@@ -10,46 +10,46 @@ public:
 	enum TypeId
 	{
 		// Keywords
-		BOOL,
-		FLOAT,
-		FALSE,
-		TRUE,
-		IF,
-		ELSE,
-		WHILE,
+		TYPEID_BOOL,
+		TYPEID_FLOAT,
+		TYPEID_FALSE,
+		TYPEID_TRUE,
+		TYPEID_IF,
+		TYPEID_ELSE,
+		TYPEID_WHILE,
 
 		// Operators
-		PLUS,      // '+'
-		MINUS,     // '-'
-		MULT,      // '*'
-		DIV,       // '/'
-		LT,        // '<'
-		LTE,       // '<='
-		GT,        // '>'
-		GTE,       // '>='
-		EQUAL,     // '=='
-		NOT_EQUAL, // '!='
-		NOT,       // '!'
-		OR,        // '||'
-		AND,       // '&&'
+		TYPEID_PLUS,      // '+'
+		TYPEID_MINUS,     // '-'
+		TYPEID_MULT,      // '*'
+		TYPEID_DIV,       // '/'
+		TYPEID_LT,        // '<'
+		TYPEID_LTE,       // '<='
+		TYPEID_GT,        // '>'
+		TYPEID_GTE,       // '>='
+		TYPEID_EQUAL,     // '=='
+		TYPEID_NOT_EQUAL, // '!='
+		TYPEID_NOT,       // '!'
+		TYPEID_OR,        // '||'
+		TYPEID_AND,       // '&&'
 
 		// Punctuation
-		OPAREN,    // '('
-		CPAREN,    // ')'
-		OBRACE,    // '{'
-		CBRACE,    // '}'
-		PERIOD,    // '.'
-		SEMICOLON, // ';'
+		TYPEID_OPAREN,    // '('
+		TYPEID_CPAREN,    // ')'
+		TYPEID_OBRACE,    // '{'
+		TYPEID_CBRACE,    // '}'
+		TYPEID_PERIOD,    // '.'
+		TYPEID_SEMICOLON, // ';'
 
 		// Stuff
-		ASSIGN,    // '='
-		//REMOTE,    // '@'
-		IDENTIFIER,
-		NUMBER,
+		TYPEID_ASSIGN,    // '='
+		//TYPEID_REMOTE,    // '@'
+		TYPEID_IDENTIFIER,
+		TYPEID_NUMBER,
 
 		// Special values
-		INVALID,
-		EOF
+		TYPEID_INVALID,
+		TYPEID_EOF
 	};
 
 	Token(TypeId type, const char *text, /*float value,*/ int line, int column, int index):
