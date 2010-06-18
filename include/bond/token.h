@@ -1,6 +1,8 @@
 #ifndef BOND_TOKEN_H
 #define BOND_TOKEN_H
 
+#include "bond/private/value.h"
+
 namespace Bond
 {
 
@@ -43,7 +45,6 @@ public:
 
 		// Stuff
 		TYPEID_ASSIGN,    // '='
-		//TYPEID_REMOTE,    // '@'
 		TYPEID_IDENTIFIER,
 		TYPEID_NUMBER,
 
@@ -52,10 +53,10 @@ public:
 		TYPEID_EOF
 	};
 
-	Token(TypeId type, const char *text, /*float value,*/ int line, int column, int index):
+	Token(Value value, TypeId type, const char *text, int line, int column, int index):
+		mValue(value),
 		mTypeId(type),
 		mText(text),
-		//mValue(value),
 		mLine(line),
 		mColumn(column),
 		mIndex(index)
@@ -64,15 +65,17 @@ public:
 
 	TypeId GetTypeId() const { return mTypeId; }
 	const char *GetText() const { return mText; }
-	//float GetValue() const { return mValue; }
+	float_t GetFloatValue() const { return mValue.mFloat; }
+	int_t GetIntValue() const { return mValue.mInt; }
+	uint_t GetUIntValue() const { return mValue.mUInt; }
 	int GetLine() const { return mLine; }
 	int GetColumn() const { return mColumn; }
 	int GetIndex() const { return mIndex; }
 
 private:
+	Value mValue;
 	TypeId mTypeId;
 	const char *mText;
-	//float mValue;
 	int mLine;
 	int mColumn;
 	int mIndex;

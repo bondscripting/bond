@@ -1,6 +1,7 @@
 #include "bond/lexer.h"
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 
 namespace Bond
@@ -15,7 +16,6 @@ Lexer::~Lexer()
 
 void Lexer::SetText(const char *scriptName, const char *text, int textLength)
 {
-	//mTokenStack.Clear();
 	mScriptName = scriptName;
 	mText = text;
 	mTextLength = textLength;
@@ -37,26 +37,20 @@ void Lexer::SetText(const char *scriptName, const char *text, int textLength)
 
 Token Lexer::NextToken()
 {
-	/*
-	if (mTokenStack.Count > 0)
-	{
-		return mTokenStack.Pop() as Token;
-	}
-
 	int startIndex = -1;
 	int startLine = -1;
 	int startColumn = -1;
-	Token.TypeId type = Token::TYPEID_INVALID;
+	Token::TypeId type = Token::TYPEID_INVALID;
 	LexState state = STATE_SPACE;
 
-	while ((mTextIndex < mText.Length) && (state != STATE_DONE))
+	while (HasMoreText() && (state != STATE_DONE))
 	{
-		char c = mText[mTextIndex];
+		const char c = GetNextTextChar();
 
 		switch (state)
 		{
 			case STATE_SPACE:
-				startIndex = mTextIndex;
+				startIndex = mTextIndex - 1;
 				startLine = mLine;
 				startColumn = mColumn;
 
@@ -134,24 +128,19 @@ Token Lexer::NextToken()
 					state = STATE_DONE;
 					type = Token::TYPEID_SEMICOLON;
 				}
-				else if (c == '@')
-				{
-					state = STATE_DONE;
-					type = Token::TYPEID_REMOTE;
-				}
 				else if ((c == 'e') || (c == 'E'))
 				{
 					state = STATE_E;
 				}
-				else if (Char.IsDigit(c))
+				else if (isdigit(c))
 				{
 					state = STATE_IDIGITS;
 				}
-				else if (Char.IsLetter(c) || (c == '_'))
+				else if (isalpha(c) || (c == '_'))
 				{
 					state = STATE_IDENTIFIER;
 				}
-				else if (!Char.IsWhiteSpace(c))
+				else if (!isspace(c))
 				{
 					state = STATE_DONE;
 				}
@@ -199,7 +188,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_DIV;
 				}
@@ -214,14 +203,14 @@ Token Lexer::NextToken()
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (Char.IsDigit(c))
+				else if (isdigit(c))
 				{
 					state = STATE_IDIGITS;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_PLUS;
 				}
@@ -236,14 +225,14 @@ Token Lexer::NextToken()
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (Char.IsDigit(c))
+				else if (isdigit(c))
 				{
 					state = STATE_IDIGITS;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_MINUS;
 				}
@@ -258,7 +247,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_LT;
 				}
@@ -273,7 +262,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_GT;
 				}
@@ -288,7 +277,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_ASSIGN;
 				}
@@ -303,7 +292,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_NOT;
 				}
@@ -318,7 +307,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 				}
 				break;
@@ -332,7 +321,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 				}
 				break;
@@ -346,10 +335,10 @@ Token Lexer::NextToken()
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (!Char.IsDigit(c))
+				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_NUMBER;
 				}
@@ -360,41 +349,41 @@ Token Lexer::NextToken()
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (!Char.IsDigit(c))
+				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_NUMBER;
 				}
 				break;
 
 			case STATE_EDIGITS:
-				if (!Char.IsDigit(c))
+				if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_NUMBER;
 				}
 				break;
 
 			case STATE_PERIOD:
-				if (Char.IsDigit(c))
+				if (isdigit(c))
 				{
 					state = STATE_EDIGITS;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_PERIOD;
 				}
 				break;
 
 			case STATE_E:
-				if (Char.IsDigit(c))
+				if (isdigit(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -409,14 +398,14 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_IDENTIFIER;
 				}
 				break;
 
 			case STATE_E_SIGN:
-				if (Char.IsDigit(c))
+				if (isdigit(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -424,14 +413,14 @@ Token Lexer::NextToken()
 				{
 					// The last character and the previous '+' or '-' are not part of the token;
 					// roll them back.
-					RollBack(2);
+					UngetTextChars(2);
 					state = STATE_DONE;
 					type = Token::TYPEID_IDENTIFIER;
 				}
 				break;
 
 			case STATE_EXPONENT:
-				if (Char.IsDigit(c))
+				if (isdigit(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -442,14 +431,14 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character and the previous 'e' are not part of the token; roll them back.
-					RollBack(2);
+					UngetTextChars(2);
 					state = STATE_DONE;
 					type = Token::TYPEID_NUMBER;
 				}
 				break;
 
 			case STATE_EXPONENT_SIGN:
-				if (Char.IsDigit(c))
+				if (isdigit(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -457,7 +446,7 @@ Token Lexer::NextToken()
 				{
 					// The last character, the previous '+' or '-' and the previous 'e' are not
 					// part of the token; roll them back.
-					RollBack(3);
+					UngetTextChars(3);
 					state = STATE_DONE;
 					type = Token::TYPEID_NUMBER;
 				}
@@ -467,7 +456,7 @@ Token Lexer::NextToken()
 				if (!IsIdentifierChar(c))
 				{
 					// The last character is not part of the token; roll it back.
-					RollBack(1);
+					UngetTextChars(1);
 					state = STATE_DONE;
 					type = Token::TYPEID_IDENTIFIER;
 				}
@@ -476,81 +465,69 @@ Token Lexer::NextToken()
 			case STATE_DONE:
 				break;
 		}
-
-		//Console.WriteLine(state);
-		++mTextIndex;
-		++mColumn;
 	}
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
-		return new Token(Token::TYPEID_EOF, "EOF", 0.0f, mLine, mColumn, mTextIndex);
+		return Token(Value(), Token::TYPEID_EOF, "EOF", mLine, mColumn, mTextIndex);
 	}
 
 	if (((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR)) &&
 	    !mAllowInvalidTokens)
 	{
-		throw new CompilerException(String.Format("{0}({1},{2}): Unterminated comment.", mScriptName, startLine, startColumn));
+		//throw new CompilerException(String.Format("{0}({1},{2}): Unterminated comment.", mScriptName, startLine, startColumn));
 	}
 
-	string text = mText.Substring(startIndex, mTextIndex - startIndex);
-	float value = 0.0f;
+	const char *text = NULL; //mText.Substring(startIndex, mTextIndex - startIndex);
+	//float value = 0.0f;
 
 	// Distinguish keywords from other identifiers.
 	if (type == Token::TYPEID_IDENTIFIER)
 	{
-		if (text.Equals("bool"))
+		if (strcmp(text, "bool") == 0)
 		{
 			type = Token::TYPEID_BOOL;
 		}
-		else if (text.Equals("float"))
+		else if (strcmp(text, "float") == 0)
 		{
 			type = Token::TYPEID_FLOAT;
 		}
-		else if (text.Equals("false"))
+		else if (strcmp(text, "false") == 0)
 		{
 			type = Token::TYPEID_FALSE;
 		}
-		else if (text.Equals("true"))
+		else if (strcmp(text, "true") == 0)
 		{
 			type = Token::TYPEID_TRUE;
 		}
-		else if (text.Equals("if"))
+		else if (strcmp(text, "if") == 0)
 		{
 			type = Token::TYPEID_IF;
 		}
-		else if (text.Equals("else"))
+		else if (strcmp(text, "else") == 0)
 		{
 			type = Token::TYPEID_ELSE;
 		}
-		else if (text.Equals("while"))
+		else if (strcmp(text, "while") == 0)
 		{
 			type = Token::TYPEID_WHILE;
-		}
-		else if (text.Equals("DeltaTick"))
-		{
-			type = Token::TYPEID_DELTA_TICK;
-		}
-		else if (text.Equals("DeltaTime"))
-		{
-			type = Token::TYPEID_DELTA_TIME;
 		}
 	}
 	else if (type == Token::TYPEID_NUMBER)
 	{
-		Single.TryParse(text, out value);			
+		//Single.TryParse(text, out value);			
 	}
 	else if (type == Token::TYPEID_INVALID)
 	{
 		if (!mAllowInvalidTokens)
 		{
-			throw new CompilerException(String.Format("{0}({1},{2}): Invalid token '{2}'.", mScriptName, startLine, startColumn, text));
+			//throw new CompilerException(String.Format("{0}({1},{2}): Invalid token '{2}'.", mScriptName, startLine, startColumn, text));
 		}
 	}
 
-	return new Token(type, text, value, startLine, startColumn, startIndex);
-	*/
-	return Token(Token::TYPEID_EOF, "", 0, 0, 0);
+	return Token(Value(), type, text, startLine, startColumn, startIndex);
+
+	//return Token(Token::TYPEID_EOF, "", 0, 0, 0);
 }
 
 
@@ -568,6 +545,7 @@ char Lexer::GetNextTextChar()
 	// is properly parsed.
 	char c = (mTextIndex >= mTextLength) ? ' ' : mText[mTextIndex];
 	++mTextIndex;
+	++mColumn;
 	return c;
 }
 

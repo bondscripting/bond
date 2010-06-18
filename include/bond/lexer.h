@@ -11,7 +11,6 @@ class Lexer
 {
 public:
 	Lexer():
-		//mTokenStack(),
 		mScriptName(""),
 		mText(""),
 		mTokenBuffer(NULL),
@@ -75,7 +74,6 @@ private:
 
 	static bool IsIdentifierChar(char c);
 
-	//Stack mTokenStack;
 	const char *mScriptName;
 	const char *mText;
 	char *mTokenBuffer;
