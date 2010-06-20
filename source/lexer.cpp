@@ -1,6 +1,7 @@
 #include "bond/lexer.h"
 #include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 
 
@@ -20,6 +21,7 @@ void Lexer::SetText(const char *scriptName, const char *text, int textLength)
 	mText = text;
 	mTextLength = textLength;
 	mTextIndex = 0;
+	mBufferIndex = 0;
 	mLine = 1;
 	mColumn = 1;
 
@@ -69,7 +71,7 @@ Token Lexer::NextToken()
 				else if (c == '*')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_MULT;
+					type = Token::TYPEID_OP_MULT;
 				}
 				else if (c == '/')
 				{
@@ -190,7 +192,7 @@ Token Lexer::NextToken()
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_DIV;
+					type = Token::TYPEID_OP_DIV;
 				}
 				break;
 
@@ -212,7 +214,7 @@ Token Lexer::NextToken()
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_PLUS;
+					type = Token::TYPEID_OP_PLUS;
 				}
 				break;
 
@@ -234,7 +236,7 @@ Token Lexer::NextToken()
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_MINUS;
+					type = Token::TYPEID_OP_MINUS;
 				}
 				break;
 
@@ -242,14 +244,14 @@ Token Lexer::NextToken()
 				if (c == '=')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_LTE;
+					type = Token::TYPEID_OP_LTE;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_LT;
+					type = Token::TYPEID_OP_LT;
 				}
 				break;
 
@@ -257,14 +259,14 @@ Token Lexer::NextToken()
 				if (c == '=')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_GTE;
+					type = Token::TYPEID_OP_GTE;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_GT;
+					type = Token::TYPEID_OP_GT;
 				}
 				break;
 
@@ -272,7 +274,7 @@ Token Lexer::NextToken()
 				if (c == '=')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_EQUAL;
+					type = Token::TYPEID_OP_EQUAL;
 				}
 				else
 				{
@@ -287,14 +289,14 @@ Token Lexer::NextToken()
 				if (c == '=')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_NOT_EQUAL;
+					type = Token::TYPEID_OP_NOT_EQUAL;
 				}
 				else
 				{
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_NOT;
+					type = Token::TYPEID_OP_NOT;
 				}
 				break;
 
@@ -302,7 +304,7 @@ Token Lexer::NextToken()
 				if (c == '|')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_OR;
+					type = Token::TYPEID_OP_OR;
 				}
 				else
 				{
@@ -316,7 +318,7 @@ Token Lexer::NextToken()
 				if (c == '&')
 				{
 					state = STATE_DONE;
-					type = Token::TYPEID_AND;
+					type = Token::TYPEID_OP_AND;
 				}
 				else
 				{
@@ -335,12 +337,17 @@ Token Lexer::NextToken()
 				{
 					state = STATE_EXPONENT;
 				}
+				else if (c == 'u')
+				{
+					state = STATE_DONE;
+					type = Token::TYPEID_VAL_UINT;
+				}
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_NUMBER;
+					type = Token::TYPEID_VAL_INT;
 				}
 				break;
 
@@ -354,7 +361,7 @@ Token Lexer::NextToken()
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_NUMBER;
+					type = Token::TYPEID_VAL_FLOAT;
 				}
 				break;
 
@@ -364,7 +371,7 @@ Token Lexer::NextToken()
 					// The last character is not part of the token; roll it back.
 					UngetTextChars(1);
 					state = STATE_DONE;
-					type = Token::TYPEID_NUMBER;
+					type = Token::TYPEID_VAL_FLOAT;
 				}
 				break;
 
@@ -433,7 +440,7 @@ Token Lexer::NextToken()
 					// The last character and the previous 'e' are not part of the token; roll them back.
 					UngetTextChars(2);
 					state = STATE_DONE;
-					type = Token::TYPEID_NUMBER;
+					type = Token::TYPEID_VAL_FLOAT;
 				}
 				break;
 
@@ -448,7 +455,7 @@ Token Lexer::NextToken()
 					// part of the token; roll them back.
 					UngetTextChars(3);
 					state = STATE_DONE;
-					type = Token::TYPEID_NUMBER;
+					type = Token::TYPEID_VAL_FLOAT;
 				}
 				break;
 
@@ -472,62 +479,60 @@ Token Lexer::NextToken()
 		return Token(Value(), Token::TYPEID_EOF, "EOF", mLine, mColumn, mTextIndex);
 	}
 
-	if (((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR)) &&
-	    !mAllowInvalidTokens)
+	if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
 	{
 		//throw new CompilerException(String.Format("{0}({1},{2}): Unterminated comment.", mScriptName, startLine, startColumn));
 	}
 
-	const char *text = NULL; //mText.Substring(startIndex, mTextIndex - startIndex);
-	//float value = 0.0f;
+	const char *tokenString = CreateTokenString(startIndex, mTextIndex - startIndex);
+	Value value;
 
 	// Distinguish keywords from other identifiers.
 	if (type == Token::TYPEID_IDENTIFIER)
 	{
-		if (strcmp(text, "bool") == 0)
+		if (strcmp(tokenString, "bool") == 0)
 		{
-			type = Token::TYPEID_BOOL;
+			type = Token::TYPEID_KEY_BOOL;
 		}
-		else if (strcmp(text, "float") == 0)
+		else if (strcmp(tokenString, "float") == 0)
 		{
-			type = Token::TYPEID_FLOAT;
+			type = Token::TYPEID_KEY_FLOAT;
 		}
-		else if (strcmp(text, "false") == 0)
+		else if (strcmp(tokenString, "false") == 0)
 		{
-			type = Token::TYPEID_FALSE;
+			type = Token::TYPEID_KEY_FALSE;
 		}
-		else if (strcmp(text, "true") == 0)
+		else if (strcmp(tokenString, "true") == 0)
 		{
-			type = Token::TYPEID_TRUE;
+			type = Token::TYPEID_KEY_TRUE;
 		}
-		else if (strcmp(text, "if") == 0)
+		else if (strcmp(tokenString, "if") == 0)
 		{
-			type = Token::TYPEID_IF;
+			type = Token::TYPEID_KEY_IF;
 		}
-		else if (strcmp(text, "else") == 0)
+		else if (strcmp(tokenString, "else") == 0)
 		{
-			type = Token::TYPEID_ELSE;
+			type = Token::TYPEID_KEY_ELSE;
 		}
-		else if (strcmp(text, "while") == 0)
+		else if (strcmp(tokenString, "while") == 0)
 		{
-			type = Token::TYPEID_WHILE;
+			type = Token::TYPEID_KEY_WHILE;
 		}
 	}
-	else if (type == Token::TYPEID_NUMBER)
+	else if (type == Token::TYPEID_VAL_INT)
 	{
-		//Single.TryParse(text, out value);			
+		sscanf(tokenString, BOND_INT_SCAN_FORMAT, &value.mInt);
 	}
-	else if (type == Token::TYPEID_INVALID)
+	else if (type == Token::TYPEID_VAL_UINT)
 	{
-		if (!mAllowInvalidTokens)
-		{
-			//throw new CompilerException(String.Format("{0}({1},{2}): Invalid token '{2}'.", mScriptName, startLine, startColumn, text));
-		}
+		sscanf(tokenString, BOND_UINT_SCAN_FORMAT, &value.mUInt);
+	}
+	else if (type == Token::TYPEID_VAL_FLOAT)
+	{
+		sscanf(tokenString, BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
 	}
 
-	return Token(Value(), type, text, startLine, startColumn, startIndex);
-
-	//return Token(Token::TYPEID_EOF, "", 0, 0, 0);
+	return Token(value, type, tokenString, startLine, startColumn, startIndex);
 }
 
 
@@ -556,7 +561,14 @@ void Lexer::UngetTextChars(int numChars)
 	mColumn -= numChars;
 }
 
+void Lexer::NextLine()
+{
+	++mLine;
+	mColumn = 0;						
+}
 
+
+/*
 void Lexer::PushTokenChar(char c)
 {
 	assert(mBufferIndex < mBufferLength);
@@ -572,12 +584,18 @@ const char *Lexer::TerminateToken()
 	mCurrentToken = mTokenBuffer + mBufferIndex;
 	return token;
 }
+*/
 
-
-void Lexer::NextLine()
+const char *Lexer::CreateTokenString(int startIndex, int numChars)
 {
-	++mLine;
-	mColumn = 0;						
+	const char *tokenString = mTokenBuffer;
+
+	assert((mBufferIndex + numChars + 1) < mBufferLength);
+	memcpy(mTokenBuffer + mBufferIndex, mText + startIndex, numChars);
+	mBufferIndex += numChars;
+	mTokenBuffer[mBufferIndex++] = '\0';
+
+	return tokenString;
 }
 
 

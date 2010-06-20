@@ -14,20 +14,16 @@ public:
 		mScriptName(""),
 		mText(""),
 		mTokenBuffer(NULL),
-		mCurrentToken(NULL),
 		mTextLength(0),
 		mTextIndex(0),
 		mLine(1),
-		mColumn(1),
-		mAllowInvalidTokens(false)
+		mColumn(1)
 	{
 	}
 
 	~Lexer();
 
 	void SetText(const char *scriptName, const char *text, int mTextLength);
-	void AllowInvalidTokens() { mAllowInvalidTokens = true; }
-	void DisllowInvalidTokens() { mAllowInvalidTokens = false; }
 
 	Token NextToken();
 
@@ -65,26 +61,24 @@ private:
 	bool HasMoreText() const;
 	char GetNextTextChar();
 	void UngetTextChars(int numChars);
+	void NextLine();
 
 	// Functions for manipulating the token buffer.
-	void PushTokenChar(char c);
-	const char *TerminateToken();
-
-	void NextLine();
+	//void PushTokenChar(char c);
+	//const char *TerminateToken();
+	const char *CreateTokenString(int startIndex, int numChars);
 
 	static bool IsIdentifierChar(char c);
 
 	const char *mScriptName;
 	const char *mText;
 	char *mTokenBuffer;
-	const char *mCurrentToken;
 	int mTextLength;
 	int mTextIndex;
 	int mBufferLength;
 	int mBufferIndex;
 	int mLine;
 	int mColumn;
-	bool mAllowInvalidTokens;
 };
 
 }

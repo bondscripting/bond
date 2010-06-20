@@ -12,28 +12,28 @@ public:
 	enum TypeId
 	{
 		// Keywords
-		TYPEID_BOOL,
-		TYPEID_FLOAT,
-		TYPEID_FALSE,
-		TYPEID_TRUE,
-		TYPEID_IF,
-		TYPEID_ELSE,
-		TYPEID_WHILE,
+		TYPEID_KEY_BOOL,
+		TYPEID_KEY_FLOAT,
+		TYPEID_KEY_FALSE,
+		TYPEID_KEY_TRUE,
+		TYPEID_KEY_IF,
+		TYPEID_KEY_ELSE,
+		TYPEID_KEY_WHILE,
 
 		// Operators
-		TYPEID_PLUS,      // '+'
-		TYPEID_MINUS,     // '-'
-		TYPEID_MULT,      // '*'
-		TYPEID_DIV,       // '/'
-		TYPEID_LT,        // '<'
-		TYPEID_LTE,       // '<='
-		TYPEID_GT,        // '>'
-		TYPEID_GTE,       // '>='
-		TYPEID_EQUAL,     // '=='
-		TYPEID_NOT_EQUAL, // '!='
-		TYPEID_NOT,       // '!'
-		TYPEID_OR,        // '||'
-		TYPEID_AND,       // '&&'
+		TYPEID_OP_PLUS,      // '+'
+		TYPEID_OP_MINUS,     // '-'
+		TYPEID_OP_MULT,      // '*'
+		TYPEID_OP_DIV,       // '/'
+		TYPEID_OP_LT,        // '<'
+		TYPEID_OP_LTE,       // '<='
+		TYPEID_OP_GT,        // '>'
+		TYPEID_OP_GTE,       // '>='
+		TYPEID_OP_EQUAL,     // '=='
+		TYPEID_OP_NOT_EQUAL, // '!='
+		TYPEID_OP_NOT,       // '!'
+		TYPEID_OP_OR,        // '||'
+		TYPEID_OP_AND,       // '&&'
 
 		// Punctuation
 		TYPEID_OPAREN,    // '('
@@ -43,10 +43,14 @@ public:
 		TYPEID_PERIOD,    // '.'
 		TYPEID_SEMICOLON, // ';'
 
+		// Literal values.
+		TYPEID_VAL_INT,
+		TYPEID_VAL_UINT,
+		TYPEID_VAL_FLOAT,
+
 		// Stuff
 		TYPEID_ASSIGN,    // '='
 		TYPEID_IDENTIFIER,
-		TYPEID_NUMBER,
 
 		// Special values
 		TYPEID_INVALID,
