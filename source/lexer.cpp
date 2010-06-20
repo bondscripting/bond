@@ -498,14 +498,6 @@ Token Lexer::NextToken()
 		{
 			type = Token::TYPEID_KEY_FLOAT;
 		}
-		else if (strcmp(tokenString, "false") == 0)
-		{
-			type = Token::TYPEID_KEY_FALSE;
-		}
-		else if (strcmp(tokenString, "true") == 0)
-		{
-			type = Token::TYPEID_KEY_TRUE;
-		}
 		else if (strcmp(tokenString, "if") == 0)
 		{
 			type = Token::TYPEID_KEY_IF;
@@ -517,6 +509,16 @@ Token Lexer::NextToken()
 		else if (strcmp(tokenString, "while") == 0)
 		{
 			type = Token::TYPEID_KEY_WHILE;
+		}
+		else if (strcmp(tokenString, "false") == 0)
+		{
+			type = Token::TYPEID_VAL_BOOL;
+			value.mBool = false;
+		}
+		else if (strcmp(tokenString, "true") == 0)
+		{
+			type = Token::TYPEID_VAL_BOOL;
+			value.mBool = true;
 		}
 	}
 	else if (type == Token::TYPEID_VAL_INT)

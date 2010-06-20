@@ -9,9 +9,7 @@ namespace Bond
 union Value
 {
 	Value(): mInt(0) {}
-	//Value(int_t value): mInt(value) {}
-	//Value(uint_t value): mUInt(value) {}
-	//Value(float_t value): mFloat(value) {}
+	bool mBool;
 	int_t mInt;
 	uint_t mUInt;
 	float_t mFloat;
