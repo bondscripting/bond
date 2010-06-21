@@ -1,3 +1,3 @@
 #!/bin/bash
 
-g++ -Wall -Iinclude -c $(find source -name '*.cpp')
+g++ -Wall -Iinclude -g $(find source -name '*.cpp') test/testmain.cpp -o test/testmain

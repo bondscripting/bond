@@ -1,8 +1,9 @@
+
 #ifndef BOND_LEXER_H
 #define BOND_LEXER_H
 
 #include "bond/token.h"
-#include <string>
+#include <stdlib.h>
 
 namespace Bond
 {
