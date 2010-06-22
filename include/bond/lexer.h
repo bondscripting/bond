@@ -17,6 +17,8 @@ public:
 		mTokenBuffer(NULL),
 		mTextLength(0),
 		mTextIndex(0),
+		mBufferLength(0),
+		mBufferIndex(0),
 		mLine(1),
 		mColumn(1)
 	{

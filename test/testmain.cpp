@@ -23,21 +23,21 @@ Script ReadScript(const char *fileName)
 
 int main()
 {
-	const char *fileName = "../scripts/lex.bond";
+	const char *fileName = "scripts/lex.bond";
 	Script script = ReadScript(fileName);
 	Bond::Lexer lexer;
 	lexer.SetText(fileName, script.text, script.length);
 
-	for (int i = 0; i < script.length; ++i)
-	{
-		printf("%c", script.text[i]);
-	}
+	//for (int i = 0; i < script.length; ++i)
+	//{
+	//	printf("%c", script.text[i]);
+	//}
 
 	while (true)
 	{
 		Bond::Token token = lexer.NextToken();
-		printf("%d '%s'\n", token.GetTypeId(), token.GetText());
-		if (token.GetTypeId() == Bond::Token::TYPEID_EOF)
+		printf("%s '%s'\n", token.GetTokenName(), token.GetText());
+		if (token.GetTokenType() == Bond::Token::END)
 		{
 			break;
 		}
