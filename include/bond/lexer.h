@@ -1,4 +1,3 @@
-
 #ifndef BOND_LEXER_H
 #define BOND_LEXER_H
 
