@@ -6,7 +6,10 @@
 #define BOND_TOKEN_LIST                    \
 	/* Keywords */												   \
 	BOND_TOKEN_ITEM(KEY_BOOL)                \
+	BOND_TOKEN_ITEM(KEY_CHAR)                \
 	BOND_TOKEN_ITEM(KEY_FLOAT)               \
+	BOND_TOKEN_ITEM(KEY_INT)                 \
+	BOND_TOKEN_ITEM(KEY_UINT)                \
 	BOND_TOKEN_ITEM(KEY_IF)                  \
 	BOND_TOKEN_ITEM(KEY_ELSE)                \
 	BOND_TOKEN_ITEM(KEY_WHILE)               \
@@ -55,55 +58,6 @@ namespace Bond
 class Token
 {
 public:
-	/*
-	enum TokenType
-	{
-		// Keywords
-		KEY_BOOL,
-		KEY_FLOAT,
-		KEY_IF,
-		KEY_ELSE,
-		KEY_WHILE,
-
-		// Operators
-		OP_PLUS,      // '+'
-		OP_MINUS,     // '-'
-		OP_MULT,      // '*'
-		OP_DIV,       // '/'
-		OP_LT,        // '<'
-		OP_LTE,       // '<='
-		OP_GT,        // '>'
-		OP_GTE,       // '>='
-		OP_EQUAL,     // '=='
-		OP_NOT_EQUAL, // '!='
-		OP_NOT,       // '!'
-		OP_OR,        // '||'
-		OP_AND,       // '&&'
-
-		// Punctuation
-		OPAREN,       // '('
-		CPAREN,       // ')'
-		OBRACE,       // '{'
-		CBRACE,       // '}'
-		PERIOD,       // '.'
-		SEMICOLON,    // ';'
-
-		// Literal values.
-		VAL_BOOL,
-		VAL_INT,
-		VAL_UINT,
-		VAL_FLOAT,
-
-		// Stuff
-		ASSIGN,       // '='
-		IDENTIFIER,
-
-		// Special values
-		INVALID,
-		END,
-	};
-	*/
-
 	enum TokenType
 	{
 #define BOND_TOKEN_ITEM(item) item,

@@ -494,9 +494,21 @@ Token Lexer::NextToken()
 		{
 			type = Token::KEY_BOOL;
 		}
+		else if (strcmp(tokenString, "char") == 0)
+		{
+			type = Token::KEY_CHAR;
+		}
 		else if (strcmp(tokenString, "float") == 0)
 		{
 			type = Token::KEY_FLOAT;
+		}
+		else if (strcmp(tokenString, "int") == 0)
+		{
+			type = Token::KEY_INT;
+		}
+		else if (strcmp(tokenString, "uint") == 0)
+		{
+			type = Token::KEY_UINT;
 		}
 		else if (strcmp(tokenString, "if") == 0)
 		{

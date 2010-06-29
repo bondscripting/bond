@@ -1,40 +1,43 @@
 #http://wiki.osdev.org/Makefile
 
 SRCDIR = source
+INCLUDEDIR = include
 BLDDIR = build
-LIBDIR = lib
-
-SRCFILES = $(shell find $(SRCDIR) -name "*.cpp")
-OBJFILES = $(patsubst $(SRCDIR)/%.cpp,$(BLDDIR)/%.o,$(SRCFILES))
-DEPFILES = $(patsubst %.o,%.d,$(OBJFILES))
-LIB = $(LIBDIR)/bond.a
+BINDIR = $(BLDDIR)/bin
+OBJDIR = $(BLDDIR)/obj
+LIBDIR = $(BLDDIR)/lib
 
 SRCFILE = $(SRCDIR)/%.cpp
-OBJFILE = $(BLDDIR)/%.o
-DEPFILE = $(BLDDIR)/%.d
+OBJFILE = $(OBJDIR)/%.o
+DEPFILE = $(OBJDIR)/%.d
+
+SRCFILES = $(shell find $(SRCDIR) -name "*.cpp")
+OBJFILES = $(patsubst $(SRCFILE),$(OBJFILE),$(SRCFILES))
+DEPFILES = $(patsubst $(OBJFILE),$(DEPFILE),$(OBJFILES))
+LIB = $(LIBDIR)/bond.a
 
 AR = ar
 CC = g++
+MKDIR = mkdir
 RM = rm
-CFLAGS = -Wall -g -Iinclude
+CFLAGS = -Wall -g -I$(INCLUDEDIR)
 
 .PHONY: all clean
 
 all: $(LIB)
 
-$(LIB): $(LIBDIR) $(OBJFILES)
+$(BINDIR):
+	mkdir -p $@
+
+$(LIB): $(OBJFILES)
+	@$(MKDIR) -p $(LIBDIR)
 	$(AR) rcs $(LIB) $?
 
-$(BLDDIR):
-	mkdir -p $@
-
-$(LIBDIR):
-	mkdir -p $@
-
 clean:
-	$(RM) -f $(LIB) $(OBJFILES) $(DEPFILES)
+	$(RM) -rf $(BLDDIR)
 
 -include $(DEPFILES)
 
-$(OBJFILE): $(SRCFILE) $(BLDDIR) Makefile
+$(OBJFILE): $(SRCFILE) Makefile
+	@$(MKDIR) -p $(OBJDIR)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
