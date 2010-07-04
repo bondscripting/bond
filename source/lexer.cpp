@@ -39,10 +39,15 @@ void Lexer::SetText(const char *scriptName, const char *text, int textLength)
 
 Token Lexer::NextToken()
 {
+	const char *tokenString = "";
+	Value value;
+	Token::TokenType type = Token::INVALID;
+	Token::ErrorType error = Token::NO_ERROR;
 	int startIndex = -1;
 	int startLine = -1;
 	int startColumn = -1;
-	Token::TokenType type = Token::INVALID;
+	int errorLine = -1;
+	int errorColumn = -1;
 	LexState state = STATE_SPACE;
 
 	while (HasMoreText() && (state != STATE_DONE))
@@ -133,6 +138,10 @@ Token Lexer::NextToken()
 				else if ((c == 'e') || (c == 'E'))
 				{
 					state = STATE_E;
+				}
+				else if (c == '0')
+				{
+					state = STATE_ZERO;
 				}
 				else if (isdigit(c))
 				{
@@ -328,6 +337,47 @@ Token Lexer::NextToken()
 				}
 				break;
 
+			case STATE_ZERO:
+				if (c == '.')
+				{
+					state = STATE_FDIGITS;
+				}
+				else if ((c == 'e') || (c == 'E'))
+				{
+					state = STATE_EXPONENT;
+				}
+				else if (c == 'u')
+				{
+					state = STATE_DONE;
+					type = Token::VAL_UINT;
+				}
+				else if (c == 'x')
+				{
+					state = STATE_HEX;
+				}
+				else if (IsOctalChar(c))
+				{
+					state = STATE_OCTAL;
+				}
+				else if (isdigit(c))
+				{
+					state = STATE_IDIGITS;
+				}
+				else if (!isdigit(c))
+				{
+					// The last character is not part of the token; roll it back.
+					UngetTextChars(1);
+					state = STATE_DONE;
+					type = Token::VAL_INT;
+				}
+				break;
+
+			case STATE_OCTAL:
+				break;
+
+			case STATE_HEX:
+				break;
+
 			case STATE_IDIGITS:
 				if (c == '.')
 				{
@@ -476,77 +526,80 @@ Token Lexer::NextToken()
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
-		return Token(Value(), Token::END, "END", mLine, mColumn, mTextIndex);
+		tokenString = "END";
+		type = Token::END;
+	}
+	else if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
+	{
+		error = Token::UNTERMINATED_COMMENT;
+		errorLine = startLine;
+		errorColumn = startColumn;
+	}
+	else
+	{
+		tokenString = CreateTokenString(startIndex, mTextIndex - startIndex);
+
+		// Distinguish keywords from other identifiers.
+		if (type == Token::IDENTIFIER)
+		{
+			if (strcmp(tokenString, "bool") == 0)
+			{
+				type = Token::KEY_BOOL;
+			}
+			else if (strcmp(tokenString, "char") == 0)
+			{
+				type = Token::KEY_CHAR;
+			}
+			else if (strcmp(tokenString, "float") == 0)
+			{
+				type = Token::KEY_FLOAT;
+			}
+			else if (strcmp(tokenString, "int") == 0)
+			{
+				type = Token::KEY_INT;
+			}
+			else if (strcmp(tokenString, "uint") == 0)
+			{
+				type = Token::KEY_UINT;
+			}
+			else if (strcmp(tokenString, "if") == 0)
+			{
+				type = Token::KEY_IF;
+			}
+			else if (strcmp(tokenString, "else") == 0)
+			{
+				type = Token::KEY_ELSE;
+			}
+			else if (strcmp(tokenString, "while") == 0)
+			{
+				type = Token::KEY_WHILE;
+			}
+			else if (strcmp(tokenString, "false") == 0)
+			{
+				type = Token::VAL_BOOL;
+				value.mBool = false;
+			}
+			else if (strcmp(tokenString, "true") == 0)
+			{
+				type = Token::VAL_BOOL;
+				value.mBool = true;
+			}
+		}
+		else if (type == Token::VAL_INT)
+		{
+			sscanf(tokenString, BOND_INT_SCAN_FORMAT, &value.mInt);
+		}
+		else if (type == Token::VAL_UINT)
+		{
+			sscanf(tokenString, BOND_UINT_SCAN_FORMAT, &value.mUInt);
+		}
+		else if (type == Token::VAL_FLOAT)
+		{
+			sscanf(tokenString, BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
+		}
 	}
 
-	if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
-	{
-		//throw new CompilerException(String.Format("{0}({1},{2}): Unterminated comment.", mScriptName, startLine, startColumn));
-	}
-
-	const char *tokenString = CreateTokenString(startIndex, mTextIndex - startIndex);
-	Value value;
-
-	// Distinguish keywords from other identifiers.
-	if (type == Token::IDENTIFIER)
-	{
-		if (strcmp(tokenString, "bool") == 0)
-		{
-			type = Token::KEY_BOOL;
-		}
-		else if (strcmp(tokenString, "char") == 0)
-		{
-			type = Token::KEY_CHAR;
-		}
-		else if (strcmp(tokenString, "float") == 0)
-		{
-			type = Token::KEY_FLOAT;
-		}
-		else if (strcmp(tokenString, "int") == 0)
-		{
-			type = Token::KEY_INT;
-		}
-		else if (strcmp(tokenString, "uint") == 0)
-		{
-			type = Token::KEY_UINT;
-		}
-		else if (strcmp(tokenString, "if") == 0)
-		{
-			type = Token::KEY_IF;
-		}
-		else if (strcmp(tokenString, "else") == 0)
-		{
-			type = Token::KEY_ELSE;
-		}
-		else if (strcmp(tokenString, "while") == 0)
-		{
-			type = Token::KEY_WHILE;
-		}
-		else if (strcmp(tokenString, "false") == 0)
-		{
-			type = Token::VAL_BOOL;
-			value.mBool = false;
-		}
-		else if (strcmp(tokenString, "true") == 0)
-		{
-			type = Token::VAL_BOOL;
-			value.mBool = true;
-		}
-	}
-	else if (type == Token::VAL_INT)
-	{
-		sscanf(tokenString, BOND_INT_SCAN_FORMAT, &value.mInt);
-	}
-	else if (type == Token::VAL_UINT)
-	{
-		sscanf(tokenString, BOND_UINT_SCAN_FORMAT, &value.mUInt);
-	}
-	else if (type == Token::VAL_FLOAT)
-	{
-		sscanf(tokenString, BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
-	}
-
-	return Token(value, type, tokenString, startLine, startColumn, startIndex);
+	return Token(tokenString, value, type, error, startLine, startColumn, startIndex, errorLine, errorColumn);
 }
 
 
@@ -616,6 +669,18 @@ const char *Lexer::CreateTokenString(int startIndex, int numChars)
 bool Lexer::IsIdentifierChar(char c)
 {
 	return  isalnum(c) || (c == '_');
+}
+
+
+bool Lexer::IsOctalChar(char c)
+{
+	return (c >= '0') && (c <= '8');
+}
+
+
+bool Lexer::IsHexChar(char c)
+{
+	return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
 }
 
 }

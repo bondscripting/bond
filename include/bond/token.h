@@ -39,6 +39,7 @@
                                            \
 	/* Literal values */                     \
 	BOND_TOKEN_ITEM(VAL_BOOL)                \
+	BOND_TOKEN_ITEM(VAL_CHAR)                \
 	BOND_TOKEN_ITEM(VAL_INT)                 \
 	BOND_TOKEN_ITEM(VAL_UINT)                \
 	BOND_TOKEN_ITEM(VAL_FLOAT)               \
@@ -65,35 +66,67 @@ public:
 #undef BOND_TOKEN_ITEM
 	};
 
-	Token(Value value, TokenType type, const char *text, int line, int column, int index):
+	enum ErrorType
+	{
+		NO_ERROR,
+		INVALID_ESCAPE,
+		INVALID_OCTAL_ESCAPE,
+		INVALID_HEX_ESCAPE,
+		INVALID_OCTAL_INT,
+		INVALID_HEX_INT,
+		MULTICHARACTER_CONSTANT,
+		UNTERMINATED_COMMENT,
+		UNTERMINATED_LITERAL,
+		UNTERMINATED_CHARACTER,
+	};
+
+	Token(
+			const char *text,
+			Value value,
+			TokenType type,
+			ErrorType errorType,
+			int line,
+			int column,
+			int index,
+			int errorLine,
+			int errorColumn):
+		mText(text),
 		mValue(value),
 		mTokenType(type),
-		mText(text),
+		mErrorType(errorType),
 		mLine(line),
 		mColumn(column),
-		mIndex(index)
+		mIndex(index),
+		mErrorLine(errorLine),
+		mErrorColumn(errorColumn)
 	{
 	}
 
+	const char *GetText() const { return mText; }
 	TokenType GetTokenType() const { return mTokenType; }
 	const char *GetTokenName() const;
-	const char *GetText() const { return mText; }
+	ErrorType GetErrorType() const { return mErrorType; }
 	float_t GetFloatValue() const { return mValue.mFloat; }
 	int_t GetIntValue() const { return mValue.mInt; }
 	uint_t GetUIntValue() const { return mValue.mUInt; }
 	int GetLine() const { return mLine; }
 	int GetColumn() const { return mColumn; }
 	int GetIndex() const { return mIndex; }
+	int GetErrorLine() const { return mErrorLine; }
+	int GetErrorColumn() const { return mErrorColumn; }
 
 	static const char *GetTokenName(TokenType type);
 
 private:
+	const char *mText;
 	Value mValue;
 	TokenType mTokenType;
-	const char *mText;
+	ErrorType mErrorType;
 	int mLine;
 	int mColumn;
 	int mIndex;
+	int mErrorLine;
+	int mErrorColumn;
 };
 
 }

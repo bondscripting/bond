@@ -47,6 +47,9 @@ private:
 		STATE_NOT,            // '!'
 		STATE_OR,             // '|'
 		STATE_AND,            // '&'
+		STATE_ZERO,           // '0'
+		STATE_OCTAL,          // Octal integer
+		STATE_HEX,            // Hex integer
 		STATE_IDIGITS,        // Integral digits
 		STATE_FDIGITS,        // Fractional digits
 		STATE_EDIGITS,        // Exponential digits
@@ -71,6 +74,8 @@ private:
 	const char *CreateTokenString(int startIndex, int numChars);
 
 	static bool IsIdentifierChar(char c);
+	static bool IsOctalChar(char c);
+	static bool IsHexChar(char c);
 
 	const char *mScriptName;
 	const char *mText;
