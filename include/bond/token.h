@@ -1,7 +1,8 @@
 #ifndef BOND_TOKEN_H
 #define BOND_TOKEN_H
 
-#include "bond/private/value.h"
+#include "bond/streampos.h"
+#include "bond/value.h"
 
 #define BOND_TOKEN_LIST                    \
 	/* Keywords */												   \
@@ -81,52 +82,44 @@ public:
 	};
 
 	Token(
+			const StreamPos &startPos,
+			const StreamPos &endPos,
+			const StreamPos &errorPos,
+			const Value &value,
 			const char *text,
-			Value value,
 			TokenType type,
-			ErrorType errorType,
-			int line,
-			int column,
-			int index,
-			int errorLine,
-			int errorColumn):
-		mText(text),
+			ErrorType errorType):
+		mStartPos(startPos),
+		mEndPos(endPos),
+		mErrorPos(errorPos),
 		mValue(value),
+		mText(text),
 		mTokenType(type),
-		mErrorType(errorType),
-		mLine(line),
-		mColumn(column),
-		mIndex(index),
-		mErrorLine(errorLine),
-		mErrorColumn(errorColumn)
+		mErrorType(errorType)
 	{
 	}
 
+	const StreamPos &GetStartPos() const { return mStartPos; }
+	const StreamPos &GetEndPos() const { return mEndPos; }
+	const StreamPos &GetErrorPos() const { return mErrorPos; }
 	const char *GetText() const { return mText; }
 	TokenType GetTokenType() const { return mTokenType; }
-	const char *GetTokenName() const;
 	ErrorType GetErrorType() const { return mErrorType; }
 	float_t GetFloatValue() const { return mValue.mFloat; }
 	int_t GetIntValue() const { return mValue.mInt; }
 	uint_t GetUIntValue() const { return mValue.mUInt; }
-	int GetLine() const { return mLine; }
-	int GetColumn() const { return mColumn; }
-	int GetIndex() const { return mIndex; }
-	int GetErrorLine() const { return mErrorLine; }
-	int GetErrorColumn() const { return mErrorColumn; }
+	const char *GetTokenName() const;
 
 	static const char *GetTokenName(TokenType type);
 
 private:
-	const char *mText;
+	StreamPos mStartPos;
+	StreamPos mEndPos;
+	StreamPos mErrorPos;
 	Value mValue;
+	const char *mText;
 	TokenType mTokenType;
 	ErrorType mErrorType;
-	int mLine;
-	int mColumn;
-	int mIndex;
-	int mErrorLine;
-	int mErrorColumn;
 };
 
 }

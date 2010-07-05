@@ -15,57 +15,47 @@ Lexer::~Lexer()
 }
 
 
-void Lexer::SetText(const char *scriptName, const char *text, int textLength)
+void Lexer::SetText(const char *scriptName, const char *text, int length)
 {
 	mScriptName = scriptName;
-	mText = text;
-	mTextLength = textLength;
-	mTextIndex = 0;
+	mStream.SetBuffer(text, length);
+	//mText = text;
+	//mTextLength = length;
+	//mTextIndex = 0;
 	mBufferIndex = 0;
-	mLine = 1;
-	mColumn = 1;
+	//mLine = 1;
+	//mColumn = 1;
 
 	// Since tokens must be null terminated and since we could have as many tokens as there are
 	// characters in the source text, then in the worst case the token buffer needs to be twice
 	// as long as the source text.
-	if (mBufferLength < (2 * mTextLength))
-	{
-		delete [] mTokenBuffer;
-		mTokenBuffer = new char[2 * mTextLength];
-		mBufferLength = 2 * mTextLength;
-	}
+	delete [] mTokenBuffer;
+	mTokenBuffer = new char[2 * length];
+	mBufferLength = 2 * length;
 }
 
 
 Token Lexer::NextToken()
 {
-	const char *tokenString = "";
+	StreamPos startPos;
+	StreamPos endPos;
+	StreamPos errorPos;
 	Value value;
+	const char *tokenString = "";
 	Token::TokenType type = Token::INVALID;
 	Token::ErrorType error = Token::NO_ERROR;
-	int startIndex = -1;
-	int startLine = -1;
-	int startColumn = -1;
-	int errorLine = -1;
-	int errorColumn = -1;
 	LexState state = STATE_SPACE;
 
-	while (HasMoreText() && (state != STATE_DONE))
+	while (mStream.HasNext() && (state != STATE_DONE))
 	{
-		const char c = GetNextTextChar();
+		const char c = mStream.Peek();
 
 		switch (state)
 		{
 			case STATE_SPACE:
-				startIndex = mTextIndex - 1;
-				startLine = mLine;
-				startColumn = mColumn;
+				startPos = mStream.GetStreamPos();
 
-				if (c == '\n')
-				{
-					NextLine();
-				}
-				else if (c == '+')
+				if (c == '+')
 				{
 					state = STATE_PLUS;
 				}
@@ -162,10 +152,6 @@ Token Lexer::NextToken()
 				{
 					state = STATE_C_COMMENT_STAR;
 				}
-				else if (c == '\n')
-				{
-					NextLine();
-				}
 				break;
 
 			case STATE_C_COMMENT_STAR:
@@ -182,7 +168,6 @@ Token Lexer::NextToken()
 			case STATE_LINE_COMMENT:
 				if (c == '\n')
 				{
-					NextLine();
 					state = STATE_SPACE;
 				}
 				break;
@@ -199,7 +184,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_DIV;
 				}
@@ -221,7 +206,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_PLUS;
 				}
@@ -243,7 +228,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_MINUS;
 				}
@@ -258,7 +243,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_LT;
 				}
@@ -273,7 +258,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_GT;
 				}
@@ -288,7 +273,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::ASSIGN;
 				}
@@ -303,7 +288,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_NOT;
 				}
@@ -318,7 +303,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 				}
 				break;
@@ -332,7 +317,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 				}
 				break;
@@ -366,7 +351,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_INT;
 				}
@@ -395,7 +380,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_INT;
 				}
@@ -409,7 +394,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -419,7 +404,7 @@ Token Lexer::NextToken()
 				if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -433,7 +418,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::PERIOD;
 				}
@@ -455,7 +440,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -470,7 +455,7 @@ Token Lexer::NextToken()
 				{
 					// The last character and the previous '+' or '-' are not part of the token;
 					// roll them back.
-					UngetTextChars(2);
+					mStream.Unget(2);
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -488,7 +473,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character and the previous 'e' are not part of the token; roll them back.
-					UngetTextChars(2);
+					mStream.Unget(2);
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -503,7 +488,7 @@ Token Lexer::NextToken()
 				{
 					// The last character, the previous '+' or '-' and the previous 'e' are not
 					// part of the token; roll them back.
-					UngetTextChars(3);
+					mStream.Unget(3);
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -513,7 +498,7 @@ Token Lexer::NextToken()
 				if (!IsIdentifierChar(c))
 				{
 					// The last character is not part of the token; roll it back.
-					UngetTextChars(1);
+					mStream.Unget();
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -522,6 +507,8 @@ Token Lexer::NextToken()
 			case STATE_DONE:
 				break;
 		}
+
+		mStream.Advance();
 	}
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
@@ -532,12 +519,11 @@ Token Lexer::NextToken()
 	else if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
 	{
 		error = Token::UNTERMINATED_COMMENT;
-		errorLine = startLine;
-		errorColumn = startColumn;
+		errorPos = startPos;
 	}
 	else
 	{
-		tokenString = CreateTokenString(startIndex, mTextIndex - startIndex);
+		tokenString = CreateTokenString(startPos.index, mStream.GetStreamPos().index - startPos.index);
 
 		// Distinguish keywords from other identifiers.
 		if (type == Token::IDENTIFIER)
@@ -599,10 +585,10 @@ Token Lexer::NextToken()
 		}
 	}
 
-	return Token(tokenString, value, type, error, startLine, startColumn, startIndex, errorLine, errorColumn);
+	return Token(startPos, endPos, errorPos, value, tokenString, type, error);
 }
 
-
+/*
 bool Lexer::HasMoreText() const
 {
 	// Use <= instead of < since we're artificially introducing a space at the end to ensure
@@ -613,7 +599,7 @@ bool Lexer::HasMoreText() const
 
 char Lexer::GetNextTextChar()
 {
-	// Aritificially introduce a space as the last character to ensure that the last token
+	// Artificially introduce a space as the last character to ensure that the last token
 	// is properly parsed.
 	char c = (mTextIndex >= mTextLength) ? ' ' : mText[mTextIndex];
 	++mTextIndex;
@@ -628,12 +614,13 @@ void Lexer::UngetTextChars(int numChars)
 	mColumn -= numChars;
 }
 
+
 void Lexer::NextLine()
 {
 	++mLine;
 	mColumn = 0;						
 }
-
+*/
 
 /*
 void Lexer::PushTokenChar(char c)
@@ -658,7 +645,7 @@ const char *Lexer::CreateTokenString(int startIndex, int numChars)
 	assert((mBufferIndex + numChars + 1) < mBufferLength);
 
 	const char *tokenString = mTokenBuffer + mBufferIndex;
-	memcpy(mTokenBuffer + mBufferIndex, mText + startIndex, numChars);
+	memcpy(mTokenBuffer + mBufferIndex, mStream.GetBuffer() + startIndex, numChars);
 	mBufferIndex += numChars;
 	mTokenBuffer[mBufferIndex++] = '\0';
 

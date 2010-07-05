@@ -1,8 +1,8 @@
 #ifndef BOND_LEXER_H
 #define BOND_LEXER_H
 
+#include "bond/charstream.h"
 #include "bond/token.h"
-#include <stdlib.h>
 
 namespace Bond
 {
@@ -13,13 +13,10 @@ public:
 	Lexer():
 		mScriptName(""),
 		mText(""),
-		mTokenBuffer(NULL),
+		mTokenBuffer(0),
 		mTextLength(0),
-		mTextIndex(0),
 		mBufferLength(0),
-		mBufferIndex(0),
-		mLine(1),
-		mColumn(1)
+		mBufferIndex(0)
 	{
 	}
 
@@ -63,10 +60,10 @@ private:
 	};
 
 	// Functions for manipulating the input text buffer.
-	bool HasMoreText() const;
-	char GetNextTextChar();
-	void UngetTextChars(int numChars);
-	void NextLine();
+	//bool HasMoreText() const;
+	//char GetNextTextChar();
+	//void UngetTextChars(int numChars);
+	//void NextLine();
 
 	// Functions for manipulating the token buffer.
 	//void PushTokenChar(char c);
@@ -77,15 +74,16 @@ private:
 	static bool IsOctalChar(char c);
 	static bool IsHexChar(char c);
 
+	CharStream mStream;
 	const char *mScriptName;
 	const char *mText;
 	char *mTokenBuffer;
 	int mTextLength;
-	int mTextIndex;
+	//int mTextIndex;
 	int mBufferLength;
 	int mBufferIndex;
-	int mLine;
-	int mColumn;
+	//int mLine;
+	//int mColumn;
 };
 
 }
