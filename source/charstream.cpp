@@ -22,22 +22,6 @@ bool CharStream::HasNext() const
 char CharStream::Next()
 {
 	const char c = Peek();
-	Advance();
-	return c;
-}
-
-
-char CharStream::Peek() const
-{
-	// Artificially introduce a space as the last character to ensure that the end
-	// of the last token is properly identified.
-	return (mPos.index >= mLength) ? ' ' : mBuffer[mPos.index];
-}
-
-
-void CharStream::Advance()
-{
-	const char c = Peek();
 	++mPos.index;
 	++mPos.column;
 
@@ -46,28 +30,56 @@ void CharStream::Advance()
 		++mPos.line;
 		mPos.column = 1;
 	}
+
+	return c;
+}
+
+
+char CharStream::Peek() const
+{
+	return Peek(mPos.index);
+}
+
+
+char CharStream::Peek(int index) const
+{
+	// Artificially introduce a space as the last character to ensure that the end
+	// of the last token is properly identified.
+	return (index >= mLength) ? ' ' : mBuffer[index];
 }
 
 
 void CharStream::Unget()
 {
-	if (mPos.index > 0)
-	{
-		--mPos.index;
-
-		if (mPos.column >= 1)
-		{
-			--mPos.column;
-		}
-	}
+	Unget(1);
 }
 
 
 void CharStream::Unget(int numChars)
 {
-	for (int i = 0; i < numChars; ++i)
+	const int delta = (numChars <= mPos.index) ? numChars : mPos.index;
+	const int oldIndex = mPos.index;
+	mPos.index -= delta;
+	mPos.column -= delta;
+
+	int numNewLines = 0;
+
+	for (int i = mPos.index; i < oldIndex; ++i)
 	{
-		Unget();
+		if (Peek(i) == '\n')
+		{
+			++numNewLines;
+		}
+	}
+
+	if (numNewLines > 0)
+	{
+		mPos.line -= numNewLines;
+		mPos.column = 1;
+		for (int i = mPos.index - 1; (i >= 0) && (Peek(i) != '\n'); --i)
+		{
+			++mPos.column;
+		}
 	}
 }
 

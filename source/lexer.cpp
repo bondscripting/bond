@@ -15,16 +15,10 @@ Lexer::~Lexer()
 }
 
 
-void Lexer::SetText(const char *scriptName, const char *text, int length)
+void Lexer::SetText(const char *text, int length)
 {
-	mScriptName = scriptName;
 	mStream.SetBuffer(text, length);
-	//mText = text;
-	//mTextLength = length;
-	//mTextIndex = 0;
 	mBufferIndex = 0;
-	//mLine = 1;
-	//mColumn = 1;
 
 	// Since tokens must be null terminated and since we could have as many tokens as there are
 	// characters in the source text, then in the worst case the token buffer needs to be twice
@@ -48,12 +42,13 @@ Token Lexer::NextToken()
 
 	while (mStream.HasNext() && (state != STATE_DONE))
 	{
-		const char c = mStream.Peek();
+		StreamPos pos = mStream.GetStreamPos();
+		const char c = mStream.Next();
 
 		switch (state)
 		{
 			case STATE_SPACE:
-				startPos = mStream.GetStreamPos();
+				startPos = pos;
 
 				if (c == '+')
 				{
@@ -507,9 +502,9 @@ Token Lexer::NextToken()
 			case STATE_DONE:
 				break;
 		}
-
-		mStream.Advance();
 	}
+
+	endPos = mStream.GetStreamPos();
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
@@ -523,7 +518,7 @@ Token Lexer::NextToken()
 	}
 	else
 	{
-		tokenString = CreateTokenString(startPos.index, mStream.GetStreamPos().index - startPos.index);
+		tokenString = CreateTokenString(startPos.index, endPos.index - startPos.index);
 
 		// Distinguish keywords from other identifiers.
 		if (type == Token::IDENTIFIER)
@@ -588,57 +583,6 @@ Token Lexer::NextToken()
 	return Token(startPos, endPos, errorPos, value, tokenString, type, error);
 }
 
-/*
-bool Lexer::HasMoreText() const
-{
-	// Use <= instead of < since we're artificially introducing a space at the end to ensure
-	// that the last token is properly parsed.
-	return mTextIndex <= mTextLength;
-}
-
-
-char Lexer::GetNextTextChar()
-{
-	// Artificially introduce a space as the last character to ensure that the last token
-	// is properly parsed.
-	char c = (mTextIndex >= mTextLength) ? ' ' : mText[mTextIndex];
-	++mTextIndex;
-	++mColumn;
-	return c;
-}
-
-
-void Lexer::UngetTextChars(int numChars)
-{
-	mTextIndex -= numChars;
-	mColumn -= numChars;
-}
-
-
-void Lexer::NextLine()
-{
-	++mLine;
-	mColumn = 0;						
-}
-*/
-
-/*
-void Lexer::PushTokenChar(char c)
-{
-	assert(mBufferIndex < mBufferLength);
-	mTokenBuffer[mBufferIndex++] = c;
-}
-
-
-const char *Lexer::TerminateToken()
-{
-	assert(mBufferIndex < mBufferLength);
-	mTokenBuffer[mBufferIndex++] = '\0';
-	const char *token = mCurrentToken;
-	mCurrentToken = mTokenBuffer + mBufferIndex;
-	return token;
-}
-*/
 
 const char *Lexer::CreateTokenString(int startIndex, int numChars)
 {

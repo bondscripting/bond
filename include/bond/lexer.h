@@ -11,7 +11,6 @@ class Lexer
 {
 public:
 	Lexer():
-		mScriptName(""),
 		mText(""),
 		mTokenBuffer(0),
 		mTextLength(0),
@@ -22,7 +21,7 @@ public:
 
 	~Lexer();
 
-	void SetText(const char *scriptName, const char *text, int mTextLength);
+	void SetText(const char *text, int mTextLength);
 
 	Token NextToken();
 
@@ -59,15 +58,6 @@ private:
 		STATE_DONE            // Done parsing the current token
 	};
 
-	// Functions for manipulating the input text buffer.
-	//bool HasMoreText() const;
-	//char GetNextTextChar();
-	//void UngetTextChars(int numChars);
-	//void NextLine();
-
-	// Functions for manipulating the token buffer.
-	//void PushTokenChar(char c);
-	//const char *TerminateToken();
 	const char *CreateTokenString(int startIndex, int numChars);
 
 	static bool IsIdentifierChar(char c);
@@ -75,15 +65,11 @@ private:
 	static bool IsHexChar(char c);
 
 	CharStream mStream;
-	const char *mScriptName;
 	const char *mText;
 	char *mTokenBuffer;
 	int mTextLength;
-	//int mTextIndex;
 	int mBufferLength;
 	int mBufferIndex;
-	//int mLine;
-	//int mColumn;
 };
 
 }

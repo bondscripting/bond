@@ -26,7 +26,6 @@ public:
 	bool HasNext() const;
 	char Next();
 	char Peek() const;
-	void Advance();
 	void Unget();
 	void Unget(int numChars);
 
@@ -35,6 +34,8 @@ public:
 	const int GetLength() const { return mLength; }
 
 private:
+	char Peek(int index) const;
+
 	StreamPos mPos;
 	const char *mBuffer;
 	int mLength;
