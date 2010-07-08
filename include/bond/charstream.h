@@ -22,7 +22,7 @@ public:
 	}
 
 	void SetBuffer(const char *buffer, int length);
-
+	void Reset();
 	bool HasNext() const;
 	char Next();
 	char Peek() const;

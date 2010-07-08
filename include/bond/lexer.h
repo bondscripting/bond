@@ -2,6 +2,7 @@
 #define BOND_LEXER_H
 
 #include "bond/charstream.h"
+#include "bond/stringallocator.h"
 #include "bond/token.h"
 
 namespace Bond
@@ -11,19 +12,17 @@ class Lexer
 {
 public:
 	Lexer():
-		mText(""),
-		mTokenBuffer(0),
-		mTextLength(0),
-		mBufferLength(0),
-		mBufferIndex(0)
+		mStringBuffer(0),
+		mTokens(0),
+		mNumTokens(0)
 	{
 	}
 
 	~Lexer();
 
-	void SetText(const char *text, int mTextLength);
+	void Lex(const char *text, int length);
 
-	Token NextToken();
+	//Token NextToken();
 
 private:
 
@@ -58,18 +57,23 @@ private:
 		STATE_DONE            // Done parsing the current token
 	};
 
-	const char *CreateTokenString(int startIndex, int numChars);
+	struct Resources
+	{
+		int numTokens;
+		int stringBufferLength;
+	};
+
+	void Dispose();
+	void CalculateResources(CharStream &stream, Resources &resources) const;
+	void ScanToken(CharStream &stream, Token &token) const;
 
 	static bool IsIdentifierChar(char c);
 	static bool IsOctalChar(char c);
 	static bool IsHexChar(char c);
 
-	CharStream mStream;
-	const char *mText;
-	char *mTokenBuffer;
-	int mTextLength;
-	int mBufferLength;
-	int mBufferIndex;
+	char *mStringBuffer;
+	Token *mTokens;
+	int mNumTokens;
 };
 
 }

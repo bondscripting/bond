@@ -23,10 +23,11 @@ Script ReadScript(const char *fileName)
 
 int main()
 {
-	const char *fileName = "scripts/lex.bond";
+	/*
+	const char *fileName = "../scripts/lex.bond";
 	Script script = ReadScript(fileName);
 	Bond::Lexer lexer;
-	lexer.SetText(fileName, script.text, script.length);
+	lexer.SetText(script.text, script.length);
 
 	//for (int i = 0; i < script.length; ++i)
 	//{
@@ -42,6 +43,6 @@ int main()
 			break;
 		}
 	}
-
+	*/
 	return 0;
 }

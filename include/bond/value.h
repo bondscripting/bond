@@ -10,9 +10,11 @@ union Value
 {
 	Value(): mInt(0) {}
 	bool mBool;
+	char mChar;
 	int_t mInt;
 	uint_t mUInt;
 	float_t mFloat;
+	const char *mString;
 };
 
 }

@@ -10,15 +10,37 @@ namespace Bond
 
 Lexer::~Lexer()
 {
-	delete [] mTokenBuffer;
-	mTokenBuffer = NULL;
+	Dispose();
 }
 
 
-void Lexer::SetText(const char *text, int length)
+void Lexer::Dispose()
 {
+	delete [] mStringBuffer;
+	mStringBuffer = 0;
+	delete [] mTokens;
+	mTokens = 0;
+	mNumTokens = 0;
+}
+
+
+void Lexer::Lex(const char *text, int length)
+{
+	Dispose();
+
+	CharStream stream(text, length);
+	Resources resources;
+
+	CalculateResources(stream, resources);
+
+	mStringBuffer = new char[resources.stringBufferLength];
+	StringAllocator stringAllocator(mStringBuffer, resources.stringBufferLength);
+
+	mTokens = new Token[resources.numTokens];
+	mNumTokens = resources.numTokens;
+
+	/*
 	mStream.SetBuffer(text, length);
-	mBufferIndex = 0;
 
 	// Since tokens must be null terminated and since we could have as many tokens as there are
 	// characters in the source text, then in the worst case the token buffer needs to be twice
@@ -26,29 +48,52 @@ void Lexer::SetText(const char *text, int length)
 	delete [] mTokenBuffer;
 	mTokenBuffer = new char[2 * length];
 	mBufferLength = 2 * length;
+	mStringAllocator.SetBuffer(mTokenBuffer, mBufferLength);
+	*/
 }
 
 
-Token Lexer::NextToken()
+void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 {
-	StreamPos startPos;
-	StreamPos endPos;
-	StreamPos errorPos;
-	Value value;
-	const char *tokenString = "";
+	resources.numTokens = 0;
+	resources.stringBufferLength = 0;
+
+	while (true)
+	{
+		Token token;
+		ScanToken(stream, token);
+
+		int length = token.GetEndPos().index - token.GetStartPos().index + 1;
+		if (token.GetTokenType() == Token::VAL_STRING)
+		{
+			length *=2;
+		}
+
+		resources.stringBufferLength += length;
+		++resources.numTokens;
+
+		if (token.GetTokenType() == Bond::Token::END)
+		{
+			break;
+		}
+	}
+}
+
+
+void Lexer::ScanToken(CharStream &stream, Token &token) const
+{
 	Token::TokenType type = Token::INVALID;
-	Token::ErrorType error = Token::NO_ERROR;
 	LexState state = STATE_SPACE;
 
-	while (mStream.HasNext() && (state != STATE_DONE))
+	while (stream.HasNext() && (state != STATE_DONE))
 	{
-		StreamPos pos = mStream.GetStreamPos();
-		const char c = mStream.Next();
+		StreamPos pos = stream.GetStreamPos();
+		const char c = stream.Next();
 
 		switch (state)
 		{
 			case STATE_SPACE:
-				startPos = pos;
+				token.SetStartPos(pos);
 
 				if (c == '+')
 				{
@@ -179,7 +224,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_DIV;
 				}
@@ -201,7 +246,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_PLUS;
 				}
@@ -223,7 +268,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_MINUS;
 				}
@@ -238,7 +283,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_LT;
 				}
@@ -253,7 +298,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_GT;
 				}
@@ -268,7 +313,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::ASSIGN;
 				}
@@ -283,7 +328,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::OP_NOT;
 				}
@@ -298,7 +343,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 				}
 				break;
@@ -312,7 +357,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 				}
 				break;
@@ -346,7 +391,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_INT;
 				}
@@ -375,7 +420,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_INT;
 				}
@@ -389,7 +434,7 @@ Token Lexer::NextToken()
 				else if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -399,7 +444,7 @@ Token Lexer::NextToken()
 				if (!isdigit(c))
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -413,7 +458,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::PERIOD;
 				}
@@ -435,7 +480,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -450,7 +495,7 @@ Token Lexer::NextToken()
 				{
 					// The last character and the previous '+' or '-' are not part of the token;
 					// roll them back.
-					mStream.Unget(2);
+					stream.Unget(2);
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -468,7 +513,7 @@ Token Lexer::NextToken()
 				else
 				{
 					// The last character and the previous 'e' are not part of the token; roll them back.
-					mStream.Unget(2);
+					stream.Unget(2);
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -483,7 +528,7 @@ Token Lexer::NextToken()
 				{
 					// The last character, the previous '+' or '-' and the previous 'e' are not
 					// part of the token; roll them back.
-					mStream.Unget(3);
+					stream.Unget(3);
 					state = STATE_DONE;
 					type = Token::VAL_FLOAT;
 				}
@@ -493,7 +538,7 @@ Token Lexer::NextToken()
 				if (!IsIdentifierChar(c))
 				{
 					// The last character is not part of the token; roll it back.
-					mStream.Unget();
+					stream.Unget();
 					state = STATE_DONE;
 					type = Token::IDENTIFIER;
 				}
@@ -504,21 +549,23 @@ Token Lexer::NextToken()
 		}
 	}
 
-	endPos = mStream.GetStreamPos();
-
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
-		tokenString = "END";
 		type = Token::END;
 	}
 	else if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
 	{
-		error = Token::UNTERMINATED_COMMENT;
-		errorPos = startPos;
+		token.SetErrorType(Token::UNTERMINATED_COMMENT);
+		token.SetErrorPos(token.GetStartPos());
 	}
+
+	token.SetTokenType(type);
+	token.SetEndPos(stream.GetStreamPos());
+
+	/*
 	else
 	{
-		tokenString = CreateTokenString(startPos.index, endPos.index - startPos.index);
+		tokenString = mStringAllocator.Alloc(stream.GetBuffer() + startPos.index, endPos.index - startPos.index);
 
 		// Distinguish keywords from other identifiers.
 		if (type == Token::IDENTIFIER)
@@ -581,19 +628,7 @@ Token Lexer::NextToken()
 	}
 
 	return Token(startPos, endPos, errorPos, value, tokenString, type, error);
-}
-
-
-const char *Lexer::CreateTokenString(int startIndex, int numChars)
-{
-	assert((mBufferIndex + numChars + 1) < mBufferLength);
-
-	const char *tokenString = mTokenBuffer + mBufferIndex;
-	memcpy(mTokenBuffer + mBufferIndex, mStream.GetBuffer() + startIndex, numChars);
-	mBufferIndex += numChars;
-	mTokenBuffer[mBufferIndex++] = '\0';
-
-	return tokenString;
+	*/
 }
 
 

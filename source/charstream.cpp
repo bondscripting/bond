@@ -11,6 +11,12 @@ void CharStream::SetBuffer(const char *buffer, int length)
 }
 
 
+void CharStream::Reset()
+{
+	mPos = StreamPos();
+}
+
+
 bool CharStream::HasNext() const
 {
 	// Use <= instead of < since we're artificially introducing a space at the end to

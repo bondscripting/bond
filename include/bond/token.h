@@ -44,6 +44,7 @@
 	BOND_TOKEN_ITEM(VAL_INT)                 \
 	BOND_TOKEN_ITEM(VAL_UINT)                \
 	BOND_TOKEN_ITEM(VAL_FLOAT)               \
+	BOND_TOKEN_ITEM(VAL_STRING)              \
                                            \
 	/* Stuff */                              \
 	BOND_TOKEN_ITEM(ASSIGN)       /* '=' */  \
@@ -81,35 +82,71 @@ public:
 		UNTERMINATED_CHARACTER,
 	};
 
+	Token():
+		mText(0),
+		mTokenType(INVALID),
+		mErrorType(NO_ERROR)
+	{
+	}
+
 	Token(
 			const StreamPos &startPos,
 			const StreamPos &endPos,
 			const StreamPos &errorPos,
 			const Value &value,
 			const char *text,
-			TokenType type,
+			TokenType tokenType,
 			ErrorType errorType):
 		mStartPos(startPos),
 		mEndPos(endPos),
 		mErrorPos(errorPos),
 		mValue(value),
 		mText(text),
-		mTokenType(type),
+		mTokenType(tokenType),
 		mErrorType(errorType)
 	{
 	}
 
+	Token(const Token &other):
+		mStartPos(other.mStartPos),
+		mEndPos(other.mEndPos),
+		mErrorPos(other.mErrorPos),
+		mValue(other.mValue),
+		mText(other.mText),
+		mTokenType(other.mTokenType),
+		mErrorType(other.mErrorType)
+	{
+	}
+
+	Token &operator=(const Token &other);
+
 	const StreamPos &GetStartPos() const { return mStartPos; }
+	void SetStartPos(const StreamPos &pos) { mStartPos = pos; }
+
 	const StreamPos &GetEndPos() const { return mEndPos; }
+	void SetEndPos(const StreamPos &pos) { mEndPos = pos; }
+
 	const StreamPos &GetErrorPos() const { return mErrorPos; }
+	void SetErrorPos(const StreamPos &pos) { mErrorPos = pos; }
+
 	const char *GetText() const { return mText; }
+	void SetText(const char *text) { mText = text; }
+
 	TokenType GetTokenType() const { return mTokenType; }
+	void SetTokenType(const TokenType &type) { mTokenType = type; }
+
 	ErrorType GetErrorType() const { return mErrorType; }
+	void SetErrorType(const ErrorType &type) { mErrorType = type; }
+
+	bool GetBoolValue() const { return mValue.mBool; }
+	char GetCharValue() const { return mValue.mChar; }
 	float_t GetFloatValue() const { return mValue.mFloat; }
 	int_t GetIntValue() const { return mValue.mInt; }
 	uint_t GetUIntValue() const { return mValue.mUInt; }
-	const char *GetTokenName() const;
+	const char *GetStringValue() const { return mValue.mString; }
+	void SetValue(const Value &value) { mValue = value; }
 
+	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);
 
 private:

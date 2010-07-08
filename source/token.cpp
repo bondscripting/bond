@@ -3,6 +3,19 @@
 namespace Bond
 {
 
+Token &Token::operator=(const Token &other)
+{
+	mStartPos = other.mStartPos;
+	mEndPos = other.mEndPos;
+	mErrorPos = other.mErrorPos;
+	mValue = other.mValue;
+	mText = other.mText;
+	mTokenType = other.mTokenType;
+	mErrorType = other.mErrorType;
+	return *this;
+}
+
+
 const char *Token::GetTokenName() const
 {
 	return GetTokenName(mTokenType);
