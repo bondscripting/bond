@@ -65,7 +65,11 @@ private:
 
 	void Dispose();
 	void CalculateResources(CharStream &stream, Resources &resources) const;
+	void GenerateTokens(CharStream &stream, StringAllocator &allocator);
+	void GenerateToken(CharStream &stream, StringAllocator &allocator, Token &token) const;
 	void ScanToken(CharStream &stream, Token &token) const;
+	void ExtractToken(CharStream &stream, StringAllocator &allocator, Token &token) const;
+	void EvaluateToken(StringAllocator &allocator, Token &token) const;
 
 	static bool IsIdentifierChar(char c);
 	static bool IsOctalChar(char c);

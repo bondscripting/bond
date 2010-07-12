@@ -9,8 +9,9 @@ typedef int int_t;
 typedef unsigned int uint_t;
 
 #define BOND_FLOAT_SCAN_FORMAT "%f"
-#define BOND_INT_SCAN_FORMAT "%d"
-#define BOND_UINT_SCAN_FORMAT "%u"
+#define BOND_UDECIMAL_SCAN_FORMAT "%u"
+#define BOND_UOCTAL_SCAN_FORMAT "%o"
+#define BOND_UHEX_SCAN_FORMAT "%x"
 
 }
 

@@ -68,6 +68,12 @@ public:
 #undef BOND_TOKEN_ITEM
 	};
 
+	enum Annotation
+	{
+		OCTAL = 1,
+		HEX = 2,
+	};
+
 	enum ErrorType
 	{
 		NO_ERROR,
@@ -85,7 +91,8 @@ public:
 	Token():
 		mText(0),
 		mTokenType(INVALID),
-		mErrorType(NO_ERROR)
+		mErrorType(NO_ERROR),
+		mAnnotations(0)
 	{
 	}
 
@@ -96,14 +103,16 @@ public:
 			const Value &value,
 			const char *text,
 			TokenType tokenType,
-			ErrorType errorType):
+			ErrorType errorType = NO_ERROR,
+			short annotations = 0):
 		mStartPos(startPos),
 		mEndPos(endPos),
 		mErrorPos(errorPos),
 		mValue(value),
 		mText(text),
 		mTokenType(tokenType),
-		mErrorType(errorType)
+		mErrorType(errorType),
+		mAnnotations(annotations)
 	{
 	}
 
@@ -114,7 +123,8 @@ public:
 		mValue(other.mValue),
 		mText(other.mText),
 		mTokenType(other.mTokenType),
-		mErrorType(other.mErrorType)
+		mErrorType(other.mErrorType),
+		mAnnotations(other.mAnnotations)
 	{
 	}
 
@@ -138,6 +148,9 @@ public:
 	ErrorType GetErrorType() const { return mErrorType; }
 	void SetErrorType(const ErrorType &type) { mErrorType = type; }
 
+	void AddAnnotation(const Annotation &annotation) { mAnnotations |= annotation; }
+	bool HasAnnotation(const Annotation &annotation) const { return (mAnnotations & annotation) != annotation; }
+
 	bool GetBoolValue() const { return mValue.mBool; }
 	char GetCharValue() const { return mValue.mChar; }
 	float_t GetFloatValue() const { return mValue.mFloat; }
@@ -157,6 +170,7 @@ private:
 	const char *mText;
 	TokenType mTokenType;
 	ErrorType mErrorType;
+	short mAnnotations;
 };
 
 }
