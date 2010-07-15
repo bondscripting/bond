@@ -23,26 +23,31 @@ Script ReadScript(const char *fileName)
 
 int main()
 {
-	/*
 	const char *fileName = "../scripts/lex.bond";
 	Script script = ReadScript(fileName);
 	Bond::Lexer lexer;
-	lexer.SetText(script.text, script.length);
+	lexer.Lex(script.text, script.length);
 
 	//for (int i = 0; i < script.length; ++i)
 	//{
 	//	printf("%c", script.text[i]);
 	//}
 
-	while (true)
+	int numTokens = lexer.GetNumTokens();
+	for (int i = 0; i < numTokens; ++i)
 	{
-		Bond::Token token = lexer.NextToken();
-		printf("%s '%s'\n", token.GetTokenName(), token.GetText());
+		const Bond::Token &token = lexer.GetToken(i);
+		const Bond::StreamPos &start = token.GetStartPos();
+		const Bond::StreamPos &end = token.GetEndPos();
+		printf("%-14s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'\n",
+			token.GetTokenName(), start.index, end.index, start.line, end.line,
+			start.column, end.column, token.GetText());
+
 		if (token.GetTokenType() == Bond::Token::END)
 		{
 			break;
 		}
 	}
-	*/
+
 	return 0;
 }

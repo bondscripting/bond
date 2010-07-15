@@ -21,8 +21,8 @@ public:
 	~Lexer();
 
 	void Lex(const char *text, int length);
-
-	//Token NextToken();
+	int GetNumTokens() const { return mNumTokens; }
+	const Token &GetToken(int index) const { return mTokens[index]; }
 
 private:
 

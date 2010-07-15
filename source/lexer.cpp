@@ -34,10 +34,13 @@ void Lexer::Lex(const char *text, int length)
 	CalculateResources(stream, resources);
 
 	mStringBuffer = new char[resources.stringBufferLength];
-	StringAllocator stringAllocator(mStringBuffer, resources.stringBufferLength);
+	StringAllocator allocator(mStringBuffer, resources.stringBufferLength);
 
 	mTokens = new Token[resources.numTokens];
 	mNumTokens = resources.numTokens;
+
+	stream.Reset();
+	GenerateTokens(stream, allocator);
 }
 
 
@@ -60,11 +63,14 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 		resources.stringBufferLength += length;
 		++resources.numTokens;
 
+		printf("%d. %d\n", resources.numTokens, length);
+
 		if (token.GetTokenType() == Bond::Token::END)
 		{
 			break;
 		}
 	}
+	printf("Total string space: %d\n", resources.stringBufferLength);
 }
 
 
@@ -603,6 +609,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
+		token.SetEndPos(token.GetStartPos());
 		token.SetTokenType(Token::END);
 	}
 	else if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))

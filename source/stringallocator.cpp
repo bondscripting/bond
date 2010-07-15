@@ -15,7 +15,7 @@ void StringAllocator::SetBuffer(char *buffer, int length)
 
 char *StringAllocator::Alloc(int length)
 {
-	assert((length > 0) && ((mIndex + length + 1) < mLength));
+	assert((length >= 0) && ((mIndex + length + 1) <= mLength));
 	char *buffer = mBuffer + mIndex;
 	mIndex += length + 1;
 	return buffer;
