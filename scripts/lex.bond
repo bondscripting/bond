@@ -1,5 +1,31 @@
-blah
-123
+// Keywords.
+bool break char case const continue default do else enum float for if int return sizeof switch uint void while
+
+// Identifiers.
+blah blah_2 _3blah
+
+// Operators.
++-*/%++--< <=> >=<<>> ==!=!&&||&|^~?->
+
+/****
+ * Assignment.
+ ****/
+=>>=<<=+=-=*=/=%=&=|=^=
+
+// Punctuation.
+(){}[].;:,
+
+// Literal booleans.
+true false
+
+// Literal integers.
+98765 -98765 07777 -07777 0x7fffffff -0x7fffffff 0xffffffff -0xffffffff
+
+// Invalid literal integers.
+98765g 07797 0xfg9
+
+// Literal unsigned integers
+987u 077u 0x7fffffffu 0xffffffffu
+
+// Literal floats
 123.0
-true
-{;}

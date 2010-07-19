@@ -63,14 +63,11 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 		resources.stringBufferLength += length;
 		++resources.numTokens;
 
-		printf("%d. %d\n", resources.numTokens, length);
-
 		if (token.GetTokenType() == Bond::Token::END)
 		{
 			break;
 		}
 	}
-	printf("Total string space: %d\n", resources.stringBufferLength);
 }
 
 
@@ -126,12 +123,15 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == '*')
 				{
-					state = STATE_DONE;
-					token.SetTokenType(Token::OP_MULT);
+					state = STATE_STAR;
 				}
 				else if (c == '/')
 				{
 					state = STATE_SLASH;
+				}
+				else if (c == '%')
+				{
+					state = STATE_PERCENT;
 				}
 				else if (c == '<')
 				{
@@ -149,13 +149,27 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_NOT;
 				}
+				else if (c == '&')
+				{
+					state = STATE_AND;
+				}
 				else if (c == '|')
 				{
 					state = STATE_OR;
 				}
-				else if (c == '&')
+				else if (c == '^')
 				{
-					state = STATE_AND;
+					state = STATE_XOR;
+				}
+				else if (c == '~')
+				{
+					token.SetTokenType(Token::OP_BIT_NOT);
+					state = STATE_DONE;
+				}
+				else if (c == '?')
+				{
+					token.SetTokenType(Token::OP_TERNARY);
+					state = STATE_DONE;
 				}
 				else if (c == '.')
 				{
@@ -163,32 +177,48 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == '(')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OPAREN);
+					state = STATE_DONE;
 				}
 				else if (c == ')')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::CPAREN);
+					state = STATE_DONE;
 				}
 				else if (c == '{')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OBRACE);
+					state = STATE_DONE;
 				}
 				else if (c == '}')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::CBRACE);
+					state = STATE_DONE;
+				}
+				else if (c == '[')
+				{
+					token.SetTokenType(Token::OBRACKET);
+					state = STATE_DONE;
+				}
+				else if (c == ']')
+				{
+					token.SetTokenType(Token::CBRACKET);
+					state = STATE_DONE;
 				}
 				else if (c == ';')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::SEMICOLON);
+					state = STATE_DONE;
 				}
-				else if ((c == 'e') || (c == 'E'))
+				else if (c == ':')
 				{
-					state = STATE_E;
+					token.SetTokenType(Token::COLON);
+					state = STATE_DONE;
+				}
+				else if (c == ',')
+				{
+					token.SetTokenType(Token::COMMA);
+					state = STATE_DONE;
 				}
 				else if (c == '0')
 				{
@@ -233,8 +263,102 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				break;
 
+			case STATE_PLUS:
+				if (c == '+')
+				{
+					token.SetTokenType(Token::OP_INC);
+					state = STATE_DONE;
+				}
+				else if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_PLUS);
+					state = STATE_DONE;
+				}
+				else if (c == '.')
+				{
+					state = STATE_FDIGITS;
+				}
+				else if ((c == 'e') || (c == 'E'))
+				{
+					state = STATE_EXPONENT;
+				}
+				else if (c == '0')
+				{
+					state = STATE_ZERO;
+				}
+				else if (isdigit(c))
+				{
+					state = STATE_IDIGITS;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_PLUS);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_MINUS:
+				if (c == '-')
+				{
+					token.SetTokenType(Token::OP_DEC);
+					state = STATE_DONE;
+				}
+				else if (c == '>')
+				{
+					token.SetTokenType(Token::OP_ARROW);
+					state = STATE_DONE;
+				}
+				else if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_MINUS);
+					state = STATE_DONE;
+				}
+				else if (c == '.')
+				{
+					state = STATE_FDIGITS;
+				}
+				else if ((c == 'e') || (c == 'E'))
+				{
+					state = STATE_EXPONENT;
+				}
+				else if (c == '0')
+				{
+					state = STATE_ZERO;
+				}
+				else if (isdigit(c))
+				{
+					state = STATE_IDIGITS;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_MINUS);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_STAR:
+				if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_MULT);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_MULT);
+					state = STATE_DONE;
+				}
+				break;
+
 			case STATE_SLASH:
-				if (c == '*')
+				if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_DIV);
+					state = STATE_DONE;
+				}
+				else if (c == '*')
 				{
 					state = STATE_C_COMMENT;
 				}
@@ -244,135 +368,114 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_DIV);
+					state = STATE_DONE;
 				}
 				break;
 
-			case STATE_PLUS:
-				if (c == '.')
+			case STATE_PERCENT:
+				if (c == '=')
 				{
-					state = STATE_FDIGITS;
-				}
-				else if ((c == 'e') || (c == 'E'))
-				{
-					state = STATE_EXPONENT;
-				}
-				else if (c == '0')
-				{
-					state = STATE_ZERO;
-				}
-				else if (isdigit(c))
-				{
-					state = STATE_IDIGITS;
+					token.SetTokenType(Token::ASSIGN_MOD);
+					state = STATE_DONE;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
+					token.SetTokenType(Token::OP_MOD);
 					state = STATE_DONE;
-					token.SetTokenType(Token::OP_PLUS);
-				}
-				break;
-
-			case STATE_MINUS:
-				if (c == '.')
-				{
-					state = STATE_FDIGITS;
-				}
-				else if ((c == 'e') || (c == 'E'))
-				{
-					state = STATE_EXPONENT;
-				}
-				else if (c == '0')
-				{
-					state = STATE_ZERO;
-				}
-				else if (isdigit(c))
-				{
-					state = STATE_IDIGITS;
-				}
-				else
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
-					state = STATE_DONE;
-					token.SetTokenType(Token::OP_MINUS);
 				}
 				break;
 
 			case STATE_LT:
 				if (c == '=')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_LTE);
+					state = STATE_DONE;
+				}
+				else if (c == '<')
+				{
+					state = STATE_LEFT;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_LT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_GT:
 				if (c == '=')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_GTE);
+					state = STATE_DONE;
+				}
+				else if (c == '>')
+				{
+					state = STATE_RIGHT;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_GT);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_LEFT:
+				if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_LEFT);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_LEFT);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_RIGHT:
+				if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_RIGHT);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_RIGHT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_EQUAL:
 				if (c == '=')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_EQUAL);
+					state = STATE_DONE;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::ASSIGN);
+					state = STATE_DONE;
 				}
 				break;
 				
 			case STATE_NOT:
 				if (c == '=')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_NOT_EQUAL);
+					state = STATE_DONE;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_NOT);
-				}
-				break;
-
-			case STATE_OR:
-				if (c == '|')
-				{
-					state = STATE_DONE;
-					token.SetTokenType(Token::OP_OR);
-				}
-				else
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
 					state = STATE_DONE;
 				}
 				break;
@@ -380,13 +483,51 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 			case STATE_AND:
 				if (c == '&')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::OP_AND);
+					state = STATE_DONE;
+				}
+				else if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_AND);
+					state = STATE_DONE;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
+					token.SetTokenType(Token::OP_BIT_AND);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_OR:
+				if (c == '|')
+				{
+					token.SetTokenType(Token::OP_OR);
+					state = STATE_DONE;
+				}
+				else if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_OR);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_BIT_OR);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_XOR:
+				if (c == '=')
+				{
+					token.SetTokenType(Token::ASSIGN_XOR);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::OP_BIT_XOR);
 					state = STATE_DONE;
 				}
 				break;
@@ -402,8 +543,8 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == 'u')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_UINT);
+					state = STATE_DONE;
 				}
 				else if (c == 'x')
 				{
@@ -413,49 +554,76 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_OCTAL;
 				}
-				else if (isdigit(c))
+				//else if (isdigit(c))
+				//{
+				//	state = STATE_IDIGITS;
+				//}
+				else if (IsBadNumberChar(c))
 				{
-					state = STATE_IDIGITS;
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_INT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
 				}
-				else if (!isdigit(c))
+				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_INT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_OCTAL:
 				if (c == 'u')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_UINT);
 					token.AddAnnotation(Token::OCTAL);
-				}
-				else if (!IsOctalChar(c))
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
 					state = STATE_DONE;
+				}
+				else if (IsOctalChar(c))
+				{
+					// Remain in this state.
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_OCTAL_INT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
 					token.SetTokenType(Token::VAL_INT);
 					token.AddAnnotation(Token::OCTAL);
+					state = STATE_DONE;
 				}
+				break;
 
 			case STATE_HEX:
 				if (c == 'u')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_UINT);
 					token.AddAnnotation(Token::HEX);
-				}
-				else if (!IsHexChar(c))
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
 					state = STATE_DONE;
+				}
+				else if (IsHexChar(c))
+				{
+					// Remain in this state.
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_HEX_INT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
 					token.SetTokenType(Token::VAL_INT);
 					token.AddAnnotation(Token::HEX);
+					state = STATE_DONE;
 				}
 				break;
 
@@ -470,15 +638,25 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == 'u')
 				{
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_UINT);
-				}
-				else if (!isdigit(c))
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
 					state = STATE_DONE;
+				}
+				else if (isdigit(c))
+				{
+					// Remain in this state.
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_INT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
 					token.SetTokenType(Token::VAL_INT);
+					state = STATE_DONE;
 				}
 				break;
 
@@ -487,73 +665,55 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (!isdigit(c))
+				else if (isdigit(c))
 				{
-					// The last character is not part of the token; roll it back.
+					// Remain in this state.
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_FLOAT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
+				}
+				else
+				{
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_FLOAT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_EDIGITS:
-				if (!isdigit(c))
+				if (isdigit(c))
 				{
-					// The last character is not part of the token; roll it back.
+					// Remain in this state.
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_FLOAT);
+					token.SetErrorPos(pos);
+					state = STATE_EAT_BAD_NUMBER;
+				}
+				else
+				{
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_FLOAT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_PERIOD:
 				if (isdigit(c))
 				{
-					state = STATE_EDIGITS;
+					state = STATE_FDIGITS;
 				}
 				else
 				{
-					// The last character is not part of the token; roll it back.
 					stream.Unget();
-					state = STATE_DONE;
 					token.SetTokenType(Token::PERIOD);
-				}
-				break;
-
-			case STATE_E:
-				if (isdigit(c))
-				{
-					state = STATE_EDIGITS;
-				}
-				else if ((c == '+') || (c == '-'))
-				{
-					state = STATE_E_SIGN;
-				}
-				else if (IsIdentifierChar(c))
-				{
-					state = STATE_IDENTIFIER;
-				}
-				else
-				{
-					// The last character is not part of the token; roll it back.
-					stream.Unget();
 					state = STATE_DONE;
-					token.SetTokenType(Token::IDENTIFIER);
-				}
-				break;
-
-			case STATE_E_SIGN:
-				if (isdigit(c))
-				{
-					state = STATE_EDIGITS;
-				}
-				else
-				{
-					// The last character and the previous '+' or '-' are not part of the token;
-					// roll them back.
-					stream.Unget(2);
-					state = STATE_DONE;
-					token.SetTokenType(Token::IDENTIFIER);
 				}
 				break;
 
@@ -568,10 +728,10 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					// The last character and the previous 'e' are not part of the token; roll them back.
+					// The last character and the previous 'e' are not part of the token.
 					stream.Unget(2);
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_FLOAT);
+					state = STATE_DONE;
 				}
 				break;
 
@@ -582,21 +742,27 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					// The last character, the previous '+' or '-' and the previous 'e' are not
-					// part of the token; roll them back.
+					// The last character, the previous '+' or '-' and the previous 'e' are not part of the token.
 					stream.Unget(3);
-					state = STATE_DONE;
 					token.SetTokenType(Token::VAL_FLOAT);
+					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_IDENTIFIER:
 				if (!IsIdentifierChar(c))
 				{
-					// The last character is not part of the token; roll it back.
+					stream.Unget();
+					token.SetTokenType(Token::IDENTIFIER);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_EAT_BAD_NUMBER:
+				if (!IsBadNumberChar(c))
+				{
 					stream.Unget();
 					state = STATE_DONE;
-					token.SetTokenType(Token::IDENTIFIER);
 				}
 				break;
 
@@ -617,74 +783,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 		token.SetErrorType(Token::UNTERMINATED_COMMENT);
 		token.SetErrorPos(token.GetStartPos());
 	}
-
-	/*
-	else
-	{
-		tokenString = mStringAllocator.Alloc(stream.GetBuffer() + startPos.index, endPos.index - startPos.index);
-
-		// Distinguish keywords from other identifiers.
-		if (type == Token::IDENTIFIER)
-		{
-			if (strcmp(tokenString, "bool") == 0)
-			{
-				type = Token::KEY_BOOL;
-			}
-			else if (strcmp(tokenString, "char") == 0)
-			{
-				type = Token::KEY_CHAR;
-			}
-			else if (strcmp(tokenString, "float") == 0)
-			{
-				type = Token::KEY_FLOAT;
-			}
-			else if (strcmp(tokenString, "int") == 0)
-			{
-				type = Token::KEY_INT;
-			}
-			else if (strcmp(tokenString, "uint") == 0)
-			{
-				type = Token::KEY_UINT;
-			}
-			else if (strcmp(tokenString, "if") == 0)
-			{
-				type = Token::KEY_IF;
-			}
-			else if (strcmp(tokenString, "else") == 0)
-			{
-				type = Token::KEY_ELSE;
-			}
-			else if (strcmp(tokenString, "while") == 0)
-			{
-				type = Token::KEY_WHILE;
-			}
-			else if (strcmp(tokenString, "false") == 0)
-			{
-				type = Token::VAL_BOOL;
-				value.mBool = false;
-			}
-			else if (strcmp(tokenString, "true") == 0)
-			{
-				type = Token::VAL_BOOL;
-				value.mBool = true;
-			}
-		}
-		else if (type == Token::VAL_INT)
-		{
-			sscanf(tokenString, BOND_INT_SCAN_FORMAT, &value.mInt);
-		}
-		else if (type == Token::VAL_UINT)
-		{
-			sscanf(tokenString, BOND_UINT_SCAN_FORMAT, &value.mUInt);
-		}
-		else if (type == Token::VAL_FLOAT)
-		{
-			sscanf(tokenString, BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
-		}
-	}
-
-	return Token(startPos, endPos, errorPos, value, tokenString, type, error);
-	*/
 }
 
 
@@ -710,29 +808,77 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			{
 				token.SetTokenType(Token::KEY_BOOL);
 			}
+			else if (strcmp(token.GetText(), "break") == 0)
+			{
+				token.SetTokenType(Token::KEY_BREAK);
+			}
 			else if (strcmp(token.GetText(), "char") == 0)
 			{
 				token.SetTokenType(Token::KEY_CHAR);
+			}
+			else if (strcmp(token.GetText(), "case") == 0)
+			{
+				token.SetTokenType(Token::KEY_CASE);
+			}
+			else if (strcmp(token.GetText(), "const") == 0)
+			{
+				token.SetTokenType(Token::KEY_CONST);
+			}
+			else if (strcmp(token.GetText(), "continue") == 0)
+			{
+				token.SetTokenType(Token::KEY_CONTINUE);
+			}
+			else if (strcmp(token.GetText(), "default") == 0)
+			{
+				token.SetTokenType(Token::KEY_DEFAULT);
+			}
+			else if (strcmp(token.GetText(), "do") == 0)
+			{
+				token.SetTokenType(Token::KEY_DO);
+			}
+			else if (strcmp(token.GetText(), "else") == 0)
+			{
+				token.SetTokenType(Token::KEY_ELSE);
+			}
+			else if (strcmp(token.GetText(), "enum") == 0)
+			{
+				token.SetTokenType(Token::KEY_ENUM);
 			}
 			else if (strcmp(token.GetText(), "float") == 0)
 			{
 				token.SetTokenType(Token::KEY_FLOAT);
 			}
-			else if (strcmp(token.GetText(), "int") == 0)
+			else if (strcmp(token.GetText(), "for") == 0)
 			{
-				token.SetTokenType(Token::KEY_INT);
-			}
-			else if (strcmp(token.GetText(), "uint") == 0)
-			{
-				token.SetTokenType(Token::KEY_UINT);
+				token.SetTokenType(Token::KEY_FOR);
 			}
 			else if (strcmp(token.GetText(), "if") == 0)
 			{
 				token.SetTokenType(Token::KEY_IF);
 			}
-			else if (strcmp(token.GetText(), "else") == 0)
+			else if (strcmp(token.GetText(), "int") == 0)
 			{
-				token.SetTokenType(Token::KEY_ELSE);
+				token.SetTokenType(Token::KEY_INT);
+			}
+			else if (strcmp(token.GetText(), "return") == 0)
+			{
+				token.SetTokenType(Token::KEY_RETURN);
+			}
+			else if (strcmp(token.GetText(), "sizeof") == 0)
+			{
+				token.SetTokenType(Token::KEY_SIZEOF);
+			}
+			else if (strcmp(token.GetText(), "switch") == 0)
+			{
+				token.SetTokenType(Token::KEY_SWITCH);
+			}
+			else if (strcmp(token.GetText(), "uint") == 0)
+			{
+				token.SetTokenType(Token::KEY_UINT);
+			}
+			else if (strcmp(token.GetText(), "void") == 0)
+			{
+				token.SetTokenType(Token::KEY_VOID);
 			}
 			else if (strcmp(token.GetText(), "while") == 0)
 			{
@@ -809,13 +955,18 @@ bool Lexer::IsIdentifierChar(char c)
 
 bool Lexer::IsOctalChar(char c)
 {
-	return (c >= '0') && (c <= '8');
+	return (c >= '0') && (c <= '7');
 }
 
 
 bool Lexer::IsHexChar(char c)
 {
 	return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
+}
+
+bool Lexer::IsBadNumberChar(char c)
+{
+	return IsIdentifierChar(c) || (c == '.');
 }
 
 }

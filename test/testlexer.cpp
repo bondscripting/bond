@@ -39,9 +39,19 @@ int main()
 		const Bond::Token &token = lexer.GetToken(i);
 		const Bond::StreamPos &start = token.GetStartPos();
 		const Bond::StreamPos &end = token.GetEndPos();
-		printf("%-14s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'\n",
+		printf("%-14s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'",
 			token.GetTokenName(), start.index, end.index, start.line, end.line,
 			start.column, end.column, token.GetText());
+
+		if (token.HasAnnotation(Bond::Token::OCTAL))
+		{
+			printf(" O");
+		}
+		if (token.HasAnnotation(Bond::Token::HEX))
+		{
+			printf(" X");
+		}
+		printf("\n");
 
 		if (token.GetTokenType() == Bond::Token::END)
 		{

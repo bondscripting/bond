@@ -33,15 +33,20 @@ private:
 		STATE_C_COMMENT,      // C style comment
 		STATE_C_COMMENT_STAR, // Star within a C style comment
 		STATE_LINE_COMMENT,   // Single line C++ style comment
-		STATE_SLASH,          // '/'
 		STATE_PLUS,           // '+'
 		STATE_MINUS,          // '-'
+		STATE_STAR,           // '*'
+		STATE_SLASH,          // '/'
+		STATE_PERCENT,        // '%'
 		STATE_LT,             // '<'	
 		STATE_GT,             // '>'
+		STATE_LEFT,           // '<<'
+		STATE_RIGHT,          // '>>'
 		STATE_EQUAL,          // '='
 		STATE_NOT,            // '!'
-		STATE_OR,             // '|'
 		STATE_AND,            // '&'
+		STATE_OR,             // '|'
+		STATE_XOR,            // '^'
 		STATE_ZERO,           // '0'
 		STATE_OCTAL,          // Octal integer
 		STATE_HEX,            // Hex integer
@@ -49,11 +54,10 @@ private:
 		STATE_FDIGITS,        // Fractional digits
 		STATE_EDIGITS,        // Exponential digits
 		STATE_PERIOD,         // '.'
-		STATE_E,              // 'e' or 'E'
-		STATE_E_SIGN,         // '+' or '-' following 'e' or 'E'
 		STATE_EXPONENT,       // 'e' or 'E' known to be inside a number
 		STATE_EXPONENT_SIGN,  // '+' or '-' known to be inside a number's exponent
 		STATE_IDENTIFIER,     // Sequence of characters forming an identifier
+		STATE_EAT_BAD_NUMBER, // Consume the remaining characters an incorrectly formatted number
 		STATE_DONE            // Done parsing the current token
 	};
 
@@ -74,6 +78,7 @@ private:
 	static bool IsIdentifierChar(char c);
 	static bool IsOctalChar(char c);
 	static bool IsHexChar(char c);
+	static bool IsBadNumberChar(char c);
 
 	char *mStringBuffer;
 	Token *mTokens;
