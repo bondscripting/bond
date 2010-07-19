@@ -28,18 +28,13 @@ int main()
 	Bond::Lexer lexer;
 	lexer.Lex(script.text, script.length);
 
-	//for (int i = 0; i < script.length; ++i)
-	//{
-	//	printf("%c", script.text[i]);
-	//}
-
 	int numTokens = lexer.GetNumTokens();
 	for (int i = 0; i < numTokens; ++i)
 	{
 		const Bond::Token &token = lexer.GetToken(i);
 		const Bond::StreamPos &start = token.GetStartPos();
 		const Bond::StreamPos &end = token.GetEndPos();
-		printf("%-14s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'",
+		printf("%-12s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'",
 			token.GetTokenName(), start.index, end.index, start.line, end.line,
 			start.column, end.column, token.GetText());
 
@@ -51,6 +46,41 @@ int main()
 		{
 			printf(" X");
 		}
+
+		switch (token.GetTokenType())
+		{
+			case Bond::Token::INVALID:
+				printf(" %s c:%d", token.GetErrorName(), token.GetErrorPos().column);
+				break;
+
+			case Bond::Token::VAL_BOOL:
+				printf(" %s", token.GetBoolValue() ? "true" : "false");
+				break;
+
+			case Bond::Token::VAL_CHAR:
+				printf(" %c", token.GetCharValue());
+				break;
+
+			case Bond::Token::VAL_FLOAT:
+				printf(" %g", token.GetFloatValue());
+				break;
+
+			case Bond::Token::VAL_INT:
+				printf(" %d", token.GetIntValue());
+				break;
+
+			case Bond::Token::VAL_UINT:
+				printf(" %u", token.GetUIntValue());
+				break;
+
+			case Bond::Token::VAL_STRING:
+				printf(" %s", token.GetStringValue());
+				break;
+
+			default:
+				break;
+		}
+
 		printf("\n");
 
 		if (token.GetTokenType() == Bond::Token::END)

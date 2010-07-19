@@ -220,6 +220,14 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::COMMA);
 					state = STATE_DONE;
 				}
+				else if (c == '\'')
+				{
+					state = STATE_CHAR;
+				}
+				else if (c == '\"')
+				{
+					state = STATE_STRING;
+				}
 				else if (c == '0')
 				{
 					state = STATE_ZERO;
@@ -235,31 +243,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else if (!isspace(c))
 				{
 					state = STATE_DONE;
-				}
-				break;
-
-			case STATE_C_COMMENT:
-				if (c == '*')
-				{
-					state = STATE_C_COMMENT_STAR;
-				}
-				break;
-
-			case STATE_C_COMMENT_STAR:
-				if (c == '/')
-				{
-					state = STATE_SPACE;
-				}
-				else if (c != '*')
-				{
-					state = STATE_C_COMMENT;
-				}
-				break;
-
-			case STATE_LINE_COMMENT:
-				if (c == '\n')
-				{
-					state = STATE_SPACE;
 				}
 				break;
 
@@ -563,7 +546,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_INT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -589,7 +572,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_OCTAL_INT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -616,7 +599,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_HEX_INT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -650,7 +633,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_INT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -674,7 +657,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_FLOAT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -694,7 +677,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::INVALID);
 					token.SetErrorType(Token::INVALID_FLOAT);
 					token.SetErrorPos(pos);
-					state = STATE_EAT_BAD_NUMBER;
+					state = STATE_BAD_NUMBER;
 				}
 				else
 				{
@@ -749,6 +732,14 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				break;
 
+			case STATE_BAD_NUMBER:
+				if (!IsBadNumberChar(c))
+				{
+					stream.Unget();
+					state = STATE_DONE;
+				}
+				break;
+
 			case STATE_IDENTIFIER:
 				if (!IsIdentifierChar(c))
 				{
@@ -758,11 +749,102 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				break;
 
-			case STATE_EAT_BAD_NUMBER:
-				if (!IsBadNumberChar(c))
+			case STATE_CHAR:
+				if (c == '\\')
 				{
-					stream.Unget();
+					state = STATE_CHAR_ESCAPE;
+				}
+				else if (c == '\'')
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::EMPTY_CHARACTER_CONSTANT);
+					token.SetErrorPos(token.GetStartPos());
 					state = STATE_DONE;
+				}
+				else
+				{
+					state = STATE_CHAR_END;
+				}
+				break;
+
+			case STATE_CHAR_ESCAPE:
+				if (IsEscapeChar(c))
+				{
+					state = STATE_CHAR_END;
+				}
+				else
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_ESCAPE);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_CHAR;
+				}
+				break;
+
+			case STATE_CHAR_END:
+				if (c == '\'')
+				{
+					token.SetTokenType(Token::VAL_CHAR);
+					state = STATE_DONE;
+				}
+				else
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::MULTI_CHARACTER_CONSTANT);
+					token.SetErrorPos(token.GetStartPos());
+					state = (c == '\\') ? STATE_BAD_CHAR_ESCAPE : STATE_BAD_CHAR;
+				}
+				break;
+
+			case STATE_BAD_CHAR:
+				if (c == '\\')
+				{
+					state = STATE_BAD_CHAR_ESCAPE;
+				}
+				else if (c == '\'')
+				{
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_BAD_CHAR_ESCAPE:
+				state = STATE_BAD_CHAR;
+				break;
+
+			case STATE_STRING:
+				break;
+
+			case STATE_STRING_ESCAPE:
+				break;
+
+			case STATE_BAD_STRING:
+				break;
+
+			case STATE_BAD_STRING_ESCAPE:
+				break;
+
+			case STATE_C_COMMENT:
+				if (c == '*')
+				{
+					state = STATE_C_COMMENT_STAR;
+				}
+				break;
+
+			case STATE_C_COMMENT_STAR:
+				if (c == '/')
+				{
+					state = STATE_SPACE;
+				}
+				else if (c != '*')
+				{
+					state = STATE_C_COMMENT;
+				}
+				break;
+
+			case STATE_LINE_COMMENT:
+				if (c == '\n')
+				{
+					state = STATE_SPACE;
 				}
 				break;
 
@@ -775,11 +857,25 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
-		token.SetEndPos(token.GetStartPos());
 		token.SetTokenType(Token::END);
+		token.SetEndPos(token.GetStartPos());
+	}
+	else if ((state == STATE_CHAR) || (state == STATE_CHAR_ESCAPE) || (state == STATE_CHAR_END) ||
+	         (state == STATE_BAD_CHAR) || (state == STATE_BAD_CHAR_ESCAPE))
+	{
+		token.SetTokenType(Token::INVALID);
+		token.SetErrorType(Token::UNTERMINATED_CHARACTER);
+		token.SetErrorPos(token.GetStartPos());
+	}
+	else if ((state == STATE_STRING) || (state == STATE_STRING_ESCAPE))
+	{
+		token.SetTokenType(Token::INVALID);
+		token.SetErrorType(Token::UNTERMINATED_STRING);
+		token.SetErrorPos(token.GetStartPos());
 	}
 	else if ((state == STATE_C_COMMENT) || (state == STATE_C_COMMENT_STAR))
 	{
+		token.SetTokenType(Token::INVALID);
 		token.SetErrorType(Token::UNTERMINATED_COMMENT);
 		token.SetErrorPos(token.GetStartPos());
 	}
@@ -896,11 +992,16 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			}
 		}
 		break;
+
+		case Token::VAL_CHAR:
+			value.mChar = EvaluateChar(token.GetText() + 1).value;
+			break;
+
 		case Token::VAL_INT:
 		case Token::VAL_UINT:
 		{
 			int_t sign = 1;
-			uint_t uval;
+			int_t val;
 			const char *text = token.GetText();
 			if (text[0] == '-')
 			{
@@ -913,60 +1014,108 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			}
 			if (token.HasAnnotation(Token::OCTAL))
 			{
-				sscanf(token.GetText(), BOND_UOCTAL_SCAN_FORMAT, &uval);
+				sscanf(text, BOND_UOCTAL_SCAN_FORMAT, &val);
 			}
 			else if (token.HasAnnotation(Token::HEX))
 			{
-				sscanf(token.GetText(), BOND_UHEX_SCAN_FORMAT, &uval);
+				sscanf(text, BOND_UHEX_SCAN_FORMAT, &val);
 			}
 			else
 			{
-				sscanf(token.GetText(), BOND_UDECIMAL_SCAN_FORMAT, &uval);
+				sscanf(text, BOND_UDECIMAL_SCAN_FORMAT, &val);
 			}
 			if (token.GetTokenType() == Token::VAL_INT)
 			{
-				value.mInt = static_cast<int_t>(sign * uval);
+				//value.mInt = static_cast<int_t>(sign * val);
+				value.mInt = sign * val;
 			}
 			else
 			{
-				value.mUInt = static_cast<uint_t>(sign * uval);
+				value.mUInt = static_cast<uint_t>(sign * val);
 			}
 		}
 		break;
+
 		case Token::VAL_FLOAT:
 		{
 			sscanf(token.GetText(), BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
 		}
 		break;
+
 		default:
 		{
 			// Fall through.
 		}
 		break;
 	}
+
+	token.SetValue(value);
 }
 
 
-bool Lexer::IsIdentifierChar(char c)
+Lexer::CharResult Lexer::EvaluateChar(const char *text) const
+{
+	CharResult result;
+	if (text[0] == '\\')
+	{
+		switch (text[1])
+		{
+			// (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') || (c == 'r') ||
+			// (c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
+			case 'a': result.value = '\a'; break;
+			case 'b': result.value = '\b'; break;
+			case 'e': result.value = '\e'; break;
+			case 'f': result.value = '\f'; break;
+			case 'n': result.value = '\n'; break;
+			case 'r': result.value = '\r'; break;
+			case 't': result.value = '\t'; break;
+			case 'v': result.value = '\v'; break;
+			case '\'': result.value = '\''; break;
+			case '\"': result.value = '\"'; break;
+			case '\\': result.value = '\\'; break;
+			default: result.value = text[1]; break;
+		}
+		result.end = text + 2;
+	}
+	else
+	{
+		result.end = text + 1;
+		result.value = text[0];
+	}
+
+	return result;
+}
+
+
+bool Lexer::IsIdentifierChar(char c) const
 {
 	return  isalnum(c) || (c == '_');
 }
 
 
-bool Lexer::IsOctalChar(char c)
+bool Lexer::IsOctalChar(char c) const
 {
 	return (c >= '0') && (c <= '7');
 }
 
 
-bool Lexer::IsHexChar(char c)
+bool Lexer::IsHexChar(char c) const
 {
 	return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
 }
 
-bool Lexer::IsBadNumberChar(char c)
+
+bool Lexer::IsBadNumberChar(char c) const
 {
 	return IsIdentifierChar(c) || (c == '.');
+}
+
+
+bool Lexer::IsEscapeChar(char c) const
+{
+	// TODO: Ensure exhaustive list.
+	return (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') || (c == 'r') ||
+		(c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
 }
 
 }

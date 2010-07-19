@@ -34,4 +34,23 @@ const char *Token::GetTokenName(TokenType type)
 	return TOKEN_NAMES[type];
 }
 
+
+const char *Token::GetErrorName() const
+{
+	return GetErrorName(mErrorType);
+}
+
+
+const char *Token::GetErrorName(ErrorType type)
+{
+	static const char *const ERROR_NAMES[] =
+	{
+#define BOND_TOKEN_ERROR_ITEM(item) #item,
+		BOND_TOKEN_ERROR_LIST
+#undef BOND_TOKEN_ERROR_ITEM
+	};
+
+	return ERROR_NAMES[type];
+}
+
 }

@@ -4,7 +4,7 @@
 #include "bond/streampos.h"
 #include "bond/value.h"
 
-#define BOND_TOKEN_LIST                     \
+#define BOND_TOKEN_LIST \
 	/* Keywords */												    \
 	BOND_TOKEN_ITEM(KEY_BOOL)                 \
 	BOND_TOKEN_ITEM(KEY_BREAK)                \
@@ -93,6 +93,21 @@
 	BOND_TOKEN_ITEM(INVALID)                  \
 	BOND_TOKEN_ITEM(END)                      \
 
+#define BOND_TOKEN_ERROR_LIST \
+	BOND_TOKEN_ERROR_ITEM(NO_ERROR)                 \
+	BOND_TOKEN_ERROR_ITEM(INVALID_ESCAPE)           \
+	BOND_TOKEN_ERROR_ITEM(INVALID_OCTAL_ESCAPE)     \
+	BOND_TOKEN_ERROR_ITEM(INVALID_HEX_ESCAPE)       \
+	BOND_TOKEN_ERROR_ITEM(INVALID_OCTAL_INT)        \
+	BOND_TOKEN_ERROR_ITEM(INVALID_HEX_INT)          \
+	BOND_TOKEN_ERROR_ITEM(INVALID_INT)              \
+	BOND_TOKEN_ERROR_ITEM(INVALID_FLOAT)            \
+	BOND_TOKEN_ERROR_ITEM(EMPTY_CHARACTER_CONSTANT) \
+	BOND_TOKEN_ERROR_ITEM(MULTI_CHARACTER_CONSTANT) \
+	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_COMMENT)     \
+	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_STRING)      \
+	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_CHARACTER)   \
+
 
 namespace Bond
 {
@@ -107,26 +122,17 @@ public:
 #undef BOND_TOKEN_ITEM
 	};
 
+	enum ErrorType
+	{
+#define BOND_TOKEN_ERROR_ITEM(item) item,
+		BOND_TOKEN_ERROR_LIST
+#undef BOND_TOKEN_ERROR_ITEM
+	};
+
 	enum Annotation
 	{
 		OCTAL = 1,
 		HEX = 2,
-	};
-
-	enum ErrorType
-	{
-		NO_ERROR,
-		INVALID_ESCAPE,
-		INVALID_OCTAL_ESCAPE,
-		INVALID_HEX_ESCAPE,
-		INVALID_OCTAL_INT,
-		INVALID_HEX_INT,
-		INVALID_INT,
-		INVALID_FLOAT,
-		MULTICHARACTER_CONSTANT,
-		UNTERMINATED_COMMENT,
-		UNTERMINATED_LITERAL,
-		UNTERMINATED_CHARACTER,
 	};
 
 	Token():
@@ -202,6 +208,9 @@ public:
 
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);
+
+	const char *GetErrorName() const;
+	static const char *GetErrorName(ErrorType type);
 
 private:
 	StreamPos mStartPos;

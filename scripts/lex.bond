@@ -25,7 +25,15 @@ true false
 98765g 07797 0xfg9
 
 // Literal unsigned integers
-987u 077u 0x7fffffffu 0xffffffffu
+98765u 07777u 0x7fffffffu 0xffffffffu
 
 // Literal floats
 123.0
+
+// Literal characters.
+'z' '\a'
+
+// Invalid literal characters.
+'ab' '\p' 'a\p' //'a
+
+/* Unterminated comment
