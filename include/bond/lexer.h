@@ -84,11 +84,18 @@ private:
 
 	void Dispose();
 	void CalculateResources(CharStream &stream, Resources &resources) const;
+
 	void GenerateTokens(CharStream &stream, StringAllocator &allocator);
 	void GenerateToken(CharStream &stream, StringAllocator &allocator, Token &token) const;
 	void ScanToken(CharStream &stream, Token &token) const;
 	void ExtractToken(CharStream &stream, StringAllocator &allocator, Token &token) const;
+
 	void EvaluateToken(StringAllocator &allocator, Token &token) const;
+	void EvaluateKeywordToken(Token &token) const;
+	void EvaluateCharToken(Token &token) const;
+	void EvaluateFloatToken(Token &token) const;
+	void EvaluateIntegerToken(Token &token) const;
+	void EvaluateStringToken(StringAllocator &allocator, Token &token) const;
 	CharResult EvaluateChar(const char *text) const;
 
 	bool IsIdentifierChar(char c) const;

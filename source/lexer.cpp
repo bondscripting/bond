@@ -57,7 +57,9 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 		int length = token.GetEndPos().index - token.GetStartPos().index + 1;
 		if (token.GetTokenType() == Token::VAL_STRING)
 		{
-			length *=2;
+			// Account for the string value. Subtract 2 because the quotes are stripped.
+			// Could actually be shorter once escape sequences are expanded.
+			length += length - 2;
 		}
 
 		resources.stringBufferLength += length;
@@ -812,15 +814,44 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_STRING:
+				if (c == '\\')
+				{
+					state = STATE_STRING_ESCAPE;
+				}
+				else if (c == '\"')
+				{
+					token.SetTokenType(Token::VAL_STRING);
+					state = STATE_DONE;
+				}
 				break;
 
 			case STATE_STRING_ESCAPE:
+				if (IsEscapeChar(c))
+				{
+					state = STATE_STRING;
+				}
+				else
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_ESCAPE);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_STRING;
+				}
 				break;
 
 			case STATE_BAD_STRING:
+				if (c == '\\')
+				{
+					state = STATE_BAD_STRING_ESCAPE;
+				}
+				else if (c == '\"')
+				{
+					state = STATE_DONE;
+				}
 				break;
 
 			case STATE_BAD_STRING_ESCAPE:
+				state = STATE_BAD_STRING;
 				break;
 
 			case STATE_C_COMMENT:
@@ -867,7 +898,8 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 		token.SetErrorType(Token::UNTERMINATED_CHARACTER);
 		token.SetErrorPos(token.GetStartPos());
 	}
-	else if ((state == STATE_STRING) || (state == STATE_STRING_ESCAPE))
+	else if ((state == STATE_STRING) || (state == STATE_STRING_ESCAPE) ||
+	         (state == STATE_BAD_STRING) || (state == STATE_BAD_STRING_ESCAPE))
 	{
 		token.SetTokenType(Token::INVALID);
 		token.SetErrorType(Token::UNTERMINATED_STRING);
@@ -893,163 +925,204 @@ void Lexer::ExtractToken(CharStream &stream, StringAllocator &allocator, Token &
 
 void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 {
-	Value value;
-
 	switch (token.GetTokenType())
 	{
 		case Token::IDENTIFIER:
-		{
-			// We need to refine the type of identifiers to separate out the keywords.
-			if (strcmp(token.GetText(), "bool") == 0)
-			{
-				token.SetTokenType(Token::KEY_BOOL);
-			}
-			else if (strcmp(token.GetText(), "break") == 0)
-			{
-				token.SetTokenType(Token::KEY_BREAK);
-			}
-			else if (strcmp(token.GetText(), "char") == 0)
-			{
-				token.SetTokenType(Token::KEY_CHAR);
-			}
-			else if (strcmp(token.GetText(), "case") == 0)
-			{
-				token.SetTokenType(Token::KEY_CASE);
-			}
-			else if (strcmp(token.GetText(), "const") == 0)
-			{
-				token.SetTokenType(Token::KEY_CONST);
-			}
-			else if (strcmp(token.GetText(), "continue") == 0)
-			{
-				token.SetTokenType(Token::KEY_CONTINUE);
-			}
-			else if (strcmp(token.GetText(), "default") == 0)
-			{
-				token.SetTokenType(Token::KEY_DEFAULT);
-			}
-			else if (strcmp(token.GetText(), "do") == 0)
-			{
-				token.SetTokenType(Token::KEY_DO);
-			}
-			else if (strcmp(token.GetText(), "else") == 0)
-			{
-				token.SetTokenType(Token::KEY_ELSE);
-			}
-			else if (strcmp(token.GetText(), "enum") == 0)
-			{
-				token.SetTokenType(Token::KEY_ENUM);
-			}
-			else if (strcmp(token.GetText(), "float") == 0)
-			{
-				token.SetTokenType(Token::KEY_FLOAT);
-			}
-			else if (strcmp(token.GetText(), "for") == 0)
-			{
-				token.SetTokenType(Token::KEY_FOR);
-			}
-			else if (strcmp(token.GetText(), "if") == 0)
-			{
-				token.SetTokenType(Token::KEY_IF);
-			}
-			else if (strcmp(token.GetText(), "int") == 0)
-			{
-				token.SetTokenType(Token::KEY_INT);
-			}
-			else if (strcmp(token.GetText(), "return") == 0)
-			{
-				token.SetTokenType(Token::KEY_RETURN);
-			}
-			else if (strcmp(token.GetText(), "sizeof") == 0)
-			{
-				token.SetTokenType(Token::KEY_SIZEOF);
-			}
-			else if (strcmp(token.GetText(), "switch") == 0)
-			{
-				token.SetTokenType(Token::KEY_SWITCH);
-			}
-			else if (strcmp(token.GetText(), "uint") == 0)
-			{
-				token.SetTokenType(Token::KEY_UINT);
-			}
-			else if (strcmp(token.GetText(), "void") == 0)
-			{
-				token.SetTokenType(Token::KEY_VOID);
-			}
-			else if (strcmp(token.GetText(), "while") == 0)
-			{
-				token.SetTokenType(Token::KEY_WHILE);
-			}
-			else if (strcmp(token.GetText(), "false") == 0)
-			{
-				token.SetTokenType(Token::VAL_BOOL);
-				value.mBool = false;
-			}
-			else if (strcmp(token.GetText(), "true") == 0)
-			{
-				token.SetTokenType(Token::VAL_BOOL);
-				value.mBool = true;
-			}
-		}
-		break;
+			EvaluateKeywordToken(token);
+			break;
 
 		case Token::VAL_CHAR:
-			value.mChar = EvaluateChar(token.GetText() + 1).value;
+			EvaluateCharToken(token);
 			break;
 
 		case Token::VAL_INT:
 		case Token::VAL_UINT:
-		{
-			int_t sign = 1;
-			int_t val;
-			const char *text = token.GetText();
-			if (text[0] == '-')
-			{
-				sign = -1;
-				++text;
-			}
-			else if (text[0] == '+')
-			{
-				++text;
-			}
-			if (token.HasAnnotation(Token::OCTAL))
-			{
-				sscanf(text, BOND_UOCTAL_SCAN_FORMAT, &val);
-			}
-			else if (token.HasAnnotation(Token::HEX))
-			{
-				sscanf(text, BOND_UHEX_SCAN_FORMAT, &val);
-			}
-			else
-			{
-				sscanf(text, BOND_UDECIMAL_SCAN_FORMAT, &val);
-			}
-			if (token.GetTokenType() == Token::VAL_INT)
-			{
-				//value.mInt = static_cast<int_t>(sign * val);
-				value.mInt = sign * val;
-			}
-			else
-			{
-				value.mUInt = static_cast<uint_t>(sign * val);
-			}
-		}
-		break;
+			EvaluateIntegerToken(token);
+			break;
 
 		case Token::VAL_FLOAT:
-		{
-			sscanf(token.GetText(), BOND_FLOAT_SCAN_FORMAT, &value.mFloat);
-		}
-		break;
+			EvaluateFloatToken(token);
+			break;
+
+		case Token::VAL_STRING:
+			EvaluateStringToken(allocator, token);
+			break;
 
 		default:
-		{
 			// Fall through.
-		}
-		break;
+			break;
+	}
+}
+
+
+void Lexer::EvaluateKeywordToken(Token &token) const
+{
+	if (strcmp(token.GetText(), "bool") == 0)
+	{
+		token.SetTokenType(Token::KEY_BOOL);
+	}
+	else if (strcmp(token.GetText(), "break") == 0)
+	{
+		token.SetTokenType(Token::KEY_BREAK);
+	}
+	else if (strcmp(token.GetText(), "char") == 0)
+	{
+		token.SetTokenType(Token::KEY_CHAR);
+	}
+	else if (strcmp(token.GetText(), "case") == 0)
+	{
+		token.SetTokenType(Token::KEY_CASE);
+	}
+	else if (strcmp(token.GetText(), "const") == 0)
+	{
+		token.SetTokenType(Token::KEY_CONST);
+	}
+	else if (strcmp(token.GetText(), "continue") == 0)
+	{
+		token.SetTokenType(Token::KEY_CONTINUE);
+	}
+	else if (strcmp(token.GetText(), "default") == 0)
+	{
+		token.SetTokenType(Token::KEY_DEFAULT);
+	}
+	else if (strcmp(token.GetText(), "do") == 0)
+	{
+		token.SetTokenType(Token::KEY_DO);
+	}
+	else if (strcmp(token.GetText(), "else") == 0)
+	{
+		token.SetTokenType(Token::KEY_ELSE);
+	}
+	else if (strcmp(token.GetText(), "enum") == 0)
+	{
+		token.SetTokenType(Token::KEY_ENUM);
+	}
+	else if (strcmp(token.GetText(), "float") == 0)
+	{
+		token.SetTokenType(Token::KEY_FLOAT);
+	}
+	else if (strcmp(token.GetText(), "for") == 0)
+	{
+		token.SetTokenType(Token::KEY_FOR);
+	}
+	else if (strcmp(token.GetText(), "if") == 0)
+	{
+		token.SetTokenType(Token::KEY_IF);
+	}
+	else if (strcmp(token.GetText(), "int") == 0)
+	{
+		token.SetTokenType(Token::KEY_INT);
+	}
+	else if (strcmp(token.GetText(), "return") == 0)
+	{
+		token.SetTokenType(Token::KEY_RETURN);
+	}
+	else if (strcmp(token.GetText(), "sizeof") == 0)
+	{
+		token.SetTokenType(Token::KEY_SIZEOF);
+	}
+	else if (strcmp(token.GetText(), "switch") == 0)
+	{
+		token.SetTokenType(Token::KEY_SWITCH);
+	}
+	else if (strcmp(token.GetText(), "uint") == 0)
+	{
+		token.SetTokenType(Token::KEY_UINT);
+	}
+	else if (strcmp(token.GetText(), "void") == 0)
+	{
+		token.SetTokenType(Token::KEY_VOID);
+	}
+	else if (strcmp(token.GetText(), "while") == 0)
+	{
+		token.SetTokenType(Token::KEY_WHILE);
+	}
+	else if (strcmp(token.GetText(), "false") == 0)
+	{
+		token.SetTokenType(Token::VAL_BOOL);
+		token.SetBoolValue(false);
+	}
+	else if (strcmp(token.GetText(), "true") == 0)
+	{
+		token.SetTokenType(Token::VAL_BOOL);
+		token.SetBoolValue(true);
+	}
+}
+
+
+void Lexer::EvaluateCharToken(Token &token) const
+{
+	const char value = EvaluateChar(token.GetText() + 1).value;
+	token.SetCharValue(value);
+}
+
+
+void Lexer::EvaluateFloatToken(Token &token) const
+{
+	float_t value;
+	sscanf(token.GetText(), BOND_FLOAT_SCAN_FORMAT, &value);
+	token.SetFloatValue(value);
+}
+
+
+void Lexer::EvaluateIntegerToken(Token &token) const
+{
+	int_t sign = 1;
+	int_t value;
+	const char *text = token.GetText();
+
+	if (text[0] == '-')
+	{
+		sign = -1;
+		++text;
+	}
+	else if (text[0] == '+')
+	{
+		++text;
 	}
 
-	token.SetValue(value);
+	if (token.HasAnnotation(Token::OCTAL))
+	{
+		sscanf(text, BOND_UOCTAL_SCAN_FORMAT, &value);
+	}
+	else if (token.HasAnnotation(Token::HEX))
+	{
+		sscanf(text, BOND_UHEX_SCAN_FORMAT, &value);
+	}
+	else
+	{
+		sscanf(text, BOND_UDECIMAL_SCAN_FORMAT, &value);
+	}
+
+	if (token.GetTokenType() == Token::VAL_INT)
+	{
+		token.SetIntValue(sign * value);
+	}
+	else
+	{
+		token.SetUIntValue(static_cast<uint_t>(sign * value));
+	}
+}
+
+
+void Lexer::EvaluateStringToken(StringAllocator &allocator, Token &token) const
+{
+	const int length = token.GetEndPos().index - token.GetStartPos().index - 2;
+	char *buffer = allocator.Alloc(length);
+	char *dest = buffer;
+	const char *source = token.GetText() + 1;
+	const char *end = source + length;
+
+	while (source < end)
+	{
+		CharResult result = EvaluateChar(source);
+		source = result.end;
+		*dest = result.value;
+		++dest;
+	}
+
+	*dest = '\0';
+	token.SetStringValue(buffer);
 }
 
 
@@ -1060,8 +1133,6 @@ Lexer::CharResult Lexer::EvaluateChar(const char *text) const
 	{
 		switch (text[1])
 		{
-			// (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') || (c == 'r') ||
-			// (c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
 			case 'a': result.value = '\a'; break;
 			case 'b': result.value = '\b'; break;
 			case 'e': result.value = '\e'; break;

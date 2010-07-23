@@ -96,17 +96,15 @@
 #define BOND_TOKEN_ERROR_LIST \
 	BOND_TOKEN_ERROR_ITEM(NO_ERROR)                 \
 	BOND_TOKEN_ERROR_ITEM(INVALID_ESCAPE)           \
-	BOND_TOKEN_ERROR_ITEM(INVALID_OCTAL_ESCAPE)     \
-	BOND_TOKEN_ERROR_ITEM(INVALID_HEX_ESCAPE)       \
 	BOND_TOKEN_ERROR_ITEM(INVALID_OCTAL_INT)        \
 	BOND_TOKEN_ERROR_ITEM(INVALID_HEX_INT)          \
 	BOND_TOKEN_ERROR_ITEM(INVALID_INT)              \
 	BOND_TOKEN_ERROR_ITEM(INVALID_FLOAT)            \
 	BOND_TOKEN_ERROR_ITEM(EMPTY_CHARACTER_CONSTANT) \
 	BOND_TOKEN_ERROR_ITEM(MULTI_CHARACTER_CONSTANT) \
-	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_COMMENT)     \
-	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_STRING)      \
 	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_CHARACTER)   \
+	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_STRING)      \
+	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_COMMENT)     \
 
 
 namespace Bond
@@ -199,11 +197,23 @@ public:
 	bool HasAnnotation(const Annotation &annotation) const { return (mAnnotations & annotation) == annotation; }
 
 	bool GetBoolValue() const { return mValue.mBool; }
+	void SetBoolValue(bool value) { mValue.mBool = value; }
+
 	char GetCharValue() const { return mValue.mChar; }
+	void SetCharValue(char value) { mValue.mChar = value; }
+
 	float_t GetFloatValue() const { return mValue.mFloat; }
+	void SetFloatValue(float_t value) { mValue.mFloat = value; }
+
 	int_t GetIntValue() const { return mValue.mInt; }
+	void SetIntValue(int_t value) { mValue.mInt = value; }
+
 	uint_t GetUIntValue() const { return mValue.mUInt; }
+	void SetUIntValue(uint_t value) { mValue.mUInt = value; }
+
 	const char *GetStringValue() const { return mValue.mString; }
+	void SetStringValue(const char *value) { mValue.mString = value; }
+
 	void SetValue(const Value &value) { mValue = value; }
 
 	const char *GetTokenName() const;
