@@ -107,7 +107,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 
 	while (stream.HasNext() && (state != STATE_DONE))
 	{
-		StreamPos pos = stream.GetStreamPos();
+		const StreamPos pos = stream.GetStreamPos();
 		const char c = stream.Next();
 
 		switch (state)
@@ -539,10 +539,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_OCTAL;
 				}
-				//else if (isdigit(c))
-				//{
-				//	state = STATE_IDIGITS;
-				//}
 				else if (IsBadNumberChar(c))
 				{
 					token.SetTokenType(Token::INVALID);
@@ -1107,11 +1103,14 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 
 void Lexer::EvaluateStringToken(StringAllocator &allocator, Token &token) const
 {
-	const int length = token.GetEndPos().index - token.GetStartPos().index - 2;
-	char *buffer = allocator.Alloc(length);
+	// Allocate enough space for the string with the quotes stripped off. The string
+	// could actually be shorter once escape sequences are expanded.
+	const int allocLength = token.GetEndPos().index - token.GetStartPos().index - 2;
+	char *buffer = allocator.Alloc(allocLength);
 	char *dest = buffer;
 	const char *source = token.GetText() + 1;
-	const char *end = source + length;
+	const char *end = source + allocLength;
+	int usedLength = 0;
 
 	while (source < end)
 	{
@@ -1119,10 +1118,11 @@ void Lexer::EvaluateStringToken(StringAllocator &allocator, Token &token) const
 		source = result.end;
 		*dest = result.value;
 		++dest;
+		++usedLength;
 	}
 
 	*dest = '\0';
-	token.SetStringValue(buffer);
+	token.SetStringValue(buffer, usedLength);
 }
 
 
@@ -1133,6 +1133,7 @@ Lexer::CharResult Lexer::EvaluateChar(const char *text) const
 	{
 		switch (text[1])
 		{
+			case '0': result.value = '\0'; break;
 			case 'a': result.value = '\a'; break;
 			case 'b': result.value = '\b'; break;
 			case 'e': result.value = '\e'; break;
@@ -1185,8 +1186,8 @@ bool Lexer::IsBadNumberChar(char c) const
 bool Lexer::IsEscapeChar(char c) const
 {
 	// TODO: Ensure exhaustive list.
-	return (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') || (c == 'r') ||
-		(c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
+	return (c == '0') || (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') ||
+		(c == 'r') || (c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
 }
 
 }

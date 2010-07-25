@@ -14,7 +14,11 @@ union Value
 	int_t mInt;
 	uint_t mUInt;
 	float_t mFloat;
-	const char *mString;
+	struct
+	{
+		const char *buffer;
+		int length;
+	} mString;
 };
 
 }

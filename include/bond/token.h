@@ -211,10 +211,9 @@ public:
 	uint_t GetUIntValue() const { return mValue.mUInt; }
 	void SetUIntValue(uint_t value) { mValue.mUInt = value; }
 
-	const char *GetStringValue() const { return mValue.mString; }
-	void SetStringValue(const char *value) { mValue.mString = value; }
-
-	void SetValue(const Value &value) { mValue = value; }
+	const char *GetStringValue() const { return mValue.mString.buffer; }
+	int GetStringLength() const { return mValue.mString.length; }
+	void SetStringValue(const char *buffer, int length);
 
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);

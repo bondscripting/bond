@@ -16,6 +16,13 @@ Token &Token::operator=(const Token &other)
 }
 
 
+void Token::SetStringValue(const char *buffer, int length)
+{
+	mValue.mString.buffer = buffer;
+	mValue.mString.length = length;
+}
+
+
 const char *Token::GetTokenName() const
 {
 	return GetTokenName(mTokenType);
