@@ -102,6 +102,7 @@ private:
 	bool IsOctalChar(char c) const;
 	bool IsHexChar(char c) const;
 	bool IsBadNumberChar(char c) const;
+	bool IsUnsignedSuffixChar(char c) const;
 	bool IsEscapeChar(char c) const;
 
 	char *mStringBuffer;

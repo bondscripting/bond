@@ -20,7 +20,7 @@ AR = ar
 CC = g++
 MKDIR = mkdir
 RM = rm
-CFLAGS = -Wall -g -I$(INCLUDEDIR)
+CFLAGS = -Wall -ansi -g -I$(INCLUDEDIR)
 
 .PHONY: all clean
 

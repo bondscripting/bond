@@ -526,7 +526,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (c == 'u')
+				else if (IsUnsignedSuffixChar(c))
 				{
 					token.SetTokenType(Token::VAL_UINT);
 					state = STATE_DONE;
@@ -555,7 +555,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_OCTAL:
-				if (c == 'u')
+				if (IsUnsignedSuffixChar(c))
 				{
 					token.SetTokenType(Token::VAL_UINT);
 					token.AddAnnotation(Token::OCTAL);
@@ -582,7 +582,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_HEX:
-				if (c == 'u')
+				if (IsUnsignedSuffixChar(c))
 				{
 					token.SetTokenType(Token::VAL_UINT);
 					token.AddAnnotation(Token::HEX);
@@ -617,7 +617,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_EXPONENT;
 				}
-				else if (c == 'u')
+				else if (IsUnsignedSuffixChar(c))
 				{
 					token.SetTokenType(Token::VAL_UINT);
 					state = STATE_DONE;
@@ -1136,7 +1136,6 @@ Lexer::CharResult Lexer::EvaluateChar(const char *text) const
 			case '0': result.value = '\0'; break;
 			case 'a': result.value = '\a'; break;
 			case 'b': result.value = '\b'; break;
-			case 'e': result.value = '\e'; break;
 			case 'f': result.value = '\f'; break;
 			case 'n': result.value = '\n'; break;
 			case 'r': result.value = '\r'; break;
@@ -1145,6 +1144,7 @@ Lexer::CharResult Lexer::EvaluateChar(const char *text) const
 			case '\'': result.value = '\''; break;
 			case '\"': result.value = '\"'; break;
 			case '\\': result.value = '\\'; break;
+			case '\?': result.value = '\?'; break;
 			default: result.value = text[1]; break;
 		}
 		result.end = text + 2;
@@ -1183,11 +1183,16 @@ bool Lexer::IsBadNumberChar(char c) const
 }
 
 
+bool Lexer::IsUnsignedSuffixChar(char c) const
+{
+	return (c == 'u') || (c == 'U');
+}
+
+
 bool Lexer::IsEscapeChar(char c) const
 {
-	// TODO: Ensure exhaustive list.
-	return (c == '0') || (c == 'a') || (c == 'b') || (c == 'e') || (c == 'f') || (c == 'n') ||
-		(c == 'r') || (c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\');
+	return (c == '0') || (c == 'a') || (c == 'b') || (c == 'f') || (c == 'n') || (c == 'r') ||
+		(c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\') || (c == '\?');
 }
 
 }
