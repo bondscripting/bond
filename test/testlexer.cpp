@@ -53,27 +53,27 @@ int main()
 				printf(" %s c:%d", token.GetErrorName(), token.GetErrorPos().column);
 				break;
 
-			case Bond::Token::VAL_BOOL:
+			case Bond::Token::CONST_BOOL:
 				printf(" %s", token.GetBoolValue() ? "true" : "false");
 				break;
 
-			case Bond::Token::VAL_CHAR:
+			case Bond::Token::CONST_CHAR:
 				printf(" %c", token.GetCharValue());
 				break;
 
-			case Bond::Token::VAL_FLOAT:
+			case Bond::Token::CONST_FLOAT:
 				printf(" %g", token.GetFloatValue());
 				break;
 
-			case Bond::Token::VAL_INT:
+			case Bond::Token::CONST_INT:
 				printf(" %d", token.GetIntValue());
 				break;
 
-			case Bond::Token::VAL_UINT:
+			case Bond::Token::CONST_UINT:
 				printf(" %u", token.GetUIntValue());
 				break;
 
-			case Bond::Token::VAL_STRING:
+			case Bond::Token::CONST_STRING:
 				printf(" %s", token.GetStringValue());
 				break;
 

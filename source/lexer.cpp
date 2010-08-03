@@ -55,7 +55,7 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 		ScanToken(stream, token);
 
 		int length = token.GetEndPos().index - token.GetStartPos().index + 1;
-		if (token.GetTokenType() == Token::VAL_STRING)
+		if (token.GetTokenType() == Token::CONST_STRING)
 		{
 			// Account for the string value. Subtract 2 because the quotes are stripped.
 			// Could actually be shorter once escape sequences are expanded.
@@ -528,7 +528,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::VAL_UINT);
+					token.SetTokenType(Token::CONST_UINT);
 					state = STATE_DONE;
 				}
 				else if (c == 'x')
@@ -549,7 +549,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_INT);
+					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
 				break;
@@ -557,7 +557,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 			case STATE_OCTAL:
 				if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::VAL_UINT);
+					token.SetTokenType(Token::CONST_UINT);
 					token.AddAnnotation(Token::OCTAL);
 					state = STATE_DONE;
 				}
@@ -575,7 +575,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_INT);
+					token.SetTokenType(Token::CONST_INT);
 					token.AddAnnotation(Token::OCTAL);
 					state = STATE_DONE;
 				}
@@ -584,7 +584,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 			case STATE_HEX:
 				if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::VAL_UINT);
+					token.SetTokenType(Token::CONST_UINT);
 					token.AddAnnotation(Token::HEX);
 					state = STATE_DONE;
 				}
@@ -602,7 +602,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_INT);
+					token.SetTokenType(Token::CONST_INT);
 					token.AddAnnotation(Token::HEX);
 					state = STATE_DONE;
 				}
@@ -619,7 +619,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::VAL_UINT);
+					token.SetTokenType(Token::CONST_UINT);
 					state = STATE_DONE;
 				}
 				else if (isdigit(c))
@@ -636,7 +636,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_INT);
+					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
 				break;
@@ -660,7 +660,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_FLOAT);
+					token.SetTokenType(Token::CONST_FLOAT);
 					state = STATE_DONE;
 				}
 				break;
@@ -680,7 +680,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::VAL_FLOAT);
+					token.SetTokenType(Token::CONST_FLOAT);
 					state = STATE_DONE;
 				}
 				break;
@@ -711,7 +711,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					// The last character and the previous 'e' are not part of the token.
 					stream.Unget(2);
-					token.SetTokenType(Token::VAL_FLOAT);
+					token.SetTokenType(Token::CONST_FLOAT);
 					state = STATE_DONE;
 				}
 				break;
@@ -725,7 +725,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					// The last character, the previous '+' or '-' and the previous 'e' are not part of the token.
 					stream.Unget(3);
-					token.SetTokenType(Token::VAL_FLOAT);
+					token.SetTokenType(Token::CONST_FLOAT);
 					state = STATE_DONE;
 				}
 				break;
@@ -782,7 +782,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 			case STATE_CHAR_END:
 				if (c == '\'')
 				{
-					token.SetTokenType(Token::VAL_CHAR);
+					token.SetTokenType(Token::CONST_CHAR);
 					state = STATE_DONE;
 				}
 				else
@@ -816,7 +816,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == '\"')
 				{
-					token.SetTokenType(Token::VAL_STRING);
+					token.SetTokenType(Token::CONST_STRING);
 					state = STATE_DONE;
 				}
 				break;
@@ -927,20 +927,20 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			EvaluateKeywordToken(token);
 			break;
 
-		case Token::VAL_CHAR:
+		case Token::CONST_CHAR:
 			EvaluateCharToken(token);
 			break;
 
-		case Token::VAL_INT:
-		case Token::VAL_UINT:
+		case Token::CONST_INT:
+		case Token::CONST_UINT:
 			EvaluateIntegerToken(token);
 			break;
 
-		case Token::VAL_FLOAT:
+		case Token::CONST_FLOAT:
 			EvaluateFloatToken(token);
 			break;
 
-		case Token::VAL_STRING:
+		case Token::CONST_STRING:
 			EvaluateStringToken(allocator, token);
 			break;
 
@@ -1035,12 +1035,12 @@ void Lexer::EvaluateKeywordToken(Token &token) const
 	}
 	else if (strcmp(token.GetText(), "false") == 0)
 	{
-		token.SetTokenType(Token::VAL_BOOL);
+		token.SetTokenType(Token::CONST_BOOL);
 		token.SetBoolValue(false);
 	}
 	else if (strcmp(token.GetText(), "true") == 0)
 	{
-		token.SetTokenType(Token::VAL_BOOL);
+		token.SetTokenType(Token::CONST_BOOL);
 		token.SetBoolValue(true);
 	}
 }
@@ -1090,7 +1090,7 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 		sscanf(text, BOND_UDECIMAL_SCAN_FORMAT, &value);
 	}
 
-	if (token.GetTokenType() == Token::VAL_INT)
+	if (token.GetTokenType() == Token::CONST_INT)
 	{
 		token.SetIntValue(sign * value);
 	}

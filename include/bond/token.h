@@ -58,8 +58,8 @@
 	                                          \
 	/* Assignment */                          \
 	BOND_TOKEN_ITEM(ASSIGN)       /* '=' */   \
-	BOND_TOKEN_ITEM(ASSIGN_RIGHT) /* '>>=' */ \
 	BOND_TOKEN_ITEM(ASSIGN_LEFT)  /* '<<=' */ \
+	BOND_TOKEN_ITEM(ASSIGN_RIGHT) /* '>>=' */ \
 	BOND_TOKEN_ITEM(ASSIGN_PLUS)  /* '+=' */  \
 	BOND_TOKEN_ITEM(ASSIGN_MINUS) /* '-=' */  \
 	BOND_TOKEN_ITEM(ASSIGN_MULT)  /* '*=' */  \
@@ -81,13 +81,13 @@
 	BOND_TOKEN_ITEM(COLON)        /* ':' */   \
 	BOND_TOKEN_ITEM(COMMA)        /* ',' */   \
 	                                          \
-	/* Literal values */                      \
-	BOND_TOKEN_ITEM(VAL_BOOL)                 \
-	BOND_TOKEN_ITEM(VAL_CHAR)                 \
-	BOND_TOKEN_ITEM(VAL_INT)                  \
-	BOND_TOKEN_ITEM(VAL_UINT)                 \
-	BOND_TOKEN_ITEM(VAL_FLOAT)                \
-	BOND_TOKEN_ITEM(VAL_STRING)               \
+	/* Literal constants */                   \
+	BOND_TOKEN_ITEM(CONST_BOOL)               \
+	BOND_TOKEN_ITEM(CONST_CHAR)               \
+	BOND_TOKEN_ITEM(CONST_INT)                \
+	BOND_TOKEN_ITEM(CONST_UINT)               \
+	BOND_TOKEN_ITEM(CONST_FLOAT)              \
+	BOND_TOKEN_ITEM(CONST_STRING)             \
 	                                          \
 	/* Special values */                      \
 	BOND_TOKEN_ITEM(INVALID)                  \
