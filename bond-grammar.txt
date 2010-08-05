@@ -2,14 +2,104 @@ External Definitions
 --------------------
 
 translation_unit
-	: external_declaration+
+	: external_declaration*
 
 external_declaration
 	: function_definition
-	| declaration
+	| function_declaration
+	| struct_declaration
+	| enum_declaration
+	| const_declaration
 
 function_definition
-	: [declaration_specifiers] declarator declaration* compound_statement
+	: function_prototype compound_statement
+
+
+Declarations
+------------
+
+function_declaration
+	: function_prototype ';'
+
+function_prototype
+	: declarator IDENTIFIER '(' [declarator_list] ')'
+
+struct_declaration
+	: STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+
+struct_member_declaration
+	: field_declaration
+	| function_declaration
+
+field_declaration
+	: declarator ';'
+
+enum_declaration
+	: ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
+
+enumerator_list
+	: enumerator
+	| enumerator_list ',' enumerator
+
+enumerator
+	: IDENTIFIER ['=' const_expression]
+
+declaration
+	: const_declaration
+	| variable_declaration
+
+const_declaration
+	: const_type_descriptor IDENTIFIER '=' const_initializer ';'
+
+variable_declaration
+	: declarator ['=' initializer] ';'
+
+declarator
+	: type_descriptor IDENTIFIER
+
+declarator_list
+	: declarator
+	| declarator_list ',' declarator
+
+const_type_descriptor
+	: CONST primitive_type_specifier
+	| primitive_type_specifier CONST
+	| type_descriptor '*' CONST
+	| type_descriptor '[' [const_expression] ']'
+
+type_descriptor
+	: CONST type_specifier
+	| type_specifier [CONST]
+	| type_descriptor '*' [CONST]
+	| type_descriptor '[' [const_expression] ']'
+
+type_specifier
+	: primitive_type_specifier
+	| IDENTIFIER
+
+primitive_type_specifier
+	: VOID
+	| CHAR
+	| INT
+	| UINT
+	| FLOAT
+
+const_initializer_list
+	: const_initializer
+	| const_initializer_list ',' const_initializer
+
+const_initializer
+	: const_expression
+	| '{' const_initializer_list '}'
+	| '{' const_initializer_list ',' '}'
+
+initializer_list
+	: initializer
+	| initializer_list ',' initializer
+
+initializer
+	: assignment_expression
+	| '{' initializer_list [','] '}'
 
 
 Statements
@@ -22,10 +112,11 @@ statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
+	| declaration
 
 labeled_statement
 	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
+	| CASE const_expression ':' statement
 	| DEFAULT ':' statement
 
 compound_statement
@@ -44,151 +135,9 @@ iteration_statement
 	| FOR '(' [expression] ';' [expression] ';' [expression] ')' statement
 
 jump_statement
-	: GOTO IDENTIFIER ';'
-	| CONTINUE ';'
+	: CONTINUE ';'
 	| BREAK ';'
 	| RETURN [expression] ';'
-
-
-Declarations
-------------
-
-declaration
-	: declaration_specifiers [init_declarator_list] ';'
-
-declaration_specifiers
-	: (storage_class_specifier | type_specifier | type_qualifier)*
-
-init_declarator_list
-	: init_declarator
-	| init_declarator_list ',' init_declarator
-
-init_declarator
-	: declarator ['=' initializer]
-
-storage_class_specifier
-	: TYPEDEF
-	| EXTERN
-	| STATIC
-	| AUTO
-	| REGISTER
-
-type_specifier
-	: VOID
-	| CHAR
-	| SHORT
-	| INT
-	| LONG
-	| FLOAT
-	| DOUBLE
-	| SIGNED
-	| UNSIGNED
-	| struct_or_union_specifier
-	| enum_specifier
-	| TYPE_NAME
-
-struct_or_union_specifier
-	: struct_or_union IDENTIFIER '{' struct_declaration+ '}'
-	| struct_or_union '{' struct_declaration+ '}'
-	| struct_or_union IDENTIFIER
-
-struct_or_union
-	: STRUCT
-	| UNION
-
-struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';'
-
-specifier_qualifier_list
-	: (type_specifier | type_qualifier)+
-
-struct_declarator_list
-	: struct_declarator
-	| struct_declarator_list ',' struct_declarator
-
-struct_declarator
-	: declarator
-	| ':' constant_expression
-	| declarator ':' constant_expression
-
-enum_specifier
-	: ENUM '{' enumerator_list '}'
-	| ENUM IDENTIFIER '{' enumerator_list '}'
-	| ENUM IDENTIFIER
-
-enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
-
-enumerator
-	: IDENTIFIER ['=' constant_expression]
-
-type_qualifier
-	: CONST
-	| VOLATILE
-
-declarator
-	: pointer direct_declarator
-	| direct_declarator
-
-direct_declarator
-	: IDENTIFIER
-	| '(' declarator ')'
-	| direct_declarator '[' [constant_expression] ']'
-	| direct_declarator '(' parameter_type_list ')'
-	| direct_declarator '(' identifier_list ')'
-	| direct_declarator '(' ')'
-
-pointer
-	: '*'
-	| '*' type_qualifier_list
-	| '*' pointer
-	| '*' type_qualifier_list pointer
-
-type_qualifier_list
-	: type_qualifier
-	| type_qualifier_list type_qualifier
-
-parameter_type_list
-	: parameter_list
-	| parameter_list ',' '...'
-
-parameter_list
-	: parameter_declaration
-	| parameter_list ',' parameter_declaration
-
-parameter_declaration
-	: declaration_specifiers declarator
-	| declaration_specifiers abstract_declarator
-	| declaration_specifiers
-
-identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
-
-type_name
-	: specifier_qualifier_list
-	| specifier_qualifier_list abstract_declarator
-
-abstract_declarator
-	: pointer
-	| direct_abstract_declarator
-	| pointer direct_abstract_declarator
-
-direct_abstract_declarator
-	: '(' abstract_declarator ')'
-	| '[' [constant_expression] ']'
-	| direct_abstract_declarator '[' [constant_expression] ']'
-	| '(' [parameter_type_list] ')'
-	| direct_abstract_declarator '(' [parameter_type_list] ')'
-
-initializer
-	: assignment_expression
-	| '{' initializer_list [','] '}'
-
-initializer_list
-	: initializer
-	| initializer_list ',' initializer
 
 
 Expressions
@@ -300,6 +249,3 @@ assignment_expression
 expression
 	: assignment_expression
 	| expression ',' assignment_expression
-
-constant_expression
-	: conditional_expression
