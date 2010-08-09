@@ -41,12 +41,6 @@ char CharStream::Next()
 }
 
 
-char CharStream::Peek() const
-{
-	return Peek(mPos.index);
-}
-
-
 char CharStream::Peek(int index) const
 {
 	// Artificially introduce a space as the last character to ensure that the end
@@ -55,15 +49,9 @@ char CharStream::Peek(int index) const
 }
 
 
-void CharStream::Unget()
-{
-	Unget(1);
-}
-
-
 void CharStream::Unget(int numChars)
 {
-	const int delta = (numChars <= mPos.index) ? numChars : mPos.index;
+	const int delta = (numChars < 0) ? 0 : (numChars > mPos.index) ? mPos.index : numChars;
 	const int oldIndex = mPos.index;
 	mPos.index -= delta;
 	mPos.column -= delta;

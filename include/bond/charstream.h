@@ -25,8 +25,8 @@ public:
 	void Reset();
 	bool HasNext() const;
 	char Next();
-	char Peek() const;
-	void Unget();
+	char Peek() const { return Peek(mPos.index); }
+	void Unget() { Unget(1); }
 	void Unget(int numChars);
 
 	const StreamPos &GetStreamPos() const { return mPos; }

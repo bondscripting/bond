@@ -3,7 +3,7 @@
 
 #include "bond/charstream.h"
 #include "bond/stringallocator.h"
-#include "bond/token.h"
+#include "bond/tokenstream.h"
 
 namespace Bond
 {
@@ -21,8 +21,7 @@ public:
 	~Lexer();
 
 	void Lex(const char *text, int length);
-	int GetNumTokens() const { return mNumTokens; }
-	const Token &GetToken(int index) const { return mTokens[index]; }
+	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
 private:
 

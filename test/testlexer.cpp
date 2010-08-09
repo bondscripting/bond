@@ -28,10 +28,10 @@ int main()
 	Bond::Lexer lexer;
 	lexer.Lex(script.text, script.length);
 
-	int numTokens = lexer.GetNumTokens();
-	for (int i = 0; i < numTokens; ++i)
+	Bond::TokenStream stream = lexer.GetTokenStream();
+	while (stream.HasNext())
 	{
-		const Bond::Token &token = lexer.GetToken(i);
+		const Bond::Token &token = *stream.Next(); //lexer.GetToken(i);
 		const Bond::StreamPos &start = token.GetStartPos();
 		const Bond::StreamPos &end = token.GetEndPos();
 		printf("%-12s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'",
