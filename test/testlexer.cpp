@@ -29,52 +29,52 @@ int main()
 	lexer.Lex(script.text, script.length);
 
 	Bond::TokenStream stream = lexer.GetTokenStream();
-	while (stream.HasNext())
+	while (true)
 	{
-		const Bond::Token &token = *stream.Next(); //lexer.GetToken(i);
-		const Bond::StreamPos &start = token.GetStartPos();
-		const Bond::StreamPos &end = token.GetEndPos();
+		const Bond::Token *token = stream.Next();
+		const Bond::StreamPos &start = token->GetStartPos();
+		const Bond::StreamPos &end = token->GetEndPos();
 		printf("%-12s i:%-3d %-3d l:%-3d %-3d c:%-3d %-3d '%s'",
-			token.GetTokenName(), start.index, end.index, start.line, end.line,
-			start.column, end.column, token.GetText());
+			token->GetTokenName(), start.index, end.index, start.line, end.line,
+			start.column, end.column, token->GetText());
 
-		if (token.HasAnnotation(Bond::Token::OCTAL))
+		if (token->HasAnnotation(Bond::Token::OCTAL))
 		{
 			printf(" O");
 		}
-		if (token.HasAnnotation(Bond::Token::HEX))
+		if (token->HasAnnotation(Bond::Token::HEX))
 		{
 			printf(" X");
 		}
 
-		switch (token.GetTokenType())
+		switch (token->GetTokenType())
 		{
 			case Bond::Token::INVALID:
-				printf(" %s c:%d", token.GetErrorName(), token.GetErrorPos().column);
+				printf(" %s c:%d", token->GetErrorName(), token->GetErrorPos().column);
 				break;
 
 			case Bond::Token::CONST_BOOL:
-				printf(" %s", token.GetBoolValue() ? "true" : "false");
+				printf(" %s", token->GetBoolValue() ? "true" : "false");
 				break;
 
 			case Bond::Token::CONST_CHAR:
-				printf(" %c", token.GetCharValue());
+				printf(" %c", token->GetCharValue());
 				break;
 
 			case Bond::Token::CONST_FLOAT:
-				printf(" %g", token.GetFloatValue());
+				printf(" %g", token->GetFloatValue());
 				break;
 
 			case Bond::Token::CONST_INT:
-				printf(" %d", token.GetIntValue());
+				printf(" %d", token->GetIntValue());
 				break;
 
 			case Bond::Token::CONST_UINT:
-				printf(" %u", token.GetUIntValue());
+				printf(" %u", token->GetUIntValue());
 				break;
 
 			case Bond::Token::CONST_STRING:
-				printf(" %s", token.GetStringValue());
+				printf(" %s", token->GetStringValue());
 				break;
 
 			default:
@@ -83,7 +83,7 @@ int main()
 
 		printf("\n");
 
-		if (token.GetTokenType() == Bond::Token::END)
+		if (token->GetTokenType() == Bond::Token::END)
 		{
 			break;
 		}

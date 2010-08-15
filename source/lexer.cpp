@@ -1009,6 +1009,10 @@ void Lexer::EvaluateKeywordToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_INT);
 	}
+	else if (strcmp(token.GetText(), "namespace") == 0)
+	{
+		token.SetTokenType(Token::KEY_NAMESPACE);
+	}
 	else if (strcmp(token.GetText(), "return") == 0)
 	{
 		token.SetTokenType(Token::KEY_RETURN);

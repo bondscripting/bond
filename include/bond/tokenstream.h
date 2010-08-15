@@ -18,20 +18,20 @@ public:
 
 	TokenStream(const Token *buffer, int length):
 		mBuffer(buffer),
- mLength(length),
+		mLength(length),
 		mIndex(0)
 	{
 	}
 
 	void SetBuffer(const Token *buffer, int length);
 	void Reset() { mIndex = 0; }
-	bool HasNext() const { return mIndex < mLength; }
+	//bool HasNext() const { return mIndex < mLength; }
 	const Token *Next();
 	const Token *Peek() const { return Peek(mIndex); }
 	void Unget() { Unget(1); }
 	void Unget(int numTokens) { mIndex -= (numTokens < 0) ? 0 : (numTokens > mIndex) ? mIndex : numTokens; }
 	int GetPosition() const { return mIndex; }
-	void SetPosition(int index) { mIndex = (index < 0) ? 0 : (index > mIndex) ? mIndex : index; }
+	void SetPosition(int index) { mIndex = (index < 0) ? 0 : (index > mLength) ? (mLength - 1) : index; }
 	int GetLength() const { return mLength; }
 
 private:

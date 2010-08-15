@@ -13,7 +13,7 @@ external_declaration
   | const_declaration
 
 namespace_definition
-  : NAMESPACE '{' external_declaration '}'
+  : NAMESPACE IDENTIFIER '{' external_declaration* '}'
 
 function_definition
   : function_prototype compound_statement

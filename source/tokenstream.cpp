@@ -14,10 +14,7 @@ void TokenStream::SetBuffer(const Token *buffer, int length)
 const Token *TokenStream::Next()
 {
 	const Token *token = Peek();
-	if (HasNext())
-	{
-		++mIndex;
-	}
+	SetPosition(mIndex + 1);
 	return token;
 }
 
