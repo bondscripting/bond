@@ -1,0 +1,15 @@
+namespace OuterSpace
+{
+	namespace FirstInnerSpace
+	{
+		enum Thingy
+		{
+			first,
+			last = 234
+		};
+	}
+
+	namespace SecondInnerSpace
+	{
+	}
+}
