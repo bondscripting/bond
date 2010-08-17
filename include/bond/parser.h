@@ -3,27 +3,70 @@
 
 #include "bond/parsenodes.h"
 
+#define BOND_PARSE_ERROR_LIST \
+	BOND_PARSE_ERROR_ITEM(NO_ERROR)                 \
+	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)         \
+
 namespace Bond
 {
 
+class Token;
 class TokenStream;
 
 class Parser
 {
 public:
-	Parser() {}
+	enum ErrorType
+	{
+#define BOND_PARSE_ERROR_ITEM(item) item,
+		BOND_PARSE_ERROR_LIST
+#undef BOND_PARSE_ERROR_ITEM
+	};
+
+	struct Error
+	{
+		Error(): type(NO_ERROR), expectedType(Token::INVALID), token(0) {}
+
+		Error(ErrorType type, Token::TokenType expectedType, const Token *token):
+			type(type),
+			expectedType(expectedType),
+			token(token)
+		{}
+
+		Error(const Error &other):
+			type(other.type),
+			expectedType(other.expectedType),
+			token(other.token)
+		{}
+
+		ErrorType type;
+		Token::TokenType expectedType;
+		const Token *token;
+	};
+
+	static const int MAX_ERRORS = 16;
+
+	Parser();
 	~Parser() {}
 
 	void Parse(TokenStream &stream);
+	int GetNumErrors() const { return mNumErrors; }
+	const Error *GetError(int index) const { return mErrors + index; }
 
 private:
-	TranslationUnit *ParseTranslationUnit(TokenStream &stream) const;
-	ExternalDeclaration *ParseExternalDeclarationList(TokenStream &stream) const;
-	ExternalDeclaration *ParseExternalDeclaration(TokenStream &stream) const;
-	NamespaceDefinition *ParseNamespaceDefinition(TokenStream &stream) const;
-	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream) const;
-	Enumerator *ParseEnumeratorList(TokenStream &stream) const;
-	Enumerator *ParseEnumerator(TokenStream &stream) const;
+	TranslationUnit *ParseTranslationUnit(TokenStream &stream);
+	ExternalDeclaration *ParseExternalDeclarationList(TokenStream &stream);
+	ExternalDeclaration *ParseExternalDeclaration(TokenStream &stream);
+	NamespaceDefinition *ParseNamespaceDefinition(TokenStream &stream);
+	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream);
+	Enumerator *ParseEnumeratorList(TokenStream &stream);
+	Enumerator *ParseEnumerator(TokenStream &stream);
+
+	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);
+	void PushError(ErrorType type, Token::TokenType expectedType, const Token *token);
+
+	Error mErrors[MAX_ERRORS];
+	int mNumErrors;
 };
 
 }

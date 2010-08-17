@@ -5,7 +5,7 @@ namespace OuterSpace
 		enum Thingy
 		{
 			first,
-			last = 234
+			last = 0xffffffffu,
 		};
 	}
 

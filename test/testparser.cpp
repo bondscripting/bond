@@ -32,5 +32,19 @@ int main()
 	Bond::Parser parser;
 	parser.Parse(stream);
 
+	const int numErrors = parser.GetNumErrors();
+	for (int i = 0; i < numErrors; ++i)
+	{
+		const Bond::Parser::Error *error = parser.GetError(i);
+		const Bond::Token *token = error->token;
+		const Bond::StreamPos &pos = token->GetStartPos();
+		printf("Error %d (%d, %d): expected %s near '%s'\n",
+			error->type,
+			pos.line,
+			pos.column,
+			Bond::Token::GetTokenName(error->expectedType),
+			token->GetText());
+	}
+
 	return 0;
 }

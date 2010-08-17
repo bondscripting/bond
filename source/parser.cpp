@@ -6,6 +6,16 @@
 namespace Bond
 {
 
+Parser::Parser():
+	mNumErrors(0)
+{
+	for (int i = 0; i < MAX_ERRORS; ++i)
+	{
+		mErrors[i] = Error();
+	}
+}
+
+
 void Parser::Parse(TokenStream &stream)
 {
 	printf("Entering: Parse\n");
@@ -16,7 +26,7 @@ void Parser::Parse(TokenStream &stream)
 
 // translation_unit
 //  : external_declaration*
-TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream) const
+TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream)
 {
 	printf("Entering: ParseTranslationUnit\n");
 	ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
@@ -33,7 +43,7 @@ TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream) const
 //   | struct_declaration
 //   | enum_declaration
 //   | const_declaration
-ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream) const
+ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 {
 	printf("Entering: ParseExternalDeclarationList\n");
 	ExternalDeclaration *head = ParseExternalDeclaration(stream);
@@ -51,7 +61,7 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream) c
 }
 
 
-ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream) const
+ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
 	printf("Entering: ParseExternalDeclaration\n");
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
@@ -66,43 +76,19 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream) const
 
 // namespace_definition
 //   : NAMESPACE IDENTIFIER '{' external_declaration* '}'
-NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream) const
+NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 {
 	printf("Entering: ParseNamespaceDefinition\n");
-	const int pos = stream.GetPosition();
-	const Token *token = stream.Next();
-
-	if (token->GetTokenType() != Token::KEY_NAMESPACE)
+	if (stream.TestNext(Token::KEY_NAMESPACE) == 0)
 	{
-		stream.SetPosition(pos);
 		return 0;
 	}
 
-	const Token *name = stream.Next();
-	if (name->GetTokenType() != Token::IDENTIFIER)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-	printf("Parsing namespace: '%s'\n", name->GetText());
-
-	token = stream.Next();
-	if (token->GetTokenType() != Token::OBRACE)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-
+	const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+	ExpectToken(stream, Token::OBRACE);
 	ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
-
-	token = stream.Next();
-	if (token->GetTokenType() != Token::CBRACE)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-
-	printf("Parsed namespace: '%s'\n", name->GetText());
+	ExpectToken(stream, Token::CBRACE);
+	printf("Parsed namespace: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	NamespaceDefinition *space = new NamespaceDefinition(name, declarations);
 	printf("Leaving: ParseNamespaceDefinition\n");
 	return space;
@@ -111,50 +97,21 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream) const
 
 // enum_declaration
 //  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
-EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream) const
+EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 {
 	printf("Entering: ParseEnumDeclaration\n");
-	const int pos = stream.GetPosition();
-	const Token *token = stream.Next();
-
-	if (token->GetTokenType() != Token::KEY_ENUM)
+	if (stream.TestNext(Token::KEY_ENUM) == 0)
 	{
-		stream.SetPosition(pos);
 		return 0;
 	}
 
-	const Token *name = stream.Next();
-	if (name->GetTokenType() != Token::IDENTIFIER)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-	printf("Parsing enum: '%s'\n", name->GetText());
-
-	token = stream.Next();
-	if (token->GetTokenType() != Token::OBRACE)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-
+	const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+	ExpectToken(stream, Token::OBRACE);
 	Enumerator *enumerators = ParseEnumeratorList(stream);
+	ExpectToken(stream, Token::CBRACE);
+	ExpectToken(stream, Token::SEMICOLON);
 
-	token = stream.Next();
-	if (token->GetTokenType() != Token::CBRACE)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-
-	token = stream.Next();
-	if (token->GetTokenType() != Token::SEMICOLON)
-	{
-		stream.SetPosition(pos);
-		return 0;
-	}
-
-	printf("Parsed namespace: '%s'\n", name->GetText());
+	printf("Parsed enum: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	EnumDeclaration *enumeration = new EnumDeclaration(name, enumerators);
 	printf("Leaving: ParseEnumDeclaration\n");
 	return enumeration;
@@ -164,7 +121,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream) const
 // enumerator_list
 //   : enumerator
 //   | enumerator_list ',' enumerator
-Enumerator *Parser::ParseEnumeratorList(TokenStream &stream) const
+Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 {
 	printf("Entering: ParseEnumeratorList\n");
 	Enumerator *head = ParseEnumerator(stream);
@@ -172,10 +129,8 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream) const
 
 	while (current != 0)
 	{
-		const Token *token = stream.Next();
-		if (token->GetTokenType() != Token::COMMA)
+		if (stream.TestNext(Token::COMMA) == NULL)
 		{
-			// TODO: Do something.
 			break;
 		}
 		Enumerator *next = ParseEnumerator(stream);
@@ -190,45 +145,53 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream) const
 
 // enumerator
 //   : IDENTIFIER ['=' const_expression]
-Enumerator *Parser::ParseEnumerator(TokenStream &stream) const
+Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 {
 	printf("Entering: ParseEnumerator\n");
-	int pos = stream.GetPosition();
-	const Token *name = stream.Next();
-	if (name->GetTokenType() != Token::IDENTIFIER)
+	const Token *name = stream.TestNext(Token::IDENTIFIER);
+	if (name == 0)
 	{
-		stream.SetPosition(pos);
 		return 0;
 	}
 
-	pos = stream.GetPosition();
 	int_t value = 0;
-	const Token *token = stream.Next();
-	if (token->GetTokenType() == Token::ASSIGN)
+	if (stream.TestNext(Token::ASSIGN) != 0)
 	{
-		token = stream.Next();
-		if (token->GetTokenType() == Token::CONST_INT)
+		// TODO: parse a const_expression.
+		if (stream.TestPeek(Token::CONST_INT))
 		{
-			value = token->GetIntValue();
+			value = stream.Next()->GetIntValue();
 		}
-		else if (token->GetTokenType() == Token::CONST_UINT)
+		else if (stream.TestPeek(Token::CONST_UINT))
 		{
-			value = static_cast<int_t>(token->GetUIntValue());
+			value = static_cast<int_t>(stream.Next()->GetUIntValue());
 		}
-		else
-		{
-			stream.SetPosition(pos);
-		}
-	}
-	else
-	{
-		stream.SetPosition(pos);
 	}
 	printf("Parsed enumerator: '%s' = '%d'\n", name->GetText(), value);
 
 	Enumerator *enumerator = new Enumerator(name, value);
 	printf("Leaving: ParseEnumerator\n");
 	return enumerator;
+}
+
+
+const Token *Parser::ExpectToken(TokenStream &stream, Token::TokenType expectedType)
+{
+	const Token *token = stream.TestNext(expectedType);
+	if (token == 0)
+	{
+		PushError(UNEXPECTED_TOKEN, expectedType, stream.Peek());
+	}
+	return token;
+}
+
+void Parser::PushError(ErrorType type, Token::TokenType expectedType, const Token *token)
+{
+	if (mNumErrors < MAX_ERRORS)
+	{
+		mErrors[mNumErrors] = Error(type, expectedType, token);
+		++mNumErrors;
+	}
 }
 
 }

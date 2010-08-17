@@ -25,17 +25,18 @@ public:
 
 	void SetBuffer(const Token *buffer, int length);
 	void Reset() { mIndex = 0; }
-	//bool HasNext() const { return mIndex < mLength; }
+	void Advance() { SetPosition(mIndex + 1); }
 	const Token *Next();
-	const Token *Peek() const { return Peek(mIndex); }
-	void Unget() { Unget(1); }
-	void Unget(int numTokens) { mIndex -= (numTokens < 0) ? 0 : (numTokens > mIndex) ? mIndex : numTokens; }
+	const Token *TestNext(Token::TokenType type);
+	const Token *Peek() const { return mBuffer + mIndex; }
+	bool TestPeek(Token::TokenType type) const { return Peek()->GetTokenType() == type; }
+	//bool TestPeek(const Token::TokenType *types, int numTypes) const;
 	int GetPosition() const { return mIndex; }
-	void SetPosition(int index) { mIndex = (index < 0) ? 0 : (index > mLength) ? (mLength - 1) : index; }
+	void SetPosition(int index) { mIndex = ValidIndex(index); }
 	int GetLength() const { return mLength; }
 
 private:
-	const Token *Peek(int index) const { return (index > mLength) ? 0 : mBuffer + index; }
+	int ValidIndex(int index) const { return (index < 0) ? 0 : (index > mLength) ? (mLength - 1) : index; }
 
 	const Token *mBuffer;
 	int mLength;
