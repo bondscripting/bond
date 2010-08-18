@@ -38,7 +38,7 @@ int main()
 		const Bond::Parser::Error *error = parser.GetError(i);
 		const Bond::Token *token = error->token;
 		const Bond::StreamPos &pos = token->GetStartPos();
-		printf("Error %d (%d, %d): expected %s near '%s'\n",
+		printf("Error %d (%d, %d): expected %s before '%s'\n",
 			error->type,
 			pos.line,
 			pos.column,

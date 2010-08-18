@@ -30,7 +30,31 @@ const Token *TokenStream::TestNext(Token::TokenType type)
 	return 0;
 }
 
-/*
+
+void TokenStream::SkipTo(Token::TokenType type)
+{
+	while (mIndex < (mLength - 1))
+	{
+		if (TestPeek(type))
+		{
+			break;
+		}
+	}
+}
+
+
+void TokenStream::SkipTo(const Token::TokenType *types, int numTypes)
+{
+	while (mIndex < (mLength - 1))
+	{
+		if (TestPeek(types, numTypes))
+		{
+			break;
+		}
+	}
+}
+
+
 bool TokenStream::TestPeek(const Token::TokenType *types, int numTypes) const
 {
 	for (int i = 0; i < numTypes; ++i)
@@ -42,5 +66,5 @@ bool TokenStream::TestPeek(const Token::TokenType *types, int numTypes) const
 	}
 	return false;
 }
-*/
+
 }

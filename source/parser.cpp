@@ -18,9 +18,7 @@ Parser::Parser():
 
 void Parser::Parse(TokenStream &stream)
 {
-	printf("Entering: Parse\n");
 	ParseTranslationUnit(stream);
-	printf("Leaving: Parse\n");
 }
 
 
@@ -28,10 +26,8 @@ void Parser::Parse(TokenStream &stream)
 //  : external_declaration*
 TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream)
 {
-	printf("Entering: ParseTranslationUnit\n");
 	ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
 	TranslationUnit *unit = new TranslationUnit(declarations);
-	printf("Leaving: ParseTranslationUnit\n");
 	return unit;
 }
 
@@ -45,7 +41,6 @@ TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream)
 //   | const_declaration
 ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 {
-	printf("Entering: ParseExternalDeclarationList\n");
 	ExternalDeclaration *head = ParseExternalDeclaration(stream);
 	ExternalDeclaration *current = head;
 
@@ -55,7 +50,6 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 		current->SetNext(next);
 		current = next;
 	}
-	printf("Leaving: ParseExternalDeclarationList\n");
 
 	return head;
 }
@@ -63,13 +57,11 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
-	printf("Entering: ParseExternalDeclaration\n");
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
 	if (declaration == 0)
 	{
 		declaration = ParseEnumDeclaration(stream);
 	}
-	printf("Leaving: ParseExternalDeclaration\n");
 	return declaration;
 }
 
@@ -78,7 +70,6 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 //   : NAMESPACE IDENTIFIER '{' external_declaration* '}'
 NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 {
-	printf("Entering: ParseNamespaceDefinition\n");
 	if (stream.TestNext(Token::KEY_NAMESPACE) == 0)
 	{
 		return 0;
@@ -90,7 +81,6 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 	ExpectToken(stream, Token::CBRACE);
 	printf("Parsed namespace: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	NamespaceDefinition *space = new NamespaceDefinition(name, declarations);
-	printf("Leaving: ParseNamespaceDefinition\n");
 	return space;
 }
 
@@ -99,7 +89,6 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 //  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
 EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 {
-	printf("Entering: ParseEnumDeclaration\n");
 	if (stream.TestNext(Token::KEY_ENUM) == 0)
 	{
 		return 0;
@@ -113,7 +102,6 @@ EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 
 	printf("Parsed enum: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	EnumDeclaration *enumeration = new EnumDeclaration(name, enumerators);
-	printf("Leaving: ParseEnumDeclaration\n");
 	return enumeration;
 }
 
@@ -123,7 +111,6 @@ EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 //   | enumerator_list ',' enumerator
 Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 {
-	printf("Entering: ParseEnumeratorList\n");
 	Enumerator *head = ParseEnumerator(stream);
 	Enumerator *current = head;
 
@@ -137,7 +124,6 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 		current->SetNext(next);
 		current = next;
 	}
-	printf("Leaving: ParseEnumeratorList\n");
 
 	return head;
 }
@@ -147,7 +133,6 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 //   : IDENTIFIER ['=' const_expression]
 Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 {
-	printf("Entering: ParseEnumerator\n");
 	const Token *name = stream.TestNext(Token::IDENTIFIER);
 	if (name == 0)
 	{
@@ -170,8 +155,24 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 	printf("Parsed enumerator: '%s' = '%d'\n", name->GetText(), value);
 
 	Enumerator *enumerator = new Enumerator(name, value);
-	printf("Leaving: ParseEnumerator\n");
 	return enumerator;
+}
+
+
+// const_expression
+//   : conditional_expression
+Expression *Parser::ParseConstExpression(TokenStream &stream)
+{
+	return ParseConditionalExpression(stream, EXP_CONST);
+}
+
+
+// conditional_expression
+//   : logical_or_expression
+//   | logical_or_expression '?' expression ':' conditional_expression
+Expression *Parser::ParseConditionalExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	return 0;
 }
 
 
@@ -184,6 +185,7 @@ const Token *Parser::ExpectToken(TokenStream &stream, Token::TokenType expectedT
 	}
 	return token;
 }
+
 
 void Parser::PushError(ErrorType type, Token::TokenType expectedType, const Token *token)
 {

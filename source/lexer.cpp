@@ -912,10 +912,17 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 
 void Lexer::ExtractToken(CharStream &stream, StringAllocator &allocator, Token &token) const
 {
-	const int startIndex = token.GetStartPos().index;
-	const int length = token.GetEndPos().index - startIndex;
-	const char *tokenString = allocator.Alloc(stream.GetBuffer() + startIndex, length);
-	token.SetText(tokenString);
+	if (token.GetTokenType() == Token::END)
+	{
+		token.SetText("EOF");
+	}
+	else
+	{
+		const int startIndex = token.GetStartPos().index;
+		const int length = token.GetEndPos().index - startIndex;
+		const char *tokenString = allocator.Alloc(stream.GetBuffer() + startIndex, length);
+		token.SetText(tokenString);
+	}
 }
 
 

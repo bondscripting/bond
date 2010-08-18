@@ -257,3 +257,6 @@ assignment_expression
 expression
   : assignment_expression
   | expression ',' assignment_expression
+
+const_expression
+  : conditional_expression

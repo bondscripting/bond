@@ -54,6 +54,12 @@ public:
 	const Error *GetError(int index) const { return mErrors + index; }
 
 private:
+	enum ExpressionQualifier
+	{
+		EXP_NORMAL,
+		EXP_CONST
+	};
+
 	TranslationUnit *ParseTranslationUnit(TokenStream &stream);
 	ExternalDeclaration *ParseExternalDeclarationList(TokenStream &stream);
 	ExternalDeclaration *ParseExternalDeclaration(TokenStream &stream);
@@ -61,6 +67,9 @@ private:
 	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream);
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
+
+	Expression *ParseConstExpression(TokenStream &stream);
+	Expression *ParseConditionalExpression(TokenStream &stream, ExpressionQualifier qualifier);
 
 	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);
 	void PushError(ErrorType type, Token::TokenType expectedType, const Token *token);

@@ -12,6 +12,10 @@ class ExternalDeclaration;
 class NamespaceDefinition;
 class EnumDeclaration;
 class Enumerator;
+class Expression;
+class ConditionalExpression;
+class BinaryExpression;
+class UnaryExpression;
 
 
 class ParseNode
@@ -114,6 +118,94 @@ private:
 	const Token *mName;
 	int_t mValue;
 	Enumerator *mNext;
+};
+
+
+class Expression: public ParseNode
+{
+public:
+	Expression() {}
+	virtual ~Expression() {}
+};
+
+
+class ConditionalExpression: Expression
+{
+public:
+	ConditionalExpression() {}
+
+	ConditionalExpression(Expression *condition, Expression *trueExpression, Expression *falseExpression):
+		mCondition(condition),
+		mTrueExpression(trueExpression),
+		mFalseExpression(falseExpression)
+	{}
+
+	virtual ~ConditionalExpression() {}
+
+	Expression *GetCondition() { return mCondition; }
+	const Expression *GetCondition() const { return mCondition; }
+
+	Expression *GetTrueExpression() { return mTrueExpression; }
+	const Expression *GetTrueExpression() const { return mTrueExpression; }
+
+	Expression *GetFalseExpression() { return mFalseExpression; }
+	const Expression *GetFalseExpression() const { return mFalseExpression; }
+
+private:
+	Expression *mCondition;
+	Expression *mTrueExpression;
+	Expression *mFalseExpression;
+};
+
+
+class BinaryExpression: Expression
+{
+public:
+	BinaryExpression() {}
+
+	BinaryExpression(const Token *op, Expression *lhs, Expression *rhs):
+		mOperator(op),
+		mLhs(lhs),
+		mRhs(rhs)
+	{}
+
+	virtual ~BinaryExpression() {}
+
+	const Token *GetOperatorn() const { return mOperator; }
+
+	Expression *GetLhs() { return mLhs; }
+	const Expression *GetLhs() const { return mLhs; }
+
+	Expression *GetRhs() { return mRhs; }
+	const Expression *GetRhs() const { return mRhs; }
+
+private:
+	const Token *mOperator;
+	Expression *mLhs;
+	Expression *mRhs;
+};
+
+
+class UnaryExpression: Expression
+{
+public:
+	UnaryExpression() {}
+
+	UnaryExpression(const Token *op, Expression *rhs):
+		mOperator(op),
+		mRhs(rhs)
+	{}
+
+	virtual ~UnaryExpression() {}
+
+	const Token *GetOperatorn() const { return mOperator; }
+
+	Expression *GetRhs() { return mRhs; }
+	const Expression *GetRhs() const { return mRhs; }
+
+private:
+	const Token *mOperator;
+	Expression *mRhs;
 };
 
 }
