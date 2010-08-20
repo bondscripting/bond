@@ -29,14 +29,15 @@ public:
 	void Advance() { SetPosition(mIndex + 1); }
 
 	const Token *Next();
-	const Token *TestNext(Token::TokenType type);
-
-	void SkipTo(Token::TokenType type);
-	void SkipTo(const Token::TokenType *types, int numTypes);
+	const Token *NextIf(Token::TokenType type);
+	const Token *NextIf(const TokenTypeSet &typeSet);
 
 	const Token *Peek() const { return mBuffer + mIndex; }
-	bool TestPeek(Token::TokenType type) const { return Peek()->GetTokenType() == type; }
-	bool TestPeek(const Token::TokenType *types, int numTypes) const;
+	const Token *PeekIf(Token::TokenType type) const;
+	const Token *PeekIf(const TokenTypeSet &typeSet) const;
+
+	void SkipTo(Token::TokenType type);
+	void SkipTo(const TokenTypeSet &typeSet);
 
 	int GetPosition() const { return mIndex; }
 	void SetPosition(int index) { mIndex = ValidIndex(index); }

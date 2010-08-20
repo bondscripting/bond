@@ -19,13 +19,50 @@ const Token *TokenStream::Next()
 }
 
 
-const Token *TokenStream::TestNext(Token::TokenType type)
+const Token *TokenStream::NextIf(Token::TokenType type)
+{
+	const Token *token = PeekIf(type);
+	if (token != 0)
+	{
+		Advance();
+		return token;
+	}
+	return 0;
+}
+
+
+const Token *TokenStream::NextIf(const TokenTypeSet &typeSet)
+{
+	const Token *token = PeekIf(typeSet);
+	if (token != 0)
+	{
+		Advance();
+		return token;
+	}
+	return 0;
+}
+
+
+const Token *TokenStream::PeekIf(Token::TokenType type) const
 {
 	const Token *token = Peek();
 	if (token->GetTokenType() == type)
 	{
-		Advance();
 		return token;
+	}
+	return 0;
+}
+
+
+const Token *TokenStream::PeekIf(const TokenTypeSet &typeSet) const
+{
+	for (int i = 0; i < typeSet.numTypes; ++i)
+	{
+		const Token *token = Peek();
+		if (token->GetTokenType() == typeSet.types[i])
+		{
+			return token;
+		}
 	}
 	return 0;
 }
@@ -35,7 +72,7 @@ void TokenStream::SkipTo(Token::TokenType type)
 {
 	while (mIndex < (mLength - 1))
 	{
-		if (TestPeek(type))
+		if (PeekIf(type) != 0)
 		{
 			break;
 		}
@@ -43,28 +80,15 @@ void TokenStream::SkipTo(Token::TokenType type)
 }
 
 
-void TokenStream::SkipTo(const Token::TokenType *types, int numTypes)
+void TokenStream::SkipTo(const TokenTypeSet &typeSet)
 {
 	while (mIndex < (mLength - 1))
 	{
-		if (TestPeek(types, numTypes))
+		if (PeekIf(typeSet) != 0)
 		{
 			break;
 		}
 	}
-}
-
-
-bool TokenStream::TestPeek(const Token::TokenType *types, int numTypes) const
-{
-	for (int i = 0; i < numTypes; ++i)
-	{
-		if (TestPeek(types[i]))
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 }

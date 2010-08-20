@@ -60,4 +60,27 @@ const char *Token::GetErrorName(ErrorType type)
 	return ERROR_NAMES[type];
 }
 
+
+static const Token::TokenType ASSIGNMENT_OPERATOR_TYPES[] =
+{
+	Token::ASSIGN,
+	Token::ASSIGN_LEFT,
+	Token::ASSIGN_RIGHT,
+	Token::ASSIGN_PLUS,
+	Token::ASSIGN_MINUS,
+	Token::ASSIGN_MULT,
+	Token::ASSIGN_DIV,
+	Token::ASSIGN_MOD,
+	Token::ASSIGN_AND,
+	Token::ASSIGN_OR,
+	Token::ASSIGN_XOR,
+};
+
+TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS =
+{
+	ASSIGNMENT_OPERATOR_TYPES,
+	sizeof(ASSIGNMENT_OPERATOR_TYPES) / sizeof(*ASSIGNMENT_OPERATOR_TYPES),
+	"ASSIGNMENT_OPERATOR",
+};
+
 }

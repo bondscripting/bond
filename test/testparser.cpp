@@ -42,7 +42,7 @@ int main()
 			error->type,
 			pos.line,
 			pos.column,
-			Bond::Token::GetTokenName(error->expectedType),
+			error->expected,
 			token->GetText());
 	}
 

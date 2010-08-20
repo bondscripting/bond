@@ -5,7 +5,9 @@
 
 #define BOND_PARSE_ERROR_LIST \
 	BOND_PARSE_ERROR_ITEM(NO_ERROR)                 \
+	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)              \
 	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)         \
+
 
 namespace Bond
 {
@@ -25,23 +27,23 @@ public:
 
 	struct Error
 	{
-		Error(): type(NO_ERROR), expectedType(Token::INVALID), token(0) {}
+		Error(): type(NO_ERROR), token(0), expected("") {}
 
-		Error(ErrorType type, Token::TokenType expectedType, const Token *token):
+		Error(ErrorType type, const Token *token, const char *expected):
 			type(type),
-			expectedType(expectedType),
-			token(token)
+			token(token),
+			expected(expected)
 		{}
 
 		Error(const Error &other):
 			type(other.type),
-			expectedType(other.expectedType),
-			token(other.token)
+			token(other.token),
+			expected(other.expected)
 		{}
 
 		ErrorType type;
-		Token::TokenType expectedType;
 		const Token *token;
+		const char *expected;
 	};
 
 	static const int MAX_ERRORS = 16;
@@ -69,10 +71,17 @@ private:
 	Enumerator *ParseEnumerator(TokenStream &stream);
 
 	Expression *ParseConstExpression(TokenStream &stream);
+	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
+	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseConditionalExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseLogicalOrExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseLogicalAndExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
 
 	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);
-	void PushError(ErrorType type, Token::TokenType expectedType, const Token *token);
+	const Token *ExpectToken(TokenStream &stream, TokenTypeSet &typeSet);
+	void AssertNode(TokenStream &stream, ParseNode *node);
+	void PushError(ErrorType type, const Token *token, const char *expected = "");
 
 	Error mErrors[MAX_ERRORS];
 	int mNumErrors;

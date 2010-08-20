@@ -107,16 +107,20 @@ class Enumerator: public ParseNode
 {
 public:
 	Enumerator(): mName(0), mValue(0), mNext(0) {}
-	Enumerator(const Token *name, int_t value): mName(name), mValue(value), mNext(0) {}
+	Enumerator(const Token *name, Expression *value): mName(name), mValue(value), mNext(0) {}
 	virtual ~Enumerator() {}
 
 	Enumerator *GetNext() { return mNext; }
+
+	Expression *GetValue() { return mValue; }
+	const Expression *GetValue() const { return mValue; }
+
 	const Enumerator *GetNext() const { return mNext; }
 	void SetNext(Enumerator *next) { mNext = next; }
 
 private:
 	const Token *mName;
-	int_t mValue;
+	Expression *mValue;
 	Enumerator *mNext;
 };
 
@@ -129,7 +133,7 @@ public:
 };
 
 
-class ConditionalExpression: Expression
+class ConditionalExpression: public Expression
 {
 public:
 	ConditionalExpression() {}
@@ -158,7 +162,7 @@ private:
 };
 
 
-class BinaryExpression: Expression
+class BinaryExpression: public Expression
 {
 public:
 	BinaryExpression() {}
@@ -186,7 +190,7 @@ private:
 };
 
 
-class UnaryExpression: Expression
+class UnaryExpression: public Expression
 {
 public:
 	UnaryExpression() {}

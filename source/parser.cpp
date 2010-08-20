@@ -70,7 +70,7 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 //   : NAMESPACE IDENTIFIER '{' external_declaration* '}'
 NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 {
-	if (stream.TestNext(Token::KEY_NAMESPACE) == 0)
+	if (stream.NextIf(Token::KEY_NAMESPACE) == 0)
 	{
 		return 0;
 	}
@@ -89,7 +89,7 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 //  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
 EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 {
-	if (stream.TestNext(Token::KEY_ENUM) == 0)
+	if (stream.NextIf(Token::KEY_ENUM) == 0)
 	{
 		return 0;
 	}
@@ -116,7 +116,7 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 
 	while (current != 0)
 	{
-		if (stream.TestNext(Token::COMMA) == NULL)
+		if (stream.NextIf(Token::COMMA) == NULL)
 		{
 			break;
 		}
@@ -133,26 +133,19 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 //   : IDENTIFIER ['=' const_expression]
 Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 {
-	const Token *name = stream.TestNext(Token::IDENTIFIER);
+	const Token *name = stream.NextIf(Token::IDENTIFIER);
 	if (name == 0)
 	{
 		return 0;
 	}
 
-	int_t value = 0;
-	if (stream.TestNext(Token::ASSIGN) != 0)
+	Expression *value = 0;
+	if (stream.NextIf(Token::ASSIGN) != 0)
 	{
-		// TODO: parse a const_expression.
-		if (stream.TestPeek(Token::CONST_INT))
-		{
-			value = stream.Next()->GetIntValue();
-		}
-		else if (stream.TestPeek(Token::CONST_UINT))
-		{
-			value = static_cast<int_t>(stream.Next()->GetUIntValue());
-		}
+		value = ParseConstExpression(stream);
+		AssertNode(stream, value);
 	}
-	printf("Parsed enumerator: '%s' = '%d'\n", name->GetText(), value);
+	printf("Parsed enumerator: '%s'%s\n", name->GetText(), (value == 0) ? "" : " with initializer");
 
 	Enumerator *enumerator = new Enumerator(name, value);
 	return enumerator;
@@ -167,10 +160,127 @@ Expression *Parser::ParseConstExpression(TokenStream &stream)
 }
 
 
+// expression
+//   : assignment_expression
+//   | expression ',' assignment_expression
+Expression *Parser::ParseExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression;
+	if (qualifier == EXP_CONST)
+	{
+		expression = ParseConstExpression(stream);
+	}
+	else
+	{
+		expression = ParseAssignmentExpression(stream, qualifier);
+
+		if (expression != 0)
+		{
+			const Token *token = stream.NextIf(Token::COMMA);
+			while (token != 0)
+			{
+				Expression *rhs = ParseAssignmentExpression(stream, qualifier);
+				AssertNode(stream, rhs);
+				expression = new BinaryExpression(token, expression, rhs);
+				token = stream.NextIf(Token::COMMA);
+			}
+		}
+	}
+
+	return expression;
+}
+
+
+// assignment_expression
+//   : conditional_expression
+//   | unary_expression '=' assignment_expression
+//   | unary_expression '<<=' assignment_expression
+//   | unary_expression '>>=' assignment_expression
+//   | unary_expression '+=' assignment_expression
+//   | unary_expression '-=' assignment_expression
+//   | unary_expression '*=' assignment_expression
+//   | unary_expression '/=' assignment_expression
+//   | unary_expression '%=' assignment_expression
+//   | unary_expression '&=' assignment_expression
+//   | unary_expression '^=' assignment_expression
+//   | unary_expression '|=' assignment_expression
+Expression *Parser::ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	// TODO: Handle conditional_expression.
+	Expression *lhs = ParseUnaryExpression(stream, qualifier);
+	const Token *op = ExpectToken(stream, TokenTypeSet::ASSIGNMENT_OPERATORS);
+	Expression *rhs = ParseAssignmentExpression(stream, qualifier);
+	AssertNode(stream, rhs);
+	Expression *expression = new BinaryExpression(op, lhs, rhs);
+	return expression;
+}
+
+
 // conditional_expression
 //   : logical_or_expression
 //   | logical_or_expression '?' expression ':' conditional_expression
 Expression *Parser::ParseConditionalExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseLogicalOrExpression(stream, qualifier);
+
+	if ((expression != 0) && (stream.NextIf(Token::OP_TERNARY) != 0))
+	{
+		Expression *trueExpression = ParseExpression(stream, qualifier);
+		AssertNode(stream, trueExpression);
+		ExpectToken(stream, Token::COLON);
+		Expression *falseExpression = ParseConditionalExpression(stream, qualifier);
+		AssertNode(stream, falseExpression);
+		expression = new ConditionalExpression(expression, trueExpression, falseExpression);
+	}
+
+	return expression;
+}
+
+
+// logical_or_expression
+//   : logical_and_expression
+//   | logical_or_expression '||' logical_and_expression
+Expression *Parser::ParseLogicalOrExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseLogicalAndExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(Token::OP_OR);
+		while (token != 0)
+		{
+			Expression *rhs = ParseLogicalAndExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(Token::COMMA);
+		}
+	}
+	return expression;
+}
+
+
+// logical_and_expression
+//   : inclusive_or_expression
+//   | logical_and_expression '&&' inclusive_or_expression
+Expression *Parser::ParseLogicalAndExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	return 0;
+}
+
+
+// unary_expression
+//   : postfix_expression
+//   | '++' unary_expression
+//   | '--' unary_expression
+//   | '&' cast_expression
+//   | '*' cast_expression
+//   | '+' cast_expression
+//   | '-' cast_expression
+//   | '~' cast_expression
+//   | '!' cast_expression
+//   | SIZEOF unary_expression
+//   | SIZEOF '(' type_name ')'
+Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
 	return 0;
 }
@@ -178,20 +288,40 @@ Expression *Parser::ParseConditionalExpression(TokenStream &stream, ExpressionQu
 
 const Token *Parser::ExpectToken(TokenStream &stream, Token::TokenType expectedType)
 {
-	const Token *token = stream.TestNext(expectedType);
+	const Token *token = stream.NextIf(expectedType);
 	if (token == 0)
 	{
-		PushError(UNEXPECTED_TOKEN, expectedType, stream.Peek());
+		PushError(UNEXPECTED_TOKEN, stream.Peek(), Token::GetTokenName(expectedType));
 	}
 	return token;
 }
 
 
-void Parser::PushError(ErrorType type, Token::TokenType expectedType, const Token *token)
+const Token *Parser::ExpectToken(TokenStream &stream, TokenTypeSet &typeSet)
+{
+	const Token *token = stream.NextIf(typeSet);
+	if (token == 0)
+	{
+		PushError(UNEXPECTED_TOKEN, stream.Peek(), typeSet.typeName);
+	}
+	return token;
+}
+
+
+void Parser::AssertNode(TokenStream &stream, ParseNode *node)
+{
+	if (node == 0)
+	{
+		PushError(PARSE_ERROR, stream.Peek());
+	}
+}
+
+
+void Parser::PushError(ErrorType type, const Token *token, const char *expected)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{
-		mErrors[mNumErrors] = Error(type, expectedType, token);
+		mErrors[mNumErrors] = Error(type, token, expected);
 		++mNumErrors;
 	}
 }

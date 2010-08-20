@@ -233,6 +233,16 @@ private:
 	short mAnnotations;
 };
 
+
+struct TokenTypeSet
+{
+	const Token::TokenType *const types;
+	const int numTypes;
+	const char *const typeName;
+
+	static TokenTypeSet ASSIGNMENT_OPERATORS;
+};
+
 }
 
 #endif
