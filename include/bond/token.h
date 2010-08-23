@@ -241,6 +241,11 @@ struct TokenTypeSet
 	const char *const typeName;
 
 	static TokenTypeSet ASSIGNMENT_OPERATORS;
+	static TokenTypeSet EQUALITY_OPERATORS;
+	static TokenTypeSet RELATIONAL_OPERATORS;
+	static TokenTypeSet SHIFT_OPERATORS;
+	static TokenTypeSet ADDITIVE_OPERATORS;
+	static TokenTypeSet MULTIPLICATIVE_OPERATORS;
 };
 
 }

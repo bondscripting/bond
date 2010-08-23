@@ -83,4 +83,76 @@ TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS =
 	"ASSIGNMENT_OPERATOR",
 };
 
+
+static const Token::TokenType EQUALITY_OPERATOR_TYPES[] =
+{
+	Token::OP_EQUAL,
+	Token::OP_NOT_EQUAL,
+};
+
+TokenTypeSet TokenTypeSet::EQUALITY_OPERATORS =
+{
+	EQUALITY_OPERATOR_TYPES,
+	sizeof(EQUALITY_OPERATOR_TYPES) / sizeof(*EQUALITY_OPERATOR_TYPES),
+	"EQUALITY_OPERATOR",
+};
+
+
+static const Token::TokenType RELATIONAL_OPERATOR_TYPES[] =
+{
+	Token::OP_LT,
+	Token::OP_LTE,
+	Token::OP_GT,
+	Token::OP_GTE,
+};
+
+TokenTypeSet TokenTypeSet::RELATIONAL_OPERATORS =
+{
+	RELATIONAL_OPERATOR_TYPES,
+	sizeof(RELATIONAL_OPERATOR_TYPES) / sizeof(*RELATIONAL_OPERATOR_TYPES),
+	"RELATIONAL_OPERATOR",
+};
+
+
+static const Token::TokenType SHIFT_OPERATOR_TYPES[] =
+{
+	Token::OP_LEFT,
+	Token::OP_RIGHT,
+};
+
+TokenTypeSet TokenTypeSet::SHIFT_OPERATORS =
+{
+	SHIFT_OPERATOR_TYPES,
+	sizeof(SHIFT_OPERATOR_TYPES) / sizeof(*SHIFT_OPERATOR_TYPES),
+	"SHIFT_OPERATOR",
+};
+
+
+static const Token::TokenType ADDITIVE_OPERATOR_TYPES[] =
+{
+	Token::OP_PLUS,
+	Token::OP_MINUS,
+};
+
+TokenTypeSet TokenTypeSet::ADDITIVE_OPERATORS =
+{
+	ADDITIVE_OPERATOR_TYPES,
+	sizeof(ADDITIVE_OPERATOR_TYPES) / sizeof(*ADDITIVE_OPERATOR_TYPES),
+	"ADDITIVE_OPERATOR",
+};
+
+
+static const Token::TokenType MULTIPLICATIVE_OPERATOR_TYPES[] =
+{
+	Token::OP_PLUS,
+	Token::OP_MINUS,
+};
+
+TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS =
+{
+	MULTIPLICATIVE_OPERATOR_TYPES,
+	sizeof(MULTIPLICATIVE_OPERATOR_TYPES) / sizeof(*MULTIPLICATIVE_OPERATOR_TYPES),
+	"MULTIPLICATIVE_OPERATOR",
+};
+
 }

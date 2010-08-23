@@ -69,13 +69,21 @@ private:
 	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream);
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
-
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseConditionalExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseLogicalOrExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseLogicalAndExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseInclusiveOrExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseExclusiveOrExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseAndExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseEqualityExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseRelationalExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseShiftExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseAdditiveExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseMultiplicativeExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseCastExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
 
 	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);

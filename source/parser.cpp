@@ -32,13 +32,6 @@ TranslationUnit *Parser::ParseTranslationUnit(TokenStream &stream)
 }
 
 
-// external_declaration
-//   : namespace_definition
-//   | function_definition
-//   | function_declaration
-//   | struct_declaration
-//   | enum_declaration
-//   | const_declaration
 ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 {
 	ExternalDeclaration *head = ParseExternalDeclaration(stream);
@@ -55,6 +48,13 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 }
 
 
+// external_declaration
+//   : namespace_definition
+//   | function_definition
+//   | function_declaration
+//   | struct_declaration
+//   | enum_declaration
+//   | const_declaration
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
@@ -252,9 +252,10 @@ Expression *Parser::ParseLogicalOrExpression(TokenStream &stream, ExpressionQual
 			Expression *rhs = ParseLogicalAndExpression(stream, qualifier);
 			AssertNode(stream, rhs);
 			expression = new BinaryExpression(token, expression, rhs);
-			token = stream.NextIf(Token::COMMA);
+			token = stream.NextIf(Token::OP_OR);
 		}
 	}
+
 	return expression;
 }
 
@@ -263,6 +264,221 @@ Expression *Parser::ParseLogicalOrExpression(TokenStream &stream, ExpressionQual
 //   : inclusive_or_expression
 //   | logical_and_expression '&&' inclusive_or_expression
 Expression *Parser::ParseLogicalAndExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseInclusiveOrExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(Token::OP_AND);
+		while (token != 0)
+		{
+			Expression *rhs = ParseInclusiveOrExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(Token::OP_AND);
+		}
+	}
+
+	return expression;
+}
+
+
+// inclusive_or_expression
+//   : exclusive_or_expression
+//   | inclusive_or_expression '|' exclusive_or_expression
+Expression *Parser::ParseInclusiveOrExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseExclusiveOrExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(Token::OP_BIT_OR);
+		while (token != 0)
+		{
+			Expression *rhs = ParseExclusiveOrExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(Token::OP_BIT_OR);
+		}
+	}
+
+	return expression;
+}
+
+
+// exclusive_or_expression
+//   : and_expression
+//   | exclusive_or_expression '^' and_expression
+Expression *Parser::ParseExclusiveOrExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseAndExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(Token::OP_BIT_XOR);
+		while (token != 0)
+		{
+			Expression *rhs = ParseAndExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(Token::OP_BIT_XOR);
+		}
+	}
+
+	return expression;
+}
+
+
+// and_expression
+//   : equality_expression
+//   | and_expression '&' equality_expression
+Expression *Parser::ParseAndExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseEqualityExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(Token::OP_BIT_AND);
+		while (token != 0)
+		{
+			Expression *rhs = ParseEqualityExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(Token::OP_BIT_AND);
+		}
+	}
+
+	return expression;
+}
+
+
+// equality_expression
+//   : relational_expression
+//   | equality_expression '==' relational_expression
+//   | equality_expression '!=' relational_expression
+Expression *Parser::ParseEqualityExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseRelationalExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
+		while (token != 0)
+		{
+			Expression *rhs = ParseRelationalExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
+		}
+	}
+
+	return expression;
+}
+
+
+// relational_expression
+//   : shift_expression
+//   | relational_expression '<' shift_expression
+//   | relational_expression '>' shift_expression
+//   | relational_expression '<=' shift_expression
+//   | relational_expression '>=' shift_expression
+Expression *Parser::ParseRelationalExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseShiftExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
+		while (token != 0)
+		{
+			Expression *rhs = ParseShiftExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
+		}
+	}
+
+	return expression;
+}
+
+
+// shift_expression
+//   : additive_expression
+//   | shift_expression '<<' additive_expression
+//   | shift_expression '>>' additive_expression
+Expression *Parser::ParseShiftExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseAdditiveExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
+		while (token != 0)
+		{
+			Expression *rhs = ParseAdditiveExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
+		}
+	}
+
+	return expression;
+}
+
+
+// additive_expression
+//   : multiplicative_expression
+//   | additive_expression '+' multiplicative_expression
+//   | additive_expression '-' multiplicative_expression
+Expression *Parser::ParseAdditiveExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseMultiplicativeExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
+		while (token != 0)
+		{
+			Expression *rhs = ParseMultiplicativeExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
+		}
+	}
+
+	return expression;
+}
+
+
+// multiplicative_expression
+//   : cast_expression
+//   | multiplicative_expression '*' cast_expression
+//   | multiplicative_expression '/' cast_expression
+//   | multiplicative_expression '%' cast_expression
+Expression *Parser::ParseMultiplicativeExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	Expression *expression = ParseCastExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
+		while (token != 0)
+		{
+			Expression *rhs = ParseCastExpression(stream, qualifier);
+			AssertNode(stream, rhs);
+			expression = new BinaryExpression(token, expression, rhs);
+			token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
+		}
+	}
+
+	return expression;
+}
+
+
+// cast_expression
+//   : unary_expression
+//   | '(' type_name ')' cast_expression
+Expression *Parser::ParseCastExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
 	return 0;
 }
