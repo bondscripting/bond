@@ -182,11 +182,11 @@ unary_expression
   | '~' cast_expression
   | '!' cast_expression
   | SIZEOF unary_expression
-  | SIZEOF '(' type_name ')'
+  | SIZEOF '(' type_descriptor ')'
 
 cast_expression
   : unary_expression
-  | '(' type_name ')' cast_expression
+  | '(' type_descriptor ')' cast_expression
 
 multiplicative_expression
   : cast_expression

@@ -12,10 +12,14 @@ class ExternalDeclaration;
 class NamespaceDefinition;
 class EnumDeclaration;
 class Enumerator;
+class TypeDescriptor;
 class Expression;
 class ConditionalExpression;
 class BinaryExpression;
 class UnaryExpression;
+class CastExpression;
+class SizeofExpression;
+class ConstantValue;
 
 
 class ParseNode
@@ -35,7 +39,6 @@ public:
 
 	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarations; }
 	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarations; }
-	//void SetExternalDeclarationList(ExternalDeclaration *declarations) { mDeclarations = declarations; }
 
 private:
 	ExternalDeclaration *mDeclarations;
@@ -125,6 +128,14 @@ private:
 };
 
 
+ class TypeDescriptor: public ParseNode
+{
+public:
+	TypeDescriptor() {}
+	virtual ~TypeDescriptor() {}
+};
+
+
 class Expression: public ParseNode
 {
 public:
@@ -175,7 +186,7 @@ public:
 
 	virtual ~BinaryExpression() {}
 
-	const Token *GetOperatorn() const { return mOperator; }
+	const Token *GetOperator() const { return mOperator; }
 
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
@@ -202,7 +213,7 @@ public:
 
 	virtual ~UnaryExpression() {}
 
-	const Token *GetOperatorn() const { return mOperator; }
+	const Token *GetOperator() const { return mOperator; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
@@ -210,6 +221,73 @@ public:
 private:
 	const Token *mOperator;
 	Expression *mRhs;
+};
+
+
+class CastExpression: public Expression
+{
+public:
+	CastExpression() {}
+
+	CastExpression(TypeDescriptor *typeDescriptor, Expression *rhs):
+		mTypeDescriptor(typeDescriptor),
+		mRhs(rhs)
+	{}
+
+	virtual ~CastExpression() {}
+
+	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+
+	Expression *GetRhs() { return mRhs; }
+	const Expression *GetRhs() const { return mRhs; }
+
+private:
+	TypeDescriptor *mTypeDescriptor;
+	Expression *mRhs;
+};
+
+
+class SizeofExpression: public Expression
+{
+public:
+	SizeofExpression() {}
+
+	SizeofExpression(TypeDescriptor *typeDescriptor):
+		mTypeDescriptor(typeDescriptor),
+		mRhs(0)
+	{}
+
+	SizeofExpression(Expression *rhs):
+		mTypeDescriptor(0),
+		mRhs(rhs)
+	{}
+
+	virtual ~SizeofExpression() {}
+
+	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+
+	Expression *GetRhs() { return mRhs; }
+	const Expression *GetRhs() const { return mRhs; }
+
+private:
+	TypeDescriptor *mTypeDescriptor;
+	Expression *mRhs;
+};
+
+
+class ConstantValue: public Expression
+{
+public:
+	ConstantValue() {}
+	ConstantValue(const Token *value): mValue(value) {}
+	virtual ~ConstantValue() {}
+
+	const Token *GetValue() const { return mValue; }
+
+private:
+	const Token *mValue;
 };
 
 }

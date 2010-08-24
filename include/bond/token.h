@@ -246,6 +246,8 @@ struct TokenTypeSet
 	static TokenTypeSet SHIFT_OPERATORS;
 	static TokenTypeSet ADDITIVE_OPERATORS;
 	static TokenTypeSet MULTIPLICATIVE_OPERATORS;
+	static TokenTypeSet UNARY_OPERATORS;
+	static TokenTypeSet CONSTANT_VALUES;
 };
 
 }

@@ -155,4 +155,42 @@ TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS =
 	"MULTIPLICATIVE_OPERATOR",
 };
 
+
+static const Token::TokenType UNARY_OPERATOR_TYPES[] =
+{
+	Token::OP_PLUS,
+	Token::OP_MINUS,
+	Token::OP_MULT,
+	Token::OP_INC,
+	Token::OP_DEC,
+	Token::OP_NOT,
+	Token::OP_BIT_AND,
+	Token::OP_BIT_NOT,
+};
+
+TokenTypeSet TokenTypeSet::UNARY_OPERATORS =
+{
+	UNARY_OPERATOR_TYPES,
+	sizeof(UNARY_OPERATOR_TYPES) / sizeof(*UNARY_OPERATOR_TYPES),
+	"UNARY_OPERATOR",
+};
+
+
+static const Token::TokenType CONSTANT_VALUE_TYPES[] =
+{
+	Token::CONST_BOOL,
+	Token::CONST_CHAR,
+	Token::CONST_INT,
+	Token::CONST_UINT,
+	Token::CONST_FLOAT,
+	Token::CONST_STRING,
+};
+
+TokenTypeSet TokenTypeSet::CONSTANT_VALUES =
+{
+	CONSTANT_VALUE_TYPES,
+	sizeof(CONSTANT_VALUE_TYPES) / sizeof(*CONSTANT_VALUE_TYPES),
+	"CONSTANT_VALUE",
+};
+
 }

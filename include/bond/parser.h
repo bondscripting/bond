@@ -4,9 +4,10 @@
 #include "bond/parsenodes.h"
 
 #define BOND_PARSE_ERROR_LIST \
-	BOND_PARSE_ERROR_ITEM(NO_ERROR)                 \
-	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)              \
-	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)         \
+	BOND_PARSE_ERROR_ITEM(NO_ERROR)                      \
+	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)                   \
+	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)              \
+	BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION) \
 
 
 namespace Bond
@@ -69,6 +70,7 @@ private:
 	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream);
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
+	TypeDescriptor *ParseTypeDescriptor(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);
@@ -85,6 +87,8 @@ private:
 	Expression *ParseMultiplicativeExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseCastExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParsePostfixExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParsePrimaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
 
 	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);
 	const Token *ExpectToken(TokenStream &stream, TokenTypeSet &typeSet);

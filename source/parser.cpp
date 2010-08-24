@@ -152,6 +152,18 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 }
 
 
+// type_descriptor
+//   : CONST type_specifier
+//   | type_specifier [CONST]
+//   | type_descriptor '*' [CONST]
+//   | type_descriptor '[' [const_expression] ']'
+TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
+{
+	// TODO
+	return 0;
+}
+
+
 // const_expression
 //   : conditional_expression
 Expression *Parser::ParseConstExpression(TokenStream &stream)
@@ -477,10 +489,26 @@ Expression *Parser::ParseMultiplicativeExpression(TokenStream &stream, Expressio
 
 // cast_expression
 //   : unary_expression
-//   | '(' type_name ')' cast_expression
+//   | '(' type_descriptor ')' cast_expression
 Expression *Parser::ParseCastExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	return 0;
+	Expression *expression = 0;
+
+	if (stream.NextIf(Token::OPAREN))
+	{
+		TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+		AssertNode(stream, descriptor);
+		ExpectToken(stream, Token::CPAREN);
+		Expression *rhs = ParseCastExpression(stream, qualifier);
+		AssertNode(stream, rhs);
+		expression = new CastExpression(descriptor, rhs);
+	}
+	else
+	{
+		expression = ParseUnaryExpression(stream, qualifier);
+	}
+
+	return expression;
 }
 
 
@@ -495,10 +523,96 @@ Expression *Parser::ParseCastExpression(TokenStream &stream, ExpressionQualifier
 //   | '~' cast_expression
 //   | '!' cast_expression
 //   | SIZEOF unary_expression
-//   | SIZEOF '(' type_name ')'
+//   | SIZEOF '(' type_descriptor ')'
 Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	return 0;
+	Expression *expression = 0;
+	const Token *op = stream.NextIf(TokenTypeSet::UNARY_OPERATORS);
+
+	if (op != 0)
+	{
+		Expression *rhs = 0;
+
+		switch (op->GetTokenType())
+		{
+			case Token::OP_INC:
+			case Token::OP_DEC:
+				rhs = ParseUnaryExpression(stream, qualifier);
+
+				if (qualifier == EXP_CONST)
+				{
+					PushError(INCREMENT_IN_CONST_EXPRESSION, op);
+				}
+				break;
+
+			default:
+				rhs = ParseCastExpression(stream, qualifier);
+				break;
+		}
+
+		AssertNode(stream, rhs);
+		expression = new UnaryExpression(op, rhs);
+	}
+
+	else if (stream.NextIf(Token::KEY_SIZEOF) != 0)
+	{
+		Expression *unary = ParseUnaryExpression(stream, qualifier);
+		if (unary != 0)
+		{
+			expression = new SizeofExpression(unary);
+		}
+		else
+		{
+			ExpectToken(stream, Token::OPAREN);
+			TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+			AssertNode(stream, descriptor);
+			ExpectToken(stream, Token::CPAREN);
+			expression = new SizeofExpression(descriptor);
+		}
+	}
+
+	else
+	{
+		expression = ParsePostfixExpression(stream, qualifier);
+	}
+
+	return expression;
+}
+
+
+// postfix_expression
+//   : primary_expression
+//   | postfix_expression '[' expression ']'
+//   | postfix_expression '(' ')'
+//   | postfix_expression '(' argument_expression_list ')'
+//   | postfix_expression '.' IDENTIFIER
+//   | postfix_expression '->' IDENTIFIER
+//   | postfix_expression '++'
+//   | postfix_expression '--'
+Expression *Parser::ParsePostfixExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	// TODO
+	Expression *expression = ParsePrimaryExpression(stream, qualifier);
+	return expression;
+}
+
+
+// primary_expression
+//   : namespaced_identifier
+//   | CONSTANT
+//   | '(' expression ')'
+Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualifier qualifier)
+{
+	// TODO
+	Expression *expression = 0;
+
+	const Token *value = stream.NextIf(TokenTypeSet::CONSTANT_VALUES);
+	if (value != 0)
+	{
+		expression = new ConstantValue(value);
+	}
+
+	return expression;
 }
 
 
