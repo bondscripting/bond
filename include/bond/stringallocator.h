@@ -1,5 +1,5 @@
-#ifndef STRING_ALLOCATOR_H
-#define STRING_ALLOCATOR_H
+#ifndef BOND_STRINGALLOCATOR_H
+#define BOND_STRINGALLOCATOR_H
 
 namespace Bond
 {

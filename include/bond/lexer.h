@@ -1,6 +1,7 @@
 #ifndef BOND_LEXER_H
 #define BOND_LEXER_H
 
+#include "bond/allocator.h"
 #include "bond/charstream.h"
 #include "bond/stringallocator.h"
 #include "bond/tokenstream.h"
@@ -11,7 +12,8 @@ namespace Bond
 class Lexer
 {
 public:
-	Lexer():
+	Lexer(Allocator &allocator):
+		mAllocator(allocator),
 		mStringBuffer(0),
 		mTokens(0),
 		mNumTokens(0)
@@ -24,6 +26,9 @@ public:
 	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
 private:
+	// Copying disallowed.
+	Lexer(const Lexer &other);
+	Lexer &operator=(const Lexer &other);
 
 	//[sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits]
 	enum LexState
@@ -104,6 +109,7 @@ private:
 	bool IsUnsignedSuffixChar(char c) const;
 	bool IsEscapeChar(char c) const;
 
+	Allocator &mAllocator;
 	char *mStringBuffer;
 	Token *mTokens;
 	int mNumTokens;

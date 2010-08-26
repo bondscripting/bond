@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "bond/defaultallocator.h"
 #include "bond/lexer.h"
 
 struct Script
@@ -25,7 +26,8 @@ int main()
 {
 	const char *fileName = "../scripts/lex.bond";
 	Script script = ReadScript(fileName);
-	Bond::Lexer lexer;
+	Bond::DefaultAllocator allocator;
+	Bond::Lexer lexer(allocator);
 	lexer.Lex(script.text, script.length);
 
 	Bond::TokenStream stream = lexer.GetTokenStream();

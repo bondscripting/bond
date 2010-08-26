@@ -12,6 +12,7 @@ Token &Token::operator=(const Token &other)
 	mText = other.mText;
 	mTokenType = other.mTokenType;
 	mErrorType = other.mErrorType;
+	mAnnotations = other.mAnnotations;
 	return *this;
 }
 

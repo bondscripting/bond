@@ -16,9 +16,9 @@ Lexer::~Lexer()
 
 void Lexer::Dispose()
 {
-	delete [] mStringBuffer;
+	mAllocator.Free(mStringBuffer);
 	mStringBuffer = 0;
-	delete [] mTokens;
+	mAllocator.Free(mTokens);
 	mTokens = 0;
 	mNumTokens = 0;
 }
@@ -33,10 +33,10 @@ void Lexer::Lex(const char *text, int length)
 
 	CalculateResources(stream, resources);
 
-	mStringBuffer = new char[resources.stringBufferLength];
+	mStringBuffer = static_cast<char *>(mAllocator.Alloc(resources.stringBufferLength));
 	StringAllocator allocator(mStringBuffer, resources.stringBufferLength);
 
-	mTokens = new Token[resources.numTokens];
+	mTokens = static_cast<Token *>(mAllocator.Alloc(resources.numTokens * sizeof(Token)));
 	mNumTokens = resources.numTokens;
 
 	stream.Reset();
@@ -49,9 +49,9 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 	resources.numTokens = 0;
 	resources.stringBufferLength = 0;
 
+	Token token;
 	while (true)
 	{
-		Token token;
 		ScanToken(stream, token);
 
 		int length = token.GetEndPos().index - token.GetStartPos().index + 1;
@@ -103,6 +103,7 @@ void Lexer::GenerateToken(CharStream &stream, StringAllocator &allocator, Token 
 
 void Lexer::ScanToken(CharStream &stream, Token &token) const
 {
+	token = Token();
 	LexState state = STATE_SPACE;
 
 	while (stream.HasNext() && (state != STATE_DONE))
