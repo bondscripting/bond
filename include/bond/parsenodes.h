@@ -1,30 +1,19 @@
 #ifndef BOND_PARSENODES_H
 #define BOND_PARSENODES_H
 
+#include "bond/parsenodesfwd.h"
+#include "bond/parsenodevisitor.h"
 #include "bond/token.h"
 
 namespace Bond
 {
 
-class ParseNode;
-class TranslationUnit;
-class ExternalDeclaration;
-class NamespaceDefinition;
-class EnumDeclaration;
-class Enumerator;
-class TypeDescriptor;
-class Expression;
-class ConditionalExpression;
-class BinaryExpression;
-class UnaryExpression;
-class CastExpression;
-class SizeofExpression;
-class ConstantValue;
-
-
 class ParseNode
 {
 public:
+	virtual void Accept(ParseNodeVisitor &visitor) = 0;
+
+protected:
 	ParseNode() {}
 	virtual ~ParseNode() {}
 };
@@ -33,9 +22,10 @@ public:
 class TranslationUnit: public ParseNode
 {
 public:
-  TranslationUnit(): mDeclarations(0) {}
   TranslationUnit(ExternalDeclaration *declarations): mDeclarations(declarations) {}
 	virtual ~TranslationUnit() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTranslationUnit(this); }
 
 	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarations; }
 	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarations; }
@@ -48,11 +38,6 @@ private:
 class ExternalDeclaration: public ParseNode
 {
 public:
-	ExternalDeclaration(): mName(0), mNext(0) {}
-	ExternalDeclaration(const Token *name): mName(name), mNext(0) {}
-	virtual ~ExternalDeclaration() {}
-
-	const Token *mName;
 	const Token *GetName() const { return mName; }
 	void SetName(const Token *name) { mName = name; }
 
@@ -60,8 +45,12 @@ public:
 	const ExternalDeclaration *GetNext() const { return mNext; }
 	void SetNext(ExternalDeclaration *next) { mNext = next; }
 
+protected:
+	ExternalDeclaration(const Token *name): mName(name), mNext(0) {}
+	virtual ~ExternalDeclaration() {}
+
 private:
-	const Token *name;
+	const Token *mName;
 	ExternalDeclaration *mNext;
 };
 
@@ -69,14 +58,14 @@ private:
 class NamespaceDefinition: public ExternalDeclaration
 {
 public:
-	NamespaceDefinition(): mDeclarations(0) {}
-
- NamespaceDefinition(const Token *name, ExternalDeclaration *declarations):
+	NamespaceDefinition(const Token *name, ExternalDeclaration *declarations):
 		ExternalDeclaration(name),
 	 	mDeclarations(declarations)
 	{}
 
 	virtual ~NamespaceDefinition() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamespaceDefinition(this); }
 
 	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarations; }
 	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarations; }
@@ -89,14 +78,14 @@ private:
 class EnumDeclaration: public ExternalDeclaration
 {
 public:
-	EnumDeclaration(): mEnumerators(0) {}
-
- EnumDeclaration(const Token *name, Enumerator *enumerators):
+	EnumDeclaration(const Token *name, Enumerator *enumerators):
 		ExternalDeclaration(name),
 	 	mEnumerators(enumerators)
 	{}
 
 	virtual ~EnumDeclaration() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumDeclaration(this); }
 
 	Enumerator *GetEnumeratorList() { return mEnumerators; }
 	const Enumerator *GetEnumeratorList() const { return mEnumerators; }
@@ -109,9 +98,10 @@ private:
 class Enumerator: public ParseNode
 {
 public:
-	Enumerator(): mName(0), mValue(0), mNext(0) {}
 	Enumerator(const Token *name, Expression *value): mName(name), mValue(value), mNext(0) {}
 	virtual ~Enumerator() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumerator(this); }
 
 	Enumerator *GetNext() { return mNext; }
 
@@ -128,17 +118,18 @@ private:
 };
 
 
- class TypeDescriptor: public ParseNode
+class TypeDescriptor: public ParseNode
 {
 public:
 	TypeDescriptor() {}
 	virtual ~TypeDescriptor() {}
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeDescriptor(this); }
 };
 
 
 class Expression: public ParseNode
 {
-public:
+protected:
 	Expression() {}
 	virtual ~Expression() {}
 };
@@ -147,8 +138,6 @@ public:
 class ConditionalExpression: public Expression
 {
 public:
-	ConditionalExpression() {}
-
 	ConditionalExpression(Expression *condition, Expression *trueExpression, Expression *falseExpression):
 		mCondition(condition),
 		mTrueExpression(trueExpression),
@@ -156,6 +145,8 @@ public:
 	{}
 
 	virtual ~ConditionalExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConditionalExpression(this); }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -176,8 +167,6 @@ private:
 class BinaryExpression: public Expression
 {
 public:
-	BinaryExpression() {}
-
 	BinaryExpression(const Token *op, Expression *lhs, Expression *rhs):
 		mOperator(op),
 		mLhs(lhs),
@@ -185,6 +174,8 @@ public:
 	{}
 
 	virtual ~BinaryExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitBinaryExpression(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -204,14 +195,14 @@ private:
 class UnaryExpression: public Expression
 {
 public:
-	UnaryExpression() {}
-
 	UnaryExpression(const Token *op, Expression *rhs):
 		mOperator(op),
 		mRhs(rhs)
 	{}
 
 	virtual ~UnaryExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitUnaryExpression(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -227,14 +218,14 @@ private:
 class CastExpression: public Expression
 {
 public:
-	CastExpression() {}
-
 	CastExpression(TypeDescriptor *typeDescriptor, Expression *rhs):
 		mTypeDescriptor(typeDescriptor),
 		mRhs(rhs)
 	{}
 
 	virtual ~CastExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCastExpression(this); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -251,8 +242,6 @@ private:
 class SizeofExpression: public Expression
 {
 public:
-	SizeofExpression() {}
-
 	SizeofExpression(TypeDescriptor *typeDescriptor):
 		mTypeDescriptor(typeDescriptor),
 		mRhs(0)
@@ -264,6 +253,8 @@ public:
 	{}
 
 	virtual ~SizeofExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSizeofExpression(this); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -280,9 +271,10 @@ private:
 class ConstantValue: public Expression
 {
 public:
-	ConstantValue() {}
 	ConstantValue(const Token *value): mValue(value) {}
 	virtual ~ConstantValue() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConstantValue(this); }
 
 	const Token *GetValue() const { return mValue; }
 

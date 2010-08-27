@@ -1,6 +1,7 @@
 #ifndef BOND_PARSER_H
 #define BOND_PARSER_H
 
+#include "bond/parsenodefactory.h"
 #include "bond/parsenodes.h"
 
 #define BOND_PARSE_ERROR_LIST \
