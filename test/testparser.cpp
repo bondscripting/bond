@@ -28,25 +28,33 @@ int main()
 	const char *fileName = "../scripts/parse.bond";
 	Script script = ReadScript(fileName);
 	Bond::DefaultAllocator allocator;
-	Bond::Lexer lexer(allocator);
-	lexer.Lex(script.text, script.length);
-	Bond::TokenStream stream = lexer.GetTokenStream();
-	Bond::Parser parser;
-	parser.Parse(stream);
-
-	const int numErrors = parser.GetNumErrors();
-	for (int i = 0; i < numErrors; ++i)
 	{
-		const Bond::Parser::Error *error = parser.GetError(i);
-		const Bond::Token *token = error->token;
-		const Bond::StreamPos &pos = token->GetStartPos();
-		printf("Error %d (%d, %d): expected %s before '%s'\n",
-			error->type,
-			pos.line,
-			pos.column,
-			error->expected,
-			token->GetText());
+		Bond::Lexer lexer(allocator);
+		lexer.Lex(script.text, script.length);
+		printf("Num allocations after lexing: %d\n", allocator.GetNumAllocations());
+
+		Bond::TokenStream stream = lexer.GetTokenStream();
+		Bond::Parser parser(allocator);
+		parser.Parse(stream);
+
+		printf("Num allocations after parsing: %d\n", allocator.GetNumAllocations());
+
+		const int numErrors = parser.GetNumErrors();
+		for (int i = 0; i < numErrors; ++i)
+		{
+			const Bond::Parser::Error *error = parser.GetError(i);
+			const Bond::Token *token = error->token;
+			const Bond::StreamPos &pos = token->GetStartPos();
+			printf("Error %d (%d, %d): expected %s before '%s'\n",
+				error->type,
+				pos.line,
+				pos.column,
+				error->expected,
+				token->GetText());
+		}
 	}
+
+	printf("Num allocations after destruction: %d\n", allocator.GetNumAllocations());
 
 	return 0;
 }

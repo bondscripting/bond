@@ -33,10 +33,10 @@ void Lexer::Lex(const char *text, int length)
 
 	CalculateResources(stream, resources);
 
-	mStringBuffer = static_cast<char *>(mAllocator.Alloc(resources.stringBufferLength));
+	mStringBuffer = mAllocator.Alloc<char>(resources.stringBufferLength);
 	StringAllocator allocator(mStringBuffer, resources.stringBufferLength);
 
-	mTokens = static_cast<Token *>(mAllocator.Alloc(resources.numTokens * sizeof(Token)));
+	mTokens = mAllocator.Alloc<Token>(resources.numTokens);
 	mNumTokens = resources.numTokens;
 
 	stream.Reset();

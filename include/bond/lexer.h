@@ -21,15 +21,12 @@ public:
 	}
 
 	~Lexer();
+	void Dispose();
 
 	void Lex(const char *text, int length);
 	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
 private:
-	// Copying disallowed.
-	Lexer(const Lexer &other);
-	Lexer &operator=(const Lexer &other);
-
 	//[sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits]
 	enum LexState
 	{
@@ -86,7 +83,10 @@ private:
 		char value;
 	};
 
-	void Dispose();
+	// Copying disallowed.
+	Lexer(const Lexer &other);
+	Lexer &operator=(const Lexer &other);
+
 	void CalculateResources(CharStream &stream, Resources &resources) const;
 
 	void GenerateTokens(CharStream &stream, StringAllocator &allocator);

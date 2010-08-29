@@ -50,8 +50,9 @@ public:
 
 	static const int MAX_ERRORS = 16;
 
-	Parser();
-	~Parser() {}
+	Parser(Allocator &allocator);
+	~Parser();
+	void Dispose();
 
 	void Parse(TokenStream &stream);
 	int GetNumErrors() const { return mNumErrors; }
@@ -63,6 +64,10 @@ private:
 		EXP_NORMAL,
 		EXP_CONST
 	};
+
+	// Copying disallowed.
+	Parser(const Parser &other);
+	Parser &operator=(const Parser &other);
 
 	TranslationUnit *ParseTranslationUnit(TokenStream &stream);
 	ExternalDeclaration *ParseExternalDeclarationList(TokenStream &stream);
@@ -98,6 +103,8 @@ private:
 
 	Error mErrors[MAX_ERRORS];
 	int mNumErrors;
+	ParseNodeFactory mFactory;
+	TranslationUnit *mTranslationUnit;
 };
 
 }

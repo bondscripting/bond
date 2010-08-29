@@ -31,12 +31,13 @@ public:
 	UnaryExpression *CreateUnaryExpression(const Token *op, Expression *rhs);
 	CastExpression *CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs);
 	SizeofExpression *CreateSizeofExpression(TypeDescriptor *typeDescriptor);
+	SizeofExpression *CreateSizeofExpression(Expression *rhs);
 	ConstantValue *CreateConstantValue(const Token *value);
 
-private:
-	//template <typename T> T *Alloc() { return static_cast<T *>(mAllocator.Alloc(sizeof(T))); }
-	template <typename T> void *Alloc() { return mAllocator.Alloc(sizeof(T)); }
+	void Destroy(ParseNode *parseNode);
+	void DestroyHierarchy(ParseNode *parseNode);
 
+private:
 	Allocator &mAllocator;
 };
 

@@ -22,16 +22,16 @@ protected:
 class TranslationUnit: public ParseNode
 {
 public:
-  TranslationUnit(ExternalDeclaration *declarations): mDeclarations(declarations) {}
+	TranslationUnit(ExternalDeclaration *declarationList): mDeclarationList(declarationList) {}
 	virtual ~TranslationUnit() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTranslationUnit(this); }
 
-	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarations; }
-	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarations; }
+	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarationList; }
+	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
-	ExternalDeclaration *mDeclarations;
+	ExternalDeclaration *mDeclarationList;
 };
 
 
@@ -58,40 +58,40 @@ private:
 class NamespaceDefinition: public ExternalDeclaration
 {
 public:
-	NamespaceDefinition(const Token *name, ExternalDeclaration *declarations):
+	NamespaceDefinition(const Token *name, ExternalDeclaration *declarationList):
 		ExternalDeclaration(name),
-	 	mDeclarations(declarations)
+	 	mDeclarationList(declarationList)
 	{}
 
 	virtual ~NamespaceDefinition() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamespaceDefinition(this); }
 
-	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarations; }
-	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarations; }
+	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarationList; }
+	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
-	ExternalDeclaration *mDeclarations;
+	ExternalDeclaration *mDeclarationList;
 };
 
 
 class EnumDeclaration: public ExternalDeclaration
 {
 public:
-	EnumDeclaration(const Token *name, Enumerator *enumerators):
+	EnumDeclaration(const Token *name, Enumerator *enumeratorList):
 		ExternalDeclaration(name),
-	 	mEnumerators(enumerators)
+	 	mEnumeratorList(enumeratorList)
 	{}
 
 	virtual ~EnumDeclaration() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumDeclaration(this); }
 
-	Enumerator *GetEnumeratorList() { return mEnumerators; }
-	const Enumerator *GetEnumeratorList() const { return mEnumerators; }
+	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
+	const Enumerator *GetEnumeratorList() const { return mEnumeratorList; }
 
 private:
-	Enumerator *mEnumerators;
+	Enumerator *mEnumeratorList;
 };
 
 
@@ -103,11 +103,10 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumerator(this); }
 
-	Enumerator *GetNext() { return mNext; }
-
 	Expression *GetValue() { return mValue; }
 	const Expression *GetValue() const { return mValue; }
 
+	Enumerator *GetNext() { return mNext; }
 	const Enumerator *GetNext() const { return mNext; }
 	void SetNext(Enumerator *next) { mNext = next; }
 
