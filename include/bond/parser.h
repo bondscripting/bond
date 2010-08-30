@@ -55,6 +55,10 @@ public:
 	void Dispose();
 
 	void Parse(TokenStream &stream);
+
+	TranslationUnit *GetTranslationUnit() { return mTranslationUnit; }
+
+	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
 	const Error *GetError(int index) const { return mErrors + index; }
 

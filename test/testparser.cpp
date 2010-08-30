@@ -2,6 +2,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/lexer.h"
 #include "bond/parser.h"
+#include "bond/prettyprinter.h"
 
 struct Script
 {
@@ -39,18 +40,26 @@ int main()
 
 		printf("Num allocations after parsing: %d\n", allocator.GetNumAllocations());
 
-		const int numErrors = parser.GetNumErrors();
-		for (int i = 0; i < numErrors; ++i)
+		if (parser.HasErrors())
 		{
-			const Bond::Parser::Error *error = parser.GetError(i);
-			const Bond::Token *token = error->token;
-			const Bond::StreamPos &pos = token->GetStartPos();
-			printf("Error %d (%d, %d): expected %s before '%s'\n",
-				error->type,
-				pos.line,
-				pos.column,
-				error->expected,
-				token->GetText());
+			const int numErrors = parser.GetNumErrors();
+			for (int i = 0; i < numErrors; ++i)
+			{
+				const Bond::Parser::Error *error = parser.GetError(i);
+				const Bond::Token *token = error->token;
+				const Bond::StreamPos &pos = token->GetStartPos();
+				printf("Error %d (%d, %d): expected %s before '%s'\n",
+					error->type,
+					pos.line,
+					pos.column,
+					error->expected,
+					token->GetText());
+			}
+		}
+		else
+		{
+			Bond::PrettyPrinter printer;
+			printer.Print(parser.GetTranslationUnit());
 		}
 	}
 

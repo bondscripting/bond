@@ -1,5 +1,6 @@
 #include "bond/parsenodefactory.h"
 #include "bond/parsenodes.h"
+#include "bond/parsenodevisitor.h"
 #include <new>
 
 namespace Bond
@@ -9,7 +10,7 @@ namespace Bond
 // ParseNodeDeallocator
 //------------------------------------------------------------------------------
 
-class ParseNodeDeallocator: ParseNodeVisitor
+class ParseNodeDeallocator: public ParseNodeVisitor
 {
 public:
 	ParseNodeDeallocator(Allocator &allocator):

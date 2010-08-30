@@ -1,14 +1,13 @@
 #include "bond/parser.h"
 #include "bond/tokenstream.h"
 
-#include <stdio.h>
-
 namespace Bond
 {
 
 Parser::Parser(Allocator &allocator):
 	mNumErrors(0),
-	mFactory(allocator)
+	mFactory(allocator),
+	mTranslationUnit(0)
 {
 	for (int i = 0; i < MAX_ERRORS; ++i)
 	{
@@ -94,7 +93,6 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 	ExpectToken(stream, Token::OBRACE);
 	ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
 	ExpectToken(stream, Token::CBRACE);
-	printf("Parsed namespace: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	NamespaceDefinition *space = mFactory.CreateNamespaceDefinition(name, declarations);
 	return space;
 }
@@ -114,8 +112,6 @@ EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 	Enumerator *enumerators = ParseEnumeratorList(stream);
 	ExpectToken(stream, Token::CBRACE);
 	ExpectToken(stream, Token::SEMICOLON);
-
-	printf("Parsed enum: '%s'\n", (name == 0) ? "<INVALID>" : name->GetText());
 	EnumDeclaration *enumeration = mFactory.CreateEnumDeclaration(name, enumerators);
 	return enumeration;
 }
@@ -131,7 +127,7 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 
 	while (current != 0)
 	{
-		if (stream.NextIf(Token::COMMA) == NULL)
+		if (stream.NextIf(Token::COMMA) == 0)
 		{
 			break;
 		}
@@ -160,7 +156,6 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 		value = ParseConstExpression(stream);
 		AssertNode(stream, value);
 	}
-	printf("Parsed enumerator: '%s'%s\n", name->GetText(), (value == 0) ? "" : " with initializer");
 
 	Enumerator *enumerator = mFactory.CreateEnumerator(name, value);
 	return enumerator;

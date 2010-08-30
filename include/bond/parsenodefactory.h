@@ -3,7 +3,6 @@
 
 #include "bond/allocator.h"
 #include "bond/parsenodesfwd.h"
-#include "bond/parsenodevisitor.h"
 #include "bond/token.h"
 
 namespace Bond

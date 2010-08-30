@@ -25,22 +25,22 @@ public:
 };
 
 
-class ParseNodeVisitorAdapter: ParseNodeVisitor
+class ConstParseNodeVisitor
 {
 public:
-	virtual ~ParseNodeVisitorAdapter() {}
+	virtual ~ConstParseNodeVisitor() {}
 
-	virtual void VisitTranslationUnit(TranslationUnit *translationUnit) {}
-	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition) {}
-	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration) {}
-	virtual void VisitEnumerator(Enumerator *enumerator) {}
-	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor) {}
-	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression) {}
-	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression) {}
-	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression) {}
-	virtual void VisitCastExpression(CastExpression *castExpression) {}
-	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression) {}
-	virtual void VisitConstantValue(ConstantValue *constantValue) {}
+	virtual void VisitTranslationUnit(const TranslationUnit *translationUnit) = 0;
+	virtual void VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition) = 0;
+	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration) = 0;
+	virtual void VisitEnumerator(const Enumerator *enumerator) = 0;
+	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor) = 0;
+	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression) = 0;
+	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression) = 0;
+	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression) = 0;
+	virtual void VisitCastExpression(const CastExpression *castExpression) = 0;
+	virtual void VisitSizeofExpression(const SizeofExpression *sizeofExpression) = 0;
+	virtual void VisitConstantValue(const ConstantValue *constantValue) = 0;
 };
 
 }
