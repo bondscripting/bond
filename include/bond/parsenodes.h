@@ -133,6 +133,26 @@ public:
 };
 
 
+class QualifiedIdentifier: public ParseNode
+{
+public:
+	QualifiedIdentifier(const Token *name): mName(name), mNext(0) {}
+	virtual ~QualifiedIdentifier() {}
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitQualifiedIdentifier(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitQualifiedIdentifier(this); }
+
+	const Token *GetName() const { return mName; }
+
+	QualifiedIdentifier *GetNext() { return mNext; }
+	const QualifiedIdentifier *GetNext() const { return mNext; }
+	void SetNext(QualifiedIdentifier *next) { mNext = next; }
+
+private:
+	const Token *mName;
+	QualifiedIdentifier *mNext;
+};
+
+
 class Expression: public ParseNode
 {
 protected:
@@ -279,19 +299,36 @@ private:
 };
 
 
-class ConstantValue: public Expression
+class ConstantExpression: public Expression
 {
 public:
-	ConstantValue(const Token *value): mValue(value) {}
-	virtual ~ConstantValue() {}
+	ConstantExpression(const Token *value): mValue(value) {}
+	virtual ~ConstantExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConstantValue(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitConstantValue(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConstantExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitConstantExpression(this); }
 
 	const Token *GetValue() const { return mValue; }
 
 private:
 	const Token *mValue;
+};
+
+
+class IdentifierExpression: public Expression
+{
+public:
+	IdentifierExpression(QualifiedIdentifier *identifier): mIdentifier(identifier) {}
+	virtual ~IdentifierExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIdentifierExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitIdentifierExpression(this); }
+
+	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
+	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+private:
+	QualifiedIdentifier *mIdentifier;
 };
 
 }

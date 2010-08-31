@@ -215,8 +215,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c == ':')
 				{
-					token.SetTokenType(Token::COLON);
-					state = STATE_DONE;
+					state = STATE_COLON;
 				}
 				else if (c == ',')
 				{
@@ -514,6 +513,20 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					stream.Unget();
 					token.SetTokenType(Token::OP_BIT_XOR);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_COLON:
+				if (c == ':')
+				{
+					token.SetTokenType(Token::SCOPE);
+					state = STATE_DONE;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::COLON);
 					state = STATE_DONE;
 				}
 				break;

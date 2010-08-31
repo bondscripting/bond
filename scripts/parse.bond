@@ -4,8 +4,8 @@ namespace OuterSpace
 	{
 		enum Thingy
 		{
-			first,
-			last = 2 + 1,
+			FIRST,
+			LAST = FirstInnerSpace::first*3 + 2,
 		};
 	}
 

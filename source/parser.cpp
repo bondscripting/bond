@@ -174,6 +174,27 @@ TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 }
 
 
+// qualified_id
+//   : IDENTIFIER
+//   | qualified_id '::' IDENTIFIER
+QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
+{
+	QualifiedIdentifier *id = 0;
+	const Token *name = stream.NextIf(Token::IDENTIFIER);
+	if (name != 0)
+	{
+		id = mFactory.CreateQualifiedIdentifier(name);
+		if (stream.NextIf(Token::SCOPE))
+		{
+			QualifiedIdentifier *next = ParseQualifiedIdentifier(stream);
+			AssertNode(stream, next);
+			id->SetNext(next);
+		}
+	}
+	return id;
+}
+
+
 // const_expression
 //   : conditional_expression
 Expression *Parser::ParseConstExpression(TokenStream &stream)
@@ -608,18 +629,31 @@ Expression *Parser::ParsePostfixExpression(TokenStream &stream, ExpressionQualif
 
 
 // primary_expression
-//   : namespaced_identifier
+//   : qualified_id
 //   | CONSTANT
 //   | '(' expression ')'
 Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	// TODO
 	Expression *expression = 0;
 
 	const Token *value = stream.NextIf(TokenTypeSet::CONSTANT_VALUES);
 	if (value != 0)
 	{
-		expression = mFactory.CreateConstantValue(value);
+		expression = mFactory.CreateConstantExpression(value);
+	}
+	else if (stream.NextIf(Token::OPAREN) != 0)
+	{
+		expression = ParseExpression(stream, qualifier);
+		AssertNode(stream, expression);
+		ExpectToken(stream, Token::CPAREN);
+	}
+	else
+	{
+		QualifiedIdentifier *identifier = ParseQualifiedIdentifier(stream);
+		if (identifier != 0)
+		{
+			expression = mFactory.CreateIdentifierExpression(identifier);
+		}
 	}
 
 	return expression;

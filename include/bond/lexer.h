@@ -45,6 +45,7 @@ private:
 		STATE_AND,               // '&'
 		STATE_OR,                // '|'
 		STATE_XOR,               // '^'
+		STATE_COLON,             // ':'
 		STATE_ZERO,              // '0'
 		STATE_OCTAL,             // Octal integer.
 		STATE_HEX,               // Hex integer.

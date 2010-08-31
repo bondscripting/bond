@@ -145,8 +145,9 @@ TokenTypeSet TokenTypeSet::ADDITIVE_OPERATORS =
 
 static const Token::TokenType MULTIPLICATIVE_OPERATOR_TYPES[] =
 {
-	Token::OP_PLUS,
-	Token::OP_MINUS,
+	Token::OP_MULT,
+	Token::OP_DIV,
+	Token::OP_MOD,
 };
 
 TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS =

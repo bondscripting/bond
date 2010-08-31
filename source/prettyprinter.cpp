@@ -75,6 +75,12 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 }
 
 
+void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
+{
+	Print(identifier->GetName()->GetText());
+}
+
+
 void PrettyPrinter::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
 {
 	Print("(");
@@ -133,9 +139,15 @@ void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpressi
 }
 
 
-void PrettyPrinter::VisitConstantValue(const ConstantValue *constantValue)
+void PrettyPrinter::VisitConstantExpression(const ConstantExpression *constantExpression)
 {
-	Print(constantValue->GetValue()->GetText());
+	Print(constantExpression->GetValue()->GetText());
+}
+
+
+void PrettyPrinter::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
+{
+	PrintQualifiedIdentifier(identifierExpression->GetIdentifier());
 }
 
 
@@ -155,6 +167,25 @@ void PrettyPrinter::PrintEnumeratorList(const Enumerator *enumeratorList)
 	const Enumerator *current = enumeratorList;
 	while (current != 0)
 	{
+		Print(current);
+		current = current->GetNext();
+	}
+}
+
+
+void PrettyPrinter::PrintQualifiedIdentifier(const QualifiedIdentifier *identifier)
+{
+	const QualifiedIdentifier *current = identifier;
+
+	if (current != 0)
+	{
+		Print(current);
+		current = current->GetNext();
+	}
+
+	while (current != 0)
+	{
+		Print("::");
 		Print(current);
 		current = current->GetNext();
 	}

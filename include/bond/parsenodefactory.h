@@ -20,6 +20,7 @@ public:
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumerators);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
 	TypeDescriptor *CreateTypeDescriptor();
+	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 
 	ConditionalExpression *CreateConditionalExpression(
 		Expression *condition,
@@ -31,7 +32,8 @@ public:
 	CastExpression *CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs);
 	SizeofExpression *CreateSizeofExpression(TypeDescriptor *typeDescriptor);
 	SizeofExpression *CreateSizeofExpression(Expression *rhs);
-	ConstantValue *CreateConstantValue(const Token *value);
+	ConstantExpression *CreateConstantExpression(const Token *value);
+	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
 
 	void Destroy(ParseNode *parseNode);
 	void DestroyHierarchy(ParseNode *parseNode);

@@ -26,16 +26,19 @@ public:
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(Enumerator *enumerator);
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
+	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
 	virtual void VisitCastExpression(CastExpression *castExpression);
 	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression);
-	virtual void VisitConstantValue(ConstantValue *constantValue);
+	virtual void VisitConstantExpression(ConstantExpression *constantExpression);
+	virtual void VisitIdentifierExpression(IdentifierExpression *identifierExpression);
 
 private:
 	void DestroyExternalDeclarationList(ExternalDeclaration *declarationList);
 	void DestroyEnumeratorList(Enumerator *enumeratorList);
+	void DestroyQualifiedIdentifier(QualifiedIdentifier *identifier);
 
 	Allocator &mAllocator;
 };
@@ -75,9 +78,8 @@ void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 }
 
 
-void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor)
-{
-}
+void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor) {}
+void ParseNodeDeallocator::VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
 
 
 void ParseNodeDeallocator::VisitConditionalExpression(ConditionalExpression *conditionalExpression)
@@ -113,8 +115,14 @@ void ParseNodeDeallocator::VisitSizeofExpression(SizeofExpression *sizeofExpress
 }
 
 
-void ParseNodeDeallocator::VisitConstantValue(ConstantValue *constantValue)
+void ParseNodeDeallocator::VisitConstantExpression(ConstantExpression *constantExpression)
 {
+}
+
+
+void ParseNodeDeallocator::VisitIdentifierExpression(IdentifierExpression *identifierExpression)
+{
+	DestroyQualifiedIdentifier(identifierExpression->GetIdentifier());
 }
 
 
@@ -136,6 +144,18 @@ void ParseNodeDeallocator::DestroyEnumeratorList(Enumerator *enumeratorList)
 	while (current != 0)
 	{
 		Enumerator *next = current->GetNext();
+		Destroy(current);
+		current = next;
+	}
+}
+
+
+void ParseNodeDeallocator::DestroyQualifiedIdentifier(QualifiedIdentifier *identifier)
+{
+	QualifiedIdentifier *current = identifier;
+	while (current != 0)
+	{
+		QualifiedIdentifier *next = current->GetNext();
 		Destroy(current);
 		current = next;
 	}
@@ -178,6 +198,12 @@ TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor()
 }
 
 
+QualifiedIdentifier *ParseNodeFactory::CreateQualifiedIdentifier(const Token *name)
+{
+	return new (mAllocator.Alloc<QualifiedIdentifier>()) QualifiedIdentifier(name);
+}
+
+
 ConditionalExpression *ParseNodeFactory::CreateConditionalExpression(
 	Expression *condition,
 	Expression *trueExpression,
@@ -217,9 +243,15 @@ SizeofExpression *ParseNodeFactory::CreateSizeofExpression(Expression *rhs)
 }
 
 
-ConstantValue *ParseNodeFactory::CreateConstantValue(const Token *value)
+ConstantExpression *ParseNodeFactory::CreateConstantExpression(const Token *value)
 {
-	return new (mAllocator.Alloc<ConstantValue>()) ConstantValue(value);
+	return new (mAllocator.Alloc<ConstantExpression>()) ConstantExpression(value);
+}
+
+
+IdentifierExpression *ParseNodeFactory::CreateIdentifierExpression(QualifiedIdentifier *identifier)
+{
+	return new (mAllocator.Alloc<IdentifierExpression>()) IdentifierExpression(identifier);
 }
 
 

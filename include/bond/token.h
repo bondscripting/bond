@@ -80,6 +80,7 @@
 	BOND_TOKEN_ITEM(PERIOD)       /* '.' */   \
 	BOND_TOKEN_ITEM(SEMICOLON)    /* ';' */   \
 	BOND_TOKEN_ITEM(COLON)        /* ':' */   \
+	BOND_TOKEN_ITEM(SCOPE)        /* '::' */  \
 	BOND_TOKEN_ITEM(COMMA)        /* ',' */   \
 	                                          \
 	/* Literal constants */                   \

@@ -13,7 +13,7 @@ blah blah_2 _3blah
 =>>=<<=+=-=*=/=%=&=|=^=
 
 // Punctuation.
-(){}[].;:,
+(){}[].;:::,
 
 // Literal booleans.
 true false

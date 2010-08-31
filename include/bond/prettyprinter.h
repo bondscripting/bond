@@ -22,16 +22,19 @@ public:
 	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(const Enumerator *enumerator);
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor);
+	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *typeDescriptor);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);
 	virtual void VisitCastExpression(const CastExpression *castExpression);
 	virtual void VisitSizeofExpression(const SizeofExpression *sizeofExpression);
-	virtual void VisitConstantValue(const ConstantValue *constantValue);
+	virtual void VisitConstantExpression(const ConstantExpression *constantExpression);
+	virtual void VisitIdentifierExpression(const IdentifierExpression *identifierValue);
 
 private:
 	void PrintExternalDeclarationList(const ExternalDeclaration *declarationList);
 	void PrintEnumeratorList(const Enumerator *enumeratorList);
+	void PrintQualifiedIdentifier(const QualifiedIdentifier *identifier);
 
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }

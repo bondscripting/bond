@@ -11,13 +11,15 @@ namespace Bond
 	class EnumDeclaration;
 	class Enumerator;
 	class TypeDescriptor;
+	class QualifiedIdentifier;
 	class Expression;
 	class ConditionalExpression;
 	class BinaryExpression;
 	class UnaryExpression;
 	class CastExpression;
 	class SizeofExpression;
-	class ConstantValue;
+	class ConstantExpression;
+	class IdentifierExpression;
 
 }
 

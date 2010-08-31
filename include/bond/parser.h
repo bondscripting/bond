@@ -81,6 +81,7 @@ private:
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
 	TypeDescriptor *ParseTypeDescriptor(TokenStream &stream);
+	QualifiedIdentifier *ParseQualifiedIdentifier(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);

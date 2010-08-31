@@ -53,13 +53,13 @@ declaration
   | variable_declaration
 
 const_declaration
-  : const_type_descriptor namespaced_identifier '=' const_initializer ';'
+  : const_type_descriptor IDENTIFIER '=' const_initializer ';'
 
 variable_declaration
   : declarator ['=' initializer] ';'
 
 declarator
-  : type_descriptor namespaced_identifier
+  : type_descriptor IDENTIFIER
 
 declarator_list
   : declarator
@@ -79,7 +79,7 @@ type_descriptor
 
 type_specifier
   : primitive_type_specifier
-  | namespaced_identifier
+  | qualified_id
 
 primitive_type_specifier
   : VOID
@@ -105,9 +105,9 @@ initializer
   : assignment_expression
   | '{' initializer_list [','] '}'
 
-namespaced_identifier
+qualified_id
   : IDENTIFIER
-  | namespaced_identifier '::' IDENTIFIER
+  | IDENTIFIER '::' qualified_id
 
 
 Statements
@@ -152,9 +152,8 @@ Expressions
 -----------
 
 primary_expression
-  : namespaced_identifier
+  : qualified_id
   | CONSTANT
-  | STRING_LITERAL
   | '(' expression ')'
 
 postfix_expression
