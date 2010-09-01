@@ -178,6 +178,24 @@ TokenTypeSet TokenTypeSet::UNARY_OPERATORS =
 };
 
 
+static const Token::TokenType POSTFIX_OPERATOR_TYPES[] =
+{
+	Token::OP_INC,
+	Token::OP_DEC,
+	Token::OP_ARROW,
+	Token::OPAREN,
+	Token::OBRACKET,
+	Token::PERIOD,
+};
+
+TokenTypeSet TokenTypeSet::POSTFIX_OPERATORS =
+{
+	POSTFIX_OPERATOR_TYPES,
+	sizeof(POSTFIX_OPERATOR_TYPES) / sizeof(*POSTFIX_OPERATOR_TYPES),
+	"POSTFIX_OPERATOR",
+};
+
+
 static const Token::TokenType CONSTANT_VALUE_TYPES[] =
 {
 	Token::CONST_BOOL,

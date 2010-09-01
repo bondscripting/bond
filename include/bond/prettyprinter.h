@@ -26,6 +26,7 @@ public:
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);
+	virtual void VisitPostfixExpression(const PostfixExpression *postfixExpression);
 	virtual void VisitCastExpression(const CastExpression *castExpression);
 	virtual void VisitSizeofExpression(const SizeofExpression *sizeofExpression);
 	virtual void VisitConstantExpression(const ConstantExpression *constantExpression);

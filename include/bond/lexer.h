@@ -27,7 +27,7 @@ public:
 	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
 private:
-	//[sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits]
+	//integral-digits[.[fractional-digits]][e[sign]exponential-digits]
 	enum LexState
 	{
 		STATE_SPACE,             // Whitespace.

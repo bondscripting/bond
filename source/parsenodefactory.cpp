@@ -30,6 +30,7 @@ public:
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
+	virtual void VisitPostfixExpression(PostfixExpression *postfixExpression);
 	virtual void VisitCastExpression(CastExpression *castExpression);
 	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression);
 	virtual void VisitConstantExpression(ConstantExpression *constantExpression);
@@ -100,6 +101,12 @@ void ParseNodeDeallocator::VisitBinaryExpression(BinaryExpression *binaryExpress
 void ParseNodeDeallocator::VisitUnaryExpression(UnaryExpression *unaryExpression)
 {
 	Destroy(unaryExpression->GetRhs());
+}
+
+
+void ParseNodeDeallocator::VisitPostfixExpression(PostfixExpression *postfixExpression)
+{
+	Destroy(postfixExpression->GetLhs());
 }
 
 
@@ -222,6 +229,12 @@ BinaryExpression *ParseNodeFactory::CreateBinaryExpression(const Token *op, Expr
 UnaryExpression *ParseNodeFactory::CreateUnaryExpression(const Token *op, Expression *rhs)
 {
 	return new (mAllocator.Alloc<UnaryExpression>()) UnaryExpression(op, rhs);
+}
+
+
+PostfixExpression *ParseNodeFactory::CreatePostfixExpression(const Token *op, Expression *lhs)
+{
+	return new (mAllocator.Alloc<PostfixExpression>()) PostfixExpression(op, lhs);
 }
 
 

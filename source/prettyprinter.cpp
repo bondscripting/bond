@@ -114,6 +114,15 @@ void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 }
 
 
+void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpression)
+{
+	Print("(");
+	Print(postfixExpression->GetLhs());
+	Print(postfixExpression->GetOperator()->GetText());
+	Print(")");
+}
+
+
 void PrettyPrinter::VisitCastExpression(const CastExpression *castExpression)
 {
 	Print("(");

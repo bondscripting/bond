@@ -259,22 +259,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::ASSIGN_PLUS);
 					state = STATE_DONE;
 				}
-				else if (c == '.')
-				{
-					state = STATE_FDIGITS;
-				}
-				else if ((c == 'e') || (c == 'E'))
-				{
-					state = STATE_EXPONENT;
-				}
-				else if (c == '0')
-				{
-					state = STATE_ZERO;
-				}
-				else if (isdigit(c))
-				{
-					state = STATE_IDIGITS;
-				}
 				else
 				{
 					stream.Unget();
@@ -298,22 +282,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					token.SetTokenType(Token::ASSIGN_MINUS);
 					state = STATE_DONE;
-				}
-				else if (c == '.')
-				{
-					state = STATE_FDIGITS;
-				}
-				else if ((c == 'e') || (c == 'E'))
-				{
-					state = STATE_EXPONENT;
-				}
-				else if (c == '0')
-				{
-					state = STATE_ZERO;
-				}
-				else if (isdigit(c))
-				{
-					state = STATE_IDIGITS;
 				}
 				else
 				{
@@ -1088,20 +1056,8 @@ void Lexer::EvaluateFloatToken(Token &token) const
 
 void Lexer::EvaluateIntegerToken(Token &token) const
 {
-	int_t sign = 1;
-	int_t value;
+	uint_t value;
 	const char *text = token.GetText();
-
-	if (text[0] == '-')
-	{
-		sign = -1;
-		++text;
-	}
-	else if (text[0] == '+')
-	{
-		++text;
-	}
-
 	if (token.HasAnnotation(Token::OCTAL))
 	{
 		sscanf(text, BOND_UOCTAL_SCAN_FORMAT, &value);
@@ -1117,11 +1073,11 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
-		token.SetIntValue(sign * value);
+		token.SetIntValue(static_cast<int_t>(value));
 	}
 	else
 	{
-		token.SetUIntValue(static_cast<uint_t>(sign * value));
+		token.SetUIntValue(value);
 	}
 }
 

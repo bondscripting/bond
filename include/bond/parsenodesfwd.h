@@ -16,6 +16,7 @@ namespace Bond
 	class ConditionalExpression;
 	class BinaryExpression;
 	class UnaryExpression;
+	class PostfixExpression;
 	class CastExpression;
 	class SizeofExpression;
 	class ConstantExpression;

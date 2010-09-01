@@ -5,7 +5,7 @@ namespace OuterSpace
 		enum Thingy
 		{
 			FIRST,
-			LAST = FirstInnerSpace::first*3 + 2,
+			LAST = FirstInnerSpace::first+3 + 2,
 		};
 	}
 

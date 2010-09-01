@@ -614,16 +614,51 @@ Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifie
 // postfix_expression
 //   : primary_expression
 //   | postfix_expression '[' expression ']'
-//   | postfix_expression '(' ')'
-//   | postfix_expression '(' argument_expression_list ')'
+//   | postfix_expression '(' [argument_expression_list] ')'
 //   | postfix_expression '.' IDENTIFIER
 //   | postfix_expression '->' IDENTIFIER
 //   | postfix_expression '++'
 //   | postfix_expression '--'
 Expression *Parser::ParsePostfixExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	// TODO
 	Expression *expression = ParsePrimaryExpression(stream, qualifier);
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::POSTFIX_OPERATORS);
+		while (token != 0)
+		{
+			switch (token->GetTokenType())
+			{
+				case Token::OBRACKET:
+				{
+					// TODO
+				}
+				break;
+
+				case Token::OPAREN:
+				{
+					// TODO
+				}
+				break;
+
+				case Token::OP_ARROW:
+				case Token::PERIOD:
+				{
+					// TODO
+				}
+				break;
+
+				default:
+				{
+					expression = mFactory.CreatePostfixExpression(token, expression);
+				}
+				break;
+			}
+			token = stream.NextIf(TokenTypeSet::POSTFIX_OPERATORS);
+		}
+	}
+
 	return expression;
 }
 

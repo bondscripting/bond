@@ -155,9 +155,17 @@ private:
 
 class Expression: public ParseNode
 {
+public:
+	Expression *GetNext() { return mNext; }
+	const Expression *GetNext() const { return mNext; }
+	void SetNext(Expression *next) { mNext = next; }
+
 protected:
-	Expression() {}
+	Expression(): mNext(0) {}
 	virtual ~Expression() {}
+
+private:
+	Expression *mNext;
 };
 
 
@@ -241,6 +249,30 @@ public:
 private:
 	const Token *mOperator;
 	Expression *mRhs;
+};
+
+
+class PostfixExpression: public Expression
+{
+public:
+	PostfixExpression(const Token *op, Expression *lhs):
+		mOperator(op),
+		mLhs(lhs)
+	{}
+
+	virtual ~PostfixExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitPostfixExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitPostfixExpression(this); }
+
+	const Token *GetOperator() const { return mOperator; }
+
+	Expression *GetLhs() { return mLhs; }
+	const Expression *GetLhs() const { return mLhs; }
+
+private:
+	const Token *mOperator;
+	Expression *mLhs;
 };
 
 
