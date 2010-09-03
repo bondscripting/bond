@@ -31,6 +31,9 @@ public:
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
 	virtual void VisitPostfixExpression(PostfixExpression *postfixExpression);
+	virtual void VisitMemberExpression(MemberExpression *memberExpression);
+	virtual void VisitArraySubscriptExpression(ArraySubscriptExpression *arraySubscriptExpression);
+	virtual void VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression);
 	virtual void VisitCastExpression(CastExpression *castExpression);
 	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression);
 	virtual void VisitConstantExpression(ConstantExpression *constantExpression);
@@ -40,6 +43,7 @@ private:
 	void DestroyExternalDeclarationList(ExternalDeclaration *declarationList);
 	void DestroyEnumeratorList(Enumerator *enumeratorList);
 	void DestroyQualifiedIdentifier(QualifiedIdentifier *identifier);
+	void DestroyExpressionList(Expression *expressionList);
 
 	Allocator &mAllocator;
 };
@@ -110,6 +114,26 @@ void ParseNodeDeallocator::VisitPostfixExpression(PostfixExpression *postfixExpr
 }
 
 
+void ParseNodeDeallocator::VisitMemberExpression(MemberExpression *memberExpression)
+{
+	Destroy(memberExpression->GetLhs());
+}
+
+
+void ParseNodeDeallocator::VisitArraySubscriptExpression(ArraySubscriptExpression *arraySubscriptExpression)
+{
+	Destroy(arraySubscriptExpression->GetLhs());
+	Destroy(arraySubscriptExpression->GetIndex());
+}
+
+
+void ParseNodeDeallocator::VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression)
+{
+	Destroy(functionCallExpression->GetLhs());
+	DestroyExpressionList(functionCallExpression->GetArgumentList());
+}
+
+
 void ParseNodeDeallocator::VisitCastExpression(CastExpression *castExpression)
 {
 	Destroy(castExpression->GetRhs());
@@ -163,6 +187,18 @@ void ParseNodeDeallocator::DestroyQualifiedIdentifier(QualifiedIdentifier *ident
 	while (current != 0)
 	{
 		QualifiedIdentifier *next = current->GetNext();
+		Destroy(current);
+		current = next;
+	}
+}
+
+
+void ParseNodeDeallocator::DestroyExpressionList(Expression *expressionList)
+{
+	Expression *current = expressionList;
+	while (current != 0)
+	{
+		Expression *next = current->GetNext();
 		Destroy(current);
 		current = next;
 	}
@@ -235,6 +271,24 @@ UnaryExpression *ParseNodeFactory::CreateUnaryExpression(const Token *op, Expres
 PostfixExpression *ParseNodeFactory::CreatePostfixExpression(const Token *op, Expression *lhs)
 {
 	return new (mAllocator.Alloc<PostfixExpression>()) PostfixExpression(op, lhs);
+}
+
+
+MemberExpression *ParseNodeFactory::CreateMemberExpression(const Token *op, const Token *memberName, Expression *lhs)
+{
+	return new (mAllocator.Alloc<MemberExpression>()) MemberExpression(op, memberName, lhs);
+}
+
+
+ArraySubscriptExpression *ParseNodeFactory::CreateArraySubscriptExpression(Expression *lhs, Expression *index)
+{
+	return new (mAllocator.Alloc<ArraySubscriptExpression>()) ArraySubscriptExpression(lhs, index);
+}
+
+
+FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(Expression *lhs, Expression *argumentList)
+{
+	return new (mAllocator.Alloc<FunctionCallExpression>()) FunctionCallExpression(lhs, argumentList);
 }
 
 

@@ -30,6 +30,9 @@ public:
 	BinaryExpression *CreateBinaryExpression(const Token *op, Expression *lhs, Expression *rhs);
 	UnaryExpression *CreateUnaryExpression(const Token *op, Expression *rhs);
 	PostfixExpression *CreatePostfixExpression(const Token *op, Expression *lhs);
+	MemberExpression *CreateMemberExpression(const Token *op, const Token *memberName, Expression *lhs);
+	ArraySubscriptExpression *CreateArraySubscriptExpression(Expression *lhs, Expression *index);
+	FunctionCallExpression *CreateFunctionCallExpression(Expression *lhs, Expression *argumentList);
 	CastExpression *CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs);
 	SizeofExpression *CreateSizeofExpression(TypeDescriptor *typeDescriptor);
 	SizeofExpression *CreateSizeofExpression(Expression *rhs);

@@ -5,10 +5,13 @@
 #include "bond/parsenodes.h"
 
 #define BOND_PARSE_ERROR_LIST \
-	BOND_PARSE_ERROR_ITEM(NO_ERROR)                      \
-	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)                   \
-	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)              \
-	BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION) \
+	BOND_PARSE_ERROR_ITEM(NO_ERROR)                          \
+	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)                       \
+	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)                  \
+	BOND_PARSE_ERROR_ITEM(COMMA_IN_CONST_EXPRESSION)         \
+	BOND_PARSE_ERROR_ITEM(ASSIGNMENT_IN_CONST_EXPRESSION)    \
+	BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION)     \
+	BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION) \
 
 
 namespace Bond
@@ -100,11 +103,13 @@ private:
 	Expression *ParseUnaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParsePostfixExpression(TokenStream &stream, ExpressionQualifier qualifier);
 	Expression *ParsePrimaryExpression(TokenStream &stream, ExpressionQualifier qualifier);
+	Expression *ParseArgumentList(TokenStream &stream);
 
 	const Token *ExpectToken(TokenStream &stream, Token::TokenType expectedType);
 	const Token *ExpectToken(TokenStream &stream, TokenTypeSet &typeSet);
-	void AssertNode(TokenStream &stream, ParseNode *node);
-	void PushError(ErrorType type, const Token *token, const char *expected = "");
+	void AssertNode(ParseNode *node, const TokenStream &stream);
+	void AssertConstExpression(ExpressionQualifier qualifier, ErrorType type, const Token *token);
+	void PushError(ErrorType errorType, const Token *token, const char *expected = "");
 
 	Error mErrors[MAX_ERRORS];
 	int mNumErrors;

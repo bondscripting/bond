@@ -125,12 +125,8 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 	Enumerator *head = ParseEnumerator(stream);
 	Enumerator *current = head;
 
-	while (current != 0)
+	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
 	{
-		if (stream.NextIf(Token::COMMA) == 0)
-		{
-			break;
-		}
 		Enumerator *next = ParseEnumerator(stream);
 		current->SetNext(next);
 		current = next;
@@ -154,7 +150,7 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 	if (stream.NextIf(Token::ASSIGN) != 0)
 	{
 		value = ParseConstExpression(stream);
-		AssertNode(stream, value);
+		AssertNode(value, stream);
 	}
 
 	Enumerator *enumerator = mFactory.CreateEnumerator(name, value);
@@ -187,7 +183,7 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 		if (stream.NextIf(Token::SCOPE))
 		{
 			QualifiedIdentifier *next = ParseQualifiedIdentifier(stream);
-			AssertNode(stream, next);
+			AssertNode(next, stream);
 			id->SetNext(next);
 		}
 	}
@@ -216,21 +212,21 @@ Expression *Parser::ParseExpression(TokenStream &stream, ExpressionQualifier qua
 	else
 	{
 		expression = ParseAssignmentExpression(stream, qualifier);
-
+ 
 		if (expression != 0)
-		{
+ 		{
 			const Token *token = stream.NextIf(Token::COMMA);
 			while (token != 0)
 			{
 				Expression *rhs = ParseAssignmentExpression(stream, qualifier);
-				AssertNode(stream, rhs);
+				AssertNode(rhs, stream);
 				expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 				token = stream.NextIf(Token::COMMA);
 			}
-		}
-	}
-
-	return expression;
+ 		}
+ 	}
+ 
+ 	return expression;
 }
 
 
@@ -249,12 +245,19 @@ Expression *Parser::ParseExpression(TokenStream &stream, ExpressionQualifier qua
 //   | unary_expression '|=' assignment_expression
 Expression *Parser::ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	// TODO: Handle conditional_expression.
-	Expression *lhs = ParseUnaryExpression(stream, qualifier);
-	const Token *op = ExpectToken(stream, TokenTypeSet::ASSIGNMENT_OPERATORS);
-	Expression *rhs = ParseAssignmentExpression(stream, qualifier);
-	AssertNode(stream, rhs);
-	Expression *expression = mFactory.CreateBinaryExpression(op, lhs, rhs);
+	Expression *expression = ParseConditionalExpression(stream, qualifier);
+	// TODO: Handle assignment expression.
+	/*
+	Expression *expression = ParseUnaryExpression(stream, qualifier);
+	const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);
+	if (token != 0)
+	{
+		AssertConstExpression(qualifier, ASSIGNMENT_IN_CONST_EXPRESSION, token);
+		Expression *rhs = ParseAssignmentExpression(stream, qualifier);
+		AssertNode(rhs, stream);
+		expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+	}
+	*/
 	return expression;
 }
 
@@ -269,10 +272,10 @@ Expression *Parser::ParseConditionalExpression(TokenStream &stream, ExpressionQu
 	if ((expression != 0) && (stream.NextIf(Token::OP_TERNARY) != 0))
 	{
 		Expression *trueExpression = ParseExpression(stream, qualifier);
-		AssertNode(stream, trueExpression);
+		AssertNode(trueExpression, stream);
 		ExpectToken(stream, Token::COLON);
 		Expression *falseExpression = ParseConditionalExpression(stream, qualifier);
-		AssertNode(stream, falseExpression);
+		AssertNode(falseExpression, stream);
 		expression = mFactory.CreateConditionalExpression(expression, trueExpression, falseExpression);
 	}
 
@@ -293,7 +296,7 @@ Expression *Parser::ParseLogicalOrExpression(TokenStream &stream, ExpressionQual
 		while (token != 0)
 		{
 			Expression *rhs = ParseLogicalAndExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_OR);
 		}
@@ -316,7 +319,7 @@ Expression *Parser::ParseLogicalAndExpression(TokenStream &stream, ExpressionQua
 		while (token != 0)
 		{
 			Expression *rhs = ParseInclusiveOrExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_AND);
 		}
@@ -339,7 +342,7 @@ Expression *Parser::ParseInclusiveOrExpression(TokenStream &stream, ExpressionQu
 		while (token != 0)
 		{
 			Expression *rhs = ParseExclusiveOrExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_OR);
 		}
@@ -362,7 +365,7 @@ Expression *Parser::ParseExclusiveOrExpression(TokenStream &stream, ExpressionQu
 		while (token != 0)
 		{
 			Expression *rhs = ParseAndExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_XOR);
 		}
@@ -385,7 +388,7 @@ Expression *Parser::ParseAndExpression(TokenStream &stream, ExpressionQualifier 
 		while (token != 0)
 		{
 			Expression *rhs = ParseEqualityExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_AND);
 		}
@@ -409,7 +412,7 @@ Expression *Parser::ParseEqualityExpression(TokenStream &stream, ExpressionQuali
 		while (token != 0)
 		{
 			Expression *rhs = ParseRelationalExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
 		}
@@ -435,7 +438,7 @@ Expression *Parser::ParseRelationalExpression(TokenStream &stream, ExpressionQua
 		while (token != 0)
 		{
 			Expression *rhs = ParseShiftExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
 		}
@@ -459,7 +462,7 @@ Expression *Parser::ParseShiftExpression(TokenStream &stream, ExpressionQualifie
 		while (token != 0)
 		{
 			Expression *rhs = ParseAdditiveExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
 		}
@@ -483,7 +486,7 @@ Expression *Parser::ParseAdditiveExpression(TokenStream &stream, ExpressionQuali
 		while (token != 0)
 		{
 			Expression *rhs = ParseMultiplicativeExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
 		}
@@ -508,7 +511,7 @@ Expression *Parser::ParseMultiplicativeExpression(TokenStream &stream, Expressio
 		while (token != 0)
 		{
 			Expression *rhs = ParseCastExpression(stream, qualifier);
-			AssertNode(stream, rhs);
+			AssertNode(rhs, stream);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
 		}
@@ -525,13 +528,14 @@ Expression *Parser::ParseCastExpression(TokenStream &stream, ExpressionQualifier
 {
 	Expression *expression = 0;
 
+	// TODO: Could also be a parenthesized expression.
 	if (stream.NextIf(Token::OPAREN))
 	{
 		TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
-		AssertNode(stream, descriptor);
+		AssertNode(descriptor, stream);
 		ExpectToken(stream, Token::CPAREN);
 		Expression *rhs = ParseCastExpression(stream, qualifier);
-		AssertNode(stream, rhs);
+		AssertNode(rhs, stream);
 		expression = mFactory.CreateCastExpression(descriptor, rhs);
 	}
 	else
@@ -569,11 +573,7 @@ Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifie
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				rhs = ParseUnaryExpression(stream, qualifier);
-
-				if (qualifier == EXP_CONST)
-				{
-					PushError(INCREMENT_IN_CONST_EXPRESSION, op);
-				}
+				AssertConstExpression(qualifier, INCREMENT_IN_CONST_EXPRESSION, op);
 				break;
 
 			default:
@@ -581,7 +581,7 @@ Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifie
 				break;
 		}
 
-		AssertNode(stream, rhs);
+		AssertNode(rhs, stream);
 		expression = mFactory.CreateUnaryExpression(op, rhs);
 	}
 
@@ -596,7 +596,7 @@ Expression *Parser::ParseUnaryExpression(TokenStream &stream, ExpressionQualifie
 		{
 			ExpectToken(stream, Token::OPAREN);
 			TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
-			AssertNode(stream, descriptor);
+			AssertNode(descriptor, stream);
 			ExpectToken(stream, Token::CPAREN);
 			expression = mFactory.CreateSizeofExpression(descriptor);
 		}
@@ -632,26 +632,33 @@ Expression *Parser::ParsePostfixExpression(TokenStream &stream, ExpressionQualif
 			{
 				case Token::OBRACKET:
 				{
-					// TODO
+					Expression *index = ParseExpression(stream, qualifier);
+					expression = mFactory.CreateArraySubscriptExpression(expression, index);
+					ExpectToken(stream, Token::CBRACKET);
 				}
 				break;
 
 				case Token::OPAREN:
 				{
-					// TODO
+					Expression *argumentList = ParseArgumentList(stream);
+					expression = mFactory.CreateFunctionCallExpression(expression, argumentList);
+					AssertConstExpression(qualifier, FUNCTION_CALL_IN_CONST_EXPRESSION, token);
+					ExpectToken(stream, Token::CPAREN);
 				}
 				break;
 
 				case Token::OP_ARROW:
 				case Token::PERIOD:
 				{
-					// TODO
+					const Token *memberName = ExpectToken(stream, Token::IDENTIFIER);
+					expression = mFactory.CreateMemberExpression(token, memberName, expression);
 				}
 				break;
 
 				default:
 				{
 					expression = mFactory.CreatePostfixExpression(token, expression);
+					AssertConstExpression(qualifier, INCREMENT_IN_CONST_EXPRESSION, token);
 				}
 				break;
 			}
@@ -679,7 +686,7 @@ Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualif
 	else if (stream.NextIf(Token::OPAREN) != 0)
 	{
 		expression = ParseExpression(stream, qualifier);
-		AssertNode(stream, expression);
+		AssertNode(expression, stream);
 		ExpectToken(stream, Token::CPAREN);
 	}
 	else
@@ -692,6 +699,26 @@ Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualif
 	}
 
 	return expression;
+}
+
+
+// argument_expression_list
+//   : assignment_expression
+//   | argument_expression_list ',' assignment_expression
+Expression *Parser::ParseArgumentList(TokenStream &stream)
+{
+	Expression *head = ParseExpression(stream);
+	Expression *current = head;
+
+	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
+	{
+		Expression *next = ParseExpression(stream);
+		AssertNode(next, stream);
+		current->SetNext(next);
+		current = next;
+	}
+
+	return head;
 }
 
 
@@ -717,11 +744,20 @@ const Token *Parser::ExpectToken(TokenStream &stream, TokenTypeSet &typeSet)
 }
 
 
-void Parser::AssertNode(TokenStream &stream, ParseNode *node)
+void Parser::AssertNode(ParseNode *node, const TokenStream &stream)
 {
 	if (node == 0)
 	{
 		PushError(PARSE_ERROR, stream.Peek());
+	}
+}
+
+
+void Parser::AssertConstExpression(ExpressionQualifier qualifier, ErrorType errorType, const Token *token)
+{
+	if (qualifier != EXP_CONST)
+	{
+		PushError(errorType, token);
 	}
 }
 

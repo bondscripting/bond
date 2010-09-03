@@ -276,6 +276,83 @@ private:
 };
 
 
+class MemberExpression: public Expression
+{
+public:
+	MemberExpression(const Token *op, const Token *memberName, Expression *lhs):
+		mOperator(op),
+		mMemberName(memberName),
+		mLhs(lhs)
+	{}
+
+	virtual ~MemberExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitMemberExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitMemberExpression(this); }
+
+	const Token *GetOperator() const { return mOperator; }
+	const Token *GetMemberName() const { return mMemberName; }
+
+	Expression *GetLhs() { return mLhs; }
+	const Expression *GetLhs() const { return mLhs; }
+
+private:
+	const Token *mOperator;
+	const Token *mMemberName;
+	Expression *mLhs;
+};
+
+
+class ArraySubscriptExpression: public Expression
+{
+public:
+	ArraySubscriptExpression(Expression *lhs, Expression *index):
+		mLhs(lhs),
+		mIndex(index)
+	{}
+
+	virtual ~ArraySubscriptExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitArraySubscriptExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitArraySubscriptExpression(this); }
+
+	Expression *GetLhs() { return mLhs; }
+	const Expression *GetLhs() const { return mLhs; }
+
+	Expression *GetIndex() { return mIndex; }
+	const Expression *GetIndex() const { return mIndex; }
+
+private:
+	Expression *mLhs;
+	Expression *mIndex;
+};
+
+
+class FunctionCallExpression: public Expression
+{
+public:
+	FunctionCallExpression(Expression *lhs, Expression *argumentList):
+		mLhs(lhs),
+		mArgumentList(argumentList)
+	{}
+
+	virtual ~FunctionCallExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionCallExpression(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionCallExpression(this); }
+
+	Expression *GetLhs() { return mLhs; }
+	const Expression *GetLhs() const { return mLhs; }
+
+	Expression *GetArgumentList() { return mArgumentList; }
+	const Expression *GetArgumentList() const { return mArgumentList; }
+
+private:
+	Expression *mLhs;
+	Expression *mArgumentList;
+};
+
+
 class CastExpression: public Expression
 {
 public:

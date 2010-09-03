@@ -17,6 +17,9 @@ namespace Bond
 	class BinaryExpression;
 	class UnaryExpression;
 	class PostfixExpression;
+	class MemberExpression;
+	class ArraySubscriptExpression;
+	class FunctionCallExpression;
 	class CastExpression;
 	class SizeofExpression;
 	class ConstantExpression;

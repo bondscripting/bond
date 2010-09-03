@@ -21,6 +21,9 @@ public:
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression) = 0;
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression) = 0;
 	virtual void VisitPostfixExpression(PostfixExpression *postfixExpression) = 0;
+	virtual void VisitMemberExpression(MemberExpression *memberExpression) = 0;
+	virtual void VisitArraySubscriptExpression(ArraySubscriptExpression *arraySubscriptExpression) = 0;
+	virtual void VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression) = 0;
 	virtual void VisitCastExpression(CastExpression *castExpression) = 0;
 	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression) = 0;
 	virtual void VisitConstantExpression(ConstantExpression *constantExpression) = 0;
@@ -43,6 +46,9 @@ public:
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression) = 0;
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression) = 0;
 	virtual void VisitPostfixExpression(const PostfixExpression *postfixExpression) = 0;
+	virtual void VisitMemberExpression(const MemberExpression *memberExpression) = 0;
+	virtual void VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression) = 0;
+	virtual void VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression) = 0;
 	virtual void VisitCastExpression(const CastExpression *castExpression) = 0;
 	virtual void VisitSizeofExpression(const SizeofExpression *sizeofExpression) = 0;
 	virtual void VisitConstantExpression(const ConstantExpression *constantExpression) = 0;

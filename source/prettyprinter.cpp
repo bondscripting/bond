@@ -123,6 +123,29 @@ void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpre
 }
 
 
+void PrettyPrinter::VisitMemberExpression(const MemberExpression *memberExpression)
+{
+	Print(memberExpression->GetLhs());
+	Print(memberExpression->GetOperator()->GetText());
+	Print(memberExpression->GetMemberName()->GetText());
+}
+
+
+void PrettyPrinter::VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression)
+{
+	Print(arraySubscriptExpression->GetLhs());
+	Print("[");
+	Print(arraySubscriptExpression->GetIndex());
+	Print("]");
+}
+
+
+void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
+{
+	// TODO
+}
+
+
 void PrettyPrinter::VisitCastExpression(const CastExpression *castExpression)
 {
 	Print("(");
