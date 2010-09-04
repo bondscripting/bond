@@ -75,6 +75,19 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 }
 
 
+void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
+{
+	if (typeSpecifier->GetPrimitiveType() != 0)
+	{
+		Print(typeSpecifier->GetPrimitiveType()->GetText());
+	}
+	else
+	{
+		PrintQualifiedIdentifier(typeSpecifier->GetIdentifier());
+	}
+}
+
+
 void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName()->GetText());

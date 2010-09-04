@@ -19,7 +19,11 @@ public:
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarations);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumerators);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
-	TypeDescriptor *CreateTypeDescriptor();
+	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
+	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, bool isConst);
+	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length);
+	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
+	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 
 	ConditionalExpression *CreateConditionalExpression(

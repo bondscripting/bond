@@ -165,8 +165,80 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 //   | type_descriptor '[' [const_expression] ']'
 TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 {
-	// TODO
-	return 0;
+	TypeDescriptor *descriptor = 0;
+	const int pos = stream.GetPosition();
+	const bool isConst1 = stream.NextIf(Token::KEY_CONST) != 0;
+	TypeSpecifier *specifier = ParseTypeSpecifier(stream);
+	if (specifier != 0)
+	{
+		const Token *const2 = stream.NextIf(Token::KEY_CONST);
+		const bool isConst2 = const2 != 0;
+		if (isConst1 && isConst2)
+		{
+			PushError(DUPLICATE_CONST, const2);
+		}
+
+		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
+
+		const Token *token = stream.NextIf(TokenTypeSet::TYPE_DESCRIPTORS);
+		while (token != 0)
+		{
+			if (token->GetTokenType() == Token::OP_MULT)
+			{
+				const bool isConst = stream.NextIf(Token::KEY_CONST) != 0;
+				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
+			}
+			else
+			{
+				Expression *length = ParseConstExpression(stream);
+				ExpectToken(stream, Token::CBRACKET);
+				descriptor = mFactory.CreateTypeDescriptor(descriptor, length);
+			}
+			token = stream.NextIf(TokenTypeSet::TYPE_DESCRIPTORS);
+		}
+	}
+	else
+	{
+		stream.SetPosition(pos);
+	}
+	return descriptor;
+}
+
+
+// type_specifier
+//   : primitive_type_specifier
+//   | qualified_id
+TypeSpecifier *Parser::ParseTypeSpecifier(TokenStream &stream)
+{
+	TypeSpecifier *specifier = ParsePrimitiveTypeSpecifier(stream);;
+	if (specifier == 0)
+	{
+		QualifiedIdentifier *identifier = ParseQualifiedIdentifier(stream);
+		if (identifier != 0)
+		{
+			specifier = mFactory.CreateTypeSpecifier(identifier);
+		}
+	}
+
+	return specifier;
+}
+
+
+// primitive_type_specifier
+//   : VOID
+//   | CHAR
+//   | INT
+//   | UINT
+//   | FLOAT
+TypeSpecifier *Parser::ParsePrimitiveTypeSpecifier(TokenStream &stream)
+{
+	TypeSpecifier *specifier = 0;
+	const Token *primitiveType = stream.NextIf(TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS);
+	if (primitiveType != 0)
+	{
+		specifier = mFactory.CreateTypeSpecifier(primitiveType);
+	}
+	return specifier;
 }
 
 
@@ -245,19 +317,25 @@ Expression *Parser::ParseExpression(TokenStream &stream, ExpressionQualifier qua
 //   | unary_expression '|=' assignment_expression
 Expression *Parser::ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
+	// TODO: This function can produce pretty much any type of expression on the lhs of an assignment.
+	// Will need to do further analysis in the semantic analyser to ensure validity.
 	Expression *expression = ParseConditionalExpression(stream, qualifier);
-	// TODO: Handle assignment expression.
-	/*
-	Expression *expression = ParseUnaryExpression(stream, qualifier);
-	const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);
-	if (token != 0)
+	if (expression == 0)
 	{
-		AssertConstExpression(qualifier, ASSIGNMENT_IN_CONST_EXPRESSION, token);
-		Expression *rhs = ParseAssignmentExpression(stream, qualifier);
-		AssertNode(rhs, stream);
-		expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+		expression = ParseUnaryExpression(stream, qualifier);
 	}
-	*/
+
+	if (expression != 0)
+	{
+		const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);
+		if (token != 0)
+		{
+			AssertConstExpression(qualifier, ASSIGNMENT_IN_CONST_EXPRESSION, token);
+			Expression *rhs = ParseAssignmentExpression(stream, qualifier);
+			AssertNode(rhs, stream);
+			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+		}
+	}
 	return expression;
 }
 
@@ -523,19 +601,21 @@ Expression *Parser::ParseMultiplicativeExpression(TokenStream &stream, Expressio
 
 // cast_expression
 //   : unary_expression
-//   | '(' type_descriptor ')' cast_expression
+//   | CAST '<' type_descriptor '>' '(' cast_expression ')'
 Expression *Parser::ParseCastExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
 	Expression *expression = 0;
 
-	// TODO: Could also be a parenthesized expression.
-	if (stream.NextIf(Token::OPAREN))
+	if (stream.NextIf(Token::KEY_CAST))
 	{
+		ExpectToken(stream, Token::OP_LT);
 		TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
 		AssertNode(descriptor, stream);
-		ExpectToken(stream, Token::CPAREN);
+		ExpectToken(stream, Token::OP_GT);
+		ExpectToken(stream, Token::OPAREN);
 		Expression *rhs = ParseCastExpression(stream, qualifier);
 		AssertNode(rhs, stream);
+		ExpectToken(stream, Token::CPAREN);
 		expression = mFactory.CreateCastExpression(descriptor, rhs);
 	}
 	else

@@ -958,6 +958,10 @@ void Lexer::EvaluateKeywordToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_CASE);
 	}
+	else if (strcmp(token.GetText(), "cast") == 0)
+	{
+		token.SetTokenType(Token::KEY_CAST);
+	}
 	else if (strcmp(token.GetText(), "const") == 0)
 	{
 		token.SetTokenType(Token::KEY_CONST);

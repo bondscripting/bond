@@ -11,6 +11,7 @@ namespace Bond
 	class EnumDeclaration;
 	class Enumerator;
 	class TypeDescriptor;
+	class TypeSpecifier;
 	class QualifiedIdentifier;
 	class Expression;
 	class ConditionalExpression;

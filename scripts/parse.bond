@@ -6,7 +6,7 @@ namespace OuterSpace
 		{
 			FIRST,
 			SECOND = FirstInnerSpace::FIRST*3 +2,
-			THIRD = FIRST < SECOND ? 5 : 10,
+			THIRD = (FIRST < SECOND)?5:10,
 		};
 	}
 

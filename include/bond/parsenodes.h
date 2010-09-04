@@ -126,10 +126,69 @@ private:
 class TypeDescriptor: public ParseNode
 {
 public:
+	enum Descriptor
+	{
+		DESC_VALUE,
+		DESC_POINTER,
+		DESC_ARRAY,
+	};
+
 	TypeDescriptor() {}
+	TypeDescriptor(TypeSpecifier *specifier, bool isConst):
+		mSpecifier(specifier),
+		mParent(0),
+		mLength(0),
+		mDescriptor(DESC_VALUE),
+		mIsConst(isConst)
+	{}
+
+	TypeDescriptor(TypeDescriptor *parent, bool isConst):
+		mSpecifier(0),
+		mParent(parent),
+		mLength(0),
+		mDescriptor(DESC_POINTER),
+		mIsConst(isConst)
+	{}
+
+	TypeDescriptor(TypeDescriptor *parent, Expression *length):
+		mSpecifier(0),
+		mParent(parent),
+		mLength(length),
+		mDescriptor(DESC_ARRAY),
+		mIsConst(false)
+	{}
+
 	virtual ~TypeDescriptor() {}
+
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeDescriptor(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTypeDescriptor(this); }
+
+private:
+	TypeSpecifier *mSpecifier;
+	TypeDescriptor *mParent;
+	Expression *mLength;
+	Descriptor mDescriptor;
+	bool mIsConst;
+};
+
+
+class TypeSpecifier: public ParseNode
+{
+public:
+	TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
+	TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
+	virtual ~TypeSpecifier() {}
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeSpecifier(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTypeSpecifier(this); }
+
+	const Token *GetPrimitiveType() const { return mPrimitiveType; }
+
+	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
+	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+ private:
+	const Token *mPrimitiveType;
+	QualifiedIdentifier *mIdentifier;
 };
 
 

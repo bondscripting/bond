@@ -22,7 +22,8 @@ public:
 	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(const Enumerator *enumerator);
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor);
-	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *typeDescriptor);
+	virtual void VisitTypeSpecifier(const TypeSpecifier *typeSpecifier);
+	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);

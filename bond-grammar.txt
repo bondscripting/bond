@@ -184,7 +184,7 @@ unary_expression
 
 cast_expression
   : unary_expression
-  | '(' type_descriptor ')' cast_expression
+  | CAST '<' type_descriptor '>' '(' cast_expression ')'
 
 multiplicative_expression
   : cast_expression

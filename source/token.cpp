@@ -62,6 +62,43 @@ const char *Token::GetErrorName(ErrorType type)
 }
 
 
+static const Token::TokenType PRIMITIVE_TYPE_SPECIFIER_TYPES[] =
+{
+	Token::ASSIGN,
+	Token::ASSIGN_LEFT,
+	Token::ASSIGN_RIGHT,
+	Token::ASSIGN_PLUS,
+	Token::ASSIGN_MINUS,
+	Token::ASSIGN_MULT,
+	Token::ASSIGN_DIV,
+	Token::ASSIGN_MOD,
+	Token::ASSIGN_AND,
+	Token::ASSIGN_OR,
+	Token::ASSIGN_XOR,
+};
+
+TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS =
+{
+	PRIMITIVE_TYPE_SPECIFIER_TYPES,
+	sizeof(PRIMITIVE_TYPE_SPECIFIER_TYPES) / sizeof(*PRIMITIVE_TYPE_SPECIFIER_TYPES),
+	"PRIMITIVE_TYPE_SPECIFIER",
+};
+
+
+static const Token::TokenType TYPE_DESCRIPTOR_TYPES[] =
+{
+	Token::OP_MULT,
+	Token::OBRACKET,
+};
+
+TokenTypeSet TokenTypeSet::TYPE_DESCRIPTORS =
+{
+	TYPE_DESCRIPTOR_TYPES,
+	sizeof(TYPE_DESCRIPTOR_TYPES) / sizeof(*TYPE_DESCRIPTOR_TYPES),
+	"TYPE_DESCRIPTOR",
+};
+
+
 static const Token::TokenType ASSIGNMENT_OPERATOR_TYPES[] =
 {
 	Token::ASSIGN,

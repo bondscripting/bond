@@ -10,6 +10,7 @@
 	BOND_TOKEN_ITEM(KEY_BREAK)                \
 	BOND_TOKEN_ITEM(KEY_CHAR)                 \
 	BOND_TOKEN_ITEM(KEY_CASE)                 \
+	BOND_TOKEN_ITEM(KEY_CAST)                 \
 	BOND_TOKEN_ITEM(KEY_CONST)                \
 	BOND_TOKEN_ITEM(KEY_CONTINUE)             \
 	BOND_TOKEN_ITEM(KEY_DEFAULT)              \
@@ -241,6 +242,8 @@ struct TokenTypeSet
 	const int numTypes;
 	const char *const typeName;
 
+	static TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
+	static TokenTypeSet TYPE_DESCRIPTORS;
 	static TokenTypeSet ASSIGNMENT_OPERATORS;
 	static TokenTypeSet EQUALITY_OPERATORS;
 	static TokenTypeSet RELATIONAL_OPERATORS;

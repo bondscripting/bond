@@ -26,6 +26,7 @@ public:
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(Enumerator *enumerator);
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
+	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
@@ -84,6 +85,14 @@ void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 
 
 void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor) {}
+
+
+void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
+{
+	DestroyQualifiedIdentifier(typeSpecifier->GetIdentifier());
+}
+
+
 void ParseNodeDeallocator::VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
 
 
@@ -235,9 +244,33 @@ Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *va
 }
 
 
-TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor()
+TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst)
 {
-	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor();
+	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(specifier, isConst);
+}
+
+
+TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, bool isConst)
+{
+	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, isConst);
+}
+
+
+TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, Expression *length)
+{
+	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, length);
+}
+
+
+TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(const Token *primitiveType)
+{
+	return new (mAllocator.Alloc<TypeSpecifier>()) TypeSpecifier(primitiveType);
+}
+
+
+TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identifier)
+{
+	return new (mAllocator.Alloc<TypeSpecifier>()) TypeSpecifier(identifier);
 }
 
 

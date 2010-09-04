@@ -8,6 +8,7 @@
 	BOND_PARSE_ERROR_ITEM(NO_ERROR)                          \
 	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)                       \
 	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)                  \
+	BOND_PARSE_ERROR_ITEM(DUPLICATE_CONST)                   \
 	BOND_PARSE_ERROR_ITEM(COMMA_IN_CONST_EXPRESSION)         \
 	BOND_PARSE_ERROR_ITEM(ASSIGNMENT_IN_CONST_EXPRESSION)    \
 	BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION)     \
@@ -84,6 +85,8 @@ private:
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
 	TypeDescriptor *ParseTypeDescriptor(TokenStream &stream);
+	TypeSpecifier *ParseTypeSpecifier(TokenStream &stream);
+	TypeSpecifier *ParsePrimitiveTypeSpecifier(TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
