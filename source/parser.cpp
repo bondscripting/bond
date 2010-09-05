@@ -169,6 +169,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 	const int pos = stream.GetPosition();
 	const bool isConst1 = stream.NextIf(Token::KEY_CONST) != 0;
 	TypeSpecifier *specifier = ParseTypeSpecifier(stream);
+
 	if (specifier != 0)
 	{
 		const Token *const2 = stream.NextIf(Token::KEY_CONST);
@@ -201,6 +202,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 	{
 		stream.SetPosition(pos);
 	}
+
 	return descriptor;
 }
 
@@ -226,6 +228,7 @@ TypeSpecifier *Parser::ParseTypeSpecifier(TokenStream &stream)
 
 // primitive_type_specifier
 //   : VOID
+//   | BOOL
 //   | CHAR
 //   | INT
 //   | UINT
@@ -757,8 +760,9 @@ Expression *Parser::ParsePostfixExpression(TokenStream &stream, ExpressionQualif
 Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
 	Expression *expression = 0;
-
+	const int pos = stream.GetPosition();
 	const Token *value = stream.NextIf(TokenTypeSet::CONSTANT_VALUES);
+
 	if (value != 0)
 	{
 		expression = mFactory.CreateConstantExpression(value);
@@ -766,8 +770,14 @@ Expression *Parser::ParsePrimaryExpression(TokenStream &stream, ExpressionQualif
 	else if (stream.NextIf(Token::OPAREN) != 0)
 	{
 		expression = ParseExpression(stream, qualifier);
-		AssertNode(expression, stream);
-		ExpectToken(stream, Token::CPAREN);
+		if (expression != 0)
+		{
+			ExpectToken(stream, Token::CPAREN);
+		}
+		else
+		{
+			stream.SetPosition(pos);
+		}
 	}
 	else
 	{

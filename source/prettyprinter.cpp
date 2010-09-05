@@ -71,7 +71,32 @@ void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
 
 void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 {
-	// TODO
+	switch (typeDescriptor->GetDescriptor())
+	{
+		case TypeDescriptor::DESC_VALUE:
+			if (typeDescriptor->IsConst())
+			{
+				Print("const ");
+			}
+			Print(typeDescriptor->GetTypeSpecifier());
+			break;
+
+		case TypeDescriptor::DESC_POINTER:
+			VisitTypeDescriptor(typeDescriptor->GetParent());
+			Print(" *");
+			if (typeDescriptor->IsConst())
+			{
+				Print(" const");
+			}
+			break;
+
+		case TypeDescriptor::DESC_ARRAY:
+			VisitTypeDescriptor(typeDescriptor->GetParent());
+			Print(" [");
+			Print(typeDescriptor->GetLength());
+			Print("]");
+			break;
+	}
 }
 
 
@@ -175,7 +200,7 @@ void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpressi
 	{
 		Print("(");
 		Print(sizeofExpression->GetTypeDescriptor());
-		Print("(");
+		Print(")");
 	}
 	else
 	{

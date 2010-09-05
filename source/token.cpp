@@ -64,17 +64,12 @@ const char *Token::GetErrorName(ErrorType type)
 
 static const Token::TokenType PRIMITIVE_TYPE_SPECIFIER_TYPES[] =
 {
-	Token::ASSIGN,
-	Token::ASSIGN_LEFT,
-	Token::ASSIGN_RIGHT,
-	Token::ASSIGN_PLUS,
-	Token::ASSIGN_MINUS,
-	Token::ASSIGN_MULT,
-	Token::ASSIGN_DIV,
-	Token::ASSIGN_MOD,
-	Token::ASSIGN_AND,
-	Token::ASSIGN_OR,
-	Token::ASSIGN_XOR,
+	Token::KEY_BOOL,
+	Token::KEY_CHAR,
+	Token::KEY_FLOAT,
+	Token::KEY_INT,
+	Token::KEY_UINT,
+	Token::KEY_VOID,
 };
 
 TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS =

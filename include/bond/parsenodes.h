@@ -163,6 +163,18 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeDescriptor(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTypeDescriptor(this); }
 
+	TypeSpecifier *GetTypeSpecifier() { return mSpecifier; }
+	const TypeSpecifier *GetTypeSpecifier() const { return mSpecifier; }
+
+	TypeDescriptor *GetParent() { return mParent; }
+	const TypeDescriptor *GetParent() const { return mParent; }
+
+	Expression *GetLength() { return mLength; }
+	const Expression *GetLength() const { return mLength; }
+
+	Descriptor GetDescriptor() const { return mDescriptor; }
+	bool IsConst() const { return mIsConst; }
+
 private:
 	TypeSpecifier *mSpecifier;
 	TypeDescriptor *mParent;
