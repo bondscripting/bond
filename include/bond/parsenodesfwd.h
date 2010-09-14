@@ -10,6 +10,9 @@ namespace Bond
 	class NamespaceDefinition;
 	class EnumDeclaration;
 	class Enumerator;
+	class FunctionDefinition;
+	class FunctionPrototype;
+	class Parameter;
 	class TypeDescriptor;
 	class TypeSpecifier;
 	class QualifiedIdentifier;

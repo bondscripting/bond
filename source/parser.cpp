@@ -64,13 +64,14 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 
 // external_declaration
 //   : namespace_definition
+//   | enum_declaration
 //   | function_definition
 //   | function_declaration
 //   | struct_declaration
-//   | enum_declaration
-//   | const_declaration
+//   | const_declarative_statement
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
+	// TODO
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
 	if (declaration == 0)
 	{
@@ -158,6 +159,21 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 }
 
 
+// parameter
+//   : type_descriptor IDENTIFIER
+Parameter *Parser::ParseParameter(TokenStream &stream)
+{
+	Parameter *parameter = 0;
+	TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+	if (descriptor != 0)
+	{
+		const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+		parameter = mFactory.CreateParameter(name, descriptor);
+	}
+	return parameter;
+}
+
+
 // type_descriptor
 //   : CONST type_specifier
 //   | type_specifier [CONST]
@@ -212,7 +228,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 //   | qualified_id
 TypeSpecifier *Parser::ParseTypeSpecifier(TokenStream &stream)
 {
-	TypeSpecifier *specifier = ParsePrimitiveTypeSpecifier(stream);;
+	TypeSpecifier *specifier = ParsePrimitiveTypeSpecifier(stream);
 	if (specifier == 0)
 	{
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier(stream);

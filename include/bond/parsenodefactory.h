@@ -15,10 +15,11 @@ public:
 		mAllocator(allocator)
 	{}
 
-	TranslationUnit *CreateTranslationUnit(ExternalDeclaration *declarations);
-	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarations);
-	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumerators);
+	TranslationUnit *CreateTranslationUnit(ExternalDeclaration *declarationList);
+	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarationList);
+	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
+	Parameter *CreateParameter(const Token *name, TypeDescriptor *typeDescriptor);
 	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, bool isConst);
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length);

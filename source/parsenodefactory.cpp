@@ -25,6 +25,7 @@ public:
 	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(Enumerator *enumerator);
+	virtual void VisitParameter(Parameter *parameter);
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
@@ -43,6 +44,7 @@ public:
 private:
 	void DestroyExternalDeclarationList(ExternalDeclaration *declarationList);
 	void DestroyEnumeratorList(Enumerator *enumeratorList);
+	void DestroyParameterList(Parameter *parameterList);
 	void DestroyQualifiedIdentifier(QualifiedIdentifier *identifier);
 	void DestroyExpressionList(Expression *expressionList);
 
@@ -81,6 +83,12 @@ void ParseNodeDeallocator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration
 void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 {
 	Destroy(enumerator->GetValue());
+}
+
+
+void ParseNodeDeallocator::VisitParameter(Parameter *parameter)
+{
+	Destroy(parameter->GetTypeDescriptor());
 }
 
 
@@ -190,6 +198,18 @@ void ParseNodeDeallocator::DestroyEnumeratorList(Enumerator *enumeratorList)
 }
 
 
+void ParseNodeDeallocator::DestroyParameterList(Parameter *parameterList)
+{
+	Parameter *current = parameterList;
+	while (current != 0)
+	{
+		Parameter *next = current->GetNext();
+		Destroy(current);
+		current = next;
+	}
+}
+
+
 void ParseNodeDeallocator::DestroyQualifiedIdentifier(QualifiedIdentifier *identifier)
 {
 	QualifiedIdentifier *current = identifier;
@@ -218,29 +238,35 @@ void ParseNodeDeallocator::DestroyExpressionList(Expression *expressionList)
 // ParseNodeFactory
 //------------------------------------------------------------------------------
 
-TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ExternalDeclaration *declarations)
+TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ExternalDeclaration *declarationList)
 {
-	return new (mAllocator.Alloc<TranslationUnit>()) TranslationUnit(declarations);
+	return new (mAllocator.Alloc<TranslationUnit>()) TranslationUnit(declarationList);
 }
 
 
 NamespaceDefinition *ParseNodeFactory::CreateNamespaceDefinition(
 	const Token *name,
-	ExternalDeclaration *declarations)
+	ExternalDeclaration *declarationList)
 {
-	return new (mAllocator.Alloc<NamespaceDefinition>()) NamespaceDefinition(name, declarations);
+	return new (mAllocator.Alloc<NamespaceDefinition>()) NamespaceDefinition(name, declarationList);
 }
 
 
-EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name, Enumerator *enumerators)
+EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList)
 {
-	return new (mAllocator.Alloc<EnumDeclaration>()) EnumDeclaration(name, enumerators);
+	return new (mAllocator.Alloc<EnumDeclaration>()) EnumDeclaration(name, enumeratorList);
 }
 
 
 Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *value)
 {
 	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, value);
+}
+
+
+Parameter *ParseNodeFactory::CreateParameter(const Token *name, TypeDescriptor *typeDescriptor)
+{
+	return new (mAllocator.Alloc<Parameter>()) Parameter(name, typeDescriptor);
 }
 
 

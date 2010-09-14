@@ -84,6 +84,7 @@ private:
 	EnumDeclaration *ParseEnumDeclaration(TokenStream &stream);
 	Enumerator *ParseEnumeratorList(TokenStream &stream);
 	Enumerator *ParseEnumerator(TokenStream &stream);
+	Parameter *ParseParameter(TokenStream &stream);
 	TypeDescriptor *ParseTypeDescriptor(TokenStream &stream);
 	TypeSpecifier *ParseTypeSpecifier(TokenStream &stream);
 	TypeSpecifier *ParsePrimitiveTypeSpecifier(TokenStream &stream);

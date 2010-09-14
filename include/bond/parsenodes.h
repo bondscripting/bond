@@ -40,18 +40,15 @@ private:
 class ExternalDeclaration: public ParseNode
 {
 public:
-	const Token *GetName() const { return mName; }
-
 	ExternalDeclaration *GetNext() { return mNext; }
 	const ExternalDeclaration *GetNext() const { return mNext; }
 	void SetNext(ExternalDeclaration *next) { mNext = next; }
 
 protected:
-	ExternalDeclaration(const Token *name): mName(name), mNext(0) {}
+	ExternalDeclaration(): mNext(0) {}
 	virtual ~ExternalDeclaration() {}
 
 private:
-	const Token *mName;
 	ExternalDeclaration *mNext;
 };
 
@@ -60,7 +57,7 @@ class NamespaceDefinition: public ExternalDeclaration
 {
 public:
 	NamespaceDefinition(const Token *name, ExternalDeclaration *declarationList):
-		ExternalDeclaration(name),
+		mName(name),
 	 	mDeclarationList(declarationList)
 	{}
 
@@ -69,10 +66,13 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamespaceDefinition(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitNamespaceDefinition(this); }
 
+	const Token *GetName() const { return mName; }
+
 	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarationList; }
 	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
+	const Token *mName;
 	ExternalDeclaration *mDeclarationList;
 };
 
@@ -81,7 +81,7 @@ class EnumDeclaration: public ExternalDeclaration
 {
 public:
 	EnumDeclaration(const Token *name, Enumerator *enumeratorList):
-		ExternalDeclaration(name),
+		mName(name),
 	 	mEnumeratorList(enumeratorList)
 	{}
 
@@ -90,10 +90,13 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumDeclaration(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitEnumDeclaration(this); }
 
+	const Token *GetName() const { return mName; }
+
 	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
 	const Enumerator *GetEnumeratorList() const { return mEnumeratorList; }
 
 private:
+	const Token *mName;
 	Enumerator *mEnumeratorList;
 };
 
@@ -120,6 +123,88 @@ private:
 	const Token *mName;
 	Expression *mValue;
 	Enumerator *mNext;
+};
+
+
+class FunctionDefinition: public ExternalDeclaration
+{
+public:
+	FunctionDefinition(const Token *name, FunctionPrototype *prototype):
+		mName(name),
+		mPrototype(prototype)
+	{}
+
+	virtual ~FunctionDefinition() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionDefinition(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionDefinition(this); }
+
+	const Token *GetName() const { return mName; }
+
+	FunctionPrototype *GetPrototype() { return mPrototype; }
+	const FunctionPrototype *GetPrototype() const { return mPrototype; }
+
+private:
+	const Token *mName;
+	FunctionPrototype *mPrototype;
+};
+
+
+class FunctionPrototype: public ParseNode
+{
+public:
+	FunctionPrototype(const Token *name, TypeDescriptor *returnType, Parameter *parameterList):
+		mName(name),
+		mReturnType(returnType),
+		mParameterList(parameterList)
+	{}
+
+	virtual ~FunctionPrototype() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionPrototype(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionPrototype(this); }
+
+	const Token *GetName() const { return mName; }
+
+	TypeDescriptor *GetReturnType() { return mReturnType; }
+	const TypeDescriptor *GetReturnType() const { return mReturnType; }
+
+	Parameter *GetParameterList() { return mParameterList; }
+	const Parameter *GetParameterList() const { return mParameterList; }
+
+private:
+	const Token *mName;
+	TypeDescriptor *mReturnType;
+	Parameter *mParameterList;
+};
+
+
+class Parameter: public ParseNode
+{
+public:
+	Parameter(const Token *name, TypeDescriptor *typeDescriptor):
+		mName(name),
+		mTypeDescriptor(typeDescriptor)
+	{}
+
+	virtual ~Parameter() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitParameter(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitParameter(this); }
+
+	const Token *GetName() const { return mName; }
+
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
+
+	Parameter *GetNext() { return mNext; }
+	const Parameter *GetNext() const { return mNext; }
+	void SetNext(Parameter *next) { mNext = next; }
+
+private:
+	const Token *mName;
+	TypeDescriptor *mTypeDescriptor;
+	Parameter *mNext;
 };
 
 
