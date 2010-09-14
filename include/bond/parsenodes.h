@@ -129,8 +129,7 @@ private:
 class FunctionDefinition: public ExternalDeclaration
 {
 public:
-	FunctionDefinition(const Token *name, FunctionPrototype *prototype):
-		mName(name),
+	FunctionDefinition(FunctionPrototype *prototype):
 		mPrototype(prototype)
 	{}
 
@@ -139,13 +138,10 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionDefinition(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionDefinition(this); }
 
-	const Token *GetName() const { return mName; }
-
 	FunctionPrototype *GetPrototype() { return mPrototype; }
 	const FunctionPrototype *GetPrototype() const { return mPrototype; }
 
 private:
-	const Token *mName;
 	FunctionPrototype *mPrototype;
 };
 

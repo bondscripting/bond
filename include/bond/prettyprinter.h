@@ -6,6 +6,8 @@
 namespace Bond
 {
 
+class Token;
+
 class PrettyPrinter: public ConstParseNodeVisitor
 {
 public:
@@ -21,6 +23,9 @@ public:
 	virtual void VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(const Enumerator *enumerator);
+	virtual void VisitFunctionDefinition(const FunctionDefinition *functionDefinition);
+	virtual void VisitFunctionPrototype(const FunctionPrototype *functionPrototype);
+	virtual void VisitParameter(const Parameter *parameter);
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(const TypeSpecifier *typeSpecifier);
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
@@ -39,12 +44,14 @@ public:
 private:
 	void PrintExternalDeclarationList(const ExternalDeclaration *declarationList);
 	void PrintEnumeratorList(const Enumerator *enumeratorList);
+	void PrintParameterList(const Parameter *parameterList);
 	void PrintQualifiedIdentifier(const QualifiedIdentifier *identifier);
 
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
 	void Print(const char *text);
+	void Print(const Token *token);
 
 	int mTabLevel;
 };

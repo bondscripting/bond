@@ -25,6 +25,8 @@ public:
 	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(Enumerator *enumerator);
+	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition);
+	virtual void VisitFunctionPrototype(FunctionPrototype *functionPrototype);
 	virtual void VisitParameter(Parameter *parameter);
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
@@ -83,6 +85,19 @@ void ParseNodeDeallocator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration
 void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 {
 	Destroy(enumerator->GetValue());
+}
+
+
+void ParseNodeDeallocator::VisitFunctionDefinition(FunctionDefinition *functionDefinition)
+{
+	Destroy(functionDefinition->GetPrototype());
+}
+
+
+void ParseNodeDeallocator::VisitFunctionPrototype(FunctionPrototype *functionPrototype)
+{
+	Destroy(functionPrototype->GetReturnType());
+	DestroyParameterList(functionPrototype->GetParameterList());
 }
 
 
@@ -261,6 +276,21 @@ EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name, Enum
 Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *value)
 {
 	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, value);
+}
+
+
+FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(FunctionPrototype *prototype)
+{
+	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype);
+}
+
+
+FunctionPrototype *ParseNodeFactory::CreateFunctionPrototype(
+	const Token *name,
+	TypeDescriptor *returnType,
+	Parameter *parameterList)
+{
+	return new (mAllocator.Alloc<FunctionPrototype>()) FunctionPrototype(name, returnType, parameterList);
 }
 
 

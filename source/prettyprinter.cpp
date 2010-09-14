@@ -28,7 +28,7 @@ void PrettyPrinter::VisitNamespaceDefinition(const NamespaceDefinition *namespac
 {
 	Tab();
 	Print("namespace ");
-	Print(namespaceDefinition->GetName()->GetText());
+	Print(namespaceDefinition->GetName());
 	Print("\n");
 	Tab();
 	Print("{\n");
@@ -44,7 +44,7 @@ void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 {
 	Tab();
 	Print("enum ");
-	Print(enumDeclaration->GetName()->GetText());
+	Print(enumDeclaration->GetName());
 	Print("\n");
 	Tab();
 	Print("{\n");
@@ -59,13 +59,41 @@ void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
 {
 	Tab();
-	Print(enumerator->GetName()->GetText());
+	Print(enumerator->GetName());
 	if (enumerator->GetValue() != 0)
 	{
 		Print(" = ");
 		Print(enumerator->GetValue());
 	}
 	Print(",\n");
+}
+
+
+void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDefinition)
+{
+	Tab();
+	Print(functionDefinition->GetPrototype());
+	// TODO: Print compound statement.
+	Print(";\n");
+}
+
+
+void PrettyPrinter::VisitFunctionPrototype(const FunctionPrototype *functionPrototype)
+{
+	Print(functionPrototype->GetReturnType());
+	Print(" ");
+	Print(functionPrototype->GetName());
+	Print("(");
+	PrintParameterList(functionPrototype->GetParameterList());
+	Print(")");
+}
+
+
+void PrettyPrinter::VisitParameter(const Parameter *parameter)
+{
+	Print(parameter->GetTypeDescriptor());
+	Print(" ");
+	Print(parameter->GetName());
 }
 
 
@@ -104,7 +132,7 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 {
 	if (typeSpecifier->GetPrimitiveType() != 0)
 	{
-		Print(typeSpecifier->GetPrimitiveType()->GetText());
+		Print(typeSpecifier->GetPrimitiveType());
 	}
 	else
 	{
@@ -115,7 +143,7 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 
 void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
-	Print(identifier->GetName()->GetText());
+	Print(identifier->GetName());
 }
 
 
@@ -136,7 +164,7 @@ void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpressi
 	Print("(");
 	Print(binaryExpression->GetLhs());
 	Print(" ");
-	Print(binaryExpression->GetOperator()->GetText());
+	Print(binaryExpression->GetOperator());
 	Print(" ");
 	Print(binaryExpression->GetRhs());
 	Print(")");
@@ -146,7 +174,7 @@ void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpressi
 void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 {
 	Print("(");
-	Print(unaryExpression->GetOperator()->GetText());
+	Print(unaryExpression->GetOperator());
 	Print(unaryExpression->GetRhs());
 	Print(")");
 }
@@ -156,7 +184,7 @@ void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpre
 {
 	Print("(");
 	Print(postfixExpression->GetLhs());
-	Print(postfixExpression->GetOperator()->GetText());
+	Print(postfixExpression->GetOperator());
 	Print(")");
 }
 
@@ -164,8 +192,8 @@ void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpre
 void PrettyPrinter::VisitMemberExpression(const MemberExpression *memberExpression)
 {
 	Print(memberExpression->GetLhs());
-	Print(memberExpression->GetOperator()->GetText());
-	Print(memberExpression->GetMemberName()->GetText());
+	Print(memberExpression->GetOperator());
+	Print(memberExpression->GetMemberName());
 }
 
 
@@ -211,7 +239,7 @@ void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpressi
 
 void PrettyPrinter::VisitConstantExpression(const ConstantExpression *constantExpression)
 {
-	Print(constantExpression->GetValue()->GetText());
+	Print(constantExpression->GetValue());
 }
 
 
@@ -237,6 +265,25 @@ void PrettyPrinter::PrintEnumeratorList(const Enumerator *enumeratorList)
 	const Enumerator *current = enumeratorList;
 	while (current != 0)
 	{
+		Print(current);
+		current = current->GetNext();
+	}
+}
+
+
+void PrettyPrinter::PrintParameterList(const Parameter *parameterList)
+{
+	const Parameter *current = parameterList;
+
+	if (current != 0)
+	{
+		Print(current);
+		current = current->GetNext();
+	}
+
+	while (current != 0)
+	{
+		Print(", ");
 		Print(current);
 		current = current->GetNext();
 	}
@@ -275,6 +322,15 @@ void PrettyPrinter::Print(const char *text)
 {
 	// TODO: output to appropriate place.
 	printf("%s", text);
+}
+
+
+void PrettyPrinter::Print(const Token *token)
+{
+	if (token != 0)
+	{
+		Print(token->GetText());
+	}
 }
 
 }

@@ -19,6 +19,13 @@ public:
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
+	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype);
+
+	FunctionPrototype *CreateFunctionPrototype(
+		const Token *name,
+		TypeDescriptor *returnType,
+		Parameter *parameterList);
+
 	Parameter *CreateParameter(const Token *name, TypeDescriptor *typeDescriptor);
 	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, bool isConst);
