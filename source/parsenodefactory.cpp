@@ -107,7 +107,12 @@ void ParseNodeDeallocator::VisitParameter(Parameter *parameter)
 }
 
 
-void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor) {}
+void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor)
+{
+	Destroy(typeDescriptor->GetTypeSpecifier());
+	Destroy(typeDescriptor->GetParent());
+	Destroy(typeDescriptor->GetLength());
+}
 
 
 void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
@@ -174,6 +179,7 @@ void ParseNodeDeallocator::VisitCastExpression(CastExpression *castExpression)
 
 void ParseNodeDeallocator::VisitSizeofExpression(SizeofExpression *sizeofExpression)
 {
+	Destroy(sizeofExpression->GetTypeDescriptor());
 	Destroy(sizeofExpression->GetRhs());
 }
 

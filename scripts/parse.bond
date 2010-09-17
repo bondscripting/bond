@@ -14,4 +14,6 @@ namespace OuterSpace
 	namespace SecondInnerSpace
 	{
 	}
+
+	void DoSomething(int a, int *b);
 }

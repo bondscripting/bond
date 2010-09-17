@@ -13,6 +13,7 @@ namespace Bond
 	class FunctionDefinition;
 	class FunctionPrototype;
 	class Parameter;
+	class StructDeclaration;
 	class TypeDescriptor;
 	class TypeSpecifier;
 	class QualifiedIdentifier;

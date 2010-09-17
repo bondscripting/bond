@@ -45,6 +45,7 @@ private:
 	void PrintExternalDeclarationList(const ExternalDeclaration *declarationList);
 	void PrintEnumeratorList(const Enumerator *enumeratorList);
 	void PrintParameterList(const Parameter *parameterList);
+	void PrintArgumentList(const Expression *argumentList);
 	void PrintQualifiedIdentifier(const QualifiedIdentifier *identifier);
 
 	void IncrementTab() { ++mTabLevel; }

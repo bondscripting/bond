@@ -28,17 +28,18 @@ int main()
 {
 	const char *fileName = "../scripts/parse.bond";
 	Script script = ReadScript(fileName);
-	Bond::DefaultAllocator allocator;
+	Bond::DefaultAllocator lexerAllocator;
+	Bond::DefaultAllocator parserAllocator;
 	{
-		Bond::Lexer lexer(allocator);
+		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.text, script.length);
-		printf("Num allocations after lexing: %d\n", allocator.GetNumAllocations());
+		printf("Num allocations after lexing: %d\n", lexerAllocator.GetNumAllocations());
 
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::Parser parser(allocator);
+		Bond::Parser parser(parserAllocator);
 		parser.Parse(stream);
 
-		printf("Num allocations after parsing: %d\n", allocator.GetNumAllocations());
+		printf("Num allocations after parsing: %d\n", parserAllocator.GetNumAllocations());
 
 		if (parser.HasErrors())
 		{
@@ -63,7 +64,8 @@ int main()
 		}
 	}
 
-	printf("Num allocations after destruction: %d\n", allocator.GetNumAllocations());
+	printf("Num allocations after lexer destruction: %d\n", lexerAllocator.GetNumAllocations());
+	printf("Num allocations after parser destruction: %d\n", parserAllocator.GetNumAllocations());
 
 	return 0;
 }

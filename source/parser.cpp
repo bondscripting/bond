@@ -65,18 +65,49 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 // external_declaration
 //   : namespace_definition
 //   | enum_declaration
-//   | function_definition
 //   | function_declaration
+//   | function_definition
 //   | struct_declaration
 //   | const_declarative_statement
+//
+// function_declaration
+//   : function_prototype ';'
+//
+// function_prototype
+//   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
-	// TODO
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
 	if (declaration == 0)
 	{
 		declaration = ParseEnumDeclaration(stream);
 	}
+
+	if (declaration == 0)
+	{
+		declaration = ParseStructDeclaration(stream);
+	}
+
+	if (declaration == 0)
+	{
+		TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+
+		// Could be a function declaration, function definition or a constant declarative statement.
+		if (descriptor != 0)
+		{
+			const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+			if (stream.NextIf(Token::OPAREN) != 0)
+			{
+				Parameter *parameterList = ParseParameterList(stream);
+				ExpectToken(stream, Token::CPAREN);
+				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
+				// TODO: discriminate between declaration and definition.
+				ExpectToken(stream, Token::SEMICOLON);
+				declaration = mFactory.CreateFunctionDefinition(prototype);
+			}
+		}
+	}
+
 	return declaration;
 }
 
@@ -159,6 +190,26 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 }
 
 
+// parameter_list
+//   : parameter
+// 	| parameter_list ',' parameter
+Parameter *Parser::ParseParameterList(TokenStream &stream)
+{
+	Parameter *head = ParseParameter(stream);
+	Parameter *current = head;
+
+	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
+	{
+		Parameter *next = ParseParameter(stream);
+		AssertNode(next, stream);
+		current->SetNext(next);
+		current = next;
+	}
+
+	return head;
+}
+
+
 // parameter
 //   : type_descriptor IDENTIFIER
 Parameter *Parser::ParseParameter(TokenStream &stream)
@@ -171,6 +222,14 @@ Parameter *Parser::ParseParameter(TokenStream &stream)
 		parameter = mFactory.CreateParameter(name, descriptor);
 	}
 	return parameter;
+}
+
+
+// struct_declaration
+//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+StructDeclaration *Parser::ParseStructDeclaration(TokenStream &stream)
+{
+	return 0;
 }
 
 

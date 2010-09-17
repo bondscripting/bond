@@ -7,8 +7,8 @@ translation_unit
 external_declaration
   : namespace_definition
   | enum_declaration
-  | function_definition
   | function_declaration
+  | function_definition
   | struct_declaration
   | const_declarative_statement
 

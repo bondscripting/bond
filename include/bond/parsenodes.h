@@ -175,6 +175,26 @@ private:
 };
 
 
+class StructDeclaration: public ExternalDeclaration
+{
+public:
+	StructDeclaration(const Token *name):
+		mName(name)
+	{}
+
+	virtual ~StructDeclaration() {}
+
+	//virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitStructDeclaration(this); }
+	//virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitStructDeclaration(this); }
+
+	const Token *GetName() const { return mName; }
+	// TODO
+
+private:
+	const Token *mName;
+};
+
+
 class Parameter: public ParseNode
 {
 public:

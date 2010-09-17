@@ -173,19 +173,19 @@ void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpressi
 
 void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 {
-	Print("(");
+	//Print("(");
 	Print(unaryExpression->GetOperator());
 	Print(unaryExpression->GetRhs());
-	Print(")");
+	//Print(")");
 }
 
 
 void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpression)
 {
-	Print("(");
+	//Print("(");
 	Print(postfixExpression->GetLhs());
 	Print(postfixExpression->GetOperator());
-	Print(")");
+	//Print(")");
 }
 
 
@@ -208,7 +208,10 @@ void PrettyPrinter::VisitArraySubscriptExpression(const ArraySubscriptExpression
 
 void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
 {
-	// TODO
+	Print(functionCallExpression->GetLhs());
+	Print("(");
+	PrintArgumentList(functionCallExpression->GetArgumentList());
+	Print(")");
 }
 
 
@@ -274,6 +277,25 @@ void PrettyPrinter::PrintEnumeratorList(const Enumerator *enumeratorList)
 void PrettyPrinter::PrintParameterList(const Parameter *parameterList)
 {
 	const Parameter *current = parameterList;
+
+	if (current != 0)
+	{
+		Print(current);
+		current = current->GetNext();
+	}
+
+	while (current != 0)
+	{
+		Print(", ");
+		Print(current);
+		current = current->GetNext();
+	}
+}
+
+
+void PrettyPrinter::PrintArgumentList(const Expression *argumentList)
+{
+	const Expression *current = argumentList;
 
 	if (current != 0)
 	{
