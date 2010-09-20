@@ -101,9 +101,12 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 				Parameter *parameterList = ParseParameterList(stream);
 				ExpectToken(stream, Token::CPAREN);
 				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
-				// TODO: discriminate between declaration and definition.
-				ExpectToken(stream, Token::SEMICOLON);
-				declaration = mFactory.CreateFunctionDefinition(prototype);
+				CompoundStatement *body = ParseCompoundStatement(stream);
+				if (body == 0)
+				{
+					ExpectToken(stream, Token::SEMICOLON);
+				}
+				declaration = mFactory.CreateFunctionDefinition(prototype, body);
 			}
 		}
 	}
@@ -229,6 +232,7 @@ Parameter *Parser::ParseParameter(TokenStream &stream)
 //   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
 StructDeclaration *Parser::ParseStructDeclaration(TokenStream &stream)
 {
+	// TODO:
 	return 0;
 }
 
@@ -338,6 +342,29 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 		}
 	}
 	return id;
+}
+
+
+// compound_statement
+//   : '{' statement* '}'
+CompoundStatement *Parser::ParseCompoundStatement(TokenStream &stream)
+{
+	CompoundStatement *compoundStatement = 0;
+	if (stream.NextIf(Token::OBRACE))
+	{
+		// TODO
+		Statement *statementList = 0; //ParseStatementList(stream);
+		ExpectToken(stream, Token::CBRACE);
+		compoundStatement = mFactory.CreateCompoundStatement(statementList);
+	}
+	return compoundStatement;
+}
+
+
+IfStatement *Parser::ParseIfStatement(TokenStream &stream)
+{
+	IfStatement *ifStatement = 0;
+	return ifStatement;
 }
 
 

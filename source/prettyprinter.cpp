@@ -73,8 +73,15 @@ void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDe
 {
 	Tab();
 	Print(functionDefinition->GetPrototype());
-	// TODO: Print compound statement.
-	Print(";\n");
+	if (functionDefinition->GetBody() != 0)
+	{
+		Print("\n");
+		Print(functionDefinition->GetBody());
+	}
+	else
+	{
+		Print(";\n");
+	}
 }
 
 
@@ -144,6 +151,41 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName());
+}
+
+
+void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStatement)
+{
+	Tab();
+	Print("{\n");
+	IncrementTab();
+	PrintStatementList(compoundStatement->GetStatementList());
+	DecrementTab();
+	Tab();
+	Print("}\n");
+}
+
+
+void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
+{
+	Tab();
+	Print("if (");
+	Print(ifStatement->GetCondition());
+	Print(")\n");
+
+	IncrementTab();
+	Print(ifStatement->GetThenStatement());
+	DecrementTab();
+
+	if (ifStatement->GetElseStatement() != 0)
+	{
+		Tab();
+		Print("else\n");
+
+		IncrementTab();
+		Print(ifStatement->GetElseStatement());
+		DecrementTab();
+	}
 }
 
 
@@ -325,6 +367,17 @@ void PrettyPrinter::PrintQualifiedIdentifier(const QualifiedIdentifier *identifi
 	while (current != 0)
 	{
 		Print("::");
+		Print(current);
+		current = current->GetNext();
+	}
+}
+
+
+void PrettyPrinter::PrintStatementList(const Statement *statementList)
+{
+	const Statement *current = statementList;
+	while (current != 0)
+	{
 		Print(current);
 		current = current->GetNext();
 	}

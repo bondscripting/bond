@@ -19,7 +19,7 @@ public:
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
-	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype);
+	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);
 
 	FunctionPrototype *CreateFunctionPrototype(
 		const Token *name,
@@ -33,6 +33,8 @@ public:
 	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
+	CompoundStatement *CreateCompoundStatement(Statement *statementList);
+	IfStatement *CreateIfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement);
 
 	ConditionalExpression *CreateConditionalExpression(
 		Expression *condition,

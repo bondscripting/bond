@@ -129,8 +129,9 @@ private:
 class FunctionDefinition: public ExternalDeclaration
 {
 public:
-	FunctionDefinition(FunctionPrototype *prototype):
-		mPrototype(prototype)
+	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body):
+		mPrototype(prototype),
+		mBody(body)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -141,8 +142,12 @@ public:
 	FunctionPrototype *GetPrototype() { return mPrototype; }
 	const FunctionPrototype *GetPrototype() const { return mPrototype; }
 
+	CompoundStatement *GetBody() { return mBody; }
+	const CompoundStatement *GetBody() const { return mBody; }
+
 private:
 	FunctionPrototype *mPrototype;
+	CompoundStatement *mBody;
 };
 
 
@@ -322,6 +327,69 @@ public:
 private:
 	const Token *mName;
 	QualifiedIdentifier *mNext;
+};
+
+
+class Statement: public ParseNode
+{
+public:
+	Statement *GetNext() { return mNext; }
+	const Statement *GetNext() const { return mNext; }
+	void SetNext(Statement *next) { mNext = next; }
+
+protected:
+	Statement(): mNext(0) {}
+	virtual ~Statement() {}
+
+private:
+	Statement *mNext;
+};
+
+
+class CompoundStatement: public Statement
+{
+public:
+	CompoundStatement(Statement *statementList): mStatementList(statementList) {}
+	virtual ~CompoundStatement() {}
+
+ 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitCompoundStatement(this); }
+
+	Statement *GetStatementList() { return mStatementList; }
+	const Statement *GetStatementList() const { return mStatementList; }
+
+private:
+	Statement *mStatementList;
+};
+
+
+class IfStatement: public Statement
+{
+public:
+	IfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement):
+		mCondition(condition),
+		mThenStatement(thenStatement),
+		mElseStatement(elseStatement)
+ {}
+
+	virtual ~IfStatement() {}
+
+ 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIfStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitIfStatement(this); }
+
+	Expression *GetCondition() { return mCondition; }
+	const Expression *GetCondition() const { return mCondition; }
+
+	Statement *GetThenStatement() { return mThenStatement; }
+	const Statement *GetThenStatement() const { return mThenStatement; }
+
+	Statement *GetElseStatement() { return mElseStatement; }
+	const Statement *GetElseStatement() const { return mElseStatement; }
+
+private:
+	Expression *mCondition;
+	Statement *mThenStatement;
+	Statement *mElseStatement;
 };
 
 

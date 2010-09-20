@@ -31,6 +31,8 @@ public:
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
+	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
+	virtual void VisitIfStatement(IfStatement *ifStatement);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
@@ -48,6 +50,7 @@ private:
 	void DestroyEnumeratorList(Enumerator *enumeratorList);
 	void DestroyParameterList(Parameter *parameterList);
 	void DestroyQualifiedIdentifier(QualifiedIdentifier *identifier);
+	void DestroyStatementList(Statement *statementList);
 	void DestroyExpressionList(Expression *expressionList);
 
 	Allocator &mAllocator;
@@ -91,6 +94,7 @@ void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 void ParseNodeDeallocator::VisitFunctionDefinition(FunctionDefinition *functionDefinition)
 {
 	Destroy(functionDefinition->GetPrototype());
+	Destroy(functionDefinition->GetBody());
 }
 
 
@@ -122,6 +126,20 @@ void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
 
 
 void ParseNodeDeallocator::VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
+
+
+void ParseNodeDeallocator::VisitCompoundStatement(CompoundStatement *compoundStatement)
+{
+	DestroyStatementList(compoundStatement->GetStatementList());
+}
+
+
+void ParseNodeDeallocator::VisitIfStatement(IfStatement *ifStatement)
+{
+	Destroy(ifStatement->GetCondition());
+	Destroy(ifStatement->GetThenStatement());
+	Destroy(ifStatement->GetElseStatement());
+}
 
 
 void ParseNodeDeallocator::VisitConditionalExpression(ConditionalExpression *conditionalExpression)
@@ -243,6 +261,18 @@ void ParseNodeDeallocator::DestroyQualifiedIdentifier(QualifiedIdentifier *ident
 }
 
 
+void ParseNodeDeallocator::DestroyStatementList(Statement *statementList)
+{
+	Statement *current = statementList;
+	while (current != 0)
+	{
+		Statement *next = current->GetNext();
+		Destroy(current);
+		current = next;
+	}
+}
+
+
 void ParseNodeDeallocator::DestroyExpressionList(Expression *expressionList)
 {
 	Expression *current = expressionList;
@@ -285,9 +315,9 @@ Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *va
 }
 
 
-FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(FunctionPrototype *prototype)
+FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body)
 {
-	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype);
+	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype, body);
 }
 
 
@@ -339,6 +369,21 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 QualifiedIdentifier *ParseNodeFactory::CreateQualifiedIdentifier(const Token *name)
 {
 	return new (mAllocator.Alloc<QualifiedIdentifier>()) QualifiedIdentifier(name);
+}
+
+
+CompoundStatement *ParseNodeFactory::CreateCompoundStatement(Statement *statementList)
+{
+	return new (mAllocator.Alloc<CompoundStatement>()) CompoundStatement(statementList);
+}
+
+
+IfStatement *ParseNodeFactory::CreateIfStatement(
+	Expression *condition,
+	Statement *thenStatement,
+	Statement *elseStatement)
+{
+	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
 }
 
 

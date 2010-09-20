@@ -29,6 +29,8 @@ public:
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(const TypeSpecifier *typeSpecifier);
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
+	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement);
+	virtual void VisitIfStatement(const IfStatement *ifStatement);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);
@@ -47,6 +49,7 @@ private:
 	void PrintParameterList(const Parameter *parameterList);
 	void PrintArgumentList(const Expression *argumentList);
 	void PrintQualifiedIdentifier(const QualifiedIdentifier *identifier);
+	void PrintStatementList(const Statement *statementList);
 
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
