@@ -78,6 +78,7 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
 	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
+
 	if (declaration == 0)
 	{
 		declaration = ParseEnumDeclaration(stream);
@@ -119,16 +120,17 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 //   : NAMESPACE IDENTIFIER '{' external_declaration* '}'
 NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 {
-	if (stream.NextIf(Token::KEY_NAMESPACE) == 0)
+	NamespaceDefinition *space = 0;
+
+	if (stream.NextIf(Token::KEY_NAMESPACE) != 0)
 	{
-		return 0;
+		const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+		ExpectToken(stream, Token::OBRACE);
+		ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
+		ExpectToken(stream, Token::CBRACE);
+		space = mFactory.CreateNamespaceDefinition(name, declarations);
 	}
 
-	const Token *name = ExpectToken(stream, Token::IDENTIFIER);
-	ExpectToken(stream, Token::OBRACE);
-	ExternalDeclaration *declarations = ParseExternalDeclarationList(stream);
-	ExpectToken(stream, Token::CBRACE);
-	NamespaceDefinition *space = mFactory.CreateNamespaceDefinition(name, declarations);
 	return space;
 }
 
@@ -137,17 +139,18 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(TokenStream &stream)
 //  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
 EnumDeclaration *Parser::ParseEnumDeclaration(TokenStream &stream)
 {
-	if (stream.NextIf(Token::KEY_ENUM) == 0)
+	EnumDeclaration *enumeration = 0;
+
+	if (stream.NextIf(Token::KEY_ENUM) != 0)
 	{
-		return 0;
+		const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+		ExpectToken(stream, Token::OBRACE);
+		Enumerator *enumerators = ParseEnumeratorList(stream);
+		ExpectToken(stream, Token::CBRACE);
+		ExpectToken(stream, Token::SEMICOLON);
+		enumeration = mFactory.CreateEnumDeclaration(name, enumerators);
 	}
 
-	const Token *name = ExpectToken(stream, Token::IDENTIFIER);
-	ExpectToken(stream, Token::OBRACE);
-	Enumerator *enumerators = ParseEnumeratorList(stream);
-	ExpectToken(stream, Token::CBRACE);
-	ExpectToken(stream, Token::SEMICOLON);
-	EnumDeclaration *enumeration = mFactory.CreateEnumDeclaration(name, enumerators);
 	return enumeration;
 }
 
@@ -175,20 +178,20 @@ Enumerator *Parser::ParseEnumeratorList(TokenStream &stream)
 //   : IDENTIFIER ['=' const_expression]
 Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 {
+	Enumerator *enumerator = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
-	if (name == 0)
+
+	if (name != 0)
 	{
-		return 0;
+		Expression *value = 0;
+		if (stream.NextIf(Token::ASSIGN) != 0)
+		{
+			value = ParseConstExpression(stream);
+			AssertNode(value, stream);
+		}
+		enumerator = mFactory.CreateEnumerator(name, value);
 	}
 
-	Expression *value = 0;
-	if (stream.NextIf(Token::ASSIGN) != 0)
-	{
-		value = ParseConstExpression(stream);
-		AssertNode(value, stream);
-	}
-
-	Enumerator *enumerator = mFactory.CreateEnumerator(name, value);
 	return enumerator;
 }
 
@@ -219,11 +222,13 @@ Parameter *Parser::ParseParameter(TokenStream &stream)
 {
 	Parameter *parameter = 0;
 	TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+
 	if (descriptor != 0)
 	{
 		const Token *name = ExpectToken(stream, Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);
 	}
+
 	return parameter;
 }
 
@@ -292,6 +297,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(TokenStream &stream)
 TypeSpecifier *Parser::ParseTypeSpecifier(TokenStream &stream)
 {
 	TypeSpecifier *specifier = ParsePrimitiveTypeSpecifier(stream);
+
 	if (specifier == 0)
 	{
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier(stream);
@@ -316,10 +322,12 @@ TypeSpecifier *Parser::ParsePrimitiveTypeSpecifier(TokenStream &stream)
 {
 	TypeSpecifier *specifier = 0;
 	const Token *primitiveType = stream.NextIf(TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS);
+
 	if (primitiveType != 0)
 	{
 		specifier = mFactory.CreateTypeSpecifier(primitiveType);
 	}
+
 	return specifier;
 }
 
@@ -331,6 +339,7 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 {
 	QualifiedIdentifier *id = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
+
 	if (name != 0)
 	{
 		id = mFactory.CreateQualifiedIdentifier(name);
@@ -341,7 +350,41 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 			id->SetNext(next);
 		}
 	}
+
 	return id;
+}
+
+
+// statement
+//   : compound_statement
+//   | if_statement
+//   | switch_statement
+//   | while_statement
+//   | do_statement
+//   | for_statement
+//   | continue_statement
+//   | break_statement
+//   | return_statement
+//   | labeled_statement
+//   | declarative_statement
+//   | expression_statement
+Statement *Parser::ParseStatement(TokenStream &stream)
+{
+	Statement *statement = ParseCompoundStatement(stream);
+
+	if (statement == 0)
+	{
+		statement = ParseIfStatement(stream);
+	}
+
+	if (statement == 0)
+	{
+		statement = ParseWhileStatement(stream);
+	}
+
+	// TODO
+
+	return statement;
 }
 
 
@@ -350,21 +393,74 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 CompoundStatement *Parser::ParseCompoundStatement(TokenStream &stream)
 {
 	CompoundStatement *compoundStatement = 0;
+
 	if (stream.NextIf(Token::OBRACE))
 	{
-		// TODO
-		Statement *statementList = 0; //ParseStatementList(stream);
+		Statement *statementList = ParseStatement(stream);
+		Statement *current = statementList;
+
+		while (current != 0)
+		{
+			Statement *next = ParseStatement(stream);
+			current->SetNext(next);
+			current = next;
+		}
+
 		ExpectToken(stream, Token::CBRACE);
 		compoundStatement = mFactory.CreateCompoundStatement(statementList);
 	}
+
 	return compoundStatement;
 }
 
 
+// if_statement
+//   : IF '(' expression ')' statement [ELSE statement]
 IfStatement *Parser::ParseIfStatement(TokenStream &stream)
 {
 	IfStatement *ifStatement = 0;
+
+	if (stream.NextIf(Token::KEY_IF) != 0)
+	{
+		ExpectToken(stream, Token::OPAREN);
+		Expression *condition = ParseExpression(stream);
+		AssertNode(condition, stream);
+		ExpectToken(stream, Token::CPAREN);
+		Statement *thenStatement = ParseStatement(stream);
+		AssertNode(thenStatement, stream);
+		Statement *elseStatement = 0;
+
+		if (stream.NextIf(Token::KEY_ELSE))
+		{
+			elseStatement = ParseStatement(stream);
+			AssertNode(elseStatement, stream);
+		}
+
+		ifStatement = mFactory.CreateIfStatement(condition, thenStatement, elseStatement);
+	}
+
 	return ifStatement;
+}
+
+
+// while_statement
+//   : WHILE '(' expression ')' statement
+WhileStatement *Parser::ParseWhileStatement(TokenStream &stream)
+{
+	WhileStatement *whileStatement = 0;
+
+	if (stream.NextIf(Token::KEY_WHILE) != 0)
+	{
+		ExpectToken(stream, Token::OPAREN);
+		Expression *condition = ParseExpression(stream);
+		AssertNode(condition, stream);
+		ExpectToken(stream, Token::CPAREN);
+		Statement *body = ParseStatement(stream);
+		AssertNode(body, stream);
+		whileStatement = mFactory.CreateWhileStatement(condition, body);
+	}
+
+	return whileStatement;
 }
 
 
@@ -381,7 +477,8 @@ Expression *Parser::ParseConstExpression(TokenStream &stream)
 //   | expression ',' assignment_expression
 Expression *Parser::ParseExpression(TokenStream &stream, ExpressionQualifier qualifier)
 {
-	Expression *expression;
+	Expression *expression = 0;
+
 	if (qualifier == EXP_CONST)
 	{
 		expression = ParseConstExpression(stream);
@@ -425,6 +522,7 @@ Expression *Parser::ParseAssignmentExpression(TokenStream &stream, ExpressionQua
 	// TODO: This function can produce pretty much any type of expression on the lhs of an assignment.
 	// Will need to do further analysis in the semantic analyser to ensure validity.
 	Expression *expression = ParseConditionalExpression(stream, qualifier);
+
 	if (expression == 0)
 	{
 		expression = ParseUnaryExpression(stream, qualifier);
@@ -441,6 +539,7 @@ Expression *Parser::ParseAssignmentExpression(TokenStream &stream, ExpressionQua
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 		}
 	}
+
 	return expression;
 }
 

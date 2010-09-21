@@ -16,5 +16,14 @@ namespace OuterSpace
 	}
 
 	void DoSomething(int a, int *b);
-	void DoSomethingElse(int a, int *b) {}
+	void DoSomethingElse(int a, int *b)
+	{
+		while (a < 20)
+		{
+			if (a > 10)
+			{}
+			else
+			{}
+		}
+	}
 }

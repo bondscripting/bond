@@ -19,6 +19,7 @@ namespace Bond
 	class QualifiedIdentifier;
 	class Statement;
 	class IfStatement;
+	class WhileStatement;
 	class CompoundStatement;
 	class Expression;
 	class ConditionalExpression;

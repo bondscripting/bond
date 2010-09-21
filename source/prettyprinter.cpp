@@ -76,7 +76,9 @@ void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDe
 	if (functionDefinition->GetBody() != 0)
 	{
 		Print("\n");
+		IncrementTab();
 		Print(functionDefinition->GetBody());
+		DecrementTab();
 	}
 	else
 	{
@@ -156,6 +158,7 @@ void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifi
 
 void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStatement)
 {
+	DecrementTab();
 	Tab();
 	Print("{\n");
 	IncrementTab();
@@ -163,6 +166,7 @@ void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStat
 	DecrementTab();
 	Tab();
 	Print("}\n");
+	IncrementTab();
 }
 
 
@@ -184,6 +188,32 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 
 		IncrementTab();
 		Print(ifStatement->GetElseStatement());
+		DecrementTab();
+	}
+}
+
+
+void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
+{
+	Tab();
+	if (whileStatement->GetForm() == WhileStatement::FORM_DO_WHILE)
+	{
+		Print("do\n");
+		IncrementTab();
+		Print(whileStatement->GetBody());
+		DecrementTab();
+		Tab();
+		Print("while (");
+		Print(whileStatement->GetCondition());
+		Print(");\n");
+	}
+	else
+	{
+		Print("while (");
+		Print(whileStatement->GetCondition());
+		Print(")\n");
+		IncrementTab();
+		Print(whileStatement->GetBody());
 		DecrementTab();
 	}
 }

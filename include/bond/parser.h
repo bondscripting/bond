@@ -91,8 +91,10 @@ private:
 	TypeSpecifier *ParseTypeSpecifier(TokenStream &stream);
 	TypeSpecifier *ParsePrimitiveTypeSpecifier(TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(TokenStream &stream);
+	Statement *ParseStatement(TokenStream &stream);
 	CompoundStatement *ParseCompoundStatement(TokenStream &stream);
 	IfStatement *ParseIfStatement(TokenStream &stream);
+	WhileStatement *ParseWhileStatement(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);

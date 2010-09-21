@@ -31,6 +31,7 @@ public:
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(const IfStatement *ifStatement);
+	virtual void VisitWhileStatement(const WhileStatement *whileStatement);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);

@@ -30,7 +30,7 @@ function_prototype
 
 parameter_list
   : parameter
-	| parameter_list ',' parameter
+  | parameter_list ',' parameter
 
 parameter
   : type_descriptor IDENTIFIER
@@ -72,7 +72,7 @@ primitive_type_specifier
 
 named_initializer_list
   : named_initializer
-	: named_initializer_list ',' named_initializer
+  | named_initializer_list ',' named_initializer
 
 named_initializer
   : IDENTIFIER ['=' initializer]
@@ -100,16 +100,16 @@ Statements
 statement
   : compound_statement
   | if_statement
-	| switch_statement
-	| while_statement
-	| do_statement
-	| for_statement
-	| continue_statement
-	| break_statement
-	| return_statement
+  | switch_statement
+  | while_statement
+  | do_statement
+  | for_statement
+  | continue_statement
+  | break_statement
+  | return_statement
   | labeled_statement
   | declarative_statement
-  | expression_statement				
+  | expression_statement
 
 compound_statement
   : '{' statement* '}'

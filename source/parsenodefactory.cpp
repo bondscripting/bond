@@ -33,6 +33,7 @@ public:
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(IfStatement *ifStatement);
+	virtual void VisitWhileStatement(WhileStatement *whileStatement);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
@@ -139,6 +140,13 @@ void ParseNodeDeallocator::VisitIfStatement(IfStatement *ifStatement)
 	Destroy(ifStatement->GetCondition());
 	Destroy(ifStatement->GetThenStatement());
 	Destroy(ifStatement->GetElseStatement());
+}
+
+
+void ParseNodeDeallocator::VisitWhileStatement(WhileStatement *whileStatement)
+{
+	Destroy(whileStatement->GetCondition());
+	Destroy(whileStatement->GetBody());
 }
 
 
@@ -384,6 +392,18 @@ IfStatement *ParseNodeFactory::CreateIfStatement(
 	Statement *elseStatement)
 {
 	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
+}
+
+
+WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, Statement *body)
+{
+	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::FORM_WHILE);
+}
+
+
+WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, Statement *body)
+{
+	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::FORM_DO_WHILE);
 }
 
 

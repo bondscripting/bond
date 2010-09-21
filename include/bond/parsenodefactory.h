@@ -35,6 +35,8 @@ public:
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 	CompoundStatement *CreateCompoundStatement(Statement *statementList);
 	IfStatement *CreateIfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement);
+	WhileStatement *CreateWhileStatement(Expression *condition, Statement *body);
+	WhileStatement *CreateDoWhileStatement(Expression *condition, Statement *body);
 
 	ConditionalExpression *CreateConditionalExpression(
 		Expression *condition,

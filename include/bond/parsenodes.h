@@ -393,6 +393,41 @@ private:
 };
 
 
+class WhileStatement: public Statement
+{
+public:
+	enum Form
+	{
+		FORM_WHILE,
+		FORM_DO_WHILE,
+	};
+
+	WhileStatement(Expression *condition, Statement *body, Form form):
+		mCondition(condition),
+		mBody(body),
+		mForm(form)
+ {}
+
+	virtual ~WhileStatement() {}
+
+ 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitWhileStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitWhileStatement(this); }
+
+	Expression *GetCondition() { return mCondition; }
+	const Expression *GetCondition() const { return mCondition; }
+
+	Statement *GetBody() { return mBody; }
+	const Statement *GetBody() const { return mBody; }
+
+	Form GetForm() const { return mForm; }
+
+private:
+	Expression *mCondition;
+	Statement *mBody;
+	Form mForm;
+};
+
+
 class Expression: public ParseNode
 {
 public:
