@@ -23,6 +23,7 @@ public:
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(IfStatement *ifStatement) = 0;
 	virtual void VisitWhileStatement(WhileStatement *whileStatement) = 0;
+	virtual void VisitJumpStatement(JumpStatement *jumpStatement) = 0;
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) = 0;
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression) = 0;
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression) = 0;
@@ -56,6 +57,7 @@ public:
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(const IfStatement *ifStatement) = 0;
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement) = 0;
+	virtual void VisitJumpStatement(const JumpStatement *jumpStatement) = 0;
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression) = 0;
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression) = 0;
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression) = 0;

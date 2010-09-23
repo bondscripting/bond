@@ -94,6 +94,21 @@ TokenTypeSet TokenTypeSet::TYPE_DESCRIPTORS =
 };
 
 
+static const Token::TokenType JUMP_OPERATOR_TYPES[] =
+{
+	Token::KEY_BREAK,
+	Token::KEY_CONTINUE,
+	Token::KEY_RETURN,
+};
+
+TokenTypeSet TokenTypeSet::JUMP_OPERATORS =
+{
+	JUMP_OPERATOR_TYPES,
+	sizeof(JUMP_OPERATOR_TYPES) / sizeof(*JUMP_OPERATOR_TYPES),
+	"JUMP_OPERATOR",
+};
+
+
 static const Token::TokenType ASSIGNMENT_OPERATOR_TYPES[] =
 {
 	Token::ASSIGN,

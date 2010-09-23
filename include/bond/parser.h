@@ -95,6 +95,8 @@ private:
 	CompoundStatement *ParseCompoundStatement(TokenStream &stream);
 	IfStatement *ParseIfStatement(TokenStream &stream);
 	WhileStatement *ParseWhileStatement(TokenStream &stream);
+	WhileStatement *ParseDoWhileStatement(TokenStream &stream);
+	JumpStatement *ParseJumpStatement(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);

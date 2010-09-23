@@ -32,6 +32,7 @@ public:
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(const IfStatement *ifStatement);
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement);
+	virtual void VisitJumpStatement(const JumpStatement *jumpStatement);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);

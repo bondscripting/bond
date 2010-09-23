@@ -104,10 +104,7 @@ statement
   | while_statement
   | do_statement
   | for_statement
-  | continue_statement
-  | break_statement
-  | return_statement
-  | labeled_statement
+  | jump_statement
   | declarative_statement
   | expression_statement
 
@@ -118,7 +115,17 @@ if_statement
   : IF '(' expression ')' statement [ELSE statement]
 
 switch_statement
-  : SWITCH '(' expression ')' statement
+	: SWITCH '(' expression ')' switch_block
+
+switch_block
+	: '{' switch_section* '}'
+
+switch_section
+	: switch_label+ statement_list+
+
+switch_label
+	: CASE const_expression ':'
+	| DEFAULT ':'
 
 while_statement
   : WHILE '(' expression ')' statement
@@ -127,21 +134,16 @@ do_statement
   : DO statement WHILE '(' expression ')' ';'
 
 for_statement
-  : FOR '(' [expression] ';' [expression] ';' [expression] ')' statement
+  : FOR '(' for_init [expression] ';' [expression] ')' statement
 
-continue_statement
+for_init
+	: declarative_statement
+	| expression_statement
+
+jump_statement
   : CONTINUE ';'
-
-break_statement
-  : BREAK ';'
-
-return_statement
-  : RETURN [expression] ';'
-
-labeled_statement
-  : IDENTIFIER ':' statement
-  | CASE const_expression ':' statement
-  | DEFAULT ':' statement
+  | BREAK ';'
+  | RETURN [expression] ';'
 
 declarative_statement
   : type_descriptor named_initializer_list ';'

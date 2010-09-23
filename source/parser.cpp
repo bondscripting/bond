@@ -362,9 +362,7 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 //   | while_statement
 //   | do_statement
 //   | for_statement
-//   | continue_statement
-//   | break_statement
-//   | return_statement
+//   | jump_statement
 //   | labeled_statement
 //   | declarative_statement
 //   | expression_statement
@@ -380,6 +378,16 @@ Statement *Parser::ParseStatement(TokenStream &stream)
 	if (statement == 0)
 	{
 		statement = ParseWhileStatement(stream);
+	}
+
+	if (statement == 0)
+	{
+		statement = ParseDoWhileStatement(stream);
+	}
+
+	if (statement == 0)
+	{
+		statement = ParseJumpStatement(stream);
 	}
 
 	// TODO
@@ -461,6 +469,53 @@ WhileStatement *Parser::ParseWhileStatement(TokenStream &stream)
 	}
 
 	return whileStatement;
+}
+
+
+// do_statement
+//   : DO statement WHILE '(' expression ')' ';'
+WhileStatement *Parser::ParseDoWhileStatement(TokenStream &stream)
+{
+	WhileStatement *whileStatement = 0;
+
+	if (stream.NextIf(Token::KEY_DO) != 0)
+	{
+		Statement *body = ParseStatement(stream);
+		AssertNode(body, stream);
+		ExpectToken(stream, Token::KEY_WHILE);
+		ExpectToken(stream, Token::OPAREN);
+		Expression *condition = ParseExpression(stream);
+		AssertNode(condition, stream);
+		ExpectToken(stream, Token::CPAREN);
+		ExpectToken(stream, Token::SEMICOLON);
+		whileStatement = mFactory.CreateDoWhileStatement(condition, body);
+	}
+
+	return whileStatement;
+}
+
+
+// jump_statement
+//   : CONTINUE ';'
+//   | BREAK ';'
+//   | RETURN [expression] ';'
+JumpStatement *Parser::ParseJumpStatement(TokenStream &stream)
+{
+	JumpStatement *jumpStatement = 0;
+	const Token *op = stream.NextIf(TokenTypeSet::JUMP_OPERATORS);
+
+	if (op != 0)
+	{
+		Expression *rhs = 0;
+		if (op->GetTokenType() == Token::KEY_RETURN)
+		{
+			rhs = ParseExpression(stream);
+		}
+		ExpectToken(stream, Token::SEMICOLON);
+		jumpStatement = mFactory.CreateJumpStatement(op, rhs);
+	}
+
+	return jumpStatement;
 }
 
 

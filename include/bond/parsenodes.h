@@ -203,11 +203,7 @@ private:
 class Parameter: public ParseNode
 {
 public:
-	Parameter(const Token *name, TypeDescriptor *typeDescriptor):
-		mName(name),
-		mTypeDescriptor(typeDescriptor)
-	{}
-
+	Parameter(const Token *name, TypeDescriptor *typeDescriptor): mName(name), mTypeDescriptor(typeDescriptor) {}
 	virtual ~Parameter() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitParameter(this); }
@@ -232,11 +228,11 @@ private:
 class TypeDescriptor: public ParseNode
 {
 public:
-	enum Descriptor
+	enum Variant
 	{
-		DESC_VALUE,
-		DESC_POINTER,
-		DESC_ARRAY,
+		VARIANT_VALUE,
+		VARIANT_POINTER,
+		VARIANT_ARRAY,
 	};
 
 	TypeDescriptor() {}
@@ -244,7 +240,7 @@ public:
 		mSpecifier(specifier),
 		mParent(0),
 		mLength(0),
-		mDescriptor(DESC_VALUE),
+		mVariant(VARIANT_VALUE),
 		mIsConst(isConst)
 	{}
 
@@ -252,7 +248,7 @@ public:
 		mSpecifier(0),
 		mParent(parent),
 		mLength(0),
-		mDescriptor(DESC_POINTER),
+		mVariant(VARIANT_POINTER),
 		mIsConst(isConst)
 	{}
 
@@ -260,7 +256,7 @@ public:
 		mSpecifier(0),
 		mParent(parent),
 		mLength(length),
-		mDescriptor(DESC_ARRAY),
+		mVariant(VARIANT_ARRAY),
 		mIsConst(false)
 	{}
 
@@ -278,14 +274,14 @@ public:
 	Expression *GetLength() { return mLength; }
 	const Expression *GetLength() const { return mLength; }
 
-	Descriptor GetDescriptor() const { return mDescriptor; }
+	Variant GetVariant() const { return mVariant; }
 	bool IsConst() const { return mIsConst; }
 
 private:
 	TypeSpecifier *mSpecifier;
 	TypeDescriptor *mParent;
 	Expression *mLength;
-	Descriptor mDescriptor;
+	Variant mVariant;
 	bool mIsConst;
 };
 
@@ -396,16 +392,16 @@ private:
 class WhileStatement: public Statement
 {
 public:
-	enum Form
+	enum Variant
 	{
-		FORM_WHILE,
-		FORM_DO_WHILE,
+		VARIANT_WHILE,
+		VARIANT_DO_WHILE,
 	};
 
-	WhileStatement(Expression *condition, Statement *body, Form form):
+	WhileStatement(Expression *condition, Statement *body, Variant variant):
 		mCondition(condition),
 		mBody(body),
-		mForm(form)
+		mVariant(variant)
  {}
 
 	virtual ~WhileStatement() {}
@@ -419,12 +415,33 @@ public:
 	Statement *GetBody() { return mBody; }
 	const Statement *GetBody() const { return mBody; }
 
-	Form GetForm() const { return mForm; }
+	Variant GetVariant() const { return mVariant; }
 
 private:
 	Expression *mCondition;
 	Statement *mBody;
-	Form mForm;
+	Variant mVariant;
+};
+
+
+class JumpStatement: public Statement
+{
+public:
+ JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
+
+	virtual ~JumpStatement() {}
+
+ 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitJumpStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitJumpStatement(this); }
+
+	const Token *GetOperator() const { return mOperator; }
+
+	Expression *GetRhs() { return mRhs; }
+	const Expression *GetRhs() const { return mRhs; }
+
+private:
+	const Token *mOperator;
+	Expression *mRhs;
 };
 
 
@@ -506,11 +523,7 @@ private:
 class UnaryExpression: public Expression
 {
 public:
-	UnaryExpression(const Token *op, Expression *rhs):
-		mOperator(op),
-		mRhs(rhs)
-	{}
-
+	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
 	virtual ~UnaryExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitUnaryExpression(this); }
@@ -530,11 +543,7 @@ private:
 class PostfixExpression: public Expression
 {
 public:
-	PostfixExpression(const Token *op, Expression *lhs):
-		mOperator(op),
-		mLhs(lhs)
-	{}
-
+	PostfixExpression(const Token *op, Expression *lhs): mOperator(op), mLhs(lhs) {}
 	virtual ~PostfixExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitPostfixExpression(this); }
@@ -581,11 +590,7 @@ private:
 class ArraySubscriptExpression: public Expression
 {
 public:
-	ArraySubscriptExpression(Expression *lhs, Expression *index):
-		mLhs(lhs),
-		mIndex(index)
-	{}
-
+	ArraySubscriptExpression(Expression *lhs, Expression *index): mLhs(lhs), mIndex(index) {}
 	virtual ~ArraySubscriptExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitArraySubscriptExpression(this); }
@@ -606,11 +611,7 @@ private:
 class FunctionCallExpression: public Expression
 {
 public:
-	FunctionCallExpression(Expression *lhs, Expression *argumentList):
-		mLhs(lhs),
-		mArgumentList(argumentList)
-	{}
-
+	FunctionCallExpression(Expression *lhs, Expression *argumentList): mLhs(lhs), mArgumentList(argumentList) {}
 	virtual ~FunctionCallExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionCallExpression(this); }
@@ -656,16 +657,8 @@ private:
 class SizeofExpression: public Expression
 {
 public:
-	SizeofExpression(TypeDescriptor *typeDescriptor):
-		mTypeDescriptor(typeDescriptor),
-		mRhs(0)
-	{}
-
-	SizeofExpression(Expression *rhs):
-		mTypeDescriptor(0),
-		mRhs(rhs)
-	{}
-
+	SizeofExpression(TypeDescriptor *typeDescriptor): mTypeDescriptor(typeDescriptor), mRhs(0) {}
+	SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
 	virtual ~SizeofExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSizeofExpression(this); }

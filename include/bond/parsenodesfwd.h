@@ -18,9 +18,12 @@ namespace Bond
 	class TypeSpecifier;
 	class QualifiedIdentifier;
 	class Statement;
-	class IfStatement;
-	class WhileStatement;
 	class CompoundStatement;
+	class IfStatement;
+	class SwitchStatement;
+	class WhileStatement;
+	class ForStatement;
+	class JumpStatement;
 	class Expression;
 	class ConditionalExpression;
 	class BinaryExpression;

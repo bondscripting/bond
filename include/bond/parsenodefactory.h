@@ -37,6 +37,7 @@ public:
 	IfStatement *CreateIfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement);
 	WhileStatement *CreateWhileStatement(Expression *condition, Statement *body);
 	WhileStatement *CreateDoWhileStatement(Expression *condition, Statement *body);
+	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
 
 	ConditionalExpression *CreateConditionalExpression(
 		Expression *condition,

@@ -108,9 +108,9 @@ void PrettyPrinter::VisitParameter(const Parameter *parameter)
 
 void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 {
-	switch (typeDescriptor->GetDescriptor())
+	switch (typeDescriptor->GetVariant())
 	{
-		case TypeDescriptor::DESC_VALUE:
+		case TypeDescriptor::VARIANT_VALUE:
 			if (typeDescriptor->IsConst())
 			{
 				Print("const ");
@@ -118,7 +118,7 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 			Print(typeDescriptor->GetTypeSpecifier());
 			break;
 
-		case TypeDescriptor::DESC_POINTER:
+		case TypeDescriptor::VARIANT_POINTER:
 			VisitTypeDescriptor(typeDescriptor->GetParent());
 			Print(" *");
 			if (typeDescriptor->IsConst())
@@ -127,7 +127,7 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 			}
 			break;
 
-		case TypeDescriptor::DESC_ARRAY:
+		case TypeDescriptor::VARIANT_ARRAY:
 			VisitTypeDescriptor(typeDescriptor->GetParent());
 			Print(" [");
 			Print(typeDescriptor->GetLength());
@@ -196,7 +196,7 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
 {
 	Tab();
-	if (whileStatement->GetForm() == WhileStatement::FORM_DO_WHILE)
+	if (whileStatement->GetVariant() == WhileStatement::VARIANT_DO_WHILE)
 	{
 		Print("do\n");
 		IncrementTab();
@@ -216,6 +216,23 @@ void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
 		Print(whileStatement->GetBody());
 		DecrementTab();
 	}
+}
+
+
+void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
+{
+	Tab();
+	const Token *op = jumpStatement->GetOperator();
+	Print(op);
+
+	const Expression *rhs = jumpStatement->GetRhs(); 
+	if ((op->GetTokenType() == Token::KEY_RETURN) && (rhs != 0))
+	{
+		Print(" ");
+		Print(rhs);
+	}
+
+	Print(";\n");
 }
 
 

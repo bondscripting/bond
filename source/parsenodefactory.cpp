@@ -34,6 +34,7 @@ public:
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(IfStatement *ifStatement);
 	virtual void VisitWhileStatement(WhileStatement *whileStatement);
+	virtual void VisitJumpStatement(JumpStatement *jumpStatement);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
@@ -147,6 +148,12 @@ void ParseNodeDeallocator::VisitWhileStatement(WhileStatement *whileStatement)
 {
 	Destroy(whileStatement->GetCondition());
 	Destroy(whileStatement->GetBody());
+}
+
+
+void ParseNodeDeallocator::VisitJumpStatement(JumpStatement *jumpStatement)
+{
+	Destroy(jumpStatement->GetRhs());
 }
 
 
@@ -397,13 +404,19 @@ IfStatement *ParseNodeFactory::CreateIfStatement(
 
 WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, Statement *body)
 {
-	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::FORM_WHILE);
+	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
 }
 
 
 WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, Statement *body)
 {
-	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::FORM_DO_WHILE);
+	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
+}
+
+
+JumpStatement *ParseNodeFactory::CreateJumpStatement(const Token *op, Expression *rhs)
+{
+	return new (mAllocator.Alloc<JumpStatement>()) JumpStatement(op, rhs);
 }
 
 
