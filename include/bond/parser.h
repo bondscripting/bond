@@ -94,6 +94,7 @@ private:
 	Statement *ParseStatement(TokenStream &stream);
 	CompoundStatement *ParseCompoundStatement(TokenStream &stream);
 	IfStatement *ParseIfStatement(TokenStream &stream);
+	SwitchStatement *ParseSwitchStatement(TokenStream &stream);
 	WhileStatement *ParseWhileStatement(TokenStream &stream);
 	WhileStatement *ParseDoWhileStatement(TokenStream &stream);
 	JumpStatement *ParseJumpStatement(TokenStream &stream);

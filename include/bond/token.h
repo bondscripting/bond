@@ -24,6 +24,7 @@
 	BOND_TOKEN_ITEM(KEY_NAMESPACE)            \
 	BOND_TOKEN_ITEM(KEY_RETURN)               \
 	BOND_TOKEN_ITEM(KEY_SIZEOF)               \
+	BOND_TOKEN_ITEM(KEY_STRUCT)               \
 	BOND_TOKEN_ITEM(KEY_SWITCH)               \
 	BOND_TOKEN_ITEM(KEY_UINT)                 \
 	BOND_TOKEN_ITEM(KEY_VOID)                 \

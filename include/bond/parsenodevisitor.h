@@ -22,6 +22,9 @@ public:
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier) = 0;
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(IfStatement *ifStatement) = 0;
+	virtual void VisitSwitchStatement(SwitchStatement *switchStatement) = 0;
+	virtual void VisitSwitchSection(SwitchSection *switchSection) = 0;
+	virtual void VisitSwitchLabel(SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(WhileStatement *whileStatement) = 0;
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement) = 0;
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) = 0;
@@ -56,6 +59,9 @@ public:
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier) = 0;
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(const IfStatement *ifStatement) = 0;
+	virtual void VisitSwitchStatement(const SwitchStatement *switchStatement) = 0;
+	virtual void VisitSwitchSection(const SwitchSection *switchSection) = 0;
+	virtual void VisitSwitchLabel(const SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement) = 0;
 	virtual void VisitJumpStatement(const JumpStatement *jumpStatement) = 0;
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression) = 0;

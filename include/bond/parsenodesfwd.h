@@ -21,6 +21,8 @@ namespace Bond
 	class CompoundStatement;
 	class IfStatement;
 	class SwitchStatement;
+	class SwitchSection;
+	class SwitchLabel;
 	class WhileStatement;
 	class ForStatement;
 	class JumpStatement;

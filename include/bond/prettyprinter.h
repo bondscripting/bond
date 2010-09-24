@@ -31,6 +31,9 @@ public:
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(const IfStatement *ifStatement);
+	virtual void VisitSwitchStatement(const SwitchStatement *switchStatement);
+	virtual void VisitSwitchSection(const SwitchSection *switchSection);
+	virtual void VisitSwitchLabel(const SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement);
 	virtual void VisitJumpStatement(const JumpStatement *jumpStatement);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
@@ -46,12 +49,11 @@ public:
 	virtual void VisitIdentifierExpression(const IdentifierExpression *identifierValue);
 
 private:
-	void PrintExternalDeclarationList(const ExternalDeclaration *declarationList);
-	void PrintEnumeratorList(const Enumerator *enumeratorList);
-	void PrintParameterList(const Parameter *parameterList);
-	void PrintArgumentList(const Expression *argumentList);
-	void PrintQualifiedIdentifier(const QualifiedIdentifier *identifier);
-	void PrintStatementList(const Statement *statementList);
+	template <typename T>
+	void PrintList(const ListParseNode<T> *listNode);
+
+	template <typename T>
+	void PrintList(const ListParseNode<T> *listNode, const char *separator);
 
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }

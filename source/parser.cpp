@@ -77,39 +77,46 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 //   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
 ExternalDeclaration *Parser::ParseExternalDeclaration(TokenStream &stream)
 {
-	ExternalDeclaration *declaration = ParseNamespaceDefinition(stream);
+	ExternalDeclaration *declaration = 0;
 
-	if (declaration == 0)
+	switch (stream.Peek()->GetTokenType())
 	{
-		declaration = ParseEnumDeclaration(stream);
-	}
+		case Token::KEY_NAMESPACE:
+			declaration = ParseNamespaceDefinition(stream);
+			break;
 
-	if (declaration == 0)
-	{
-		declaration = ParseStructDeclaration(stream);
-	}
+		case Token::KEY_ENUM:
+			declaration = ParseEnumDeclaration(stream);
+			break;
 
-	if (declaration == 0)
-	{
-		TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+		case Token::KEY_STRUCT:
+			declaration = ParseStructDeclaration(stream);
+			break;
 
-		// Could be a function declaration, function definition or a constant declarative statement.
-		if (descriptor != 0)
+		default:
 		{
-			const Token *name = ExpectToken(stream, Token::IDENTIFIER);
-			if (stream.NextIf(Token::OPAREN) != 0)
+			// TODO: move into a separate function once const_declarative_statement is figured out.
+			TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+
+			// Could be a function declaration, function definition or a constant declarative statement.
+			if (descriptor != 0)
 			{
-				Parameter *parameterList = ParseParameterList(stream);
-				ExpectToken(stream, Token::CPAREN);
-				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
-				CompoundStatement *body = ParseCompoundStatement(stream);
-				if (body == 0)
+				const Token *name = ExpectToken(stream, Token::IDENTIFIER);
+				if (stream.NextIf(Token::OPAREN) != 0)
 				{
-					ExpectToken(stream, Token::SEMICOLON);
+					Parameter *parameterList = ParseParameterList(stream);
+					ExpectToken(stream, Token::CPAREN);
+					FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
+					CompoundStatement *body = ParseCompoundStatement(stream);
+					if (body == 0)
+					{
+						ExpectToken(stream, Token::SEMICOLON);
+					}
+					declaration = mFactory.CreateFunctionDefinition(prototype, body);
 				}
-				declaration = mFactory.CreateFunctionDefinition(prototype, body);
 			}
 		}
+		break;
 	}
 
 	return declaration;
@@ -368,29 +375,36 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(TokenStream &stream)
 //   | expression_statement
 Statement *Parser::ParseStatement(TokenStream &stream)
 {
-	Statement *statement = ParseCompoundStatement(stream);
+	Statement *statement = 0;
 
-	if (statement == 0)
+	switch (stream.Peek()->GetTokenType())
 	{
-		statement = ParseIfStatement(stream);
-	}
+		case Token::OBRACE:
+			statement = ParseCompoundStatement(stream);
+			break;
 
-	if (statement == 0)
-	{
-		statement = ParseWhileStatement(stream);
-	}
+		case Token::KEY_IF:
+			statement = ParseIfStatement(stream);
+			break;
 
-	if (statement == 0)
-	{
-		statement = ParseDoWhileStatement(stream);
-	}
+		case Token::KEY_WHILE:
+			statement = ParseWhileStatement(stream);
+			break;
 
-	if (statement == 0)
-	{
-		statement = ParseJumpStatement(stream);
-	}
+		case Token::KEY_DO:
+			statement = ParseDoWhileStatement(stream);
+			break;
 
-	// TODO
+		case Token::KEY_BREAK:
+		case Token::KEY_CONTINUE:
+		case Token::KEY_RETURN:
+			statement = ParseJumpStatement(stream);
+			break;
+
+		default:
+			// TODO
+			break;
+	}
 
 	return statement;
 }
@@ -448,6 +462,29 @@ IfStatement *Parser::ParseIfStatement(TokenStream &stream)
 	}
 
 	return ifStatement;
+}
+
+
+// switch_statement
+// 	: SWITCH '(' expression ')' '{' switch_section* '}'
+SwitchStatement *Parser::ParseSwitchStatement(TokenStream &stream)
+{
+	SwitchStatement *switchStatement = 0;
+
+	if (stream.NextIf(Token::KEY_SWITCH) != 0)
+	{
+		ExpectToken(stream, Token::OPAREN);
+		Expression *control = ParseExpression(stream);
+		AssertNode(control, stream);
+		ExpectToken(stream, Token::CPAREN);
+
+		SwitchSection *sectionList = 0;
+		// TODO
+
+		switchStatement = mFactory.CreateSwitchStatement(control, sectionList);
+	}
+
+	return switchStatement;
 }
 
 

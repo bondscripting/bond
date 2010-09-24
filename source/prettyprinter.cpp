@@ -20,7 +20,7 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 
 void PrettyPrinter::VisitTranslationUnit(const TranslationUnit *translationUnit)
 {
-	PrintExternalDeclarationList(translationUnit->GetExternalDeclarationList());
+	PrintList(translationUnit->GetExternalDeclarationList());
 }
 
 
@@ -33,7 +33,7 @@ void PrettyPrinter::VisitNamespaceDefinition(const NamespaceDefinition *namespac
 	Tab();
 	Print("{\n");
 	IncrementTab();
-	PrintExternalDeclarationList(namespaceDefinition->GetExternalDeclarationList());
+	PrintList(namespaceDefinition->GetExternalDeclarationList());
 	DecrementTab();
 	Tab();
 	Print("}\n");
@@ -49,7 +49,7 @@ void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 	Tab();
 	Print("{\n");
 	IncrementTab();
-	PrintEnumeratorList(enumDeclaration->GetEnumeratorList());
+	PrintList(enumDeclaration->GetEnumeratorList());
 	DecrementTab();
 	Tab();
 	Print("};\n");
@@ -93,7 +93,7 @@ void PrettyPrinter::VisitFunctionPrototype(const FunctionPrototype *functionProt
 	Print(" ");
 	Print(functionPrototype->GetName());
 	Print("(");
-	PrintParameterList(functionPrototype->GetParameterList());
+	PrintList(functionPrototype->GetParameterList(), ", ");
 	Print(")");
 }
 
@@ -145,7 +145,7 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 	}
 	else
 	{
-		PrintQualifiedIdentifier(typeSpecifier->GetIdentifier());
+		PrintList(typeSpecifier->GetIdentifier(), "::");
 	}
 }
 
@@ -162,7 +162,7 @@ void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStat
 	Tab();
 	Print("{\n");
 	IncrementTab();
-	PrintStatementList(compoundStatement->GetStatementList());
+	PrintList(compoundStatement->GetStatementList());
 	DecrementTab();
 	Tab();
 	Print("}\n");
@@ -190,6 +190,47 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 		Print(ifStatement->GetElseStatement());
 		DecrementTab();
 	}
+}
+
+
+void PrettyPrinter::VisitSwitchStatement(const SwitchStatement *switchStatement)
+{
+	Tab();
+	Print("switch (");
+	Print(switchStatement->GetControl());
+	Print(")\n");
+
+	Tab();
+	Print("{\n");
+	IncrementTab();
+	PrintList(switchStatement->GetSectionList());
+	DecrementTab();
+	Tab();
+	Print("}\n");
+}
+
+
+void PrettyPrinter::VisitSwitchSection(const SwitchSection *switchSection)
+{
+	PrintList(switchSection->GetLabelList());
+	IncrementTab();
+	PrintList(switchSection->GetStatementList());
+	DecrementTab();
+}
+
+
+void PrettyPrinter::VisitSwitchLabel(const SwitchLabel *switchLabel)
+{
+	Tab();
+	Print(switchLabel->GetLabel());
+
+	if (switchLabel->GetExpression() != 0)
+	{
+		Print(" ");
+		Print(switchLabel->GetExpression());
+	}
+
+	Print(":\n");
 }
 
 
@@ -299,7 +340,7 @@ void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *fu
 {
 	Print(functionCallExpression->GetLhs());
 	Print("(");
-	PrintArgumentList(functionCallExpression->GetArgumentList());
+	PrintList(functionCallExpression->GetArgumentList(), ", ");
 	Print(")");
 }
 
@@ -337,13 +378,14 @@ void PrettyPrinter::VisitConstantExpression(const ConstantExpression *constantEx
 
 void PrettyPrinter::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
 {
-	PrintQualifiedIdentifier(identifierExpression->GetIdentifier());
+	PrintList(identifierExpression->GetIdentifier(), "::");
 }
 
 
-void PrettyPrinter::PrintExternalDeclarationList(const ExternalDeclaration *declarationList)
+template <typename T>
+void PrettyPrinter::PrintList(const ListParseNode<T> *listNode)
 {
-	const ExternalDeclaration *current = declarationList;
+	const ListParseNode<T> *current = listNode;
 	while (current != 0)
 	{
 		Print(current);
@@ -352,20 +394,10 @@ void PrettyPrinter::PrintExternalDeclarationList(const ExternalDeclaration *decl
 }
 
 
-void PrettyPrinter::PrintEnumeratorList(const Enumerator *enumeratorList)
+template <typename T>
+void PrettyPrinter::PrintList(const ListParseNode<T> *listNode, const char *separator)
 {
-	const Enumerator *current = enumeratorList;
-	while (current != 0)
-	{
-		Print(current);
-		current = current->GetNext();
-	}
-}
-
-
-void PrettyPrinter::PrintParameterList(const Parameter *parameterList)
-{
-	const Parameter *current = parameterList;
+	const ListParseNode<T> *current = listNode;
 
 	if (current != 0)
 	{
@@ -375,56 +407,7 @@ void PrettyPrinter::PrintParameterList(const Parameter *parameterList)
 
 	while (current != 0)
 	{
-		Print(", ");
-		Print(current);
-		current = current->GetNext();
-	}
-}
-
-
-void PrettyPrinter::PrintArgumentList(const Expression *argumentList)
-{
-	const Expression *current = argumentList;
-
-	if (current != 0)
-	{
-		Print(current);
-		current = current->GetNext();
-	}
-
-	while (current != 0)
-	{
-		Print(", ");
-		Print(current);
-		current = current->GetNext();
-	}
-}
-
-
-void PrettyPrinter::PrintQualifiedIdentifier(const QualifiedIdentifier *identifier)
-{
-	const QualifiedIdentifier *current = identifier;
-
-	if (current != 0)
-	{
-		Print(current);
-		current = current->GetNext();
-	}
-
-	while (current != 0)
-	{
-		Print("::");
-		Print(current);
-		current = current->GetNext();
-	}
-}
-
-
-void PrettyPrinter::PrintStatementList(const Statement *statementList)
-{
-	const Statement *current = statementList;
-	while (current != 0)
-	{
+		Print(separator);
 		Print(current);
 		current = current->GetNext();
 	}

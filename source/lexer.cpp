@@ -1014,6 +1014,10 @@ void Lexer::EvaluateKeywordToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_SIZEOF);
 	}
+	else if (strcmp(token.GetText(), "struct") == 0)
+	{
+		token.SetTokenType(Token::KEY_STRUCT);
+	}
 	else if (strcmp(token.GetText(), "switch") == 0)
 	{
 		token.SetTokenType(Token::KEY_SWITCH);

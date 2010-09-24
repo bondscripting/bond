@@ -115,13 +115,10 @@ if_statement
   : IF '(' expression ')' statement [ELSE statement]
 
 switch_statement
-	: SWITCH '(' expression ')' switch_block
-
-switch_block
-	: '{' switch_section* '}'
+	: SWITCH '(' expression ')' '{' switch_section* '}'
 
 switch_section
-	: switch_label+ statement_list+
+	: switch_label+ statement+
 
 switch_label
 	: CASE const_expression ':'

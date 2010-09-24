@@ -33,6 +33,9 @@ public:
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(IfStatement *ifStatement);
+	virtual void VisitSwitchStatement(SwitchStatement *switchStatement);
+	virtual void VisitSwitchSection(SwitchSection *switchSection);
+	virtual void VisitSwitchLabel(SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(WhileStatement *whileStatement);
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
@@ -48,12 +51,8 @@ public:
 	virtual void VisitIdentifierExpression(IdentifierExpression *identifierExpression);
 
 private:
-	void DestroyExternalDeclarationList(ExternalDeclaration *declarationList);
-	void DestroyEnumeratorList(Enumerator *enumeratorList);
-	void DestroyParameterList(Parameter *parameterList);
-	void DestroyQualifiedIdentifier(QualifiedIdentifier *identifier);
-	void DestroyStatementList(Statement *statementList);
-	void DestroyExpressionList(Expression *expressionList);
+	template <typename T>
+	void DestroyList(ListParseNode<T> *listNode);
 
 	Allocator &mAllocator;
 };
@@ -71,19 +70,19 @@ void ParseNodeDeallocator::Destroy(ParseNode *parseNode)
 
 void ParseNodeDeallocator::VisitTranslationUnit(TranslationUnit *translationUnit)
 {
-	DestroyExternalDeclarationList(translationUnit->GetExternalDeclarationList());
+	DestroyList(translationUnit->GetExternalDeclarationList());
 }
 
 
 void ParseNodeDeallocator::VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition)
 {
-	DestroyExternalDeclarationList(namespaceDefinition->GetExternalDeclarationList());
+	DestroyList(namespaceDefinition->GetExternalDeclarationList());
 }
 
 
 void ParseNodeDeallocator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration)
 {
-	DestroyEnumeratorList(enumDeclaration->GetEnumeratorList());
+	DestroyList(enumDeclaration->GetEnumeratorList());
 }
 
 
@@ -103,7 +102,7 @@ void ParseNodeDeallocator::VisitFunctionDefinition(FunctionDefinition *functionD
 void ParseNodeDeallocator::VisitFunctionPrototype(FunctionPrototype *functionPrototype)
 {
 	Destroy(functionPrototype->GetReturnType());
-	DestroyParameterList(functionPrototype->GetParameterList());
+	DestroyList(functionPrototype->GetParameterList());
 }
 
 
@@ -123,7 +122,7 @@ void ParseNodeDeallocator::VisitTypeDescriptor(TypeDescriptor *typeDescriptor)
 
 void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
 {
-	DestroyQualifiedIdentifier(typeSpecifier->GetIdentifier());
+	DestroyList(typeSpecifier->GetIdentifier());
 }
 
 
@@ -132,7 +131,7 @@ void ParseNodeDeallocator::VisitQualifiedIdentifier(QualifiedIdentifier *identif
 
 void ParseNodeDeallocator::VisitCompoundStatement(CompoundStatement *compoundStatement)
 {
-	DestroyStatementList(compoundStatement->GetStatementList());
+	DestroyList(compoundStatement->GetStatementList());
 }
 
 
@@ -141,6 +140,26 @@ void ParseNodeDeallocator::VisitIfStatement(IfStatement *ifStatement)
 	Destroy(ifStatement->GetCondition());
 	Destroy(ifStatement->GetThenStatement());
 	Destroy(ifStatement->GetElseStatement());
+}
+
+
+void ParseNodeDeallocator::VisitSwitchStatement(SwitchStatement *switchStatement)
+{
+	Destroy(switchStatement->GetControl());
+	DestroyList(switchStatement->GetSectionList());
+}
+
+
+void ParseNodeDeallocator::VisitSwitchSection(SwitchSection *switchSection)
+{
+	DestroyList(switchSection->GetLabelList());
+	DestroyList(switchSection->GetStatementList());
+}
+
+
+void ParseNodeDeallocator::VisitSwitchLabel(SwitchLabel *switchLabel)
+{
+	Destroy(switchLabel->GetExpression());
 }
 
 
@@ -200,7 +219,7 @@ void ParseNodeDeallocator::VisitArraySubscriptExpression(ArraySubscriptExpressio
 void ParseNodeDeallocator::VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression)
 {
 	Destroy(functionCallExpression->GetLhs());
-	DestroyExpressionList(functionCallExpression->GetArgumentList());
+	DestroyList(functionCallExpression->GetArgumentList());
 }
 
 
@@ -224,76 +243,17 @@ void ParseNodeDeallocator::VisitConstantExpression(ConstantExpression *constantE
 
 void ParseNodeDeallocator::VisitIdentifierExpression(IdentifierExpression *identifierExpression)
 {
-	DestroyQualifiedIdentifier(identifierExpression->GetIdentifier());
+	DestroyList(identifierExpression->GetIdentifier());
 }
 
 
-void ParseNodeDeallocator::DestroyExternalDeclarationList(ExternalDeclaration *declarationList)
+template <typename T>
+void ParseNodeDeallocator::DestroyList(ListParseNode<T> *listNode)
 {
-	ExternalDeclaration *current = declarationList;
+	ListParseNode<T> *current = listNode;
 	while (current != 0)
 	{
-		ExternalDeclaration *next = current->GetNext();
-		Destroy(current);
-		current = next;
-	}
-}
-
-
-void ParseNodeDeallocator::DestroyEnumeratorList(Enumerator *enumeratorList)
-{
-	Enumerator *current = enumeratorList;
-	while (current != 0)
-	{
-		Enumerator *next = current->GetNext();
-		Destroy(current);
-		current = next;
-	}
-}
-
-
-void ParseNodeDeallocator::DestroyParameterList(Parameter *parameterList)
-{
-	Parameter *current = parameterList;
-	while (current != 0)
-	{
-		Parameter *next = current->GetNext();
-		Destroy(current);
-		current = next;
-	}
-}
-
-
-void ParseNodeDeallocator::DestroyQualifiedIdentifier(QualifiedIdentifier *identifier)
-{
-	QualifiedIdentifier *current = identifier;
-	while (current != 0)
-	{
-		QualifiedIdentifier *next = current->GetNext();
-		Destroy(current);
-		current = next;
-	}
-}
-
-
-void ParseNodeDeallocator::DestroyStatementList(Statement *statementList)
-{
-	Statement *current = statementList;
-	while (current != 0)
-	{
-		Statement *next = current->GetNext();
-		Destroy(current);
-		current = next;
-	}
-}
-
-
-void ParseNodeDeallocator::DestroyExpressionList(Expression *expressionList)
-{
-	Expression *current = expressionList;
-	while (current != 0)
-	{
-		Expression *next = current->GetNext();
+		ListParseNode<T> *next = current->GetNext();
 		Destroy(current);
 		current = next;
 	}
@@ -399,6 +359,30 @@ IfStatement *ParseNodeFactory::CreateIfStatement(
 	Statement *elseStatement)
 {
 	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
+}
+
+
+SwitchStatement *ParseNodeFactory::CreateSwitchStatement(Expression *control, SwitchSection *sectionList)
+{
+	return new (mAllocator.Alloc<SwitchStatement>()) SwitchStatement(control, sectionList);
+}
+
+
+SwitchSection *ParseNodeFactory::CreateSwitchSection(SwitchLabel *labelList, Statement* statementList)
+{
+	return new (mAllocator.Alloc<SwitchSection>()) SwitchSection(labelList, statementList);
+}
+
+
+SwitchLabel *ParseNodeFactory::CreateSwitchLabel(const Token *label, Expression *expression)
+{
+	return new (mAllocator.Alloc<SwitchLabel>()) SwitchLabel(label, expression);
+}
+
+
+SwitchLabel *ParseNodeFactory::CreateDefaultLabel(const Token *label)
+{
+	return new (mAllocator.Alloc<SwitchLabel>()) SwitchLabel(label);
 }
 
 
