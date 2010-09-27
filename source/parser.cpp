@@ -70,6 +70,9 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(TokenStream &stream)
 //   | struct_declaration
 //   | const_declarative_statement
 //
+// function_definition
+//   : function_prototype compound_statement
+//
 // function_declaration
 //   : function_prototype ';'
 //
@@ -205,7 +208,7 @@ Enumerator *Parser::ParseEnumerator(TokenStream &stream)
 
 // parameter_list
 //   : parameter
-// 	| parameter_list ',' parameter
+//   | parameter_list ',' parameter
 Parameter *Parser::ParseParameterList(TokenStream &stream)
 {
 	Parameter *head = ParseParameter(stream);
@@ -387,6 +390,10 @@ Statement *Parser::ParseStatement(TokenStream &stream)
 			statement = ParseIfStatement(stream);
 			break;
 
+		case Token::KEY_SWITCH:
+			statement = ParseSwitchStatement(stream);
+			break;
+
 		case Token::KEY_WHILE:
 			statement = ParseWhileStatement(stream);
 			break;
@@ -402,7 +409,7 @@ Statement *Parser::ParseStatement(TokenStream &stream)
 			break;
 
 		default:
-			// TODO
+			statement = ParseDeclarativeOrExpressionStatement(stream);
 			break;
 	}
 
@@ -421,7 +428,7 @@ CompoundStatement *Parser::ParseCompoundStatement(TokenStream &stream)
 		Statement *statementList = ParseStatement(stream);
 		Statement *current = statementList;
 
-		while (current != 0)
+		while ((current != 0) && (stream.PeekIf(Token::CBRACE) == 0))
 		{
 			Statement *next = ParseStatement(stream);
 			current->SetNext(next);
@@ -466,7 +473,7 @@ IfStatement *Parser::ParseIfStatement(TokenStream &stream)
 
 
 // switch_statement
-// 	: SWITCH '(' expression ')' '{' switch_section* '}'
+//   : SWITCH '(' expression ')' '{' switch_section* '}'
 SwitchStatement *Parser::ParseSwitchStatement(TokenStream &stream)
 {
 	SwitchStatement *switchStatement = 0;
@@ -477,14 +484,85 @@ SwitchStatement *Parser::ParseSwitchStatement(TokenStream &stream)
 		Expression *control = ParseExpression(stream);
 		AssertNode(control, stream);
 		ExpectToken(stream, Token::CPAREN);
+		ExpectToken(stream, Token::OBRACE);
 
-		SwitchSection *sectionList = 0;
-		// TODO
+		SwitchSection *sectionList = ParseSwitchSection(stream);
+		SwitchSection *current = sectionList;
+		while ((current != 0) && (stream.PeekIf(Token::CBRACE) == 0))
+		{
+			SwitchSection *next = ParseSwitchSection(stream);
+			current->SetNext(next);
+			current = next;
+		}
+		// TODO: Ensure list is not empty.
 
+		ExpectToken(stream, Token::CBRACE);
 		switchStatement = mFactory.CreateSwitchStatement(control, sectionList);
 	}
 
 	return switchStatement;
+}
+
+
+// switch_section
+//   : switch_label+ statement+
+SwitchSection *Parser::ParseSwitchSection(TokenStream &stream)
+{
+	SwitchSection *section = 0;
+	SwitchLabel *labelList = ParseSwitchLabel(stream);
+
+	if (labelList != 0)
+	{
+		SwitchLabel *currentLabel = labelList;
+		while (currentLabel != 0)
+		{
+			SwitchLabel *next = ParseSwitchLabel(stream);
+			currentLabel->SetNext(next);
+			currentLabel = next;
+		}
+
+		Statement *statementList = ParseStatement(stream);
+		Statement *currentStatement = statementList;
+		while (currentStatement != 0)
+		{
+			Statement *next = ParseStatement(stream);
+			currentStatement->SetNext(next);
+			currentStatement = next;
+		}
+		// TODO: Ensure list is not empty.
+
+		section = mFactory.CreateSwitchSection(labelList, statementList);;
+	}
+
+	return section;
+}
+
+
+// switch_label
+//   : CASE const_expression ':'
+//   | DEFAULT ':'
+SwitchLabel *Parser::ParseSwitchLabel(TokenStream &stream)
+{
+	SwitchLabel *label = 0;
+	const Token *labelToken = stream.NextIf(TokenTypeSet::SWITCH_LABELS);
+
+	if (labelToken != 0)
+	{
+		if (labelToken->GetTokenType() == Token::KEY_CASE)
+		{
+			Expression *expression = ParseConstExpression(stream);
+			AssertNode(expression, stream);
+			label = mFactory.CreateSwitchLabel(labelToken, expression);
+		}
+		else
+		{
+			label = mFactory.CreateDefaultLabel(labelToken);
+		}
+
+		ExpectToken(stream, Token::COLON);
+	}
+
+	return label;
 }
 
 
@@ -553,6 +631,46 @@ JumpStatement *Parser::ParseJumpStatement(TokenStream &stream)
 	}
 
 	return jumpStatement;
+}
+
+
+// declarative_statement
+//   : type_descriptor named_initializer_list ';'
+Statement *Parser::ParseDeclarativeOrExpressionStatement(TokenStream &stream)
+{
+	Statement *statement = 0;
+	//const int pos = stream.GetPosition();
+
+	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
+	// index operators can appear like a type descriptor as well as an expression, we'll treat anything
+	// that fits the profile of a declaration as such and everything else like an expression statement.
+	TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
+	if (descriptor != 0)
+	{
+		
+	}
+	else
+	{
+		statement = ParseExpressionStatement(stream);
+	}
+
+	return statement;
+}
+
+
+// expression_statement
+//   : [expression] ';'
+ExpressionStatement *Parser::ParseExpressionStatement(TokenStream &stream)
+{
+	ExpressionStatement *expressionStatement = 0;
+	Expression *expression = ParseExpression(stream);
+
+	if (expression != 0)
+	{
+		expressionStatement = mFactory.CreateExpressionStatement(expression);
+	}
+
+	return expressionStatement;
 }
 
 

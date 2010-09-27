@@ -277,6 +277,25 @@ void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
 }
 
 
+void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement)
+{
+	Tab();
+	Print(declarativeStatement->GetTypeDescriptor());
+	Print(" ");
+	Print(declarativeStatement->GetName());
+	// TODO
+	Print(";\n");
+}
+
+
+void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressionStatement)
+{
+	Tab();
+	Print(expressionStatement->GetExpression());
+	Print(";\n");
+}
+
+
 void PrettyPrinter::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
 {
 	Print("(");

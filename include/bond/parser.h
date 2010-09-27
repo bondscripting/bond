@@ -95,9 +95,13 @@ private:
 	CompoundStatement *ParseCompoundStatement(TokenStream &stream);
 	IfStatement *ParseIfStatement(TokenStream &stream);
 	SwitchStatement *ParseSwitchStatement(TokenStream &stream);
+	SwitchSection *ParseSwitchSection(TokenStream &stream);
+	SwitchLabel *ParseSwitchLabel(TokenStream &stream);
 	WhileStatement *ParseWhileStatement(TokenStream &stream);
 	WhileStatement *ParseDoWhileStatement(TokenStream &stream);
 	JumpStatement *ParseJumpStatement(TokenStream &stream);
+	Statement *ParseDeclarativeOrExpressionStatement(TokenStream &stream);
+	ExpressionStatement *ParseExpressionStatement(TokenStream &stream);
 	Expression *ParseConstExpression(TokenStream &stream);
 	Expression *ParseExpression(TokenStream &stream, ExpressionQualifier qualifier = EXP_NORMAL);
 	Expression *ParseAssignmentExpression(TokenStream &stream, ExpressionQualifier qualifier);

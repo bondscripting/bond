@@ -31,6 +31,13 @@ namespace OuterSpace
 
 			do
 			{
+				switch (a)
+				{
+					case 12 * 3:
+						break;
+					default:
+						break;
+				}
 			}
 			while (b != 0);
 		}

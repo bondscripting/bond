@@ -36,6 +36,8 @@ public:
 	virtual void VisitSwitchLabel(const SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement);
 	virtual void VisitJumpStatement(const JumpStatement *jumpStatement);
+	virtual void VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement);
+	virtual void VisitExpressionStatement(const ExpressionStatement *expressionStatement);
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression);

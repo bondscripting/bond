@@ -26,6 +26,8 @@ namespace Bond
 	class WhileStatement;
 	class ForStatement;
 	class JumpStatement;
+	class DeclarativeStatement;
+	class ExpressionStatement;
 	class Expression;
 	class ConditionalExpression;
 	class BinaryExpression;

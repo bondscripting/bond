@@ -38,6 +38,8 @@ public:
 	virtual void VisitSwitchLabel(SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(WhileStatement *whileStatement);
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement);
+	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement);
+	virtual void VisitExpressionStatement(ExpressionStatement *expressionStatement);
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression);
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression);
 	virtual void VisitUnaryExpression(UnaryExpression *unaryExpression);
@@ -173,6 +175,19 @@ void ParseNodeDeallocator::VisitWhileStatement(WhileStatement *whileStatement)
 void ParseNodeDeallocator::VisitJumpStatement(JumpStatement *jumpStatement)
 {
 	Destroy(jumpStatement->GetRhs());
+}
+
+
+void ParseNodeDeallocator::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
+{
+	Destroy(declarativeStatement->GetTypeDescriptor());
+	// TODO
+}
+
+
+void ParseNodeDeallocator::VisitExpressionStatement(ExpressionStatement *expressionStatement)
+{
+	Destroy(expressionStatement->GetExpression());
 }
 
 
@@ -401,6 +416,20 @@ WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, 
 JumpStatement *ParseNodeFactory::CreateJumpStatement(const Token *op, Expression *rhs)
 {
 	return new (mAllocator.Alloc<JumpStatement>()) JumpStatement(op, rhs);
+}
+
+
+DeclarativeStatement *ParseNodeFactory::CreateDeclarativeStatement(
+	const Token *name,
+	TypeDescriptor *typeDescriptor)
+{
+	return new (mAllocator.Alloc<DeclarativeStatement>()) DeclarativeStatement(name, typeDescriptor);
+}
+
+
+ExpressionStatement *ParseNodeFactory::CreateExpressionStatement(Expression *expression)
+{
+	return new (mAllocator.Alloc<ExpressionStatement>()) ExpressionStatement(expression);
 }
 
 

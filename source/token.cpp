@@ -109,6 +109,20 @@ TokenTypeSet TokenTypeSet::JUMP_OPERATORS =
 };
 
 
+static const Token::TokenType SWITCH_LABEL_TYPES[] =
+{
+	Token::KEY_CASE,
+	Token::KEY_DEFAULT,
+};
+
+TokenTypeSet TokenTypeSet::SWITCH_LABELS =
+{
+	SWITCH_LABEL_TYPES,
+	sizeof(SWITCH_LABEL_TYPES) / sizeof(*SWITCH_LABEL_TYPES),
+	"SWITCH_LABEL",
+};
+
+
 static const Token::TokenType ASSIGNMENT_OPERATOR_TYPES[] =
 {
 	Token::ASSIGN,

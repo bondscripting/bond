@@ -246,6 +246,7 @@ struct TokenTypeSet
 	static TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
 	static TokenTypeSet TYPE_DESCRIPTORS;
 	static TokenTypeSet JUMP_OPERATORS;
+	static TokenTypeSet SWITCH_LABELS;
 	static TokenTypeSet ASSIGNMENT_OPERATORS;
 	static TokenTypeSet EQUALITY_OPERATORS;
 	static TokenTypeSet RELATIONAL_OPERATORS;

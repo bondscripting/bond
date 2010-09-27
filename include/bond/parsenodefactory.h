@@ -42,6 +42,8 @@ public:
 	WhileStatement *CreateWhileStatement(Expression *condition, Statement *body);
 	WhileStatement *CreateDoWhileStatement(Expression *condition, Statement *body);
 	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
+	DeclarativeStatement *CreateDeclarativeStatement(const Token *name, TypeDescriptor *typeDescriptor);
+	ExpressionStatement *CreateExpressionStatement(Expression *expression);
 
 	ConditionalExpression *CreateConditionalExpression(
 		Expression *condition,

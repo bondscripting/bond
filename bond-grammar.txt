@@ -35,13 +35,6 @@ parameter_list
 parameter
   : type_descriptor IDENTIFIER
 
-struct_declaration
-  : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
-
-struct_member_declaration
-  : type_descriptor identifier_list ';'
-  | function_declaration
-
 enum_declaration
   : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
 
@@ -51,6 +44,13 @@ enumerator_list
 
 enumerator
   : IDENTIFIER ['=' const_expression]
+
+struct_declaration
+  : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+
+*struct_member_declaration
+  : type_descriptor identifier_list ';'
+  | function_declaration
 
 type_descriptor
   : CONST type_specifier
@@ -70,22 +70,22 @@ primitive_type_specifier
   | UINT
   | FLOAT
 
-named_initializer_list
+*named_initializer_list
   : named_initializer
   | named_initializer_list ',' named_initializer
 
-named_initializer
+*named_initializer
   : IDENTIFIER ['=' initializer]
 
-initializer_list
+*initializer_list
   : initializer
   | initializer_list ',' initializer
 
-initializer
+*initializer
   : assignment_expression
   | '{' initializer_list [','] '}'
 
-identifier_list
+*identifier_list
   : IDENTIFIER
   | identifier_list ',' IDENTIFIER
 
@@ -115,14 +115,14 @@ if_statement
   : IF '(' expression ')' statement [ELSE statement]
 
 switch_statement
-	: SWITCH '(' expression ')' '{' switch_section* '}'
+  : SWITCH '(' expression ')' '{' switch_section* '}'
 
 switch_section
-	: switch_label+ statement+
+  : switch_label+ statement+
 
 switch_label
-	: CASE const_expression ':'
-	| DEFAULT ':'
+  : CASE const_expression ':'
+  | DEFAULT ':'
 
 while_statement
   : WHILE '(' expression ')' statement
@@ -130,12 +130,12 @@ while_statement
 do_statement
   : DO statement WHILE '(' expression ')' ';'
 
-for_statement
+*for_statement
   : FOR '(' for_init [expression] ';' [expression] ')' statement
 
-for_init
-	: declarative_statement
-	| expression_statement
+*for_init
+  : declarative_statement
+  | expression_statement
 
 jump_statement
   : CONTINUE ';'
@@ -145,7 +145,7 @@ jump_statement
 declarative_statement
   : type_descriptor named_initializer_list ';'
 
-const_declarative_statement
+*const_declarative_statement
   : declarative_statement 
   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 

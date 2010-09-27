@@ -71,7 +71,7 @@ class NamespaceDefinition: public ExternalDeclaration
 public:
 	NamespaceDefinition(const Token *name, ExternalDeclaration *declarationList):
 		mName(name),
-	 	mDeclarationList(declarationList)
+		mDeclarationList(declarationList)
 	{}
 
 	virtual ~NamespaceDefinition() {}
@@ -95,7 +95,7 @@ class EnumDeclaration: public ExternalDeclaration
 public:
 	EnumDeclaration(const Token *name, Enumerator *enumeratorList):
 		mName(name),
-	 	mEnumeratorList(enumeratorList)
+		mEnumeratorList(enumeratorList)
 	{}
 
 	virtual ~EnumDeclaration() {}
@@ -304,7 +304,7 @@ public:
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
 
- private:
+private:
 	const Token *mPrimitiveType;
 	QualifiedIdentifier *mIdentifier;
 };
@@ -342,7 +342,7 @@ public:
 	CompoundStatement(Statement *statementList): mStatementList(statementList) {}
 	virtual ~CompoundStatement() {}
 
- 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitCompoundStatement(this); }
 
 	Statement *GetStatementList() { return mStatementList; }
@@ -360,11 +360,11 @@ public:
 		mCondition(condition),
 		mThenStatement(thenStatement),
 		mElseStatement(elseStatement)
- {}
+	{}
 
 	virtual ~IfStatement() {}
 
- 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIfStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIfStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitIfStatement(this); }
 
 	Expression *GetCondition() { return mCondition; }
@@ -389,7 +389,7 @@ public:
 	SwitchStatement(Expression *control, SwitchSection *sectionList):
 		mControl(control),
 		mSectionList(sectionList)
- {}
+	{}
 
 	virtual ~SwitchStatement() {}
 
@@ -486,11 +486,11 @@ public:
 		mCondition(condition),
 		mBody(body),
 		mVariant(variant)
- {}
+	{}
 
 	virtual ~WhileStatement() {}
 
- 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitWhileStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitWhileStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitWhileStatement(this); }
 
 	Expression *GetCondition() { return mCondition; }
@@ -511,10 +511,10 @@ private:
 class JumpStatement: public Statement
 {
 public:
- JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
+	JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
 	virtual ~JumpStatement() {}
 
- 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitJumpStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitJumpStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitJumpStatement(this); }
 
 	const Token *GetOperator() const { return mOperator; }
@@ -525,6 +525,47 @@ public:
 private:
 	const Token *mOperator;
 	Expression *mRhs;
+};
+
+
+class DeclarativeStatement: public Statement
+{
+public:
+	DeclarativeStatement(const Token *name, TypeDescriptor *typeDescriptor):
+		mName(name),
+		mTypeDescriptor(typeDescriptor)
+	{}
+
+	virtual ~DeclarativeStatement() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitDeclarativeStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitDeclarativeStatement(this); }
+
+	const Token *GetName() const { return mName; }
+
+	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+
+private:
+	const Token *mName;
+	TypeDescriptor *mTypeDescriptor;
+};
+
+
+class ExpressionStatement: public Statement
+{
+public:
+	ExpressionStatement(Expression *expression): mExpression(expression) {}
+	virtual ~ExpressionStatement() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitExpressionStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitExpressionStatement(this); }
+
+	Expression *GetExpression() { return mExpression; }
+	const Expression *GetExpression() const { return mExpression; }
+
+private:
+	Expression *mExpression;
 };
 
 

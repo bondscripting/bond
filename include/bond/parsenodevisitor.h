@@ -27,6 +27,8 @@ public:
 	virtual void VisitSwitchLabel(SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(WhileStatement *whileStatement) = 0;
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement) = 0;
+	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement) = 0;
+	virtual void VisitExpressionStatement(ExpressionStatement *expressionStatement) = 0;
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) = 0;
 	virtual void VisitConditionalExpression(ConditionalExpression *conditionalExpression) = 0;
 	virtual void VisitBinaryExpression(BinaryExpression *binaryExpression) = 0;
@@ -64,6 +66,8 @@ public:
 	virtual void VisitSwitchLabel(const SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement) = 0;
 	virtual void VisitJumpStatement(const JumpStatement *jumpStatement) = 0;
+	virtual void VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement) = 0;
+	virtual void VisitExpressionStatement(const ExpressionStatement *expressionStatement) = 0;
 	virtual void VisitConditionalExpression(const ConditionalExpression *conditionalExpression) = 0;
 	virtual void VisitBinaryExpression(const BinaryExpression *binaryExpression) = 0;
 	virtual void VisitUnaryExpression(const UnaryExpression *unaryExpression) = 0;
