@@ -150,6 +150,13 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 }
 
 
+void PrettyPrinter::VisitNamedInitializer(const NamedInitializer *namedInitializer)
+{
+	Print(namedInitializer->GetName());
+	// TODO
+}
+
+
 void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName());
@@ -282,8 +289,7 @@ void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declar
 	Tab();
 	Print(declarativeStatement->GetTypeDescriptor());
 	Print(" ");
-	Print(declarativeStatement->GetName());
-	// TODO
+	PrintList(declarativeStatement->GetNamedInitializerList(), ", ");
 	Print(";\n");
 }
 

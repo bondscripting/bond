@@ -18,6 +18,9 @@ namespace OuterSpace
 	void DoSomething(int a, int *b);
 	void DoSomethingElse(int a, int b, int *c)
 	{
+		Thingy *[2] thingA, thingB;
+		thingA = thingB = 1;
+
 		while (a < 20)
 		{
 			if (b > 10)

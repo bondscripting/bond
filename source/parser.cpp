@@ -342,6 +342,43 @@ TypeSpecifier *Parser::ParsePrimitiveTypeSpecifier(TokenStream &stream)
 }
 
 
+// named_initializer_list
+//   : named_initializer
+//   | named_initializer_list ',' named_initializer
+NamedInitializer *Parser::ParseNamedInitializerList(TokenStream &stream)
+{
+	NamedInitializer *head = ParseNamedInitializer(stream);
+	NamedInitializer *current = head;
+
+	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
+	{
+		NamedInitializer *next = ParseNamedInitializer(stream);
+		AssertNode(next, stream);
+		current->SetNext(next);
+		current = next;
+	}
+
+	return head;
+}
+
+
+// named_initializer
+//   : IDENTIFIER ['=' initializer]
+NamedInitializer *Parser::ParseNamedInitializer(TokenStream &stream)
+{
+	NamedInitializer *namedInitializer = 0;
+	const Token *name = stream.NextIf(Token::IDENTIFIER);
+
+	if (name != 0)
+	{
+		// TODO: Parse initializer
+		namedInitializer = mFactory.CreateNamedInitializer(name);
+	}
+
+	return namedInitializer;
+}
+
+
 // qualified_id
 //   : IDENTIFIER
 //   | qualified_id '::' IDENTIFIER
@@ -639,7 +676,7 @@ JumpStatement *Parser::ParseJumpStatement(TokenStream &stream)
 Statement *Parser::ParseDeclarativeOrExpressionStatement(TokenStream &stream)
 {
 	Statement *statement = 0;
-	//const int pos = stream.GetPosition();
+	const int pos = stream.GetPosition();
 
 	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
 	// index operators can appear like a type descriptor as well as an expression, we'll treat anything
@@ -647,9 +684,22 @@ Statement *Parser::ParseDeclarativeOrExpressionStatement(TokenStream &stream)
 	TypeDescriptor *descriptor = ParseTypeDescriptor(stream);
 	if (descriptor != 0)
 	{
-		
+		NamedInitializer *initializerList = ParseNamedInitializerList(stream);
+
+		if (initializerList != 0)
+		{
+			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
+			ExpectToken(stream, Token::SEMICOLON);
+		}
+		else
+		{
+			// The tokens that looked like a type descriptor, might actually be part of an expression.
+			mFactory.DestroyHierarchy(descriptor);
+			stream.SetPosition(pos);
+		}
 	}
-	else
+
+	if (statement == 0)
 	{
 		statement = ParseExpressionStatement(stream);
 	}
@@ -668,6 +718,7 @@ ExpressionStatement *Parser::ParseExpressionStatement(TokenStream &stream)
 	if (expression != 0)
 	{
 		expressionStatement = mFactory.CreateExpressionStatement(expression);
+		ExpectToken(stream, Token::SEMICOLON);
 	}
 
 	return expressionStatement;
@@ -1256,7 +1307,8 @@ void Parser::AssertNode(ParseNode *node, const TokenStream &stream)
 
 void Parser::AssertConstExpression(ExpressionQualifier qualifier, ErrorType errorType, const Token *token)
 {
-	if (qualifier != EXP_CONST)
+	// TODO: The name of this function doesn't make sense.
+	if (qualifier == EXP_CONST)
 	{
 		PushError(errorType, token);
 	}

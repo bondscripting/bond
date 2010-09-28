@@ -32,6 +32,7 @@ public:
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length);
 	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
+	NamedInitializer *CreateNamedInitializer(const Token *name);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 	CompoundStatement *CreateCompoundStatement(Statement *statementList);
 	IfStatement *CreateIfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement);
@@ -42,7 +43,11 @@ public:
 	WhileStatement *CreateWhileStatement(Expression *condition, Statement *body);
 	WhileStatement *CreateDoWhileStatement(Expression *condition, Statement *body);
 	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
-	DeclarativeStatement *CreateDeclarativeStatement(const Token *name, TypeDescriptor *typeDescriptor);
+
+	DeclarativeStatement *CreateDeclarativeStatement(
+		TypeDescriptor *typeDescriptor,
+		NamedInitializer *initializerList);
+
 	ExpressionStatement *CreateExpressionStatement(Expression *expression);
 
 	ConditionalExpression *CreateConditionalExpression(

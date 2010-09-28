@@ -70,11 +70,11 @@ primitive_type_specifier
   | UINT
   | FLOAT
 
-*named_initializer_list
+named_initializer_list
   : named_initializer
   | named_initializer_list ',' named_initializer
 
-*named_initializer
+named_initializer
   : IDENTIFIER ['=' initializer]
 
 *initializer_list

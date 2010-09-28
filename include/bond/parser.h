@@ -90,6 +90,8 @@ private:
 	TypeDescriptor *ParseTypeDescriptor(TokenStream &stream);
 	TypeSpecifier *ParseTypeSpecifier(TokenStream &stream);
 	TypeSpecifier *ParsePrimitiveTypeSpecifier(TokenStream &stream);
+	NamedInitializer *ParseNamedInitializerList(TokenStream &stream);
+	NamedInitializer *ParseNamedInitializer(TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(TokenStream &stream);
 	Statement *ParseStatement(TokenStream &stream);
 	CompoundStatement *ParseCompoundStatement(TokenStream &stream);

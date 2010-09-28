@@ -30,7 +30,8 @@ public:
 	virtual void VisitParameter(Parameter *parameter);
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
-	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier);
+	virtual void VisitNamedInitializer(NamedInitializer *namedInitializer);
+	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(IfStatement *ifStatement);
 	virtual void VisitSwitchStatement(SwitchStatement *switchStatement);
@@ -128,7 +129,10 @@ void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
 }
 
 
-void ParseNodeDeallocator::VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
+void ParseNodeDeallocator::VisitNamedInitializer(NamedInitializer *namedInitializer)
+{
+	// TODO
+}
 
 
 void ParseNodeDeallocator::VisitCompoundStatement(CompoundStatement *compoundStatement)
@@ -181,7 +185,7 @@ void ParseNodeDeallocator::VisitJumpStatement(JumpStatement *jumpStatement)
 void ParseNodeDeallocator::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
 {
 	Destroy(declarativeStatement->GetTypeDescriptor());
-	// TODO
+	DestroyList(declarativeStatement->GetNamedInitializerList());
 }
 
 
@@ -356,6 +360,12 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 }
 
 
+NamedInitializer *ParseNodeFactory::CreateNamedInitializer(const Token *name)
+{
+	return new (mAllocator.Alloc<NamedInitializer>()) NamedInitializer(name);
+}
+
+
 QualifiedIdentifier *ParseNodeFactory::CreateQualifiedIdentifier(const Token *name)
 {
 	return new (mAllocator.Alloc<QualifiedIdentifier>()) QualifiedIdentifier(name);
@@ -420,10 +430,10 @@ JumpStatement *ParseNodeFactory::CreateJumpStatement(const Token *op, Expression
 
 
 DeclarativeStatement *ParseNodeFactory::CreateDeclarativeStatement(
-	const Token *name,
-	TypeDescriptor *typeDescriptor)
+	TypeDescriptor *typeDescriptor,
+	NamedInitializer *initializerList)
 {
-	return new (mAllocator.Alloc<DeclarativeStatement>()) DeclarativeStatement(name, typeDescriptor);
+	return new (mAllocator.Alloc<DeclarativeStatement>()) DeclarativeStatement(typeDescriptor, initializerList);
 }
 
 

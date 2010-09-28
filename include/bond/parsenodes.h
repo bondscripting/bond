@@ -310,6 +310,25 @@ private:
 };
 
 
+class NamedInitializer: public ListParseNode<NamedInitializer>
+{
+public:
+	NamedInitializer(const Token *name):
+		mName(name)
+	{}
+
+	virtual ~NamedInitializer() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamedInitializer(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitNamedInitializer(this); }
+
+	const Token *GetName() const { return mName; }
+
+private:
+	const Token *mName;
+};
+
+
 class QualifiedIdentifier: public ListParseNode<QualifiedIdentifier>
 {
 public:
@@ -531,9 +550,9 @@ private:
 class DeclarativeStatement: public Statement
 {
 public:
-	DeclarativeStatement(const Token *name, TypeDescriptor *typeDescriptor):
-		mName(name),
-		mTypeDescriptor(typeDescriptor)
+	DeclarativeStatement(TypeDescriptor *typeDescriptor, NamedInitializer *initializerList):
+		mTypeDescriptor(typeDescriptor),
+		mNamedInitializerList(initializerList)
 	{}
 
 	virtual ~DeclarativeStatement() {}
@@ -541,14 +560,15 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitDeclarativeStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitDeclarativeStatement(this); }
 
-	const Token *GetName() const { return mName; }
-
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 
+	const NamedInitializer *GetNamedInitializerList() const { return mNamedInitializerList; }
+	NamedInitializer *GetNamedInitializerList() { return mNamedInitializerList; }
+
 private:
-	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
+	NamedInitializer *mNamedInitializerList;
 };
 
 
