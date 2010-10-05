@@ -51,4 +51,3 @@ namespace OuterSpace
 		return a + b;
 	}
 }
-

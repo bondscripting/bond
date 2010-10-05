@@ -202,7 +202,7 @@ Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream)
 		if (stream.NextIf(Token::ASSIGN) != 0)
 		{
 			value = ParseConstExpression(status, stream);
-			AssertNode(value, stream, status);
+			AssertNode(status, stream, value);
 		}
 		enumerator = mFactory.CreateEnumerator(name, value);
 	}
@@ -222,7 +222,7 @@ Parameter *Parser::ParseParameterList(Status &status, TokenStream &stream)
 	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
 	{
 		Parameter *next = ParseParameter(status, stream);
-		AssertNode(next, stream, status);
+		AssertNode(status, stream, next);
 		current->SetNext(next);
 		current = next;
 	}
@@ -365,7 +365,7 @@ NamedInitializer *Parser::ParseNamedInitializerList(Status &status, TokenStream 
 	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
 	{
 		NamedInitializer *next = ParseNamedInitializer(status, stream);
-		AssertNode(next, stream, status);
+		AssertNode(status, stream, next);
 		current->SetNext(next);
 		current = next;
 	}
@@ -405,7 +405,7 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(Status &status, TokenStrea
 		if (stream.NextIf(Token::SCOPE))
 		{
 			QualifiedIdentifier *next = ParseQualifiedIdentifier(status, stream);
-			AssertNode(next, stream, status);
+			AssertNode(status, stream, next);
 			id->SetNext(next);
 		}
 	}
@@ -480,7 +480,7 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 		while ((stream.PeekIf(Token::CBRACE) == 0) && (stream.PeekIf(Token::END) == 0))
 		{
 			Statement *next = ParseStatement(status, stream);
-			AssertNode(next, stream, status);
+			AssertNode(status, stream, next);
 			SyncToStatementDelimiter(status, stream);
 
 			if (next != 0)
@@ -515,16 +515,16 @@ IfStatement *Parser::ParseIfStatement(Status &status, TokenStream &stream)
 	{
 		ExpectToken(status, stream, Token::OPAREN);
 		Expression *condition = ParseExpression(status, stream);
-		AssertNode(condition, stream, status);
+		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
 		Statement *thenStatement = ParseStatement(status, stream);
-		AssertNode(thenStatement, stream, status);
+		AssertNode(status, stream, thenStatement);
 		Statement *elseStatement = 0;
 
 		if (stream.NextIf(Token::KEY_ELSE))
 		{
 			elseStatement = ParseStatement(status, stream);
-			AssertNode(elseStatement, stream, status);
+			AssertNode(status, stream, elseStatement);
 		}
 
 		ifStatement = mFactory.CreateIfStatement(condition, thenStatement, elseStatement);
@@ -544,7 +544,7 @@ SwitchStatement *Parser::ParseSwitchStatement(Status &status, TokenStream &strea
 	{
 		ExpectToken(status, stream, Token::OPAREN);
 		Expression *control = ParseExpression(status, stream);
-		AssertNode(control, stream, status);
+		AssertNode(status, stream, control);
 		ExpectToken(status, stream, Token::CPAREN);
 		ExpectToken(status, stream, Token::OBRACE);
 
@@ -589,7 +589,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 		       (stream.PeekIf(Token::KEY_CASE) == 0) && (stream.PeekIf(Token::KEY_DEFAULT) == 0))
 		{
 			Statement *next = ParseStatement(status, stream);
-			AssertNode(next, stream, status);
+			AssertNode(status, stream, next);
 			SyncToStatementDelimiter(status, stream);
 
 			if (next != 0)
@@ -627,7 +627,7 @@ SwitchLabel *Parser::ParseSwitchLabel(Status &status, TokenStream &stream)
 		if (labelToken->GetTokenType() == Token::KEY_CASE)
 		{
 			Expression *expression = ParseConstExpression(status, stream);
-			AssertNode(expression, stream, status);
+			AssertNode(status, stream, expression);
 			label = mFactory.CreateSwitchLabel(labelToken, expression);
 		}
 		else
@@ -636,7 +636,6 @@ SwitchLabel *Parser::ParseSwitchLabel(Status &status, TokenStream &stream)
 		}
 
 		SyncToLabelTerminator(status, stream);
-		//ExpectToken(status, stream, Token::COLON);
 	}
 
 	return label;
@@ -653,10 +652,10 @@ WhileStatement *Parser::ParseWhileStatement(Status &status, TokenStream &stream)
 	{
 		ExpectToken(status, stream, Token::OPAREN);
 		Expression *condition = ParseExpression(status, stream);
-		AssertNode(condition, stream, status);
+		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
 		Statement *body = ParseStatement(status, stream);
-		AssertNode(body, stream, status);
+		AssertNode(status, stream, body);
 		whileStatement = mFactory.CreateWhileStatement(condition, body);
 	}
 
@@ -673,11 +672,11 @@ WhileStatement *Parser::ParseDoWhileStatement(Status &status, TokenStream &strea
 	if (stream.NextIf(Token::KEY_DO) != 0)
 	{
 		Statement *body = ParseStatement(status, stream);
-		AssertNode(body, stream, status);
+		AssertNode(status, stream, body);
 		ExpectToken(status, stream, Token::KEY_WHILE);
 		ExpectToken(status, stream, Token::OPAREN);
 		Expression *condition = ParseExpression(status, stream);
-		AssertNode(condition, stream, status);
+		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
 		ExpectToken(status, stream, Token::SEMICOLON);
 		whileStatement = mFactory.CreateDoWhileStatement(condition, body);
@@ -745,7 +744,7 @@ Statement *Parser::ParseDeclarativeOrExpressionStatement(Status &status, TokenSt
 			{
 				// Uh, oh. Looks like we're even worse off.
 				stream.SetPosition(descriptorPos);
-				AssertNode(statement, stream, status);
+				AssertNode(status, stream, statement);
 				SyncToStatementTerminator(status, stream);
 			}
 		}
@@ -771,6 +770,10 @@ ExpressionStatement *Parser::ParseExpressionStatement(Status &status, TokenStrea
 	{
 		SyncToStatementTerminator(status, stream);
 		expressionStatement = mFactory.CreateExpressionStatement(expression);
+	}
+	else if (stream.NextIf(Token::SEMICOLON))
+	{
+		expressionStatement = mFactory.CreateExpressionStatement(0);
 	}
 
 	return expressionStatement;
@@ -807,7 +810,7 @@ Expression *Parser::ParseExpression(Status &status, TokenStream &stream)
 			while (token != 0)
 			{
 				Expression *rhs = ParseAssignmentExpression(status, stream);
-				AssertNode(rhs, stream, status);
+				AssertNode(status, stream, rhs);
 				expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 				token = stream.NextIf(Token::COMMA);
 			}
@@ -849,7 +852,7 @@ Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &strea
 		{
 			AssertNonConstExpression(status, ASSIGNMENT_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 		}
 	}
@@ -868,10 +871,10 @@ Expression *Parser::ParseConditionalExpression(Status &status, TokenStream &stre
 	if ((expression != 0) && (stream.NextIf(Token::OP_TERNARY) != 0))
 	{
 		Expression *trueExpression = ParseExpression(status, stream);
-		AssertNode(trueExpression, stream, status);
+		AssertNode(status, stream, trueExpression);
 		ExpectToken(status, stream, Token::COLON);
 		Expression *falseExpression = ParseConditionalExpression(status, stream);
-		AssertNode(falseExpression, stream, status);
+		AssertNode(status, stream, falseExpression);
 		expression = mFactory.CreateConditionalExpression(expression, trueExpression, falseExpression);
 	}
 
@@ -892,7 +895,7 @@ Expression *Parser::ParseLogicalOrExpression(Status &status, TokenStream &stream
 		while (token != 0)
 		{
 			Expression *rhs = ParseLogicalAndExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_OR);
 		}
@@ -915,7 +918,7 @@ Expression *Parser::ParseLogicalAndExpression(Status &status, TokenStream &strea
 		while (token != 0)
 		{
 			Expression *rhs = ParseInclusiveOrExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_AND);
 		}
@@ -938,7 +941,7 @@ Expression *Parser::ParseInclusiveOrExpression(Status &status, TokenStream &stre
 		while (token != 0)
 		{
 			Expression *rhs = ParseExclusiveOrExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_OR);
 		}
@@ -961,7 +964,7 @@ Expression *Parser::ParseExclusiveOrExpression(Status &status, TokenStream &stre
 		while (token != 0)
 		{
 			Expression *rhs = ParseAndExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_XOR);
 		}
@@ -984,7 +987,7 @@ Expression *Parser::ParseAndExpression(Status &status, TokenStream &stream)
 		while (token != 0)
 		{
 			Expression *rhs = ParseEqualityExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(Token::OP_BIT_AND);
 		}
@@ -1008,7 +1011,7 @@ Expression *Parser::ParseEqualityExpression(Status &status, TokenStream &stream)
 		while (token != 0)
 		{
 			Expression *rhs = ParseRelationalExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
 		}
@@ -1034,7 +1037,7 @@ Expression *Parser::ParseRelationalExpression(Status &status, TokenStream &strea
 		while (token != 0)
 		{
 			Expression *rhs = ParseShiftExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
 		}
@@ -1058,7 +1061,7 @@ Expression *Parser::ParseShiftExpression(Status &status, TokenStream &stream)
 		while (token != 0)
 		{
 			Expression *rhs = ParseAdditiveExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
 		}
@@ -1082,7 +1085,7 @@ Expression *Parser::ParseAdditiveExpression(Status &status, TokenStream &stream)
 		while (token != 0)
 		{
 			Expression *rhs = ParseMultiplicativeExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
 		}
@@ -1107,7 +1110,7 @@ Expression *Parser::ParseMultiplicativeExpression(Status &status, TokenStream &s
 		while (token != 0)
 		{
 			Expression *rhs = ParseCastExpression(status, stream);
-			AssertNode(rhs, stream, status);
+			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
 			token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
 		}
@@ -1128,11 +1131,11 @@ Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 	{
 		ExpectToken(status, stream, Token::OP_LT);
 		TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
-		AssertNode(descriptor, stream, status);
+		AssertNode(status, stream, descriptor);
 		ExpectToken(status, stream, Token::OP_GT);
 		ExpectToken(status, stream, Token::OPAREN);
 		Expression *rhs = ParseCastExpression(status, stream);
-		AssertNode(rhs, stream, status);
+		AssertNode(status, stream, rhs);
 		ExpectToken(status, stream, Token::CPAREN);
 		expression = mFactory.CreateCastExpression(descriptor, rhs);
 	}
@@ -1179,7 +1182,7 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 				break;
 		}
 
-		AssertNode(rhs, stream, status);
+		AssertNode(status, stream, rhs);
 		expression = mFactory.CreateUnaryExpression(op, rhs);
 	}
 
@@ -1194,7 +1197,7 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 		{
 			ExpectToken(status, stream, Token::OPAREN);
 			TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
-			AssertNode(descriptor, stream, status);
+			AssertNode(status, stream, descriptor);
 			ExpectToken(status, stream, Token::CPAREN);
 			expression = mFactory.CreateSizeofExpression(descriptor);
 		}
@@ -1318,7 +1321,7 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
 	{
 		Expression *next = ParseExpression(status, stream);
-		AssertNode(next, stream, status);
+		AssertNode(status, stream, next);
 		current->SetNext(next);
 		current = next;
 	}
@@ -1343,9 +1346,15 @@ void Parser::SyncToStatementDelimiter(Status &status, TokenStream &stream)
 
 void Parser::SyncToLabelTerminator(Status &status, TokenStream &stream)
 {
-	SyncToStatementDelimiter(status, stream);
+	SyncToLabelDelimiter(status, stream);
 	ExpectToken(status, stream, Token::COLON);
-	SyncToStatementDelimiter(status, stream);
+	SyncToLabelDelimiter(status, stream);
+}
+
+
+void Parser::SyncToLabelDelimiter(Status &status, TokenStream &stream)
+{
+	Recover(status, stream, TokenTypeSet::LABEL_DELIMITERS);
 }
 
 
@@ -1384,7 +1393,7 @@ const Token *Parser::ExpectToken(Status &status, TokenStream &stream, const Toke
 }
 
 
-void Parser::AssertNode(ParseNode *node, const TokenStream &stream, Status &status)
+void Parser::AssertNode(Status &status, const TokenStream &stream, ParseNode *node)
 {
 	if (node == 0)
 	{

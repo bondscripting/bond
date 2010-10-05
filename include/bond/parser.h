@@ -162,6 +162,7 @@ private:
 	void SyncToStatementTerminator(Status &status, TokenStream &stream);
 	void SyncToStatementDelimiter(Status &status, TokenStream &stream);
 	void SyncToLabelTerminator(Status &status, TokenStream &stream);
+	void SyncToLabelDelimiter(Status &status, TokenStream &stream);
 
 	void Recover(
 		Status &status,
@@ -170,7 +171,7 @@ private:
 
 	const Token *ExpectToken(Status &status, TokenStream &stream, Token::TokenType expectedType);
 	const Token *ExpectToken(Status &status, TokenStream &stream, const TokenTypeSet &expectedTypes);
-	void AssertNode(ParseNode *node, const TokenStream &stream, Status &status);
+	void AssertNode(Status &status, const TokenStream &stream, ParseNode *node);
 	void AssertNonConstExpression(Status &status, ErrorType type, const Token *token);
 	void PushError(Status &status, ErrorType errorType, const Token *token, const char *expected = "");
 

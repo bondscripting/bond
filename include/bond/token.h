@@ -257,6 +257,7 @@ struct TokenTypeSet
 	static const TokenTypeSet POSTFIX_OPERATORS;
 	static const TokenTypeSet CONSTANT_VALUES;
 	static const TokenTypeSet STATEMENT_DELIMITERS;
+	static const TokenTypeSet LABEL_DELIMITERS;
 };
 
 }

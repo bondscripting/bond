@@ -299,4 +299,30 @@ const TokenTypeSet TokenTypeSet::STATEMENT_DELIMITERS =
 	"STATEMENT_DELIMITER",
 };
 
+
+static const Token::TokenType LABEL_DELIMITER_TYPES[] =
+{
+	Token::KEY_BREAK,
+	Token::KEY_CASE,
+	Token::KEY_CONTINUE,
+	Token::KEY_DEFAULT,
+	Token::KEY_DO,
+	Token::KEY_IF,
+	Token::KEY_FOR,
+	Token::KEY_RETURN,
+	Token::KEY_SWITCH,
+	Token::KEY_WHILE,
+	Token::OBRACE,
+	Token::CBRACE,
+	Token::SEMICOLON,
+	Token::COLON,
+};
+
+const TokenTypeSet TokenTypeSet::LABEL_DELIMITERS =
+{
+	LABEL_DELIMITER_TYPES,
+	sizeof(LABEL_DELIMITER_TYPES) / sizeof(*LABEL_DELIMITER_TYPES),
+	"LABEL_DELIMITER",
+};
+
 }
