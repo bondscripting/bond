@@ -38,13 +38,14 @@ public:
 
 	void SkipTo(Token::TokenType type);
 	void SkipTo(const TokenTypeSet &typeSet);
+	//void SkipTo(const TokenTypeSet &inclusiveDelimiters, const TokenTypeSet &exclusiveDelimiters);
 
 	int GetPosition() const { return mIndex; }
 	void SetPosition(int index) { mIndex = ValidIndex(index); }
 	int GetLength() const { return mLength; }
 
 private:
-	int ValidIndex(int index) const { return (index < 0) ? 0 : (index > mLength) ? (mLength - 1) : index; }
+	int ValidIndex(int index) const { return (index < 0) ? 0 : (index >= mLength) ? (mLength - 1) : index; }
 
 	const Token *mBuffer;
 	int mLength;

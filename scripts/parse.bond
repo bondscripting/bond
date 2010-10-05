@@ -38,6 +38,7 @@ namespace OuterSpace
 			{
 				switch (a)
 				{
+					case 11 * 3:
 					case 12 * 3:
 						break;
 					default:
@@ -50,3 +51,4 @@ namespace OuterSpace
 		return a + b;
 	}
 }
+

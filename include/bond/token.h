@@ -243,19 +243,20 @@ struct TokenTypeSet
 	const int numTypes;
 	const char *const typeName;
 
-	static TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
-	static TokenTypeSet TYPE_DESCRIPTORS;
-	static TokenTypeSet JUMP_OPERATORS;
-	static TokenTypeSet SWITCH_LABELS;
-	static TokenTypeSet ASSIGNMENT_OPERATORS;
-	static TokenTypeSet EQUALITY_OPERATORS;
-	static TokenTypeSet RELATIONAL_OPERATORS;
-	static TokenTypeSet SHIFT_OPERATORS;
-	static TokenTypeSet ADDITIVE_OPERATORS;
-	static TokenTypeSet MULTIPLICATIVE_OPERATORS;
-	static TokenTypeSet UNARY_OPERATORS;
-	static TokenTypeSet POSTFIX_OPERATORS;
-	static TokenTypeSet CONSTANT_VALUES;
+	static const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
+	static const TokenTypeSet TYPE_DESCRIPTORS;
+	static const TokenTypeSet JUMP_OPERATORS;
+	static const TokenTypeSet SWITCH_LABELS;
+	static const TokenTypeSet ASSIGNMENT_OPERATORS;
+	static const TokenTypeSet EQUALITY_OPERATORS;
+	static const TokenTypeSet RELATIONAL_OPERATORS;
+	static const TokenTypeSet SHIFT_OPERATORS;
+	static const TokenTypeSet ADDITIVE_OPERATORS;
+	static const TokenTypeSet MULTIPLICATIVE_OPERATORS;
+	static const TokenTypeSet UNARY_OPERATORS;
+	static const TokenTypeSet POSTFIX_OPERATORS;
+	static const TokenTypeSet CONSTANT_VALUES;
+	static const TokenTypeSet STATEMENT_DELIMITERS;
 };
 
 }

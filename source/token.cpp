@@ -72,7 +72,7 @@ static const Token::TokenType PRIMITIVE_TYPE_SPECIFIER_TYPES[] =
 	Token::KEY_VOID,
 };
 
-TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS =
+const TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS =
 {
 	PRIMITIVE_TYPE_SPECIFIER_TYPES,
 	sizeof(PRIMITIVE_TYPE_SPECIFIER_TYPES) / sizeof(*PRIMITIVE_TYPE_SPECIFIER_TYPES),
@@ -86,7 +86,7 @@ static const Token::TokenType TYPE_DESCRIPTOR_TYPES[] =
 	Token::OBRACKET,
 };
 
-TokenTypeSet TokenTypeSet::TYPE_DESCRIPTORS =
+const TokenTypeSet TokenTypeSet::TYPE_DESCRIPTORS =
 {
 	TYPE_DESCRIPTOR_TYPES,
 	sizeof(TYPE_DESCRIPTOR_TYPES) / sizeof(*TYPE_DESCRIPTOR_TYPES),
@@ -101,7 +101,7 @@ static const Token::TokenType JUMP_OPERATOR_TYPES[] =
 	Token::KEY_RETURN,
 };
 
-TokenTypeSet TokenTypeSet::JUMP_OPERATORS =
+const TokenTypeSet TokenTypeSet::JUMP_OPERATORS =
 {
 	JUMP_OPERATOR_TYPES,
 	sizeof(JUMP_OPERATOR_TYPES) / sizeof(*JUMP_OPERATOR_TYPES),
@@ -115,7 +115,7 @@ static const Token::TokenType SWITCH_LABEL_TYPES[] =
 	Token::KEY_DEFAULT,
 };
 
-TokenTypeSet TokenTypeSet::SWITCH_LABELS =
+const TokenTypeSet TokenTypeSet::SWITCH_LABELS =
 {
 	SWITCH_LABEL_TYPES,
 	sizeof(SWITCH_LABEL_TYPES) / sizeof(*SWITCH_LABEL_TYPES),
@@ -138,7 +138,7 @@ static const Token::TokenType ASSIGNMENT_OPERATOR_TYPES[] =
 	Token::ASSIGN_XOR,
 };
 
-TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS =
+const TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS =
 {
 	ASSIGNMENT_OPERATOR_TYPES,
 	sizeof(ASSIGNMENT_OPERATOR_TYPES) / sizeof(*ASSIGNMENT_OPERATOR_TYPES),
@@ -152,7 +152,7 @@ static const Token::TokenType EQUALITY_OPERATOR_TYPES[] =
 	Token::OP_NOT_EQUAL,
 };
 
-TokenTypeSet TokenTypeSet::EQUALITY_OPERATORS =
+const TokenTypeSet TokenTypeSet::EQUALITY_OPERATORS =
 {
 	EQUALITY_OPERATOR_TYPES,
 	sizeof(EQUALITY_OPERATOR_TYPES) / sizeof(*EQUALITY_OPERATOR_TYPES),
@@ -168,7 +168,7 @@ static const Token::TokenType RELATIONAL_OPERATOR_TYPES[] =
 	Token::OP_GTE,
 };
 
-TokenTypeSet TokenTypeSet::RELATIONAL_OPERATORS =
+const TokenTypeSet TokenTypeSet::RELATIONAL_OPERATORS =
 {
 	RELATIONAL_OPERATOR_TYPES,
 	sizeof(RELATIONAL_OPERATOR_TYPES) / sizeof(*RELATIONAL_OPERATOR_TYPES),
@@ -182,7 +182,7 @@ static const Token::TokenType SHIFT_OPERATOR_TYPES[] =
 	Token::OP_RIGHT,
 };
 
-TokenTypeSet TokenTypeSet::SHIFT_OPERATORS =
+const TokenTypeSet TokenTypeSet::SHIFT_OPERATORS =
 {
 	SHIFT_OPERATOR_TYPES,
 	sizeof(SHIFT_OPERATOR_TYPES) / sizeof(*SHIFT_OPERATOR_TYPES),
@@ -196,7 +196,7 @@ static const Token::TokenType ADDITIVE_OPERATOR_TYPES[] =
 	Token::OP_MINUS,
 };
 
-TokenTypeSet TokenTypeSet::ADDITIVE_OPERATORS =
+const TokenTypeSet TokenTypeSet::ADDITIVE_OPERATORS =
 {
 	ADDITIVE_OPERATOR_TYPES,
 	sizeof(ADDITIVE_OPERATOR_TYPES) / sizeof(*ADDITIVE_OPERATOR_TYPES),
@@ -211,7 +211,7 @@ static const Token::TokenType MULTIPLICATIVE_OPERATOR_TYPES[] =
 	Token::OP_MOD,
 };
 
-TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS =
+const TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS =
 {
 	MULTIPLICATIVE_OPERATOR_TYPES,
 	sizeof(MULTIPLICATIVE_OPERATOR_TYPES) / sizeof(*MULTIPLICATIVE_OPERATOR_TYPES),
@@ -231,7 +231,7 @@ static const Token::TokenType UNARY_OPERATOR_TYPES[] =
 	Token::OP_BIT_NOT,
 };
 
-TokenTypeSet TokenTypeSet::UNARY_OPERATORS =
+const TokenTypeSet TokenTypeSet::UNARY_OPERATORS =
 {
 	UNARY_OPERATOR_TYPES,
 	sizeof(UNARY_OPERATOR_TYPES) / sizeof(*UNARY_OPERATOR_TYPES),
@@ -249,7 +249,7 @@ static const Token::TokenType POSTFIX_OPERATOR_TYPES[] =
 	Token::PERIOD,
 };
 
-TokenTypeSet TokenTypeSet::POSTFIX_OPERATORS =
+const TokenTypeSet TokenTypeSet::POSTFIX_OPERATORS =
 {
 	POSTFIX_OPERATOR_TYPES,
 	sizeof(POSTFIX_OPERATOR_TYPES) / sizeof(*POSTFIX_OPERATOR_TYPES),
@@ -267,11 +267,36 @@ static const Token::TokenType CONSTANT_VALUE_TYPES[] =
 	Token::CONST_STRING,
 };
 
-TokenTypeSet TokenTypeSet::CONSTANT_VALUES =
+const TokenTypeSet TokenTypeSet::CONSTANT_VALUES =
 {
 	CONSTANT_VALUE_TYPES,
 	sizeof(CONSTANT_VALUE_TYPES) / sizeof(*CONSTANT_VALUE_TYPES),
 	"CONSTANT_VALUE",
+};
+
+
+static const Token::TokenType STATEMENT_DELIMITER_TYPES[] =
+{
+	Token::KEY_BREAK,
+	Token::KEY_CASE,
+	Token::KEY_CONTINUE,
+	Token::KEY_DEFAULT,
+	Token::KEY_DO,
+	Token::KEY_IF,
+	Token::KEY_FOR,
+	Token::KEY_RETURN,
+	Token::KEY_SWITCH,
+	Token::KEY_WHILE,
+	Token::OBRACE,
+	Token::CBRACE,
+	Token::SEMICOLON,
+};
+
+const TokenTypeSet TokenTypeSet::STATEMENT_DELIMITERS =
+{
+	STATEMENT_DELIMITER_TYPES,
+	sizeof(STATEMENT_DELIMITER_TYPES) / sizeof(*STATEMENT_DELIMITER_TYPES),
+	"STATEMENT_DELIMITER",
 };
 
 }
