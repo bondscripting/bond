@@ -185,7 +185,7 @@ unary_expression
   | '~' cast_expression
   | '!' cast_expression
   | SIZEOF unary_expression
-  | SIZEOF '(' type_descriptor ')'
+  | SIZEOF '<' type_descriptor '>'
 
 cast_expression
   : unary_expression

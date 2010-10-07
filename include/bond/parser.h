@@ -116,7 +116,6 @@ private:
 	ExternalDeclaration *ParseExternalDeclaration(Status &status, TokenStream &stream);
 	NamespaceDefinition *ParseNamespaceDefinition(Status &status, TokenStream &stream);
 	EnumDeclaration *ParseEnumDeclaration(Status &status, TokenStream &stream);
-	Enumerator *ParseEnumeratorList(Status &status, TokenStream &stream);
 	Enumerator *ParseEnumerator(Status &status, TokenStream &stream);
 	Parameter *ParseParameterList(Status &status, TokenStream &stream);
 	Parameter *ParseParameter(Status &status, TokenStream &stream);
@@ -159,6 +158,7 @@ private:
 	Expression *ParsePrimaryExpression(Status &status, TokenStream &stream);
 	Expression *ParseArgumentList(Status &status, TokenStream &stream);
 
+	void SyncToEnumeratorDelimiter(Status &status, TokenStream &stream);
 	void SyncToStatementTerminator(Status &status, TokenStream &stream);
 	void SyncToStatementDelimiter(Status &status, TokenStream &stream);
 	void SyncToLabelTerminator(Status &status, TokenStream &stream);

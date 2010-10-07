@@ -120,7 +120,7 @@ ExternalDeclaration *Parser::ParseExternalDeclaration(Status &status, TokenStrea
 				}
 				else
 				{
-					// TODO: Do something else we'll memory leak the type descriptor.
+					// TODO: Do something or we'll memory leak the type descriptor.
 				}
 			}
 		}
@@ -152,6 +152,10 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(Status &status, TokenStrea
 
 // enum_declaration
 //  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
+//
+// enumerator_list
+//   : enumerator
+//   | enumerator_list ',' enumerator
 EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &stream)
 {
 	EnumDeclaration *enumeration = 0;
@@ -160,32 +164,41 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 	{
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
 		ExpectToken(status, stream, Token::OBRACE);
-		Enumerator *enumerators = ParseEnumeratorList(status, stream);
+		Enumerator *enumeratorList = 0;
+		Enumerator *current = 0;
+
+		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		{
+			Enumerator *next = ParseEnumerator(status, stream);
+			AssertNode(status, stream, next);
+			SyncToEnumeratorDelimiter(status, stream);
+
+			// Note that the comma on the last enumerator is optional.
+			if (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+			{
+				ExpectToken(status, stream, Token::COMMA);
+			}
+
+			if (next != 0)
+			{
+				if (enumeratorList == 0)
+				{
+					enumeratorList = next;
+				}
+				else
+				{
+					current->SetNext(next);
+				}
+				current = next;
+			}
+		}
+
 		ExpectToken(status, stream, Token::CBRACE);
 		ExpectToken(status, stream, Token::SEMICOLON);
-		enumeration = mFactory.CreateEnumDeclaration(name, enumerators);
+		enumeration = mFactory.CreateEnumDeclaration(name, enumeratorList);
 	}
 
 	return enumeration;
-}
-
-
-// enumerator_list
-//   : enumerator
-//   | enumerator_list ',' enumerator
-Enumerator *Parser::ParseEnumeratorList(Status &status, TokenStream &stream)
-{
-	Enumerator *head = ParseEnumerator(status, stream);
-	Enumerator *current = head;
-
-	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
-	{
-		Enumerator *next = ParseEnumerator(status, stream);
-		current->SetNext(next);
-		current = next;
-	}
-
-	return head;
 }
 
 
@@ -477,7 +490,7 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 		Statement *statementList = 0;
 		Statement *current = 0;
 
-		while ((stream.PeekIf(Token::CBRACE) == 0) && (stream.PeekIf(Token::END) == 0))
+		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 		{
 			Statement *next = ParseStatement(status, stream);
 			AssertNode(status, stream, next);
@@ -550,13 +563,13 @@ SwitchStatement *Parser::ParseSwitchStatement(Status &status, TokenStream &strea
 
 		SwitchSection *sectionList = ParseSwitchSection(status, stream);
 		SwitchSection *current = sectionList;
-		while ((current != 0) && (stream.PeekIf(Token::CBRACE) == 0))
+		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 		{
 			SwitchSection *next = ParseSwitchSection(status, stream);
 			current->SetNext(next);
 			current = next;
 		}
-		// TODO: Ensure list is not empty.
+		// TODO: Semantic analyser must ensure the list is not empty.
 
 		ExpectToken(status, stream, Token::CBRACE);
 		switchStatement = mFactory.CreateSwitchStatement(control, sectionList);
@@ -572,43 +585,39 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 {
 	SwitchSection *section = 0;
 	SwitchLabel *labelList = ParseSwitchLabel(status, stream);
-
-	if (labelList != 0)
+	SwitchLabel *currentLabel = labelList;
+	while (currentLabel != 0)
 	{
-		SwitchLabel *currentLabel = labelList;
-		while (currentLabel != 0)
-		{
-			SwitchLabel *next = ParseSwitchLabel(status, stream);
-			currentLabel->SetNext(next);
-			currentLabel = next;
-		}
-
-		Statement *statementList = 0;
-		Statement *currentStatement = 0;
-		while ((stream.PeekIf(Token::CBRACE) == 0) && (stream.PeekIf(Token::END) == 0) &&
-		       (stream.PeekIf(Token::KEY_CASE) == 0) && (stream.PeekIf(Token::KEY_DEFAULT) == 0))
-		{
-			Statement *next = ParseStatement(status, stream);
-			AssertNode(status, stream, next);
-			SyncToStatementDelimiter(status, stream);
-
-			if (next != 0)
-			{
-				if (statementList == 0)
-				{
-					statementList = next;
-				}
-				else
-				{
-					currentStatement->SetNext(next);
-				}
-				currentStatement = next;
-			}
-		}
-		// TODO: Ensure list is not empty.
-
-		section = mFactory.CreateSwitchSection(labelList, statementList);;
+		SwitchLabel *next = ParseSwitchLabel(status, stream);
+		currentLabel->SetNext(next);
+		currentLabel = next;
 	}
+	// TODO: Semantic analyser must ensure the list is not empty.
+
+	Statement *statementList = 0;
+	Statement *currentStatement = 0;
+	while (stream.PeekIf(TokenTypeSet::SWITCH_SECTION_DELIMITERS) == 0)
+	{
+		Statement *next = ParseStatement(status, stream);
+		AssertNode(status, stream, next);
+		SyncToStatementDelimiter(status, stream);
+
+		if (next != 0)
+		{
+			if (statementList == 0)
+			{
+				statementList = next;
+			}
+			else
+			{
+				currentStatement->SetNext(next);
+			}
+			currentStatement = next;
+		}
+	}
+	// TODO: Semantic analyser must ensure the list is not empty.
+
+	section = mFactory.CreateSwitchSection(labelList, statementList);;
 
 	return section;
 }
@@ -1159,7 +1168,7 @@ Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 //   | '~' cast_expression
 //   | '!' cast_expression
 //   | SIZEOF unary_expression
-//   | SIZEOF '(' type_descriptor ')'
+//   | SIZEOF '<' type_descriptor '>'
 Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
@@ -1188,18 +1197,18 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 
 	else if (stream.NextIf(Token::KEY_SIZEOF) != 0)
 	{
-		Expression *unary = ParseUnaryExpression(status, stream);
-		if (unary != 0)
+		if (stream.NextIf(Token::OP_LT) != 0)
 		{
-			expression = mFactory.CreateSizeofExpression(unary);
+			TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
+			AssertNode(status, stream, descriptor);
+			ExpectToken(status, stream, Token::OP_GT);
+			expression = mFactory.CreateSizeofExpression(descriptor);
 		}
 		else
 		{
-			ExpectToken(status, stream, Token::OPAREN);
-			TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
-			AssertNode(status, stream, descriptor);
-			ExpectToken(status, stream, Token::CPAREN);
-			expression = mFactory.CreateSizeofExpression(descriptor);
+			Expression *unary = ParseUnaryExpression(status, stream);
+			AssertNode(status, stream, unary);
+			expression = mFactory.CreateSizeofExpression(unary);
 		}
 	}
 
@@ -1278,7 +1287,6 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 Expression *Parser::ParsePrimaryExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
-	const int pos = stream.GetPosition();
 	const Token *value = stream.NextIf(TokenTypeSet::CONSTANT_VALUES);
 
 	if (value != 0)
@@ -1288,14 +1296,8 @@ Expression *Parser::ParsePrimaryExpression(Status &status, TokenStream &stream)
 	else if (stream.NextIf(Token::OPAREN) != 0)
 	{
 		expression = ParseExpression(status, stream);
-		if (expression != 0)
-		{
-			ExpectToken(status, stream, Token::CPAREN);
-		}
-		else
-		{
-			stream.SetPosition(pos);
-		}
+		AssertNode(status, stream, expression);
+		ExpectToken(status, stream, Token::CPAREN);
 	}
 	else
 	{
@@ -1327,6 +1329,12 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 	}
 
 	return head;
+}
+
+
+void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
+{
+	Recover(status, stream, TokenTypeSet::ENUMERATOR_DELIMITERS);
 }
 
 
@@ -1413,7 +1421,7 @@ void Parser::AssertNonConstExpression(Status &status, ErrorType errorType, const
 
 void Parser::PushError(Status &status, ErrorType type, const Token *context, const char *expected)
 {
-	if (mNumErrors < MAX_ERRORS)
+	if (!status.HasUnrecoveredError() && (mNumErrors < MAX_ERRORS))
 	{
 		mErrors[mNumErrors] = Error(type, context, expected);
 		++mNumErrors;

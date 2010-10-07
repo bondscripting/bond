@@ -275,6 +275,50 @@ const TokenTypeSet TokenTypeSet::CONSTANT_VALUES =
 };
 
 
+static const Token::TokenType ENUMERATOR_DELIMITER_TYPES[] =
+{
+	Token::CBRACE,
+	Token::COMMA,
+};
+
+const TokenTypeSet TokenTypeSet::ENUMERATOR_DELIMITERS =
+{
+	ENUMERATOR_DELIMITER_TYPES,
+	sizeof(ENUMERATOR_DELIMITER_TYPES) / sizeof(*ENUMERATOR_DELIMITER_TYPES),
+	"ENUMERATOR_DELIMITER",
+};
+
+
+static const Token::TokenType BLOCK_DELIMITER_TYPES[] =
+{
+	Token::CBRACE,
+	Token::END,
+};
+
+const TokenTypeSet TokenTypeSet::BLOCK_DELIMITERS =
+{
+	BLOCK_DELIMITER_TYPES,
+	sizeof(BLOCK_DELIMITER_TYPES) / sizeof(*BLOCK_DELIMITER_TYPES),
+	"BLOCK_DELIMITER",
+};
+
+
+static const Token::TokenType SWITCH_SECTION_DELIMITER_TYPES[] =
+{
+	Token::KEY_CASE,
+	Token::KEY_DEFAULT,
+	Token::CBRACE,
+	Token::END,
+};
+
+const TokenTypeSet TokenTypeSet::SWITCH_SECTION_DELIMITERS =
+{
+	SWITCH_SECTION_DELIMITER_TYPES,
+	sizeof(SWITCH_SECTION_DELIMITER_TYPES) / sizeof(*SWITCH_SECTION_DELIMITER_TYPES),
+	"SWITCH_SECTION_DELIMITER",
+};
+
+
 static const Token::TokenType STATEMENT_DELIMITER_TYPES[] =
 {
 	Token::KEY_BREAK,

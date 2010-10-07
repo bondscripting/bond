@@ -384,9 +384,9 @@ void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpressi
 	Print("sizeof");
 	if (sizeofExpression->GetTypeDescriptor() != 0)
 	{
-		Print("(");
+		Print("<");
 		Print(sizeofExpression->GetTypeDescriptor());
-		Print(")");
+		Print(">");
 	}
 	else
 	{
