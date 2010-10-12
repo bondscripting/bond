@@ -26,7 +26,7 @@ Script ReadScript(const char *fileName)
 
 int main()
 {
-	const char *fileName = "../scripts/parse.bond";
+	const char *fileName = "scripts/parse.bond";
 	Script script = ReadScript(fileName);
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;

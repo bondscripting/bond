@@ -24,7 +24,7 @@ Script ReadScript(const char *fileName)
 
 int main()
 {
-	const char *fileName = "../scripts/lex.bond";
+	const char *fileName = "scripts/lex.bond";
 	Script script = ReadScript(fileName);
 	Bond::DefaultAllocator allocator;
 	Bond::Lexer lexer(allocator);
