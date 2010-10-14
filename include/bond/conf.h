@@ -8,10 +8,11 @@ typedef float float_t;
 typedef int int_t;
 typedef unsigned int uint_t;
 
-#define BOND_FLOAT_SCAN_FORMAT "%f"
-#define BOND_UDECIMAL_SCAN_FORMAT "%u"
-#define BOND_UOCTAL_SCAN_FORMAT "%o"
-#define BOND_UHEX_SCAN_FORMAT "%x"
+#define BOND_FLOAT_FORMAT "%f"
+#define BOND_DECIMAL_FORMAT "%d"
+#define BOND_UDECIMAL_FORMAT "%u"
+#define BOND_UOCTAL_FORMAT "%o"
+#define BOND_UHEX_FORMAT "%x"
 
 }
 

@@ -31,7 +31,7 @@ void Logger::Log(const char *format, ...)
 }
 
 
-void RunTests(const TestGroup &testGroup)
+bool RunTests(const TestGroup &testGroup)
 {
 	const unsigned numTests = testGroup.numItems;
 	unsigned numPassed = 0;
@@ -61,6 +61,8 @@ void RunTests(const TestGroup &testGroup)
 	}
 
 	printf("Results for %s: %u/%u/%u\n", testGroup.groupName, numFailed, numPassed, numTests);
+
+	return numPassed == numTests;
 }
 
 }

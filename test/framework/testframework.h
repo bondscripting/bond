@@ -5,20 +5,24 @@
 
 #define TEST_ITEM(testName) {#testName, &testName},    
 
-#define TEST_GROUP(groupName, TEST_ITEMS)                      \
-  const TestFramework::TestItem groupName ## _Items[] =        \
-  {                                                            \
-    TEST_ITEMS                                                 \
-  };                                                           \
-                                                               \
-  const TestFramework::TestGroup groupName ## _Group =         \
-  {                                                            \
-    #groupName,                                                \
-    groupName ## _Items,                                       \
-    sizeof(groupName ## _Items) / sizeof(*groupName ## _Items) \
-  }                                                            \
-
-#define RUN_TESTS(groupName) TestFramework::RunTests(groupName ## _Group)
+#define RUN_TESTS(groupName, TEST_ITEMS)                               \
+  int main()                                                           \
+  {                                                                    \
+    const TestFramework::TestItem groupName ## _Items[] =              \
+    {                                                                  \
+      TEST_ITEMS                                                       \
+    };                                                                 \
+                                                                       \
+    const TestFramework::TestGroup groupName ## _Group =               \
+    {                                                                  \
+      #groupName,                                                      \
+      groupName ## _Items,                                             \
+      sizeof(groupName ## _Items) / sizeof(*groupName ## _Items)       \
+    };                                                                 \
+                                                                       \
+    const bool success = TestFramework::RunTests(groupName ## _Group); \
+    return success ? 0 : 1;                                            \
+  }                                                                    \
 
 #define ASSERT_MESSAGE(condition, message)                                  \
   __ASSERT_FORMAT__(condition, logger, __FILE__, __LINE__, ("%s", message)) \
@@ -66,7 +70,7 @@ struct TestGroup
 	const unsigned numItems;
 };
 
-void RunTests(const TestGroup &testGroup);
+bool RunTests(const TestGroup &testGroup);
 
 }
 
