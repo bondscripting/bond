@@ -36,7 +36,7 @@ true false
 .0075e+2 // 0.75
 
 // Literal characters.
-'z' '\a' '\'' '"' '\"'
+'z' '\t' '\'' '"' '\"'
 
 // Invalid literal characters.
 '' 'ab' '\p' 'a\p' //'a

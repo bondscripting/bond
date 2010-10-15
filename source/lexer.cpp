@@ -691,10 +691,10 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					// The last character and the previous 'e' are not part of the token.
-					stream.Unget(2);
-					token.SetTokenType(Token::CONST_FLOAT);
-					state = STATE_DONE;
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_FLOAT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
 				}
 				break;
 
@@ -705,10 +705,10 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					// The last character, the previous '+' or '-' and the previous 'e' are not part of the token.
-					stream.Unget(3);
-					token.SetTokenType(Token::CONST_FLOAT);
-					state = STATE_DONE;
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_FLOAT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
 				}
 				break;
 
