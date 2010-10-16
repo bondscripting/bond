@@ -278,10 +278,40 @@ DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 }
 
 
+DEFINE_LEXER_TEST(EndOfStream1, "scripts/lexer_EndOfStream1.bond")
+{
+	Bond::TokenStream stream = lexer.GetTokenStream();
+
+	ASSERT_FORMAT(stream.GetLength() == 2, ("Expected 2 tokens but found %d.", stream.GetLength()));
+
+	stream.SetPosition(1);
+	const Bond::Token *token = stream.Next();
+	Bond::StreamPos pos = token->GetStartPos();
+	ASSERT_FORMAT((pos.line == 3) && (pos.column == 2),
+		("Expected EOF at line 3 column 2 but was at line %d column %d.", pos.line, pos.column));
+
+	return true;
+}
+
+
+DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
+{
+	Bond::TokenStream stream = lexer.GetTokenStream();
+
+	ASSERT_FORMAT(stream.GetLength() == 1, ("Expected 1 token but found %d.", stream.GetLength()));
+
+	const Bond::Token *token = stream.Next();
+	Bond::StreamPos pos = token->GetStartPos();
+	ASSERT_FORMAT((pos.line == 1) && (pos.column == 2),
+		("Expected EOF at line 1 column 2 but was at line %d column %d.", pos.line, pos.column));
+
+	return true;
+}
+
+
 // TODO: Test identifiers
 // TODO: Test valid string literals
 // TODO: Test valid comments
-// TODO: Test position of end of stream
 
 #define TEST_ITEMS                       \
   TEST_ITEM(KeywordAndPunctuationTokens) \
@@ -290,6 +320,8 @@ DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
   TEST_ITEM(UnterminatedCharacter)       \
   TEST_ITEM(UnterminatedString)          \
   TEST_ITEM(UnterminatedComment)         \
+  TEST_ITEM(EndOfStream1)                \
+  TEST_ITEM(EndOfStream2)                \
 
 
 RUN_TESTS(Lexer, TEST_ITEMS)

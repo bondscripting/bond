@@ -28,13 +28,17 @@ bool CharStream::HasNext() const
 char CharStream::Next()
 {
 	const char c = Peek();
-	++mPos.index;
-	++mPos.column;
 
-	if (c == '\n')
+	if (mPos.index <= mLength)
 	{
-		++mPos.line;
-		mPos.column = 1;
+		++mPos.index;
+		++mPos.column;
+
+		if (c == '\n')
+		{
+			++mPos.line;
+			mPos.column = 1;
+		}
 	}
 
 	return c;

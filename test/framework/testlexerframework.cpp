@@ -44,17 +44,19 @@ static bool RunLexerTest(
 	const FileData &script,
 	LexerValidationFunction *validationFunction)
 {
+	bool result = true;
+
 	Bond::DefaultAllocator allocator;
 	{
 		Bond::Lexer lexer(allocator);
 		lexer.Lex(script.data, script.length);
-		validationFunction(logger, lexer);
+		result = validationFunction(logger, lexer);
 	}
 
 	__ASSERT_FORMAT__(allocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Lexer leaked %d chunks of memory.", allocator.GetNumAllocations()));
 
-	return true;
+	return result;
 }
 
 }

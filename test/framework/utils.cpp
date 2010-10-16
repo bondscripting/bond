@@ -13,10 +13,15 @@ FileData ReadFile(const char *fileName)
 	if (file != 0)
 	{
 		fseek(file, 0, SEEK_END);
-		fileData.length = (int) ftell(file);
+		fileData.length = static_cast<int>(ftell(file));
 		fseek(file, 0, SEEK_SET);
-		fileData.data = new char[fileData.length];
-		fread(fileData.data, sizeof(char), fileData.length, file);
+
+		if (fileData.length > 0)
+		{
+			fileData.data = new char[fileData.length];
+			fread(fileData.data, sizeof(char), fileData.length, file);
+		}
+
 		fclose(file);
 	}
 

@@ -867,7 +867,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
 		token.SetTokenType(Token::END);
-		token.SetEndPos(token.GetStartPos());
+		token.SetStartPos(token.GetEndPos());
 	}
 	else if ((state == STATE_CHAR) || (state == STATE_CHAR_ESCAPE) || (state == STATE_CHAR_END) ||
 	         (state == STATE_BAD_CHAR) || (state == STATE_BAD_CHAR_ESCAPE))
