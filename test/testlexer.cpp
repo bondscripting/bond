@@ -1,5 +1,4 @@
 #include "framework/testlexerframework.h"
-#include "bond/defaultallocator.h"
 
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
@@ -178,15 +177,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 }
 
 
-DEFINE_TEST(InvalidTokens)
+DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 {
-	const char TEXT[] =
-		"98765g 07797 0xfg9\n"
-		"1.2blah3e4 1.2eblah 1.2e+blah 1.2e3blah 1.2e\n"
-		"'' 'ab' '\\p' 'a\\p' \"a\\pb\"\n";
-
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
-
 	const Bond::Token::ErrorType EXPECTED_ERRORS[] =
 	{
 		Bond::Token::INVALID_INT,
@@ -206,25 +198,18 @@ DEFINE_TEST(InvalidTokens)
 
 	const int NUM_TOKENS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	Bond::DefaultAllocator allocator;
+	Bond::TokenStream stream = lexer.GetTokenStream();
+
+	for (int i = 0; i < NUM_TOKENS; ++i)
 	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
-
-		for (int i = 0; i < NUM_TOKENS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-			ASSERT_FORMAT(EXPECTED_ERRORS[i] == token->GetErrorType(),
-				("Expected %s but was %s.", Bond::Token::GetErrorName(EXPECTED_ERRORS[i]), token->GetErrorName()));
-		}
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
+		ASSERT_FORMAT(EXPECTED_ERRORS[i] == token->GetErrorType(),
+			("Expected %s but was %s.", Bond::Token::GetErrorName(EXPECTED_ERRORS[i]), token->GetErrorName()));
 	}
 
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }

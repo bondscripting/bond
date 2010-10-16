@@ -1,7 +1,6 @@
 #include "framework/testlexerframework.h"
 #include "framework/utils.h"
 #include "bond/defaultallocator.h"
-#include "bond/lexer.h"
 
 namespace TestFramework
 {

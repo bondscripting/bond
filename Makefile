@@ -86,11 +86,8 @@ test: $(UTESTS)
 $(UTEST): $(EXEFILE)
 	$<
 
-#testlexer: build/bin/testlexer
-#	build/bin/testlexer
-
 -include $(UTDEPFILES)
 
 $(EXEFILE): $(UTSRCFILE) Makefile $(LIB) $(TFLIB)
 	@$(MKDIR) -p $(BINDIR)
-	$(CC) $(UTCFLAGS) -MMD -MP $< $(LIB) $(TFLIB) -o $@
+	$(CC) $(UTCFLAGS) -MMD -MP $< $(TFLIB) $(LIB) -o $@

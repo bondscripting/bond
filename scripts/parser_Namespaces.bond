@@ -1,0 +1,9 @@
+namespace OuterSpace
+{
+	namespace FirstInnerSpace
+	{
+	}
+	namespace SecondInnerSpace
+	{
+	}
+}

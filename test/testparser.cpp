@@ -1,3 +1,18 @@
+#include "framework/testparserframework.h"
+
+DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
+{
+	return true;
+}
+
+
+#define TEST_ITEMS         \
+  TEST_ITEM(Namespaces)    \
+
+
+RUN_TESTS(Parser, TEST_ITEMS)
+
+/*
 #include <stdio.h>
 #include "bond/defaultallocator.h"
 #include "bond/lexer.h"
@@ -69,3 +84,4 @@ int main()
 
 	return 0;
 }
+*/
