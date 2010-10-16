@@ -1,18 +1,8 @@
-#include "framework/testframework.h"
+#include "framework/testlexerframework.h"
 #include "bond/defaultallocator.h"
-#include "bond/lexer.h"
 
-DEFINE_TEST(KeywordAndPunctuationTokens)
+DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
-	const char TEXT[] =
-		"bool break char case cast const continue default do else enum float\n"
-		"for if int namespace return sizeof struct switch uint void while\n"
-		"+-*/%++--< <=> >=<<>> ==!=!&&||&|^~?->\n"
-		"=>>=<<=+=-=*=/=%=&=|=^=\n"
-		"(){}[].;:::,\n";
-
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
-
 	const Bond::Token::TokenType EXPECTED_TYPES[] =
 	{
 		Bond::Token::KEY_BOOL,
@@ -88,39 +78,23 @@ DEFINE_TEST(KeywordAndPunctuationTokens)
 
 	const int NUM_TOKENS = sizeof(EXPECTED_TYPES) / sizeof(*EXPECTED_TYPES);
 
-	Bond::DefaultAllocator allocator;
+	Bond::TokenStream stream = lexer.GetTokenStream();
+
+	for (int i = 0; i < NUM_TOKENS; ++i)
 	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
-
-		for (int i = 0; i < NUM_TOKENS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(EXPECTED_TYPES[i] == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName()));
-		}
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(EXPECTED_TYPES[i] == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName()));
 	}
 
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }
 
 
-DEFINE_TEST(LiteralTokens)
+DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 {
-	const char TEXT[] =
-		"true false\n"
-		"98765 07777 0x7fffffff 0xffffffff\n"
-		"98765u 07777u 0x7fffffffu 0xffffffffu\n"
-		"15.75 1.575E1 1575e-2 2.5e-3 25E-4 .0075e+2\n"
-		"'z' '\\t' '\\'' '\"' '\\\"'\n";
-
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
-
 	const bool EXPECTED_BOOLS[] = { true, false };
 	const int NUM_BOOLS = sizeof(EXPECTED_BOOLS) / sizeof(*EXPECTED_BOOLS);
 
@@ -136,77 +110,69 @@ DEFINE_TEST(LiteralTokens)
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
 
-	Bond::DefaultAllocator allocator;
+	Bond::TokenStream stream = lexer.GetTokenStream();
+
+	for (int i = 0; i < NUM_BOOLS; ++i)
 	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_BOOL == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName()));
 
-		for (int i = 0; i < NUM_BOOLS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::CONST_BOOL == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName()));
-
-			const bool expected = EXPECTED_BOOLS[i];
-			const bool actual = token->GetBoolValue();
-			ASSERT_FORMAT(expected == actual,
-				("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
-		}
-
-
-		for (int i = 0; i < NUM_INTS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
-
-			const Bond::int_t expected = EXPECTED_INTS[i];
-			const Bond::int_t actual = token->GetIntValue();
-			ASSERT_FORMAT(expected == actual,
-				("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
-		}
-
-		for (int i = 0; i < NUM_UINTS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
-
-			const Bond::uint_t expected = EXPECTED_UINTS[i];
-			const Bond::uint_t actual = token->GetUIntValue();
-			ASSERT_FORMAT(expected == actual,
-				("Expected " BOND_UDECIMAL_FORMAT " but was " BOND_UDECIMAL_FORMAT ".", expected, actual));
-		}
-
-		for (int i = 0; i < NUM_FLOATS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::CONST_FLOAT == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
-
-			const Bond::float_t expected = EXPECTED_FLOATS[i];
-			const Bond::float_t actual = token->GetFloatValue();
-			ASSERT_FORMAT(expected == actual,
-				("Expected " BOND_FLOAT_FORMAT " but was " BOND_FLOAT_FORMAT ".", expected, actual));
-		}
-
-		for (int i = 0; i < NUM_CHARS; ++i)
-		{
-			const Bond::Token *token = stream.Next();
-			ASSERT_FORMAT(Bond::Token::CONST_CHAR == token->GetTokenType(),
-				("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
-
-			const char expected = EXPECTED_CHARS[i];
-			const char actual = token->GetCharValue();
-			ASSERT_FORMAT(expected == actual,
-				("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
-		}
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+		const bool expected = EXPECTED_BOOLS[i];
+		const bool actual = token->GetBoolValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
 	}
 
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	for (int i = 0; i < NUM_INTS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
+
+		const Bond::int_t expected = EXPECTED_INTS[i];
+		const Bond::int_t actual = token->GetIntValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_UINTS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
+
+		const Bond::uint_t expected = EXPECTED_UINTS[i];
+		const Bond::uint_t actual = token->GetUIntValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected " BOND_UDECIMAL_FORMAT " but was " BOND_UDECIMAL_FORMAT ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_FLOATS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_FLOAT == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
+
+		const Bond::float_t expected = EXPECTED_FLOATS[i];
+		const Bond::float_t actual = token->GetFloatValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected " BOND_FLOAT_FORMAT " but was " BOND_FLOAT_FORMAT ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_CHARS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_CHAR == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
+
+		const char expected = EXPECTED_CHARS[i];
+		const char actual = token->GetCharValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
+	}
+
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }
@@ -264,84 +230,55 @@ DEFINE_TEST(InvalidTokens)
 }
 
 
-DEFINE_TEST(UnterminatedCharacter)
+DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bond")
 {
-	const char TEXT[] = "/* Comment */ 'a /* Not a comment */";
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
+	Bond::TokenStream stream = lexer.GetTokenStream();
 
-	Bond::DefaultAllocator allocator;
-	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
+		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
+	ASSERT_FORMAT(Bond::Token::UNTERMINATED_CHARACTER == token->GetErrorType(),
+		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_CHARACTER), token->GetErrorName()));
 
-		const Bond::Token *token = stream.Next();
-		ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-		ASSERT_FORMAT(Bond::Token::UNTERMINATED_CHARACTER == token->GetErrorType(),
-			("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_CHARACTER), token->GetErrorName()));
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
-	}
-
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }
 
 
-DEFINE_TEST(UnterminatedString)
+DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 {
-	const char TEXT[] = "/* Comment */ \"a /* Not a comment */";
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
+	Bond::TokenStream stream = lexer.GetTokenStream();
 
-	Bond::DefaultAllocator allocator;
-	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
+		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
+	ASSERT_FORMAT(Bond::Token::UNTERMINATED_STRING == token->GetErrorType(),
+		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_STRING), token->GetErrorName()));
 
-		const Bond::Token *token = stream.Next();
-		ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-		ASSERT_FORMAT(Bond::Token::UNTERMINATED_STRING == token->GetErrorType(),
-			("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_STRING), token->GetErrorName()));
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
-	}
-
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }
 
 
-DEFINE_TEST(UnterminatedComment)
+DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 {
-	const char TEXT[] = "/* Comment */\n// Line comment\n/* New comment\n// Same comment\n";
-	const int LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
+	Bond::TokenStream stream = lexer.GetTokenStream();
 
-	Bond::DefaultAllocator allocator;
-	{
-		Bond::Lexer lexer(allocator);
-		lexer.Lex(TEXT, LENGTH);
-		Bond::TokenStream stream = lexer.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
+		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
+	ASSERT_FORMAT(Bond::Token::UNTERMINATED_COMMENT == token->GetErrorType(),
+		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_COMMENT), token->GetErrorName()));
 
-		const Bond::Token *token = stream.Next();
-		ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-		ASSERT_FORMAT(Bond::Token::UNTERMINATED_COMMENT == token->GetErrorType(),
-			("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_COMMENT), token->GetErrorName()));
-
-		ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
-	}
-
-	ASSERT_FORMAT(allocator.GetNumAllocations() == 0, ("%d leaked chunks.", allocator.GetNumAllocations()));
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 
 	return true;
 }
 
 
+// TODO: Test identifiers
 // TODO: Test valid string literals
 // TODO: Test valid comments
 // TODO: Test position of end of stream

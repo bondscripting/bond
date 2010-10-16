@@ -1,9 +1,9 @@
-#ifndef TEST_FRAMEWORK_TEST_H
-#define TEST_FRAMEWORK_TEST_H
+#ifndef TEST_FRAMEWORK_TESTFRAMEWORK_H
+#define TEST_FRAMEWORK_TESTFRAMEWORK_H
 
-#define DEFINE_TEST(testName) bool testName(TestFramework::Logger &logger)
+#define DEFINE_TEST(testName) bool __Test ## testName ## __(TestFramework::Logger &logger)
 
-#define TEST_ITEM(testName) {#testName, &testName},    
+#define TEST_ITEM(testName) {#testName, &__Test ## testName ## __ },
 
 #define RUN_TESTS(groupName, TEST_ITEMS)                               \
   int main()                                                           \
