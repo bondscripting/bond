@@ -5,8 +5,8 @@ namespace Bond
 {
 
 	class ParseNode;
+	class ListParseNode;
 	class TranslationUnit;
-	class ExternalDeclaration;
 	class NamespaceDefinition;
 	class EnumDeclaration;
 	class Enumerator;
@@ -18,7 +18,6 @@ namespace Bond
 	class TypeSpecifier;
 	class NamedInitializer;
 	class QualifiedIdentifier;
-	class Statement;
 	class CompoundStatement;
 	class IfStatement;
 	class SwitchStatement;

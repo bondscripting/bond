@@ -52,11 +52,8 @@ public:
 	virtual void VisitIdentifierExpression(const IdentifierExpression *identifierValue);
 
 private:
-	template <typename T>
-	void PrintList(const ListParseNode<T> *listNode);
-
-	template <typename T>
-	void PrintList(const ListParseNode<T> *listNode, const char *separator);
+	void PrintList(const ListParseNode *listNode);
+	void PrintList(const ListParseNode *listNode, const char *separator);
 
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }

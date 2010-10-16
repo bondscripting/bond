@@ -21,55 +21,44 @@ protected:
 };
 
 
-template <typename T>
 class ListParseNode: public ParseNode
 {
 public:
 	virtual ~ListParseNode() {}
 
-	T *GetNext() { return mNext; }
-	const T *GetNext() const { return mNext; }
-	void SetNext(T *next) { mNext = next; }
+	ListParseNode *GetNext() { return mNext; }
+	const ListParseNode *GetNext() const { return mNext; }
+	void SetNext(ListParseNode *next) { mNext = next; }
 
 protected:
 	ListParseNode(): mNext(0) {}
 
 private:
-	T *mNext;
+	ListParseNode *mNext;
 };
 
 
 class TranslationUnit: public ParseNode
 {
 public:
-	TranslationUnit(ExternalDeclaration *declarationList): mDeclarationList(declarationList) {}
+	TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}
 	virtual ~TranslationUnit() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTranslationUnit(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTranslationUnit(this); }
 
-	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarationList; }
-	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarationList; }
+	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
+	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
-	ExternalDeclaration *mDeclarationList;
+	ListParseNode *mDeclarationList;
 };
 
 
-class ExternalDeclaration: public ListParseNode<ExternalDeclaration>
+class NamespaceDefinition: public ListParseNode
 {
 public:
-	virtual ~ExternalDeclaration() {}
-
-protected:
-	ExternalDeclaration() {}
-};
-
-
-class NamespaceDefinition: public ExternalDeclaration
-{
-public:
-	NamespaceDefinition(const Token *name, ExternalDeclaration *declarationList):
+	NamespaceDefinition(const Token *name, ListParseNode *declarationList):
 		mName(name),
 		mDeclarationList(declarationList)
 	{}
@@ -81,16 +70,16 @@ public:
 
 	const Token *GetName() const { return mName; }
 
-	ExternalDeclaration *GetExternalDeclarationList() { return mDeclarationList; }
-	const ExternalDeclaration *GetExternalDeclarationList() const { return mDeclarationList; }
+	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
+	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
 	const Token *mName;
-	ExternalDeclaration *mDeclarationList;
+	ListParseNode *mDeclarationList;
 };
 
 
-class EnumDeclaration: public ExternalDeclaration
+class EnumDeclaration: public ListParseNode
 {
 public:
 	EnumDeclaration(const Token *name, Enumerator *enumeratorList):
@@ -114,7 +103,7 @@ private:
 };
 
 
-class Enumerator: public ListParseNode<Enumerator>
+class Enumerator: public ListParseNode
 {
 public:
 	Enumerator(const Token *name, Expression *value): mName(name), mValue(value) {}
@@ -134,7 +123,7 @@ private:
 };
 
 
-class FunctionDefinition: public ExternalDeclaration
+class FunctionDefinition: public ListParseNode
 {
 public:
 	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body):
@@ -188,7 +177,7 @@ private:
 };
 
 
-class StructDeclaration: public ExternalDeclaration
+class StructDeclaration: public ListParseNode
 {
 public:
 	StructDeclaration(const Token *name):
@@ -208,7 +197,7 @@ private:
 };
 
 
-class Parameter: public ListParseNode<Parameter>
+class Parameter: public ListParseNode
 {
 public:
 	Parameter(const Token *name, TypeDescriptor *typeDescriptor): mName(name), mTypeDescriptor(typeDescriptor) {}
@@ -310,7 +299,7 @@ private:
 };
 
 
-class NamedInitializer: public ListParseNode<NamedInitializer>
+class NamedInitializer: public ListParseNode
 {
 public:
 	NamedInitializer(const Token *name):
@@ -329,7 +318,7 @@ private:
 };
 
 
-class QualifiedIdentifier: public ListParseNode<QualifiedIdentifier>
+class QualifiedIdentifier: public ListParseNode
 {
 public:
 	QualifiedIdentifier(const Token *name): mName(name) {}
@@ -345,37 +334,27 @@ private:
 };
 
 
-class Statement: public ListParseNode<Statement>
+class CompoundStatement: public ListParseNode
 {
 public:
-	virtual ~Statement() {}
-
-protected:
-	Statement() {}
-};
-
-
-class CompoundStatement: public Statement
-{
-public:
-	CompoundStatement(Statement *statementList): mStatementList(statementList) {}
+	CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
 	virtual ~CompoundStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitCompoundStatement(this); }
 
-	Statement *GetStatementList() { return mStatementList; }
-	const Statement *GetStatementList() const { return mStatementList; }
+	ListParseNode *GetStatementList() { return mStatementList; }
+	const ListParseNode *GetStatementList() const { return mStatementList; }
 
 private:
-	Statement *mStatementList;
+	ListParseNode *mStatementList;
 };
 
 
-class IfStatement: public Statement
+class IfStatement: public ListParseNode
 {
 public:
-	IfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement):
+	IfStatement(Expression *condition, ListParseNode *thenStatement, ListParseNode *elseStatement):
 		mCondition(condition),
 		mThenStatement(thenStatement),
 		mElseStatement(elseStatement)
@@ -389,20 +368,20 @@ public:
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
 
-	Statement *GetThenStatement() { return mThenStatement; }
-	const Statement *GetThenStatement() const { return mThenStatement; }
+	ListParseNode *GetThenStatement() { return mThenStatement; }
+	const ListParseNode *GetThenStatement() const { return mThenStatement; }
 
-	Statement *GetElseStatement() { return mElseStatement; }
-	const Statement *GetElseStatement() const { return mElseStatement; }
+	ListParseNode *GetElseStatement() { return mElseStatement; }
+	const ListParseNode *GetElseStatement() const { return mElseStatement; }
 
 private:
 	Expression *mCondition;
-	Statement *mThenStatement;
-	Statement *mElseStatement;
+	ListParseNode *mThenStatement;
+	ListParseNode *mElseStatement;
 };
 
 
-class SwitchStatement: public Statement
+class SwitchStatement: public ListParseNode
 {
 public:
 	SwitchStatement(Expression *control, SwitchSection *sectionList):
@@ -427,10 +406,10 @@ private:
 };
 
 
-class SwitchSection: public ListParseNode<SwitchSection>
+class SwitchSection: public ListParseNode
 {
 public:
-	SwitchSection(SwitchLabel *labelList, Statement* statementList):
+	SwitchSection(SwitchLabel *labelList, ListParseNode* statementList):
 		mLabelList(labelList),
 		mStatementList(statementList)
 	{}
@@ -443,16 +422,16 @@ public:
 	SwitchLabel *GetLabelList() { return mLabelList; }
 	const SwitchLabel *GetLabelList() const { return mLabelList; }
 
-	Statement *GetStatementList() { return mStatementList; }
-	const Statement *GetStatementList() const { return mStatementList; }
+	ListParseNode *GetStatementList() { return mStatementList; }
+	const ListParseNode *GetStatementList() const { return mStatementList; }
 
 private:
 	SwitchLabel *mLabelList;
-	Statement *mStatementList;
+	ListParseNode *mStatementList;
 };
 
 
-class SwitchLabel: public ListParseNode<SwitchLabel>
+class SwitchLabel: public ListParseNode
 {
 public:
 	enum Variant
@@ -492,7 +471,7 @@ private:
 };
 
 
-class WhileStatement: public Statement
+class WhileStatement: public ListParseNode
 {
 public:
 	enum Variant
@@ -501,7 +480,7 @@ public:
 		VARIANT_DO_WHILE,
 	};
 
-	WhileStatement(Expression *condition, Statement *body, Variant variant):
+	WhileStatement(Expression *condition, ListParseNode *body, Variant variant):
 		mCondition(condition),
 		mBody(body),
 		mVariant(variant)
@@ -515,19 +494,19 @@ public:
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
 
-	Statement *GetBody() { return mBody; }
-	const Statement *GetBody() const { return mBody; }
+	ListParseNode *GetBody() { return mBody; }
+	const ListParseNode *GetBody() const { return mBody; }
 
 	Variant GetVariant() const { return mVariant; }
 
 private:
 	Expression *mCondition;
-	Statement *mBody;
+	ListParseNode *mBody;
 	Variant mVariant;
 };
 
 
-class JumpStatement: public Statement
+class JumpStatement: public ListParseNode
 {
 public:
 	JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
@@ -547,7 +526,7 @@ private:
 };
 
 
-class DeclarativeStatement: public Statement
+class DeclarativeStatement: public ListParseNode
 {
 public:
 	DeclarativeStatement(TypeDescriptor *typeDescriptor, NamedInitializer *initializerList):
@@ -572,7 +551,7 @@ private:
 };
 
 
-class ExpressionStatement: public Statement
+class ExpressionStatement: public ListParseNode
 {
 public:
 	ExpressionStatement(Expression *expression): mExpression(expression) {}
@@ -589,7 +568,7 @@ private:
 };
 
 
-class Expression: public ListParseNode<Expression>
+class Expression: public ListParseNode
 {
 public:
 	virtual ~Expression() {}

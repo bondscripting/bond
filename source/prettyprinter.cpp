@@ -407,10 +407,9 @@ void PrettyPrinter::VisitIdentifierExpression(const IdentifierExpression *identi
 }
 
 
-template <typename T>
-void PrettyPrinter::PrintList(const ListParseNode<T> *listNode)
+void PrettyPrinter::PrintList(const ListParseNode *listNode)
 {
-	const ListParseNode<T> *current = listNode;
+	const ListParseNode *current = listNode;
 	while (current != 0)
 	{
 		Print(current);
@@ -419,10 +418,9 @@ void PrettyPrinter::PrintList(const ListParseNode<T> *listNode)
 }
 
 
-template <typename T>
-void PrettyPrinter::PrintList(const ListParseNode<T> *listNode, const char *separator)
+void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separator)
 {
-	const ListParseNode<T> *current = listNode;
+	const ListParseNode *current = listNode;
 
 	if (current != 0)
 	{

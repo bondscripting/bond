@@ -112,8 +112,8 @@ private:
 	Parser &operator=(const Parser &other);
 
 	TranslationUnit *ParseTranslationUnit(Status &status, TokenStream &stream);
-	ExternalDeclaration *ParseExternalDeclarationList(Status &status, TokenStream &stream);
-	ExternalDeclaration *ParseExternalDeclaration(Status &status, TokenStream &stream);
+	ListParseNode *ParseExternalDeclarationList(Status &status, TokenStream &stream);
+	ListParseNode *ParseExternalDeclaration(Status &status, TokenStream &stream);
 	NamespaceDefinition *ParseNamespaceDefinition(Status &status, TokenStream &stream);
 	EnumDeclaration *ParseEnumDeclaration(Status &status, TokenStream &stream);
 	Enumerator *ParseEnumerator(Status &status, TokenStream &stream);
@@ -127,7 +127,7 @@ private:
 	NamedInitializer *ParseNamedInitializerList(Status &status, TokenStream &stream);
 	NamedInitializer *ParseNamedInitializer(Status &status, TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(Status &status, TokenStream &stream);
-	Statement *ParseStatement(Status &status, TokenStream &stream);
+	ListParseNode *ParseStatement(Status &status, TokenStream &stream);
 	CompoundStatement *ParseCompoundStatement(Status &status, TokenStream &stream);
 	IfStatement *ParseIfStatement(Status &status, TokenStream &stream);
 	SwitchStatement *ParseSwitchStatement(Status &status, TokenStream &stream);
@@ -136,7 +136,7 @@ private:
 	WhileStatement *ParseWhileStatement(Status &status, TokenStream &stream);
 	WhileStatement *ParseDoWhileStatement(Status &status, TokenStream &stream);
 	JumpStatement *ParseJumpStatement(Status &status, TokenStream &stream);
-	Statement *ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream);
+	ListParseNode *ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream);
 	ExpressionStatement *ParseExpressionStatement(Status &status, TokenStream &stream);
 	Expression *ParseConstExpression(Status &status, TokenStream &stream);
 	Expression *ParseExpression(Status &status, TokenStream &stream);

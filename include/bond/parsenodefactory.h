@@ -15,8 +15,8 @@ public:
 		mAllocator(allocator)
 	{}
 
-	TranslationUnit *CreateTranslationUnit(ExternalDeclaration *declarationList);
-	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ExternalDeclaration *declarationList);
+	TranslationUnit *CreateTranslationUnit(ListParseNode *declarationList);
+	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ListParseNode *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
 	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);
@@ -34,14 +34,19 @@ public:
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
 	NamedInitializer *CreateNamedInitializer(const Token *name);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
-	CompoundStatement *CreateCompoundStatement(Statement *statementList);
-	IfStatement *CreateIfStatement(Expression *condition, Statement *thenStatement, Statement *elseStatement);
+	CompoundStatement *CreateCompoundStatement(ListParseNode *statementList);
+
+	IfStatement *CreateIfStatement(
+		Expression *condition,
+		ListParseNode *thenStatement,
+		ListParseNode *elseStatement);
+
 	SwitchStatement *CreateSwitchStatement(Expression *control, SwitchSection *sectionList);
-	SwitchSection *CreateSwitchSection(SwitchLabel *labelList, Statement* statementList);
+	SwitchSection *CreateSwitchSection(SwitchLabel *labelList, ListParseNode* statementList);
 	SwitchLabel *CreateSwitchLabel(const Token *label, Expression *expression);
 	SwitchLabel *CreateDefaultLabel(const Token *label);
-	WhileStatement *CreateWhileStatement(Expression *condition, Statement *body);
-	WhileStatement *CreateDoWhileStatement(Expression *condition, Statement *body);
+	WhileStatement *CreateWhileStatement(Expression *condition, ListParseNode *body);
+	WhileStatement *CreateDoWhileStatement(Expression *condition, ListParseNode *body);
 	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
 
 	DeclarativeStatement *CreateDeclarativeStatement(

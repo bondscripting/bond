@@ -54,8 +54,7 @@ public:
 	virtual void VisitIdentifierExpression(IdentifierExpression *identifierExpression);
 
 private:
-	template <typename T>
-	void DestroyList(ListParseNode<T> *listNode);
+	void DestroyList(ListParseNode *listNode);
 
 	Allocator &mAllocator;
 };
@@ -266,13 +265,12 @@ void ParseNodeDeallocator::VisitIdentifierExpression(IdentifierExpression *ident
 }
 
 
-template <typename T>
-void ParseNodeDeallocator::DestroyList(ListParseNode<T> *listNode)
+void ParseNodeDeallocator::DestroyList(ListParseNode *listNode)
 {
-	ListParseNode<T> *current = listNode;
+	ListParseNode *current = listNode;
 	while (current != 0)
 	{
-		ListParseNode<T> *next = current->GetNext();
+		ListParseNode *next = current->GetNext();
 		Destroy(current);
 		current = next;
 	}
@@ -283,7 +281,7 @@ void ParseNodeDeallocator::DestroyList(ListParseNode<T> *listNode)
 // ParseNodeFactory
 //------------------------------------------------------------------------------
 
-TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ExternalDeclaration *declarationList)
+TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ListParseNode *declarationList)
 {
 	return new (mAllocator.Alloc<TranslationUnit>()) TranslationUnit(declarationList);
 }
@@ -291,7 +289,7 @@ TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ExternalDeclaration *de
 
 NamespaceDefinition *ParseNodeFactory::CreateNamespaceDefinition(
 	const Token *name,
-	ExternalDeclaration *declarationList)
+	ListParseNode *declarationList)
 {
 	return new (mAllocator.Alloc<NamespaceDefinition>()) NamespaceDefinition(name, declarationList);
 }
@@ -372,7 +370,7 @@ QualifiedIdentifier *ParseNodeFactory::CreateQualifiedIdentifier(const Token *na
 }
 
 
-CompoundStatement *ParseNodeFactory::CreateCompoundStatement(Statement *statementList)
+CompoundStatement *ParseNodeFactory::CreateCompoundStatement(ListParseNode *statementList)
 {
 	return new (mAllocator.Alloc<CompoundStatement>()) CompoundStatement(statementList);
 }
@@ -380,8 +378,8 @@ CompoundStatement *ParseNodeFactory::CreateCompoundStatement(Statement *statemen
 
 IfStatement *ParseNodeFactory::CreateIfStatement(
 	Expression *condition,
-	Statement *thenStatement,
-	Statement *elseStatement)
+	ListParseNode *thenStatement,
+	ListParseNode *elseStatement)
 {
 	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
 }
@@ -393,7 +391,7 @@ SwitchStatement *ParseNodeFactory::CreateSwitchStatement(Expression *control, Sw
 }
 
 
-SwitchSection *ParseNodeFactory::CreateSwitchSection(SwitchLabel *labelList, Statement* statementList)
+SwitchSection *ParseNodeFactory::CreateSwitchSection(SwitchLabel *labelList, ListParseNode* statementList)
 {
 	return new (mAllocator.Alloc<SwitchSection>()) SwitchSection(labelList, statementList);
 }
@@ -411,13 +409,13 @@ SwitchLabel *ParseNodeFactory::CreateDefaultLabel(const Token *label)
 }
 
 
-WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, Statement *body)
+WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, ListParseNode *body)
 {
 	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
 }
 
 
-WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, Statement *body)
+WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, ListParseNode *body)
 {
 	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
 }

@@ -41,20 +41,20 @@ void Parser::Parse(TokenStream &stream)
 //  : external_declaration*
 TranslationUnit *Parser::ParseTranslationUnit(Status &status, TokenStream &stream)
 {
-	ExternalDeclaration *declarations = ParseExternalDeclarationList(status, stream);
+	ListParseNode *declarations = ParseExternalDeclarationList(status, stream);
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
 	return unit;
 }
 
 
-ExternalDeclaration *Parser::ParseExternalDeclarationList(Status &status, TokenStream &stream)
+ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream &stream)
 {
-	ExternalDeclaration *head = ParseExternalDeclaration(status, stream);
-	ExternalDeclaration *current = head;
+	ListParseNode *head = ParseExternalDeclaration(status, stream);
+	ListParseNode *current = head;
 
 	while (current != 0)
 	{
-		ExternalDeclaration *next = ParseExternalDeclaration(status, stream);
+		ListParseNode *next = ParseExternalDeclaration(status, stream);
 		current->SetNext(next);
 		current = next;
 	}
@@ -79,9 +79,9 @@ ExternalDeclaration *Parser::ParseExternalDeclarationList(Status &status, TokenS
 //
 // function_prototype
 //   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
-ExternalDeclaration *Parser::ParseExternalDeclaration(Status &status, TokenStream &stream)
+ListParseNode *Parser::ParseExternalDeclaration(Status &status, TokenStream &stream)
 {
-	ExternalDeclaration *declaration = 0;
+	ListParseNode *declaration = 0;
 
 	switch (stream.Peek()->GetTokenType())
 	{
@@ -141,7 +141,7 @@ NamespaceDefinition *Parser::ParseNamespaceDefinition(Status &status, TokenStrea
 	{
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
 		ExpectToken(status, stream, Token::OBRACE);
-		ExternalDeclaration *declarations = ParseExternalDeclarationList(status, stream);
+		ListParseNode *declarations = ParseExternalDeclarationList(status, stream);
 		ExpectToken(status, stream, Token::CBRACE);
 		space = mFactory.CreateNamespaceDefinition(name, declarations);
 	}
@@ -438,9 +438,9 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(Status &status, TokenStrea
 //   | labeled_statement
 //   | declarative_statement
 //   | expression_statement
-Statement *Parser::ParseStatement(Status &status, TokenStream &stream)
+ListParseNode *Parser::ParseStatement(Status &status, TokenStream &stream)
 {
-	Statement *statement = 0;
+	ListParseNode *statement = 0;
 
 	switch (stream.Peek()->GetTokenType())
 	{
@@ -487,12 +487,12 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 
 	if (stream.NextIf(Token::OBRACE))
 	{
-		Statement *statementList = 0;
-		Statement *current = 0;
+		ListParseNode *statementList = 0;
+		ListParseNode *current = 0;
 
 		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 		{
-			Statement *next = ParseStatement(status, stream);
+			ListParseNode *next = ParseStatement(status, stream);
 			AssertNode(status, stream, next);
 			SyncToStatementDelimiter(status, stream);
 
@@ -530,9 +530,9 @@ IfStatement *Parser::ParseIfStatement(Status &status, TokenStream &stream)
 		Expression *condition = ParseExpression(status, stream);
 		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
-		Statement *thenStatement = ParseStatement(status, stream);
+		ListParseNode *thenStatement = ParseStatement(status, stream);
 		AssertNode(status, stream, thenStatement);
-		Statement *elseStatement = 0;
+		ListParseNode *elseStatement = 0;
 
 		if (stream.NextIf(Token::KEY_ELSE))
 		{
@@ -594,11 +594,11 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 	}
 	// TODO: Semantic analyser must ensure the list is not empty.
 
-	Statement *statementList = 0;
-	Statement *currentStatement = 0;
+	ListParseNode *statementList = 0;
+	ListParseNode *currentStatement = 0;
 	while (stream.PeekIf(TokenTypeSet::SWITCH_SECTION_DELIMITERS) == 0)
 	{
-		Statement *next = ParseStatement(status, stream);
+		ListParseNode *next = ParseStatement(status, stream);
 		AssertNode(status, stream, next);
 		SyncToStatementDelimiter(status, stream);
 
@@ -663,7 +663,7 @@ WhileStatement *Parser::ParseWhileStatement(Status &status, TokenStream &stream)
 		Expression *condition = ParseExpression(status, stream);
 		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
-		Statement *body = ParseStatement(status, stream);
+		ListParseNode *body = ParseStatement(status, stream);
 		AssertNode(status, stream, body);
 		whileStatement = mFactory.CreateWhileStatement(condition, body);
 	}
@@ -680,7 +680,7 @@ WhileStatement *Parser::ParseDoWhileStatement(Status &status, TokenStream &strea
 
 	if (stream.NextIf(Token::KEY_DO) != 0)
 	{
-		Statement *body = ParseStatement(status, stream);
+		ListParseNode *body = ParseStatement(status, stream);
 		AssertNode(status, stream, body);
 		ExpectToken(status, stream, Token::KEY_WHILE);
 		ExpectToken(status, stream, Token::OPAREN);
@@ -721,9 +721,9 @@ JumpStatement *Parser::ParseJumpStatement(Status &status, TokenStream &stream)
 
 // declarative_statement
 //   : type_descriptor named_initializer_list ';'
-Statement *Parser::ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream)
+ListParseNode *Parser::ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream)
 {
-	Statement *statement = 0;
+	ListParseNode *statement = 0;
 	const int startPos = stream.GetPosition();
 
 	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
