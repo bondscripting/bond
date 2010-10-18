@@ -11,7 +11,7 @@ Parser::Parser(Allocator &allocator):
 {
 	for (int i = 0; i < MAX_ERRORS; ++i)
 	{
-		mErrors[i] = Error();
+		mErrors[i] = ParseError();
 	}
 }
 
@@ -294,7 +294,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 		const bool isConst2 = const2 != 0;
 		if (isConst1 && isConst2)
 		{
-			PushError(status, DUPLICATE_CONST, const2);
+			PushError(status, ParseError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
@@ -859,7 +859,7 @@ Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &strea
 		const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);
 		if (token != 0)
 		{
-			AssertNonConstExpression(status, ASSIGNMENT_IN_CONST_EXPRESSION, token);
+			AssertNonConstExpression(status, ParseError::ASSIGNMENT_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
@@ -1183,7 +1183,7 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				rhs = ParseUnaryExpression(status, stream);
-				AssertNonConstExpression(status, INCREMENT_IN_CONST_EXPRESSION, op);
+				AssertNonConstExpression(status, ParseError::INCREMENT_IN_CONST_EXPRESSION, op);
 				break;
 
 			default:
@@ -1252,7 +1252,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				{
 					Expression *argumentList = ParseArgumentList(status, stream);
 					expression = mFactory.CreateFunctionCallExpression(expression, argumentList);
-					AssertNonConstExpression(status, FUNCTION_CALL_IN_CONST_EXPRESSION, token);
+					AssertNonConstExpression(status, ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, token);
 					ExpectToken(status, stream, Token::CPAREN);
 				}
 				break;
@@ -1268,7 +1268,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				default:
 				{
 					expression = mFactory.CreatePostfixExpression(token, expression);
-					AssertNonConstExpression(status, INCREMENT_IN_CONST_EXPRESSION, token);
+					AssertNonConstExpression(status, ParseError::INCREMENT_IN_CONST_EXPRESSION, token);
 				}
 				break;
 			}
@@ -1384,7 +1384,7 @@ const Token *Parser::ExpectToken(Status &status, TokenStream &stream, Token::Tok
 	const Token *token = stream.NextIf(expectedType);
 	if (token == 0)
 	{
-		PushError(status, UNEXPECTED_TOKEN, stream.Peek(), Token::GetTokenName(expectedType));
+		PushError(status, ParseError::UNEXPECTED_TOKEN, stream.Peek(), Token::GetTokenName(expectedType));
 	}
 	return token;
 }
@@ -1395,7 +1395,7 @@ const Token *Parser::ExpectToken(Status &status, TokenStream &stream, const Toke
 	const Token *token = stream.NextIf(expectedTypes);
 	if (token == 0)
 	{
-		PushError(status, UNEXPECTED_TOKEN, stream.Peek(), expectedTypes.typeName);
+		PushError(status, ParseError::UNEXPECTED_TOKEN, stream.Peek(), expectedTypes.typeName);
 	}
 	return token;
 }
@@ -1405,12 +1405,12 @@ void Parser::AssertNode(Status &status, const TokenStream &stream, ParseNode *no
 {
 	if (node == 0)
 	{
-		PushError(status, PARSE_ERROR, stream.Peek());
+		PushError(status, ParseError::PARSE_ERROR, stream.Peek());
 	}
 }
 
 
-void Parser::AssertNonConstExpression(Status &status, ErrorType errorType, const Token *context)
+void Parser::AssertNonConstExpression(Status &status, ParseError::Type errorType, const Token *context)
 {
 	if (status.IsParsingConstExpressions())
 	{
@@ -1419,11 +1419,11 @@ void Parser::AssertNonConstExpression(Status &status, ErrorType errorType, const
 }
 
 
-void Parser::PushError(Status &status, ErrorType type, const Token *context, const char *expected)
+void Parser::PushError(Status &status, ParseError::Type type, const Token *context, const char *expected)
 {
 	if (!status.HasUnrecoveredError() && (mNumErrors < MAX_ERRORS))
 	{
-		mErrors[mNumErrors] = Error(type, context, expected);
+		mErrors[mNumErrors] = ParseError(type, context, expected);
 		++mNumErrors;
 		status.MarkError();
 	}

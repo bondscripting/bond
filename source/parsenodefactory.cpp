@@ -50,7 +50,7 @@ public:
 	virtual void VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression);
 	virtual void VisitCastExpression(CastExpression *castExpression);
 	virtual void VisitSizeofExpression(SizeofExpression *sizeofExpression);
-	virtual void VisitConstantExpression(ConstantExpression *constantExpression);
+	virtual void VisitConstantExpression(ConstantExpression *constantExpression) {}
 	virtual void VisitIdentifierExpression(IdentifierExpression *identifierExpression);
 
 private:
@@ -251,11 +251,6 @@ void ParseNodeDeallocator::VisitSizeofExpression(SizeofExpression *sizeofExpress
 {
 	Destroy(sizeofExpression->GetTypeDescriptor());
 	Destroy(sizeofExpression->GetRhs());
-}
-
-
-void ParseNodeDeallocator::VisitConstantExpression(ConstantExpression *constantExpression)
-{
 }
 
 

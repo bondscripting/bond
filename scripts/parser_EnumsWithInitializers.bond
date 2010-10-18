@@ -1,0 +1,11 @@
+enum WithoutTrailingComma
+{
+	FIRST,
+	SECOND = FIRST*3 +2,
+};
+
+enum WithTrailingComma
+{
+	THIRD = (FIRST < SECOND)?5:10,
+	FOURTH = sizeof<int const *const[234]>,
+};

@@ -1,19 +1,9 @@
 #ifndef BOND_PARSER_H
 #define BOND_PARSER_H
 
+#include "bond/parseerror.h"
 #include "bond/parsenodefactory.h"
 #include "bond/parsenodes.h"
-
-#define BOND_PARSE_ERROR_LIST \
-	BOND_PARSE_ERROR_ITEM(NO_ERROR)                          \
-	BOND_PARSE_ERROR_ITEM(PARSE_ERROR)                       \
-	BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN)                  \
-	BOND_PARSE_ERROR_ITEM(DUPLICATE_CONST)                   \
-	BOND_PARSE_ERROR_ITEM(COMMA_IN_CONST_EXPRESSION)         \
-	BOND_PARSE_ERROR_ITEM(ASSIGNMENT_IN_CONST_EXPRESSION)    \
-	BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION)     \
-	BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION) \
-
 
 namespace Bond
 {
@@ -24,34 +14,6 @@ class TokenStream;
 class Parser
 {
 public:
-	enum ErrorType
-	{
-#define BOND_PARSE_ERROR_ITEM(item) item,
-		BOND_PARSE_ERROR_LIST
-#undef BOND_PARSE_ERROR_ITEM
-	};
-
-	struct Error
-	{
-		Error(): type(NO_ERROR), token(0), expected("") {}
-
-		Error(ErrorType type, const Token *token, const char *expected):
-			type(type),
-			token(token),
-			expected(expected)
-		{}
-
-		Error(const Error &other):
-			type(other.type),
-			token(other.token),
-			expected(other.expected)
-		{}
-
-		ErrorType type;
-		const Token *token;
-		const char *expected;
-	};
-
 	static const int MAX_ERRORS = 16;
 
 	Parser(Allocator &allocator);
@@ -64,7 +26,7 @@ public:
 
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
-	const Error *GetError(int index) const { return mErrors + index; }
+	const ParseError *GetError(int index) const { return mErrors + index; }
 
 private:
 	enum ExpressionQualifier
@@ -172,10 +134,10 @@ private:
 	const Token *ExpectToken(Status &status, TokenStream &stream, Token::TokenType expectedType);
 	const Token *ExpectToken(Status &status, TokenStream &stream, const TokenTypeSet &expectedTypes);
 	void AssertNode(Status &status, const TokenStream &stream, ParseNode *node);
-	void AssertNonConstExpression(Status &status, ErrorType type, const Token *token);
-	void PushError(Status &status, ErrorType errorType, const Token *token, const char *expected = "");
+	void AssertNonConstExpression(Status &status, ParseError::Type type, const Token *token);
+	void PushError(Status &status, ParseError::Type errorType, const Token *token, const char *expected = "");
 
-	Error mErrors[MAX_ERRORS];
+	ParseError mErrors[MAX_ERRORS];
 	int mNumErrors;
 	ParseNodeFactory mFactory;
 	TranslationUnit *mTranslationUnit;

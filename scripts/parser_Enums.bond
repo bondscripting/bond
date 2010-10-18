@@ -1,0 +1,13 @@
+enum WithoutTrailingComma
+{
+	FIRST,
+	SECOND,
+	THIRD
+};
+
+enum WithTrailingComma
+{
+	FOURTH,
+	FIFTH,
+	SIXTH,
+};

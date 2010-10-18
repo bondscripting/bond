@@ -65,4 +65,91 @@ static bool RunParserTest(
 	return result;
 }
 
+bool AssertParseNodeCount(
+	Logger &logger,
+	const char *assertFile,
+	int assertLine,
+	const Bond::ParseNode *root,
+	const ParseNodeCount &expected)
+{
+	ParseNodeCounter counter;
+	counter.Count(root);
+	const ParseNodeCount &actual = counter.GetCount();
+
+#define ASSERT_COUNT(field)                                                    \
+  __ASSERT_FORMAT__(                                                           \
+    (expected.m ## field == -1) || (expected.m ## field == actual.m ## field), \
+    logger,                                                                    \
+    assertFile,                                                                \
+    assertLine,                                                                \
+    ("Expected " #field " count to be %d, but was %d.",                        \
+    expected.m ## field,                                                       \
+    actual.m ## field));                                                       \
+
+	ASSERT_COUNT(TranslationUnit);
+	ASSERT_COUNT(NamespaceDefinition);
+	ASSERT_COUNT(EnumDeclaration);
+	ASSERT_COUNT(Enumerator);
+	ASSERT_COUNT(FunctionDefinition);
+	ASSERT_COUNT(FunctionPrototype);
+	ASSERT_COUNT(Parameter);
+	ASSERT_COUNT(TypeDescriptor);
+	ASSERT_COUNT(TypeSpecifier);
+	ASSERT_COUNT(NamedInitializer);
+	ASSERT_COUNT(QualifiedIdentifier);
+	ASSERT_COUNT(CompoundStatement);
+	ASSERT_COUNT(IfStatement);
+	ASSERT_COUNT(SwitchStatement);
+	ASSERT_COUNT(SwitchSection);
+	ASSERT_COUNT(SwitchLabel);
+	ASSERT_COUNT(WhileStatement);
+	ASSERT_COUNT(JumpStatement);
+	ASSERT_COUNT(DeclarativeStatement);
+	ASSERT_COUNT(ExpressionStatement);
+	ASSERT_COUNT(ConditionalExpression);
+	ASSERT_COUNT(BinaryExpression);
+	ASSERT_COUNT(UnaryExpression);
+	ASSERT_COUNT(PostfixExpression);
+	ASSERT_COUNT(MemberExpression);
+	ASSERT_COUNT(ArraySubscriptExpression);
+	ASSERT_COUNT(FunctionCallExpression);
+	ASSERT_COUNT(CastExpression);
+	ASSERT_COUNT(SizeofExpression);
+	ASSERT_COUNT(ConstantExpression);
+	ASSERT_COUNT(IdentifierExpression);
+
+#undef ASSERT_COUNT
+
+	return true;
+}
+
+
+bool AssertNoParseErrors(
+	Logger &logger,
+	const char *assertFile,
+	int assertLine,
+	const Bond::Parser &parser)
+{
+	if (parser.HasErrors())
+	{
+		const Bond::ParseError *error = parser.GetError(0);
+		const Bond::Token *context = error->GetContext();
+		const Bond::StreamPos &pos = context->GetStartPos();
+		const char *description = error->GetDescription();
+
+		logger.Log("line %u in %s: (%d, %d) %s ", assertLine, assertFile, pos.line, pos.column, description);
+
+		if (error->GetType() == Bond::ParseError::UNEXPECTED_TOKEN)
+		{
+			logger.Log("'%s' before '%s'.", error->GetExpected(), context->GetTokenName());
+		}
+		else
+		{
+			logger.Log("near '%s'.", context->GetTokenName());
+		}
+	}
+
+	return true;
+}
+
 }
