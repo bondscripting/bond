@@ -1,0 +1,11 @@
+void TheFunction(int a)
+{
+	switch (a)
+	{
+		case 11 * 3:
+		case 12 * 3:
+			break;
+		default:
+			break;
+	}
+}

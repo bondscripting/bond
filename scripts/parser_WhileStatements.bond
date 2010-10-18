@@ -1,0 +1,30 @@
+void TheFunction(int a)
+{
+	// Empty body.
+	while (false);
+
+	// Single statement body.
+	while (a < 2)
+		++a;
+
+	// Compound statement body.
+	while (a < 3)
+	{
+		++a;
+	}
+
+	// Empty body;
+	do; while (false);
+
+	// Single statement body.
+	do
+		++a;
+	while (a < 4);
+
+	// Compound statement body.
+	do
+	{
+		++a;
+	}
+	while (a < 5);
+}

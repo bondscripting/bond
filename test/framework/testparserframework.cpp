@@ -147,6 +147,8 @@ bool AssertNoParseErrors(
 		{
 			logger.Log("near '%s'.", context->GetTokenName());
 		}
+
+		return false;
 	}
 
 	return true;

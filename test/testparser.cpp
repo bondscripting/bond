@@ -1,6 +1,4 @@
 #include "framework/testparserframework.h"
-#include "bond/prettyprinter.h"
-#include <stdio.h>
 
 DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
@@ -24,24 +22,8 @@ DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
 	TestFramework::ParseNodeCount expectedCount(-1);
-	expectedCount.mEnumDeclaration = 2;
-	expectedCount.mEnumerator = 6;
-
-	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
-
-	return true;
-}
-
-
-DEFINE_PARSER_TEST(EnumsWithInitializers, "scripts/parser_EnumsWithInitializers.bond")
-{
-	ASSERT_NO_PARSE_ERRORS();
-
-	const Bond::ParseNode *root = parser.GetTranslationUnit();
-
-	TestFramework::ParseNodeCount expectedCount(-1);
-	expectedCount.mEnumDeclaration = 2;
-	expectedCount.mEnumerator = 4;
+	expectedCount.mEnumDeclaration = 3;
+	expectedCount.mEnumerator = 9;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
@@ -58,48 +40,126 @@ DEFINE_PARSER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bo
 	TestFramework::ParseNodeCount expectedCount(-1);
 	expectedCount.mFunctionPrototype = 4;
 	expectedCount.mFunctionDefinition = 4;
-	expectedCount.mParameter = 5;
 	expectedCount.mCompoundStatement = 0;
+	expectedCount.mParameter = 5;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
 	return true;
 }
 
-/*
-DEFINE_PARSER_TEST(All, "scripts/parse.bond")
+
+DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond")
 {
-	if (parser.HasErrors())
-	{
-		const int numErrors = parser.GetNumErrors();
-		for (int i = 0; i < numErrors; ++i)
-		{
-			const Bond::Parser::Error *error = parser.GetError(i);
-			const Bond::Token *token = error->token;
-			const Bond::StreamPos &pos = token->GetStartPos();
-			printf("Error %d (%d, %d): expected %s before '%s'\n",
-				error->type,
-				pos.line,
-				pos.column,
-				error->expected,
-				token->GetText());
-		}
-	}
-	else
-	{
-		Bond::PrettyPrinter printer;
-		printer.Print(parser.GetTranslationUnit());
-	}
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mFunctionPrototype = 4;
+	expectedCount.mFunctionDefinition = 4;
+	expectedCount.mCompoundStatement = 4;
+	expectedCount.mParameter = 5;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
 	return true;
 }
-*/
 
-#define TEST_ITEMS                 \
-  TEST_ITEM(Namespaces)            \
-  TEST_ITEM(Enums)                 \
-  TEST_ITEM(EnumsWithInitializers) \
-  TEST_ITEM(FunctionDeclarations)  \
+
+DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_DeclarativeAndExpressionStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mDeclarativeStatement = 2;
+	expectedCount.mExpressionStatement = 2;
+	expectedCount.mNamedInitializer = 3;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mIfStatement = 8;
+	expectedCount.mCompoundStatement = 2;
+	expectedCount.mExpressionStatement = 11;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mWhileStatement = 6;
+	expectedCount.mCompoundStatement = 3;
+	expectedCount.mExpressionStatement = 6;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mSwitchStatement = 1;
+	expectedCount.mSwitchSection = 2;
+	expectedCount.mSwitchLabel = 3;
+	expectedCount.mJumpStatement = 2;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mJumpStatement = 4;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+#define TEST_ITEMS                              \
+  TEST_ITEM(Namespaces)                         \
+  TEST_ITEM(Enums)                              \
+  TEST_ITEM(FunctionDeclarations)               \
+  TEST_ITEM(FunctionDefinitions)                \
+  TEST_ITEM(DeclarativeAndExpressionStatements) \
+  TEST_ITEM(IfStatements)                       \
+  TEST_ITEM(WhileStatements)                    \
+  TEST_ITEM(SwitchStatements)                   \
 
 
 RUN_TESTS(Parser, TEST_ITEMS)

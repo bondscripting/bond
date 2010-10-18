@@ -1,0 +1,19 @@
+void TestContinue(int a)
+{
+	while (true) continue;
+}
+
+void TestBreak(int a)
+{
+	while (true) break;
+}
+
+void TestReturn1(int a)
+{
+	return;
+}
+
+bool TestReturn2(int a)
+{
+	return (a > 10);
+}

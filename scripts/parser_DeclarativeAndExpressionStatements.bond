@@ -1,0 +1,8 @@
+void TheFunction()
+{
+	int a, b;
+	a = b = 1;
+
+	Thingy *const [2] thingA;
+	*thingA[a] = 0;
+}
