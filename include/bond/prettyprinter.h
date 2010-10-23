@@ -29,6 +29,7 @@ public:
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(const TypeSpecifier *typeSpecifier);
 	virtual void VisitNamedInitializer(const NamedInitializer *namedInitializer);
+	virtual void VisitInitializer(const Initializer *initializer);
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(const IfStatement *ifStatement);

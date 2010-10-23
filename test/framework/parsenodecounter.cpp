@@ -89,7 +89,15 @@ void ParseNodeCounter::VisitQualifiedIdentifier(const Bond::QualifiedIdentifier 
 void ParseNodeCounter::VisitNamedInitializer(const Bond::NamedInitializer *namedInitializer)
 {
 	++mCount.mNamedInitializer;
-	// TODO
+	Count(namedInitializer->GetInitializer());
+}
+
+
+void ParseNodeCounter::VisitInitializer(const Bond::Initializer *initializer)
+{
+	++mCount.mInitializer;
+	Count(initializer->GetExpression());
+	CountList(initializer->GetInitializerList());
 }
 
 

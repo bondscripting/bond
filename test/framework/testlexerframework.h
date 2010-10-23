@@ -4,24 +4,24 @@
 #include "framework/testframework.h"
 #include "bond/lexer.h"
 
-#define DEFINE_LEXER_TEST(testName, scriptName)                                                 \
-  bool __Validate ## testName ## __(TestFramework::Logger &logger, Bond::Lexer &lexer);         \
-                                                                                                \
-  bool __Test ## testName ## __(TestFramework::Logger &logger)                                  \
-  {                                                                                             \
-    return RunLexerTest(logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
-  }                                                                                             \
-                                                                                                \
-  bool __Validate ## testName ## __(TestFramework::Logger &logger, Bond::Lexer &lexer)          \
+#define DEFINE_LEXER_TEST(testName, scriptName)                                                                \
+  bool __Validate ## testName ## __(Bond::TextWriter &logger, Bond::Lexer &lexer);                             \
+                                                                                                               \
+  bool __Test ## testName ## __(Bond::TextWriter &logger)                                                      \
+  {                                                                                                            \
+    return TestFramework::RunLexerTest(logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
+  }                                                                                                            \
+                                                                                                               \
+  bool __Validate ## testName ## __(Bond::TextWriter &logger, Bond::Lexer &lexer)                              \
 
 
 namespace TestFramework
 {
 
-typedef bool LexerValidationFunction(Logger &logger, Bond::Lexer &lexer);
+typedef bool LexerValidationFunction(Bond::TextWriter &logger, Bond::Lexer &lexer);
 
 bool RunLexerTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,

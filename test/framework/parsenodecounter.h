@@ -19,6 +19,7 @@ struct ParseNodeCount
 		mTypeDescriptor(defaultValue),
 		mTypeSpecifier(defaultValue),
 		mNamedInitializer(defaultValue),
+		mInitializer(defaultValue),
 		mQualifiedIdentifier(defaultValue),
 		mCompoundStatement(defaultValue),
 		mIfStatement(defaultValue),
@@ -52,6 +53,7 @@ struct ParseNodeCount
 	int mTypeDescriptor;
 	int mTypeSpecifier;
 	int mNamedInitializer;
+	int mInitializer;
 	int mQualifiedIdentifier;
 	int mCompoundStatement;
 	int mIfStatement;
@@ -96,6 +98,7 @@ public:
 	virtual void VisitTypeDescriptor(const Bond::TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(const Bond::TypeSpecifier *typeSpecifier);
 	virtual void VisitNamedInitializer(const Bond::NamedInitializer *namedInitializer);
+	virtual void VisitInitializer(const Bond::Initializer *initializer);
 	virtual void VisitQualifiedIdentifier(const Bond::QualifiedIdentifier *identifier);
 	virtual void VisitCompoundStatement(const Bond::CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(const Bond::IfStatement *ifStatement);

@@ -1,12 +1,13 @@
 #include "framework/testlexerframework.h"
 #include "framework/utils.h"
 #include "bond/defaultallocator.h"
+#include "bond/textwriter.h"
 
 namespace TestFramework
 {
 
 static bool RunLexerTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const FileData &script,
@@ -14,7 +15,7 @@ static bool RunLexerTest(
 
 
 bool RunLexerTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
@@ -37,7 +38,7 @@ bool RunLexerTest(
 
 
 static bool RunLexerTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const FileData &script,

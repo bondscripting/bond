@@ -1,7 +1,9 @@
 #ifndef TEST_FRAMEWORK_TESTFRAMEWORK_H
 #define TEST_FRAMEWORK_TESTFRAMEWORK_H
 
-#define DEFINE_TEST(testName) bool __Test ## testName ## __(TestFramework::Logger &logger)
+#include "bond/textwriter.h"
+
+#define DEFINE_TEST(testName) bool __Test ## testName ## __(Bond::TextWriter &logger)
 
 #define TEST_ITEM(testName) {#testName, &__Test ## testName ## __ },
 
@@ -33,29 +35,16 @@
 #define __ASSERT_FORMAT__(condition, logger, file, line, format)            \
   if (!(condition))                                                         \
   {                                                                         \
-    logger.Log("line %u in %s: ", line, file);                              \
-    logger.Log format;                                                      \
+    logger.Write("line %u in %s: ", line, file);                            \
+    logger.Write format;                                                    \
     return false;                                                           \
   }                                                                         \
+
 
 namespace TestFramework
 {
 
-class Logger
-{
-public:
-	Logger();
-
-	void Log(const char *format, ...);
-	const char *GetLog() const { return mBuffer; }
-
-private:
-	static const unsigned BUFFER_SIZE = 1024;
-	char mBuffer[BUFFER_SIZE];
-	unsigned mIndex;
-};
-
-typedef bool TestFunction(Logger &logger);
+typedef bool TestFunction(Bond::TextWriter &logger);
 
 struct TestItem
 {

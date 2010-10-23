@@ -17,6 +17,7 @@ namespace Bond
 	class TypeDescriptor;
 	class TypeSpecifier;
 	class NamedInitializer;
+	class Initializer;
 	class QualifiedIdentifier;
 	class CompoundStatement;
 	class IfStatement;

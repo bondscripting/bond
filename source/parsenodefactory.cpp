@@ -31,6 +31,7 @@ public:
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor);
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier);
 	virtual void VisitNamedInitializer(NamedInitializer *namedInitializer);
+	virtual void VisitInitializer(Initializer *initializer);
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) {}
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement);
 	virtual void VisitIfStatement(IfStatement *ifStatement);
@@ -130,7 +131,14 @@ void ParseNodeDeallocator::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
 
 void ParseNodeDeallocator::VisitNamedInitializer(NamedInitializer *namedInitializer)
 {
-	// TODO
+	Destroy(namedInitializer->GetInitializer());
+}
+
+
+void ParseNodeDeallocator::VisitInitializer(Initializer *initializer)
+{
+	Destroy(initializer->GetExpression());
+	DestroyList(initializer->GetInitializerList());
 }
 
 
@@ -353,9 +361,21 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 }
 
 
-NamedInitializer *ParseNodeFactory::CreateNamedInitializer(const Token *name)
+NamedInitializer *ParseNodeFactory::CreateNamedInitializer(const Token *name, Initializer *initializer)
 {
-	return new (mAllocator.Alloc<NamedInitializer>()) NamedInitializer(name);
+	return new (mAllocator.Alloc<NamedInitializer>()) NamedInitializer(name, initializer);
+}
+
+
+Initializer *ParseNodeFactory::CreateInitializer(Expression *expression)
+{
+	return new (mAllocator.Alloc<Initializer>()) Initializer(expression);
+}
+
+
+Initializer *ParseNodeFactory::CreateInitializer(Initializer *initializerList)
+{
+	return new (mAllocator.Alloc<Initializer>()) Initializer(initializerList);
 }
 
 

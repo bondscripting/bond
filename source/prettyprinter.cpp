@@ -157,6 +157,21 @@ void PrettyPrinter::VisitNamedInitializer(const NamedInitializer *namedInitializ
 }
 
 
+void PrettyPrinter::VisitInitializer(const Initializer *initializer)
+{
+	if (initializer->GetExpression() != 0)
+	{
+		Print(initializer->GetExpression());
+	}
+	else
+	{
+		Print("{ ");
+		PrintList(initializer->GetInitializerList(), ", ");
+		Print(" }");
+	}
+}
+
+
 void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName());

@@ -396,11 +396,75 @@ NamedInitializer *Parser::ParseNamedInitializer(Status &status, TokenStream &str
 
 	if (name != 0)
 	{
-		// TODO: Parse initializer
-		namedInitializer = mFactory.CreateNamedInitializer(name);
+		Initializer *initializer = 0;
+
+		if (stream.NextIf(Token::ASSIGN))
+		{
+			initializer = ParseInitializer(status, stream);
+			AssertNode(status, stream, initializer);
+		}
+
+		namedInitializer = mFactory.CreateNamedInitializer(name, initializer);
 	}
 
 	return namedInitializer;
+}
+
+
+// initializer_list
+//   : initializer
+//   | initializer_list ',' initializer
+//
+// initializer
+//   : assignment_expression
+//   | '{' initializer_list [','] '}'
+Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
+{
+	Initializer *initializer = 0;
+
+	if (stream.NextIf(Token::OBRACE))
+	{
+		Initializer *initializerList = 0;
+		Initializer *current = 0;
+
+		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		{
+			Initializer *next = ParseInitializer(status, stream);
+			AssertNode(status, stream, next);
+			SyncToInitializerDelimiter(status, stream);
+
+			// Note that the comma on the last initializer is optional.
+			if (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+			{
+				ExpectToken(status, stream, Token::COMMA);
+			}
+
+			if (next != 0)
+			{
+				if (initializerList == 0)
+				{
+					initializerList = next;
+				}
+				else
+				{
+					current->SetNext(next);
+				}
+				current = next;
+			}
+		}
+
+		ExpectToken(status, stream, Token::CBRACE);
+	}
+	else
+	{
+		Expression *expression = ParseAssignmentExpression(status, stream);
+		if (expression != 0)
+		{
+			initializer = mFactory.CreateInitializer(expression);
+		}
+	}
+
+	return 0;
 }
 
 
@@ -1335,6 +1399,12 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 {
 	Recover(status, stream, TokenTypeSet::ENUMERATOR_DELIMITERS);
+}
+
+
+void Parser::SyncToInitializerDelimiter(Status &status, TokenStream &stream)
+{
+	Recover(status, stream, TokenTypeSet::INITIALIZER_DELIMITERS);
 }
 
 

@@ -41,7 +41,7 @@ private:
 class TranslationUnit: public ParseNode
 {
 public:
-	TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}
+	explicit TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}
 	virtual ~TranslationUnit() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTranslationUnit(this); }
@@ -180,7 +180,7 @@ private:
 class StructDeclaration: public ListParseNode
 {
 public:
-	StructDeclaration(const Token *name):
+	explicit StructDeclaration(const Token *name):
 		mName(name)
 	{}
 
@@ -281,8 +281,8 @@ private:
 class TypeSpecifier: public ParseNode
 {
 public:
-	TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
-	TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
+	explicit TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
+	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
 	virtual ~TypeSpecifier() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeSpecifier(this); }
@@ -302,8 +302,9 @@ private:
 class NamedInitializer: public ListParseNode
 {
 public:
-	NamedInitializer(const Token *name):
-		mName(name)
+	explicit NamedInitializer(const Token *name, Initializer *initializer):
+		mName(name),
+		mInitializer(initializer)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -313,15 +314,49 @@ public:
 
 	const Token *GetName() const { return mName; }
 
+	Initializer *GetInitializer() { return mInitializer; }
+	const Initializer *GetInitializer() const { return mInitializer; }
+
 private:
 	const Token *mName;
+	Initializer *mInitializer;
+};
+
+
+class Initializer: public ListParseNode
+{
+public:
+	explicit Initializer(Expression *expression):
+		mExpression(expression),
+		mInitializerList(0)
+	{}
+
+	explicit Initializer(Initializer *initializerList):
+		mExpression(0),
+		mInitializerList(initializerList)
+	{}
+
+	virtual ~Initializer() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitInitializer(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitInitializer(this); }
+
+	Expression *GetExpression() { return mExpression; }
+	const Expression *GetExpression() const { return mExpression; }
+
+	Initializer *GetInitializerList() { return mInitializerList; }
+	const Initializer *GetInitializerList() const { return mInitializerList; }
+
+private:
+	Expression *mExpression;
+	Initializer *mInitializerList;
 };
 
 
 class QualifiedIdentifier: public ListParseNode
 {
 public:
-	QualifiedIdentifier(const Token *name): mName(name) {}
+	explicit QualifiedIdentifier(const Token *name): mName(name) {}
 	virtual ~QualifiedIdentifier() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitQualifiedIdentifier(this); }
@@ -337,7 +372,7 @@ private:
 class CompoundStatement: public ListParseNode
 {
 public:
-	CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
+	explicit CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
 	virtual ~CompoundStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
@@ -440,7 +475,7 @@ public:
 		VARIANT_DEFAULT,
 	};
 
-	SwitchLabel(const Token *label):
+	explicit SwitchLabel(const Token *label):
 		mLabel(label),
 		mExpression(0),
 		mVariant(VARIANT_DEFAULT)
@@ -554,7 +589,7 @@ private:
 class ExpressionStatement: public ListParseNode
 {
 public:
-	ExpressionStatement(Expression *expression): mExpression(expression) {}
+	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
 	virtual ~ExpressionStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitExpressionStatement(this); }
@@ -775,7 +810,7 @@ class SizeofExpression: public Expression
 {
 public:
 	SizeofExpression(TypeDescriptor *typeDescriptor): mTypeDescriptor(typeDescriptor), mRhs(0) {}
-	SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
+	explicit SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
 	virtual ~SizeofExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSizeofExpression(this); }
@@ -812,7 +847,7 @@ private:
 class IdentifierExpression: public Expression
 {
 public:
-	IdentifierExpression(QualifiedIdentifier *identifier): mIdentifier(identifier) {}
+	explicit IdentifierExpression(QualifiedIdentifier *identifier): mIdentifier(identifier) {}
 	virtual ~IdentifierExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIdentifierExpression(this); }

@@ -289,6 +289,21 @@ const TokenTypeSet TokenTypeSet::ENUMERATOR_DELIMITERS =
 };
 
 
+static const Token::TokenType INITIALIZER_DELIMITER_TYPES[] =
+{
+	Token::OBRACE,
+	Token::CBRACE,
+	Token::COMMA,
+};
+
+const TokenTypeSet TokenTypeSet::INITIALIZER_DELIMITERS =
+{
+	INITIALIZER_DELIMITER_TYPES,
+	sizeof(INITIALIZER_DELIMITER_TYPES) / sizeof(*INITIALIZER_DELIMITER_TYPES),
+	"INITIALIZER_DELIMITER",
+};
+
+
 static const Token::TokenType BLOCK_DELIMITER_TYPES[] =
 {
 	Token::CBRACE,

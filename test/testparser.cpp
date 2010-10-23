@@ -22,7 +22,7 @@ DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
 	TestFramework::ParseNodeCount expectedCount(-1);
-	expectedCount.mEnumDeclaration = 3;
+	expectedCount.mEnumDeclaration = 4;
 	expectedCount.mEnumerator = 9;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);

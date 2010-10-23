@@ -1,35 +1,9 @@
 #include "framework/testframework.h"
+#include "bond/bufferedtextwriter.h"
 #include <stdio.h>
-#include <stdarg.h>
 
 namespace TestFramework
 {
-
-Logger::Logger():
-	mIndex(0)
-{
-	mBuffer[0] = '\0';
-}
-
-
-void Logger::Log(const char *format, ...)
-{
-	unsigned length = BUFFER_SIZE - mIndex;
-	char *buffer = mBuffer + mIndex;
-	va_list argList;
-	va_start(argList, format);
-	int n = vsnprintf(buffer, length, format, argList);
-
-	if (n > 0)
-	{
-		mIndex += n;
-		if (mIndex >= BUFFER_SIZE)
-		{
-			mIndex = BUFFER_SIZE - 1;
-		}
-	}
-}
-
 
 bool RunTests(const TestGroup &testGroup)
 {
@@ -41,7 +15,9 @@ bool RunTests(const TestGroup &testGroup)
 
 	for (unsigned i = 0; i < numTests; ++i)
 	{
-		Logger logger;
+		const int BUFFER_SIZE = 1024;
+		char buffer[BUFFER_SIZE];
+		Bond::BufferedTextWriter logger(buffer, BUFFER_SIZE);
 		const TestItem &item = testGroup.items[i];
 		bool result = item.testFunction(logger);
 		const char *resultStr = "";
@@ -57,7 +33,7 @@ bool RunTests(const TestGroup &testGroup)
 			resultStr = "FAIL";
 		}
 
-		printf("\t%u/%u/%u %s: [%s] %s\n", numFailed, numPassed, numTests, item.testName, resultStr, logger.GetLog());
+		printf("\t%u/%u/%u %s: [%s] %s\n", numFailed, numPassed, numTests, item.testName, resultStr, buffer);
 	}
 
 	printf("Results for %s: %u/%u/%u\n", testGroup.groupName, numFailed, numPassed, numTests);

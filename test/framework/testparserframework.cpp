@@ -2,12 +2,13 @@
 #include "framework/utils.h"
 #include "bond/defaultallocator.h"
 #include "bond/lexer.h"
+#include "bond/textwriter.h"
 
 namespace TestFramework
 {
 
 static bool RunParserTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const FileData &script,
@@ -15,7 +16,7 @@ static bool RunParserTest(
 
 
 bool RunParserTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
@@ -38,7 +39,7 @@ bool RunParserTest(
 
 
 static bool RunParserTest(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const FileData &script,
@@ -66,7 +67,7 @@ static bool RunParserTest(
 }
 
 bool AssertParseNodeCount(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const Bond::ParseNode *root,
@@ -125,7 +126,7 @@ bool AssertParseNodeCount(
 
 
 bool AssertNoParseErrors(
-	Logger &logger,
+	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
 	const Bond::Parser &parser)
@@ -137,15 +138,15 @@ bool AssertNoParseErrors(
 		const Bond::StreamPos &pos = context->GetStartPos();
 		const char *description = error->GetDescription();
 
-		logger.Log("line %u in %s: (%d, %d) %s ", assertLine, assertFile, pos.line, pos.column, description);
+		logger.Write("line %u in %s: (%d, %d) %s ", assertLine, assertFile, pos.line, pos.column, description);
 
 		if (error->GetType() == Bond::ParseError::UNEXPECTED_TOKEN)
 		{
-			logger.Log("'%s' before '%s'.", error->GetExpected(), context->GetTokenName());
+			logger.Write("'%s' before '%s'.", error->GetExpected(), context->GetTokenName());
 		}
 		else
 		{
-			logger.Log("near '%s'.", context->GetTokenName());
+			logger.Write("near '%s'.", context->GetTokenName());
 		}
 
 		return false;

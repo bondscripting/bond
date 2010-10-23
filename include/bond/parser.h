@@ -88,6 +88,7 @@ private:
 	TypeSpecifier *ParsePrimitiveTypeSpecifier(Status &status, TokenStream &stream);
 	NamedInitializer *ParseNamedInitializerList(Status &status, TokenStream &stream);
 	NamedInitializer *ParseNamedInitializer(Status &status, TokenStream &stream);
+	Initializer *ParseInitializer(Status &status, TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(Status &status, TokenStream &stream);
 	ListParseNode *ParseStatement(Status &status, TokenStream &stream);
 	CompoundStatement *ParseCompoundStatement(Status &status, TokenStream &stream);
@@ -121,6 +122,7 @@ private:
 	Expression *ParseArgumentList(Status &status, TokenStream &stream);
 
 	void SyncToEnumeratorDelimiter(Status &status, TokenStream &stream);
+	void SyncToInitializerDelimiter(Status &status, TokenStream &stream);
 	void SyncToStatementTerminator(Status &status, TokenStream &stream);
 	void SyncToStatementDelimiter(Status &status, TokenStream &stream);
 	void SyncToLabelTerminator(Status &status, TokenStream &stream);

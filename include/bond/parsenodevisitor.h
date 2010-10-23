@@ -21,6 +21,7 @@ public:
 	virtual void VisitTypeDescriptor(TypeDescriptor *typeDescriptor) = 0;
 	virtual void VisitTypeSpecifier(TypeSpecifier *typeSpecifier) = 0;
 	virtual void VisitNamedInitializer(NamedInitializer *namedInitializer) = 0;
+	virtual void VisitInitializer(Initializer *initializer) = 0;
 	virtual void VisitQualifiedIdentifier(QualifiedIdentifier *identifier) = 0;
 	virtual void VisitCompoundStatement(CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(IfStatement *ifStatement) = 0;
@@ -60,6 +61,7 @@ public:
 	virtual void VisitTypeDescriptor(const TypeDescriptor *typeDescriptor) = 0;
 	virtual void VisitTypeSpecifier(const TypeSpecifier *typeSpecifier) = 0;
 	virtual void VisitNamedInitializer(const NamedInitializer *namedInitializer) = 0;
+	virtual void VisitInitializer(const Initializer *initializer) = 0;
 	virtual void VisitQualifiedIdentifier(const QualifiedIdentifier *identifier) = 0;
 	virtual void VisitCompoundStatement(const CompoundStatement *compoundStatement) = 0;
 	virtual void VisitIfStatement(const IfStatement *ifStatement) = 0;

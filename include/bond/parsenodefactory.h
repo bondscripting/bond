@@ -32,7 +32,9 @@ public:
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length);
 	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
-	NamedInitializer *CreateNamedInitializer(const Token *name);
+	NamedInitializer *CreateNamedInitializer(const Token *name, Initializer *initializer);
+	Initializer *CreateInitializer(Expression *expression);
+	Initializer *CreateInitializer(Initializer *initializerList);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 	CompoundStatement *CreateCompoundStatement(ListParseNode *statementList);
 
