@@ -151,6 +151,23 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 }
 
 
+DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mDeclarativeStatement = 3;
+	expectedCount.mNamedInitializer = 4;
+	expectedCount.mInitializer = 16;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -160,6 +177,7 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
   TEST_ITEM(IfStatements)                       \
   TEST_ITEM(WhileStatements)                    \
   TEST_ITEM(SwitchStatements)                   \
+  TEST_ITEM(Initializers)                       \
 
 
 RUN_TESTS(Parser, TEST_ITEMS)

@@ -454,6 +454,7 @@ Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
 		}
 
 		ExpectToken(status, stream, Token::CBRACE);
+		initializer = mFactory.CreateInitializer(initializerList);
 	}
 	else
 	{
@@ -464,7 +465,7 @@ Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
 		}
 	}
 
-	return 0;
+	return initializer;
 }
 
 
