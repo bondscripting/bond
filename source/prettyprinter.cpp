@@ -1,5 +1,6 @@
 #include "bond/parsenodes.h"
 #include "bond/prettyprinter.h"
+#include "bond/textwriter.h"
 #include <stdio.h>
 
 namespace Bond
@@ -13,7 +14,7 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 	}
 	else
 	{
-		Print("<invalid>");
+		mWriter.Write("<invalid>");
 	}
 }
 
@@ -27,32 +28,32 @@ void PrettyPrinter::VisitTranslationUnit(const TranslationUnit *translationUnit)
 void PrettyPrinter::VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition)
 {
 	Tab();
-	Print("namespace ");
+	mWriter.Write("namespace ");
 	Print(namespaceDefinition->GetName());
-	Print("\n");
+	mWriter.Write("\n");
 	Tab();
-	Print("{\n");
+	mWriter.Write("{\n");
 	IncrementTab();
 	PrintList(namespaceDefinition->GetExternalDeclarationList());
 	DecrementTab();
 	Tab();
-	Print("}\n");
+	mWriter.Write("}\n");
 }
 
 
 void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 {
 	Tab();
-	Print("enum ");
+	mWriter.Write("enum ");
 	Print(enumDeclaration->GetName());
-	Print("\n");
+	mWriter.Write("\n");
 	Tab();
-	Print("{\n");
+	mWriter.Write("{\n");
 	IncrementTab();
 	PrintList(enumDeclaration->GetEnumeratorList());
 	DecrementTab();
 	Tab();
-	Print("};\n");
+	mWriter.Write("};\n");
 }
 
 
@@ -62,10 +63,10 @@ void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
 	Print(enumerator->GetName());
 	if (enumerator->GetValue() != 0)
 	{
-		Print(" = ");
+		mWriter.Write(" = ");
 		Print(enumerator->GetValue());
 	}
-	Print(",\n");
+	mWriter.Write(",\n");
 }
 
 
@@ -75,14 +76,14 @@ void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDe
 	Print(functionDefinition->GetPrototype());
 	if (functionDefinition->GetBody() != 0)
 	{
-		Print("\n");
+		mWriter.Write("\n");
 		IncrementTab();
 		Print(functionDefinition->GetBody());
 		DecrementTab();
 	}
 	else
 	{
-		Print(";\n");
+		mWriter.Write(";\n");
 	}
 }
 
@@ -90,18 +91,18 @@ void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDe
 void PrettyPrinter::VisitFunctionPrototype(const FunctionPrototype *functionPrototype)
 {
 	Print(functionPrototype->GetReturnType());
-	Print(" ");
+	mWriter.Write(" ");
 	Print(functionPrototype->GetName());
-	Print("(");
+	mWriter.Write("(");
 	PrintList(functionPrototype->GetParameterList(), ", ");
-	Print(")");
+	mWriter.Write(")");
 }
 
 
 void PrettyPrinter::VisitParameter(const Parameter *parameter)
 {
 	Print(parameter->GetTypeDescriptor());
-	Print(" ");
+	mWriter.Write(" ");
 	Print(parameter->GetName());
 }
 
@@ -113,25 +114,25 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 		case TypeDescriptor::VARIANT_VALUE:
 			if (typeDescriptor->IsConst())
 			{
-				Print("const ");
+				mWriter.Write("const ");
 			}
 			Print(typeDescriptor->GetTypeSpecifier());
 			break;
 
 		case TypeDescriptor::VARIANT_POINTER:
 			VisitTypeDescriptor(typeDescriptor->GetParent());
-			Print(" *");
+			mWriter.Write(" *");
 			if (typeDescriptor->IsConst())
 			{
-				Print(" const");
+				mWriter.Write(" const");
 			}
 			break;
 
 		case TypeDescriptor::VARIANT_ARRAY:
 			VisitTypeDescriptor(typeDescriptor->GetParent());
-			Print(" [");
+			mWriter.Write(" [");
 			Print(typeDescriptor->GetLength());
-			Print("]");
+			mWriter.Write("]");
 			break;
 	}
 }
@@ -165,9 +166,9 @@ void PrettyPrinter::VisitInitializer(const Initializer *initializer)
 	}
 	else
 	{
-		Print("{ ");
+		mWriter.Write("{ ");
 		PrintList(initializer->GetInitializerList(), ", ");
-		Print(" }");
+		mWriter.Write(" }");
 	}
 }
 
@@ -182,12 +183,12 @@ void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStat
 {
 	DecrementTab();
 	Tab();
-	Print("{\n");
+	mWriter.Write("{\n");
 	IncrementTab();
 	PrintList(compoundStatement->GetStatementList());
 	DecrementTab();
 	Tab();
-	Print("}\n");
+	mWriter.Write("}\n");
 	IncrementTab();
 }
 
@@ -195,9 +196,9 @@ void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStat
 void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 {
 	Tab();
-	Print("if (");
+	mWriter.Write("if (");
 	Print(ifStatement->GetCondition());
-	Print(")\n");
+	mWriter.Write(")\n");
 
 	IncrementTab();
 	Print(ifStatement->GetThenStatement());
@@ -206,7 +207,7 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 	if (ifStatement->GetElseStatement() != 0)
 	{
 		Tab();
-		Print("else\n");
+		mWriter.Write("else\n");
 
 		IncrementTab();
 		Print(ifStatement->GetElseStatement());
@@ -218,17 +219,17 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 void PrettyPrinter::VisitSwitchStatement(const SwitchStatement *switchStatement)
 {
 	Tab();
-	Print("switch (");
+	mWriter.Write("switch (");
 	Print(switchStatement->GetControl());
-	Print(")\n");
+	mWriter.Write(")\n");
 
 	Tab();
-	Print("{\n");
+	mWriter.Write("{\n");
 	IncrementTab();
 	PrintList(switchStatement->GetSectionList());
 	DecrementTab();
 	Tab();
-	Print("}\n");
+	mWriter.Write("}\n");
 }
 
 
@@ -248,11 +249,11 @@ void PrettyPrinter::VisitSwitchLabel(const SwitchLabel *switchLabel)
 
 	if (switchLabel->GetExpression() != 0)
 	{
-		Print(" ");
+		mWriter.Write(" ");
 		Print(switchLabel->GetExpression());
 	}
 
-	Print(":\n");
+	mWriter.Write(":\n");
 }
 
 
@@ -261,20 +262,20 @@ void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
 	Tab();
 	if (whileStatement->GetVariant() == WhileStatement::VARIANT_DO_WHILE)
 	{
-		Print("do\n");
+		mWriter.Write("do\n");
 		IncrementTab();
 		Print(whileStatement->GetBody());
 		DecrementTab();
 		Tab();
-		Print("while (");
+		mWriter.Write("while (");
 		Print(whileStatement->GetCondition());
-		Print(");\n");
+		mWriter.Write(");\n");
 	}
 	else
 	{
-		Print("while (");
+		mWriter.Write("while (");
 		Print(whileStatement->GetCondition());
-		Print(")\n");
+		mWriter.Write(")\n");
 		IncrementTab();
 		Print(whileStatement->GetBody());
 		DecrementTab();
@@ -291,11 +292,11 @@ void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
 	const Expression *rhs = jumpStatement->GetRhs(); 
 	if ((op->GetTokenType() == Token::KEY_RETURN) && (rhs != 0))
 	{
-		Print(" ");
+		mWriter.Write(" ");
 		Print(rhs);
 	}
 
-	Print(";\n");
+	mWriter.Write(";\n");
 }
 
 
@@ -303,9 +304,9 @@ void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declar
 {
 	Tab();
 	Print(declarativeStatement->GetTypeDescriptor());
-	Print(" ");
+	mWriter.Write(" ");
 	PrintList(declarativeStatement->GetNamedInitializerList(), ", ");
-	Print(";\n");
+	mWriter.Write(";\n");
 }
 
 
@@ -313,49 +314,49 @@ void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressi
 {
 	Tab();
 	Print(expressionStatement->GetExpression());
-	Print(";\n");
+	mWriter.Write(";\n");
 }
 
 
 void PrettyPrinter::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
 {
-	Print("(");
+	mWriter.Write("(");
 	Print(conditionalExpression->GetCondition());
-	Print(" ? ");
+	mWriter.Write(" ? ");
 	Print(conditionalExpression->GetTrueExpression());
-	Print(" : ");
+	mWriter.Write(" : ");
 	Print(conditionalExpression->GetFalseExpression());
-	Print(")");
+	mWriter.Write(")");
 }
 
 
 void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpression)
 {
-	Print("(");
+	mWriter.Write("(");
 	Print(binaryExpression->GetLhs());
-	Print(" ");
+	mWriter.Write(" ");
 	Print(binaryExpression->GetOperator());
-	Print(" ");
+	mWriter.Write(" ");
 	Print(binaryExpression->GetRhs());
-	Print(")");
+	mWriter.Write(")");
 }
 
 
 void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 {
-	//Print("(");
+	//mWriter.Write("(");
 	Print(unaryExpression->GetOperator());
 	Print(unaryExpression->GetRhs());
-	//Print(")");
+	//mWriter.Write(")");
 }
 
 
 void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpression)
 {
-	//Print("(");
+	//mWriter.Write("(");
 	Print(postfixExpression->GetLhs());
 	Print(postfixExpression->GetOperator());
-	//Print(")");
+	//mWriter.Write(")");
 }
 
 
@@ -370,38 +371,38 @@ void PrettyPrinter::VisitMemberExpression(const MemberExpression *memberExpressi
 void PrettyPrinter::VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	Print(arraySubscriptExpression->GetLhs());
-	Print("[");
+	mWriter.Write("[");
 	Print(arraySubscriptExpression->GetIndex());
-	Print("]");
+	mWriter.Write("]");
 }
 
 
 void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
 {
 	Print(functionCallExpression->GetLhs());
-	Print("(");
+	mWriter.Write("(");
 	PrintList(functionCallExpression->GetArgumentList(), ", ");
-	Print(")");
+	mWriter.Write(")");
 }
 
 
 void PrettyPrinter::VisitCastExpression(const CastExpression *castExpression)
 {
-	Print("(");
+	mWriter.Write("(");
 	Print(castExpression->GetTypeDescriptor());
-	Print(") ");
+	mWriter.Write(") ");
 	Print(castExpression->GetRhs());
 }
 
 
 void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpression)
 {
-	Print("sizeof");
+	mWriter.Write("sizeof");
 	if (sizeofExpression->GetTypeDescriptor() != 0)
 	{
-		Print("<");
+		mWriter.Write("<");
 		Print(sizeofExpression->GetTypeDescriptor());
-		Print(">");
+		mWriter.Write(">");
 	}
 	else
 	{
@@ -445,7 +446,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 
 	while (current != 0)
 	{
-		Print(separator);
+		mWriter.Write("%s", separator);
 		Print(current);
 		current = current->GetNext();
 	}
@@ -456,15 +457,8 @@ void PrettyPrinter::Tab()
 {
 	for (int i = 0; i < mTabLevel; ++i)
 	{
-		Print("\t");
+		mWriter.Write("\t");
 	}
-}
-
-
-void PrettyPrinter::Print(const char *text)
-{
-	// TODO: output to appropriate place.
-	printf("%s", text);
 }
 
 
@@ -472,7 +466,7 @@ void PrettyPrinter::Print(const Token *token)
 {
 	if (token != 0)
 	{
-		Print(token->GetText());
+		mWriter.Write("%s", token->GetText());
 	}
 }
 

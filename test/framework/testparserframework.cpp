@@ -97,6 +97,7 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(TypeDescriptor);
 	ASSERT_COUNT(TypeSpecifier);
 	ASSERT_COUNT(NamedInitializer);
+	ASSERT_COUNT(Initializer);
 	ASSERT_COUNT(QualifiedIdentifier);
 	ASSERT_COUNT(CompoundStatement);
 	ASSERT_COUNT(IfStatement);
@@ -133,22 +134,15 @@ bool AssertNoParseErrors(
 {
 	if (parser.HasErrors())
 	{
-		const Bond::ParseError *error = parser.GetError(0);
-		const Bond::Token *context = error->GetContext();
-		const Bond::StreamPos &pos = context->GetStartPos();
-		const char *description = error->GetDescription();
+		logger.Write("line %u in %s:\n", assertLine, assertFile);
 
-		logger.Write("line %u in %s: (%d, %d) %s ", assertLine, assertFile, pos.line, pos.column, description);
-
-		if (error->GetType() == Bond::ParseError::UNEXPECTED_TOKEN)
+		for (int i = 0; i < parser.GetNumErrors(); ++i)
 		{
-			logger.Write("'%s' before '%s'.", error->GetExpected(), context->GetTokenName());
+			logger.Write("\t\t");
+			const Bond::ParseError *error = parser.GetError(i);
+			error->Print(logger);
+			logger.Write("\n");
 		}
-		else
-		{
-			logger.Write("near '%s'.", context->GetTokenName());
-		}
-
 		return false;
 	}
 

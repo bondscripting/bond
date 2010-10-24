@@ -15,6 +15,7 @@
 namespace Bond
 {
 
+class TextWriter;
 class Token;
 
 class ParseError
@@ -47,6 +48,8 @@ public:
 
 	const char *GetDescription() const;
 	static const char *GetDescription(Type type);
+
+	void Print(TextWriter &writer) const;
 
 private:
 	static const char *ERROR_DESCRIPTIONS;

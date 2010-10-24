@@ -6,12 +6,14 @@
 namespace Bond
 {
 
+class TextWriter;
 class Token;
 
 class PrettyPrinter: public ConstParseNodeVisitor
 {
 public:
-	PrettyPrinter():
+	PrettyPrinter(TextWriter &writer):
+		mWriter(writer),
 		mTabLevel(0)
 	{}
 
@@ -59,9 +61,9 @@ private:
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
-	void Print(const char *text);
 	void Print(const Token *token);
 
+	TextWriter &mWriter;
 	int mTabLevel;
 };
 

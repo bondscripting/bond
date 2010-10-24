@@ -1,4 +1,6 @@
 #include "bond/parseerror.h"
+#include "bond/textwriter.h"
+#include "bond/token.h"
 
 namespace Bond
 {
@@ -19,6 +21,23 @@ const char *ParseError::GetDescription(Type type)
 	};
 
 	return ERROR_DESCRIPTIONS[type];
+}
+
+
+void ParseError::Print(TextWriter &writer) const
+{
+	const Bond::StreamPos &pos = mContext->GetStartPos();
+
+	writer.Write("(%d, %d): %s ", pos.line, pos.column, GetDescription());
+
+	if (mType == Bond::ParseError::UNEXPECTED_TOKEN)
+	{
+		writer.Write("'%s' before '%s'.", mExpected, mContext->GetTokenName());
+	}
+	else
+	{
+		writer.Write("near '%s'.", mContext->GetTokenName());
+	}
 }
 
 }
