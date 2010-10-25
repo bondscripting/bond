@@ -98,6 +98,7 @@ private:
 	SwitchLabel *ParseSwitchLabel(Status &status, TokenStream &stream);
 	WhileStatement *ParseWhileStatement(Status &status, TokenStream &stream);
 	WhileStatement *ParseDoWhileStatement(Status &status, TokenStream &stream);
+	ForStatement *ParseForStatement(Status &status, TokenStream &stream);
 	JumpStatement *ParseJumpStatement(Status &status, TokenStream &stream);
 	ListParseNode *ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream);
 	ExpressionStatement *ParseExpressionStatement(Status &status, TokenStream &stream);

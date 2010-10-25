@@ -1,0 +1,27 @@
+void TheFunction(int a)
+{
+	// Empty expressions and empty body.
+	for (;;);
+
+	// Declarative loop initializer.
+	for (int i = 0, j = 0;;);
+
+	// Expression loop initializer
+	for (a = 0;;);
+
+	// Condition
+	for (; a < 10; );
+
+	// Counting expression.
+	for (;; --a);
+
+	// All expressions and single statement body.
+	for (int i = 0; i < 10; ++i)
+		++a;
+
+	// Compound statement body.
+	for (int i = 0; i < 10; ++i)
+	{
+		++a;
+	}
+}

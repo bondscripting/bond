@@ -40,15 +40,22 @@ public:
 
 	IfStatement *CreateIfStatement(
 		Expression *condition,
-		ListParseNode *thenStatement,
-		ListParseNode *elseStatement);
+		ParseNode *thenStatement,
+		ParseNode *elseStatement);
 
 	SwitchStatement *CreateSwitchStatement(Expression *control, SwitchSection *sectionList);
 	SwitchSection *CreateSwitchSection(SwitchLabel *labelList, ListParseNode* statementList);
 	SwitchLabel *CreateSwitchLabel(const Token *label, Expression *expression);
 	SwitchLabel *CreateDefaultLabel(const Token *label);
-	WhileStatement *CreateWhileStatement(Expression *condition, ListParseNode *body);
-	WhileStatement *CreateDoWhileStatement(Expression *condition, ListParseNode *body);
+	WhileStatement *CreateWhileStatement(Expression *condition, ParseNode *body);
+	WhileStatement *CreateDoWhileStatement(Expression *condition, ParseNode *body);
+
+	ForStatement *CreateForStatement(
+		ParseNode *initializer,
+		Expression *condition,
+		Expression *countingExpression,
+		ParseNode *body);
+
 	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
 
 	DeclarativeStatement *CreateDeclarativeStatement(

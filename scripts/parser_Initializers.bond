@@ -1,4 +1,4 @@
-void AFunction()
+void TheFunction()
 {
 	int a = 0, b = 0;
 	int [] b = {1, 2, 3};

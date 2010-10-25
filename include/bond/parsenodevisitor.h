@@ -29,6 +29,7 @@ public:
 	virtual void VisitSwitchSection(SwitchSection *switchSection) = 0;
 	virtual void VisitSwitchLabel(SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(WhileStatement *whileStatement) = 0;
+	virtual void VisitForStatement(ForStatement *forStatement) = 0;
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement) = 0;
 	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement) = 0;
 	virtual void VisitExpressionStatement(ExpressionStatement *expressionStatement) = 0;
@@ -69,6 +70,7 @@ public:
 	virtual void VisitSwitchSection(const SwitchSection *switchSection) = 0;
 	virtual void VisitSwitchLabel(const SwitchLabel *switchLabel) = 0;
 	virtual void VisitWhileStatement(const WhileStatement *whileStatement) = 0;
+	virtual void VisitForStatement(const ForStatement *forStatement) = 0;
 	virtual void VisitJumpStatement(const JumpStatement *jumpStatement) = 0;
 	virtual void VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement) = 0;
 	virtual void VisitExpressionStatement(const ExpressionStatement *expressionStatement) = 0;

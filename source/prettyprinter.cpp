@@ -283,6 +283,22 @@ void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
 }
 
 
+void PrettyPrinter::VisitForStatement(const ForStatement *forStatement)
+{
+	Tab();
+	mWriter.Write("for (");
+	Print(forStatement->GetInitializer());
+	mWriter.Write(" ");
+	Print(forStatement->GetCondition());
+	mWriter.Write("; ");
+	Print(forStatement->GetCountingExpression());
+	mWriter.Write(")\n");
+	IncrementTab();
+	Print(forStatement->GetBody());
+	DecrementTab();
+}
+
+
 void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
 {
 	Tab();

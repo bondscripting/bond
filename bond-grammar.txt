@@ -81,11 +81,11 @@ named_initializer
   : initializer
   | initializer_list ',' initializer
 
-*initializer
+initializer
   : assignment_expression
   | '{' initializer_list [','] '}'
 
-*identifier_list
+identifier_list
   : IDENTIFIER
   | identifier_list ',' IDENTIFIER
 
@@ -130,10 +130,10 @@ while_statement
 do_statement
   : DO statement WHILE '(' expression ')' ';'
 
-*for_statement
+for_statement
   : FOR '(' for_init [expression] ';' [expression] ')' statement
 
-*for_init
+for_init
   : declarative_statement
   | expression_statement
 

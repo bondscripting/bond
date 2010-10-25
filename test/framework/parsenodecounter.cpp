@@ -148,6 +148,16 @@ void ParseNodeCounter::VisitWhileStatement(const Bond::WhileStatement *whileStat
 }
 
 
+void ParseNodeCounter::VisitForStatement(const Bond::ForStatement *forStatement)
+{
+	++mCount.mForStatement;
+	Count(forStatement->GetInitializer());
+	Count(forStatement->GetCondition());
+	Count(forStatement->GetCountingExpression());
+	Count(forStatement->GetBody());
+}
+
+
 void ParseNodeCounter::VisitJumpStatement(const Bond::JumpStatement *jumpStatement)
 {
 	++mCount.mJumpStatement;

@@ -39,6 +39,7 @@ public:
 	virtual void VisitSwitchSection(SwitchSection *switchSection);
 	virtual void VisitSwitchLabel(SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(WhileStatement *whileStatement);
+	virtual void VisitForStatement(ForStatement *forStatement);
 	virtual void VisitJumpStatement(JumpStatement *jumpStatement);
 	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement);
 	virtual void VisitExpressionStatement(ExpressionStatement *expressionStatement);
@@ -180,6 +181,15 @@ void ParseNodeDeallocator::VisitWhileStatement(WhileStatement *whileStatement)
 {
 	Destroy(whileStatement->GetCondition());
 	Destroy(whileStatement->GetBody());
+}
+
+
+void ParseNodeDeallocator::VisitForStatement(ForStatement *forStatement)
+{
+	Destroy(forStatement->GetInitializer());
+	Destroy(forStatement->GetCondition());
+	Destroy(forStatement->GetCountingExpression());
+	Destroy(forStatement->GetBody());
 }
 
 
@@ -393,8 +403,8 @@ CompoundStatement *ParseNodeFactory::CreateCompoundStatement(ListParseNode *stat
 
 IfStatement *ParseNodeFactory::CreateIfStatement(
 	Expression *condition,
-	ListParseNode *thenStatement,
-	ListParseNode *elseStatement)
+	ParseNode *thenStatement,
+	ParseNode *elseStatement)
 {
 	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
 }
@@ -424,15 +434,25 @@ SwitchLabel *ParseNodeFactory::CreateDefaultLabel(const Token *label)
 }
 
 
-WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, ListParseNode *body)
+WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, ParseNode *body)
 {
 	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
 }
 
 
-WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, ListParseNode *body)
+WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, ParseNode *body)
 {
 	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
+}
+
+
+ForStatement *ParseNodeFactory::CreateForStatement(
+	ParseNode *initializer,
+	Expression *condition,
+	Expression *countingExpression,
+	ParseNode *body)
+{
+	return new (mAllocator.Alloc<ForStatement>()) ForStatement(initializer, condition, countingExpression, body);
 }
 
 

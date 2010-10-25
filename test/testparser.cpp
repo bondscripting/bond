@@ -84,6 +84,23 @@ DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_Declarati
 }
 
 
+DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mDeclarativeStatement = 3;
+	expectedCount.mNamedInitializer = 4;
+	expectedCount.mInitializer = 16;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
 DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 {
 	ASSERT_NO_PARSE_ERRORS();
@@ -111,6 +128,28 @@ DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 	expectedCount.mWhileStatement = 6;
 	expectedCount.mCompoundStatement = 3;
 	expectedCount.mExpressionStatement = 6;
+	expectedCount.mUnaryExpression = 4;
+	expectedCount.mBinaryExpression = 4;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mForStatement = 7;
+	expectedCount.mCompoundStatement = 2;
+	expectedCount.mDeclarativeStatement = 3;
+	expectedCount.mExpressionStatement = 11;
+	expectedCount.mUnaryExpression = 5;
+	expectedCount.mBinaryExpression = 4;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
@@ -151,33 +190,17 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 }
 
 
-DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
-{
-	ASSERT_NO_PARSE_ERRORS();
-
-	const Bond::ParseNode *root = parser.GetTranslationUnit();
-
-	TestFramework::ParseNodeCount expectedCount(-1);
-	expectedCount.mDeclarativeStatement = 3;
-	expectedCount.mNamedInitializer = 4;
-	expectedCount.mInitializer = 16;
-
-	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
-
-	return true;
-}
-
-
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
   TEST_ITEM(FunctionDeclarations)               \
   TEST_ITEM(FunctionDefinitions)                \
   TEST_ITEM(DeclarativeAndExpressionStatements) \
+  TEST_ITEM(Initializers)                       \
   TEST_ITEM(IfStatements)                       \
   TEST_ITEM(WhileStatements)                    \
+  TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
-  TEST_ITEM(Initializers)                       \
 
 
 RUN_TESTS(Parser, TEST_ITEMS)

@@ -529,6 +529,10 @@ ListParseNode *Parser::ParseStatement(Status &status, TokenStream &stream)
 			statement = ParseDoWhileStatement(status, stream);
 			break;
 
+		case Token::KEY_FOR:
+			statement = ParseForStatement(status, stream);
+			break;
+
 		case Token::KEY_BREAK:
 		case Token::KEY_CONTINUE:
 		case Token::KEY_RETURN:
@@ -595,9 +599,9 @@ IfStatement *Parser::ParseIfStatement(Status &status, TokenStream &stream)
 		Expression *condition = ParseExpression(status, stream);
 		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
-		ListParseNode *thenStatement = ParseStatement(status, stream);
+		ParseNode *thenStatement = ParseStatement(status, stream);
 		AssertNode(status, stream, thenStatement);
-		ListParseNode *elseStatement = 0;
+		ParseNode *elseStatement = 0;
 
 		if (stream.NextIf(Token::KEY_ELSE))
 		{
@@ -728,7 +732,7 @@ WhileStatement *Parser::ParseWhileStatement(Status &status, TokenStream &stream)
 		Expression *condition = ParseExpression(status, stream);
 		AssertNode(status, stream, condition);
 		ExpectToken(status, stream, Token::CPAREN);
-		ListParseNode *body = ParseStatement(status, stream);
+		ParseNode *body = ParseStatement(status, stream);
 		AssertNode(status, stream, body);
 		whileStatement = mFactory.CreateWhileStatement(condition, body);
 	}
@@ -745,7 +749,7 @@ WhileStatement *Parser::ParseDoWhileStatement(Status &status, TokenStream &strea
 
 	if (stream.NextIf(Token::KEY_DO) != 0)
 	{
-		ListParseNode *body = ParseStatement(status, stream);
+		ParseNode *body = ParseStatement(status, stream);
 		AssertNode(status, stream, body);
 		ExpectToken(status, stream, Token::KEY_WHILE);
 		ExpectToken(status, stream, Token::OPAREN);
@@ -757,6 +761,34 @@ WhileStatement *Parser::ParseDoWhileStatement(Status &status, TokenStream &strea
 	}
 
 	return whileStatement;
+}
+
+
+// for_statement
+//   : FOR '(' for_init [expression] ';' [expression] ')' statement
+//
+// for_init
+//   : declarative_statement
+//   | expression_statement
+ForStatement *Parser::ParseForStatement(Status &status, TokenStream &stream)
+{
+	ForStatement *forStatement = 0;
+
+	if (stream.NextIf(Token::KEY_FOR) != 0)
+	{
+		ExpectToken(status, stream, Token::OPAREN);
+		ParseNode *initializer = ParseDeclarativeOrExpressionStatement(status, stream);
+		AssertNode(status, stream, initializer);
+		Expression *condition = ParseExpression(status, stream);
+		ExpectToken(status, stream, Token::SEMICOLON);
+		Expression *countingExpression = ParseExpression(status, stream);
+		ExpectToken(status, stream, Token::CPAREN);
+		ParseNode *body = ParseStatement(status, stream);
+		AssertNode(status, stream, body);
+		forStatement = mFactory.CreateForStatement(initializer, condition, countingExpression, body);
+	}
+
+	return forStatement;
 }
 
 

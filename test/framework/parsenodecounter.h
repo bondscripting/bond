@@ -27,6 +27,7 @@ struct ParseNodeCount
 		mSwitchSection(defaultValue),
 		mSwitchLabel(defaultValue),
 		mWhileStatement(defaultValue),
+		mForStatement(defaultValue),
 		mJumpStatement(defaultValue),
 		mDeclarativeStatement(defaultValue),
 		mExpressionStatement(defaultValue),
@@ -61,6 +62,7 @@ struct ParseNodeCount
 	int mSwitchSection;
 	int mSwitchLabel;
 	int mWhileStatement;
+	int mForStatement;
 	int mJumpStatement;
 	int mDeclarativeStatement;
 	int mExpressionStatement;
@@ -106,6 +108,7 @@ public:
 	virtual void VisitSwitchSection(const Bond::SwitchSection *switchSection);
 	virtual void VisitSwitchLabel(const Bond::SwitchLabel *switchLabel);
 	virtual void VisitWhileStatement(const Bond::WhileStatement *whileStatement);
+	virtual void VisitForStatement(const Bond::ForStatement *forStatement);
 	virtual void VisitJumpStatement(const Bond::JumpStatement *jumpStatement);
 	virtual void VisitDeclarativeStatement(const Bond::DeclarativeStatement *declarativeStatement);
 	virtual void VisitExpressionStatement(const Bond::ExpressionStatement *expressionStatement);

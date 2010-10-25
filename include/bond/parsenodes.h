@@ -389,7 +389,7 @@ private:
 class IfStatement: public ListParseNode
 {
 public:
-	IfStatement(Expression *condition, ListParseNode *thenStatement, ListParseNode *elseStatement):
+	IfStatement(Expression *condition, ParseNode *thenStatement, ParseNode *elseStatement):
 		mCondition(condition),
 		mThenStatement(thenStatement),
 		mElseStatement(elseStatement)
@@ -403,16 +403,16 @@ public:
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
 
-	ListParseNode *GetThenStatement() { return mThenStatement; }
-	const ListParseNode *GetThenStatement() const { return mThenStatement; }
+	ParseNode *GetThenStatement() { return mThenStatement; }
+	const ParseNode *GetThenStatement() const { return mThenStatement; }
 
-	ListParseNode *GetElseStatement() { return mElseStatement; }
-	const ListParseNode *GetElseStatement() const { return mElseStatement; }
+	ParseNode *GetElseStatement() { return mElseStatement; }
+	const ParseNode *GetElseStatement() const { return mElseStatement; }
 
 private:
 	Expression *mCondition;
-	ListParseNode *mThenStatement;
-	ListParseNode *mElseStatement;
+	ParseNode *mThenStatement;
+	ParseNode *mElseStatement;
 };
 
 
@@ -515,7 +515,7 @@ public:
 		VARIANT_DO_WHILE,
 	};
 
-	WhileStatement(Expression *condition, ListParseNode *body, Variant variant):
+	WhileStatement(Expression *condition, ParseNode *body, Variant variant):
 		mCondition(condition),
 		mBody(body),
 		mVariant(variant)
@@ -529,15 +529,54 @@ public:
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
 
-	ListParseNode *GetBody() { return mBody; }
-	const ListParseNode *GetBody() const { return mBody; }
+	ParseNode *GetBody() { return mBody; }
+	const ParseNode *GetBody() const { return mBody; }
 
 	Variant GetVariant() const { return mVariant; }
 
 private:
 	Expression *mCondition;
-	ListParseNode *mBody;
+	ParseNode *mBody;
 	Variant mVariant;
+};
+
+
+class ForStatement: public ListParseNode
+{
+public:
+	ForStatement(
+			ParseNode *initializer,
+			Expression *condition,
+			Expression *countingExpression,
+			ParseNode *body):
+		mInitializer(initializer),
+		mCondition(condition),
+		mCountingExpression(countingExpression),
+		mBody(body)
+	{}
+
+	virtual ~ForStatement() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitForStatement(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitForStatement(this); }
+
+	ParseNode *GetInitializer() { return mInitializer; }
+	const ParseNode *GetInitializer() const { return mInitializer; }
+
+	Expression *GetCondition() { return mCondition; }
+	const Expression *GetCondition() const { return mCondition; }
+
+	Expression *GetCountingExpression() { return mCountingExpression; }
+	const Expression *GetCountingExpression() const { return mCountingExpression; }
+
+	ParseNode *GetBody() { return mBody; }
+	const ParseNode *GetBody() const { return mBody; }
+
+private:
+	ParseNode *mInitializer;
+	Expression *mCondition;
+	Expression *mCountingExpression;
+	ParseNode *mBody;
 };
 
 
