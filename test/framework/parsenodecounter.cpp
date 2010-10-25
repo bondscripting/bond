@@ -41,6 +41,13 @@ void ParseNodeCounter::VisitEnumerator(const Bond::Enumerator *enumerator)
 }
 
 
+void ParseNodeCounter::VisitStructDeclaration(const Bond::StructDeclaration *structDeclaration)
+{
+	++mCount.mStructDeclaration;
+	CountList(structDeclaration->GetMemberList());
+}
+
+
 void ParseNodeCounter::VisitFunctionDefinition(const Bond::FunctionDefinition *functionDefinition)
 {
 	++mCount.mFunctionDefinition;

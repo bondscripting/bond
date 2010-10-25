@@ -15,6 +15,7 @@ public:
 	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition) = 0;
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration) = 0;
 	virtual void VisitEnumerator(Enumerator *enumerator) = 0;
+	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration) = 0;
 	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition) = 0;
 	virtual void VisitFunctionPrototype(FunctionPrototype *functionPrototype) = 0;
 	virtual void VisitParameter(Parameter *parameter) = 0;
@@ -56,6 +57,7 @@ public:
 	virtual void VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition) = 0;
 	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration) = 0;
 	virtual void VisitEnumerator(const Enumerator *enumerator) = 0;
+	virtual void VisitStructDeclaration(const StructDeclaration *structDeclaration) = 0;
 	virtual void VisitFunctionDefinition(const FunctionDefinition *functionDefinition) = 0;
 	virtual void VisitFunctionPrototype(const FunctionPrototype *functionPrototype) = 0;
 	virtual void VisitParameter(const Parameter *parameter) = 0;

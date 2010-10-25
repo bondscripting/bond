@@ -123,6 +123,30 @@ private:
 };
 
 
+class StructDeclaration: public ListParseNode
+{
+public:
+	explicit StructDeclaration(const Token *name, ListParseNode *memberList):
+		mName(name),
+		mMemberList(memberList)
+	{}
+
+	virtual ~StructDeclaration() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitStructDeclaration(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitStructDeclaration(this); }
+
+	const Token *GetName() const { return mName; }
+
+	ListParseNode *GetMemberList() { return mMemberList; }
+	const ListParseNode *GetMemberList() const { return mMemberList; }
+
+private:
+	const Token *mName;
+	ListParseNode *mMemberList;
+};
+
+
 class FunctionDefinition: public ListParseNode
 {
 public:
@@ -174,26 +198,6 @@ private:
 	const Token *mName;
 	TypeDescriptor *mReturnType;
 	Parameter *mParameterList;
-};
-
-
-class StructDeclaration: public ListParseNode
-{
-public:
-	explicit StructDeclaration(const Token *name):
-		mName(name)
-	{}
-
-	virtual ~StructDeclaration() {}
-
-	//virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitStructDeclaration(this); }
-	//virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitStructDeclaration(this); }
-
-	const Token *GetName() const { return mName; }
-	// TODO
-
-private:
-	const Token *mName;
 };
 
 

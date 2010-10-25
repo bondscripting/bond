@@ -39,6 +39,7 @@ private:
 	{
 	public:
 		Status():
+			mParseFunctionDeclarationsOnly(false),
 			mParseConstExpressions(false),
 			mParseRelaxedTypeDescriptors(false),
 			mHasError(false),
@@ -46,11 +47,15 @@ private:
 		{}
 
 		Status(Status &parent):
+			mParseFunctionDeclarationsOnly(parent.mParseFunctionDeclarationsOnly),
 			mParseConstExpressions(parent.mParseConstExpressions),
 			mParseRelaxedTypeDescriptors(parent.mParseRelaxedTypeDescriptors),
 			mHasError(false),
 			mParent(&parent)
 		{}
+
+		void ParseFunctionDeclarationsOnly() { mParseFunctionDeclarationsOnly = true; }
+		bool IsParsingFunctionDeclarationsOnly() const { return mParseFunctionDeclarationsOnly; }
 
 		void ParseConstExpressions() { mParseConstExpressions = true; }
 		bool IsParsingConstExpressions() const { return mParseConstExpressions; }
@@ -63,6 +68,7 @@ private:
 		bool HasUnrecoveredError() const { return mHasError; }
 
 	private:
+		bool mParseFunctionDeclarationsOnly;
 		bool mParseConstExpressions;
 		bool mParseRelaxedTypeDescriptors;
 		bool mHasError;
@@ -79,9 +85,10 @@ private:
 	NamespaceDefinition *ParseNamespaceDefinition(Status &status, TokenStream &stream);
 	EnumDeclaration *ParseEnumDeclaration(Status &status, TokenStream &stream);
 	Enumerator *ParseEnumerator(Status &status, TokenStream &stream);
+	StructDeclaration *ParseStructDeclaration(Status &status, TokenStream &stream);
+	ListParseNode *ParseFunctionOrDeclarativeStatement(Status &status, TokenStream &stream);
 	Parameter *ParseParameterList(Status &status, TokenStream &stream);
 	Parameter *ParseParameter(Status &status, TokenStream &stream);
-	StructDeclaration *ParseStructDeclaration(Status &status, TokenStream &stream);
 	TypeDescriptor *ParseRelaxedTypeDescriptor(Status &status, TokenStream &stream);
 	TypeDescriptor *ParseTypeDescriptor(Status &status, TokenStream &stream);
 	TypeSpecifier *ParseTypeSpecifier(Status &status, TokenStream &stream);
@@ -100,7 +107,7 @@ private:
 	WhileStatement *ParseDoWhileStatement(Status &status, TokenStream &stream);
 	ForStatement *ParseForStatement(Status &status, TokenStream &stream);
 	JumpStatement *ParseJumpStatement(Status &status, TokenStream &stream);
-	ListParseNode *ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream);
+	ListParseNode *ParseExpressionOrDeclarativeStatement(Status &status, TokenStream &stream);
 	ExpressionStatement *ParseExpressionStatement(Status &status, TokenStream &stream);
 	Expression *ParseConstExpression(Status &status, TokenStream &stream);
 	Expression *ParseExpression(Status &status, TokenStream &stream);
@@ -123,6 +130,7 @@ private:
 	Expression *ParseArgumentList(Status &status, TokenStream &stream);
 
 	void SyncToEnumeratorDelimiter(Status &status, TokenStream &stream);
+	void SyncToStructMemberDelimiter(Status &status, TokenStream &stream);
 	void SyncToInitializerDelimiter(Status &status, TokenStream &stream);
 	void SyncToStatementTerminator(Status &status, TokenStream &stream);
 	void SyncToStatementDelimiter(Status &status, TokenStream &stream);

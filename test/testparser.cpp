@@ -101,6 +101,23 @@ DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 }
 
 
+DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
+{
+	ASSERT_NO_PARSE_ERRORS();
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mStructDeclaration = 4;
+	expectedCount.mDeclarativeStatement = 4;
+	expectedCount.mFunctionPrototype = 4;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
 DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 {
 	ASSERT_NO_PARSE_ERRORS();

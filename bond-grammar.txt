@@ -7,9 +7,9 @@ translation_unit
 external_declaration
   : namespace_definition
   | enum_declaration
+  | struct_declaration
   | function_declaration
   | function_definition
-  | struct_declaration
   | const_declarative_statement
 
 namespace_definition
@@ -48,7 +48,7 @@ enumerator
 struct_declaration
   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
 
-*struct_member_declaration
+struct_member_declaration
   : type_descriptor identifier_list ';'
   | function_declaration
 
@@ -77,7 +77,7 @@ named_initializer_list
 named_initializer
   : IDENTIFIER ['=' initializer]
 
-*initializer_list
+initializer_list
   : initializer
   | initializer_list ',' initializer
 
@@ -145,7 +145,7 @@ jump_statement
 declarative_statement
   : type_descriptor named_initializer_list ';'
 
-*const_declarative_statement
+const_declarative_statement
   : declarative_statement 
   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 

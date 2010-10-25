@@ -19,6 +19,7 @@ public:
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ListParseNode *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList);
 	Enumerator *CreateEnumerator(const Token *name, Expression *value);
+	StructDeclaration *CreateStructDeclaration(const Token *name, ListParseNode *memberList);
 	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);
 
 	FunctionPrototype *CreateFunctionPrototype(

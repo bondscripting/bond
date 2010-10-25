@@ -70,6 +70,22 @@ void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
 }
 
 
+void PrettyPrinter::VisitStructDeclaration(const StructDeclaration *structDeclaration)
+{
+	Tab();
+	mWriter.Write("struct ");
+	Print(structDeclaration->GetName());
+	mWriter.Write("\n");
+	Tab();
+	mWriter.Write("{\n");
+	IncrementTab();
+	PrintList(structDeclaration->GetMemberList());
+	DecrementTab();
+	Tab();
+	mWriter.Write("};\n");
+}
+
+
 void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDefinition)
 {
 	Tab();
@@ -154,7 +170,12 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 void PrettyPrinter::VisitNamedInitializer(const NamedInitializer *namedInitializer)
 {
 	Print(namedInitializer->GetName());
-	// TODO
+
+	if (namedInitializer->GetInitializer() != 0)
+	{
+		mWriter.Write(" = ");
+		Print(namedInitializer->GetInitializer());
+	}
 }
 
 

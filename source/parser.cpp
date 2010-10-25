@@ -70,15 +70,6 @@ ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream 
 //   | function_definition
 //   | struct_declaration
 //   | const_declarative_statement
-//
-// function_definition
-//   : function_prototype compound_statement
-//
-// function_declaration
-//   : function_prototype ';'
-//
-// function_prototype
-//   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
 ListParseNode *Parser::ParseExternalDeclaration(Status &status, TokenStream &stream)
 {
 	ListParseNode *declaration = 0;
@@ -98,33 +89,8 @@ ListParseNode *Parser::ParseExternalDeclaration(Status &status, TokenStream &str
 			break;
 
 		default:
-		{
-			// TODO: move into a separate function once const_declarative_statement is figured out.
-			TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
-
-			// Could be a function declaration, function definition or a constant declarative statement.
-			if (descriptor != 0)
-			{
-				const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
-				if (stream.NextIf(Token::OPAREN) != 0)
-				{
-					Parameter *parameterList = ParseParameterList(status, stream);
-					ExpectToken(status, stream, Token::CPAREN);
-					FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
-					CompoundStatement *body = ParseCompoundStatement(status, stream);
-					if (body == 0)
-					{
-						ExpectToken(status, stream, Token::SEMICOLON);
-					}
-					declaration = mFactory.CreateFunctionDefinition(prototype, body);
-				}
-				else
-				{
-					// TODO: Do something or we'll memory leak the type descriptor.
-				}
-			}
-		}
-		break;
+			declaration = ParseFunctionOrDeclarativeStatement(status, stream);
+			break;
 	}
 
 	return declaration;
@@ -224,6 +190,119 @@ Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream)
 }
 
 
+// struct_declaration
+//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &stream)
+{
+	StructDeclaration *declaration = 0;
+
+	if (stream.NextIf(Token::KEY_STRUCT) != 0)
+	{
+		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
+		ExpectToken(status, stream, Token::OBRACE);
+		Status overrideStatus(status);
+		overrideStatus.ParseFunctionDeclarationsOnly();
+		ListParseNode *memberList = 0;
+		ListParseNode *current = 0;
+
+		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		{
+			ListParseNode *next = ParseFunctionOrDeclarativeStatement(overrideStatus, stream);
+			AssertNode(overrideStatus, stream, next);
+			SyncToStructMemberDelimiter(overrideStatus, stream);
+
+			if (next != 0)
+			{
+				if (memberList == 0)
+				{
+					memberList = next;
+				}
+				else
+				{
+					current->SetNext(next);
+				}
+				current = next;
+			}
+		}
+
+		ExpectToken(overrideStatus, stream, Token::CBRACE);
+		ExpectToken(overrideStatus, stream, Token::SEMICOLON);
+		declaration = mFactory.CreateStructDeclaration(name, memberList);
+	}
+
+	return declaration;
+}
+
+
+// function_definition
+//   : function_prototype compound_statement
+//
+// function_declaration
+//   : function_prototype ';'
+//
+// function_prototype
+//   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
+//
+// *const_declarative_statement
+//   : declarative_statement 
+//   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
+ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, TokenStream &stream)
+{
+	ListParseNode *node = 0;
+	const int startPos = stream.GetPosition();
+	TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
+
+	// Could be a function declaration, function definition or a constant declarative statement.
+	if (descriptor != 0)
+	{
+		const int namePos = stream.GetPosition();
+		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
+
+		if (name != 0)
+		{
+			if (stream.NextIf(Token::OPAREN) != 0)
+			{
+				Parameter *parameterList = ParseParameterList(status, stream);
+				ExpectToken(status, stream, Token::CPAREN);
+				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
+				CompoundStatement *body = ParseCompoundStatement(status, stream);
+
+				if (body == 0)
+				{
+					SyncToStatementTerminator(status, stream);
+				}
+				else if (!status.IsParsingFunctionDeclarationsOnly())
+				{
+					// TODO: Push error.
+				}
+
+				node = mFactory.CreateFunctionDefinition(prototype, body);
+			}
+			else
+			{
+				// Put the name back into the stream since ParseNamedInitializerList will consume it.
+				stream.SetPosition(namePos);
+				NamedInitializer *initializerList = ParseNamedInitializerList(status, stream);
+
+				if (initializerList != 0)
+				{
+					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
+					SyncToStatementTerminator(status, stream);
+				}
+			}
+		}
+		else
+		{
+			// We can't tell what this is. Undo everything and bail.
+			stream.SetPosition(startPos);
+			mFactory.DestroyHierarchy(descriptor);
+		}
+	}
+
+	return node;
+}
+
+
 // parameter_list
 //   : parameter
 //   | parameter_list ',' parameter
@@ -258,15 +337,6 @@ Parameter *Parser::ParseParameter(Status &status, TokenStream &stream)
 	}
 
 	return parameter;
-}
-
-
-// struct_declaration
-//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
-StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &stream)
-{
-	// TODO:
-	return 0;
 }
 
 
@@ -540,7 +610,7 @@ ListParseNode *Parser::ParseStatement(Status &status, TokenStream &stream)
 			break;
 
 		default:
-			statement = ParseDeclarativeOrExpressionStatement(status, stream);
+			statement = ParseExpressionOrDeclarativeStatement(status, stream);
 			break;
 	}
 
@@ -777,7 +847,7 @@ ForStatement *Parser::ParseForStatement(Status &status, TokenStream &stream)
 	if (stream.NextIf(Token::KEY_FOR) != 0)
 	{
 		ExpectToken(status, stream, Token::OPAREN);
-		ParseNode *initializer = ParseDeclarativeOrExpressionStatement(status, stream);
+		ParseNode *initializer = ParseExpressionOrDeclarativeStatement(status, stream);
 		AssertNode(status, stream, initializer);
 		Expression *condition = ParseExpression(status, stream);
 		ExpectToken(status, stream, Token::SEMICOLON);
@@ -818,7 +888,7 @@ JumpStatement *Parser::ParseJumpStatement(Status &status, TokenStream &stream)
 
 // declarative_statement
 //   : type_descriptor named_initializer_list ';'
-ListParseNode *Parser::ParseDeclarativeOrExpressionStatement(Status &status, TokenStream &stream)
+ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, TokenStream &stream)
 {
 	ListParseNode *statement = 0;
 	const int startPos = stream.GetPosition();
@@ -1432,6 +1502,12 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 {
 	Recover(status, stream, TokenTypeSet::ENUMERATOR_DELIMITERS);
+}
+
+
+void Parser::SyncToStructMemberDelimiter(Status &status, TokenStream &stream)
+{
+	Recover(status, stream, TokenTypeSet::STRUCT_MEMBER_DELIMITERS);
 }
 
 

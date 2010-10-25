@@ -289,6 +289,20 @@ const TokenTypeSet TokenTypeSet::ENUMERATOR_DELIMITERS =
 };
 
 
+static const Token::TokenType STRUCT_MEMBER_DELIMITER_TYPES[] =
+{
+	Token::CBRACE,
+	Token::SEMICOLON,
+};
+
+const TokenTypeSet TokenTypeSet::STRUCT_MEMBER_DELIMITERS =
+{
+	STRUCT_MEMBER_DELIMITER_TYPES,
+	sizeof(STRUCT_MEMBER_DELIMITER_TYPES) / sizeof(*STRUCT_MEMBER_DELIMITER_TYPES),
+	"STRUCT_MEMBER_DELIMITER",
+};
+
+
 static const Token::TokenType INITIALIZER_DELIMITER_TYPES[] =
 {
 	Token::OBRACE,

@@ -13,6 +13,7 @@ struct ParseNodeCount
 		mNamespaceDefinition(defaultValue),
 		mEnumDeclaration(defaultValue),
 		mEnumerator(defaultValue),
+		mStructDeclaration(defaultValue),
 		mFunctionDefinition(defaultValue),
 		mFunctionPrototype(defaultValue),
 		mParameter(defaultValue),
@@ -48,6 +49,7 @@ struct ParseNodeCount
 	int mNamespaceDefinition;
 	int mEnumDeclaration;
 	int mEnumerator;
+	int mStructDeclaration;
 	int mFunctionDefinition;
 	int mFunctionPrototype;
 	int mParameter;
@@ -94,6 +96,7 @@ public:
 	virtual void VisitNamespaceDefinition(const Bond::NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(const Bond::EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(const Bond::Enumerator *enumerator);
+	virtual void VisitStructDeclaration(const Bond::StructDeclaration *structDeclaration);
 	virtual void VisitFunctionDefinition(const Bond::FunctionDefinition *functionDefinition);
 	virtual void VisitFunctionPrototype(const Bond::FunctionPrototype *functionPrototype);
 	virtual void VisitParameter(const Bond::Parameter *parameter);

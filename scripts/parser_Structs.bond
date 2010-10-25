@@ -1,0 +1,21 @@
+struct Empty {};
+
+struct Data
+{
+	int x, y;
+	int z;
+};
+
+struct Functions
+{
+	void DoStuff();
+	int DoMoreStuff(int a);
+};
+
+struct DataAndFunctions
+{
+	int x;
+	Data *DoStuff();
+	float y;
+	void DoMoreStuff();
+};

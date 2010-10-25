@@ -25,6 +25,7 @@ public:
 	virtual void VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(const EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(const Enumerator *enumerator);
+	virtual void VisitStructDeclaration(const StructDeclaration *structDeclaration);
 	virtual void VisitFunctionDefinition(const FunctionDefinition *functionDefinition);
 	virtual void VisitFunctionPrototype(const FunctionPrototype *functionPrototype);
 	virtual void VisitParameter(const Parameter *parameter);

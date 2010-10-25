@@ -257,6 +257,7 @@ struct TokenTypeSet
 	static const TokenTypeSet POSTFIX_OPERATORS;
 	static const TokenTypeSet CONSTANT_VALUES;
 	static const TokenTypeSet ENUMERATOR_DELIMITERS;
+	static const TokenTypeSet STRUCT_MEMBER_DELIMITERS;
 	static const TokenTypeSet INITIALIZER_DELIMITERS;
 	static const TokenTypeSet BLOCK_DELIMITERS;
 	static const TokenTypeSet SWITCH_SECTION_DELIMITERS;

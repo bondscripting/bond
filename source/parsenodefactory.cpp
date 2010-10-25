@@ -25,6 +25,7 @@ public:
 	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
 	virtual void VisitEnumerator(Enumerator *enumerator);
+	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration);
 	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition);
 	virtual void VisitFunctionPrototype(FunctionPrototype *functionPrototype);
 	virtual void VisitParameter(Parameter *parameter);
@@ -93,6 +94,12 @@ void ParseNodeDeallocator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration
 void ParseNodeDeallocator::VisitEnumerator(Enumerator *enumerator)
 {
 	Destroy(enumerator->GetValue());
+}
+
+
+void ParseNodeDeallocator::VisitStructDeclaration(StructDeclaration *structDeclaration)
+{
+	DestroyList(structDeclaration->GetMemberList());
 }
 
 
@@ -317,6 +324,12 @@ EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name, Enum
 Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *value)
 {
 	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, value);
+}
+
+
+StructDeclaration *ParseNodeFactory::CreateStructDeclaration(const Token *name, ListParseNode *memberList)
+{
+	return new (mAllocator.Alloc<StructDeclaration>()) StructDeclaration(name, memberList);
 }
 
 
