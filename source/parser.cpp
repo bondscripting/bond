@@ -43,6 +43,7 @@ TranslationUnit *Parser::ParseTranslationUnit(Status &status, TokenStream &strea
 {
 	ListParseNode *declarations = ParseExternalDeclarationList(status, stream);
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
+	// TODO: Verify that the end of the stream has been reached.
 	return unit;
 }
 
@@ -52,6 +53,7 @@ ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream 
 	ListParseNode *head = ParseExternalDeclaration(status, stream);
 	ListParseNode *current = head;
 
+	// TODO: Error recovery between declarations.
 	while (current != 0)
 	{
 		ListParseNode *next = ParseExternalDeclaration(status, stream);
@@ -265,15 +267,21 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				Parameter *parameterList = ParseParameterList(status, stream);
 				ExpectToken(status, stream, Token::CPAREN);
 				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
-				CompoundStatement *body = ParseCompoundStatement(status, stream);
+				CompoundStatement *body = 0;
+				const Token *obrace = stream.PeekIf(Token::OBRACE);
 
-				if (body == 0)
+				if (obrace != 0)
+				{
+					body = ParseCompoundStatement(status, stream);
+					if (status.IsParsingFunctionDeclarationsOnly())
+					{
+						PushError(status, ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, obrace);
+						status.RecoverFromError();
+					}
+				}
+				else
 				{
 					SyncToStatementTerminator(status, stream);
-				}
-				else if (!status.IsParsingFunctionDeclarationsOnly())
-				{
-					// TODO: Push error.
 				}
 
 				node = mFactory.CreateFunctionDefinition(prototype, body);
@@ -1508,6 +1516,7 @@ void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 void Parser::SyncToStructMemberDelimiter(Status &status, TokenStream &stream)
 {
 	Recover(status, stream, TokenTypeSet::STRUCT_MEMBER_DELIMITERS);
+	stream.NextIf(Token::SEMICOLON);
 }
 
 

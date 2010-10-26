@@ -4,12 +4,13 @@
 #define BOND_PARSE_ERROR_LIST                                                                                 \
   BOND_PARSE_ERROR_ITEM(NO_ERROR, "")                                                                         \
   BOND_PARSE_ERROR_ITEM(PARSE_ERROR, "Parse error")                                                           \
-  BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN, "Expected " )                                                       \
+  BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN, "Expected" )                                                        \
   BOND_PARSE_ERROR_ITEM(DUPLICATE_CONST, "Duplicate const keyword")                                           \
   BOND_PARSE_ERROR_ITEM(COMMA_IN_CONST_EXPRESSION, "Comma in constant expression")                            \
   BOND_PARSE_ERROR_ITEM(ASSIGNMENT_IN_CONST_EXPRESSION, "Assignment in constant expression" )                 \
   BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION, "Increment/decrement operator in constant expression") \
   BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION, "Function call in constant expression")            \
+  BOND_PARSE_ERROR_ITEM(FUNCTION_DEFINITION_NOT_ALLOWED, "Function definition not allowed")                   \
 
 
 namespace Bond
