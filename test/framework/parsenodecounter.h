@@ -1,7 +1,7 @@
 #ifndef TEST_FRAMEWORK_PARSENODECOUNTER_H
 #define TEST_FRAMEWORK_PARSENODECOUNTER_H
 
-#include "bond/parsenodevisitor.h"
+#include "bond/parsenodetraverser.h"
 
 namespace TestFramework
 {
@@ -82,16 +82,16 @@ struct ParseNodeCount
 };
 
 
-class ParseNodeCounter: public Bond::ConstParseNodeVisitor
+class ParseNodeCounter: private Bond::ConstParseNodeTraverser
 {
 public:
 	ParseNodeCounter(): mCount(0) {}
 	virtual ~ParseNodeCounter() {}
 
 	const ParseNodeCount &GetCount() const { return mCount; }
+	void Count(const Bond::ParseNode *parseNode) { Traverse(parseNode); }
 
-	void Count(const Bond::ParseNode *parseNode);
-
+private:
 	virtual void VisitTranslationUnit(const Bond::TranslationUnit *translationUnit);
 	virtual void VisitNamespaceDefinition(const Bond::NamespaceDefinition *namespaceDefinition);
 	virtual void VisitEnumDeclaration(const Bond::EnumDeclaration *enumDeclaration);
@@ -126,9 +126,6 @@ public:
 	virtual void VisitSizeofExpression(const Bond::SizeofExpression *sizeofExpression);
 	virtual void VisitConstantExpression(const Bond::ConstantExpression *constantExpression);
 	virtual void VisitIdentifierExpression(const Bond::IdentifierExpression *identifierValue);
-
-private:
-	void CountList(const Bond::ListParseNode *listNode);
 
 	ParseNodeCount mCount;
 };
