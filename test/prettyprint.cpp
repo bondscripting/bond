@@ -4,19 +4,18 @@
 
 bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
 {
-	if (parser.HasErrors())
+	Bond::PrettyPrinter printer(logger);
+	printer.Print(parser.GetTranslationUnit());
+
+	const Bond::ParseErrorBuffer &errorBuffer = parser.GetErrorBuffer();
+	if (errorBuffer.HasErrors())
 	{
-		for (int i = 0; i < parser.GetNumErrors(); ++i)
+		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
-			const Bond::ParseError *error = parser.GetError(i);
+			const Bond::ParseError *error = errorBuffer.GetError(i);
 			error->Print(logger);
 			logger.Write("\n");
 		}
-	}
-	else
-	{
-		Bond::PrettyPrinter printer(logger);
-		printer.Print(parser.GetTranslationUnit());
 	}
 
 	return true;

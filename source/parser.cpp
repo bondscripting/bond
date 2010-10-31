@@ -5,14 +5,9 @@ namespace Bond
 {
 
 Parser::Parser(Allocator &allocator):
-	mNumErrors(0),
 	mFactory(allocator),
 	mTranslationUnit(0)
 {
-	for (int i = 0; i < MAX_ERRORS; ++i)
-	{
-		mErrors[i] = ParseError();
-	}
 }
 
 
@@ -43,25 +38,37 @@ TranslationUnit *Parser::ParseTranslationUnit(Status &status, TokenStream &strea
 {
 	ListParseNode *declarations = ParseExternalDeclarationList(status, stream);
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
-	// TODO: Verify that the end of the stream has been reached.
+	ExpectToken(status, stream, Token::END);
 	return unit;
 }
 
 
 ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream &stream)
 {
-	ListParseNode *head = ParseExternalDeclaration(status, stream);
-	ListParseNode *current = head;
+	ListParseNode *declarationList = 0;
+	ListParseNode *current = 0;
 
-	// TODO: Error recovery between declarations.
-	while (current != 0)
+	while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 	{
 		ListParseNode *next = ParseExternalDeclaration(status, stream);
-		current->SetNext(next);
-		current = next;
+		AssertNode(status, stream, next);
+		SyncToDeclarationDelimiter(status, stream);
+
+		if (next != 0)
+		{
+			if (declarationList == 0)
+			{
+				declarationList = next;
+			}
+			else
+			{
+				current->SetNext(next);
+			}
+			current = next;
+		}
 	}
 
-	return head;
+	return declarationList;
 }
 
 
@@ -135,14 +142,14 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 		Enumerator *enumeratorList = 0;
 		Enumerator *current = 0;
 
-		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		while (stream.PeekIf(TokenTypeSet::ENUM_DELIMITERS) == 0)
 		{
 			Enumerator *next = ParseEnumerator(status, stream);
 			AssertNode(status, stream, next);
 			SyncToEnumeratorDelimiter(status, stream);
 
 			// Note that the comma on the last enumerator is optional.
-			if (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+			if (stream.PeekIf(TokenTypeSet::ENUM_DELIMITERS) == 0)
 			{
 				ExpectToken(status, stream, Token::COMMA);
 			}
@@ -162,7 +169,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 		}
 
 		ExpectToken(status, stream, Token::CBRACE);
-		ExpectToken(status, stream, Token::SEMICOLON);
+		SyncToDeclarationTerminator(status, stream);
 		enumeration = mFactory.CreateEnumDeclaration(name, enumeratorList);
 	}
 
@@ -203,7 +210,8 @@ StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &s
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
 		ExpectToken(status, stream, Token::OBRACE);
 		Status overrideStatus(status);
-		overrideStatus.ParseFunctionDeclarationsOnly();
+		overrideStatus.DisallowFunctionDefinitions();
+		overrideStatus.DisallowInitializers();
 		ListParseNode *memberList = 0;
 		ListParseNode *current = 0;
 
@@ -228,7 +236,7 @@ StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &s
 		}
 
 		ExpectToken(overrideStatus, stream, Token::CBRACE);
-		ExpectToken(overrideStatus, stream, Token::SEMICOLON);
+		SyncToDeclarationTerminator(status, stream);
 		declaration = mFactory.CreateStructDeclaration(name, memberList);
 	}
 
@@ -273,7 +281,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				if (obrace != 0)
 				{
 					body = ParseCompoundStatement(status, stream);
-					if (status.IsParsingFunctionDeclarationsOnly())
+					if (status.IsDisallowingFunctionDefinitions())
 					{
 						PushError(status, ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, obrace);
 						status.RecoverFromError();
@@ -281,7 +289,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				}
 				else
 				{
-					SyncToStatementTerminator(status, stream);
+					SyncToDeclarationTerminator(status, stream);
 				}
 
 				node = mFactory.CreateFunctionDefinition(prototype, body);
@@ -295,7 +303,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				if (initializerList != 0)
 				{
 					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
-					SyncToStatementTerminator(status, stream);
+					SyncToDeclarationTerminator(status, stream);
 				}
 			}
 		}
@@ -474,11 +482,16 @@ NamedInitializer *Parser::ParseNamedInitializer(Status &status, TokenStream &str
 
 	if (name != 0)
 	{
+		const Token *assign = stream.NextIf(Token::ASSIGN);
 		Initializer *initializer = 0;
 
-		if (stream.NextIf(Token::ASSIGN))
+		if (assign != 0)
 		{
 			initializer = ParseInitializer(status, stream);
+			if (status.IsDisallowingInitializers())
+			{
+				PushError(status, ParseError::INITIALIZER_NOT_ALLOWED, assign);
+			}
 			AssertNode(status, stream, initializer);
 		}
 
@@ -1507,6 +1520,21 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 }
 
 
+void Parser::SyncToDeclarationTerminator(Status &status, TokenStream &stream)
+{
+	SyncToDeclarationDelimiter(status, stream);
+	ExpectToken(status, stream, Token::SEMICOLON);
+	SyncToDeclarationDelimiter(status, stream);
+}
+
+
+void Parser::SyncToDeclarationDelimiter(Status &status, TokenStream &stream)
+{
+	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
+	//stream.NextIf(Token::SEMICOLON);
+}
+
+
 void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 {
 	Recover(status, stream, TokenTypeSet::ENUMERATOR_DELIMITERS);
@@ -1609,10 +1637,9 @@ void Parser::AssertNonConstExpression(Status &status, ParseError::Type errorType
 
 void Parser::PushError(Status &status, ParseError::Type type, const Token *context, const char *expected)
 {
-	if (!status.HasUnrecoveredError() && (mNumErrors < MAX_ERRORS))
+	if (!status.HasUnrecoveredError())
 	{
-		mErrors[mNumErrors] = ParseError(type, context, expected);
-		++mNumErrors;
+		mErrorBuffer.PushError(type, context, expected);
 		status.MarkError();
 	}
 }

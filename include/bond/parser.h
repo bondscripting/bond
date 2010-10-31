@@ -14,8 +14,6 @@ class TokenStream;
 class Parser
 {
 public:
-	static const int MAX_ERRORS = 16;
-
 	Parser(Allocator &allocator);
 	~Parser();
 	void Dispose();
@@ -24,9 +22,8 @@ public:
 
 	TranslationUnit *GetTranslationUnit() { return mTranslationUnit; }
 
-	bool HasErrors() const { return mNumErrors > 0; }
-	int GetNumErrors() const { return mNumErrors; }
-	const ParseError *GetError(int index) const { return mErrors + index; }
+	bool HasErrors() const { return mErrorBuffer.HasErrors(); }
+	const ParseErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
 private:
 	enum ExpressionQualifier
@@ -39,7 +36,8 @@ private:
 	{
 	public:
 		Status():
-			mParseFunctionDeclarationsOnly(false),
+			mDisallowFunctionDefinitions(false),
+			mDisallowInitializers(false),
 			mParseConstExpressions(false),
 			mParseRelaxedTypeDescriptors(false),
 			mHasError(false),
@@ -47,15 +45,19 @@ private:
 		{}
 
 		Status(Status &parent):
-			mParseFunctionDeclarationsOnly(parent.mParseFunctionDeclarationsOnly),
+			mDisallowFunctionDefinitions(parent.mDisallowFunctionDefinitions),
+			mDisallowInitializers(parent.mDisallowInitializers),
 			mParseConstExpressions(parent.mParseConstExpressions),
 			mParseRelaxedTypeDescriptors(parent.mParseRelaxedTypeDescriptors),
 			mHasError(false),
 			mParent(&parent)
 		{}
 
-		void ParseFunctionDeclarationsOnly() { mParseFunctionDeclarationsOnly = true; }
-		bool IsParsingFunctionDeclarationsOnly() const { return mParseFunctionDeclarationsOnly; }
+		void DisallowFunctionDefinitions() { mDisallowFunctionDefinitions = true; }
+		bool IsDisallowingFunctionDefinitions() const { return mDisallowFunctionDefinitions; }
+
+		void DisallowInitializers() { mDisallowInitializers = true; }
+		bool IsDisallowingInitializers() const { return mDisallowInitializers; }
 
 		void ParseConstExpressions() { mParseConstExpressions = true; }
 		bool IsParsingConstExpressions() const { return mParseConstExpressions; }
@@ -68,7 +70,8 @@ private:
 		bool HasUnrecoveredError() const { return mHasError; }
 
 	private:
-		bool mParseFunctionDeclarationsOnly;
+		bool mDisallowFunctionDefinitions;
+		bool mDisallowInitializers;
 		bool mParseConstExpressions;
 		bool mParseRelaxedTypeDescriptors;
 		bool mHasError;
@@ -129,6 +132,8 @@ private:
 	Expression *ParsePrimaryExpression(Status &status, TokenStream &stream);
 	Expression *ParseArgumentList(Status &status, TokenStream &stream);
 
+	void SyncToDeclarationTerminator(Status &status, TokenStream &stream);
+	void SyncToDeclarationDelimiter(Status &status, TokenStream &stream);
 	void SyncToEnumeratorDelimiter(Status &status, TokenStream &stream);
 	void SyncToStructMemberDelimiter(Status &status, TokenStream &stream);
 	void SyncToInitializerDelimiter(Status &status, TokenStream &stream);
@@ -148,8 +153,7 @@ private:
 	void AssertNonConstExpression(Status &status, ParseError::Type type, const Token *token);
 	void PushError(Status &status, ParseError::Type errorType, const Token *token, const char *expected = "");
 
-	ParseError mErrors[MAX_ERRORS];
-	int mNumErrors;
+	ParseErrorBuffer mErrorBuffer;
 	ParseNodeFactory mFactory;
 	TranslationUnit *mTranslationUnit;
 };

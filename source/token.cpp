@@ -275,9 +275,56 @@ const TokenTypeSet TokenTypeSet::CONSTANT_VALUES =
 };
 
 
+static const Token::TokenType BLOCK_DELIMITER_TYPES[] =
+{
+	Token::CBRACE,
+	Token::END,
+};
+
+const TokenTypeSet TokenTypeSet::BLOCK_DELIMITERS =
+{
+	BLOCK_DELIMITER_TYPES,
+	sizeof(BLOCK_DELIMITER_TYPES) / sizeof(*BLOCK_DELIMITER_TYPES),
+	"BLOCK_DELIMITER",
+};
+
+
+static const Token::TokenType DECLARATION_DELIMITER_TYPES[] =
+{
+	Token::KEY_ENUM,
+	Token::KEY_NAMESPACE,
+	Token::KEY_STRUCT,
+	Token::CBRACE,
+	Token::SEMICOLON,
+};
+
+const TokenTypeSet TokenTypeSet::DECLARATION_DELIMITERS =
+{
+	DECLARATION_DELIMITER_TYPES,
+	sizeof(DECLARATION_DELIMITER_TYPES) / sizeof(*DECLARATION_DELIMITER_TYPES),
+	"DECLARATION_DELIMITER",
+};
+
+
+static const Token::TokenType ENUM_DELIMITER_TYPES[] =
+{
+	Token::CBRACE,
+	Token::SEMICOLON,
+	Token::END,
+};
+
+const TokenTypeSet TokenTypeSet::ENUM_DELIMITERS =
+{
+	ENUM_DELIMITER_TYPES,
+	sizeof(ENUM_DELIMITER_TYPES) / sizeof(*ENUM_DELIMITER_TYPES),
+	"ENUM_DELIMITER",
+};
+
+
 static const Token::TokenType ENUMERATOR_DELIMITER_TYPES[] =
 {
 	Token::CBRACE,
+	Token::SEMICOLON,
 	Token::COMMA,
 };
 
@@ -315,20 +362,6 @@ const TokenTypeSet TokenTypeSet::INITIALIZER_DELIMITERS =
 	INITIALIZER_DELIMITER_TYPES,
 	sizeof(INITIALIZER_DELIMITER_TYPES) / sizeof(*INITIALIZER_DELIMITER_TYPES),
 	"INITIALIZER_DELIMITER",
-};
-
-
-static const Token::TokenType BLOCK_DELIMITER_TYPES[] =
-{
-	Token::CBRACE,
-	Token::END,
-};
-
-const TokenTypeSet TokenTypeSet::BLOCK_DELIMITERS =
-{
-	BLOCK_DELIMITER_TYPES,
-	sizeof(BLOCK_DELIMITER_TYPES) / sizeof(*BLOCK_DELIMITER_TYPES),
-	"BLOCK_DELIMITER",
 };
 
 

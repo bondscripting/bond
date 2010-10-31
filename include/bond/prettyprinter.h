@@ -14,7 +14,8 @@ class PrettyPrinter: public ConstParseNodeVisitor
 public:
 	PrettyPrinter(TextWriter &writer):
 		mWriter(writer),
-		mTabLevel(0)
+		mTabLevel(0),
+		mPrintTabsAndNewlines(true)
 	{}
 
 	virtual ~PrettyPrinter() {}
@@ -63,10 +64,14 @@ private:
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
+	void Newline();
 	void Print(const Token *token);
+	void PrintTabsAndNewlines() { mPrintTabsAndNewlines = true; }
+	void SuppressTabsAndNewlines() { mPrintTabsAndNewlines = false; }
 
 	TextWriter &mWriter;
 	int mTabLevel;
+	bool mPrintTabsAndNewlines;
 };
 
 }

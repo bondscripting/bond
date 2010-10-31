@@ -11,6 +11,7 @@
   BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION, "Increment/decrement operator in constant expression") \
   BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION, "Function call in constant expression")            \
   BOND_PARSE_ERROR_ITEM(FUNCTION_DEFINITION_NOT_ALLOWED, "Function definition not allowed")                   \
+  BOND_PARSE_ERROR_ITEM(INITIALIZER_NOT_ALLOWED, "Initializer not allowed")                                   \
 
 
 namespace Bond
@@ -58,6 +59,25 @@ private:
 	Type mType;
 	const Token *mContext;
 	const char *mExpected;
+};
+
+
+class ParseErrorBuffer
+{
+public:
+	ParseErrorBuffer();
+
+	void PushError(ParseError::Type type, const Token *context, const char *expected);
+
+	bool HasErrors() const { return mNumErrors > 0; }
+	int GetNumErrors() const { return mNumErrors; }
+	const ParseError *GetError(int index) const { return mErrors + index; }
+
+private:
+	static const int MAX_ERRORS = 16;
+
+	ParseError mErrors[MAX_ERRORS];
+	int mNumErrors;
 };
 
 }

@@ -32,11 +32,31 @@ void ParseError::Print(TextWriter &writer) const
 
 	if (mType == Bond::ParseError::UNEXPECTED_TOKEN)
 	{
-		writer.Write("'%s' before '%s'.", mExpected, mContext->GetTokenName());
+		writer.Write("'%s' before '%s'.", mExpected, mContext->GetText());
 	}
 	else
 	{
-		writer.Write("near '%s'.", mContext->GetTokenName());
+		writer.Write("near '%s'.", mContext->GetText());
+	}
+}
+
+
+ParseErrorBuffer::ParseErrorBuffer():
+	mNumErrors(0)
+{
+	for (int i = 0; i < MAX_ERRORS; ++i)
+	{
+		mErrors[i] = ParseError();
+	}
+}
+
+
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const char *expected)
+{
+	if (mNumErrors < MAX_ERRORS)
+	{
+		mErrors[mNumErrors] = ParseError(type, context, expected);
+		++mNumErrors;
 	}
 }
 

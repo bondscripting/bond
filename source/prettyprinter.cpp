@@ -308,7 +308,9 @@ void PrettyPrinter::VisitForStatement(const ForStatement *forStatement)
 {
 	Tab();
 	mWriter.Write("for (");
+	SuppressTabsAndNewlines();
 	Print(forStatement->GetInitializer());
+	PrintTabsAndNewlines();
 	mWriter.Write(" ");
 	Print(forStatement->GetCondition());
 	mWriter.Write("; ");
@@ -333,7 +335,8 @@ void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
 		Print(rhs);
 	}
 
-	mWriter.Write(";\n");
+	mWriter.Write(";");
+	Newline();
 }
 
 
@@ -343,7 +346,8 @@ void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declar
 	Print(declarativeStatement->GetTypeDescriptor());
 	mWriter.Write(" ");
 	PrintList(declarativeStatement->GetNamedInitializerList(), ", ");
-	mWriter.Write(";\n");
+	mWriter.Write(";");
+	Newline();
 }
 
 
@@ -351,7 +355,8 @@ void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressi
 {
 	Tab();
 	Print(expressionStatement->GetExpression());
-	mWriter.Write(";\n");
+	mWriter.Write(";");
+	Newline();
 }
 
 
@@ -492,9 +497,21 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 
 void PrettyPrinter::Tab()
 {
-	for (int i = 0; i < mTabLevel; ++i)
+	if (mPrintTabsAndNewlines)
 	{
-		mWriter.Write("\t");
+		for (int i = 0; i < mTabLevel; ++i)
+		{
+			mWriter.Write("\t");
+		}
+	}
+}
+
+
+void PrettyPrinter::Newline()
+{
+	if (mPrintTabsAndNewlines)
+	{
+		mWriter.Write("\n");
 	}
 }
 

@@ -15,15 +15,30 @@
                                                                                                                \
   bool __Validate ## testName ## __(Bond::TextWriter &logger, Bond::Parser &parser)                            \
 
- #define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                                                  \
-  if (!TestFramework::AssertParseNodeCount(logger, __FILE__, __LINE__, root, expectedCount)) return false;
+#define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                                                  \
+  if (!TestFramework::AssertParseNodeCount(logger, __FILE__, __LINE__, root, expectedCount)) return false; \
 
-#define ASSERT_NO_PARSE_ERRORS()                                                             \
-	if (!TestFramework::AssertNoParseErrors(logger, __FILE__, __LINE__, parser)) return false;
+#define ASSERT_NO_PARSE_ERRORS(errorBuffer)                                                       \
+	if (!TestFramework::AssertNoParseErrors(logger, __FILE__, __LINE__, errorBuffer)) return false; \
+
+#define ASSERT_PARSE_ERRORS(errorBuffer, expectedErrors, expectedErrorCount) \
+  if (!TestFramework::AssertParseErrors(logger, __FILE__, __LINE__,          \
+      errorBuffer, expectedErrors, expectedErrorCount))                      \
+  {                                                                          \
+		return false;                                                            \
+  }                                                                          \
 
 
 namespace TestFramework
 {
+
+struct ExpectedParseError
+{
+	Bond::ParseError::Type errorType;
+	Bond::Token::TokenType context;
+	int line;
+};
+
 
 typedef bool ParserValidationFunction(Bond::TextWriter &logger, Bond::Parser &parser);
 
@@ -45,7 +60,15 @@ bool AssertNoParseErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const Bond::Parser &parser);
+	const Bond::ParseErrorBuffer &errorBuffer);
+
+bool AssertParseErrors(
+	Bond::TextWriter &logger,
+	const char *assertFile,
+	int assertLine,
+	const Bond::ParseErrorBuffer &errorBuffer,
+	const ExpectedParseError *expectedErrors,
+	int numErrors);
 
 }
 

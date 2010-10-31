@@ -130,20 +130,50 @@ bool AssertNoParseErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const Bond::Parser &parser)
+	const Bond::ParseErrorBuffer &errorBuffer)
 {
-	if (parser.HasErrors())
+	if (errorBuffer.HasErrors())
 	{
 		logger.Write("line %u in %s:\n", assertLine, assertFile);
 
-		for (int i = 0; i < parser.GetNumErrors(); ++i)
+		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
 			logger.Write("\t\t");
-			const Bond::ParseError *error = parser.GetError(i);
+			const Bond::ParseError *error = errorBuffer.GetError(i);
 			error->Print(logger);
 			logger.Write("\n");
 		}
 		return false;
+	}
+
+	return true;
+}
+
+
+bool AssertParseErrors(
+	Bond::TextWriter &logger,
+	const char *assertFile,
+	int assertLine,
+	const Bond::ParseErrorBuffer &errorBuffer,
+	const ExpectedParseError *expectedErrors,
+	int numErrors)
+{
+	__ASSERT_FORMAT__(errorBuffer.GetNumErrors() == numErrors, logger, assertFile, assertLine,
+		("Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors()));
+
+	for (int i = 0; i < numErrors; ++i)
+	{
+		const ExpectedParseError *expected = expectedErrors + i;
+		const Bond::ParseError *actual = errorBuffer.GetError(i);
+		const Bond::Token *context = actual->GetContext();
+		const Bond::StreamPos &pos = context->GetStartPos();
+		__ASSERT_FORMAT__(expected->errorType == actual->GetType(), logger, assertFile, assertLine,
+			("Expected type of error %d to be %d but was %d.", i, expected->errorType, actual->GetType()));
+		__ASSERT_FORMAT__(expected->context == context->GetTokenType(), logger, assertFile, assertLine,
+			("Expected context of error %d to be %s but was %s.", i,
+			Bond::Token::GetTokenName(expected->context), context->GetTokenName()));
+		__ASSERT_FORMAT__(expected->line == pos.line, logger, assertFile, assertLine,
+			("Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line));
 	}
 
 	return true;

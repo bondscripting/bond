@@ -1,0 +1,22 @@
+const int SENTINEL1 = 1;
+
+enum Enum1
+{
+	// Bad initializer.
+	Value1 = (1 + 2,
+	Value2
+};
+
+enum // Missing name.
+{
+	Value3,
+	Value4		
+};
+
+enum Enum3
+{
+	Value5,
+	Value6,
+; // Missing closing brace.
+
+const int SENTINEL2 = 2;
