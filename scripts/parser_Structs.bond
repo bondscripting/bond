@@ -16,6 +16,8 @@ struct DataAndFunctions
 {
 	int x;
 	Data *DoStuff();
+	; // A couple of superfluous semicolons.
+	;
 	float y;
 	void DoMoreStuff();
 };

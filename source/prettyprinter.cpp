@@ -354,7 +354,10 @@ void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declar
 void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressionStatement)
 {
 	Tab();
-	Print(expressionStatement->GetExpression());
+	if (expressionStatement->GetExpression() != 0)
+	{
+		Print(expressionStatement->GetExpression());
+	}
 	mWriter.Write(";");
 	Newline();
 }

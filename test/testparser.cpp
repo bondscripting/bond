@@ -233,6 +233,79 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 }
 
 
+DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
+		{Bond::ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, Bond::Token::OBRACE, 12},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 15},
+		{Bond::ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, Bond::Token::OBRACE, 15},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mDeclarativeStatement = 6;
+	expectedCount.mStructDeclaration = 4;
+	expectedCount.mFunctionPrototype = 3;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::DUPLICATE_CONST, Bond::Token::KEY_CONST, 3},
+		{Bond::ParseError::PARSE_ERROR, Bond::Token::OP_DIV, 5},
+		{Bond::ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 10},
+		{Bond::ParseError::INCREMENT_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 13},
+		{Bond::ParseError::INCREMENT_IN_CONST_EXPRESSION, Bond::Token::OP_DEC, 16},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 21},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 22},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 23},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 26},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 27},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 28},
+		{Bond::ParseError::PARSE_ERROR, Bond::Token::CPAREN, 31},
+		{Bond::ParseError::PARSE_ERROR, Bond::Token::CPAREN, 32},
+		{Bond::ParseError::PARSE_ERROR, Bond::Token::SEMICOLON, 33},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 36},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 39},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+
+	const Bond::ParseNode *root = parser.GetTranslationUnit();
+
+	TestFramework::ParseNodeCount expectedCount(-1);
+	expectedCount.mDeclarativeStatement = 6;
+	expectedCount.mIfStatement = 3;
+	expectedCount.mSwitchStatement = 1;
+	expectedCount.mWhileStatement = 3;
+	expectedCount.mForStatement = 5;
+
+	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -240,11 +313,14 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
   TEST_ITEM(FunctionDefinitions)                \
   TEST_ITEM(DeclarativeAndExpressionStatements) \
   TEST_ITEM(Initializers)                       \
+  TEST_ITEM(Structs)                            \
   TEST_ITEM(IfStatements)                       \
   TEST_ITEM(WhileStatements)                    \
   TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
   TEST_ITEM(EnumErrors)                         \
+  TEST_ITEM(StructErrors)                       \
+  TEST_ITEM(MiscErrors)                         \
 
 
 RUN_TESTS(Parser, TEST_ITEMS)

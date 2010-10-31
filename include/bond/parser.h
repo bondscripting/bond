@@ -132,15 +132,14 @@ private:
 	Expression *ParsePrimaryExpression(Status &status, TokenStream &stream);
 	Expression *ParseArgumentList(Status &status, TokenStream &stream);
 
+	void ExpectDeclarationTerminator(Status &status, TokenStream &stream);
 	void SyncToDeclarationTerminator(Status &status, TokenStream &stream);
-	void SyncToDeclarationDelimiter(Status &status, TokenStream &stream);
 	void SyncToEnumeratorDelimiter(Status &status, TokenStream &stream);
-	void SyncToStructMemberDelimiter(Status &status, TokenStream &stream);
+	void SyncToStructMemberTerminator(Status &status, TokenStream &stream);
 	void SyncToInitializerDelimiter(Status &status, TokenStream &stream);
+	void ExpectStatementTerminator(Status &status, TokenStream &stream);
 	void SyncToStatementTerminator(Status &status, TokenStream &stream);
-	void SyncToStatementDelimiter(Status &status, TokenStream &stream);
-	void SyncToLabelTerminator(Status &status, TokenStream &stream);
-	void SyncToLabelDelimiter(Status &status, TokenStream &stream);
+	void ExpectLabelTerminator(Status &status, TokenStream &stream);
 
 	void Recover(
 		Status &status,

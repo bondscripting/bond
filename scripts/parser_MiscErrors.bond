@@ -1,0 +1,40 @@
+void Function1(int a)
+{
+	const int const b = 6;
+
+	/ // Arbitrary parse error.
+
+	switch (a)
+	{
+		// Function call in const expression.
+		case Function1(6):
+
+		// Increment/decrement in const expression.
+		case a++:
+
+		// Increment/decrement in const expression.
+		case --a:
+			break;
+	}
+
+	// Missing opening parenthesis.
+	if a + b < 3) {}
+	while a + b < 3) {}
+	for int i = 0; i < 10; ++i) {}
+
+	// Missing closing parenthesis.
+	if (a + b < 3 {}
+	while (a + b < 3 {}
+	for (int i = 0; i < 10; ++i {}
+
+	// Malformed condition.
+	if (a < ) {}
+	while (a < ) {}
+	for (int i = 0; i < ; ++i) {}
+
+	// Missing first semicolon.
+	for (int i = 0 i < 10; ++i) {}
+
+	// Missing second semicolon.
+	for (int i = 0; i < 10 ++i) {}
+}

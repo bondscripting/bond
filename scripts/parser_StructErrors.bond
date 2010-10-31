@@ -1,0 +1,37 @@
+const int SENTINEL1 = 1;
+
+struct Struct1
+{
+	// Initializer on member.
+	int x = 6;
+
+	// Even worse, an initializer with a parse error on a member.
+	int y = (1 + 2;
+
+	// Function definition on member.
+	int Function1(int a) { return a; }
+
+	// Even worse, a function definition with a parse error on a member.
+	int Function2(int a) { return / 2; }
+};
+
+struct // Missing name.
+{
+	int x;
+};
+
+struct Struct3
+{
+	int x // Missing semicolon.
+	int y;
+};
+
+struct Struct4
+{
+	// Malformed data member.
+	const int;
+	// Malformed function member.
+	int Function(int , blarg ,,;
+};
+
+const int SENTINEL2 = 2;

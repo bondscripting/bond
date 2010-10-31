@@ -50,21 +50,25 @@ ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream 
 
 	while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 	{
-		ListParseNode *next = ParseExternalDeclaration(status, stream);
-		AssertNode(status, stream, next);
-		SyncToDeclarationDelimiter(status, stream);
-
-		if (next != 0)
+		// Eat up superfluous semicolons.
+		if (stream.NextIf(Token::SEMICOLON) == 0)
 		{
-			if (declarationList == 0)
+			ListParseNode *next = ParseExternalDeclaration(status, stream);
+			AssertNode(status, stream, next);
+			SyncToDeclarationTerminator(status, stream);
+
+			if (next != 0)
 			{
-				declarationList = next;
+				if (declarationList == 0)
+				{
+					declarationList = next;
+				}
+				else
+				{
+					current->SetNext(next);
+				}
+				current = next;
 			}
-			else
-			{
-				current->SetNext(next);
-			}
-			current = next;
 		}
 	}
 
@@ -169,7 +173,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 		}
 
 		ExpectToken(status, stream, Token::CBRACE);
-		SyncToDeclarationTerminator(status, stream);
+		ExpectDeclarationTerminator(status, stream);
 		enumeration = mFactory.CreateEnumDeclaration(name, enumeratorList);
 	}
 
@@ -217,26 +221,30 @@ StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &s
 
 		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
 		{
-			ListParseNode *next = ParseFunctionOrDeclarativeStatement(overrideStatus, stream);
-			AssertNode(overrideStatus, stream, next);
-			SyncToStructMemberDelimiter(overrideStatus, stream);
-
-			if (next != 0)
+			// Eat up superfluous semicolons.
+			if (stream.NextIf(Token::SEMICOLON) == 0)
 			{
-				if (memberList == 0)
+				ListParseNode *next = ParseFunctionOrDeclarativeStatement(overrideStatus, stream);
+				AssertNode(overrideStatus, stream, next);
+				SyncToStructMemberTerminator(overrideStatus, stream);
+
+				if (next != 0)
 				{
-					memberList = next;
+					if (memberList == 0)
+					{
+						memberList = next;
+					}
+					else
+					{
+						current->SetNext(next);
+					}
+					current = next;
 				}
-				else
-				{
-					current->SetNext(next);
-				}
-				current = next;
 			}
 		}
 
 		ExpectToken(overrideStatus, stream, Token::CBRACE);
-		SyncToDeclarationTerminator(status, stream);
+		ExpectDeclarationTerminator(status, stream);
 		declaration = mFactory.CreateStructDeclaration(name, memberList);
 	}
 
@@ -289,7 +297,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				}
 				else
 				{
-					SyncToDeclarationTerminator(status, stream);
+					ExpectDeclarationTerminator(status, stream);
 				}
 
 				node = mFactory.CreateFunctionDefinition(prototype, body);
@@ -303,7 +311,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				if (initializerList != 0)
 				{
 					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
-					SyncToDeclarationTerminator(status, stream);
+					ExpectDeclarationTerminator(status, stream);
 				}
 			}
 		}
@@ -654,7 +662,7 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 		{
 			ListParseNode *next = ParseStatement(status, stream);
 			AssertNode(status, stream, next);
-			SyncToStatementDelimiter(status, stream);
+			SyncToStatementTerminator(status, stream);
 
 			if (next != 0)
 			{
@@ -760,7 +768,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 	{
 		ListParseNode *next = ParseStatement(status, stream);
 		AssertNode(status, stream, next);
-		SyncToStatementDelimiter(status, stream);
+		SyncToStatementTerminator(status, stream);
 
 		if (next != 0)
 		{
@@ -804,7 +812,7 @@ SwitchLabel *Parser::ParseSwitchLabel(Status &status, TokenStream &stream)
 			label = mFactory.CreateDefaultLabel(labelToken);
 		}
 
-		SyncToLabelTerminator(status, stream);
+		ExpectLabelTerminator(status, stream);
 	}
 
 	return label;
@@ -899,7 +907,7 @@ JumpStatement *Parser::ParseJumpStatement(Status &status, TokenStream &stream)
 		{
 			rhs = ParseExpression(status, stream);
 		}
-		SyncToStatementTerminator(status, stream);
+		ExpectStatementTerminator(status, stream);
 		jumpStatement = mFactory.CreateJumpStatement(op, rhs);
 	}
 
@@ -925,7 +933,7 @@ ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, Tok
 		if (initializerList != 0)
 		{
 			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
-			SyncToStatementTerminator(status, stream);
+			ExpectStatementTerminator(status, stream);
 		}
 		else
 		{
@@ -942,7 +950,7 @@ ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, Tok
 				// Uh, oh. Looks like we're even worse off.
 				stream.SetPosition(descriptorPos);
 				AssertNode(status, stream, statement);
-				SyncToStatementTerminator(status, stream);
+				ExpectStatementTerminator(status, stream);
 			}
 		}
 	}
@@ -965,7 +973,7 @@ ExpressionStatement *Parser::ParseExpressionStatement(Status &status, TokenStrea
 
 	if (expression != 0)
 	{
-		SyncToStatementTerminator(status, stream);
+		ExpectStatementTerminator(status, stream);
 		expressionStatement = mFactory.CreateExpressionStatement(expression);
 	}
 	else if (stream.NextIf(Token::SEMICOLON))
@@ -1520,18 +1528,21 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 }
 
 
-void Parser::SyncToDeclarationTerminator(Status &status, TokenStream &stream)
+void Parser::ExpectDeclarationTerminator(Status &status, TokenStream &stream)
 {
-	SyncToDeclarationDelimiter(status, stream);
+	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
 	ExpectToken(status, stream, Token::SEMICOLON);
-	SyncToDeclarationDelimiter(status, stream);
+	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
 }
 
 
-void Parser::SyncToDeclarationDelimiter(Status &status, TokenStream &stream)
+void Parser::SyncToDeclarationTerminator(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
-	//stream.NextIf(Token::SEMICOLON);
+	if (status.HasUnrecoveredError())
+	{
+		Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
+		stream.NextIf(Token::SEMICOLON);
+	}
 }
 
 
@@ -1541,10 +1552,13 @@ void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 }
 
 
-void Parser::SyncToStructMemberDelimiter(Status &status, TokenStream &stream)
+void Parser::SyncToStructMemberTerminator(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::STRUCT_MEMBER_DELIMITERS);
-	stream.NextIf(Token::SEMICOLON);
+	if (status.HasUnrecoveredError())
+	{
+		Recover(status, stream, TokenTypeSet::STRUCT_MEMBER_DELIMITERS);
+		stream.NextIf(Token::SEMICOLON);
+	}
 }
 
 
@@ -1554,30 +1568,28 @@ void Parser::SyncToInitializerDelimiter(Status &status, TokenStream &stream)
 }
 
 
-void Parser::SyncToStatementTerminator(Status &status, TokenStream &stream)
+void Parser::ExpectStatementTerminator(Status &status, TokenStream &stream)
 {
-	SyncToStatementDelimiter(status, stream);
+	Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
 	ExpectToken(status, stream, Token::SEMICOLON);
-	SyncToStatementDelimiter(status, stream);
-}
-
-
-void Parser::SyncToStatementDelimiter(Status &status, TokenStream &stream)
-{
 	Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
 }
 
 
-void Parser::SyncToLabelTerminator(Status &status, TokenStream &stream)
+void Parser::SyncToStatementTerminator(Status &status, TokenStream &stream)
 {
-	SyncToLabelDelimiter(status, stream);
-	ExpectToken(status, stream, Token::COLON);
-	SyncToLabelDelimiter(status, stream);
+	if (status.HasUnrecoveredError())
+	{
+		Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
+		stream.NextIf(Token::SEMICOLON);
+	}
 }
 
 
-void Parser::SyncToLabelDelimiter(Status &status, TokenStream &stream)
+void Parser::ExpectLabelTerminator(Status &status, TokenStream &stream)
 {
+	Recover(status, stream, TokenTypeSet::LABEL_DELIMITERS);
+	ExpectToken(status, stream, Token::COLON);
 	Recover(status, stream, TokenTypeSet::LABEL_DELIMITERS);
 }
 
