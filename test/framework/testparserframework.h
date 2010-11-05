@@ -2,7 +2,7 @@
 #define TEST_FRAMEWORK_TESTPARSERFRAMEWORK_H
 
 #include "framework/testframework.h"
-#include "framework/parsenodecounter.h"
+#include "bond/parsenodecounter.h"
 #include "bond/parser.h"
 
 #define DEFINE_PARSER_TEST(testName, scriptName)                                                               \
@@ -54,7 +54,7 @@ bool AssertParseNodeCount(
 	const char *assertFile,
 	int assertLine,
 	const Bond::ParseNode *root,
-	const ParseNodeCount &expectedCount);
+	const Bond::ParseNodeCount &expectedCount);
 
 bool AssertNoParseErrors(
 	Bond::TextWriter &logger,

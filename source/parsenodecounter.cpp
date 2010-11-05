@@ -1,241 +1,241 @@
-#include "framework/parsenodecounter.h"
+#include "bond/parsenodecounter.h"
 #include "bond/parsenodes.h"
 
-namespace TestFramework
+namespace Bond
 {
 
-void ParseNodeCounter::VisitTranslationUnit(const Bond::TranslationUnit *translationUnit)
+void ParseNodeCounter::VisitTranslationUnit(const TranslationUnit *translationUnit)
 {
 	++mCount.mTranslationUnit;
 	ConstParseNodeTraverser::VisitTranslationUnit(translationUnit);
 }
 
 
-void ParseNodeCounter::VisitNamespaceDefinition(const Bond::NamespaceDefinition *namespaceDefinition)
+void ParseNodeCounter::VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition)
 {
 	++mCount.mNamespaceDefinition;
 	ConstParseNodeTraverser::VisitNamespaceDefinition(namespaceDefinition);
 }
 
 
-void ParseNodeCounter::VisitEnumDeclaration(const Bond::EnumDeclaration *enumDeclaration)
+void ParseNodeCounter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 {
 	++mCount.mEnumDeclaration;
 	ConstParseNodeTraverser::VisitEnumDeclaration(enumDeclaration);
 }
 
 
-void ParseNodeCounter::VisitEnumerator(const Bond::Enumerator *enumerator)
+void ParseNodeCounter::VisitEnumerator(const Enumerator *enumerator)
 {
 	++mCount.mEnumerator;
 	ConstParseNodeTraverser::VisitEnumerator(enumerator);
 }
 
 
-void ParseNodeCounter::VisitStructDeclaration(const Bond::StructDeclaration *structDeclaration)
+void ParseNodeCounter::VisitStructDeclaration(const StructDeclaration *structDeclaration)
 {
 	++mCount.mStructDeclaration;
 	ConstParseNodeTraverser::VisitStructDeclaration(structDeclaration);
 }
 
 
-void ParseNodeCounter::VisitFunctionDefinition(const Bond::FunctionDefinition *functionDefinition)
+void ParseNodeCounter::VisitFunctionDefinition(const FunctionDefinition *functionDefinition)
 {
 	++mCount.mFunctionDefinition;
 	ConstParseNodeTraverser::VisitFunctionDefinition(functionDefinition);
 }
 
 
-void ParseNodeCounter::VisitFunctionPrototype(const Bond::FunctionPrototype *functionPrototype)
+void ParseNodeCounter::VisitFunctionPrototype(const FunctionPrototype *functionPrototype)
 {
 	++mCount.mFunctionPrototype;
 	ConstParseNodeTraverser::VisitFunctionPrototype(functionPrototype);
 }
 
 
-void ParseNodeCounter::VisitParameter(const Bond::Parameter *parameter)
+void ParseNodeCounter::VisitParameter(const Parameter *parameter)
 {
 	++mCount.mParameter;
 	ConstParseNodeTraverser::VisitParameter(parameter);
 }
 
 
-void ParseNodeCounter::VisitTypeDescriptor(const Bond::TypeDescriptor *typeDescriptor)
+void ParseNodeCounter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 {
 	++mCount.mTypeDescriptor;
 	ConstParseNodeTraverser::VisitTypeDescriptor(typeDescriptor);
 }
 
 
-void ParseNodeCounter::VisitTypeSpecifier(const Bond::TypeSpecifier *typeSpecifier)
+void ParseNodeCounter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 {
 	++mCount.mTypeSpecifier;
 	ConstParseNodeTraverser::VisitTypeSpecifier(typeSpecifier);
 }
 
 
-void ParseNodeCounter::VisitQualifiedIdentifier(const Bond::QualifiedIdentifier *identifier)
+void ParseNodeCounter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
 {
 	++mCount.mQualifiedIdentifier;
 	ConstParseNodeTraverser::VisitQualifiedIdentifier(identifier);
 }
 
 
-void ParseNodeCounter::VisitNamedInitializer(const Bond::NamedInitializer *namedInitializer)
+void ParseNodeCounter::VisitNamedInitializer(const NamedInitializer *namedInitializer)
 {
 	++mCount.mNamedInitializer;
 	ConstParseNodeTraverser::VisitNamedInitializer(namedInitializer);
 }
 
 
-void ParseNodeCounter::VisitInitializer(const Bond::Initializer *initializer)
+void ParseNodeCounter::VisitInitializer(const Initializer *initializer)
 {
 	++mCount.mInitializer;
 	ConstParseNodeTraverser::VisitInitializer(initializer);
 }
 
 
-void ParseNodeCounter::VisitCompoundStatement(const Bond::CompoundStatement *compoundStatement)
+void ParseNodeCounter::VisitCompoundStatement(const CompoundStatement *compoundStatement)
 {
 	++mCount.mCompoundStatement;
 	ConstParseNodeTraverser::VisitCompoundStatement(compoundStatement);
 }
 
 
-void ParseNodeCounter::VisitIfStatement(const Bond::IfStatement *ifStatement)
+void ParseNodeCounter::VisitIfStatement(const IfStatement *ifStatement)
 {
 	++mCount.mIfStatement;
 	ConstParseNodeTraverser::VisitIfStatement(ifStatement);
 }
 
 
-void ParseNodeCounter::VisitSwitchStatement(const Bond::SwitchStatement *switchStatement)
+void ParseNodeCounter::VisitSwitchStatement(const SwitchStatement *switchStatement)
 {
 	++mCount.mSwitchStatement;
 	ConstParseNodeTraverser::VisitSwitchStatement(switchStatement);
 }
 
 
-void ParseNodeCounter::VisitSwitchSection(const Bond::SwitchSection *switchSection)
+void ParseNodeCounter::VisitSwitchSection(const SwitchSection *switchSection)
 {
 	++mCount.mSwitchSection;
 	ConstParseNodeTraverser::VisitSwitchSection(switchSection);
 }
 
 
-void ParseNodeCounter::VisitSwitchLabel(const Bond::SwitchLabel *switchLabel)
+void ParseNodeCounter::VisitSwitchLabel(const SwitchLabel *switchLabel)
 {
 	++mCount.mSwitchLabel;
 	ConstParseNodeTraverser::VisitSwitchLabel(switchLabel);
 }
 
 
-void ParseNodeCounter::VisitWhileStatement(const Bond::WhileStatement *whileStatement)
+void ParseNodeCounter::VisitWhileStatement(const WhileStatement *whileStatement)
 {
 	++mCount.mWhileStatement;
 	ConstParseNodeTraverser::VisitWhileStatement(whileStatement);
 }
 
 
-void ParseNodeCounter::VisitForStatement(const Bond::ForStatement *forStatement)
+void ParseNodeCounter::VisitForStatement(const ForStatement *forStatement)
 {
 	++mCount.mForStatement;
 	ConstParseNodeTraverser::VisitForStatement(forStatement);
 }
 
 
-void ParseNodeCounter::VisitJumpStatement(const Bond::JumpStatement *jumpStatement)
+void ParseNodeCounter::VisitJumpStatement(const JumpStatement *jumpStatement)
 {
 	++mCount.mJumpStatement;
 	ConstParseNodeTraverser::VisitJumpStatement(jumpStatement);
 }
 
 
-void ParseNodeCounter::VisitDeclarativeStatement(const Bond::DeclarativeStatement *declarativeStatement)
+void ParseNodeCounter::VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement)
 {
 	++mCount.mDeclarativeStatement;
 	ConstParseNodeTraverser::VisitDeclarativeStatement(declarativeStatement);
 }
 
 
-void ParseNodeCounter::VisitExpressionStatement(const Bond::ExpressionStatement *expressionStatement)
+void ParseNodeCounter::VisitExpressionStatement(const ExpressionStatement *expressionStatement)
 {
 	++mCount.mExpressionStatement;
 	ConstParseNodeTraverser::VisitExpressionStatement(expressionStatement);
 }
 
 
-void ParseNodeCounter::VisitConditionalExpression(const Bond::ConditionalExpression *conditionalExpression)
+void ParseNodeCounter::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
 {
 	++mCount.mConditionalExpression;
 	ConstParseNodeTraverser::VisitConditionalExpression(conditionalExpression);
 }
 
 
-void ParseNodeCounter::VisitBinaryExpression(const Bond::BinaryExpression *binaryExpression)
+void ParseNodeCounter::VisitBinaryExpression(const BinaryExpression *binaryExpression)
 {
 	++mCount.mBinaryExpression;
 	ConstParseNodeTraverser::VisitBinaryExpression(binaryExpression);
 }
 
 
-void ParseNodeCounter::VisitUnaryExpression(const Bond::UnaryExpression *unaryExpression)
+void ParseNodeCounter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 {
 	++mCount.mUnaryExpression;
 	ConstParseNodeTraverser::VisitUnaryExpression(unaryExpression);
 }
 
 
-void ParseNodeCounter::VisitPostfixExpression(const Bond::PostfixExpression *postfixExpression)
+void ParseNodeCounter::VisitPostfixExpression(const PostfixExpression *postfixExpression)
 {
 	++mCount.mPostfixExpression;
 	ConstParseNodeTraverser::VisitPostfixExpression(postfixExpression);
 }
 
 
-void ParseNodeCounter::VisitMemberExpression(const Bond::MemberExpression *memberExpression)
+void ParseNodeCounter::VisitMemberExpression(const MemberExpression *memberExpression)
 {
 	++mCount.mMemberExpression;
 	ConstParseNodeTraverser::VisitMemberExpression(memberExpression);
 }
 
 
-void ParseNodeCounter::VisitArraySubscriptExpression(const Bond::ArraySubscriptExpression *arraySubscriptExpression)
+void ParseNodeCounter::VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	++mCount.mArraySubscriptExpression;
 	ConstParseNodeTraverser::VisitArraySubscriptExpression(arraySubscriptExpression);
 }
 
 
-void ParseNodeCounter::VisitFunctionCallExpression(const Bond::FunctionCallExpression *functionCallExpression)
+void ParseNodeCounter::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
 {
 	++mCount.mFunctionCallExpression;
 	ConstParseNodeTraverser::VisitFunctionCallExpression(functionCallExpression);
 }
 
 
-void ParseNodeCounter::VisitCastExpression(const Bond::CastExpression *castExpression)
+void ParseNodeCounter::VisitCastExpression(const CastExpression *castExpression)
 {
 	++mCount.mCastExpression;
 	ConstParseNodeTraverser::VisitCastExpression(castExpression);
 }
 
 
-void ParseNodeCounter::VisitSizeofExpression(const Bond::SizeofExpression *sizeofExpression)
+void ParseNodeCounter::VisitSizeofExpression(const SizeofExpression *sizeofExpression)
 {
 	++mCount.mSizeofExpression;
 	ConstParseNodeTraverser::VisitSizeofExpression(sizeofExpression);
 }
 
 
-void ParseNodeCounter::VisitConstantExpression(const Bond::ConstantExpression *constantExpression)
+void ParseNodeCounter::VisitConstantExpression(const ConstantExpression *constantExpression)
 {
 	++mCount.mConstantExpression;
 	ConstParseNodeTraverser::VisitConstantExpression(constantExpression);
 }
 
 
-void ParseNodeCounter::VisitIdentifierExpression(const Bond::IdentifierExpression *identifierExpression)
+void ParseNodeCounter::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
 {
 	++mCount.mIdentifierExpression;
 	ConstParseNodeTraverser::VisitIdentifierExpression(identifierExpression);

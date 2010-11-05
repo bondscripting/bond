@@ -71,11 +71,11 @@ bool AssertParseNodeCount(
 	const char *assertFile,
 	int assertLine,
 	const Bond::ParseNode *root,
-	const ParseNodeCount &expected)
+	const Bond::ParseNodeCount &expected)
 {
-	ParseNodeCounter counter;
+	Bond::ParseNodeCounter counter;
 	counter.Count(root);
-	const ParseNodeCount &actual = counter.GetCount();
+	const Bond::ParseNodeCount &actual = counter.GetCount();
 
 #define ASSERT_COUNT(field)                                                    \
   __ASSERT_FORMAT__(                                                           \

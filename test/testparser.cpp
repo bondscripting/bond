@@ -6,7 +6,7 @@ DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mNamespaceDefinition = 3;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
@@ -21,7 +21,7 @@ DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mEnumDeclaration = 4;
 	expectedCount.mEnumerator = 9;
 
@@ -37,7 +37,7 @@ DEFINE_PARSER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bo
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mFunctionPrototype = 4;
 	expectedCount.mFunctionDefinition = 4;
 	expectedCount.mCompoundStatement = 0;
@@ -55,7 +55,7 @@ DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mFunctionPrototype = 4;
 	expectedCount.mFunctionDefinition = 4;
 	expectedCount.mCompoundStatement = 4;
@@ -73,7 +73,7 @@ DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_Declarati
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 2;
 	expectedCount.mExpressionStatement = 2;
 	expectedCount.mNamedInitializer = 3;
@@ -90,7 +90,7 @@ DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 3;
 	expectedCount.mNamedInitializer = 4;
 	expectedCount.mInitializer = 16;
@@ -107,7 +107,7 @@ DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mStructDeclaration = 4;
 	expectedCount.mDeclarativeStatement = 4;
 	expectedCount.mFunctionPrototype = 4;
@@ -124,7 +124,7 @@ DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mIfStatement = 8;
 	expectedCount.mCompoundStatement = 2;
 	expectedCount.mExpressionStatement = 11;
@@ -141,7 +141,7 @@ DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mWhileStatement = 6;
 	expectedCount.mCompoundStatement = 3;
 	expectedCount.mExpressionStatement = 6;
@@ -160,7 +160,7 @@ DEFINE_PARSER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mForStatement = 7;
 	expectedCount.mCompoundStatement = 2;
 	expectedCount.mDeclarativeStatement = 3;
@@ -180,7 +180,7 @@ DEFINE_PARSER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mSwitchStatement = 1;
 	expectedCount.mSwitchSection = 2;
 	expectedCount.mSwitchLabel = 3;
@@ -198,7 +198,7 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mJumpStatement = 4;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
@@ -222,7 +222,7 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 2;
 	expectedCount.mEnumDeclaration = 3;
 	expectedCount.mEnumerator = 6;
@@ -254,7 +254,7 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 6;
 	expectedCount.mStructDeclaration = 4;
 	expectedCount.mFunctionPrototype = 3;
@@ -293,7 +293,7 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 
 	const Bond::ParseNode *root = parser.GetTranslationUnit();
 
-	TestFramework::ParseNodeCount expectedCount(-1);
+	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 6;
 	expectedCount.mIfStatement = 3;
 	expectedCount.mSwitchStatement = 1;
