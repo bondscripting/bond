@@ -11,15 +11,13 @@ public:
 		mBuffer(0),
 		mLength(0),
 		mIndex(0)
-	{
-	}
+	{}
 
 	StringAllocator(char *buffer, int length):
 		mBuffer(buffer),
 		mLength(length),
 		mIndex(0)
-	{
-	}
+	{}
 
 	void SetBuffer(char *buffer, int length);
 	char *Alloc(int length);

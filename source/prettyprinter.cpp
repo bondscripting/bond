@@ -19,6 +19,17 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 }
 
 
+void PrettyPrinter::PrintList(const ListParseNode *listNode)
+{
+	const ListParseNode *current = listNode;
+	while (current != 0)
+	{
+		Print(current);
+		current = current->GetNext();
+	}
+}
+
+
 void PrettyPrinter::VisitTranslationUnit(const TranslationUnit *translationUnit)
 {
 	PrintList(translationUnit->GetExternalDeclarationList());
@@ -465,17 +476,6 @@ void PrettyPrinter::VisitConstantExpression(const ConstantExpression *constantEx
 void PrettyPrinter::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
 {
 	PrintList(identifierExpression->GetIdentifier(), "::");
-}
-
-
-void PrettyPrinter::PrintList(const ListParseNode *listNode)
-{
-	const ListParseNode *current = listNode;
-	while (current != 0)
-	{
-		Print(current);
-		current = current->GetNext();
-	}
 }
 
 

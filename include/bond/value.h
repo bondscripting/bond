@@ -11,9 +11,9 @@ union Value
 	Value(): mInt(0) {}
 	bool mBool;
 	char mChar;
-	int_t mInt;
-	uint_t mUInt;
-	float_t mFloat;
+	bi32_t mInt;
+	bu32_t mUInt;
+	bf32_t mFloat;
 	struct
 	{
 		const char *buffer;

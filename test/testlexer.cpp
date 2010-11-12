@@ -97,13 +97,13 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const bool EXPECTED_BOOLS[] = { true, false };
 	const int NUM_BOOLS = sizeof(EXPECTED_BOOLS) / sizeof(*EXPECTED_BOOLS);
 
-	const Bond::int_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, 0xffffffff };
+	const Bond::bi32_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, 0xffffffff };
 	const int NUM_INTS = sizeof(EXPECTED_INTS) / sizeof(*EXPECTED_INTS);
 
-	const Bond::uint_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
+	const Bond::bu32_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
 	const int NUM_UINTS = sizeof(EXPECTED_UINTS) / sizeof(*EXPECTED_UINTS);
 
-	const Bond::float_t EXPECTED_FLOATS[] = { 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
+	const Bond::bf32_t EXPECTED_FLOATS[] = { 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
 	const int NUM_FLOATS = sizeof(EXPECTED_FLOATS) / sizeof(*EXPECTED_FLOATS);
 
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
@@ -129,8 +129,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
 			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
 
-		const Bond::int_t expected = EXPECTED_INTS[i];
-		const Bond::int_t actual = token->GetIntValue();
+		const Bond::bi32_t expected = EXPECTED_INTS[i];
+		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
 	}
@@ -141,8 +141,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
 			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
 
-		const Bond::uint_t expected = EXPECTED_UINTS[i];
-		const Bond::uint_t actual = token->GetUIntValue();
+		const Bond::bu32_t expected = EXPECTED_UINTS[i];
+		const Bond::bu32_t actual = token->GetUIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected " BOND_UDECIMAL_FORMAT " but was " BOND_UDECIMAL_FORMAT ".", expected, actual));
 	}
@@ -153,8 +153,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_FLOAT == token->GetTokenType(),
 			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
 
-		const Bond::float_t expected = EXPECTED_FLOATS[i];
-		const Bond::float_t actual = token->GetFloatValue();
+		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
+		const Bond::bf32_t actual = token->GetFloatValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected " BOND_FLOAT_FORMAT " but was " BOND_FLOAT_FORMAT ".", expected, actual));
 	}

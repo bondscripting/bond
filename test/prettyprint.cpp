@@ -5,7 +5,7 @@
 bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
 {
 	Bond::PrettyPrinter printer(logger);
-	printer.Print(parser.GetTranslationUnit());
+	printer.Print(parser.GetTranslationUnitList());
 
 	const Bond::ParseErrorBuffer &errorBuffer = parser.GetErrorBuffer();
 	if (errorBuffer.HasErrors())

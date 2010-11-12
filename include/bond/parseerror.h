@@ -67,6 +67,8 @@ class ParseErrorBuffer
 public:
 	ParseErrorBuffer();
 
+	void Reset();
+
 	void PushError(ParseError::Type type, const Token *context, const char *expected);
 
 	bool HasErrors() const { return mNumErrors > 0; }

@@ -17,8 +17,7 @@ public:
 		mStringBuffer(0),
 		mTokens(0),
 		mNumTokens(0)
-	{
-	}
+	{}
 
 	~Lexer();
 	void Dispose();
@@ -96,7 +95,7 @@ private:
 	void ExtractToken(CharStream &stream, StringAllocator &allocator, Token &token) const;
 
 	void EvaluateToken(StringAllocator &allocator, Token &token) const;
-	void EvaluateKeywordToken(Token &token) const;
+	void EvaluateKeywordOrIdentifierToken(Token &token) const;
 	void EvaluateCharToken(Token &token) const;
 	void EvaluateFloatToken(Token &token) const;
 	void EvaluateIntegerToken(Token &token) const;

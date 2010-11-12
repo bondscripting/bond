@@ -90,6 +90,7 @@ public:
 
 	const ParseNodeCount &GetCount() const { return mCount; }
 	void Count(const ParseNode *parseNode) { Traverse(parseNode); }
+	void CountList(const ListParseNode *listNode) { TraverseList(listNode); }
 
 private:
 	virtual void VisitTranslationUnit(const TranslationUnit *translationUnit);

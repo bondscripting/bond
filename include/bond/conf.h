@@ -4,9 +4,9 @@
 namespace Bond
 {
 
-typedef float float_t;
-typedef int int_t;
-typedef unsigned int uint_t;
+typedef float bf32_t;
+typedef int bi32_t;
+typedef unsigned int bu32_t;
 
 #define BOND_FLOAT_FORMAT "%f"
 #define BOND_DECIMAL_FORMAT "%d"

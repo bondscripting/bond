@@ -38,7 +38,7 @@ private:
 };
 
 
-class TranslationUnit: public ParseNode
+class TranslationUnit: public ListParseNode
 {
 public:
 	explicit TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}

@@ -18,6 +18,7 @@ public:
 	{}
 
 	void Destroy(ParseNode *parseNode) { Traverse(parseNode); }
+	void DestroyList(ListParseNode *listNode) { TraverseList(listNode); }
 
 private:
 	virtual void Traverse(ParseNode *parseNode);
@@ -310,6 +311,12 @@ void ParseNodeFactory::DestroyHierarchy(ParseNode *parseNode)
 {
 	ParseNodeDeallocator deallocator(mAllocator);
 	deallocator.Destroy(parseNode);
+}
+
+void ParseNodeFactory::DestroyListHierarchy(ListParseNode *listNode)
+{
+	ParseNodeDeallocator deallocator(mAllocator);
+	deallocator.DestroyList(listNode);
 }
 
 }

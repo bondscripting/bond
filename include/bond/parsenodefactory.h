@@ -84,6 +84,7 @@ public:
 
 	void Destroy(ParseNode *parseNode);
 	void DestroyHierarchy(ParseNode *parseNode);
+	void DestroyListHierarchy(ListParseNode *listNode);
 
 private:
 	Allocator &mAllocator;

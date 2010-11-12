@@ -20,7 +20,7 @@ public:
 
 	void Parse(TokenStream &stream);
 
-	TranslationUnit *GetTranslationUnit() { return mTranslationUnit; }
+	TranslationUnit *GetTranslationUnitList() { return mTranslationUnitList; }
 
 	bool HasErrors() const { return mErrorBuffer.HasErrors(); }
 	const ParseErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
@@ -154,7 +154,7 @@ private:
 
 	ParseErrorBuffer mErrorBuffer;
 	ParseNodeFactory mFactory;
-	TranslationUnit *mTranslationUnit;
+	TranslationUnit *mTranslationUnitList;
 };
 
 }

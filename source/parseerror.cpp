@@ -41,9 +41,15 @@ void ParseError::Print(TextWriter &writer) const
 }
 
 
-ParseErrorBuffer::ParseErrorBuffer():
-	mNumErrors(0)
+ParseErrorBuffer::ParseErrorBuffer()
 {
+	Reset();
+}
+
+
+void ParseErrorBuffer::Reset()
+{
+	mNumErrors = 0;
 	for (int i = 0; i < MAX_ERRORS; ++i)
 	{
 		mErrors[i] = ParseError();

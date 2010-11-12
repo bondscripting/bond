@@ -53,7 +53,7 @@ bool AssertParseNodeCount(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const Bond::ParseNode *root,
+	const Bond::ListParseNode *root,
 	const Bond::ParseNodeCount &expectedCount);
 
 bool AssertNoParseErrors(

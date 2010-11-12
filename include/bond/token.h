@@ -206,18 +206,21 @@ public:
 	char GetCharValue() const { return mValue.mChar; }
 	void SetCharValue(char value) { mValue.mChar = value; }
 
-	float_t GetFloatValue() const { return mValue.mFloat; }
-	void SetFloatValue(float_t value) { mValue.mFloat = value; }
+	bf32_t GetFloatValue() const { return mValue.mFloat; }
+	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
 
-	int_t GetIntValue() const { return mValue.mInt; }
-	void SetIntValue(int_t value) { mValue.mInt = value; }
+	bi32_t GetIntValue() const { return mValue.mInt; }
+	void SetIntValue(bi32_t value) { mValue.mInt = value; }
 
-	uint_t GetUIntValue() const { return mValue.mUInt; }
-	void SetUIntValue(uint_t value) { mValue.mUInt = value; }
+	bu32_t GetUIntValue() const { return mValue.mUInt; }
+	void SetUIntValue(bu32_t value) { mValue.mUInt = value; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
 	int GetStringLength() const { return mValue.mString.length; }
 	void SetStringValue(const char *buffer, int length);
+
+	bu32_t GetHashCode() const { return mValue.mUInt; }
+	void SetHashCode(bu32_t hash) { mValue.mUInt = hash; }
 
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);

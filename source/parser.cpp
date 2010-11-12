@@ -6,7 +6,7 @@ namespace Bond
 
 Parser::Parser(Allocator &allocator):
 	mFactory(allocator),
-	mTranslationUnit(0)
+	mTranslationUnitList(0)
 {
 }
 
@@ -19,16 +19,17 @@ Parser::~Parser()
 
 void Parser::Dispose()
 {
-	mFactory.DestroyHierarchy(mTranslationUnit);
-	mTranslationUnit = 0;
+	mFactory.DestroyListHierarchy(mTranslationUnitList);
+	mTranslationUnitList = 0;
 }
 
 
 void Parser::Parse(TokenStream &stream)
 {
-	Dispose();
 	Status status;
-	mTranslationUnit = ParseTranslationUnit(status, stream);
+	TranslationUnit *translationUnit = ParseTranslationUnit(status, stream);
+	translationUnit->SetNext(mTranslationUnitList);
+	mTranslationUnitList = translationUnit;
 }
 
 

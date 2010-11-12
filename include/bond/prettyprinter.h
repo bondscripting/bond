@@ -21,6 +21,7 @@ public:
 	virtual ~PrettyPrinter() {}
 
 	void Print(const ParseNode *parseNode);
+	void PrintList(const ListParseNode *listNode);
 
 	virtual void VisitTranslationUnit(const TranslationUnit *translationUnit);
 	virtual void VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition);
@@ -58,9 +59,7 @@ public:
 	virtual void VisitIdentifierExpression(const IdentifierExpression *identifierValue);
 
 private:
-	void PrintList(const ListParseNode *listNode);
 	void PrintList(const ListParseNode *listNode, const char *separator);
-
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();

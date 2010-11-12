@@ -1,5 +1,5 @@
 #include "bond/lexer.h"
-#include <assert.h>
+#include "bond/util.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -79,7 +79,6 @@ void Lexer::GenerateTokens(CharStream &stream, StringAllocator &allocator)
 
 	while (true)
 	{
-		assert(tokenIndex < mNumTokens);
 		Token &token = mTokens[tokenIndex++];
 		GenerateToken(stream, allocator, token);
 
@@ -88,8 +87,6 @@ void Lexer::GenerateTokens(CharStream &stream, StringAllocator &allocator)
 			break;
 		}
 	}
-
-	assert(tokenIndex == mNumTokens);
 }
 
 
@@ -913,7 +910,7 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 	switch (token.GetTokenType())
 	{
 		case Token::IDENTIFIER:
-			EvaluateKeywordToken(token);
+			EvaluateKeywordOrIdentifierToken(token);
 			break;
 
 		case Token::CONST_CHAR:
@@ -940,7 +937,7 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 }
 
 
-void Lexer::EvaluateKeywordToken(Token &token) const
+void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 {
 	if (strcmp(token.GetText(), "bool") == 0)
 	{
@@ -1044,6 +1041,12 @@ void Lexer::EvaluateKeywordToken(Token &token) const
 		token.SetTokenType(Token::CONST_BOOL);
 		token.SetBoolValue(true);
 	}
+	else
+	{
+		// Compute and cache the identifier's hash code.
+		const bu32_t hash = Util::StringHash(token.GetText());
+		token.SetHashCode(hash);
+	}
 }
 
 
@@ -1056,7 +1059,7 @@ void Lexer::EvaluateCharToken(Token &token) const
 
 void Lexer::EvaluateFloatToken(Token &token) const
 {
-	float_t value;
+	bf32_t value;
 	sscanf(token.GetText(), BOND_FLOAT_FORMAT, &value);
 	token.SetFloatValue(value);
 }
@@ -1064,7 +1067,7 @@ void Lexer::EvaluateFloatToken(Token &token) const
 
 void Lexer::EvaluateIntegerToken(Token &token) const
 {
-	uint_t value;
+	bu32_t value;
 	const char *text = token.GetText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
@@ -1081,7 +1084,7 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
-		token.SetIntValue(static_cast<int_t>(value));
+		token.SetIntValue(static_cast<bi32_t>(value));
 	}
 	else
 	{
