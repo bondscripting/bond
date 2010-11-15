@@ -12,6 +12,8 @@
   BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION, "Function call in constant expression")            \
   BOND_PARSE_ERROR_ITEM(FUNCTION_DEFINITION_NOT_ALLOWED, "Function definition not allowed")                   \
   BOND_PARSE_ERROR_ITEM(INITIALIZER_NOT_ALLOWED, "Initializer not allowed")                                   \
+  BOND_PARSE_ERROR_ITEM(HASH_COLLISION, "Hash collision")                                                     \
+  BOND_PARSE_ERROR_ITEM(DUPLICATE_SYMBOL, "Duplicate symbol")                                                 \
 
 
 namespace Bond
@@ -30,22 +32,31 @@ public:
 #undef BOND_PARSE_ERROR_ITEM
 	};
 
-	ParseError(): mType(NO_ERROR), mContext(0), mExpected("") {}
+	ParseError(): mType(NO_ERROR), mContext(0), mAltContext(0), mExpected("") {}
 
 	ParseError(Type type, const Token *context, const char *expected):
 		mType(type),
 		mContext(context),
+		mAltContext(0),
 		mExpected(expected)
+	{}
+
+	ParseError(Type type, const Token *context, const Token *altContext):
+		mType(type),
+		mContext(context),
+		mAltContext(altContext)
 	{}
 
 	ParseError(const ParseError &other):
 		mType(other.mType),
 		mContext(other.mContext),
+		mAltContext(other.mAltContext),
 		mExpected(other.mExpected)
 	{}
 
 	Type GetType() const { return mType; }
 	const Token *GetContext() const { return mContext; }
+	const Token *GetAltContext() const { return mContext; }
 	const char *GetExpected() const { return mExpected; }
 
 	const char *GetDescription() const;
@@ -58,6 +69,7 @@ private:
 
 	Type mType;
 	const Token *mContext;
+	const Token *mAltContext;
 	const char *mExpected;
 };
 
@@ -70,6 +82,7 @@ public:
 	void Reset();
 
 	void PushError(ParseError::Type type, const Token *context, const char *expected);
+	void PushError(ParseError::Type type, const Token *context, const Token *altContext);
 
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }

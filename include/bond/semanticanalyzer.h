@@ -22,8 +22,11 @@ public:
 
 	void Analyze(TranslationUnit *translationUnitList);
 
+	bool HasErrors() const { return mErrorBuffer.HasErrors(); }
+	const ParseErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
+
 private:
-	void PopulateSymbolTable(Allocator &allocator);
+	void PopulateSymbolTable(TranslationUnit *translationUnitList, Allocator &allocator);
 
 	ParseErrorBuffer mErrorBuffer;
 	Allocator &mAllocator;

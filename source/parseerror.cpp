@@ -30,9 +30,19 @@ void ParseError::Print(TextWriter &writer) const
 
 	writer.Write("(%d, %d): %s ", pos.line, pos.column, GetDescription());
 
-	if (mType == Bond::ParseError::UNEXPECTED_TOKEN)
+	if (mType == ParseError::UNEXPECTED_TOKEN)
 	{
 		writer.Write("'%s' before '%s'.", mExpected, mContext->GetText());
+	}
+	else if (mType == ParseError::HASH_COLLISION)
+	{
+		const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
+		writer.Write("'%s' hash code collided with '%s' on line '%d'.", mContext->GetText(), mAltContext->GetText(), previousPos.line);
+	}
+	else if (mType == ParseError::DUPLICATE_SYMBOL)
+	{
+		const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
+		writer.Write("'%s' previously defined on line '%d'.", mContext->GetText(), previousPos.line);
 	}
 	else
 	{
@@ -62,6 +72,16 @@ void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, co
 	if (mNumErrors < MAX_ERRORS)
 	{
 		mErrors[mNumErrors] = ParseError(type, context, expected);
+		++mNumErrors;
+	}
+}
+
+
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const Token *altContext)
+{
+	if (mNumErrors < MAX_ERRORS)
+	{
+		mErrors[mNumErrors] = ParseError(type, context, altContext);
 		++mNumErrors;
 	}
 }

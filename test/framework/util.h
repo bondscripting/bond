@@ -1,5 +1,5 @@
-#ifndef TEST_FRAMEWORK_UTILS_H
-#define TEST_FRAMEWORK_UTILS_H
+#ifndef TEST_FRAMEWORK_UTIL_H
+#define TEST_FRAMEWORK_UTIL_H
 
 namespace TestFramework
 {

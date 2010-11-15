@@ -3,10 +3,7 @@
 # Common files, folders and configuration.
 BLDDIR := build
 BINDIR := $(BLDDIR)/bin
-OBJDIR := $(BLDDIR)/obj
 LIBDIR := $(BLDDIR)/lib
-OBJFILE := $(OBJDIR)/%.o
-OBJDEPFILE := $(OBJDIR)/%.d
 EXEFILE := $(BINDIR)/%
 EXEDEPFILE := $(BINDIR)/%.d
 AR := ar
@@ -17,6 +14,9 @@ RM := rm
 # Bond library files, folders and configuration.
 SRCDIR := source
 SRCFILE := $(SRCDIR)/%.cpp
+OBJDIR := $(BLDDIR)/obj/bond
+OBJFILE := $(OBJDIR)/%.o
+OBJDEPFILE := $(OBJDIR)/%.d
 INCLUDEDIR := include
 SRCFILES := $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES := $(patsubst $(SRCFILE),$(OBJFILE),$(SRCFILES))
@@ -27,14 +27,17 @@ CFLAGS := -Wall -ansi -g -I$(INCLUDEDIR)
 # Test Framework library files, folders and configuration.
 TFSRCDIR := test/framework
 TFSRCFILE := $(TFSRCDIR)/%.cpp
+TFOBJDIR := $(BLDDIR)/obj/framework
+TFOBJFILE := $(TFOBJDIR)/%.o
+TFOBJDEPFILE := $(TFOBJDIR)/%.d
 TFINCLUDEDIR := test
 TFSRCFILES := $(wildcard $(TFSRCDIR)/*.cpp)
-TFOBJFILES := $(patsubst $(TFSRCFILE),$(OBJFILE),$(TFSRCFILES))
-TFDEPFILES := $(patsubst $(TFSRCFILE),$(OBJDEPFILE),$(TFSRCFILES))
+TFOBJFILES := $(patsubst $(TFSRCFILE),$(TFOBJFILE),$(TFSRCFILES))
+TFDEPFILES := $(patsubst $(TFSRCFILE),$(TFOBJDEPFILE),$(TFSRCFILES))
 TFLIB := $(LIBDIR)/framework.a
 TFCFLAGS := -Wall -g -I$(INCLUDEDIR) -I$(TFINCLUDEDIR)
 
- # Unit Test files, folders and configuration.
+# Unit Test files, folders and configuration.
 UTSRCDIR := test
 UTSRCFILE := $(UTSRCDIR)/%.cpp
 UTEST := %
@@ -76,8 +79,8 @@ $(TFLIB): $(TFOBJFILES)
 
 -include $(TFDEPFILES)
 
-$(OBJFILE): $(TFSRCFILE) Makefile
-	@$(MKDIR) -p $(OBJDIR)
+$(TFOBJFILE): $(TFSRCFILE) Makefile
+	@$(MKDIR) -p $(TFOBJDIR)
 	$(CC) $(TFCFLAGS) -MMD -MP -c $< -o $@
 
 # Unit Test targets.

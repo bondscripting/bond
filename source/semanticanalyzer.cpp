@@ -6,34 +6,29 @@
 #include "bond/semanticanalyzer.h"
 #include "bond/symboltable.h"
 #include <new>
+#include <string.h>
 
 namespace Bond
 {
 
 //------------------------------------------------------------------------------
-// GlobalSymbolPopulator
+// SymbolTablePopulator
 //------------------------------------------------------------------------------
-class GlobalSymbolPopulator: ParseNodeTraverser
+class SymbolTablePopulator: public ParseNodeTraverser
 {
 public:
-	GlobalSymbolPopulator(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+	virtual ~SymbolTablePopulator() {}
+
+protected:
+	SymbolTablePopulator(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
 		mErrorBuffer(errorBuffer),
 		mAllocator(allocator),
 		mSymbolTable(symbolTable)
 	{}
 
-	virtual ~GlobalSymbolPopulator() {}
+	Symbol *InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Scope *InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
 
-	void Populate();
-
-	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
-	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
-	virtual void VisitEnumerator(Enumerator *enumerator);
-	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration);
-	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition);
-	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement);
-
-private:
 	typedef AutoStack<Scope *> ScopeStack;
 
 	ScopeStack mScopeStack;
@@ -43,56 +38,185 @@ private:
 };
 
 
-void GlobalSymbolPopulator::Populate()
+Symbol *SymbolTablePopulator::InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
 {
-	ScopeStack::Element globalScopeElement(mScopeStack, mSymbolTable.GetGlobalScope());
+	Symbol *symbol = parent->FindSymbol(name);
+
+	if (symbol == 0)
+	{
+		symbol = new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition);
+		parent->InsertSymbol(symbol);
+	}
+	else
+	{
+		if (strcmp(name->GetText(), symbol->GetName()->GetText()) == 0)
+		{
+			mErrorBuffer.PushError(ParseError::HASH_COLLISION, name, symbol->GetName());
+		}
+		else
+		{
+			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
+		}
+	}
+
+	return symbol;
 }
 
 
-void GlobalSymbolPopulator::VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition)
+Scope *SymbolTablePopulator::InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	Scope *scope = parent->FindScope(name);
+
+	if (scope == 0)
+	{
+		scope = new (mAllocator.Alloc<Scope>()) Scope(type, name, definition, parent);
+		parent->InsertScope(scope);
+	}
+	else
+	{
+		if (strcmp(name->GetText(), scope->GetName()->GetText()) == 0)
+		{
+			mErrorBuffer.PushError(ParseError::HASH_COLLISION, name, scope->GetName());
+		}
+		else
+		{
+			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
+		}
+	}
+
+	return scope;
+}
+
+
+//------------------------------------------------------------------------------
+// TopLevelSymbolPopulator
+//------------------------------------------------------------------------------
+class TopLevelSymbolPopulator: public SymbolTablePopulator
+{
+public:
+	TopLevelSymbolPopulator(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+		SymbolTablePopulator(errorBuffer, allocator, symbolTable)
+	{}
+
+	virtual ~TopLevelSymbolPopulator() {}
+
+	void Populate(TranslationUnit *translationUnitList);
+
+	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
+	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
+	virtual void VisitEnumerator(Enumerator *enumerator);
+	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration);
+	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition) {}
+	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement);
+};
+
+
+void TopLevelSymbolPopulator::Populate(TranslationUnit *translationUnitList)
+{
+	ScopeStack::Element globalScopeElement(mScopeStack, mSymbolTable.GetGlobalScope());
+	ParseNodeTraverser::TraverseList(translationUnitList);
+}
+
+
+void TopLevelSymbolPopulator::VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition)
 {
 	const Token *name = namespaceDefinition->GetName();
 
 	Scope *parentScope = mScopeStack.GetTop();
-	Scope *namespaceScope = parentScope->FindScope(name);
+	Scope *currentScope = parentScope->FindScope(name);
 
-	if (namespaceScope == 0)
+	if (currentScope == 0)
 	{
-		namespaceScope = new (mAllocator.Alloc<Scope>()) Scope(name, namespaceDefinition, parentScope);
-		parentScope->InsertScope(namespaceScope);
+		currentScope = new (mAllocator.Alloc<Scope>()) Scope(SymbolBase::TYPE_NAMESPACE, name, namespaceDefinition, parentScope);
+		parentScope->InsertScope(currentScope);
+	}
+	else
+	{
+		if (currentScope->GetType() != SymbolBase::TYPE_NAMESPACE)
+		{
+			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, currentScope->GetName());
+		}
 	}
 
-	ScopeStack::Element namespaceScopeElement(mScopeStack, namespaceScope);
+	ScopeStack::Element currentScopeElement(mScopeStack, currentScope);
 	ParseNodeTraverser::VisitNamespaceDefinition(namespaceDefinition);
 }
 
 
-void GlobalSymbolPopulator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration)
+void TopLevelSymbolPopulator::VisitEnumDeclaration(EnumDeclaration *enumDeclaration)
 {
+	const Token *name = enumDeclaration->GetName();
+	Scope *parent = mScopeStack.GetTop();
+	Scope *scope = InsertScope(SymbolBase::TYPE_ENUM, name, enumDeclaration, parent);
+	ScopeStack::Element stackElement(mScopeStack, scope);
+	ParseNodeTraverser::VisitEnumDeclaration(enumDeclaration);
 }
 
 
-void GlobalSymbolPopulator::VisitEnumerator(Enumerator *enumerator)
+void TopLevelSymbolPopulator::VisitEnumerator(Enumerator *enumerator)
 {
+	const Token *name = enumerator->GetName();
+	Scope *parent = mScopeStack.GetTop();
+	InsertSymbol(SymbolBase::TYPE_VALUE, name, enumerator, parent);
+	parent = parent->GetParent();
+	InsertSymbol(SymbolBase::TYPE_VALUE, name, enumerator, parent);
 }
 
 
-void GlobalSymbolPopulator::VisitStructDeclaration(StructDeclaration *structDeclaration)
+void TopLevelSymbolPopulator::VisitStructDeclaration(StructDeclaration *structDeclaration)
 {
+	const Token *name = structDeclaration->GetName();
+	Scope *parent = mScopeStack.GetTop();
+	InsertScope(SymbolBase::TYPE_STRUCT, name, structDeclaration, parent);
 }
 
 
-void GlobalSymbolPopulator::VisitFunctionDefinition(FunctionDefinition *functionDefinition)
+void TopLevelSymbolPopulator::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
 {
+	/*
+	const Token *name = declarativeStatement->GetName();
+	Scope *parent = mScopeStack.GetTop();
+	InsertSymbol(SymbolBase::TYPE_VALUE, name, enumerator, parent);
+	*/
 }
 
 
-void GlobalSymbolPopulator::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
+//------------------------------------------------------------------------------
+// SymbolPopulator
+//------------------------------------------------------------------------------
+/*
+class SymbolPopulator: ParseNodeTraverser
 {
-}
+public:
+	SymbolPopulator(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+		mErrorBuffer(errorBuffer),
+		mAllocator(allocator),
+		mSymbolTable(symbolTable)
+	{}
 
+	virtual ~SymbolPopulator() {}
 
+	void Populate();
 
+	virtual void VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition);
+	virtual void VisitEnumDeclaration(EnumDeclaration *enumDeclaration);
+	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration);
+	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition) {}
+	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement) {}
+
+private:
+	typedef AutoStack<Scope *> ScopeStack;
+
+	ScopeStack mScopeStack;
+	ParseErrorBuffer &mErrorBuffer;
+	Allocator &mAllocator;
+	SymbolTable &mSymbolTable;
+};
+*/
+
+//------------------------------------------------------------------------------
+// SemanticAnalyser
+//------------------------------------------------------------------------------
 SemanticAnalyzer::~SemanticAnalyzer()
 {
 	Dispose();
@@ -116,8 +240,8 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	counter.CountList(translationUnitList);
 	const ParseNodeCount &nodeCount = counter.GetCount();
 
-	const int symbolCount =
-		nodeCount.mEnumerator +
+	const int symbolCount = 0;
+		(nodeCount.mEnumerator * 2) +
 		nodeCount.mFunctionDefinition +
 		nodeCount.mParameter +
 		nodeCount.mNamedInitializer +
@@ -135,12 +259,22 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	LinearAllocator linearAllocator(buffer, size);
 
 	mSymbolTable = new (linearAllocator.Alloc<SymbolTable>()) SymbolTable();
+
+	PopulateSymbolTable(translationUnitList, linearAllocator);
 }
 
 
-void SemanticAnalyzer::PopulateSymbolTable(Allocator &allocator)
+void SemanticAnalyzer::PopulateSymbolTable(TranslationUnit *translationUnitList, Allocator &allocator)
 {
-	// Add all global symbols to the symbol table first, since they can be used prior to their declaration.
+	// Add all type declarations to the symbol table first, since they can be used prior to their declaration
+	// in other typed declarations (e.g. function return type and parameter types).
+	TopLevelSymbolPopulator typePopulator(mErrorBuffer, allocator, *mSymbolTable);
+	typePopulator.Populate(translationUnitList);
+
+	if (mErrorBuffer.HasErrors())
+	{
+		return;
+	}
 }
 
 }

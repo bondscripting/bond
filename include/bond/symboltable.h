@@ -15,25 +15,29 @@ public:
 	enum Type
 	{
 		TYPE_NAMESPACE,
-		TYPE_LOCALSCOPE,
 		TYPE_STRUCT,
 		TYPE_ENUM,
+		//TYPE_LOCALSCOPE,
 		TYPE_VALUE,
-		TYPE_VARIABLE,
-		TYPE_FUNCTION,
+		//TYPE_VARIABLE,
+		//TYPE_FUNCTION,
 	};
 
-	SymbolBase(const Token *name, const ParseNode *definition):
-		mName(name),
-		mDefinition(definition)
-	{}
-
+	Type GetType() const { return mType; }
 	const Token *GetName() const { return mName; }
 	const ParseNode *GetDefinition() const { return mDefinition; }
 
 	bool Matches(const Token *name) const;
 
+protected:
+	SymbolBase(Type type, const Token *name, const ParseNode *definition):
+		mType(type),
+		mName(name),
+		mDefinition(definition)
+	{}
+
 private:
+	Type mType;
 	const Token *mName;
 	const ParseNode *mDefinition;
 	bu32_t mQualifiedHash;
@@ -43,8 +47,8 @@ private:
 class Symbol: public SymbolBase
 {
 public:
-	Symbol(const Token *name, const ParseNode *definition):
-		SymbolBase(name, definition),
+	Symbol(Type type, const Token *name, const ParseNode *definition):
+		SymbolBase(type, name, definition),
 		mNext(0)
 	{}
 
@@ -59,8 +63,8 @@ private:
 class Scope: public SymbolBase
 {
 public:
-	Scope(const Token *name, const ParseNode *definition, Scope *parent):
-		SymbolBase(name, definition),
+	Scope(Type type, const Token *name, const ParseNode *definition, Scope *parent):
+		SymbolBase(type, name, definition),
 		mNext(0),
 		mParent(parent),
 		mScopeList(0),
@@ -89,7 +93,7 @@ private:
 class SymbolTable
 {
 public:
-	SymbolTable(): mGlobalScope(0, 0, 0) {}
+	SymbolTable(): mGlobalScope(SymbolBase::TYPE_NAMESPACE, 0, 0, 0) {}
 
 	Scope *GetGlobalScope() { return &mGlobalScope; }
 
