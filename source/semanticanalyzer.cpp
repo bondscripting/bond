@@ -6,7 +6,6 @@
 #include "bond/semanticanalyzer.h"
 #include "bond/symboltable.h"
 #include <new>
-#include <string.h>
 
 namespace Bond
 {
@@ -22,19 +21,26 @@ public:
 protected:
 	SymbolTablePopulator(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
 		mErrorBuffer(errorBuffer),
-		mAllocator(allocator),
-		mSymbolTable(symbolTable)
+		mSymbolTable(symbolTable),
+		mAllocator(allocator)
 	{}
 
 	Symbol *InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Symbol *GetOrInsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Symbol *CreateSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition);
 	Scope *InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Scope *GetOrInsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Scope *CreateScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
 
 	typedef AutoStack<Scope *> ScopeStack;
 
 	ScopeStack mScopeStack;
 	ParseErrorBuffer &mErrorBuffer;
-	Allocator &mAllocator;
 	SymbolTable &mSymbolTable;
+
+private:
+
+	Allocator &mAllocator;
 };
 
 
@@ -42,24 +48,41 @@ Symbol *SymbolTablePopulator::InsertSymbol(SymbolBase::Type type, const Token *n
 {
 	Symbol *symbol = parent->FindSymbol(name);
 
+	if (symbol != 0)
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
+	}
+
+	symbol = CreateSymbol(type, name, definition);
+	parent->InsertSymbol(symbol);
+
+	return symbol;
+}
+
+
+Symbol *SymbolTablePopulator::GetOrInsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	Symbol *symbol = parent->FindSymbol(name);
+
+	if ((symbol != 0) && (symbol->GetType() != type))
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
+		symbol = 0;
+	}
+
 	if (symbol == 0)
 	{
-		symbol = new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition);
+		symbol = CreateSymbol(type, name, definition);
 		parent->InsertSymbol(symbol);
-	}
-	else
-	{
-		if (strcmp(name->GetText(), symbol->GetName()->GetText()) == 0)
-		{
-			mErrorBuffer.PushError(ParseError::HASH_COLLISION, name, symbol->GetName());
-		}
-		else
-		{
-			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
-		}
 	}
 
 	return symbol;
+}
+
+
+Symbol *SymbolTablePopulator::CreateSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition)
+{
+	return new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition);
 }
 
 
@@ -67,24 +90,41 @@ Scope *SymbolTablePopulator::InsertScope(SymbolBase::Type type, const Token *nam
 {
 	Scope *scope = parent->FindScope(name);
 
+	if (scope != 0)
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
+	}
+
+	scope = CreateScope(type, name, definition, scope);
+	parent->InsertScope(scope);
+
+	return scope;
+}
+
+
+Scope *SymbolTablePopulator::GetOrInsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	Scope *scope = parent->FindScope(name);
+
+	if ((scope != 0) && (scope->GetType() != type))
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
+		scope = 0;
+	}
+
 	if (scope == 0)
 	{
-		scope = new (mAllocator.Alloc<Scope>()) Scope(type, name, definition, parent);
+		scope = CreateScope(type, name, definition, scope);
 		parent->InsertScope(scope);
-	}
-	else
-	{
-		if (strcmp(name->GetText(), scope->GetName()->GetText()) == 0)
-		{
-			mErrorBuffer.PushError(ParseError::HASH_COLLISION, name, scope->GetName());
-		}
-		else
-		{
-			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
-		}
 	}
 
 	return scope;
+}
+
+
+Scope *SymbolTablePopulator::CreateScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	return new (mAllocator.Alloc<Scope>()) Scope(type, name, definition, parent);
 }
 
 
@@ -121,24 +161,9 @@ void TopLevelSymbolPopulator::Populate(TranslationUnit *translationUnitList)
 void TopLevelSymbolPopulator::VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition)
 {
 	const Token *name = namespaceDefinition->GetName();
-
-	Scope *parentScope = mScopeStack.GetTop();
-	Scope *currentScope = parentScope->FindScope(name);
-
-	if (currentScope == 0)
-	{
-		currentScope = new (mAllocator.Alloc<Scope>()) Scope(SymbolBase::TYPE_NAMESPACE, name, namespaceDefinition, parentScope);
-		parentScope->InsertScope(currentScope);
-	}
-	else
-	{
-		if (currentScope->GetType() != SymbolBase::TYPE_NAMESPACE)
-		{
-			mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, currentScope->GetName());
-		}
-	}
-
-	ScopeStack::Element currentScopeElement(mScopeStack, currentScope);
+	Scope *parent = mScopeStack.GetTop();
+	Scope *scope = GetOrInsertScope(SymbolBase::TYPE_NAMESPACE, name, namespaceDefinition, parent);
+	ScopeStack::Element stackElement(mScopeStack, scope);
 	ParseNodeTraverser::VisitNamespaceDefinition(namespaceDefinition);
 }
 
@@ -240,7 +265,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	counter.CountList(translationUnitList);
 	const ParseNodeCount &nodeCount = counter.GetCount();
 
-	const int symbolCount = 0;
+	const int symbolCount =
 		(nodeCount.mEnumerator * 2) +
 		nodeCount.mFunctionDefinition +
 		nodeCount.mParameter +

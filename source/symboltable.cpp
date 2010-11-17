@@ -1,12 +1,14 @@
 #include "bond/symboltable.h"
 #include "bond/token.h"
+#include <string.h>
 
 namespace Bond
 {
 
 bool SymbolBase::Matches(const Token *name) const
 {
-	return name->GetHashCode() == mName->GetHashCode();
+	return (name->GetHashCode() == mName->GetHashCode()) &&
+		(strcmp(name->GetText(), mName->GetText()) == 0);
 }
 
 
