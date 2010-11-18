@@ -25,6 +25,8 @@ public:
 	bool HasErrors() const { return mErrorBuffer.HasErrors(); }
 	const ParseErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
+	const SymbolTable *GetSymbolTable() const { return mSymbolTable; }
+
 private:
 	void PopulateSymbolTable(TranslationUnit *translationUnitList, Allocator &allocator);
 

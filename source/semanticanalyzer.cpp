@@ -25,12 +25,13 @@ protected:
 		mAllocator(allocator)
 	{}
 
-	Symbol *InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
-	Symbol *GetOrInsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
-	Symbol *CreateSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition);
 	Scope *InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
 	Scope *GetOrInsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
 	Scope *CreateScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+
+	Symbol *InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Symbol *GetOrInsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent);
+	Symbol *CreateSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition);
 
 	typedef AutoStack<Scope *> ScopeStack;
 
@@ -42,6 +43,48 @@ private:
 
 	Allocator &mAllocator;
 };
+
+
+Scope *SymbolTablePopulator::InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	Scope *scope = parent->FindScope(name);
+
+	if (scope != 0)
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
+	}
+
+	scope = CreateScope(type, name, definition, parent);
+	parent->InsertScope(scope);
+
+	return scope;
+}
+
+
+Scope *SymbolTablePopulator::GetOrInsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	Scope *scope = parent->FindScope(name);
+
+	if ((scope != 0) && (scope->GetType() != type))
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
+		scope = 0;
+	}
+
+	if (scope == 0)
+	{
+		scope = CreateScope(type, name, definition, parent);
+		parent->InsertScope(scope);
+	}
+
+	return scope;
+}
+
+
+Scope *SymbolTablePopulator::CreateScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
+{
+	return new (mAllocator.Alloc<Scope>()) Scope(type, name, definition, parent);
+}
 
 
 Symbol *SymbolTablePopulator::InsertSymbol(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
@@ -86,48 +129,6 @@ Symbol *SymbolTablePopulator::CreateSymbol(SymbolBase::Type type, const Token *n
 }
 
 
-Scope *SymbolTablePopulator::InsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
-{
-	Scope *scope = parent->FindScope(name);
-
-	if (scope != 0)
-	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
-	}
-
-	scope = CreateScope(type, name, definition, scope);
-	parent->InsertScope(scope);
-
-	return scope;
-}
-
-
-Scope *SymbolTablePopulator::GetOrInsertScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
-{
-	Scope *scope = parent->FindScope(name);
-
-	if ((scope != 0) && (scope->GetType() != type))
-	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, scope->GetName());
-		scope = 0;
-	}
-
-	if (scope == 0)
-	{
-		scope = CreateScope(type, name, definition, scope);
-		parent->InsertScope(scope);
-	}
-
-	return scope;
-}
-
-
-Scope *SymbolTablePopulator::CreateScope(SymbolBase::Type type, const Token *name, const ParseNode *definition, Scope *parent)
-{
-	return new (mAllocator.Alloc<Scope>()) Scope(type, name, definition, parent);
-}
-
-
 //------------------------------------------------------------------------------
 // TopLevelSymbolPopulator
 //------------------------------------------------------------------------------
@@ -147,7 +148,7 @@ public:
 	virtual void VisitEnumerator(Enumerator *enumerator);
 	virtual void VisitStructDeclaration(StructDeclaration *structDeclaration);
 	virtual void VisitFunctionDefinition(FunctionDefinition *functionDefinition) {}
-	virtual void VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement);
+	virtual void VisitNamedInitializer(NamedInitializer *namedInitializer);
 };
 
 
@@ -196,13 +197,11 @@ void TopLevelSymbolPopulator::VisitStructDeclaration(StructDeclaration *structDe
 }
 
 
-void TopLevelSymbolPopulator::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
+void TopLevelSymbolPopulator::VisitNamedInitializer(NamedInitializer *namedInitializer)
 {
-	/*
-	const Token *name = declarativeStatement->GetName();
+	const Token *name = namedInitializer->GetName();
 	Scope *parent = mScopeStack.GetTop();
-	InsertSymbol(SymbolBase::TYPE_VALUE, name, enumerator, parent);
-	*/
+	InsertSymbol(SymbolBase::TYPE_VALUE, name, namedInitializer, parent);
 }
 
 

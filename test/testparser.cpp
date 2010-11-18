@@ -7,7 +7,7 @@ DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mNamespaceDefinition = 3;
+	expectedCount.mNamespaceDefinition = 4;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 

@@ -6,4 +6,7 @@ namespace OuterSpace
 	namespace SecondInnerSpace
 	{
 	}
+	namespace FirstInnerSpace
+	{
+	}
 }

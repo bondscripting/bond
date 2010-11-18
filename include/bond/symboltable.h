@@ -27,6 +27,7 @@ public:
 	const Token *GetName() const { return mName; }
 	const ParseNode *GetDefinition() const { return mDefinition; }
 
+	bool Matches(bu32_t hashCode, const char *name) const;
 	bool Matches(const Token *name) const;
 
 protected:
@@ -53,6 +54,7 @@ public:
 	{}
 
 	Symbol *GetNext() { return mNext; }
+	const Symbol *GetNext() const { return mNext; }
 	void SetNext(Symbol *next) { mNext = next; }
 
 private:
@@ -72,12 +74,18 @@ public:
 	{}
 
 	Scope *GetNext() { return mNext; }
+	const Scope *GetNext() const { return mNext; }
 	void SetNext(Scope *next) { mNext = next; }
 
 	Scope *GetParent() { return mParent; }
 
+	const Scope *FindScope(const char *name) const;
 	Scope *FindScope(const Token *name);
+	const Scope *FindScope(const Token *name) const;
+
+	const Symbol *FindSymbol(const char *name) const;
 	Symbol *FindSymbol(const Token *name);
+	const Symbol *FindSymbol(const Token *name) const;
 
 	void InsertScope(Scope *scope);
 	void InsertSymbol(Symbol *symbol);
@@ -96,6 +104,7 @@ public:
 	SymbolTable(): mGlobalScope(SymbolBase::TYPE_NAMESPACE, 0, 0, 0) {}
 
 	Scope *GetGlobalScope() { return &mGlobalScope; }
+	const Scope *GetGlobalScope() const { return &mGlobalScope; }
 
 private:
 	Scope mGlobalScope;

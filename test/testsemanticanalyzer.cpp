@@ -1,33 +1,51 @@
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
 
+#include "bond/symboltable.h"
+
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+
+	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
+	const Bond::Scope *globalScope = table->GetGlobalScope();
+
+	const Bond::Scope *outerSpace = globalScope->FindScope("OuterSpace");
+	ASSERT_MESSAGE(outerSpace != 0, "Failed to find scope 'OuterSpace'.");
+	ASSERT_MESSAGE(outerSpace->GetType() == Bond::SymbolBase::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
+
+	const Bond::Scope *firstInnerSpace = outerSpace->FindScope("FirstInnerSpace");
+	ASSERT_MESSAGE(firstInnerSpace != 0, "Failed to find scope 'FirstInnerSpace'.");
+
+	const Bond::Scope *secondInnerSpace = outerSpace->FindScope("SecondInnerSpace");
+	ASSERT_MESSAGE(secondInnerSpace != 0, "Failed to find scope 'SecondInnerSpace'.");
+
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+
+	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
+	const Bond::Scope *globalScope = table->GetGlobalScope();
+
+	const Bond::Scope *empty = globalScope->FindScope("Empty");
+	ASSERT_MESSAGE(empty != 0, "Failed to find scope 'Empty'.");
+	ASSERT_MESSAGE(empty->GetType() == Bond::SymbolBase::TYPE_ENUM, "Expected 'Empty' to be an enum.");
+
+	const Bond::Symbol *eigth = globalScope->FindSymbol("EIGTH");
+	ASSERT_MESSAGE(eigth != 0, "Failed to find scope 'EIGTH'.");
+	ASSERT_MESSAGE(eigth->GetType() == Bond::SymbolBase::TYPE_VALUE, "Expected 'EIGTH' to be a value.");
 
 	return true;
 }
 
 /*
-DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
-{
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
-
-	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
-
-	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mEnumDeclaration = 4;
-	expectedCount.mEnumerator = 9;
-
-	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
-
-	return true;
-}
-
-
 DEFINE_SEMANTICANALYZER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -45,7 +63,7 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDeclarations, "scripts/parser_FunctionDecla
 
 DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -63,7 +81,7 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 
 DEFINE_SEMANTICANALYZER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_DeclarativeAndExpressionStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -80,7 +98,7 @@ DEFINE_SEMANTICANALYZER_TEST(DeclarativeAndExpressionStatements, "scripts/parser
 
 DEFINE_SEMANTICANALYZER_TEST(Initializers, "scripts/parser_Initializers.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -97,7 +115,7 @@ DEFINE_SEMANTICANALYZER_TEST(Initializers, "scripts/parser_Initializers.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -114,7 +132,7 @@ DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -131,7 +149,7 @@ DEFINE_SEMANTICANALYZER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -150,7 +168,7 @@ DEFINE_SEMANTICANALYZER_TEST(WhileStatements, "scripts/parser_WhileStatements.bo
 
 DEFINE_SEMANTICANALYZER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -170,7 +188,7 @@ DEFINE_SEMANTICANALYZER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -188,7 +206,7 @@ DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.
 
 DEFINE_SEMANTICANALYZER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -225,7 +243,7 @@ DEFINE_SEMANTICANALYZER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -244,8 +262,8 @@ DEFINE_SEMANTICANALYZER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
-	/*
   TEST_ITEM(Enums)                              \
+	/*
   TEST_ITEM(FunctionDeclarations)               \
   TEST_ITEM(FunctionDefinitions)                \
   TEST_ITEM(DeclarativeAndExpressionStatements) \
