@@ -30,23 +30,26 @@ void ParseError::Print(TextWriter &writer) const
 
 	writer.Write("(%d, %d): %s ", pos.line, pos.column, GetDescription());
 
-	if (mType == ParseError::UNEXPECTED_TOKEN)
+	switch (mType)
 	{
-		writer.Write("'%s' before '%s'.", mExpected, mContext->GetText());
-	}
-	else if (mType == ParseError::HASH_COLLISION)
-	{
-		const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
-		writer.Write("'%s' hash code collided with '%s' on line '%d'.", mContext->GetText(), mAltContext->GetText(), previousPos.line);
-	}
-	else if (mType == ParseError::DUPLICATE_SYMBOL)
-	{
-		const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
-		writer.Write("'%s' previously defined on line '%d'.", mContext->GetText(), previousPos.line);
-	}
-	else
-	{
-		writer.Write("near '%s'.", mContext->GetText());
+		case ParseError::UNEXPECTED_TOKEN:
+		{
+			writer.Write("'%s' before '%s'.", mExpected, mContext->GetText());
+		}
+		break;
+
+		case ParseError::DUPLICATE_SYMBOL:
+		case ParseError::DUPLICATE_FUNCTION_DEFINITION:
+		case ParseError::FUNCTION_PROTOTYPE_MISMATCH:
+		{
+			const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
+			writer.Write("'%s' previously defined on line '%d'.", mContext->GetText(), previousPos.line);
+		}
+
+		default:
+		{
+			writer.Write("near '%s'.", mContext->GetText());
+		}
 	}
 }
 

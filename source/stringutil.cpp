@@ -1,8 +1,6 @@
-#include "bond/util.h"
+#include "bond/stringutil.h"
 
 namespace Bond
-{
-namespace Util
 {
 
 bu32_t StringHash(const char *str, bu32_t seed)
@@ -18,5 +16,4 @@ bu32_t StringHash(const char *str, bu32_t seed)
 	return hash;
 }
 
-}
 }

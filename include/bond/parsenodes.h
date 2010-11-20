@@ -166,6 +166,8 @@ public:
 	CompoundStatement *GetBody() { return mBody; }
 	const CompoundStatement *GetBody() const { return mBody; }
 
+	bool IsDeclaration() const { return mBody == 0; }
+
 private:
 	FunctionPrototype *mPrototype;
 	CompoundStatement *mBody;

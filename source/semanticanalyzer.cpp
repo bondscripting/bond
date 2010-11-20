@@ -2,6 +2,7 @@
 #include "bond/linearallocator.h"
 #include "bond/parsenodecounter.h"
 #include "bond/parsenodes.h"
+#include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
 #include "bond/semanticanalyzer.h"
 #include "bond/symboltable.h"
@@ -153,15 +154,38 @@ void TopLevelSymbolPopulator::Visit(StructDeclaration *structDeclaration)
 
 void TopLevelSymbolPopulator::Visit(FunctionDefinition *functionDefinition)
 {
-	const Token *name = functionDefinition->GetPrototype()->GetName();
+	const FunctionPrototype *currentPrototype = functionDefinition->GetPrototype();
+	const Token *name = currentPrototype->GetName();
 	Symbol *parent = mScopeStack.GetTop();
-	InsertSymbol(Symbol::TYPE_FUNCTION, name, functionDefinition, parent);
 
-	// TODO:
-	// - Test if function already exists.
-	// - Verify that prototypes match.
-	// - Verify that both are not definitions.
-	// - Replace declaration with definition.
+	Symbol *symbol = parent->FindSymbol(name);
+	if (symbol != 0)
+	{
+		const FunctionDefinition *previousFunction = CastNode<FunctionDefinition>(symbol->GetDefinition());
+		const FunctionPrototype *previousPrototype = previousFunction->GetPrototype();
+
+		if (!TestMatchingFunctionPrototypes(currentPrototype, previousPrototype))
+		{
+			mErrorBuffer.PushError(ParseError::FUNCTION_PROTOTYPE_MISMATCH, name, symbol->GetName());
+		}
+		else if (!functionDefinition->IsDeclaration())
+		{
+			// We've found a definition for a previously declared function. Replace the declaration.
+			if (previousFunction->IsDeclaration())
+			{
+				symbol->SetDefinition(functionDefinition);
+			}
+			// We have two definitions for the same function.
+			else
+			{
+				mErrorBuffer.PushError(ParseError::DUPLICATE_FUNCTION_DEFINITION, name, symbol->GetName());
+			}
+		}
+	}
+	else
+	{
+		InsertSymbol(Symbol::TYPE_FUNCTION, name, functionDefinition, parent);
+	}
 }
 
 
@@ -235,6 +259,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	const int symbolCount =
 		nodeCount.mNamespaceDefinition +
 		nodeCount.mEnumDeclaration +
+		// Enumerators are added to the enum and to the parent scope of the enum.
 		(nodeCount.mEnumerator * 2) +
 		nodeCount.mStructDeclaration +
 		nodeCount.mFunctionDefinition +

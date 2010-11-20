@@ -34,7 +34,9 @@ public:
 
 	Type GetType() const { return mType; }
 	const Token *GetName() const { return mName; }
+
 	const ParseNode *GetDefinition() const { return mDefinition; }
+	void SetDefinition(const ParseNode *definition) { mDefinition = definition; }
 
 	Symbol *GetNext() { return mNext; }
 	const Symbol *GetNext() const { return mNext; }

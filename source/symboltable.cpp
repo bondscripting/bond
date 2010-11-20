@@ -1,6 +1,6 @@
 #include "bond/symboltable.h"
 #include "bond/token.h"
-#include "bond/util.h"
+#include "bond/stringutil.h"
 #include <string.h>
 
 namespace Bond
@@ -8,7 +8,7 @@ namespace Bond
 
 const Symbol *Symbol::FindSymbol(const char *name) const
 {
-	const bu32_t hashCode = Util::StringHash(name);
+	const bu32_t hashCode = StringHash(name);
 	const Symbol *symbol = mSymbolList;
 
 	while ((symbol != 0) && !symbol->Matches(hashCode, name))

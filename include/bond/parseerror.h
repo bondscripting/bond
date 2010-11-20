@@ -12,8 +12,9 @@
   BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION, "Function call in constant expression")            \
   BOND_PARSE_ERROR_ITEM(FUNCTION_DEFINITION_NOT_ALLOWED, "Function definition not allowed")                   \
   BOND_PARSE_ERROR_ITEM(INITIALIZER_NOT_ALLOWED, "Initializer not allowed")                                   \
-  BOND_PARSE_ERROR_ITEM(HASH_COLLISION, "Hash collision")                                                     \
   BOND_PARSE_ERROR_ITEM(DUPLICATE_SYMBOL, "Duplicate symbol")                                                 \
+  BOND_PARSE_ERROR_ITEM(DUPLICATE_FUNCTION_DEFINITION, "Duplicate function definition")                       \
+  BOND_PARSE_ERROR_ITEM(FUNCTION_PROTOTYPE_MISMATCH, "Mismatching function prototype")                        \
 
 
 namespace Bond

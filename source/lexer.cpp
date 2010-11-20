@@ -1,5 +1,5 @@
 #include "bond/lexer.h"
-#include "bond/util.h"
+#include "bond/stringutil.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -1044,7 +1044,7 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	else
 	{
 		// Compute and cache the identifier's hash code.
-		const bu32_t hash = Util::StringHash(token.GetText());
+		const bu32_t hash = StringHash(token.GetText());
 		token.SetHashCode(hash);
 	}
 }
