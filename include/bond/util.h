@@ -2,6 +2,7 @@
 #define BOND_UTIL_H
 
 #include "bond/conf.h"
+#include "bond/parsenodes.h"
 
 namespace Bond
 {

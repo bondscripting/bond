@@ -44,8 +44,8 @@ public:
 	explicit TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}
 	virtual ~TranslationUnit() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTranslationUnit(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTranslationUnit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
@@ -65,8 +65,8 @@ public:
 
 	virtual ~NamespaceDefinition() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamespaceDefinition(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitNamespaceDefinition(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -89,8 +89,8 @@ public:
 
 	virtual ~EnumDeclaration() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumDeclaration(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitEnumDeclaration(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -109,8 +109,8 @@ public:
 	Enumerator(const Token *name, Expression *value): mName(name), mValue(value) {}
 	virtual ~Enumerator() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitEnumerator(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitEnumerator(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -133,8 +133,8 @@ public:
 
 	virtual ~StructDeclaration() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitStructDeclaration(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitStructDeclaration(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -157,8 +157,8 @@ public:
 
 	virtual ~FunctionDefinition() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionDefinition(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionDefinition(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	FunctionPrototype *GetPrototype() { return mPrototype; }
 	const FunctionPrototype *GetPrototype() const { return mPrototype; }
@@ -183,8 +183,8 @@ public:
 
 	virtual ~FunctionPrototype() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionPrototype(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionPrototype(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -207,8 +207,8 @@ public:
 	Parameter(const Token *name, TypeDescriptor *typeDescriptor): mName(name), mTypeDescriptor(typeDescriptor) {}
 	virtual ~Parameter() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitParameter(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitParameter(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -258,8 +258,8 @@ public:
 
 	virtual ~TypeDescriptor() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeDescriptor(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTypeDescriptor(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	TypeSpecifier *GetTypeSpecifier() { return mSpecifier; }
 	const TypeSpecifier *GetTypeSpecifier() const { return mSpecifier; }
@@ -289,8 +289,8 @@ public:
 	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
 	virtual ~TypeSpecifier() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitTypeSpecifier(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitTypeSpecifier(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetPrimitiveType() const { return mPrimitiveType; }
 
@@ -313,8 +313,8 @@ public:
 
 	virtual ~NamedInitializer() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitNamedInitializer(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitNamedInitializer(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -342,8 +342,8 @@ public:
 
 	virtual ~Initializer() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitInitializer(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitInitializer(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
@@ -363,8 +363,8 @@ public:
 	explicit QualifiedIdentifier(const Token *name): mName(name) {}
 	virtual ~QualifiedIdentifier() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitQualifiedIdentifier(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitQualifiedIdentifier(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
 
@@ -379,8 +379,8 @@ public:
 	explicit CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
 	virtual ~CompoundStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCompoundStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitCompoundStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	ListParseNode *GetStatementList() { return mStatementList; }
 	const ListParseNode *GetStatementList() const { return mStatementList; }
@@ -401,8 +401,8 @@ public:
 
 	virtual ~IfStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIfStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitIfStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -430,8 +430,8 @@ public:
 
 	virtual ~SwitchStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSwitchStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitSwitchStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetControl() { return mControl; }
 	const Expression *GetControl() const { return mControl; }
@@ -455,8 +455,8 @@ public:
 
 	virtual ~SwitchSection() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSwitchSection(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitSwitchSection(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	SwitchLabel *GetLabelList() { return mLabelList; }
 	const SwitchLabel *GetLabelList() const { return mLabelList; }
@@ -493,8 +493,8 @@ public:
 
 	virtual ~SwitchLabel() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSwitchLabel(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitSwitchLabel(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetLabel() const { return mLabel; }
 
@@ -527,8 +527,8 @@ public:
 
 	virtual ~WhileStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitWhileStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitWhileStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -561,8 +561,8 @@ public:
 
 	virtual ~ForStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitForStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitForStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	ParseNode *GetInitializer() { return mInitializer; }
 	const ParseNode *GetInitializer() const { return mInitializer; }
@@ -590,8 +590,8 @@ public:
 	JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
 	virtual ~JumpStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitJumpStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitJumpStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -614,8 +614,8 @@ public:
 
 	virtual ~DeclarativeStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitDeclarativeStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitDeclarativeStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -635,8 +635,8 @@ public:
 	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
 	virtual ~ExpressionStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitExpressionStatement(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitExpressionStatement(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
@@ -667,8 +667,8 @@ public:
 
 	virtual ~ConditionalExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConditionalExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitConditionalExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -697,8 +697,8 @@ public:
 
 	virtual ~BinaryExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitBinaryExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitBinaryExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -721,8 +721,8 @@ public:
 	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
 	virtual ~UnaryExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitUnaryExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitUnaryExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -741,8 +741,8 @@ public:
 	PostfixExpression(const Token *op, Expression *lhs): mOperator(op), mLhs(lhs) {}
 	virtual ~PostfixExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitPostfixExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitPostfixExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -766,8 +766,8 @@ public:
 
 	virtual ~MemberExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitMemberExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitMemberExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetOperator() const { return mOperator; }
 	const Token *GetMemberName() const { return mMemberName; }
@@ -788,8 +788,8 @@ public:
 	ArraySubscriptExpression(Expression *lhs, Expression *index): mLhs(lhs), mIndex(index) {}
 	virtual ~ArraySubscriptExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitArraySubscriptExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitArraySubscriptExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
@@ -809,8 +809,8 @@ public:
 	FunctionCallExpression(Expression *lhs, Expression *argumentList): mLhs(lhs), mArgumentList(argumentList) {}
 	virtual ~FunctionCallExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitFunctionCallExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitFunctionCallExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
@@ -834,8 +834,8 @@ public:
 
 	virtual ~CastExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitCastExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitCastExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -856,8 +856,8 @@ public:
 	explicit SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
 	virtual ~SizeofExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitSizeofExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitSizeofExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -877,8 +877,8 @@ public:
 	ConstantExpression(const Token *value): mValue(value) {}
 	virtual ~ConstantExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitConstantExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitConstantExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetValue() const { return mValue; }
 
@@ -893,8 +893,8 @@ public:
 	explicit IdentifierExpression(QualifiedIdentifier *identifier): mIdentifier(identifier) {}
 	virtual ~IdentifierExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.VisitIdentifierExpression(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.VisitIdentifierExpression(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }

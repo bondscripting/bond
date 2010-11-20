@@ -29,57 +29,57 @@ void ParseNodeTraverser::TraverseList(ListParseNode *listNode)
 }
 
 
-void ParseNodeTraverser::VisitTranslationUnit(TranslationUnit *translationUnit)
+void ParseNodeTraverser::Visit(TranslationUnit *translationUnit)
 {
 	TraverseList(translationUnit->GetExternalDeclarationList());
 }
 
 
-void ParseNodeTraverser::VisitNamespaceDefinition(NamespaceDefinition *namespaceDefinition)
+void ParseNodeTraverser::Visit(NamespaceDefinition *namespaceDefinition)
 {
 	TraverseList(namespaceDefinition->GetExternalDeclarationList());
 }
 
 
-void ParseNodeTraverser::VisitEnumDeclaration(EnumDeclaration *enumDeclaration)
+void ParseNodeTraverser::Visit(EnumDeclaration *enumDeclaration)
 {
 	TraverseList(enumDeclaration->GetEnumeratorList());
 }
 
 
-void ParseNodeTraverser::VisitEnumerator(Enumerator *enumerator)
+void ParseNodeTraverser::Visit(Enumerator *enumerator)
 {
 	Traverse(enumerator->GetValue());
 }
 
 
-void ParseNodeTraverser::VisitStructDeclaration(StructDeclaration *structDeclaration)
+void ParseNodeTraverser::Visit(StructDeclaration *structDeclaration)
 {
 	TraverseList(structDeclaration->GetMemberList());
 }
 
 
-void ParseNodeTraverser::VisitFunctionDefinition(FunctionDefinition *functionDefinition)
+void ParseNodeTraverser::Visit(FunctionDefinition *functionDefinition)
 {
 	Traverse(functionDefinition->GetPrototype());
 	Traverse(functionDefinition->GetBody());
 }
 
 
-void ParseNodeTraverser::VisitFunctionPrototype(FunctionPrototype *functionPrototype)
+void ParseNodeTraverser::Visit(FunctionPrototype *functionPrototype)
 {
 	Traverse(functionPrototype->GetReturnType());
 	TraverseList(functionPrototype->GetParameterList());
 }
 
 
-void ParseNodeTraverser::VisitParameter(Parameter *parameter)
+void ParseNodeTraverser::Visit(Parameter *parameter)
 {
 	Traverse(parameter->GetTypeDescriptor());
 }
 
 
-void ParseNodeTraverser::VisitTypeDescriptor(TypeDescriptor *typeDescriptor)
+void ParseNodeTraverser::Visit(TypeDescriptor *typeDescriptor)
 {
 	Traverse(typeDescriptor->GetTypeSpecifier());
 	Traverse(typeDescriptor->GetParent());
@@ -87,32 +87,32 @@ void ParseNodeTraverser::VisitTypeDescriptor(TypeDescriptor *typeDescriptor)
 }
 
 
-void ParseNodeTraverser::VisitTypeSpecifier(TypeSpecifier *typeSpecifier)
+void ParseNodeTraverser::Visit(TypeSpecifier *typeSpecifier)
 {
 	TraverseList(typeSpecifier->GetIdentifier());
 }
 
 
-void ParseNodeTraverser::VisitNamedInitializer(NamedInitializer *namedInitializer)
+void ParseNodeTraverser::Visit(NamedInitializer *namedInitializer)
 {
 	Traverse(namedInitializer->GetInitializer());
 }
 
 
-void ParseNodeTraverser::VisitInitializer(Initializer *initializer)
+void ParseNodeTraverser::Visit(Initializer *initializer)
 {
 	Traverse(initializer->GetExpression());
 	TraverseList(initializer->GetInitializerList());
 }
 
 
-void ParseNodeTraverser::VisitCompoundStatement(CompoundStatement *compoundStatement)
+void ParseNodeTraverser::Visit(CompoundStatement *compoundStatement)
 {
 	TraverseList(compoundStatement->GetStatementList());
 }
 
 
-void ParseNodeTraverser::VisitIfStatement(IfStatement *ifStatement)
+void ParseNodeTraverser::Visit(IfStatement *ifStatement)
 {
 	Traverse(ifStatement->GetCondition());
 	Traverse(ifStatement->GetThenStatement());
@@ -120,34 +120,34 @@ void ParseNodeTraverser::VisitIfStatement(IfStatement *ifStatement)
 }
 
 
-void ParseNodeTraverser::VisitSwitchStatement(SwitchStatement *switchStatement)
+void ParseNodeTraverser::Visit(SwitchStatement *switchStatement)
 {
 	Traverse(switchStatement->GetControl());
 	TraverseList(switchStatement->GetSectionList());
 }
 
 
-void ParseNodeTraverser::VisitSwitchSection(SwitchSection *switchSection)
+void ParseNodeTraverser::Visit(SwitchSection *switchSection)
 {
 	TraverseList(switchSection->GetLabelList());
 	TraverseList(switchSection->GetStatementList());
 }
 
 
-void ParseNodeTraverser::VisitSwitchLabel(SwitchLabel *switchLabel)
+void ParseNodeTraverser::Visit(SwitchLabel *switchLabel)
 {
 	Traverse(switchLabel->GetExpression());
 }
 
 
-void ParseNodeTraverser::VisitWhileStatement(WhileStatement *whileStatement)
+void ParseNodeTraverser::Visit(WhileStatement *whileStatement)
 {
 	Traverse(whileStatement->GetCondition());
 	Traverse(whileStatement->GetBody());
 }
 
 
-void ParseNodeTraverser::VisitForStatement(ForStatement *forStatement)
+void ParseNodeTraverser::Visit(ForStatement *forStatement)
 {
 	Traverse(forStatement->GetInitializer());
 	Traverse(forStatement->GetCondition());
@@ -156,26 +156,26 @@ void ParseNodeTraverser::VisitForStatement(ForStatement *forStatement)
 }
 
 
-void ParseNodeTraverser::VisitJumpStatement(JumpStatement *jumpStatement)
+void ParseNodeTraverser::Visit(JumpStatement *jumpStatement)
 {
 	Traverse(jumpStatement->GetRhs());
 }
 
 
-void ParseNodeTraverser::VisitDeclarativeStatement(DeclarativeStatement *declarativeStatement)
+void ParseNodeTraverser::Visit(DeclarativeStatement *declarativeStatement)
 {
 	Traverse(declarativeStatement->GetTypeDescriptor());
 	TraverseList(declarativeStatement->GetNamedInitializerList());
 }
 
 
-void ParseNodeTraverser::VisitExpressionStatement(ExpressionStatement *expressionStatement)
+void ParseNodeTraverser::Visit(ExpressionStatement *expressionStatement)
 {
 	Traverse(expressionStatement->GetExpression());
 }
 
 
-void ParseNodeTraverser::VisitConditionalExpression(ConditionalExpression *conditionalExpression)
+void ParseNodeTraverser::Visit(ConditionalExpression *conditionalExpression)
 {
 	Traverse(conditionalExpression->GetCondition());
 	Traverse(conditionalExpression->GetTrueExpression());
@@ -183,59 +183,59 @@ void ParseNodeTraverser::VisitConditionalExpression(ConditionalExpression *condi
 }
 
 
-void ParseNodeTraverser::VisitBinaryExpression(BinaryExpression *binaryExpression)
+void ParseNodeTraverser::Visit(BinaryExpression *binaryExpression)
 {
 	Traverse(binaryExpression->GetLhs());
 	Traverse(binaryExpression->GetRhs());
 }
 
 
-void ParseNodeTraverser::VisitUnaryExpression(UnaryExpression *unaryExpression)
+void ParseNodeTraverser::Visit(UnaryExpression *unaryExpression)
 {
 	Traverse(unaryExpression->GetRhs());
 }
 
 
-void ParseNodeTraverser::VisitPostfixExpression(PostfixExpression *postfixExpression)
+void ParseNodeTraverser::Visit(PostfixExpression *postfixExpression)
 {
 	Traverse(postfixExpression->GetLhs());
 }
 
 
-void ParseNodeTraverser::VisitMemberExpression(MemberExpression *memberExpression)
+void ParseNodeTraverser::Visit(MemberExpression *memberExpression)
 {
 	Traverse(memberExpression->GetLhs());
 }
 
 
-void ParseNodeTraverser::VisitArraySubscriptExpression(ArraySubscriptExpression *arraySubscriptExpression)
+void ParseNodeTraverser::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 {
 	Traverse(arraySubscriptExpression->GetLhs());
 	Traverse(arraySubscriptExpression->GetIndex());
 }
 
 
-void ParseNodeTraverser::VisitFunctionCallExpression(FunctionCallExpression *functionCallExpression)
+void ParseNodeTraverser::Visit(FunctionCallExpression *functionCallExpression)
 {
 	Traverse(functionCallExpression->GetLhs());
 	TraverseList(functionCallExpression->GetArgumentList());
 }
 
 
-void ParseNodeTraverser::VisitCastExpression(CastExpression *castExpression)
+void ParseNodeTraverser::Visit(CastExpression *castExpression)
 {
 	Traverse(castExpression->GetRhs());
 }
 
 
-void ParseNodeTraverser::VisitSizeofExpression(SizeofExpression *sizeofExpression)
+void ParseNodeTraverser::Visit(SizeofExpression *sizeofExpression)
 {
 	Traverse(sizeofExpression->GetTypeDescriptor());
 	Traverse(sizeofExpression->GetRhs());
 }
 
 
-void ParseNodeTraverser::VisitIdentifierExpression(IdentifierExpression *identifierExpression)
+void ParseNodeTraverser::Visit(IdentifierExpression *identifierExpression)
 {
 	TraverseList(identifierExpression->GetIdentifier());
 }
@@ -266,57 +266,57 @@ void ConstParseNodeTraverser::TraverseList(const ListParseNode *listNode)
 }
 
 
-void ConstParseNodeTraverser::VisitTranslationUnit(const TranslationUnit *translationUnit)
+void ConstParseNodeTraverser::Visit(const TranslationUnit *translationUnit)
 {
 	TraverseList(translationUnit->GetExternalDeclarationList());
 }
 
 
-void ConstParseNodeTraverser::VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition)
+void ConstParseNodeTraverser::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	TraverseList(namespaceDefinition->GetExternalDeclarationList());
 }
 
 
-void ConstParseNodeTraverser::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
+void ConstParseNodeTraverser::Visit(const EnumDeclaration *enumDeclaration)
 {
 	TraverseList(enumDeclaration->GetEnumeratorList());
 }
 
 
-void ConstParseNodeTraverser::VisitEnumerator(const Enumerator *enumerator)
+void ConstParseNodeTraverser::Visit(const Enumerator *enumerator)
 {
 	Traverse(enumerator->GetValue());
 }
 
 
-void ConstParseNodeTraverser::VisitStructDeclaration(const StructDeclaration *structDeclaration)
+void ConstParseNodeTraverser::Visit(const StructDeclaration *structDeclaration)
 {
 	TraverseList(structDeclaration->GetMemberList());
 }
 
 
-void ConstParseNodeTraverser::VisitFunctionDefinition(const FunctionDefinition *functionDefinition)
+void ConstParseNodeTraverser::Visit(const FunctionDefinition *functionDefinition)
 {
 	Traverse(functionDefinition->GetPrototype());
 	Traverse(functionDefinition->GetBody());
 }
 
 
-void ConstParseNodeTraverser::VisitFunctionPrototype(const FunctionPrototype *functionPrototype)
+void ConstParseNodeTraverser::Visit(const FunctionPrototype *functionPrototype)
 {
 	Traverse(functionPrototype->GetReturnType());
 	TraverseList(functionPrototype->GetParameterList());
 }
 
 
-void ConstParseNodeTraverser::VisitParameter(const Parameter *parameter)
+void ConstParseNodeTraverser::Visit(const Parameter *parameter)
 {
 	Traverse(parameter->GetTypeDescriptor());
 }
 
 
-void ConstParseNodeTraverser::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
+void ConstParseNodeTraverser::Visit(const TypeDescriptor *typeDescriptor)
 {
 	Traverse(typeDescriptor->GetTypeSpecifier());
 	Traverse(typeDescriptor->GetParent());
@@ -324,32 +324,32 @@ void ConstParseNodeTraverser::VisitTypeDescriptor(const TypeDescriptor *typeDesc
 }
 
 
-void ConstParseNodeTraverser::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
+void ConstParseNodeTraverser::Visit(const TypeSpecifier *typeSpecifier)
 {
 	TraverseList(typeSpecifier->GetIdentifier());
 }
 
 
-void ConstParseNodeTraverser::VisitNamedInitializer(const NamedInitializer *namedInitializer)
+void ConstParseNodeTraverser::Visit(const NamedInitializer *namedInitializer)
 {
 	Traverse(namedInitializer->GetInitializer());
 }
 
 
-void ConstParseNodeTraverser::VisitInitializer(const Initializer *initializer)
+void ConstParseNodeTraverser::Visit(const Initializer *initializer)
 {
 	Traverse(initializer->GetExpression());
 	TraverseList(initializer->GetInitializerList());
 }
 
 
-void ConstParseNodeTraverser::VisitCompoundStatement(const CompoundStatement *compoundStatement)
+void ConstParseNodeTraverser::Visit(const CompoundStatement *compoundStatement)
 {
 	TraverseList(compoundStatement->GetStatementList());
 }
 
 
-void ConstParseNodeTraverser::VisitIfStatement(const IfStatement *ifStatement)
+void ConstParseNodeTraverser::Visit(const IfStatement *ifStatement)
 {
 	Traverse(ifStatement->GetCondition());
 	Traverse(ifStatement->GetThenStatement());
@@ -357,34 +357,34 @@ void ConstParseNodeTraverser::VisitIfStatement(const IfStatement *ifStatement)
 }
 
 
-void ConstParseNodeTraverser::VisitSwitchStatement(const SwitchStatement *switchStatement)
+void ConstParseNodeTraverser::Visit(const SwitchStatement *switchStatement)
 {
 	Traverse(switchStatement->GetControl());
 	TraverseList(switchStatement->GetSectionList());
 }
 
 
-void ConstParseNodeTraverser::VisitSwitchSection(const SwitchSection *switchSection)
+void ConstParseNodeTraverser::Visit(const SwitchSection *switchSection)
 {
 	TraverseList(switchSection->GetLabelList());
 	TraverseList(switchSection->GetStatementList());
 }
 
 
-void ConstParseNodeTraverser::VisitSwitchLabel(const SwitchLabel *switchLabel)
+void ConstParseNodeTraverser::Visit(const SwitchLabel *switchLabel)
 {
 	Traverse(switchLabel->GetExpression());
 }
 
 
-void ConstParseNodeTraverser::VisitWhileStatement(const WhileStatement *whileStatement)
+void ConstParseNodeTraverser::Visit(const WhileStatement *whileStatement)
 {
 	Traverse(whileStatement->GetCondition());
 	Traverse(whileStatement->GetBody());
 }
 
 
-void ConstParseNodeTraverser::VisitForStatement(const ForStatement *forStatement)
+void ConstParseNodeTraverser::Visit(const ForStatement *forStatement)
 {
 	Traverse(forStatement->GetInitializer());
 	Traverse(forStatement->GetCondition());
@@ -393,26 +393,26 @@ void ConstParseNodeTraverser::VisitForStatement(const ForStatement *forStatement
 }
 
 
-void ConstParseNodeTraverser::VisitJumpStatement(const JumpStatement *jumpStatement)
+void ConstParseNodeTraverser::Visit(const JumpStatement *jumpStatement)
 {
 	Traverse(jumpStatement->GetRhs());
 }
 
 
-void ConstParseNodeTraverser::VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement)
+void ConstParseNodeTraverser::Visit(const DeclarativeStatement *declarativeStatement)
 {
 	Traverse(declarativeStatement->GetTypeDescriptor());
 	TraverseList(declarativeStatement->GetNamedInitializerList());
 }
 
 
-void ConstParseNodeTraverser::VisitExpressionStatement(const ExpressionStatement *expressionStatement)
+void ConstParseNodeTraverser::Visit(const ExpressionStatement *expressionStatement)
 {
 	Traverse(expressionStatement->GetExpression());
 }
 
 
-void ConstParseNodeTraverser::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
+void ConstParseNodeTraverser::Visit(const ConditionalExpression *conditionalExpression)
 {
 	Traverse(conditionalExpression->GetCondition());
 	Traverse(conditionalExpression->GetTrueExpression());
@@ -420,59 +420,59 @@ void ConstParseNodeTraverser::VisitConditionalExpression(const ConditionalExpres
 }
 
 
-void ConstParseNodeTraverser::VisitBinaryExpression(const BinaryExpression *binaryExpression)
+void ConstParseNodeTraverser::Visit(const BinaryExpression *binaryExpression)
 {
 	Traverse(binaryExpression->GetLhs());
 	Traverse(binaryExpression->GetRhs());
 }
 
 
-void ConstParseNodeTraverser::VisitUnaryExpression(const UnaryExpression *unaryExpression)
+void ConstParseNodeTraverser::Visit(const UnaryExpression *unaryExpression)
 {
 	Traverse(unaryExpression->GetRhs());
 }
 
 
-void ConstParseNodeTraverser::VisitPostfixExpression(const PostfixExpression *postfixExpression)
+void ConstParseNodeTraverser::Visit(const PostfixExpression *postfixExpression)
 {
 	Traverse(postfixExpression->GetLhs());
 }
 
 
-void ConstParseNodeTraverser::VisitMemberExpression(const MemberExpression *memberExpression)
+void ConstParseNodeTraverser::Visit(const MemberExpression *memberExpression)
 {
 	Traverse(memberExpression->GetLhs());
 }
 
 
-void ConstParseNodeTraverser::VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression)
+void ConstParseNodeTraverser::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	Traverse(arraySubscriptExpression->GetLhs());
 	Traverse(arraySubscriptExpression->GetIndex());
 }
 
 
-void ConstParseNodeTraverser::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
+void ConstParseNodeTraverser::Visit(const FunctionCallExpression *functionCallExpression)
 {
 	Traverse(functionCallExpression->GetLhs());
 	TraverseList(functionCallExpression->GetArgumentList());
 }
 
 
-void ConstParseNodeTraverser::VisitCastExpression(const CastExpression *castExpression)
+void ConstParseNodeTraverser::Visit(const CastExpression *castExpression)
 {
 	Traverse(castExpression->GetRhs());
 }
 
 
-void ConstParseNodeTraverser::VisitSizeofExpression(const SizeofExpression *sizeofExpression)
+void ConstParseNodeTraverser::Visit(const SizeofExpression *sizeofExpression)
 {
 	Traverse(sizeofExpression->GetTypeDescriptor());
 	Traverse(sizeofExpression->GetRhs());
 }
 
 
-void ConstParseNodeTraverser::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
+void ConstParseNodeTraverser::Visit(const IdentifierExpression *identifierExpression)
 {
 	TraverseList(identifierExpression->GetIdentifier());
 }

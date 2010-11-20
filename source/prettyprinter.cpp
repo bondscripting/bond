@@ -30,13 +30,13 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode)
 }
 
 
-void PrettyPrinter::VisitTranslationUnit(const TranslationUnit *translationUnit)
+void PrettyPrinter::Visit(const TranslationUnit *translationUnit)
 {
 	PrintList(translationUnit->GetExternalDeclarationList());
 }
 
 
-void PrettyPrinter::VisitNamespaceDefinition(const NamespaceDefinition *namespaceDefinition)
+void PrettyPrinter::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	Tab();
 	mWriter.Write("namespace ");
@@ -52,7 +52,7 @@ void PrettyPrinter::VisitNamespaceDefinition(const NamespaceDefinition *namespac
 }
 
 
-void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
+void PrettyPrinter::Visit(const EnumDeclaration *enumDeclaration)
 {
 	Tab();
 	mWriter.Write("enum ");
@@ -68,7 +68,7 @@ void PrettyPrinter::VisitEnumDeclaration(const EnumDeclaration *enumDeclaration)
 }
 
 
-void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
+void PrettyPrinter::Visit(const Enumerator *enumerator)
 {
 	Tab();
 	Print(enumerator->GetName());
@@ -81,7 +81,7 @@ void PrettyPrinter::VisitEnumerator(const Enumerator *enumerator)
 }
 
 
-void PrettyPrinter::VisitStructDeclaration(const StructDeclaration *structDeclaration)
+void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
 {
 	Tab();
 	mWriter.Write("struct ");
@@ -97,7 +97,7 @@ void PrettyPrinter::VisitStructDeclaration(const StructDeclaration *structDeclar
 }
 
 
-void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDefinition)
+void PrettyPrinter::Visit(const FunctionDefinition *functionDefinition)
 {
 	Tab();
 	Print(functionDefinition->GetPrototype());
@@ -115,7 +115,7 @@ void PrettyPrinter::VisitFunctionDefinition(const FunctionDefinition *functionDe
 }
 
 
-void PrettyPrinter::VisitFunctionPrototype(const FunctionPrototype *functionPrototype)
+void PrettyPrinter::Visit(const FunctionPrototype *functionPrototype)
 {
 	Print(functionPrototype->GetReturnType());
 	mWriter.Write(" ");
@@ -126,7 +126,7 @@ void PrettyPrinter::VisitFunctionPrototype(const FunctionPrototype *functionProt
 }
 
 
-void PrettyPrinter::VisitParameter(const Parameter *parameter)
+void PrettyPrinter::Visit(const Parameter *parameter)
 {
 	Print(parameter->GetTypeDescriptor());
 	mWriter.Write(" ");
@@ -134,7 +134,7 @@ void PrettyPrinter::VisitParameter(const Parameter *parameter)
 }
 
 
-void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
+void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 {
 	switch (typeDescriptor->GetVariant())
 	{
@@ -147,7 +147,7 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 			break;
 
 		case TypeDescriptor::VARIANT_POINTER:
-			VisitTypeDescriptor(typeDescriptor->GetParent());
+			Visit(typeDescriptor->GetParent());
 			mWriter.Write(" *");
 			if (typeDescriptor->IsConst())
 			{
@@ -156,7 +156,7 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 			break;
 
 		case TypeDescriptor::VARIANT_ARRAY:
-			VisitTypeDescriptor(typeDescriptor->GetParent());
+			Visit(typeDescriptor->GetParent());
 			mWriter.Write(" [");
 			Print(typeDescriptor->GetLength());
 			mWriter.Write("]");
@@ -165,7 +165,7 @@ void PrettyPrinter::VisitTypeDescriptor(const TypeDescriptor *typeDescriptor)
 }
 
 
-void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
+void PrettyPrinter::Visit(const TypeSpecifier *typeSpecifier)
 {
 	if (typeSpecifier->GetPrimitiveType() != 0)
 	{
@@ -178,7 +178,7 @@ void PrettyPrinter::VisitTypeSpecifier(const TypeSpecifier *typeSpecifier)
 }
 
 
-void PrettyPrinter::VisitNamedInitializer(const NamedInitializer *namedInitializer)
+void PrettyPrinter::Visit(const NamedInitializer *namedInitializer)
 {
 	Print(namedInitializer->GetName());
 
@@ -190,7 +190,7 @@ void PrettyPrinter::VisitNamedInitializer(const NamedInitializer *namedInitializ
 }
 
 
-void PrettyPrinter::VisitInitializer(const Initializer *initializer)
+void PrettyPrinter::Visit(const Initializer *initializer)
 {
 	if (initializer->GetExpression() != 0)
 	{
@@ -205,13 +205,13 @@ void PrettyPrinter::VisitInitializer(const Initializer *initializer)
 }
 
 
-void PrettyPrinter::VisitQualifiedIdentifier(const QualifiedIdentifier *identifier)
+void PrettyPrinter::Visit(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName());
 }
 
 
-void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStatement)
+void PrettyPrinter::Visit(const CompoundStatement *compoundStatement)
 {
 	DecrementTab();
 	Tab();
@@ -225,7 +225,7 @@ void PrettyPrinter::VisitCompoundStatement(const CompoundStatement *compoundStat
 }
 
 
-void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
+void PrettyPrinter::Visit(const IfStatement *ifStatement)
 {
 	Tab();
 	mWriter.Write("if (");
@@ -248,7 +248,7 @@ void PrettyPrinter::VisitIfStatement(const IfStatement *ifStatement)
 }
 
 
-void PrettyPrinter::VisitSwitchStatement(const SwitchStatement *switchStatement)
+void PrettyPrinter::Visit(const SwitchStatement *switchStatement)
 {
 	Tab();
 	mWriter.Write("switch (");
@@ -265,7 +265,7 @@ void PrettyPrinter::VisitSwitchStatement(const SwitchStatement *switchStatement)
 }
 
 
-void PrettyPrinter::VisitSwitchSection(const SwitchSection *switchSection)
+void PrettyPrinter::Visit(const SwitchSection *switchSection)
 {
 	PrintList(switchSection->GetLabelList());
 	IncrementTab();
@@ -274,7 +274,7 @@ void PrettyPrinter::VisitSwitchSection(const SwitchSection *switchSection)
 }
 
 
-void PrettyPrinter::VisitSwitchLabel(const SwitchLabel *switchLabel)
+void PrettyPrinter::Visit(const SwitchLabel *switchLabel)
 {
 	Tab();
 	Print(switchLabel->GetLabel());
@@ -289,7 +289,7 @@ void PrettyPrinter::VisitSwitchLabel(const SwitchLabel *switchLabel)
 }
 
 
-void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
+void PrettyPrinter::Visit(const WhileStatement *whileStatement)
 {
 	Tab();
 	if (whileStatement->GetVariant() == WhileStatement::VARIANT_DO_WHILE)
@@ -315,7 +315,7 @@ void PrettyPrinter::VisitWhileStatement(const WhileStatement *whileStatement)
 }
 
 
-void PrettyPrinter::VisitForStatement(const ForStatement *forStatement)
+void PrettyPrinter::Visit(const ForStatement *forStatement)
 {
 	Tab();
 	mWriter.Write("for (");
@@ -333,7 +333,7 @@ void PrettyPrinter::VisitForStatement(const ForStatement *forStatement)
 }
 
 
-void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
+void PrettyPrinter::Visit(const JumpStatement *jumpStatement)
 {
 	Tab();
 	const Token *op = jumpStatement->GetOperator();
@@ -351,7 +351,7 @@ void PrettyPrinter::VisitJumpStatement(const JumpStatement *jumpStatement)
 }
 
 
-void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declarativeStatement)
+void PrettyPrinter::Visit(const DeclarativeStatement *declarativeStatement)
 {
 	Tab();
 	Print(declarativeStatement->GetTypeDescriptor());
@@ -362,7 +362,7 @@ void PrettyPrinter::VisitDeclarativeStatement(const DeclarativeStatement *declar
 }
 
 
-void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressionStatement)
+void PrettyPrinter::Visit(const ExpressionStatement *expressionStatement)
 {
 	Tab();
 	if (expressionStatement->GetExpression() != 0)
@@ -374,7 +374,7 @@ void PrettyPrinter::VisitExpressionStatement(const ExpressionStatement *expressi
 }
 
 
-void PrettyPrinter::VisitConditionalExpression(const ConditionalExpression *conditionalExpression)
+void PrettyPrinter::Visit(const ConditionalExpression *conditionalExpression)
 {
 	mWriter.Write("(");
 	Print(conditionalExpression->GetCondition());
@@ -386,7 +386,7 @@ void PrettyPrinter::VisitConditionalExpression(const ConditionalExpression *cond
 }
 
 
-void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpression)
+void PrettyPrinter::Visit(const BinaryExpression *binaryExpression)
 {
 	mWriter.Write("(");
 	Print(binaryExpression->GetLhs());
@@ -398,7 +398,7 @@ void PrettyPrinter::VisitBinaryExpression(const BinaryExpression *binaryExpressi
 }
 
 
-void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
+void PrettyPrinter::Visit(const UnaryExpression *unaryExpression)
 {
 	//mWriter.Write("(");
 	Print(unaryExpression->GetOperator());
@@ -407,7 +407,7 @@ void PrettyPrinter::VisitUnaryExpression(const UnaryExpression *unaryExpression)
 }
 
 
-void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpression)
+void PrettyPrinter::Visit(const PostfixExpression *postfixExpression)
 {
 	//mWriter.Write("(");
 	Print(postfixExpression->GetLhs());
@@ -416,7 +416,7 @@ void PrettyPrinter::VisitPostfixExpression(const PostfixExpression *postfixExpre
 }
 
 
-void PrettyPrinter::VisitMemberExpression(const MemberExpression *memberExpression)
+void PrettyPrinter::Visit(const MemberExpression *memberExpression)
 {
 	Print(memberExpression->GetLhs());
 	Print(memberExpression->GetOperator());
@@ -424,7 +424,7 @@ void PrettyPrinter::VisitMemberExpression(const MemberExpression *memberExpressi
 }
 
 
-void PrettyPrinter::VisitArraySubscriptExpression(const ArraySubscriptExpression *arraySubscriptExpression)
+void PrettyPrinter::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	Print(arraySubscriptExpression->GetLhs());
 	mWriter.Write("[");
@@ -433,7 +433,7 @@ void PrettyPrinter::VisitArraySubscriptExpression(const ArraySubscriptExpression
 }
 
 
-void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *functionCallExpression)
+void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
 {
 	Print(functionCallExpression->GetLhs());
 	mWriter.Write("(");
@@ -442,7 +442,7 @@ void PrettyPrinter::VisitFunctionCallExpression(const FunctionCallExpression *fu
 }
 
 
-void PrettyPrinter::VisitCastExpression(const CastExpression *castExpression)
+void PrettyPrinter::Visit(const CastExpression *castExpression)
 {
 	mWriter.Write("(");
 	Print(castExpression->GetTypeDescriptor());
@@ -451,7 +451,7 @@ void PrettyPrinter::VisitCastExpression(const CastExpression *castExpression)
 }
 
 
-void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpression)
+void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 {
 	mWriter.Write("sizeof");
 	if (sizeofExpression->GetTypeDescriptor() != 0)
@@ -467,13 +467,13 @@ void PrettyPrinter::VisitSizeofExpression(const SizeofExpression *sizeofExpressi
 }
 
 
-void PrettyPrinter::VisitConstantExpression(const ConstantExpression *constantExpression)
+void PrettyPrinter::Visit(const ConstantExpression *constantExpression)
 {
 	Print(constantExpression->GetValue());
 }
 
 
-void PrettyPrinter::VisitIdentifierExpression(const IdentifierExpression *identifierExpression)
+void PrettyPrinter::Visit(const IdentifierExpression *identifierExpression)
 {
 	PrintList(identifierExpression->GetIdentifier(), "::");
 }

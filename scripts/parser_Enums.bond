@@ -17,6 +17,6 @@ enum WithTrailingComma
 enum WithInitializers
 {
 	SEVENTH = FIRST*3 +2,
-	EIGTH = (FIRST < SECOND)?5:10,
+	EIGHTH = (FIRST < SECOND)?5:10,
 	NINETH = sizeof<int const *const[234]>,
 };

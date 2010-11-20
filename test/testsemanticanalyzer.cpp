@@ -8,17 +8,17 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
-	const Bond::Scope *globalScope = table->GetGlobalScope();
+	const Bond::Symbol *globalScope = table->GetGlobalScope();
 
-	const Bond::Scope *outerSpace = globalScope->FindScope("OuterSpace");
-	ASSERT_MESSAGE(outerSpace != 0, "Failed to find scope 'OuterSpace'.");
-	ASSERT_MESSAGE(outerSpace->GetType() == Bond::SymbolBase::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
+	const Bond::Symbol *outerSpace = globalScope->FindSymbol("OuterSpace");
+	ASSERT_MESSAGE(outerSpace != 0, "Failed to find symbol 'OuterSpace'.");
+	ASSERT_MESSAGE(outerSpace->GetType() == Bond::Symbol::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
 
-	const Bond::Scope *firstInnerSpace = outerSpace->FindScope("FirstInnerSpace");
-	ASSERT_MESSAGE(firstInnerSpace != 0, "Failed to find scope 'FirstInnerSpace'.");
+	const Bond::Symbol *firstInnerSpace = outerSpace->FindSymbol("FirstInnerSpace");
+	ASSERT_MESSAGE(firstInnerSpace != 0, "Failed to find symbol 'FirstInnerSpace'.");
 
-	const Bond::Scope *secondInnerSpace = outerSpace->FindScope("SecondInnerSpace");
-	ASSERT_MESSAGE(secondInnerSpace != 0, "Failed to find scope 'SecondInnerSpace'.");
+	const Bond::Symbol *secondInnerSpace = outerSpace->FindSymbol("SecondInnerSpace");
+	ASSERT_MESSAGE(secondInnerSpace != 0, "Failed to find symbol 'SecondInnerSpace'.");
 
 	return true;
 }
@@ -29,15 +29,15 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
 	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
-	const Bond::Scope *globalScope = table->GetGlobalScope();
+	const Bond::Symbol *globalScope = table->GetGlobalScope();
 
-	const Bond::Scope *empty = globalScope->FindScope("Empty");
-	ASSERT_MESSAGE(empty != 0, "Failed to find scope 'Empty'.");
-	ASSERT_MESSAGE(empty->GetType() == Bond::SymbolBase::TYPE_ENUM, "Expected 'Empty' to be an enum.");
+	const Bond::Symbol *empty = globalScope->FindSymbol("Empty");
+	ASSERT_MESSAGE(empty != 0, "Failed to find symbol 'Empty'.");
+	ASSERT_MESSAGE(empty->GetType() == Bond::Symbol::TYPE_ENUM, "Expected 'Empty' to be an enum.");
 
-	const Bond::Symbol *eigth = globalScope->FindSymbol("EIGTH");
-	ASSERT_MESSAGE(eigth != 0, "Failed to find scope 'EIGTH'.");
-	ASSERT_MESSAGE(eigth->GetType() == Bond::SymbolBase::TYPE_VALUE, "Expected 'EIGTH' to be a value.");
+	const Bond::Symbol *eighth = globalScope->FindSymbol("EIGHTH");
+	ASSERT_MESSAGE(eighth != 0, "Failed to find symbol 'EIGHTH'.");
+	ASSERT_MESSAGE(eighth->GetType() == Bond::Symbol::TYPE_VALUE, "Expected 'EIGHTH' to be a value.");
 
 	return true;
 }
