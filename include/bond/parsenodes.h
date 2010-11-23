@@ -8,6 +8,8 @@
 namespace Bond
 {
 
+class Symbol;
+
 class ParseNode
 {
 public:
@@ -16,8 +18,15 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) = 0;
 	virtual void Accept(ConstParseNodeVisitor &visitor) const = 0;
 
+	Symbol *GetSymbol() { return mSymbol; }
+	const Symbol *GetSymbol() const { return mSymbol; }
+	void SetSymbol(Symbol *symbol) { mSymbol = symbol; }
+
 protected:
-	ParseNode() {}
+	ParseNode(): mSymbol(0) {}
+
+private:
+	Symbol *mSymbol;
 };
 
 
@@ -308,9 +317,10 @@ private:
 class NamedInitializer: public ListParseNode
 {
 public:
-	explicit NamedInitializer(const Token *name, Initializer *initializer):
+	explicit NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
 		mName(name),
-		mInitializer(initializer)
+		mInitializer(initializer),
+		mTypeDescriptor(typeDescriptor)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -323,9 +333,14 @@ public:
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
 
+	// Reference to the type descriptor owned by the declaration that owns this named initializer.
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
+
 private:
 	const Token *mName;
 	Initializer *mInitializer;
+	TypeDescriptor *mTypeDescriptor;
 };
 
 
@@ -369,6 +384,11 @@ public:
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	const Token *GetName() const { return mName; }
+
+	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNext()); }
+	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNext()); }
+
+	bool IsTerminal() const { return GetNext() == 0; }
 
 private:
 	const Token *mName;

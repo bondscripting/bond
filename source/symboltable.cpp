@@ -1,3 +1,4 @@
+#include "bond/parsenodes.h"
 #include "bond/symboltable.h"
 #include "bond/token.h"
 #include "bond/stringutil.h"
@@ -40,6 +41,70 @@ const Symbol *Symbol::FindSymbol(const Token *name) const
 	while ((symbol != 0) && !symbol->Matches(name))
 	{
 		symbol = symbol->GetNext();
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier)
+{
+	Symbol *symbol = FindQualifiedSymbol(identifier);
+
+	if ((symbol == 0) && (mParent != 0))
+	{
+		symbol = mParent->FindSymbol(identifier);
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
+{
+	const Symbol *symbol = FindQualifiedSymbol(identifier);
+
+	if ((symbol == 0) && (mParent != 0))
+	{
+		symbol = mParent->FindSymbol(identifier);
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
+{
+	Symbol *symbol = 0;
+
+	if (identifier->IsTerminal())
+	{
+		symbol = FindSymbol(identifier->GetName());
+	}
+	else if (mType == TYPE_NAMESPACE)
+	{
+		Symbol *nextScope = FindSymbol(identifier->GetName());
+		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier) const
+{
+	const Symbol *symbol = 0;
+
+	if (identifier->IsTerminal())
+	{
+		symbol = FindSymbol(identifier->GetName());
+	}
+	else if (mType == TYPE_NAMESPACE)
+	{
+		const Symbol *nextScope = FindSymbol(identifier->GetName());
+		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
 	}
 
 	return symbol;

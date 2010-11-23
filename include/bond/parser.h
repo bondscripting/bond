@@ -96,8 +96,17 @@ private:
 	TypeDescriptor *ParseTypeDescriptor(Status &status, TokenStream &stream);
 	TypeSpecifier *ParseTypeSpecifier(Status &status, TokenStream &stream);
 	TypeSpecifier *ParsePrimitiveTypeSpecifier(Status &status, TokenStream &stream);
-	NamedInitializer *ParseNamedInitializerList(Status &status, TokenStream &stream);
-	NamedInitializer *ParseNamedInitializer(Status &status, TokenStream &stream);
+
+	NamedInitializer *ParseNamedInitializerList(
+		Status &status,
+		TokenStream &stream,
+		TypeDescriptor *typeDescriptor);
+
+	NamedInitializer *ParseNamedInitializer(
+		Status &status,
+		TokenStream &stream,
+		TypeDescriptor *typeDescriptor);
+
 	Initializer *ParseInitializer(Status &status, TokenStream &stream);
 	QualifiedIdentifier *ParseQualifiedIdentifier(Status &status, TokenStream &stream);
 	ListParseNode *ParseStatement(Status &status, TokenStream &stream);

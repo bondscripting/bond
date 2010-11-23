@@ -307,7 +307,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 			{
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				stream.SetPosition(namePos);
-				NamedInitializer *initializerList = ParseNamedInitializerList(status, stream);
+				NamedInitializer *initializerList = ParseNamedInitializerList(status, stream, descriptor);
 
 				if (initializerList != 0)
 				{
@@ -465,14 +465,17 @@ TypeSpecifier *Parser::ParsePrimitiveTypeSpecifier(Status &status, TokenStream &
 // named_initializer_list
 //   : named_initializer
 //   | named_initializer_list ',' named_initializer
-NamedInitializer *Parser::ParseNamedInitializerList(Status &status, TokenStream &stream)
+NamedInitializer *Parser::ParseNamedInitializerList(
+	Status &status,
+	TokenStream &stream,
+	TypeDescriptor *typeDescriptor)
 {
-	NamedInitializer *head = ParseNamedInitializer(status, stream);
+	NamedInitializer *head = ParseNamedInitializer(status, stream, typeDescriptor);
 	NamedInitializer *current = head;
 
 	while ((current != 0) && (stream.NextIf(Token::COMMA) != 0))
 	{
-		NamedInitializer *next = ParseNamedInitializer(status, stream);
+		NamedInitializer *next = ParseNamedInitializer(status, stream, typeDescriptor);
 		AssertNode(status, stream, next);
 		current->SetNext(next);
 		current = next;
@@ -484,7 +487,10 @@ NamedInitializer *Parser::ParseNamedInitializerList(Status &status, TokenStream 
 
 // named_initializer
 //   : IDENTIFIER ['=' initializer]
-NamedInitializer *Parser::ParseNamedInitializer(Status &status, TokenStream &stream)
+NamedInitializer *Parser::ParseNamedInitializer(
+	Status &status,
+	TokenStream &stream,
+	TypeDescriptor *typeDescriptor)
 {
 	NamedInitializer *namedInitializer = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
@@ -504,7 +510,7 @@ NamedInitializer *Parser::ParseNamedInitializer(Status &status, TokenStream &str
 			AssertNode(status, stream, initializer);
 		}
 
-		namedInitializer = mFactory.CreateNamedInitializer(name, initializer);
+		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor);
 	}
 
 	return namedInitializer;
@@ -929,7 +935,7 @@ ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, Tok
 	TypeDescriptor *descriptor = ParseRelaxedTypeDescriptor(status, stream);
 	if (descriptor != 0)
 	{
-		NamedInitializer *initializerList = ParseNamedInitializerList(status, stream);
+		NamedInitializer *initializerList = ParseNamedInitializerList(status, stream, descriptor);
 
 		if (initializerList != 0)
 		{

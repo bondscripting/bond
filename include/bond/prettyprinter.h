@@ -9,7 +9,7 @@ namespace Bond
 class TextWriter;
 class Token;
 
-class PrettyPrinter: public ConstParseNodeVisitor
+class PrettyPrinter: private ConstParseNodeVisitor
 {
 public:
 	PrettyPrinter(TextWriter &writer):

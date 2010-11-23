@@ -7,6 +7,8 @@
 namespace Bond
 {
 
+class Symbol;
+
 template<typename T>
 T *CastNode(ParseNode *node)
 {
@@ -51,8 +53,11 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-bool TestMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
-bool TestMatchingFunctionPrototypes(const FunctionPrototype *functionA, const FunctionPrototype *functionB);
+bool IsConstantTypeDescriptor(const TypeDescriptor *type);
+
+bool AreMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB);
+bool AreMatchingTypeDescriptors(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB);
 
 }
 

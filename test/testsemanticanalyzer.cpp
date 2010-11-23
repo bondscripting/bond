@@ -37,7 +37,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 
 	const Bond::Symbol *eighth = globalScope->FindSymbol("EIGHTH");
 	ASSERT_MESSAGE(eighth != 0, "Failed to find symbol 'EIGHTH'.");
-	ASSERT_MESSAGE(eighth->GetType() == Bond::Symbol::TYPE_VALUE, "Expected 'EIGHTH' to be a value.");
+	ASSERT_MESSAGE(eighth->GetType() == Bond::Symbol::TYPE_CONSTANT, "Expected 'EIGHTH' to be a constant.");
 
 	return true;
 }

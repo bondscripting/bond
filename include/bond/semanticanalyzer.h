@@ -28,7 +28,7 @@ public:
 	const SymbolTable *GetSymbolTable() const { return mSymbolTable; }
 
 private:
-	void PopulateSymbolTable(TranslationUnit *translationUnitList, Allocator &allocator);
+	void Analyze(TranslationUnit *translationUnitList, Allocator &allocator);
 
 	ParseErrorBuffer mErrorBuffer;
 	Allocator &mAllocator;

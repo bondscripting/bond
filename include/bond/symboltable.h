@@ -7,6 +7,7 @@ namespace Bond
 {
 
 class ParseNode;
+class QualifiedIdentifier;
 class Token;
 
 class Symbol
@@ -18,7 +19,7 @@ public:
 		TYPE_STRUCT,
 		TYPE_ENUM,
 		//TYPE_LOCALSCOPE,
-		TYPE_VALUE,
+		TYPE_CONSTANT,
 		//TYPE_VARIABLE,
 		TYPE_FUNCTION,
 	};
@@ -45,8 +46,12 @@ public:
 	Symbol *GetParent() { return mParent; }
 
 	const Symbol *FindSymbol(const char *name) const;
+
 	Symbol *FindSymbol(const Token *name);
 	const Symbol *FindSymbol(const Token *name) const;
+
+	Symbol *FindSymbol(const QualifiedIdentifier *identifier);
+	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
 
 	void InsertSymbol(Symbol *symbol);
 
@@ -54,6 +59,9 @@ public:
 	bool Matches(const Token *name) const;
 
 private:
+	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
+	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
+
 	Type mType;
 	const Token *mName;
 	const ParseNode *mDefinition;
