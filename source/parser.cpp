@@ -1052,11 +1052,6 @@ Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &strea
 	// Will need to do further analysis in the semantic analyser to ensure validity.
 	Expression *expression = ParseConditionalExpression(status, stream);
 
-	if (expression == 0)
-	{
-		expression = ParseUnaryExpression(status, stream);
-	}
-
 	if (expression != 0)
 	{
 		const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);

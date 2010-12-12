@@ -18,15 +18,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) = 0;
 	virtual void Accept(ConstParseNodeVisitor &visitor) const = 0;
 
-	Symbol *GetSymbol() { return mSymbol; }
-	const Symbol *GetSymbol() const { return mSymbol; }
-	void SetSymbol(Symbol *symbol) { mSymbol = symbol; }
-
 protected:
-	ParseNode(): mSymbol(0) {}
-
-private:
-	Symbol *mSymbol;
+	ParseNode() {}
 };
 
 
@@ -47,6 +40,23 @@ private:
 };
 
 
+class SymbolicParseNode: public ListParseNode
+{
+public:
+	virtual ~SymbolicParseNode() {}
+
+	Symbol *GetSymbol() { return mSymbol; }
+	const Symbol *GetSymbol() const { return mSymbol; }
+	void SetSymbol(Symbol *symbol) { mSymbol = symbol; }
+
+protected:
+	SymbolicParseNode(): mSymbol(0) {}
+
+private:
+	Symbol *mSymbol;
+};
+
+
 class TranslationUnit: public ListParseNode
 {
 public:
@@ -64,7 +74,7 @@ private:
 };
 
 
-class NamespaceDefinition: public ListParseNode
+class NamespaceDefinition: public SymbolicParseNode
 {
 public:
 	NamespaceDefinition(const Token *name, ListParseNode *declarationList):
@@ -132,7 +142,7 @@ private:
 };
 
 
-class StructDeclaration: public ListParseNode
+class StructDeclaration: public SymbolicParseNode
 {
 public:
 	explicit StructDeclaration(const Token *name, ListParseNode *memberList):
