@@ -4,6 +4,7 @@
 #include "bond/parsenodesfwd.h"
 #include "bond/parsenodevisitor.h"
 #include "bond/token.h"
+#include "bond/typeandvalue.h"
 
 namespace Bond
 {
@@ -683,8 +684,14 @@ class Expression: public ListParseNode
 public:
 	virtual ~Expression() {}
 
+	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
+	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
+
 protected:
 	Expression() {}
+
+private:
+	TypeAndValue mTypeAndValue;
 };
 
 
@@ -912,7 +919,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	const Token *GetValue() const { return mValue; }
+	const Token *GetValueToken() const { return mValue; }
 
 private:
 	const Token *mValue;
@@ -934,6 +941,14 @@ public:
 private:
 	QualifiedIdentifier *mIdentifier;
 };
+
+
+extern const TypeDescriptor CONST_BOOL_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CONST_INT_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CONST_UINT_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CONST_FLOAT_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR;
 
 }
 

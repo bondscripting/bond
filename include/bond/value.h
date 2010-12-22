@@ -14,6 +14,7 @@ union Value
 	bi32_t mInt;
 	bu32_t mUInt;
 	bf32_t mFloat;
+	const void *mPointer;
 	struct
 	{
 		const char *buffer;

@@ -4,6 +4,27 @@
 namespace Bond
 {
 
+Token::TokenType GetPrimitiveType(const TypeDescriptor *typeDescriptor)
+{
+	Token::TokenType primitiveType = Token::INVALID;
+
+	if (typeDescriptor != 0)
+	{
+		const TypeSpecifier *typeSpecifier = typeDescriptor->GetTypeSpecifier();
+		if (typeSpecifier != 0)
+		{
+			const Token *token = typeSpecifier->GetPrimitiveType();
+			if (token != 0)
+			{
+				primitiveType = token->GetTokenType();
+			}
+		}
+	}
+
+	return primitiveType;
+}
+
+
 bool IsConstantTypeDescriptor(const TypeDescriptor *type)
 {
 	while (type != 0)

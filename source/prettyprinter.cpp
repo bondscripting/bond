@@ -469,7 +469,7 @@ void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 
 void PrettyPrinter::Visit(const ConstantExpression *constantExpression)
 {
-	Print(constantExpression->GetValue());
+	Print(constantExpression->GetValueToken());
 }
 
 

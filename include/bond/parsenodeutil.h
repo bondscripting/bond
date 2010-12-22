@@ -53,6 +53,8 @@ const T *CastNode(const ParseNode *node)
 }
 
 
+Token::TokenType GetPrimitiveType(const TypeDescriptor *typeDescriptor);
+
 bool IsConstantTypeDescriptor(const TypeDescriptor *type);
 
 bool AreMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB);

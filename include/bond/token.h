@@ -145,6 +145,18 @@ public:
 	{
 	}
 
+	Token(const char *text, TokenType tokenType):
+		mStartPos(-1, -1, -1),
+		mEndPos(-1, -1, -1),
+		mErrorPos(-1, -1, -1),
+		mValue(),
+		mText(text),
+		mTokenType(tokenType),
+		mErrorType(NO_ERROR),
+		mAnnotations(0)
+	{
+	}
+
 	Token(
 			const StreamPos &startPos,
 			const StreamPos &endPos,
@@ -199,6 +211,8 @@ public:
 
 	void AddAnnotation(const Annotation &annotation) { mAnnotations |= annotation; }
 	bool HasAnnotation(const Annotation &annotation) const { return (mAnnotations & annotation) == annotation; }
+
+	const Value &GetValue() const { return mValue; }
 
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; }

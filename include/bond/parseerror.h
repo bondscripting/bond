@@ -1,20 +1,33 @@
 #ifndef BOND_PARSEERROR_H
 #define BOND_PARSEERROR_H
 
-#define BOND_PARSE_ERROR_LIST                                                                                 \
-  BOND_PARSE_ERROR_ITEM(NO_ERROR, "")                                                                         \
-  BOND_PARSE_ERROR_ITEM(PARSE_ERROR, "Parse error")                                                           \
-  BOND_PARSE_ERROR_ITEM(UNEXPECTED_TOKEN, "Expected" )                                                        \
-  BOND_PARSE_ERROR_ITEM(DUPLICATE_CONST, "Duplicate const keyword")                                           \
-  BOND_PARSE_ERROR_ITEM(COMMA_IN_CONST_EXPRESSION, "Comma in constant expression")                            \
-  BOND_PARSE_ERROR_ITEM(ASSIGNMENT_IN_CONST_EXPRESSION, "Assignment in constant expression" )                 \
-  BOND_PARSE_ERROR_ITEM(INCREMENT_IN_CONST_EXPRESSION, "Increment/decrement operator in constant expression") \
-  BOND_PARSE_ERROR_ITEM(FUNCTION_CALL_IN_CONST_EXPRESSION, "Function call in constant expression")            \
-  BOND_PARSE_ERROR_ITEM(FUNCTION_DEFINITION_NOT_ALLOWED, "Function definition not allowed")                   \
-  BOND_PARSE_ERROR_ITEM(INITIALIZER_NOT_ALLOWED, "Initializer not allowed")                                   \
-  BOND_PARSE_ERROR_ITEM(DUPLICATE_SYMBOL, "Duplicate symbol")                                                 \
-  BOND_PARSE_ERROR_ITEM(DUPLICATE_FUNCTION_DEFINITION, "Duplicate function definition")                       \
-  BOND_PARSE_ERROR_ITEM(FUNCTION_PROTOTYPE_MISMATCH, "Mismatching function prototype")                        \
+#define BOND_PARSE_ERROR_LIST                                               \
+  BOND_PARSE_ERROR(BASIC, NO_ERROR,                                         \
+    "")                                                                     \
+  BOND_PARSE_ERROR(BASIC, DUPLICATE_CONST,                                  \
+    "Duplicate 'const' keyword.")                                           \
+  BOND_PARSE_ERROR(CONTEXT, PARSE_ERROR,                                    \
+    "Parse error near '%s'.")                                               \
+  BOND_PARSE_ERROR(CONTEXT, COMMA_IN_CONST_EXPRESSION,                      \
+    "Comma in constant expression near '%s'.")                              \
+  BOND_PARSE_ERROR(CONTEXT, ASSIGNMENT_IN_CONST_EXPRESSION,                 \
+    "Assignment in constant expression at '%s'." )                          \
+  BOND_PARSE_ERROR(CONTEXT, INCREMENT_IN_CONST_EXPRESSION,                  \
+    "'%s' operator in constant expression.")                                \
+  BOND_PARSE_ERROR(CONTEXT, FUNCTION_CALL_IN_CONST_EXPRESSION,              \
+    "Function call in constant expression near '%s'.")                      \
+  BOND_PARSE_ERROR(CONTEXT, FUNCTION_DEFINITION_NOT_ALLOWED,                \
+    "Function definition not allowed near '%s'.")                           \
+  BOND_PARSE_ERROR(CONTEXT, INITIALIZER_NOT_ALLOWED,                        \
+    "Initializer not allowed near '%s'.")                                   \
+  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, DUPLICATE_SYMBOL,                      \
+    "Duplicate symbol '%s' previously defined on line '%d'.")               \
+  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, DUPLICATE_FUNCTION_DEFINITION,         \
+    "Duplicate function definition '%s' previously defined on line '%d'.")  \
+  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, FUNCTION_PROTOTYPE_MISMATCH,           \
+    "Mismatching function prototype '%s' previously defined on line '%d'.") \
+  BOND_PARSE_ERROR(EXPECTED_CONTEXT, UNEXPECTED_TOKEN,                      \
+    "Expected '%s' before '%s'." )                                          \
 
 
 namespace Bond
@@ -28,9 +41,17 @@ class ParseError
 public:
 	enum Type
 	{
-#define BOND_PARSE_ERROR_ITEM(item, description) item,
+#define BOND_PARSE_ERROR(category, type, format) type,
 		BOND_PARSE_ERROR_LIST
-#undef BOND_PARSE_ERROR_ITEM
+#undef BOND_PARSE_ERROR
+	};
+
+	enum Category
+	{
+		BASIC,
+		CONTEXT,
+		CONTEXT_ALT_LINE,
+		EXPECTED_CONTEXT
 	};
 
 	ParseError(): mType(NO_ERROR), mContext(0), mAltContext(0), mExpected("") {}
@@ -60,14 +81,15 @@ public:
 	const Token *GetAltContext() const { return mContext; }
 	const char *GetExpected() const { return mExpected; }
 
-	const char *GetDescription() const;
-	static const char *GetDescription(Type type);
+	Category GetCategory() const;
+	static Category GetCategory(Type type);
+
+	const char *GetFormat() const;
+	static const char *GetFormat(Type type);
 
 	void Print(TextWriter &writer) const;
 
 private:
-	static const char *ERROR_DESCRIPTIONS;
-
 	Type mType;
 	const Token *mContext;
 	const Token *mAltContext;

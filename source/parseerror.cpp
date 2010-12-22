@@ -5,31 +5,79 @@
 namespace Bond
 {
 
-const char *ParseError::GetDescription() const
+ParseError::Category ParseError::GetCategory() const
 {
-	return GetDescription(mType);
+	return GetCategory(mType);
 }
 
 
-const char *ParseError::GetDescription(Type type)
+ParseError::Category ParseError::GetCategory(Type type)
 {
-	static const char *const ERROR_DESCRIPTIONS[] =
+	static const Category ERROR_CATEGORIES[] =
 	{
-#define BOND_PARSE_ERROR_ITEM(item, description) description,
+#define BOND_PARSE_ERROR(category, type, format) category,
 		BOND_PARSE_ERROR_LIST
-#undef BOND_PARSE_ERROR_ITEM
+#undef BOND_PARSE_ERROR
 	};
 
-	return ERROR_DESCRIPTIONS[type];
+	return ERROR_CATEGORIES[type];
+}
+
+
+const char *ParseError::GetFormat() const
+{
+	return GetFormat(mType);
+}
+
+
+const char *ParseError::GetFormat(Type type)
+{
+	static const char *const ERROR_FORMATS[] =
+	{
+#define BOND_PARSE_ERROR(category, type, format) format,
+		BOND_PARSE_ERROR_LIST
+#undef BOND_PARSE_ERROR
+	};
+
+	return ERROR_FORMATS[type];
 }
 
 
 void ParseError::Print(TextWriter &writer) const
 {
 	const Bond::StreamPos &pos = mContext->GetStartPos();
+	writer.Write("(%d, %d): ", pos.line, pos.column);
 
-	writer.Write("(%d, %d): %s ", pos.line, pos.column, GetDescription());
+	const char *format = GetFormat();
+	switch (GetCategory())
+	{
+		case BASIC:
+		{
+			writer.Write(format);
+		}
+		break;
 
+		case CONTEXT:
+		{
+			writer.Write(format, mContext->GetText());
+		}
+		break;
+
+		case CONTEXT_ALT_LINE:
+		{
+			const Bond::StreamPos &altPos = mAltContext->GetStartPos();
+			writer.Write(format, mContext->GetText(), altPos.line);
+		}
+		break;
+
+		case EXPECTED_CONTEXT:
+		{
+			writer.Write(format, mExpected, mContext->GetText());
+		}
+		break;
+	}
+
+	/*
 	switch (mType)
 	{
 		case ParseError::UNEXPECTED_TOKEN:
@@ -51,6 +99,7 @@ void ParseError::Print(TextWriter &writer) const
 			writer.Write("near '%s'.", mContext->GetText());
 		}
 	}
+	*/
 }
 
 

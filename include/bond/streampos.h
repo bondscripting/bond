@@ -13,6 +13,13 @@ struct StreamPos
 	{
 	}
 
+	StreamPos(int index, int line, int column):
+		index(index),
+		line(line),
+		column(column)
+	{
+	}
+
 	StreamPos(const StreamPos &other):
 		index(other.index),
 		line(other.line),

@@ -11,21 +11,35 @@
 namespace Bond
 {
 
+typedef AutoStack<Symbol *> ScopeStack;
+
 //------------------------------------------------------------------------------
-// SemanticAnalysisPass
+// SemanticAnalysisTraverser
 //------------------------------------------------------------------------------
-class SemanticAnalysisPass: protected ParseNodeTraverser
+class SemanticAnalysisTraverser: protected ParseNodeTraverser
 {
 public:
-	virtual ~SemanticAnalysisPass() {}
+	virtual ~SemanticAnalysisTraverser() {}
 
 	void Analyze(TranslationUnit *translationUnitList);
 
 protected:
-	SemanticAnalysisPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+	SemanticAnalysisTraverser(
+			ParseErrorBuffer &errorBuffer,
+			Allocator &allocator,
+			SymbolTable &symbolTable,
+			ScopeStack &scopeStack):
 		mErrorBuffer(errorBuffer),
 		mSymbolTable(symbolTable),
-		mAllocator(allocator)
+		mAllocator(allocator),
+		mScopeStack(scopeStack)
+	{}
+
+	SemanticAnalysisTraverser(const SemanticAnalysisTraverser &other):
+		mErrorBuffer(other.mErrorBuffer),
+		mSymbolTable(other.mSymbolTable),
+		mAllocator(other.mAllocator),
+		mScopeStack(other.mScopeStack)
 	{}
 
 	virtual void Visit(NamespaceDefinition *namespaceDefinition);
@@ -37,40 +51,38 @@ protected:
 	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
 	Symbol *CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
 
-	typedef AutoStack<Symbol *> ScopeStack;
-
 	ParseErrorBuffer &mErrorBuffer;
 
 private:
 
-	ScopeStack mScopeStack;
 	SymbolTable &mSymbolTable;
 	Allocator &mAllocator;
+	ScopeStack &mScopeStack;
 };
 
 
-void SemanticAnalysisPass::Analyze(TranslationUnit *translationUnitList)
+void SemanticAnalysisTraverser::Analyze(TranslationUnit *translationUnitList)
 {
 	ScopeStack::Element globalScopeElement(mScopeStack, mSymbolTable.GetGlobalScope());
 	ParseNodeTraverser::TraverseList(translationUnitList);
 }
 
 
-void SemanticAnalysisPass::Visit(NamespaceDefinition *namespaceDefinition)
+void SemanticAnalysisTraverser::Visit(NamespaceDefinition *namespaceDefinition)
 {
 	ScopeStack::Element stackElement(mScopeStack, namespaceDefinition->GetSymbol());
 	ParseNodeTraverser::Visit(namespaceDefinition);
 }
 
 
-void SemanticAnalysisPass::Visit(StructDeclaration *structDeclaration)
+void SemanticAnalysisTraverser::Visit(StructDeclaration *structDeclaration)
 {
 	ScopeStack::Element stackElement(mScopeStack, structDeclaration->GetSymbol());
 	ParseNodeTraverser::Visit(structDeclaration);
 }
 
 
-Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
+Symbol *SemanticAnalysisTraverser::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
 {
 	Symbol *symbol = parent->FindSymbol(name);
 
@@ -86,7 +98,7 @@ Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name,
 }
 
 
-Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
+Symbol *SemanticAnalysisTraverser::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
 {
 	Symbol *symbol = parent->FindSymbol(name);
 
@@ -106,10 +118,154 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *
 }
 
 
-Symbol *SemanticAnalysisPass::CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
+Symbol *SemanticAnalysisTraverser::CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
 {
 	return new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition, parent);
 }
+
+
+//------------------------------------------------------------------------------
+// ExpressionEvaluator
+//------------------------------------------------------------------------------
+class ExpressionEvaluator: public SemanticAnalysisTraverser
+{
+public:
+	ExpressionEvaluator(const SemanticAnalysisTraverser &other): SemanticAnalysisTraverser(other) {}
+
+	//virtual void Visit(ConditionalExpression *conditionalExpression);
+	//virtual void Visit(BinaryExpression *binaryExpression);
+	virtual void Visit(UnaryExpression *unaryExpression);
+	//virtual void Visit(PostfixExpression *postfixExpression);
+	//virtual void Visit(MemberExpression *memberExpression);
+	//virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
+	//virtual void Visit(FunctionCallExpression *functionCallExpression);
+	//virtual void Visit(CastExpression *castExpression);
+	//virtual void Visit(SizeofExpression *sizeofExpression);
+	virtual void Visit(ConstantExpression *constantExpression);
+	//virtual void Visit(IdentifierExpression *identifierValue);
+};
+
+	/*
+void ExpressionEvaluator::Visit(BinaryExpression *binaryExpression)
+{
+	TypeAndValue tav = binaryExpression->GetTypeAndValue();
+
+	if (!tav.IsTypeDefined() && !tav.IsValueDefined())
+	{
+		Expression *lhs = binaryExpression->GetLhs();
+		Expression *rhs = binaryExpression->GetRhs();
+}
+	*/
+
+void ExpressionEvaluator::Visit(UnaryExpression *unaryExpression)
+{
+	/*
+	Token::OP_PLUS,
+	Token::OP_MINUS,
+	Token::OP_MULT,
+	Token::OP_INC,
+	Token::OP_DEC,
+	Token::OP_NOT,
+	Token::OP_BIT_AND,
+	Token::OP_BIT_NOT,
+	*/
+	TypeAndValue &tav = unaryExpression->GetTypeAndValue();
+
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(unaryExpression);
+		const TypeAndValue &rhs = unaryExpression->GetRhs()->GetTypeAndValue();
+
+		if (rhs.IsResolved())
+		{
+			// TODO: Validate operation on operand type and operand.
+			const Token::TokenType op = unaryExpression->GetOperator()->GetTokenType();
+			//const Token::TokenType primitiveType = GetPrimitiveType(rhs.GetTypeDescriptor());
+
+			switch (op)
+			{
+				case Token::OP_PLUS:
+					break;
+				case Token::OP_MINUS:
+					break;
+				case Token::OP_MULT:
+					break;
+				case Token::OP_INC:
+					break;
+				case Token::OP_DEC:
+					break;
+				case Token::OP_NOT:
+					break;
+				case Token::OP_BIT_AND:
+					break;
+				case Token::OP_BIT_NOT:
+					break;
+				default:
+					break;
+			}
+			/*
+			if (rhs.IsValueDefined())
+			{
+			}
+			*/
+			tav.SetTypeDescriptor(rhs.GetTypeDescriptor());
+			tav.Resolve();
+		}
+	}
+}
+
+
+void ExpressionEvaluator::Visit(ConstantExpression *constantExpression)
+{
+	TypeAndValue &tav = constantExpression->GetTypeAndValue();
+
+	if (!tav.IsResolved())
+	{
+		const Token *token = constantExpression->GetValueToken();
+
+		switch (token->GetTokenType())
+		{
+			case Token::CONST_BOOL:
+				tav.SetTypeDescriptor(&CONST_BOOL_TYPE_DESCRIPTOR);
+				break;
+			case Token::CONST_CHAR:
+				tav.SetTypeDescriptor(&CONST_CHAR_TYPE_DESCRIPTOR);
+				break;
+			case Token::CONST_INT:
+				tav.SetTypeDescriptor(&CONST_INT_TYPE_DESCRIPTOR);
+				break;
+			case Token::CONST_UINT:
+				tav.SetTypeDescriptor(&CONST_UINT_TYPE_DESCRIPTOR);
+				break;
+			case Token::CONST_FLOAT:
+				tav.SetTypeDescriptor(&CONST_FLOAT_TYPE_DESCRIPTOR);
+				break;
+			case Token::CONST_STRING:
+				tav.SetTypeDescriptor(&CONST_STRING_TYPE_DESCRIPTOR);
+				break;
+			default:
+				break;
+		}
+
+		tav.SetValue(token->GetValue());
+		tav.Resolve();
+	}
+}
+
+
+//------------------------------------------------------------------------------
+// SemanticAnalysicsPass
+//------------------------------------------------------------------------------
+class SemanticAnalysisPass: public SemanticAnalysisTraverser
+{
+public:
+	SemanticAnalysisPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+		SemanticAnalysisTraverser(errorBuffer, allocator, symbolTable, mScopeStack)
+	{}
+
+private:
+	ScopeStack mScopeStack;
+};
 
 
 //------------------------------------------------------------------------------
@@ -139,7 +295,7 @@ void TypeAndConstantDeclarationPass::Visit(NamespaceDefinition *namespaceDefinit
 	Symbol *parent = GetCurrentScope();
 	Symbol *symbol = GetOrInsertSymbol(Symbol::TYPE_NAMESPACE, name, namespaceDefinition, parent);
 	namespaceDefinition->SetSymbol(symbol);
-	SemanticAnalysisPass::Visit(namespaceDefinition);
+	SemanticAnalysisPass ::Visit(namespaceDefinition);
 }
 
 
