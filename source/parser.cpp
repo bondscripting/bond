@@ -389,7 +389,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 		const bool isConst2 = const2 != 0;
 		if (isConst1 && isConst2)
 		{
-			PushError(status, ParseError::DUPLICATE_CONST, 0);
+			PushError(status, ParseError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);

@@ -3,6 +3,26 @@
 namespace Bond
 {
 
+const Token *FunctionDefinition::GetContextToken() const
+{
+	return (mPrototype != 0) ? mPrototype->GetContextToken() : 0;
+}
+
+
+const Token *TypeDescriptor::GetContextToken() const
+{
+	if (mSpecifier != 0)
+	{
+		return mSpecifier->GetContextToken();
+	}
+	if (mParent != 0)
+	{
+		return mParent->GetContextToken();
+	}
+	return 0;
+}
+
+
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (mSpecifier != 0)
@@ -43,6 +63,20 @@ bool TypeDescriptor::IsNumericType() const
 }
 
 
+const Token *TypeSpecifier::GetContextToken() const
+{
+	if (mPrimitiveType != 0)
+	{
+		return mPrimitiveType;
+	}
+	if (mIdentifier != 0)
+	{
+		return mIdentifier->GetContextToken();
+	}
+	return 0;
+}
+
+
 Token::TokenType TypeSpecifier::GetPrimitiveType() const
 {
 	if (mPrimitiveType != 0)
@@ -80,6 +114,12 @@ bool TypeSpecifier::IsNumericType() const
 		return TokenTypeSet::NUMERIC_TYPE_SPECIFIERS.Contains(mPrimitiveType->GetTokenType());
 	}
 	return Token::INVALID;
+}
+
+
+const Token *IdentifierExpression::GetContextToken() const
+{
+	return (mIdentifier != 0) ? mIdentifier->GetContextToken() : 0;
 }
 
 
