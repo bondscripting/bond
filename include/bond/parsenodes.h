@@ -295,6 +295,11 @@ public:
 	Variant GetVariant() const { return mVariant; }
 	bool IsConst() const { return mIsConst; }
 
+	Token::TokenType GetPrimitiveType() const;
+	bool IsBooleanType() const;
+	bool IsIntegerType() const;
+	bool IsNumericType() const;
+
 private:
 	TypeSpecifier *mSpecifier;
 	TypeDescriptor *mParent;
@@ -314,10 +319,15 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	const Token *GetPrimitiveType() const { return mPrimitiveType; }
+	const Token *GetPrimitiveTypeToken() const { return mPrimitiveType; }
 
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+	Token::TokenType GetPrimitiveType() const;
+	bool IsBooleanType() const;
+	bool IsIntegerType() const;
+	bool IsNumericType() const;
 
 private:
 	const Token *mPrimitiveType;
@@ -891,7 +901,7 @@ private:
 class SizeofExpression: public Expression
 {
 public:
-	SizeofExpression(TypeDescriptor *typeDescriptor): mTypeDescriptor(typeDescriptor), mRhs(0) {}
+	explicit SizeofExpression(TypeDescriptor *typeDescriptor): mTypeDescriptor(typeDescriptor), mRhs(0) {}
 	explicit SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
 	virtual ~SizeofExpression() {}
 

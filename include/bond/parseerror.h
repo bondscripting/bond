@@ -20,14 +20,16 @@
     "Function definition not allowed near '%s'.")                           \
   BOND_PARSE_ERROR(CONTEXT, INITIALIZER_NOT_ALLOWED,                        \
     "Initializer not allowed near '%s'.")                                   \
-  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, DUPLICATE_SYMBOL,                      \
+  BOND_PARSE_ERROR(CONTEXT_LINE, DUPLICATE_SYMBOL,                          \
     "Duplicate symbol '%s' previously defined on line '%d'.")               \
-  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, DUPLICATE_FUNCTION_DEFINITION,         \
+  BOND_PARSE_ERROR(CONTEXT_LINE, DUPLICATE_FUNCTION_DEFINITION,             \
     "Duplicate function definition '%s' previously defined on line '%d'.")  \
-  BOND_PARSE_ERROR(CONTEXT_ALT_LINE, FUNCTION_PROTOTYPE_MISMATCH,           \
+  BOND_PARSE_ERROR(CONTEXT_LINE, FUNCTION_PROTOTYPE_MISMATCH,               \
     "Mismatching function prototype '%s' previously defined on line '%d'.") \
-  BOND_PARSE_ERROR(EXPECTED_CONTEXT, UNEXPECTED_TOKEN,                      \
+  BOND_PARSE_ERROR(STR_CONTEXT, UNEXPECTED_TOKEN,                           \
     "Expected '%s' before '%s'." )                                          \
+  BOND_PARSE_ERROR(CONTEXT_NODE, INVALID_TYPE_FOR_OPERATOR,                 \
+    "Operator '%s' cannot be applied to type '%s'." )                       \
 
 
 namespace Bond
@@ -35,6 +37,7 @@ namespace Bond
 
 class TextWriter;
 class Token;
+class ParseNode;
 
 class ParseError
 {
@@ -50,36 +53,42 @@ public:
 	{
 		BASIC,
 		CONTEXT,
-		CONTEXT_ALT_LINE,
-		EXPECTED_CONTEXT
+		CONTEXT_LINE,
+		STR_CONTEXT,
+		CONTEXT_NODE,
 	};
 
-	ParseError(): mType(NO_ERROR), mContext(0), mAltContext(0), mExpected("") {}
+	ParseError(): mType(NO_ERROR), mContext(0) {}
 
-	ParseError(Type type, const Token *context, const char *expected):
+	ParseError(Type type, const Token *context, const char *arg):
 		mType(type),
 		mContext(context),
-		mAltContext(0),
-		mExpected(expected)
+		mArg(arg)
 	{}
 
-	ParseError(Type type, const Token *context, const Token *altContext):
+	ParseError(Type type, const Token *context, const Token *arg):
 		mType(type),
 		mContext(context),
-		mAltContext(altContext)
+		mArg(arg)
+	{}
+
+	ParseError(Type type, const Token *context, const ParseNode *arg):
+		mType(type),
+		mContext(context),
+		mArg(arg)
 	{}
 
 	ParseError(const ParseError &other):
 		mType(other.mType),
 		mContext(other.mContext),
-		mAltContext(other.mAltContext),
-		mExpected(other.mExpected)
+		mArg(other.mArg)
 	{}
 
 	Type GetType() const { return mType; }
 	const Token *GetContext() const { return mContext; }
-	const Token *GetAltContext() const { return mContext; }
-	const char *GetExpected() const { return mExpected; }
+	const char *GetStringArg() const { return static_cast<const char *>(mArg); }
+	const Token *GetTokenArg() const { return static_cast<const Token *>(mArg); }
+	const ParseNode *GetParseNodeArg() const { return static_cast<const ParseNode *>(mArg); }
 
 	Category GetCategory() const;
 	static Category GetCategory(Type type);
@@ -92,8 +101,7 @@ public:
 private:
 	Type mType;
 	const Token *mContext;
-	const Token *mAltContext;
-	const char *mExpected;
+	const void *mArg;
 };
 
 
@@ -104,8 +112,9 @@ public:
 
 	void Reset();
 
-	void PushError(ParseError::Type type, const Token *context, const char *expected);
-	void PushError(ParseError::Type type, const Token *context, const Token *altContext);
+	void PushError(ParseError::Type type, const Token *context, const char *arg);
+	void PushError(ParseError::Type type, const Token *context, const Token *arg);
+	void PushError(ParseError::Type type, const Token *context, const ParseNode *arg);
 
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }

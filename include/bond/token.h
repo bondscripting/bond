@@ -254,13 +254,25 @@ private:
 };
 
 
-struct TokenTypeSet
+class TokenTypeSet
 {
-	const Token::TokenType *const types;
-	const int numTypes;
-	const char *const typeName;
+ public:
+	TokenTypeSet(
+			const Token::TokenType *types,
+			int numTypes,
+			const char *const typeName):
+		mTypes(types),
+		mNumTypes(numTypes),
+		mTypeName(typeName)
+	{}
+
+	const char *GetTypeName() const { return mTypeName; }
+	bool Contains(Token::TokenType type) const;
 
 	static const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
+	static const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS;
+	static const TokenTypeSet INTEGER_TYPE_SPECIFIERS;
+	static const TokenTypeSet NUMERIC_TYPE_SPECIFIERS;
 	static const TokenTypeSet TYPE_DESCRIPTORS;
 	static const TokenTypeSet JUMP_OPERATORS;
 	static const TokenTypeSet SWITCH_LABELS;
@@ -282,6 +294,11 @@ struct TokenTypeSet
 	static const TokenTypeSet SWITCH_SECTION_DELIMITERS;
 	static const TokenTypeSet STATEMENT_DELIMITERS;
 	static const TokenTypeSet LABEL_DELIMITERS;
+
+private:
+	const Token::TokenType *mTypes;
+	int mNumTypes;
+	const char *mTypeName;
 };
 
 }

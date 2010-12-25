@@ -389,7 +389,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 		const bool isConst2 = const2 != 0;
 		if (isConst1 && isConst2)
 		{
-			PushError(status, ParseError::DUPLICATE_CONST, const2);
+			PushError(status, ParseError::DUPLICATE_CONST, 0);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
@@ -1625,7 +1625,7 @@ const Token *Parser::ExpectToken(Status &status, TokenStream &stream, const Toke
 	const Token *token = stream.NextIf(expectedTypes);
 	if (token == 0)
 	{
-		PushError(status, ParseError::UNEXPECTED_TOKEN, stream.Peek(), expectedTypes.typeName);
+		PushError(status, ParseError::UNEXPECTED_TOKEN, stream.Peek(), expectedTypes.GetTypeName());
 	}
 	return token;
 }

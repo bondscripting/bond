@@ -13,11 +13,14 @@ class TypeAndValue
 public:
 	TypeAndValue(): mTypeDescriptor(0), mValueDefined(false), mResolved(false) {}
 
-	TypeAndValue(const TypeDescriptor *type): mTypeDescriptor(type), mValueDefined(false), mResolved(false) {}
+	TypeAndValue(const TypeDescriptor *descriptor):
+		mTypeDescriptor(descriptor),
+		mValueDefined(false),
+		mResolved(false) {}
 
-	TypeAndValue(const TypeDescriptor *type, const Value value):
+	TypeAndValue(const TypeDescriptor *descriptor, const Value value):
 		mValue(value),
-		mTypeDescriptor(type),
+		mTypeDescriptor(descriptor),
 		mValueDefined(true),
 		mResolved(true)
 	{}
@@ -41,7 +44,7 @@ public:
 	bool IsTypeDefined() const { return mTypeDescriptor != 0; }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	void SetTypeDescriptor(const TypeDescriptor *type) { mTypeDescriptor = type; }
+	void SetTypeDescriptor(const TypeDescriptor *descriptor) { mTypeDescriptor = descriptor; }
 
 	bool IsValueDefined() const { return mValueDefined; }
 
@@ -77,33 +80,6 @@ private:
 	bool mResolved;
 };
 
-/*
-class TypeAndValue
-{
-public:
-	TypeAndValue();
-	TypeAndValue(Token::TokenType primitiveType);
-	TypeAndValue(Token::TokenType primitiveType, const Value value);
-	TypeAndValue(const TypeDescriptor *complexType);
-
-	bool IsTypeDefined() const { return mIsTypeDefined == 1; }
-	bool IsPrimitiveType() const { return IsTypeDefined() && (mIsPrimitiveType == 1); }
-	bool IsComplexType() const { return IsTypeDefined() && (mIsPrimitiveType == 0); }
-
-	Token::TokenType GetPrimitiveType() const { return static_cast<Token::TokenType>(mPrimitiveType); }
-	void SetPrimitiveType(Token::TokenType type);
-
-	//const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	//void SetTypeDescriptor(const TypeDescriptor *);
-
-private:
-	Value mValue;
-	int mIsTypeDefined:1;
-	int mIsPrimitiveType: 1;
-	int mIsValueDefined:1;
-	int mPrimitiveType:10;
-};
-*/
 }
 
 #endif

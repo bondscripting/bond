@@ -1,128 +1,14 @@
-#include "bond/autostack.h"
 #include "bond/linearallocator.h"
 #include "bond/parsenodecounter.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
+#include "bond/semanticanalysistraverser.h"
 #include "bond/semanticanalyzer.h"
-#include "bond/symboltable.h"
 #include <new>
 
 namespace Bond
 {
-
-typedef AutoStack<Symbol *> ScopeStack;
-
-//------------------------------------------------------------------------------
-// SemanticAnalysisTraverser
-//------------------------------------------------------------------------------
-class SemanticAnalysisTraverser: protected ParseNodeTraverser
-{
-public:
-	virtual ~SemanticAnalysisTraverser() {}
-
-	void Analyze(TranslationUnit *translationUnitList);
-
-protected:
-	SemanticAnalysisTraverser(
-			ParseErrorBuffer &errorBuffer,
-			Allocator &allocator,
-			SymbolTable &symbolTable,
-			ScopeStack &scopeStack):
-		mErrorBuffer(errorBuffer),
-		mSymbolTable(symbolTable),
-		mAllocator(allocator),
-		mScopeStack(scopeStack)
-	{}
-
-	SemanticAnalysisTraverser(const SemanticAnalysisTraverser &other):
-		mErrorBuffer(other.mErrorBuffer),
-		mSymbolTable(other.mSymbolTable),
-		mAllocator(other.mAllocator),
-		mScopeStack(other.mScopeStack)
-	{}
-
-	virtual void Visit(NamespaceDefinition *namespaceDefinition);
-	virtual void Visit(StructDeclaration *structDeclaration);
-
-	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
-
-	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-
-	ParseErrorBuffer &mErrorBuffer;
-
-private:
-
-	SymbolTable &mSymbolTable;
-	Allocator &mAllocator;
-	ScopeStack &mScopeStack;
-};
-
-
-void SemanticAnalysisTraverser::Analyze(TranslationUnit *translationUnitList)
-{
-	ScopeStack::Element globalScopeElement(mScopeStack, mSymbolTable.GetGlobalScope());
-	ParseNodeTraverser::TraverseList(translationUnitList);
-}
-
-
-void SemanticAnalysisTraverser::Visit(NamespaceDefinition *namespaceDefinition)
-{
-	ScopeStack::Element stackElement(mScopeStack, namespaceDefinition->GetSymbol());
-	ParseNodeTraverser::Visit(namespaceDefinition);
-}
-
-
-void SemanticAnalysisTraverser::Visit(StructDeclaration *structDeclaration)
-{
-	ScopeStack::Element stackElement(mScopeStack, structDeclaration->GetSymbol());
-	ParseNodeTraverser::Visit(structDeclaration);
-}
-
-
-Symbol *SemanticAnalysisTraverser::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
-{
-	Symbol *symbol = parent->FindSymbol(name);
-
-	if (symbol != 0)
-	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
-	}
-
-	symbol = CreateSymbol(type, name, definition, parent);
-	parent->InsertSymbol(symbol);
-
-	return symbol;
-}
-
-
-Symbol *SemanticAnalysisTraverser::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
-{
-	Symbol *symbol = parent->FindSymbol(name);
-
-	if ((symbol != 0) && (symbol->GetType() != type))
-	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
-		symbol = 0;
-	}
-
-	if (symbol == 0)
-	{
-		symbol = CreateSymbol(type, name, definition, parent);
-		parent->InsertSymbol(symbol);
-	}
-
-	return symbol;
-}
-
-
-Symbol *SemanticAnalysisTraverser::CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
-{
-	return new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition, parent);
-}
-
 
 //------------------------------------------------------------------------------
 // ExpressionEvaluator
@@ -263,9 +149,17 @@ public:
 		SemanticAnalysisTraverser(errorBuffer, allocator, symbolTable, mScopeStack)
 	{}
 
+	void Analyze(TranslationUnit *translationUnitList);
+
 private:
 	ScopeStack mScopeStack;
 };
+
+
+void SemanticAnalysisPass::Analyze(TranslationUnit *translationUnitList)
+{
+	ParseNodeTraverser::TraverseList(translationUnitList);
+}
 
 
 //------------------------------------------------------------------------------

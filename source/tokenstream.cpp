@@ -56,13 +56,10 @@ const Token *TokenStream::PeekIf(Token::TokenType type) const
 
 const Token *TokenStream::PeekIf(const TokenTypeSet &typeSet) const
 {
-	for (int i = 0; i < typeSet.numTypes; ++i)
+	const Token *token = Peek();
+	if (typeSet.Contains(token->GetTokenType()))
 	{
-		const Token *token = Peek();
-		if (token->GetTokenType() == typeSet.types[i])
-		{
-			return token;
-		}
+		return token;
 	}
 	return 0;
 }

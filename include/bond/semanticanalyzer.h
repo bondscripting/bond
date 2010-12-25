@@ -1,12 +1,13 @@
 #ifndef BOND_SEMANTICANALYZER_H
 #define BOND_SEMANTICANALYZER_H
 
-#include "bond/allocator.h"
 #include "bond/parseerror.h"
 #include "bond/parsenodesfwd.h"
 
 namespace Bond
 {
+
+class Allocator;
 class SymbolTable;
 
 class SemanticAnalyzer

@@ -167,9 +167,9 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 
 void PrettyPrinter::Visit(const TypeSpecifier *typeSpecifier)
 {
-	if (typeSpecifier->GetPrimitiveType() != 0)
+	if (typeSpecifier->GetPrimitiveTypeToken() != 0)
 	{
-		Print(typeSpecifier->GetPrimitiveType());
+		Print(typeSpecifier->GetPrimitiveTypeToken());
 	}
 	else
 	{

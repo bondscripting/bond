@@ -1,5 +1,6 @@
 #include "bond/parseerror.h"
-#include "bond/textwriter.h"
+#include "bond/bufferedtextwriter.h"
+#include "bond/prettyprinter.h"
 #include "bond/token.h"
 
 namespace Bond
@@ -63,43 +64,29 @@ void ParseError::Print(TextWriter &writer) const
 		}
 		break;
 
-		case CONTEXT_ALT_LINE:
+		case CONTEXT_LINE:
 		{
-			const Bond::StreamPos &altPos = mAltContext->GetStartPos();
+			const Bond::StreamPos &altPos = GetTokenArg()->GetStartPos();
 			writer.Write(format, mContext->GetText(), altPos.line);
 		}
 		break;
 
-		case EXPECTED_CONTEXT:
+		case STR_CONTEXT:
 		{
-			writer.Write(format, mExpected, mContext->GetText());
-		}
-		break;
-	}
-
-	/*
-	switch (mType)
-	{
-		case ParseError::UNEXPECTED_TOKEN:
-		{
-			writer.Write("'%s' before '%s'.", mExpected, mContext->GetText());
+			writer.Write(format, GetStringArg(), mContext->GetText());
 		}
 		break;
 
-		case ParseError::DUPLICATE_SYMBOL:
-		case ParseError::DUPLICATE_FUNCTION_DEFINITION:
-		case ParseError::FUNCTION_PROTOTYPE_MISMATCH:
+		case CONTEXT_NODE:
 		{
-			const Bond::StreamPos &previousPos = mAltContext->GetStartPos();
-			writer.Write("'%s' previously defined on line '%d'.", mContext->GetText(), previousPos.line);
-		}
-
-		default:
-		{
-			writer.Write("near '%s'.", mContext->GetText());
+			const int BUFFER_SIZE = 1024;
+			char nodeBuffer[BUFFER_SIZE];
+			BufferedTextWriter nodeWriter(nodeBuffer, BUFFER_SIZE);
+			PrettyPrinter nodePrinter(nodeWriter);
+			nodePrinter.Print(GetParseNodeArg());
+			writer.Write(format, mContext->GetText(), nodeBuffer);
 		}
 	}
-	*/
 }
 
 
@@ -119,21 +106,31 @@ void ParseErrorBuffer::Reset()
 }
 
 
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const char *expected)
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const char *arg)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{
-		mErrors[mNumErrors] = ParseError(type, context, expected);
+		mErrors[mNumErrors] = ParseError(type, context, arg);
 		++mNumErrors;
 	}
 }
 
 
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const Token *altContext)
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const Token *arg)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{
-		mErrors[mNumErrors] = ParseError(type, context, altContext);
+		mErrors[mNumErrors] = ParseError(type, context, arg);
+		++mNumErrors;
+	}
+}
+
+
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const ParseNode *arg)
+{
+	if (mNumErrors < MAX_ERRORS)
+	{
+		mErrors[mNumErrors] = ParseError(type, context, arg);
 		++mNumErrors;
 	}
 }
