@@ -53,11 +53,11 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-bool IsConstantTypeDescriptor(const TypeDescriptor *type);
-
-bool AreMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB);
-bool AreMatchingTypeDescriptors(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+bool AreMatchingTypes(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB);
+bool AreMatchingTypes(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB);
+
+bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
 }
 

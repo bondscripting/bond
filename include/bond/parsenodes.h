@@ -316,6 +316,8 @@ public:
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
 	bool IsNumericType() const;
+	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
+	bool IsAssignableType() const { return !mIsConst && (mVariant != VARIANT_ARRAY); }
 
 private:
 	TypeSpecifier *mSpecifier;

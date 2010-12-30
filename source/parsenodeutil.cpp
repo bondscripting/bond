@@ -4,21 +4,7 @@
 namespace Bond
 {
 
-bool IsConstantTypeDescriptor(const TypeDescriptor *type)
-{
-	while (type != 0)
-	{
-		if (!type->IsConst() && (type->GetVariant() != TypeDescriptor::VARIANT_ARRAY))
-		{
-			return false;
-		}
-		type = type->GetParent();
-	}
-	return true;
-}
-
-
-bool TestMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB)
+bool AreMatchingTypes(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
 	if ((typeA != 0) && (typeB != 0))
 	{
@@ -39,7 +25,6 @@ bool TestMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA,
 		{
 			const Symbol *symbolA = scope->FindSymbol(identifierA);
 			const Symbol *symbolB = scope->FindSymbol(identifierB);
-
 			return (symbolA != 0) && (symbolA == symbolB);
 		}
 		else if (!((identifierA == 0) && (identifierB == 0)))
@@ -58,7 +43,7 @@ bool TestMatchingTypeSpecifiers(const Symbol *scope, const TypeSpecifier *typeA,
 }
 
 
-bool TestMatchingTypeDescriptors(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB)
+bool AreMatchingTypes(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
 	while ((typeA != 0) && (typeB != 0))
 	{
@@ -70,7 +55,7 @@ bool TestMatchingTypeDescriptors(const Symbol *scope, const TypeDescriptor *type
 		{
 			return false;
 		}
-		if (TestMatchingTypeSpecifiers(scope, typeA->GetTypeSpecifier(), typeB->GetTypeSpecifier()))
+		if (AreMatchingTypes(scope, typeA->GetTypeSpecifier(), typeB->GetTypeSpecifier()))
 		{
 			return false;
 		}
@@ -84,11 +69,19 @@ bool TestMatchingTypeDescriptors(const Symbol *scope, const TypeDescriptor *type
 }
 
 
-bool TestMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB)
+bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB)
 {
 	// TODO
 	return true;
 }
 
+
+bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
+{
+	return
+		(typeA->IsPointerType() && typeB->IsPointerType()) ||
+		(typeA->IsNumericType() && typeB->IsNumericType()) ||
+		(typeA->IsBooleanType() && typeB->IsBooleanType());
+}
 
 }

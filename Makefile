@@ -17,12 +17,11 @@ SRCFILE := $(SRCDIR)/%.cpp
 OBJDIR := $(BLDDIR)/obj/bond
 OBJFILE := $(OBJDIR)/%.o
 OBJDEPFILE := $(OBJDIR)/%.d
-INCLUDEDIR := include
 SRCFILES := $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES := $(patsubst $(SRCFILE),$(OBJFILE),$(SRCFILES))
 DEPFILES := $(patsubst $(SRCFILE),$(OBJDEPFILE),$(SRCFILES))
 LIB := $(LIBDIR)/bond.a
-CFLAGS := -Wall -ansi -g -I$(INCLUDEDIR)
+CFLAGS := -Wall -g -Iinclude -Isource
 
 # Test Framework library files, folders and configuration.
 TFSRCDIR := test/framework
@@ -30,12 +29,11 @@ TFSRCFILE := $(TFSRCDIR)/%.cpp
 TFOBJDIR := $(BLDDIR)/obj/framework
 TFOBJFILE := $(TFOBJDIR)/%.o
 TFOBJDEPFILE := $(TFOBJDIR)/%.d
-TFINCLUDEDIR := test
 TFSRCFILES := $(wildcard $(TFSRCDIR)/*.cpp)
 TFOBJFILES := $(patsubst $(TFSRCFILE),$(TFOBJFILE),$(TFSRCFILES))
 TFDEPFILES := $(patsubst $(TFSRCFILE),$(TFOBJDEPFILE),$(TFSRCFILES))
 TFLIB := $(LIBDIR)/framework.a
-TFCFLAGS := -Wall -g -I$(INCLUDEDIR) -I$(TFINCLUDEDIR)
+TFCFLAGS := -Wall -g -Iinclude -Itest
 
 # Unit Test files, folders and configuration.
 UTSRCDIR := test
@@ -45,7 +43,7 @@ UTSRCFILES := $(wildcard $(UTSRCDIR)/*.cpp)
 UTEXES := $(patsubst $(UTSRCFILE),$(EXEFILE),$(UTSRCFILES))
 UTDEPFILES := $(patsubst $(UTSRCFILE),$(EXEDEPFILE),$(UTSRCFILES))
 UTESTS := $(patsubst $(UTSRCFILE),$(UTEST),$(UTSRCFILES))
-UTCFLAGS := -Wall -ansi -g -I$(INCLUDEDIR) -I$(TFINCLUDEDIR)
+UTCFLAGS := -Wall -g -Iinclude -Itest
 
 .PHONY: all clean test
 
@@ -68,7 +66,7 @@ $(LIB): $(OBJFILES)
 
 $(OBJFILE): $(SRCFILE) Makefile
 	@$(MKDIR) -p $(OBJDIR)
-	$(CC) $(TFCFLAGS) -MMD -MP -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # Test Framework targets.
 framework: $(TFLIB)

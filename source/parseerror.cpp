@@ -143,31 +143,11 @@ void ParseErrorBuffer::Reset()
 }
 
 
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const char *arg)
+void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const void *arg0, const void *arg1)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{
-		mErrors[mNumErrors] = ParseError(type, context, arg);
-		++mNumErrors;
-	}
-}
-
-
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const Token *arg)
-{
-	if (mNumErrors < MAX_ERRORS)
-	{
-		mErrors[mNumErrors] = ParseError(type, context, arg);
-		++mNumErrors;
-	}
-}
-
-
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const ParseNode *arg)
-{
-	if (mNumErrors < MAX_ERRORS)
-	{
-		mErrors[mNumErrors] = ParseError(type, context, arg);
+		mErrors[mNumErrors] = ParseError(type, context, arg0, arg1);
 		++mNumErrors;
 	}
 }

@@ -30,6 +30,12 @@
     "Expected '%s' before '%c'." )                                          \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                               \
     "Operator '%c' cannot be applied to type '%n'." )                       \
+  BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                 \
+    "Cannot convert type '%0n' to '%1n'." )                                 \
+  BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
+    "Cannot assign to type '%n' on lhs of '%c'." )                          \
+  BOND_PARSE_ERROR(INVALID_COMPARISON,                                      \
+    "Operator '%c' cannot compare type '%0n' with type '%1n'." )            \
 
 
 namespace Bond
@@ -88,10 +94,7 @@ public:
 
 	void Reset();
 
-	void PushError(ParseError::Type type, const Token *context, const char *arg);
-	void PushError(ParseError::Type type, const Token *context, const Token *arg);
-	void PushError(ParseError::Type type, const Token *context, const ParseNode *arg);
-
+	void PushError(ParseError::Type type, const Token *context, const void *arg0 = 0, const void *arg1 = 0);
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
 	const ParseError *GetError(int index) const { return mErrors + index; }

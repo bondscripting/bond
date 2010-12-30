@@ -18,5 +18,5 @@ enum WithInitializers
 {
 	SEVENTH = FIRST*3 +2,
 	EIGHTH = (FIRST < SECOND)?5:10,
-	NINETH = sizeof<int const *const[234]>,
+	NINTH = sizeof<int const *const[234]>,
 };
