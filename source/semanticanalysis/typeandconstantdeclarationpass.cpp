@@ -22,8 +22,7 @@ public:
 void TypeAndConstantDeclarationPass::Visit(NamespaceDefinition *namespaceDefinition)
 {
 	const Token *name = namespaceDefinition->GetName();
-	Symbol *parent = GetCurrentScope();
-	Symbol *symbol = GetOrInsertSymbol(Symbol::TYPE_NAMESPACE, name, namespaceDefinition, parent);
+	Symbol *symbol = GetOrInsertSymbol(Symbol::TYPE_NAMESPACE, name, namespaceDefinition);
 	namespaceDefinition->SetSymbol(symbol);
 	SemanticAnalysisPass ::Visit(namespaceDefinition);
 }
@@ -32,8 +31,7 @@ void TypeAndConstantDeclarationPass::Visit(NamespaceDefinition *namespaceDefinit
 void TypeAndConstantDeclarationPass::Visit(EnumDeclaration *enumDeclaration)
 {
 	const Token *name = enumDeclaration->GetName();
-	Symbol *parent = GetCurrentScope();
-	InsertSymbol(Symbol::TYPE_ENUM, name, enumDeclaration, parent);
+	InsertSymbol(Symbol::TYPE_ENUM, name, enumDeclaration);
 	ParseNodeTraverser::Visit(enumDeclaration);
 }
 
@@ -41,16 +39,14 @@ void TypeAndConstantDeclarationPass::Visit(EnumDeclaration *enumDeclaration)
 void TypeAndConstantDeclarationPass::Visit(Enumerator *enumerator)
 {
 	const Token *name = enumerator->GetName();
-	Symbol *parent = GetCurrentScope();
-	InsertSymbol(Symbol::TYPE_CONSTANT, name, enumerator, parent);
+	InsertSymbol(Symbol::TYPE_CONSTANT, name, enumerator);
 }
 
 
 void TypeAndConstantDeclarationPass::Visit(StructDeclaration *structDeclaration)
 {
 	const Token *name = structDeclaration->GetName();
-	Symbol *parent = GetCurrentScope();
-	Symbol *symbol = InsertSymbol(Symbol::TYPE_STRUCT, name, structDeclaration, parent);
+	Symbol *symbol = InsertSymbol(Symbol::TYPE_STRUCT, name, structDeclaration);
 	structDeclaration->SetSymbol(symbol);
 }
 
@@ -97,8 +93,7 @@ void TypeAndConstantDeclarationPass::Visit(NamedInitializer *namedInitializer)
 	// TODO: Assert that type is a valid top-level constant type.
 	// Assert that the expression is a constant expression.
 	const Token *name = namedInitializer->GetName();
-	Symbol *parent = GetCurrentScope();
-	InsertSymbol(Symbol::TYPE_CONSTANT, name, namedInitializer, parent);
+	InsertSymbol(Symbol::TYPE_CONSTANT, name, namedInitializer);
 }
 
 }

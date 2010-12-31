@@ -38,17 +38,20 @@ protected:
 	virtual void Visit(SwitchSection *switchSection);
 	virtual void Visit(ForStatement *forStatement);
 
-	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
-
-	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
+	Symbol *GetSymbol(const Token *name);
+	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
+	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
 
 	ParseErrorBuffer &mErrorBuffer;
 
 private:
 	SemanticAnalysisPass(const SemanticAnalysisPass &other);
 	SemanticAnalysisPass &operator=(const SemanticAnalysisPass &other);
+
+	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
+	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
+	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
+	Symbol *CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
 
 	ScopeStack mScopeStack;
 	SymbolTable &mSymbolTable;
@@ -111,6 +114,20 @@ void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 }
 
 
+Symbol *SemanticAnalysisPass::GetSymbol(const Token *name)
+{
+	Symbol *parent = GetCurrentScope();
+	return parent->FindSymbol(name);
+}
+
+
+Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition)
+{
+	Symbol *parent = GetCurrentScope();
+	return InsertSymbol(type, name, definition, parent);
+}
+
+
 Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
 {
 	Symbol *symbol = parent->FindSymbol(name);
@@ -121,9 +138,15 @@ Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name,
 	}
 
 	symbol = CreateSymbol(type, name, definition, parent);
-	parent->InsertSymbol(symbol);
 
 	return symbol;
+}
+
+
+Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition)
+{
+	Symbol *parent = GetCurrentScope();
+	return GetOrInsertSymbol(type, name, definition, parent);
 }
 
 
@@ -140,7 +163,6 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *
 	if (symbol == 0)
 	{
 		symbol = CreateSymbol(type, name, definition, parent);
-		parent->InsertSymbol(symbol);
 	}
 
 	return symbol;
@@ -149,7 +171,9 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *
 
 Symbol *SemanticAnalysisPass::CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
 {
-	return new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition, parent);
+	Symbol *symbol = new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition, parent);
+	parent->InsertSymbol(symbol);
+	return symbol;
 }
 
 }
@@ -310,8 +334,6 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	const int symbolCount =
 		nodeCount.mNamespaceDefinition +
 		nodeCount.mEnumDeclaration +
-		// Enumerators are added to the enum and to the parent scope of the enum.
-		//(nodeCount.mEnumerator * 2) +
 		nodeCount.mEnumerator +
 		nodeCount.mStructDeclaration +
 		nodeCount.mFunctionDefinition +

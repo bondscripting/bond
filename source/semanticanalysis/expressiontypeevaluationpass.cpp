@@ -365,7 +365,11 @@ void ExpressionTypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 
 void ExpressionTypeEvaluationPass::Visit(IdentifierExpression *identifierValue)
 {
-	// TODO
+	TypeAndValue &tav = constantExpression->GetTypeAndValue();
+
+	if (!tav.IsTypeDefined())
+	{
+	}
 }
 
 
