@@ -44,7 +44,7 @@ public:
 	virtual void Visit(CastExpression *castExpression) = 0;
 	virtual void Visit(SizeofExpression *sizeofExpression) = 0;
 	virtual void Visit(ConstantExpression *constantExpression) = 0;
-	virtual void Visit(IdentifierExpression *identifierValue) = 0;
+	virtual void Visit(IdentifierExpression *identifierExpression) = 0;
 };
 
 
@@ -86,7 +86,7 @@ public:
 	virtual void Visit(const CastExpression *castExpression) = 0;
 	virtual void Visit(const SizeofExpression *sizeofExpression) = 0;
 	virtual void Visit(const ConstantExpression *constantExpression) = 0;
-	virtual void Visit(const IdentifierExpression *identifierValue) = 0;
+	virtual void Visit(const IdentifierExpression *identifierExpression) = 0;
 };
 
 
@@ -128,7 +128,7 @@ public:
 	virtual void Visit(CastExpression *castExpression) {}
 	virtual void Visit(SizeofExpression *sizeofExpression) {}
 	virtual void Visit(ConstantExpression *constantExpression) {}
-	virtual void Visit(IdentifierExpression *identifierValue) {}
+	virtual void Visit(IdentifierExpression *identifierExpression) {}
 };
 
 
@@ -170,7 +170,7 @@ public:
 	virtual void Visit(const CastExpression *castExpression) {}
 	virtual void Visit(const SizeofExpression *sizeofExpression) {}
 	virtual void Visit(const ConstantExpression *constantExpression) {}
-	virtual void Visit(const IdentifierExpression *identifierValue) {}
+	virtual void Visit(const IdentifierExpression *identifierExpression) {}
 };
 
 }

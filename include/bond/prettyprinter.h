@@ -56,7 +56,7 @@ public:
 	virtual void Visit(const CastExpression *castExpression);
 	virtual void Visit(const SizeofExpression *sizeofExpression);
 	virtual void Visit(const ConstantExpression *constantExpression);
-	virtual void Visit(const IdentifierExpression *identifierValue);
+	virtual void Visit(const IdentifierExpression *identifierExpression);
 
 private:
 	void PrintList(const ListParseNode *listNode, const char *separator);

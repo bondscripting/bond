@@ -1,15 +1,15 @@
 namespace Bond
 {
 
-class ExpressionTypeEvaluationPass: public SemanticAnalysisPass
+class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	~ExpressionTypeEvaluationPass() {}
+	~TypeEvaluationPass() {}
 
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
-	ExpressionTypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
 		SemanticAnalysisPass(errorBuffer, allocator, symbolTable)
 	{}
 
@@ -23,7 +23,7 @@ protected:
 	virtual void Visit(CastExpression *castExpression);
 	virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
-	virtual void Visit(IdentifierExpression *identifierValue);
+	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
 	void AssertBooleanType(const TypeDescriptor *descriptor, const Token *op);
@@ -37,14 +37,14 @@ private:
 };
 
 
-class TopLevelExpressionTypeEvaluationPass: public ExpressionTypeEvaluationPass
+class TopLevelTypeEvaluationPass: public TypeEvaluationPass
 {
 public:
-	TopLevelExpressionTypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
-		ExpressionTypeEvaluationPass(errorBuffer, allocator, symbolTable)
+	TopLevelTypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
+		TypeEvaluationPass(errorBuffer, allocator, symbolTable)
 	{}
 
-	~TopLevelExpressionTypeEvaluationPass() {}
+	~TopLevelTypeEvaluationPass() {}
 
 protected:
 	// This pass doesn't descend into structs and functions.
@@ -53,7 +53,7 @@ protected:
 };
 
 
-void ExpressionTypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
+void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
 	{
@@ -64,7 +64,7 @@ void ExpressionTypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
+void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 {
 	ParseNodeTraverser::Visit(conditionalExpression);
 	TypeAndValue &tav = conditionalExpression->GetTypeAndValue();
@@ -78,7 +78,7 @@ void ExpressionTypeEvaluationPass::Visit(ConditionalExpression *conditionalExpre
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
+void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 {
 	TypeAndValue &tav = binaryExpression->GetTypeAndValue();
 
@@ -207,7 +207,7 @@ void ExpressionTypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
+void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 {
 	TypeAndValue &tav = unaryExpression->GetTypeAndValue();
 
@@ -252,7 +252,7 @@ void ExpressionTypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
+void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 {
 	TypeAndValue &tav = postfixExpression->GetTypeAndValue();
 
@@ -274,7 +274,7 @@ void ExpressionTypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(CastExpression *castExpression)
+void TypeEvaluationPass::Visit(CastExpression *castExpression)
 {
 	ParseNodeTraverser::Visit(castExpression);
 	TypeAndValue &tav = castExpression->GetTypeAndValue();
@@ -310,7 +310,7 @@ void ExpressionTypeEvaluationPass::Visit(CastExpression *castExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
+void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 {
 	ParseNodeTraverser::Visit(sizeofExpression);
 	TypeAndValue &tav = sizeofExpression->GetTypeAndValue();
@@ -323,7 +323,7 @@ void ExpressionTypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(ConstantExpression *constantExpression)
+void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 {
 	TypeAndValue &tav = constantExpression->GetTypeAndValue();
 
@@ -363,9 +363,9 @@ void ExpressionTypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 }
 
 
-void ExpressionTypeEvaluationPass::Visit(IdentifierExpression *identifierValue)
+void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 {
-	TypeAndValue &tav = constantExpression->GetTypeAndValue();
+	TypeAndValue &tav = identifierExpression->GetTypeAndValue();
 
 	if (!tav.IsTypeDefined())
 	{
@@ -373,7 +373,7 @@ void ExpressionTypeEvaluationPass::Visit(IdentifierExpression *identifierValue)
 }
 
 
-void ExpressionTypeEvaluationPass::AssertBooleanType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertBooleanType(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsBooleanType())
 	{
@@ -382,7 +382,7 @@ void ExpressionTypeEvaluationPass::AssertBooleanType(const TypeDescriptor *descr
 }
 
 
-void ExpressionTypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsIntegerType())
 	{
@@ -391,7 +391,7 @@ void ExpressionTypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descr
 }
 
 
-void ExpressionTypeEvaluationPass::AssertNumericType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertNumericType(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsNumericType())
 	{
@@ -400,7 +400,7 @@ void ExpressionTypeEvaluationPass::AssertNumericType(const TypeDescriptor *descr
 }
 
 
-void ExpressionTypeEvaluationPass::AssertAssignableType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsAssignableType())
 	{
@@ -409,7 +409,7 @@ void ExpressionTypeEvaluationPass::AssertAssignableType(const TypeDescriptor *de
 }
 
 
-void ExpressionTypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op)
+void TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op)
 {
 	if (!AreComparableTypes(typeA, typeB))
 	{
@@ -418,7 +418,7 @@ void ExpressionTypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *t
 }
 
 
-const TypeDescriptor *ExpressionTypeEvaluationPass::CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB) const
+const TypeDescriptor *TypeEvaluationPass::CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB) const
 {
 	const Token::TokenType a = typeA->GetPrimitiveType();
 	const Token::TokenType b = typeB->GetPrimitiveType();

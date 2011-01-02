@@ -143,13 +143,14 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 	if (stream.NextIf(Token::KEY_ENUM) != 0)
 	{
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
+		enumeration = mFactory.CreateEnumDeclaration(name);
 		ExpectToken(status, stream, Token::OBRACE);
 		Enumerator *enumeratorList = 0;
 		Enumerator *current = 0;
 
 		while (stream.PeekIf(TokenTypeSet::ENUM_DELIMITERS) == 0)
 		{
-			Enumerator *next = ParseEnumerator(status, stream);
+			Enumerator *next = ParseEnumerator(status, stream, enumeration);
 			AssertNode(status, stream, next);
 			SyncToEnumeratorDelimiter(status, stream);
 
@@ -173,9 +174,9 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 			}
 		}
 
+		enumeration->SetEnumeratorList(enumeratorList);
 		ExpectToken(status, stream, Token::CBRACE);
 		ExpectDeclarationTerminator(status, stream);
-		enumeration = mFactory.CreateEnumDeclaration(name, enumeratorList);
 	}
 
 	return enumeration;
@@ -184,7 +185,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 
 // enumerator
 //   : IDENTIFIER ['=' const_expression]
-Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream)
+Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream, EnumDeclaration *parent)
 {
 	Enumerator *enumerator = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
@@ -197,7 +198,7 @@ Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream)
 			value = ParseConstExpression(status, stream);
 			AssertNode(status, stream, value);
 		}
-		enumerator = mFactory.CreateEnumerator(name, value);
+		enumerator = mFactory.CreateEnumerator(name, parent, value);
 	}
 
 	return enumerator;

@@ -96,6 +96,7 @@
 	/* Special values */                      \
 	BOND_TOKEN_ITEM(INVALID)                  \
 	BOND_TOKEN_ITEM(END)                      \
+	BOND_TOKEN_ITEM(NUM_TOKEN_TYPES)          \
 
 #define BOND_TOKEN_ERROR_LIST \
 	BOND_TOKEN_ERROR_ITEM(NO_ERROR)                 \
@@ -258,16 +259,29 @@ class TokenTypeSet
 {
  public:
 	TokenTypeSet(
-			const Token::TokenType *types,
-			int numTypes,
-			const char *const typeName):
-		mTypes(types),
-		mNumTypes(numTypes),
-		mTypeName(typeName)
-	{}
+		const char *const typeName,
+		Token::TokenType t0 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t1 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t2 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t3 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t4 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t5 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t6 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t7 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t8 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t9 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t10 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t11 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t12 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t13 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t14 = Token::NUM_TOKEN_TYPES,
+		Token::TokenType t15 = Token::NUM_TOKEN_TYPES);
 
 	const char *GetTypeName() const { return mTypeName; }
-	bool Contains(Token::TokenType type) const;
+
+	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & (1 << (type % 32))) != 0; }
+
+	void Set(Token::TokenType type) { mBitField[type / 32] |= 1 << (type % 32); }
 
 	static const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
 	static const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS;
@@ -296,8 +310,8 @@ class TokenTypeSet
 	static const TokenTypeSet LABEL_DELIMITERS;
 
 private:
-	const Token::TokenType *mTypes;
-	int mNumTypes;
+	static const int NUM_BIT_FIELD_ELEMENTS = (Token::NUM_TOKEN_TYPES / 32) + 1;
+	bu32_t mBitField[NUM_BIT_FIELD_ELEMENTS];
 	const char *mTypeName;
 };
 

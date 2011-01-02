@@ -2,6 +2,7 @@
 #define BOND_SYMBOLTABLE_H
 
 #include "bond/conf.h"
+#include "bond/typeandvalue.h"
 
 namespace Bond
 {
@@ -33,6 +34,9 @@ public:
 		mSymbolList(0)
 	{}
 
+	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
+	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
+
 	Type GetType() const { return mType; }
 	const Token *GetName() const { return mName; }
 
@@ -62,6 +66,7 @@ private:
 	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
 
+	TypeAndValue mTypeAndValue;
 	Type mType;
 	const Token *mName;
 	const ParseNode *mDefinition;

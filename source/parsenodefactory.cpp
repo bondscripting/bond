@@ -52,15 +52,18 @@ NamespaceDefinition *ParseNodeFactory::CreateNamespaceDefinition(
 }
 
 
-EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name, Enumerator *enumeratorList)
+EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name)
 {
-	return new (mAllocator.Alloc<EnumDeclaration>()) EnumDeclaration(name, enumeratorList);
+	return new (mAllocator.Alloc<EnumDeclaration>()) EnumDeclaration(name);
 }
 
 
-Enumerator *ParseNodeFactory::CreateEnumerator(const Token *name, Expression *value)
+Enumerator *ParseNodeFactory::CreateEnumerator(
+	const Token *name,
+	EnumDeclaration *parent,
+	Expression *value)
 {
-	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, value);
+	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, parent, value);
 }
 
 

@@ -179,7 +179,7 @@ Symbol *SemanticAnalysisPass::CreateSymbol(Symbol::Type type, const Token *name,
 }
 
 
-#include "semanticanalysis/expressiontypeevaluationpass.cpp"
+#include "semanticanalysis/typeevaluationpass.cpp"
 #include "semanticanalysis/typeandconstantdeclarationpass.cpp"
 
 
@@ -204,7 +204,7 @@ public:
 	//virtual void Visit(CastExpression *castExpression);
 	//virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
-	//virtual void Visit(IdentifierExpression *identifierValue);
+	//virtual void Visit(IdentifierExpression *identifierExpression);
 };
 
 
@@ -365,7 +365,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList, Allocator &
 		return;
 	}
 
-	TopLevelExpressionTypeEvaluationPass topLevelExpressionTypePass(mErrorBuffer, allocator, *mSymbolTable);
+	TopLevelTypeEvaluationPass topLevelExpressionTypePass(mErrorBuffer, allocator, *mSymbolTable);
 	topLevelExpressionTypePass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())

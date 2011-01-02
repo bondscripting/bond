@@ -59,6 +59,127 @@ private:
 };
 
 
+class TypeDescriptor: public ParseNode
+{
+public:
+	enum Variant
+	{
+		VARIANT_VALUE,
+		VARIANT_POINTER,
+		VARIANT_ARRAY,
+	};
+
+	TypeDescriptor() {}
+	TypeDescriptor(TypeSpecifier *specifier, bool isConst):
+		mSpecifier(specifier),
+		mParent(0),
+		mLength(0),
+		mVariant(VARIANT_VALUE),
+		mIsConst(isConst)
+	{}
+
+	TypeDescriptor(TypeDescriptor *parent, bool isConst):
+		mSpecifier(0),
+		mParent(parent),
+		mLength(0),
+		mVariant(VARIANT_POINTER),
+		mIsConst(isConst)
+	{}
+
+	TypeDescriptor(TypeDescriptor *parent, Expression *length):
+		mSpecifier(0),
+		mParent(parent),
+		mLength(length),
+		mVariant(VARIANT_ARRAY),
+		mIsConst(false)
+	{}
+
+	virtual ~TypeDescriptor() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const;
+
+	TypeSpecifier *GetTypeSpecifier() { return mSpecifier; }
+	const TypeSpecifier *GetTypeSpecifier() const { return mSpecifier; }
+
+	TypeDescriptor *GetParent() { return mParent; }
+	const TypeDescriptor *GetParent() const { return mParent; }
+
+	Expression *GetLength() { return mLength; }
+	const Expression *GetLength() const { return mLength; }
+
+	Variant GetVariant() const { return mVariant; }
+	bool IsConst() const { return mIsConst; }
+
+	Token::TokenType GetPrimitiveType() const;
+	bool IsBooleanType() const;
+	bool IsIntegerType() const;
+	bool IsNumericType() const;
+	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
+	bool IsAssignableType() const { return !mIsConst && (mVariant != VARIANT_ARRAY); }
+
+private:
+	TypeSpecifier *mSpecifier;
+	TypeDescriptor *mParent;
+	Expression *mLength;
+	Variant mVariant;
+	bool mIsConst;
+};
+
+
+class TypeSpecifier: public ParseNode
+{
+public:
+	explicit TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
+	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
+	virtual ~TypeSpecifier() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const;
+
+	const Token *GetPrimitiveTypeToken() const { return mPrimitiveType; }
+
+	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
+	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+	Token::TokenType GetPrimitiveType() const;
+	bool IsBooleanType() const;
+	bool IsIntegerType() const;
+	bool IsNumericType() const;
+
+private:
+	const Token *mPrimitiveType;
+	QualifiedIdentifier *mIdentifier;
+};
+
+
+class QualifiedIdentifier: public ListParseNode
+{
+public:
+	explicit QualifiedIdentifier(const Token *name): mName(name) {}
+	virtual ~QualifiedIdentifier() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mName; }
+
+	const Token *GetName() const { return mName; }
+
+	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNext()); }
+	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNext()); }
+
+	bool IsTerminal() const { return GetNext() == 0; }
+
+private:
+	const Token *mName;
+};
+
+
 class TranslationUnit: public ListParseNode
 {
 public:
@@ -105,9 +226,11 @@ private:
 class EnumDeclaration: public ListParseNode
 {
 public:
-	EnumDeclaration(const Token *name, Enumerator *enumeratorList):
-		mName(name),
-		mEnumeratorList(enumeratorList)
+	EnumDeclaration(const Token *name):
+		mIdentifier(name),
+		mSpecifier(&mIdentifier),
+		mDescriptor(&mSpecifier, true),
+		mEnumeratorList(0)
 	{}
 
 	virtual ~EnumDeclaration() {}
@@ -115,15 +238,18 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
+	virtual const Token *GetContextToken() const { return GetName(); }
 
-	const Token *GetName() const { return mName; }
+	const Token *GetName() const { return mIdentifier.GetName(); }
 
 	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
 	const Enumerator *GetEnumeratorList() const { return mEnumeratorList; }
+	void SetEnumeratorList(Enumerator *enumeratorList) { mEnumeratorList = enumeratorList; }
 
 private:
-	const Token *mName;
+	QualifiedIdentifier mIdentifier;
+	TypeSpecifier mSpecifier;
+	TypeDescriptor mDescriptor;
 	Enumerator *mEnumeratorList;
 };
 
@@ -131,7 +257,10 @@ private:
 class Enumerator: public ListParseNode
 {
 public:
-	Enumerator(const Token *name, Expression *value): mName(name), mValue(value) {}
+	Enumerator(const Token *name, EnumDeclaration *parent, Expression *value):
+		mName(name),
+		mParent(parent),
+		mValue(value) {}
 	virtual ~Enumerator() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
@@ -141,11 +270,15 @@ public:
 
 	const Token *GetName() const { return mName; }
 
+	EnumDeclaration *GetParent() { return mParent; }
+	const EnumDeclaration *GetParent() const { return mParent; }
+
 	Expression *GetValue() { return mValue; }
 	const Expression *GetValue() const { return mValue; }
 
 private:
 	const Token *mName;
+	EnumDeclaration *mParent;
 	Expression *mValue;
 };
 
@@ -258,104 +391,6 @@ private:
 };
 
 
-class TypeDescriptor: public ParseNode
-{
-public:
-	enum Variant
-	{
-		VARIANT_VALUE,
-		VARIANT_POINTER,
-		VARIANT_ARRAY,
-	};
-
-	TypeDescriptor() {}
-	TypeDescriptor(TypeSpecifier *specifier, bool isConst):
-		mSpecifier(specifier),
-		mParent(0),
-		mLength(0),
-		mVariant(VARIANT_VALUE),
-		mIsConst(isConst)
-	{}
-
-	TypeDescriptor(TypeDescriptor *parent, bool isConst):
-		mSpecifier(0),
-		mParent(parent),
-		mLength(0),
-		mVariant(VARIANT_POINTER),
-		mIsConst(isConst)
-	{}
-
-	TypeDescriptor(TypeDescriptor *parent, Expression *length):
-		mSpecifier(0),
-		mParent(parent),
-		mLength(length),
-		mVariant(VARIANT_ARRAY),
-		mIsConst(false)
-	{}
-
-	virtual ~TypeDescriptor() {}
-
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
-
-	virtual const Token *GetContextToken() const;
-
-	TypeSpecifier *GetTypeSpecifier() { return mSpecifier; }
-	const TypeSpecifier *GetTypeSpecifier() const { return mSpecifier; }
-
-	TypeDescriptor *GetParent() { return mParent; }
-	const TypeDescriptor *GetParent() const { return mParent; }
-
-	Expression *GetLength() { return mLength; }
-	const Expression *GetLength() const { return mLength; }
-
-	Variant GetVariant() const { return mVariant; }
-	bool IsConst() const { return mIsConst; }
-
-	Token::TokenType GetPrimitiveType() const;
-	bool IsBooleanType() const;
-	bool IsIntegerType() const;
-	bool IsNumericType() const;
-	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
-	bool IsAssignableType() const { return !mIsConst && (mVariant != VARIANT_ARRAY); }
-
-private:
-	TypeSpecifier *mSpecifier;
-	TypeDescriptor *mParent;
-	Expression *mLength;
-	Variant mVariant;
-	bool mIsConst;
-};
-
-
-class TypeSpecifier: public ParseNode
-{
-public:
-	explicit TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
-	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
-	virtual ~TypeSpecifier() {}
-
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
-
-	virtual const Token *GetContextToken() const;
-
-	const Token *GetPrimitiveTypeToken() const { return mPrimitiveType; }
-
-	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
-	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
-
-	Token::TokenType GetPrimitiveType() const;
-	bool IsBooleanType() const;
-	bool IsIntegerType() const;
-	bool IsNumericType() const;
-
-private:
-	const Token *mPrimitiveType;
-	QualifiedIdentifier *mIdentifier;
-};
-
-
 class NamedInitializer: public ListParseNode
 {
 public:
@@ -415,29 +450,6 @@ public:
 private:
 	Expression *mExpression;
 	Initializer *mInitializerList;
-};
-
-
-class QualifiedIdentifier: public ListParseNode
-{
-public:
-	explicit QualifiedIdentifier(const Token *name): mName(name) {}
-	virtual ~QualifiedIdentifier() {}
-
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ConstParseNodeVisitor &visitor) const { visitor.Visit(this); }
-
-	virtual const Token *GetContextToken() const { return mName; }
-
-	const Token *GetName() const { return mName; }
-
-	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNext()); }
-	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNext()); }
-
-	bool IsTerminal() const { return GetNext() == 0; }
-
-private:
-	const Token *mName;
 };
 
 
