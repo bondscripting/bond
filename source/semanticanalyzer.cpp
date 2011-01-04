@@ -39,6 +39,7 @@ protected:
 	virtual void Visit(ForStatement *forStatement);
 
 	Symbol *GetSymbol(const Token *name);
+	Symbol *GetSymbol(const QualifiedIdentifier *identifier);
 	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
 	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
 
@@ -118,6 +119,13 @@ Symbol *SemanticAnalysisPass::GetSymbol(const Token *name)
 {
 	Symbol *parent = GetCurrentScope();
 	return parent->FindSymbol(name);
+}
+
+
+Symbol *SemanticAnalysisPass::GetSymbol(const QualifiedIdentifier *identifier)
+{
+	Symbol *parent = GetCurrentScope();
+	return parent->FindSymbol(identifier);
 }
 
 

@@ -283,37 +283,44 @@ class TokenTypeSet
 
 	void Set(Token::TokenType type) { mBitField[type / 32] |= 1 << (type % 32); }
 
-	static const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS;
-	static const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS;
-	static const TokenTypeSet INTEGER_TYPE_SPECIFIERS;
-	static const TokenTypeSet NUMERIC_TYPE_SPECIFIERS;
-	static const TokenTypeSet TYPE_DESCRIPTORS;
-	static const TokenTypeSet JUMP_OPERATORS;
-	static const TokenTypeSet SWITCH_LABELS;
-	static const TokenTypeSet ASSIGNMENT_OPERATORS;
-	static const TokenTypeSet EQUALITY_OPERATORS;
-	static const TokenTypeSet RELATIONAL_OPERATORS;
-	static const TokenTypeSet SHIFT_OPERATORS;
-	static const TokenTypeSet ADDITIVE_OPERATORS;
-	static const TokenTypeSet MULTIPLICATIVE_OPERATORS;
-	static const TokenTypeSet UNARY_OPERATORS;
-	static const TokenTypeSet POSTFIX_OPERATORS;
-	static const TokenTypeSet CONSTANT_VALUES;
-	static const TokenTypeSet BLOCK_DELIMITERS;
-	static const TokenTypeSet DECLARATION_DELIMITERS;
-	static const TokenTypeSet ENUM_DELIMITERS;
-	static const TokenTypeSet ENUMERATOR_DELIMITERS;
-	static const TokenTypeSet STRUCT_MEMBER_DELIMITERS;
-	static const TokenTypeSet INITIALIZER_DELIMITERS;
-	static const TokenTypeSet SWITCH_SECTION_DELIMITERS;
-	static const TokenTypeSet STATEMENT_DELIMITERS;
-	static const TokenTypeSet LABEL_DELIMITERS;
-
 private:
 	static const int NUM_BIT_FIELD_ELEMENTS = (Token::NUM_TOKEN_TYPES / 32) + 1;
 	bu32_t mBitField[NUM_BIT_FIELD_ELEMENTS];
 	const char *mTypeName;
 };
+
+
+extern const Token BOOL_TOKEN;
+extern const Token CHAR_TOKEN;
+extern const Token INT_TOKEN;
+extern const Token UINT_TOKEN;
+extern const Token FLOAT_TOKEN;
+
+extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
+extern const TokenTypeSet JUMP_OPERATORS_TYPESET;
+extern const TokenTypeSet SWITCH_LABELS_TYPESET;
+extern const TokenTypeSet ASSIGNMENT_OPERATORS_TYPESET;
+extern const TokenTypeSet EQUALITY_OPERATORS_TYPESET;
+extern const TokenTypeSet RELATIONAL_OPERATORS_TYPESET;
+extern const TokenTypeSet SHIFT_OPERATORS_TYPESET;
+extern const TokenTypeSet ADDITIVE_OPERATORS_TYPESET;
+extern const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET;
+extern const TokenTypeSet UNARY_OPERATORS_TYPESET;
+extern const TokenTypeSet POSTFIX_OPERATORS_TYPESET;
+extern const TokenTypeSet CONSTANT_VALUES_TYPESET;
+extern const TokenTypeSet BLOCK_DELIMITERS_TYPESET;
+extern const TokenTypeSet DECLARATION_DELIMITERS_TYPESET;
+extern const TokenTypeSet ENUM_DELIMITERS_TYPESET;
+extern const TokenTypeSet ENUMERATOR_DELIMITERS_TYPESET;
+extern const TokenTypeSet STRUCT_MEMBER_DELIMITERS_TYPESET;
+extern const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET;
+extern const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET;
+extern const TokenTypeSet STATEMENT_DELIMITERS_TYPESET;
+extern const TokenTypeSet LABEL_DELIMITERS_TYPESET;
 
 }
 

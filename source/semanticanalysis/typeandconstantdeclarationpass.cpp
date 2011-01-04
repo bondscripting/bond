@@ -31,7 +31,8 @@ void TypeAndConstantDeclarationPass::Visit(NamespaceDefinition *namespaceDefinit
 void TypeAndConstantDeclarationPass::Visit(EnumDeclaration *enumDeclaration)
 {
 	const Token *name = enumDeclaration->GetName();
-	InsertSymbol(Symbol::TYPE_ENUM, name, enumDeclaration);
+	Symbol *symbol = InsertSymbol(Symbol::TYPE_ENUM, name, enumDeclaration);
+	enumDeclaration->SetSymbol(symbol);
 	ParseNodeTraverser::Visit(enumDeclaration);
 }
 
@@ -39,7 +40,11 @@ void TypeAndConstantDeclarationPass::Visit(EnumDeclaration *enumDeclaration)
 void TypeAndConstantDeclarationPass::Visit(Enumerator *enumerator)
 {
 	const Token *name = enumerator->GetName();
-	InsertSymbol(Symbol::TYPE_CONSTANT, name, enumerator);
+	Symbol *symbol = InsertSymbol(Symbol::TYPE_CONSTANT, name, enumerator);
+	enumerator->SetSymbol(symbol);
+	TypeAndValue &tav = symbol->GetTypeAndValue();
+	const TypeDescriptor *descriptor = enumerator->GetParent()->GetTypeDescriptor();
+	tav.SetTypeDescriptor(descriptor);
 }
 
 
@@ -93,7 +98,11 @@ void TypeAndConstantDeclarationPass::Visit(NamedInitializer *namedInitializer)
 	// TODO: Assert that type is a valid top-level constant type.
 	// Assert that the expression is a constant expression.
 	const Token *name = namedInitializer->GetName();
-	InsertSymbol(Symbol::TYPE_CONSTANT, name, namedInitializer);
+	Symbol *symbol = InsertSymbol(Symbol::TYPE_CONSTANT, name, namedInitializer);
+	//namedInitializer->SetSymbol(symbol);
+	TypeAndValue &tav = symbol->GetTypeAndValue();
+	const TypeDescriptor *descriptor = namedInitializer->GetTypeDescriptor();
+	tav.SetTypeDescriptor(descriptor);
 }
 
 }

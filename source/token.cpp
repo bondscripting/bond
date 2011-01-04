@@ -101,7 +101,14 @@ TokenTypeSet::TokenTypeSet(
 }
 
 
-const TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS(
+const Token BOOL_TOKEN("bool", Token::KEY_BOOL);
+const Token CHAR_TOKEN("char", Token::KEY_CHAR);
+const Token INT_TOKEN("int", Token::KEY_INT);
+const Token UINT_TOKEN("uint", Token::KEY_UINT);
+const Token FLOAT_TOKEN("float", Token::KEY_FLOAT);
+
+
+const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET(
 	"PRIMITIVE_TYPE_SPECIFIER",
 	Token::KEY_BOOL,
 	Token::KEY_CHAR,
@@ -112,13 +119,13 @@ const TokenTypeSet TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::BOOLEAN_TYPE_SPECIFIERS(
+const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET(
 	"BOOLEAN_TYPE_SPECIFIER",
 	Token::KEY_BOOL
 );
 
 
-const TokenTypeSet TokenTypeSet::INTEGER_TYPE_SPECIFIERS(
+const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET(
 	"INTEGER_TYPE_SPECIFIER",
 	Token::KEY_CHAR,
 	Token::KEY_INT,
@@ -126,11 +133,7 @@ const TokenTypeSet TokenTypeSet::INTEGER_TYPE_SPECIFIERS(
 );
 
 
-static const Token::TokenType NUMERIC_TYPE_SPECIFIER_TYPES[] =
-{
-};
-
-const TokenTypeSet TokenTypeSet::NUMERIC_TYPE_SPECIFIERS(
+const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET(
 	"NUMERIC_TYPE_SPECIFIER",
 	Token::KEY_CHAR,
 	Token::KEY_FLOAT,
@@ -139,14 +142,14 @@ const TokenTypeSet TokenTypeSet::NUMERIC_TYPE_SPECIFIERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::TYPE_DESCRIPTORS(
+const TokenTypeSet TYPE_DESCRIPTORS_TYPESET(
 	"TYPE_DESCRIPTOR",
 	Token::OP_MULT,
 	Token::OBRACKET
 );
 
 
-const TokenTypeSet TokenTypeSet::JUMP_OPERATORS(
+const TokenTypeSet JUMP_OPERATORS_TYPESET(
 	"JUMP_OPERATOR",
 	Token::KEY_BREAK,
 	Token::KEY_CONTINUE,
@@ -154,14 +157,14 @@ const TokenTypeSet TokenTypeSet::JUMP_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::SWITCH_LABELS(
+const TokenTypeSet SWITCH_LABELS_TYPESET(
 	"SWITCH_LABEL",
 	Token::KEY_CASE,
 	Token::KEY_DEFAULT
 );
 
 
-const TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS(
+const TokenTypeSet ASSIGNMENT_OPERATORS_TYPESET(
 	"ASSIGNMENT_OPERATOR",
 	Token::ASSIGN,
 	Token::ASSIGN_LEFT,
@@ -177,14 +180,14 @@ const TokenTypeSet TokenTypeSet::ASSIGNMENT_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::EQUALITY_OPERATORS(
+const TokenTypeSet EQUALITY_OPERATORS_TYPESET(
 	"EQUALITY_OPERATOR",
 	Token::OP_EQUAL,
 	Token::OP_NOT_EQUAL
 );
 
 
-const TokenTypeSet TokenTypeSet::RELATIONAL_OPERATORS(
+const TokenTypeSet RELATIONAL_OPERATORS_TYPESET(
 	"RELATIONAL_OPERATOR",
 	Token::OP_LT,
 	Token::OP_LTE,
@@ -193,21 +196,21 @@ const TokenTypeSet TokenTypeSet::RELATIONAL_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::SHIFT_OPERATORS(
+const TokenTypeSet SHIFT_OPERATORS_TYPESET(
 	"SHIFT_OPERATOR",
 	Token::OP_LEFT,
 	Token::OP_RIGHT
 );
 
 
-const TokenTypeSet TokenTypeSet::ADDITIVE_OPERATORS(
+const TokenTypeSet ADDITIVE_OPERATORS_TYPESET(
 	"ADDITIVE_OPERATOR",
 	Token::OP_PLUS,
 	Token::OP_MINUS
 );
 
 
-const TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS(
+const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET(
 	"MULTIPLICATIVE_OPERATOR",
 	Token::OP_MULT,
 	Token::OP_DIV,
@@ -215,7 +218,7 @@ const TokenTypeSet TokenTypeSet::MULTIPLICATIVE_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::UNARY_OPERATORS(
+const TokenTypeSet UNARY_OPERATORS_TYPESET(
 	"UNARY_OPERATOR",
 	Token::OP_PLUS,
 	Token::OP_MINUS,
@@ -228,7 +231,7 @@ const TokenTypeSet TokenTypeSet::UNARY_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::POSTFIX_OPERATORS(
+const TokenTypeSet POSTFIX_OPERATORS_TYPESET(
 	"POSTFIX_OPERATOR",
 	Token::OP_INC,
 	Token::OP_DEC,
@@ -239,7 +242,7 @@ const TokenTypeSet TokenTypeSet::POSTFIX_OPERATORS(
 );
 
 
-const TokenTypeSet TokenTypeSet::CONSTANT_VALUES(
+const TokenTypeSet CONSTANT_VALUES_TYPESET(
 	"CONSTANT_VALUE",
 	Token::CONST_BOOL,
 	Token::CONST_CHAR,
@@ -250,14 +253,14 @@ const TokenTypeSet TokenTypeSet::CONSTANT_VALUES(
 );
 
 
-const TokenTypeSet TokenTypeSet::BLOCK_DELIMITERS(
+const TokenTypeSet BLOCK_DELIMITERS_TYPESET(
 	"BLOCK_DELIMITER",
 	Token::CBRACE,
 	Token::END
 );
 
 
-const TokenTypeSet TokenTypeSet::DECLARATION_DELIMITERS(
+const TokenTypeSet DECLARATION_DELIMITERS_TYPESET(
 	"DECLARATION_DELIMITER",
 	Token::KEY_ENUM,
 	Token::KEY_NAMESPACE,
@@ -267,7 +270,7 @@ const TokenTypeSet TokenTypeSet::DECLARATION_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::ENUM_DELIMITERS(
+const TokenTypeSet ENUM_DELIMITERS_TYPESET(
 	"ENUM_DELIMITER",
 	Token::CBRACE,
 	Token::SEMICOLON,
@@ -275,7 +278,7 @@ const TokenTypeSet TokenTypeSet::ENUM_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::ENUMERATOR_DELIMITERS(
+const TokenTypeSet ENUMERATOR_DELIMITERS_TYPESET(
 	"ENUMERATOR_DELIMITER",
 	Token::CBRACE,
 	Token::SEMICOLON,
@@ -283,14 +286,14 @@ const TokenTypeSet TokenTypeSet::ENUMERATOR_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::STRUCT_MEMBER_DELIMITERS(
+const TokenTypeSet STRUCT_MEMBER_DELIMITERS_TYPESET(
 	"STRUCT_MEMBER_DELIMITER",
 	Token::CBRACE,
 	Token::SEMICOLON
 );
 
 
-const TokenTypeSet TokenTypeSet::INITIALIZER_DELIMITERS(
+const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET(
 	"INITIALIZER_DELIMITER",
 	Token::OBRACE,
 	Token::CBRACE,
@@ -298,7 +301,7 @@ const TokenTypeSet TokenTypeSet::INITIALIZER_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::SWITCH_SECTION_DELIMITERS(
+const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET(
 	"SWITCH_SECTION_DELIMITER",
 	Token::KEY_CASE,
 	Token::KEY_DEFAULT,
@@ -307,7 +310,7 @@ const TokenTypeSet TokenTypeSet::SWITCH_SECTION_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::STATEMENT_DELIMITERS(
+const TokenTypeSet STATEMENT_DELIMITERS_TYPESET(
 	"STATEMENT_DELIMITER",
 	Token::KEY_BREAK,
 	Token::KEY_CASE,
@@ -325,7 +328,7 @@ const TokenTypeSet TokenTypeSet::STATEMENT_DELIMITERS(
 );
 
 
-const TokenTypeSet TokenTypeSet::LABEL_DELIMITERS(
+const TokenTypeSet LABEL_DELIMITERS_TYPESET(
 	"LABEL_DELIMITER",
 	Token::KEY_BREAK,
 	Token::KEY_CASE,

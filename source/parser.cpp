@@ -49,7 +49,7 @@ ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream 
 	ListParseNode *declarationList = 0;
 	ListParseNode *current = 0;
 
-	while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+	while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 	{
 		// Eat up superfluous semicolons.
 		if (stream.NextIf(Token::SEMICOLON) == 0)
@@ -148,14 +148,14 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 		Enumerator *enumeratorList = 0;
 		Enumerator *current = 0;
 
-		while (stream.PeekIf(TokenTypeSet::ENUM_DELIMITERS) == 0)
+		while (stream.PeekIf(ENUM_DELIMITERS_TYPESET) == 0)
 		{
 			Enumerator *next = ParseEnumerator(status, stream, enumeration);
 			AssertNode(status, stream, next);
 			SyncToEnumeratorDelimiter(status, stream);
 
 			// Note that the comma on the last enumerator is optional.
-			if (stream.PeekIf(TokenTypeSet::ENUM_DELIMITERS) == 0)
+			if (stream.PeekIf(ENUM_DELIMITERS_TYPESET) == 0)
 			{
 				ExpectToken(status, stream, Token::COMMA);
 			}
@@ -221,7 +221,7 @@ StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &s
 		ListParseNode *memberList = 0;
 		ListParseNode *current = 0;
 
-		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			// Eat up superfluous semicolons.
 			if (stream.NextIf(Token::SEMICOLON) == 0)
@@ -395,7 +395,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
 
-		const Token *token = stream.NextIf(TokenTypeSet::TYPE_DESCRIPTORS);
+		const Token *token = stream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		while (token != 0)
 		{
 			if (token->GetTokenType() == Token::OP_MULT)
@@ -410,7 +410,7 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 				ExpectToken(status, stream, Token::CBRACKET);
 				descriptor = mFactory.CreateTypeDescriptor(descriptor, length);
 			}
-			token = stream.NextIf(TokenTypeSet::TYPE_DESCRIPTORS);
+			token = stream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		}
 	}
 	else
@@ -452,7 +452,7 @@ TypeSpecifier *Parser::ParseTypeSpecifier(Status &status, TokenStream &stream)
 TypeSpecifier *Parser::ParsePrimitiveTypeSpecifier(Status &status, TokenStream &stream)
 {
 	TypeSpecifier *specifier = 0;
-	const Token *primitiveType = stream.NextIf(TokenTypeSet::PRIMITIVE_TYPE_SPECIFIERS);
+	const Token *primitiveType = stream.NextIf(PRIMITIVE_TYPE_SPECIFIERS_TYPESET);
 
 	if (primitiveType != 0)
 	{
@@ -534,14 +534,14 @@ Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
 		Initializer *initializerList = 0;
 		Initializer *current = 0;
 
-		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			Initializer *next = ParseInitializer(status, stream);
 			AssertNode(status, stream, next);
 			SyncToInitializerDelimiter(status, stream);
 
 			// Note that the comma on the last initializer is optional.
-			if (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+			if (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 			{
 				ExpectToken(status, stream, Token::COMMA);
 			}
@@ -666,7 +666,7 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 		ListParseNode *statementList = 0;
 		ListParseNode *current = 0;
 
-		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			ListParseNode *next = ParseStatement(status, stream);
 			AssertNode(status, stream, next);
@@ -739,7 +739,7 @@ SwitchStatement *Parser::ParseSwitchStatement(Status &status, TokenStream &strea
 
 		SwitchSection *sectionList = ParseSwitchSection(status, stream);
 		SwitchSection *current = sectionList;
-		while (stream.PeekIf(TokenTypeSet::BLOCK_DELIMITERS) == 0)
+		while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			SwitchSection *next = ParseSwitchSection(status, stream);
 			current->SetNext(next);
@@ -772,7 +772,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 
 	ListParseNode *statementList = 0;
 	ListParseNode *currentStatement = 0;
-	while (stream.PeekIf(TokenTypeSet::SWITCH_SECTION_DELIMITERS) == 0)
+	while (stream.PeekIf(SWITCH_SECTION_DELIMITERS_TYPESET) == 0)
 	{
 		ListParseNode *next = ParseStatement(status, stream);
 		AssertNode(status, stream, next);
@@ -805,7 +805,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 SwitchLabel *Parser::ParseSwitchLabel(Status &status, TokenStream &stream)
 {
 	SwitchLabel *label = 0;
-	const Token *labelToken = stream.NextIf(TokenTypeSet::SWITCH_LABELS);
+	const Token *labelToken = stream.NextIf(SWITCH_LABELS_TYPESET);
 
 	if (labelToken != 0)
 	{
@@ -906,7 +906,7 @@ ForStatement *Parser::ParseForStatement(Status &status, TokenStream &stream)
 JumpStatement *Parser::ParseJumpStatement(Status &status, TokenStream &stream)
 {
 	JumpStatement *jumpStatement = 0;
-	const Token *op = stream.NextIf(TokenTypeSet::JUMP_OPERATORS);
+	const Token *op = stream.NextIf(JUMP_OPERATORS_TYPESET);
 
 	if (op != 0)
 	{
@@ -1055,7 +1055,7 @@ Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &strea
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::ASSIGNMENT_OPERATORS);
+		const Token *token = stream.NextIf(ASSIGNMENT_OPERATORS_TYPESET);
 		if (token != 0)
 		{
 			AssertNonConstExpression(status, ParseError::ASSIGNMENT_IN_CONST_EXPRESSION, token);
@@ -1215,13 +1215,13 @@ Expression *Parser::ParseEqualityExpression(Status &status, TokenStream &stream)
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
+		const Token *token = stream.NextIf(EQUALITY_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			Expression *rhs = ParseRelationalExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = stream.NextIf(TokenTypeSet::EQUALITY_OPERATORS);
+			token = stream.NextIf(EQUALITY_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1241,13 +1241,13 @@ Expression *Parser::ParseRelationalExpression(Status &status, TokenStream &strea
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
+		const Token *token = stream.NextIf(RELATIONAL_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			Expression *rhs = ParseShiftExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = stream.NextIf(TokenTypeSet::RELATIONAL_OPERATORS);
+			token = stream.NextIf(RELATIONAL_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1265,13 +1265,13 @@ Expression *Parser::ParseShiftExpression(Status &status, TokenStream &stream)
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
+		const Token *token = stream.NextIf(SHIFT_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			Expression *rhs = ParseAdditiveExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = stream.NextIf(TokenTypeSet::SHIFT_OPERATORS);
+			token = stream.NextIf(SHIFT_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1289,13 +1289,13 @@ Expression *Parser::ParseAdditiveExpression(Status &status, TokenStream &stream)
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
+		const Token *token = stream.NextIf(ADDITIVE_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			Expression *rhs = ParseMultiplicativeExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = stream.NextIf(TokenTypeSet::ADDITIVE_OPERATORS);
+			token = stream.NextIf(ADDITIVE_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1314,13 +1314,13 @@ Expression *Parser::ParseMultiplicativeExpression(Status &status, TokenStream &s
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
+		const Token *token = stream.NextIf(MULTIPLICATIVE_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			Expression *rhs = ParseCastExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = stream.NextIf(TokenTypeSet::MULTIPLICATIVE_OPERATORS);
+			token = stream.NextIf(MULTIPLICATIVE_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1371,7 +1371,7 @@ Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
-	const Token *op = stream.NextIf(TokenTypeSet::UNARY_OPERATORS);
+	const Token *op = stream.NextIf(UNARY_OPERATORS_TYPESET);
 
 	if (op != 0)
 	{
@@ -1434,7 +1434,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 
 	if (expression != 0)
 	{
-		const Token *token = stream.NextIf(TokenTypeSet::POSTFIX_OPERATORS);
+		const Token *token = stream.NextIf(POSTFIX_OPERATORS_TYPESET);
 		while (token != 0)
 		{
 			switch (token->GetTokenType())
@@ -1471,7 +1471,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				}
 				break;
 			}
-			token = stream.NextIf(TokenTypeSet::POSTFIX_OPERATORS);
+			token = stream.NextIf(POSTFIX_OPERATORS_TYPESET);
 		}
 	}
 
@@ -1486,7 +1486,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 Expression *Parser::ParsePrimaryExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
-	const Token *value = stream.NextIf(TokenTypeSet::CONSTANT_VALUES);
+	const Token *value = stream.NextIf(CONSTANT_VALUES_TYPESET);
 
 	if (value != 0)
 	{
@@ -1533,9 +1533,9 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 
 void Parser::ExpectDeclarationTerminator(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
+	Recover(status, stream, DECLARATION_DELIMITERS_TYPESET);
 	ExpectToken(status, stream, Token::SEMICOLON);
-	Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
+	Recover(status, stream, DECLARATION_DELIMITERS_TYPESET);
 }
 
 
@@ -1543,7 +1543,7 @@ void Parser::SyncToDeclarationTerminator(Status &status, TokenStream &stream)
 {
 	if (status.HasUnrecoveredError())
 	{
-		Recover(status, stream, TokenTypeSet::DECLARATION_DELIMITERS);
+		Recover(status, stream, DECLARATION_DELIMITERS_TYPESET);
 		stream.NextIf(Token::SEMICOLON);
 	}
 }
@@ -1551,7 +1551,7 @@ void Parser::SyncToDeclarationTerminator(Status &status, TokenStream &stream)
 
 void Parser::SyncToEnumeratorDelimiter(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::ENUMERATOR_DELIMITERS);
+	Recover(status, stream, ENUMERATOR_DELIMITERS_TYPESET);
 }
 
 
@@ -1559,7 +1559,7 @@ void Parser::SyncToStructMemberTerminator(Status &status, TokenStream &stream)
 {
 	if (status.HasUnrecoveredError())
 	{
-		Recover(status, stream, TokenTypeSet::STRUCT_MEMBER_DELIMITERS);
+		Recover(status, stream, STRUCT_MEMBER_DELIMITERS_TYPESET);
 		stream.NextIf(Token::SEMICOLON);
 	}
 }
@@ -1567,15 +1567,15 @@ void Parser::SyncToStructMemberTerminator(Status &status, TokenStream &stream)
 
 void Parser::SyncToInitializerDelimiter(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::INITIALIZER_DELIMITERS);
+	Recover(status, stream, INITIALIZER_DELIMITERS_TYPESET);
 }
 
 
 void Parser::ExpectStatementTerminator(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
+	Recover(status, stream, STATEMENT_DELIMITERS_TYPESET);
 	ExpectToken(status, stream, Token::SEMICOLON);
-	Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
+	Recover(status, stream, STATEMENT_DELIMITERS_TYPESET);
 }
 
 
@@ -1583,7 +1583,7 @@ void Parser::SyncToStatementTerminator(Status &status, TokenStream &stream)
 {
 	if (status.HasUnrecoveredError())
 	{
-		Recover(status, stream, TokenTypeSet::STATEMENT_DELIMITERS);
+		Recover(status, stream, STATEMENT_DELIMITERS_TYPESET);
 		stream.NextIf(Token::SEMICOLON);
 	}
 }
@@ -1591,9 +1591,9 @@ void Parser::SyncToStatementTerminator(Status &status, TokenStream &stream)
 
 void Parser::ExpectLabelTerminator(Status &status, TokenStream &stream)
 {
-	Recover(status, stream, TokenTypeSet::LABEL_DELIMITERS);
+	Recover(status, stream, LABEL_DELIMITERS_TYPESET);
 	ExpectToken(status, stream, Token::COLON);
-	Recover(status, stream, TokenTypeSet::LABEL_DELIMITERS);
+	Recover(status, stream, LABEL_DELIMITERS_TYPESET);
 }
 
 

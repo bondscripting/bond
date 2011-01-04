@@ -71,7 +71,7 @@ public:
 
 	TypeDescriptor() {}
 	TypeDescriptor(TypeSpecifier *specifier, bool isConst):
-		mSpecifier(specifier),
+		mTypeSpecifier(specifier),
 		mParent(0),
 		mLength(0),
 		mVariant(VARIANT_VALUE),
@@ -79,7 +79,7 @@ public:
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, bool isConst):
-		mSpecifier(0),
+		mTypeSpecifier(0),
 		mParent(parent),
 		mLength(0),
 		mVariant(VARIANT_POINTER),
@@ -87,7 +87,7 @@ public:
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, Expression *length):
-		mSpecifier(0),
+		mTypeSpecifier(0),
 		mParent(parent),
 		mLength(length),
 		mVariant(VARIANT_ARRAY),
@@ -101,8 +101,8 @@ public:
 
 	virtual const Token *GetContextToken() const;
 
-	TypeSpecifier *GetTypeSpecifier() { return mSpecifier; }
-	const TypeSpecifier *GetTypeSpecifier() const { return mSpecifier; }
+	TypeSpecifier *GetTypeSpecifier() { return mTypeSpecifier; }
+	const TypeSpecifier *GetTypeSpecifier() const { return mTypeSpecifier; }
 
 	TypeDescriptor *GetParent() { return mParent; }
 	const TypeDescriptor *GetParent() const { return mParent; }
@@ -121,7 +121,7 @@ public:
 	bool IsAssignableType() const { return !mIsConst && (mVariant != VARIANT_ARRAY); }
 
 private:
-	TypeSpecifier *mSpecifier;
+	TypeSpecifier *mTypeSpecifier;
 	TypeDescriptor *mParent;
 	Expression *mLength;
 	Variant mVariant;
@@ -132,8 +132,13 @@ private:
 class TypeSpecifier: public ParseNode
 {
 public:
-	explicit TypeSpecifier(const Token *primitiveType): mPrimitiveType(primitiveType), mIdentifier(0) {}
+	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = 0):
+		mPrimitiveType(primitiveType),
+		mIdentifier(identifier)
+	{}
+
 	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
+
 	virtual ~TypeSpecifier() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
@@ -223,13 +228,13 @@ private:
 };
 
 
-class EnumDeclaration: public ListParseNode
+class EnumDeclaration: public SymbolicParseNode
 {
 public:
 	EnumDeclaration(const Token *name):
 		mIdentifier(name),
-		mSpecifier(&mIdentifier),
-		mDescriptor(&mSpecifier, true),
+		mTypeSpecifier(&INT_TOKEN, &mIdentifier),
+		mTypeDescriptor(&mTypeSpecifier, true),
 		mEnumeratorList(0)
 	{}
 
@@ -242,19 +247,21 @@ public:
 
 	const Token *GetName() const { return mIdentifier.GetName(); }
 
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+
 	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
 	const Enumerator *GetEnumeratorList() const { return mEnumeratorList; }
 	void SetEnumeratorList(Enumerator *enumeratorList) { mEnumeratorList = enumeratorList; }
 
 private:
 	QualifiedIdentifier mIdentifier;
-	TypeSpecifier mSpecifier;
-	TypeDescriptor mDescriptor;
+	TypeSpecifier mTypeSpecifier;
+	TypeDescriptor mTypeDescriptor;
 	Enumerator *mEnumeratorList;
 };
 
 
-class Enumerator: public ListParseNode
+class Enumerator: public SymbolicParseNode
 {
 public:
 	Enumerator(const Token *name, EnumDeclaration *parent, Expression *value):
@@ -1005,6 +1012,12 @@ private:
 	QualifiedIdentifier *mIdentifier;
 };
 
+
+extern const TypeSpecifier BOOL_TYPE_SPECIFIER;
+extern const TypeSpecifier CHAR_TYPE_SPECIFIER;
+extern const TypeSpecifier INT_TYPE_SPECIFIER;
+extern const TypeSpecifier UINT_TYPE_SPECIFIER;
+extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
 
 extern const TypeDescriptor CONST_BOOL_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR;

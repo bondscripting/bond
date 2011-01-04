@@ -369,6 +369,16 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 	if (!tav.IsTypeDefined())
 	{
+		const Symbol *symbol = GetSymbol(identifierExpression->GetIdentifier());
+		if (symbol != 0)
+		{
+			const TypeAndValue &symbolTav = symbol->GetTypeAndValue();
+			if (symbolTav.IsTypeDefined())
+			{
+				tav.SetTypeDescriptor(symbolTav.GetTypeDescriptor());
+				mMadeChanges = true;
+			}
+		}
 	}
 }
 
