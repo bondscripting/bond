@@ -4,7 +4,7 @@ namespace Bond
 class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	~TypeEvaluationPass() {}
+	virtual ~TypeEvaluationPass() {}
 
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
@@ -29,6 +29,7 @@ private:
 	void AssertBooleanType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertIntegerType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertNumericType(const TypeDescriptor *descriptor, const Token *op);
+	void AssertPointerType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
 	const TypeDescriptor *CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB) const;
@@ -219,13 +220,14 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 		if (rhs.IsTypeDefined())
 		{
 			const TypeDescriptor *rhd = rhs.GetTypeDescriptor();
+			TypeDescriptor resultType = *rhd;
+			resultType.SetRValue();
 			const Token *op = unaryExpression->GetOperator();
 
 			switch (op->GetTokenType())
 			{
 				case Token::OP_PLUS:
 				case Token::OP_MINUS:
-				case Token::OP_MULT:
 				case Token::OP_INC:
 				case Token::OP_DEC:
 					AssertNumericType(rhd, op);
@@ -236,15 +238,24 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					break;
 
 				case Token::OP_BIT_AND:
+					// TODO: Assert rhd is lvalue.
+					//resultType = TypeDescriptor(rhd, true);
+					break;
+
 				case Token::OP_BIT_NOT:
 					AssertIntegerType(rhd, op);
+					break;
+
+				case Token::OP_MULT:
+					AssertPointerType(rhd, op);
+					resultType = *rhd->GetParent();
 					break;
 
 				default:
 					break;
 			}
 
-			tav.SetTypeDescriptor(rhd);
+			tav.SetTypeDescriptor(unaryExpression->GetTypeDescriptor());
 			tav.Resolve();
 			mMadeChanges = true;
 		}
@@ -397,6 +408,15 @@ void TypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descriptor, con
 	if (!descriptor->IsIntegerType())
 	{
 		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, descriptor);
+	}
+}
+
+
+void TypeEvaluationPass::AssertPointerType(const TypeDescriptor *descriptor, const Token *op)
+{
+	if (!descriptor->IsPointerType())
+	{
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, descriptor);
 	}
 }
 

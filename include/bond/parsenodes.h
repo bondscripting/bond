@@ -69,13 +69,22 @@ public:
 		VARIANT_ARRAY,
 	};
 
-	TypeDescriptor() {}
+	TypeDescriptor():
+		mTypeSpecifier(0),
+		mParent(0),
+		mLength(0),
+		mVariant(VARIANT_VALUE),
+		mIsConst(false),
+		mIsLValue(false)
+	{}
+
 	TypeDescriptor(TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
 		mParent(0),
 		mLength(0),
 		mVariant(VARIANT_VALUE),
-		mIsConst(isConst)
+		mIsConst(isConst),
+		mIsLValue(false)
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, bool isConst):
@@ -83,7 +92,8 @@ public:
 		mParent(parent),
 		mLength(0),
 		mVariant(VARIANT_POINTER),
-		mIsConst(isConst)
+		mIsConst(isConst),
+		mIsLValue(false)
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, Expression *length):
@@ -91,7 +101,8 @@ public:
 		mParent(parent),
 		mLength(length),
 		mVariant(VARIANT_ARRAY),
-		mIsConst(false)
+		mIsConst(false),
+		mIsLValue(false)
 	{}
 
 	virtual ~TypeDescriptor() {}
@@ -111,7 +122,16 @@ public:
 	const Expression *GetLength() const { return mLength; }
 
 	Variant GetVariant() const { return mVariant; }
+
 	bool IsConst() const { return mIsConst; }
+
+	bool IsModifiableLValue() const { return !mIsConst && mIsLValue; }
+
+	bool IsLValue() const { return mIsLValue; }
+	void SetLValue() { mIsLValue = true; }
+
+	bool IsRValue() const { return !mIsLValue; }
+	void SetRValue() { mIsLValue = false; }
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -126,6 +146,7 @@ private:
 	Expression *mLength;
 	Variant mVariant;
 	bool mIsConst;
+	bool mIsLValue;
 };
 
 
@@ -380,6 +401,7 @@ class Parameter: public ListParseNode
 {
 public:
 	Parameter(const Token *name, TypeDescriptor *typeDescriptor): mName(name), mTypeDescriptor(typeDescriptor) {}
+
 	virtual ~Parameter() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
@@ -827,12 +849,16 @@ public:
 
 	virtual const Token *GetContextToken() const { return mOperator; }
 
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
+
 	const Token *GetOperator() const { return mOperator; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
+	TypeDescriptor mTypeDescriptor;
 	const Token *mOperator;
 	Expression *mRhs;
 };

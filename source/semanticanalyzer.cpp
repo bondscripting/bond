@@ -189,6 +189,7 @@ Symbol *SemanticAnalysisPass::CreateSymbol(Symbol::Type type, const Token *name,
 
 #include "semanticanalysis/typeevaluationpass.cpp"
 #include "semanticanalysis/typeandconstantdeclarationpass.cpp"
+#include "semanticanalysis/valueevaluationpass.cpp"
 
 
 namespace Bond
@@ -373,8 +374,16 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList, Allocator &
 		return;
 	}
 
-	TopLevelTypeEvaluationPass topLevelExpressionTypePass(mErrorBuffer, allocator, *mSymbolTable);
-	topLevelExpressionTypePass.Analyze(translationUnitList);
+	TopLevelTypeEvaluationPass topLevelTypePass(mErrorBuffer, allocator, *mSymbolTable);
+	topLevelTypePass.Analyze(translationUnitList);
+
+	if (mErrorBuffer.HasErrors())
+	{
+		return;
+	}
+
+	TopLevelValueEvaluationPass topLevelValuePass(mErrorBuffer, allocator, *mSymbolTable);
+	topLevelValuePass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
 	{

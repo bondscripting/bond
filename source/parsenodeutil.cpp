@@ -84,4 +84,110 @@ bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB
 		(typeA->IsBooleanType() && typeB->IsBooleanType());
 }
 
+
+TypeAndValue CastValue(const TypeAndValue &value, const TypeDescriptor *type)
+{
+	// This function assumes that it is only called for valid casts on defined values.
+	Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
+	Value resultValue;
+
+	switch (type->GetPrimitiveType())
+	{
+		case Token::KEY_BOOL:
+			switch (sourceType)
+			{
+				case Token::KEY_BOOL:
+					resultValue.mBool = static_cast<bool>(value.GetBoolValue());
+					break;
+				default:
+					break;
+			}
+
+		case Token::KEY_CHAR:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+					resultValue.mChar = static_cast<char>(value.GetCharValue());
+					break;
+				case Token::KEY_FLOAT:
+					resultValue.mChar = static_cast<char>(value.GetFloatValue());
+					break;
+				case Token::KEY_INT:
+					resultValue.mChar = static_cast<char>(value.GetIntValue());
+					break;
+				case Token::KEY_UINT:
+					resultValue.mChar = static_cast<char>(value.GetUIntValue());
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_FLOAT:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+					resultValue.mFloat = static_cast<bf32_t>(value.GetCharValue());
+					break;
+				case Token::KEY_FLOAT:
+					resultValue.mFloat = static_cast<bf32_t>(value.GetFloatValue());
+					break;
+				case Token::KEY_INT:
+					resultValue.mFloat = static_cast<bf32_t>(value.GetIntValue());
+					break;
+				case Token::KEY_UINT:
+					resultValue.mFloat = static_cast<bf32_t>(value.GetUIntValue());
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_INT:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+					resultValue.mInt = static_cast<bi32_t>(value.GetCharValue());
+					break;
+				case Token::KEY_FLOAT:
+					resultValue.mInt = static_cast<bi32_t>(value.GetFloatValue());
+					break;
+				case Token::KEY_INT:
+					resultValue.mInt = static_cast<bi32_t>(value.GetIntValue());
+					break;
+				case Token::KEY_UINT:
+					resultValue.mInt = static_cast<bi32_t>(value.GetUIntValue());
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_UINT:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+					resultValue.mUInt = static_cast<bu32_t>(value.GetCharValue());
+					break;
+				case Token::KEY_FLOAT:
+					resultValue.mUInt = static_cast<bu32_t>(value.GetFloatValue());
+					break;
+				case Token::KEY_INT:
+					resultValue.mUInt = static_cast<bu32_t>(value.GetIntValue());
+					break;
+				case Token::KEY_UINT:
+					resultValue.mUInt = static_cast<bu32_t>(value.GetUIntValue());
+					break;
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return TypeAndValue(type, resultValue);
+}
+
 }

@@ -358,6 +358,7 @@ Parameter *Parser::ParseParameter(Status &status, TokenStream &stream)
 
 	if (descriptor != 0)
 	{
+		descriptor->SetLValue();
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);
 	}
@@ -398,6 +399,8 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 		const Token *token = stream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		while (token != 0)
 		{
+			descriptor->SetLValue();
+
 			if (token->GetTokenType() == Token::OP_MULT)
 			{
 				const bool isConst = stream.NextIf(Token::KEY_CONST) != 0;
@@ -940,6 +943,7 @@ ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, Tok
 
 		if (initializerList != 0)
 		{
+			descriptor->SetLValue();
 			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 			ExpectStatementTerminator(status, stream);
 		}

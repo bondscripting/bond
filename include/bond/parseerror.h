@@ -30,6 +30,8 @@
     "Expected '%s' before '%c'." )                                          \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                               \
     "Operator '%c' cannot be applied to type '%n'." )                       \
+  BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                       \
+    "Operator '%c' cannot be applied to non-pointer type '%n'." )           \
   BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                 \
     "Cannot convert type '%0n' to '%1n'." )                                 \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
