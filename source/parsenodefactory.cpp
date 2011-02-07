@@ -22,6 +22,7 @@ public:
 
 private:
 	virtual void Traverse(ParseNode *parseNode);
+	virtual void Traverse(const ParseNode *parseNode);
 
 	Allocator &mAllocator;
 };
@@ -31,6 +32,13 @@ void ParseNodeDeallocator::Traverse(ParseNode *parseNode)
 {
 	ParseNodeTraverser::Traverse(parseNode);
 	mAllocator.Free(parseNode);
+}
+
+
+void ParseNodeDeallocator::Traverse(const ParseNode *parseNode)
+{
+	ParseNodeTraverser::Traverse(parseNode);
+	mAllocator.Free(const_cast<ParseNode *>(parseNode));
 }
 
 

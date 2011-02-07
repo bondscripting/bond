@@ -104,7 +104,8 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 				case Token::ASSIGN:
 					AssertAssignableType(lhd, op);
-					// TODO: Assert that rhs can be assigned to lhs.
+					// TODO: Assert that rhs type can be assigned to lhs.
+					// TODO: Assert that lhs is lvalue.
 					result = lhd;
 					break;
 
@@ -239,7 +240,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 				case Token::OP_BIT_AND:
 					// TODO: Assert rhd is lvalue.
-					//resultType = TypeDescriptor(rhd, true);
+					resultType = TypeDescriptor(rhd, true);
 					break;
 
 				case Token::OP_BIT_NOT:

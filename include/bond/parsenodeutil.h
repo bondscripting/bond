@@ -34,7 +34,7 @@ T *CastNode(ParseNode *node)
 template<typename T>
 const T *CastNode(const ParseNode *node)
 {
-	class CastVisitor: public ConstParseNodeVisitorAdapter
+	class CastVisitor: public ParseNodeVisitorAdapter
 	{
 	public:
 		CastVisitor(): mNode(0) {}

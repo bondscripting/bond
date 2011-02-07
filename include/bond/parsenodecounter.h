@@ -82,7 +82,7 @@ struct ParseNodeCount
 };
 
 
-class ParseNodeCounter: private ConstParseNodeTraverser
+class ParseNodeCounter: private ParseNodeTraverser
 {
 public:
 	ParseNodeCounter(): mCount(0) {}
