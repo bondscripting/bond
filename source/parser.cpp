@@ -309,9 +309,11 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				stream.SetPosition(namePos);
 				NamedInitializer *initializerList = ParseNamedInitializerList(status, stream, descriptor);
+				// TODO: Forgot to handle failure.
 
 				if (initializerList != 0)
 				{
+					descriptor->SetLValue();
 					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 					ExpectDeclarationTerminator(status, stream);
 				}
@@ -399,8 +401,6 @@ TypeDescriptor *Parser::ParseTypeDescriptor(Status &status, TokenStream &stream)
 		const Token *token = stream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		while (token != 0)
 		{
-			descriptor->SetLValue();
-
 			if (token->GetTokenType() == Token::OP_MULT)
 			{
 				const bool isConst = stream.NextIf(Token::KEY_CONST) != 0;
@@ -1446,7 +1446,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				case Token::OBRACKET:
 				{
 					Expression *index = ParseExpression(status, stream);
-					expression = mFactory.CreateArraySubscriptExpression(expression, index);
+					expression = mFactory.CreateArraySubscriptExpression(token, expression, index);
 					ExpectToken(status, stream, Token::CBRACKET);
 				}
 				break;

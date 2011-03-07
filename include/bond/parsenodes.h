@@ -120,10 +120,9 @@ public:
 	const Expression *GetLength() const { return mLength; }
 
 	Variant GetVariant() const { return mVariant; }
+	void SetVariant(Variant variant) { mVariant = variant; }
 
 	bool IsConst() const { return mIsConst; }
-
-	bool IsModifiableLValue() const { return !mIsConst && mIsLValue; }
 
 	bool IsLValue() const { return mIsLValue; }
 	void SetLValue() { mIsLValue = true; }
@@ -131,12 +130,13 @@ public:
 	bool IsRValue() const { return !mIsLValue; }
 	void SetRValue() { mIsLValue = false; }
 
+	bool IsAssignable() const { return !mIsConst && mIsLValue && (mVariant != VARIANT_ARRAY); }
+
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
 	bool IsNumericType() const;
 	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
-	bool IsAssignableType() const { return !mIsConst && (mVariant != VARIANT_ARRAY); }
 
 private:
 	const TypeSpecifier *mTypeSpecifier;
@@ -775,7 +775,22 @@ private:
 };
 
 
-class ConditionalExpression: public Expression
+// Expression that results in a temporary value that may differ from its operand type, thus requiring
+// the instantiation of a new TypeDescriptor to describe the resulting type.
+class TemporaryExpression: public Expression
+{
+public:
+	virtual ~TemporaryExpression() {}
+
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
+
+private:
+	TypeDescriptor mTypeDescriptor;
+};
+
+
+class ConditionalExpression: public TemporaryExpression
 {
 public:
 	ConditionalExpression(Expression *condition, Expression *trueExpression, Expression *falseExpression):
@@ -805,7 +820,7 @@ private:
 };
 
 
-class BinaryExpression: public Expression
+class BinaryExpression: public TemporaryExpression
 {
 public:
 	BinaryExpression(const Token *op, Expression *lhs, Expression *rhs):
@@ -836,7 +851,7 @@ private:
 };
 
 
-class UnaryExpression: public Expression
+class UnaryExpression: public TemporaryExpression
 {
 public:
 	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
@@ -847,16 +862,12 @@ public:
 
 	virtual const Token *GetContextToken() const { return mOperator; }
 
-	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
-	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
-
 	const Token *GetOperator() const { return mOperator; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
-	TypeDescriptor mTypeDescriptor;
 	const Token *mOperator;
 	Expression *mRhs;
 };
@@ -914,11 +925,20 @@ private:
 class ArraySubscriptExpression: public Expression
 {
 public:
-	ArraySubscriptExpression(Expression *lhs, Expression *index): mLhs(lhs), mIndex(index) {}
+	ArraySubscriptExpression(const Token *op, Expression *lhs, Expression *index):
+		mOperator(op),
+		mLhs(lhs),
+		mIndex(index)
+	{}
+
 	virtual ~ArraySubscriptExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mOperator; }
+
+	const Token *GetOperator() const { return mOperator; }
 
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
@@ -927,6 +947,7 @@ public:
 	const Expression *GetIndex() const { return mIndex; }
 
 private:
+	const Token *mOperator;
 	Expression *mLhs;
 	Expression *mIndex;
 };

@@ -273,9 +273,9 @@ MemberExpression *ParseNodeFactory::CreateMemberExpression(const Token *op, cons
 }
 
 
-ArraySubscriptExpression *ParseNodeFactory::CreateArraySubscriptExpression(Expression *lhs, Expression *index)
+ArraySubscriptExpression *ParseNodeFactory::CreateArraySubscriptExpression(const Token *op, Expression *lhs, Expression *index)
 {
-	return new (mAllocator.Alloc<ArraySubscriptExpression>()) ArraySubscriptExpression(lhs, index);
+	return new (mAllocator.Alloc<ArraySubscriptExpression>()) ArraySubscriptExpression(op, lhs, index);
 }
 
 

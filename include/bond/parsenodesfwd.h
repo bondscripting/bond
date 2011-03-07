@@ -30,6 +30,7 @@ namespace Bond
 	class DeclarativeStatement;
 	class ExpressionStatement;
 	class Expression;
+	class TemporaryExpression;
 	class ConditionalExpression;
 	class BinaryExpression;
 	class UnaryExpression;

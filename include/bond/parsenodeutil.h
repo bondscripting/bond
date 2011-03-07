@@ -59,6 +59,8 @@ bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype 
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
+TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+
 TypeAndValue CastValue(const TypeAndValue &value, const TypeDescriptor *type);
 
 }

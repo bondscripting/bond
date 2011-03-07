@@ -18,8 +18,8 @@ protected:
 	virtual void Visit(UnaryExpression *unaryExpression);
 	virtual void Visit(PostfixExpression *postfixExpression);
 	//virtual void Visit(MemberExpression *memberExpression);
-	//virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
-	//virtual void Visit(FunctionCallExpression *functionCallExpression);
+	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
+	virtual void Visit(FunctionCallExpression *functionCallExpression);
 	virtual void Visit(CastExpression *castExpression);
 	virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
@@ -30,9 +30,9 @@ private:
 	void AssertIntegerType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertNumericType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertPointerType(const TypeDescriptor *descriptor, const Token *op);
+	void AssertLValueType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
-	const TypeDescriptor *CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB) const;
 
 	bool mMadeChanges;
 };
@@ -67,14 +67,24 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 
 void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 {
-	ParseNodeTraverser::Visit(conditionalExpression);
 	TypeAndValue &tav = conditionalExpression->GetTypeAndValue();
 
 	if (!tav.IsTypeDefined())
 	{
-		// TODO: WRONG
-		tav.SetTypeDescriptor(&CONST_BOOL_TYPE_DESCRIPTOR);
-		mMadeChanges = true;
+		ParseNodeTraverser::Visit(conditionalExpression);
+		const TypeAndValue &trueTav = conditionalExpression->GetTrueExpression()->GetTypeAndValue();
+		const TypeAndValue &falseTav = conditionalExpression->GetFalseExpression()->GetTypeAndValue();
+
+		if (trueTav.IsTypeDefined() && falseTav.IsTypeDefined())
+		{
+			const TypeDescriptor *trueDescriptor = trueTav.GetTypeDescriptor();
+			const TypeDescriptor *falseDescriptor = falseTav.GetTypeDescriptor();
+			TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
+			conditionalExpression->SetTypeDescriptor(resultType);
+			tav.SetTypeDescriptor(conditionalExpression->GetTypeDescriptor());
+			tav.Resolve();
+			mMadeChanges = true;
+		}
 	}
 }
 
@@ -86,27 +96,26 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 	if (!tav.IsTypeDefined())
 	{
 		ParseNodeTraverser::Visit(binaryExpression);
-		const TypeAndValue &lhs = binaryExpression->GetLhs()->GetTypeAndValue();
-		const TypeAndValue &rhs = binaryExpression->GetRhs()->GetTypeAndValue();
+		const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
+		const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
 
-		if (lhs.IsTypeDefined() && rhs.IsTypeDefined())
+		if (lhTav.IsTypeDefined() && rhTav.IsTypeDefined())
 		{
-			const TypeDescriptor *lhd = lhs.GetTypeDescriptor();
-			const TypeDescriptor *rhd = rhs.GetTypeDescriptor();
-			const TypeDescriptor *result = lhd;
+			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+			const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+			TypeDescriptor resultType = *lhDescriptor;
 			const Token *op = binaryExpression->GetOperator();
 
 			switch (op->GetTokenType())
 			{
 				case Token::COMMA:
-					result = lhd;
+					resultType = *rhDescriptor;
 					break;
 
 				case Token::ASSIGN:
-					AssertAssignableType(lhd, op);
-					// TODO: Assert that rhs type can be assigned to lhs.
-					// TODO: Assert that lhs is lvalue.
-					result = lhd;
+					AssertAssignableType(lhDescriptor, op);
+					// TODO: Assert that rhTav type can be assigned to lhTav.
+					resultType = *lhDescriptor;
 					break;
 
 				case Token::ASSIGN_LEFT:
@@ -114,34 +123,38 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				case Token::ASSIGN_MOD:
 				case Token::OP_LEFT:
 				case Token::OP_RIGHT:
-					AssertIntegerType(lhd, op);
-					AssertIntegerType(rhd, op);
-					AssertAssignableType(lhd, op);
-					result = lhd;
+					AssertIntegerType(lhDescriptor, op);
+					AssertIntegerType(rhDescriptor, op);
+					AssertAssignableType(lhDescriptor, op);
+					resultType = *lhDescriptor;
 					break;
 
 				case Token::ASSIGN_PLUS:
 				case Token::ASSIGN_MINUS:
-					AssertAssignableType(lhd, op);
-					if (lhd->IsPointerType())
+					if (lhDescriptor->IsPointerType())
 					{
-						AssertIntegerType(rhd, op);
-						// TODO
+						AssertIntegerType(rhDescriptor, op);
+					}
+					else if (rhDescriptor->IsPointerType())
+					{
+						AssertIntegerType(lhDescriptor, op);
 					}
 					else
 					{
-						AssertNumericType(lhd, op);
-						AssertNumericType(rhd, op);
-						result = lhd;
+						AssertNumericType(lhDescriptor, op);
+						AssertNumericType(rhDescriptor, op);
 					}
+
+					AssertAssignableType(lhDescriptor, op);
+					resultType = *lhDescriptor;
 					break;
 
 				case Token::ASSIGN_MULT:
 				case Token::ASSIGN_DIV:
-					AssertNumericType(lhd, op);
-					AssertNumericType(rhd, op);
-					AssertAssignableType(lhd, op);
-					result = lhd;
+					AssertNumericType(lhDescriptor, op);
+					AssertNumericType(rhDescriptor, op);
+					AssertAssignableType(lhDescriptor, op);
+					resultType = *lhDescriptor;
 					break;
 
 				case Token::ASSIGN_AND:
@@ -149,19 +162,19 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				case Token::ASSIGN_XOR:
 				case Token::OP_AND:
 				case Token::OP_OR:
-					AssertBooleanType(lhd, op);
-					AssertBooleanType(rhd, op);
-					AssertAssignableType(lhd, op);
-					result = lhd;
+					AssertBooleanType(lhDescriptor, op);
+					AssertBooleanType(rhDescriptor, op);
+					AssertAssignableType(lhDescriptor, op);
+					resultType = *lhDescriptor;
 					break;
 
 				case Token::OP_BIT_AND:
 				case Token::OP_BIT_OR:
 				case Token::OP_BIT_XOR:
 				case Token::OP_MOD:
-					AssertIntegerType(lhd, op);
-					AssertIntegerType(rhd, op);
-					result = CombineOperandTypes(lhd, rhd);
+					AssertIntegerType(lhDescriptor, op);
+					AssertIntegerType(rhDescriptor, op);
+					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 					break;
 
 				case Token::OP_EQUAL:
@@ -170,40 +183,44 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				case Token::OP_LTE:
 				case Token::OP_GT:
 				case Token::OP_GTE:
-					AssertComparableTypes(lhd, rhd, op);
-					result = &CONST_BOOL_TYPE_DESCRIPTOR;
+					AssertComparableTypes(lhDescriptor, rhDescriptor, op);
+					resultType = CONST_BOOL_TYPE_DESCRIPTOR;
 					break;
 
 				case Token::OP_PLUS:
 				case Token::OP_MINUS:
-					if (lhd->IsPointerType())
+					if (lhDescriptor->IsPointerType())
 					{
-						AssertIntegerType(rhd, op);
-						// TODO
+						AssertIntegerType(rhDescriptor, op);
 					}
-					else if (rhd->IsPointerType())
+					else if (rhDescriptor->IsPointerType())
 					{
-						AssertIntegerType(lhd, op);
-						// TODO
+						AssertIntegerType(lhDescriptor, op);
 					}
 					else
 					{
-						AssertNumericType(lhd, op);
-						AssertNumericType(rhd, op);
-						result = CombineOperandTypes(lhd, rhd);
+						AssertNumericType(lhDescriptor, op);
+						AssertNumericType(rhDescriptor, op);
 					}
+					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 					break;
 
 				case Token::OP_MULT:
 				case Token::OP_DIV:
-					AssertNumericType(lhd, op);
-					AssertNumericType(rhd, op);
-					result = CombineOperandTypes(lhd, rhd);
+					AssertNumericType(lhDescriptor, op);
+					AssertNumericType(rhDescriptor, op);
+					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 					break;
 
 				default:
 					break;
 			}
+
+			resultType.SetRValue();
+			binaryExpression->SetTypeDescriptor(resultType);
+			tav.SetTypeDescriptor(binaryExpression->GetTypeDescriptor());
+			tav.Resolve();
+			mMadeChanges = true;
 		}
 	}
 }
@@ -216,12 +233,13 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 	if (!tav.IsTypeDefined())
 	{
 		ParseNodeTraverser::Visit(unaryExpression);
-		const TypeAndValue &rhs = unaryExpression->GetRhs()->GetTypeAndValue();
+		const TypeAndValue &rhTav = unaryExpression->GetRhs()->GetTypeAndValue();
 
-		if (rhs.IsTypeDefined())
+		if (rhTav.IsTypeDefined())
 		{
-			const TypeDescriptor *rhd = rhs.GetTypeDescriptor();
-			TypeDescriptor resultType = *rhd;
+			bool isRValue = true;
+			const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+			TypeDescriptor resultType = *rhDescriptor;
 			resultType.SetRValue();
 			const Token *op = unaryExpression->GetOperator();
 
@@ -231,31 +249,38 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				case Token::OP_MINUS:
 				case Token::OP_INC:
 				case Token::OP_DEC:
-					AssertNumericType(rhd, op);
+					AssertNumericType(rhDescriptor, op);
 					break;
 
 				case Token::OP_NOT:
-					AssertBooleanType(rhd, op);
+					AssertBooleanType(rhDescriptor, op);
 					break;
 
 				case Token::OP_BIT_AND:
-					// TODO: Assert rhd is lvalue.
-					resultType = TypeDescriptor(rhd, true);
+					AssertLValueType(rhDescriptor, op);
+					resultType = TypeDescriptor(rhDescriptor, true);
 					break;
 
 				case Token::OP_BIT_NOT:
-					AssertIntegerType(rhd, op);
+					AssertIntegerType(rhDescriptor, op);
 					break;
 
 				case Token::OP_MULT:
-					AssertPointerType(rhd, op);
-					resultType = *rhd->GetParent();
+					AssertPointerType(rhDescriptor, op);
+					resultType = *rhDescriptor->GetParent();
+					isRValue = false;
 					break;
 
 				default:
 					break;
 			}
 
+			if (isRValue)
+			{
+				resultType.SetRValue();
+			}
+
+			unaryExpression->SetTypeDescriptor(resultType);
 			tav.SetTypeDescriptor(unaryExpression->GetTypeDescriptor());
 			tav.Resolve();
 			mMadeChanges = true;
@@ -271,17 +296,58 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 	if (!tav.IsTypeDefined())
 	{
 		ParseNodeTraverser::Visit(postfixExpression);
-		const TypeAndValue &lhs = postfixExpression->GetLhs()->GetTypeAndValue();
+		const TypeAndValue &lhTav = postfixExpression->GetLhs()->GetTypeAndValue();
 
-		if (lhs.IsTypeDefined())
+		if (lhTav.IsTypeDefined())
 		{
-			const TypeDescriptor *lhd = lhs.GetTypeDescriptor();
+			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 			const Token *op = postfixExpression->GetOperator();
-			AssertNumericType(lhd, op);
-			tav.SetTypeDescriptor(lhd);
+			AssertNumericType(lhDescriptor, op);
+			tav.SetTypeDescriptor(lhDescriptor);
 			tav.Resolve();
 			mMadeChanges = true;
 		}
+	}
+}
+
+
+void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
+{
+	TypeAndValue &tav = arraySubscriptExpression->GetTypeAndValue();
+
+	if (!tav.IsTypeDefined())
+	{
+		ParseNodeTraverser::Visit(arraySubscriptExpression);
+		const TypeAndValue &lhTav = arraySubscriptExpression->GetLhs()->GetTypeAndValue();
+		const TypeAndValue &indexTav = arraySubscriptExpression->GetIndex()->GetTypeAndValue();
+
+		if (lhTav.IsTypeDefined() && indexTav.IsTypeDefined())
+		{
+			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+			const TypeDescriptor *indexDescriptor = indexTav.GetTypeDescriptor();
+			if (!indexDescriptor->IsIntegerType())
+			{
+				const Token *op = arraySubscriptExpression->GetOperator();
+				mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, indexDescriptor);
+			}
+			tav.SetTypeDescriptor(lhDescriptor->GetParent());
+			tav.Resolve();
+			mMadeChanges = true;
+		}
+	}
+}
+
+
+void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
+{
+	ParseNodeTraverser::Visit(functionCallExpression);
+	TypeAndValue &tav = functionCallExpression->GetTypeAndValue();
+
+	if (!tav.IsTypeDefined())
+	{
+		// TODO: Holy crap. How does an expression evaluate to a symbol?
+		//tav.SetTypeDescriptor(lhDescriptor);
+		mMadeChanges = true;
 	}
 }
 
@@ -293,29 +359,38 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 
 	if (!tav.IsTypeDefined())
 	{
-		const TypeAndValue &rhs = castExpression->GetRhs()->GetTypeAndValue();
+		const TypeAndValue &rhTav = castExpression->GetRhs()->GetTypeAndValue();
 
-		if (rhs.IsTypeDefined())
+		if (rhTav.IsTypeDefined())
 		{
-			const TypeDescriptor *rhd = rhs.GetTypeDescriptor();
-			const TypeDescriptor *lhd = castExpression->GetTypeDescriptor();
+			const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+			TypeDescriptor *lhDescriptor = castExpression->GetTypeDescriptor();
 			bool convertible = false;
 
-			if (rhd->GetVariant() == TypeDescriptor::VARIANT_VALUE)
+			if (rhDescriptor->GetVariant() == TypeDescriptor::VARIANT_VALUE)
 			{
-				convertible = rhd->IsNumericType() && lhd->IsNumericType();
+				convertible = rhDescriptor->IsNumericType() && lhDescriptor->IsNumericType();
 			}
 			else
 			{
-				convertible = lhd->GetVariant() == TypeDescriptor::VARIANT_POINTER;
+				convertible = lhDescriptor->GetVariant() == TypeDescriptor::VARIANT_POINTER;
 			}
 
 			if (!convertible)
 			{
-				mErrorBuffer.PushError(ParseError::INVALID_TYPE_CONVERSION, lhd->GetContextToken(), rhd, lhd);
+				mErrorBuffer.PushError(
+					ParseError::INVALID_TYPE_CONVERSION,
+					lhDescriptor->GetContextToken(),
+					rhDescriptor,
+					lhDescriptor);
 			}
 
-			tav.SetTypeDescriptor(lhd);
+			if (rhDescriptor->IsLValue())
+			{
+				lhDescriptor->SetLValue();
+			}
+
+			tav.SetTypeDescriptor(lhDescriptor);
 			mMadeChanges = true;
 		}
 	}
@@ -431,9 +506,18 @@ void TypeEvaluationPass::AssertNumericType(const TypeDescriptor *descriptor, con
 }
 
 
+void TypeEvaluationPass::AssertLValueType(const TypeDescriptor *descriptor, const Token *op)
+{
+	if (!descriptor->IsLValue())
+	{
+		mErrorBuffer.PushError(ParseError::NON_LVALUE_TYPE, op, descriptor);
+	}
+}
+
+
 void TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *descriptor, const Token *op)
 {
-	if (!descriptor->IsAssignableType())
+	if (!descriptor->IsAssignable())
 	{
 		mErrorBuffer.PushError(ParseError::UNASSIGNABLE_TYPE, op, descriptor);
 	}
@@ -446,47 +530,6 @@ void TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, cons
 	{
 		mErrorBuffer.PushError(ParseError::INVALID_COMPARISON, op, typeA, typeB);
 	}
-}
-
-
-const TypeDescriptor *TypeEvaluationPass::CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB) const
-{
-	const Token::TokenType a = typeA->GetPrimitiveType();
-	const Token::TokenType b = typeB->GetPrimitiveType();
-	const TypeDescriptor *result = &CONST_INT_TYPE_DESCRIPTOR;
-
-	if (typeA->IsPointerType())
-	{
-		// TODO
-	}
-
-	else if (typeB->IsPointerType())
-	{
-		// TODO
-	}
-
-	else if ((a == Token::KEY_FLOAT) || (b == Token::KEY_FLOAT))
-	{
-		result = &CONST_FLOAT_TYPE_DESCRIPTOR;
-	}
-	else if ((a == Token::KEY_INT) || (b == Token::KEY_INT))
-	{
-		result = &CONST_INT_TYPE_DESCRIPTOR;
-	}
-	else if ((a == Token::KEY_UINT) || (b == Token::KEY_UINT))
-	{
-		result = &CONST_UINT_TYPE_DESCRIPTOR;
-	}
-	else if ((a == Token::KEY_CHAR) || (b == Token::KEY_CHAR))
-	{
-		result = &CONST_CHAR_TYPE_DESCRIPTOR;
-	}
-	else if ((a == Token::KEY_BOOL) || (b == Token::KEY_BOOL))
-	{
-		result = &CONST_BOOL_TYPE_DESCRIPTOR;
-	}
-
-	return result;
 }
 
 }

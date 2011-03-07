@@ -31,9 +31,13 @@
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                               \
     "Operator '%c' cannot be applied to type '%n'." )                       \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                       \
-    "Operator '%c' cannot be applied to non-pointer type '%n'." )           \
+    "Operator '%c' cannot be applied to non-pointer type '%n'.")            \
+  BOND_PARSE_ERROR(INVALID_TYPE_FOR_INDEX_OPERATOR,                         \
+    "Index operator cannot be applied to non-integer type '%n'.")           \
   BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                 \
     "Cannot convert type '%0n' to '%1n'." )                                 \
+  BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                         \
+    "Cannot apply operator '%c' to non lvalue type '%n'." )                 \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
     "Cannot assign to type '%n' on lhs of '%c'." )                          \
   BOND_PARSE_ERROR(INVALID_COMPARISON,                                      \
