@@ -68,10 +68,10 @@ EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name)
 
 Enumerator *ParseNodeFactory::CreateEnumerator(
 	const Token *name,
-	EnumDeclaration *parent,
+	const TypeDescriptor *typeDescriptor,
 	Expression *value)
 {
-	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, parent, value);
+	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, typeDescriptor, value);
 }
 
 

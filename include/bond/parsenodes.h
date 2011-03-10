@@ -61,8 +61,8 @@ public:
 	virtual SymbolType GetSymbolType() const = 0;
 	virtual const Token *GetName() const = 0;
 
-	TypeAndValue *GetTypeAndValue() { return 0; }
-	const TypeAndValue *GetTypeAndValue() const { return 0; }
+	virtual TypeAndValue *GetTypeAndValue() { return 0; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return 0; }
 
 	Symbol *GetNextSymbol() { return mNextSymbol; }
 	const Symbol *GetNextSymbol() const { return mNextSymbol; }
@@ -329,9 +329,9 @@ private:
 class Enumerator: public Symbol
 {
 public:
-	Enumerator(const Token *name, EnumDeclaration *parent, Expression *value):
+	Enumerator(const Token *name, const TypeDescriptor *typeDescriptor, Expression *value):
+		mTypeAndValue(typeDescriptor),
 		mName(name),
-		mParent(parent),
 		mValue(value) {}
 	virtual ~Enumerator() {}
 
@@ -341,15 +341,15 @@ public:
 	virtual SymbolType GetSymbolType() const { return TYPE_CONSTANT; }
 	virtual const Token *GetName() const { return mName; }
 
-	EnumDeclaration *GetParent() { return mParent; }
-	const EnumDeclaration *GetParent() const { return mParent; }
+	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
 
 	Expression *GetValue() { return mValue; }
 	const Expression *GetValue() const { return mValue; }
 
 private:
+	TypeAndValue mTypeAndValue;
 	const Token *mName;
-	EnumDeclaration *mParent;
 	Expression *mValue;
 };
 
@@ -376,35 +376,6 @@ public:
 private:
 	const Token *mName;
 	ListParseNode *mMemberList;
-};
-
-
-class FunctionDefinition: public ListParseNode
-{
-public:
-	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body):
-		mPrototype(prototype),
-		mBody(body)
-	{}
-
-	virtual ~FunctionDefinition() {}
-
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
-
-	virtual const Token *GetContextToken() const;
-
-	FunctionPrototype *GetPrototype() { return mPrototype; }
-	const FunctionPrototype *GetPrototype() const { return mPrototype; }
-
-	CompoundStatement *GetBody() { return mBody; }
-	const CompoundStatement *GetBody() const { return mBody; }
-
-	bool IsDeclaration() const { return mBody == 0; }
-
-private:
-	FunctionPrototype *mPrototype;
-	CompoundStatement *mBody;
 };
 
 
@@ -436,6 +407,44 @@ private:
 	const Token *mName;
 	TypeDescriptor *mReturnType;
 	Parameter *mParameterList;
+};
+
+
+class FunctionDefinition: public Symbol
+{
+public:
+	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body):
+		mIdentifier(prototype->GetName()),
+		mTypeSpecifier(&INT_TOKEN, &mIdentifier),
+		mTypeDescriptor(&mTypeSpecifier, true),
+		mPrototype(prototype),
+		mBody(body)
+	{}
+
+	virtual ~FunctionDefinition() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual SymbolType GetSymbolType() const { return TYPE_FUNCTION; }
+	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+
+	FunctionPrototype *GetPrototype() { return mPrototype; }
+	const FunctionPrototype *GetPrototype() const { return mPrototype; }
+
+	CompoundStatement *GetBody() { return mBody; }
+	const CompoundStatement *GetBody() const { return mBody; }
+
+	bool IsDeclaration() const { return mBody == 0; }
+
+private:
+	QualifiedIdentifier mIdentifier;
+	TypeSpecifier mTypeSpecifier;
+	TypeDescriptor mTypeDescriptor;
+	FunctionPrototype *mPrototype;
+	CompoundStatement *mBody;
 };
 
 

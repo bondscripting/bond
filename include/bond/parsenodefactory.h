@@ -21,7 +21,7 @@ public:
 
 	Enumerator *CreateEnumerator(
 		const Token *name,
-		EnumDeclaration *parent,
+		const TypeDescriptor *typeDescriptor,
 		Expression *value);
 
 	StructDeclaration *CreateStructDeclaration(const Token *name, ListParseNode *memberList);

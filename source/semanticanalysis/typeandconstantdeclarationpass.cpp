@@ -36,11 +36,6 @@ void TypeAndConstantDeclarationPass::Visit(EnumDeclaration *enumDeclaration)
 void TypeAndConstantDeclarationPass::Visit(Enumerator *enumerator)
 {
 	InsertSymbol(enumerator);
-	/*
-	TypeAndValue &tav = symbol->GetTypeAndValue();
-	const TypeDescriptor *descriptor = enumerator->GetParent()->GetTypeDescriptor();
-	tav.SetTypeDescriptor(descriptor);
-	*/
 }
 
 

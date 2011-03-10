@@ -79,7 +79,7 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	{
 		symbol = FindSymbol(identifier->GetName());
 	}
-	else //if (mType == TYPE_NAMESPACE)
+	else
 	{
 		Symbol *nextScope = FindSymbol(identifier->GetName());
 		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
@@ -98,7 +98,7 @@ const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	{
 		symbol = FindSymbol(identifier->GetName());
 	}
-	else //if (mType == TYPE_NAMESPACE)
+	else
 	{
 		const Symbol *nextScope = FindSymbol(identifier->GetName());
 		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
@@ -236,12 +236,6 @@ bool TypeSpecifier::IsNumericType() const
 		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return Token::INVALID;
-}
-
-
-const Token *FunctionDefinition::GetContextToken() const
-{
-	return (mPrototype != 0) ? mPrototype->GetContextToken() : 0;
 }
 
 

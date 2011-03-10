@@ -150,7 +150,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 
 		while (stream.PeekIf(ENUM_DELIMITERS_TYPESET) == 0)
 		{
-			Enumerator *next = ParseEnumerator(status, stream, enumeration);
+			Enumerator *next = ParseEnumerator(status, stream, enumeration->GetTypeDescriptor());
 			AssertNode(status, stream, next);
 			SyncToEnumeratorDelimiter(status, stream);
 
@@ -185,7 +185,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 
 // enumerator
 //   : IDENTIFIER ['=' const_expression]
-Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream, EnumDeclaration *parent)
+Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream, const TypeDescriptor *typeDescriptor)
 {
 	Enumerator *enumerator = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
@@ -198,7 +198,7 @@ Enumerator *Parser::ParseEnumerator(Status &status, TokenStream &stream, EnumDec
 			value = ParseConstExpression(status, stream);
 			AssertNode(status, stream, value);
 		}
-		enumerator = mFactory.CreateEnumerator(name, parent, value);
+		enumerator = mFactory.CreateEnumerator(name, typeDescriptor, value);
 	}
 
 	return enumerator;

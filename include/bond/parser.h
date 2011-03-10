@@ -87,7 +87,7 @@ private:
 	ListParseNode *ParseExternalDeclaration(Status &status, TokenStream &stream);
 	NamespaceDefinition *ParseNamespaceDefinition(Status &status, TokenStream &stream);
 	EnumDeclaration *ParseEnumDeclaration(Status &status, TokenStream &stream);
-	Enumerator *ParseEnumerator(Status &status, TokenStream &stream, EnumDeclaration *parent);
+	Enumerator *ParseEnumerator(Status &status, TokenStream &stream, const TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration(Status &status, TokenStream &stream);
 	ListParseNode *ParseFunctionOrDeclarativeStatement(Status &status, TokenStream &stream);
 	Parameter *ParseParameterList(Status &status, TokenStream &stream);
