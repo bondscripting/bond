@@ -1,11 +1,7 @@
 #include "bond/autostack.h"
-#include "bond/linearallocator.h"
-#include "bond/parsenodecounter.h"
-#include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
 #include "bond/semanticanalyzer.h"
-#include "bond/symboltable.h"
 #include <new>
 
 namespace Bond
@@ -23,11 +19,9 @@ public:
 protected:
 	SemanticAnalysisPass(
 			ParseErrorBuffer &errorBuffer,
-			Allocator &allocator,
 			SymbolTable &symbolTable):
 		mErrorBuffer(errorBuffer),
-		mSymbolTable(symbolTable),
-		mAllocator(allocator)
+		mSymbolTable(symbolTable)
 	{}
 
 	virtual void Visit(TranslationUnit *translationUnit);
@@ -40,8 +34,8 @@ protected:
 
 	Symbol *GetSymbol(const Token *name);
 	Symbol *GetSymbol(const QualifiedIdentifier *identifier);
-	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
-	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition);
+	void InsertSymbol(Symbol *symbol);
+	Symbol *GetOrInsertSymbol(Symbol *symbol);
 
 	ParseErrorBuffer &mErrorBuffer;
 
@@ -50,13 +44,11 @@ private:
 	SemanticAnalysisPass &operator=(const SemanticAnalysisPass &other);
 
 	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
-	Symbol *InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
-	Symbol *CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent);
+	void InsertSymbol(Symbol *parent, Symbol *symbol);
+	Symbol *GetOrInsertSymbol(Symbol *parent, Symbol *symbol);
 
 	ScopeStack mScopeStack;
 	SymbolTable &mSymbolTable;
-	Allocator &mAllocator;
 };
 
 
@@ -75,42 +67,42 @@ void SemanticAnalysisPass::Visit(TranslationUnit *translationUnit)
 
 void SemanticAnalysisPass::Visit(NamespaceDefinition *namespaceDefinition)
 {
-	ScopeStack::Element stackElement(mScopeStack, namespaceDefinition->GetSymbol());
+	ScopeStack::Element stackElement(mScopeStack, namespaceDefinition);
 	ParseNodeTraverser::Visit(namespaceDefinition);
 }
 
 
 void SemanticAnalysisPass::Visit(StructDeclaration *structDeclaration)
 {
-	ScopeStack::Element stackElement(mScopeStack, structDeclaration->GetSymbol());
+	ScopeStack::Element stackElement(mScopeStack, structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
 }
 
 
 void SemanticAnalysisPass::Visit(FunctionDefinition *functionDefinition)
 {
-	//ScopeStack::Element stackElement(mScopeStack, functionDefinition->GetSymbol());
+	//ScopeStack::Element stackElement(mScopeStack, functionDefinition);
 	ParseNodeTraverser::Visit(functionDefinition);
 }
 
 
 void SemanticAnalysisPass::Visit(CompoundStatement *compoundStatement)
 {
-	//ScopeStack::Element stackElement(mScopeStack, structDeclaration->GetSymbol());
+	//ScopeStack::Element stackElement(mScopeStack, compoundStatement);
 	ParseNodeTraverser::Visit(compoundStatement);
 }
 
 
 void SemanticAnalysisPass::Visit(SwitchSection *switchSection)
 {
-	//ScopeStack::Element stackElement(mScopeStack, switchSection->GetSymbol());
+	//ScopeStack::Element stackElement(mScopeStack, switchSection);
 	ParseNodeTraverser::Visit(switchSection);
 }
 
 
 void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 {
-	//ScopeStack::Element stackElement(mScopeStack, forStatement->GetSymbol());
+	//ScopeStack::Element stackElement(mScopeStack, forStatement);
 	ParseNodeTraverser::Visit(forStatement);
 }
 
@@ -129,58 +121,49 @@ Symbol *SemanticAnalysisPass::GetSymbol(const QualifiedIdentifier *identifier)
 }
 
 
-Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition)
+void SemanticAnalysisPass::InsertSymbol(Symbol *symbol)
 {
 	Symbol *parent = GetCurrentScope();
-	return InsertSymbol(type, name, definition, parent);
+	InsertSymbol(parent, symbol);
 }
 
 
-Symbol *SemanticAnalysisPass::InsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
+void SemanticAnalysisPass::InsertSymbol(Symbol *parent, Symbol *symbol)
 {
-	Symbol *symbol = parent->FindSymbol(name);
+	Symbol *prev = parent->FindSymbol(symbol->GetName());
 
-	if (symbol != 0)
+	if (prev != 0)
 	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, symbol->GetName(), prev->GetName());
 	}
 
-	symbol = CreateSymbol(type, name, definition, parent);
-
-	return symbol;
-}
-
-
-Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition)
-{
-	Symbol *parent = GetCurrentScope();
-	return GetOrInsertSymbol(type, name, definition, parent);
-}
-
-
-Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
-{
-	Symbol *symbol = parent->FindSymbol(name);
-
-	if ((symbol != 0) && (symbol->GetType() != type))
-	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, name, symbol->GetName());
-		symbol = 0;
-	}
-
-	if (symbol == 0)
-	{
-		symbol = CreateSymbol(type, name, definition, parent);
-	}
-
-	return symbol;
-}
-
-
-Symbol *SemanticAnalysisPass::CreateSymbol(Symbol::Type type, const Token *name, const ParseNode *definition, Symbol *parent)
-{
-	Symbol *symbol = new (mAllocator.Alloc<Symbol>()) Symbol(type, name, definition, parent);
 	parent->InsertSymbol(symbol);
+}
+
+
+Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *symbol)
+{
+	Symbol *parent = GetCurrentScope();
+	return GetOrInsertSymbol(parent, symbol);
+}
+
+
+Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
+{
+	Symbol *target = parent->FindSymbol(symbol->GetName());
+
+	if ((target != 0) && (target->GetSymbolType() != symbol->GetSymbolType()))
+	{
+		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, target->GetName(), symbol->GetName());
+		target = 0;
+	}
+
+	if (target == 0)
+	{
+		parent->InsertSymbol(symbol);
+		target = symbol;
+	}
+
 	return symbol;
 }
 
@@ -198,56 +181,14 @@ namespace Bond
 //------------------------------------------------------------------------------
 // SemanticAnalyser
 //------------------------------------------------------------------------------
-SemanticAnalyzer::~SemanticAnalyzer()
-{
-	Dispose();
-}
-
-
-void SemanticAnalyzer::Dispose()
-{
-	mErrorBuffer.Reset();
-	mAllocator.Free(mSymbolTable);
-	mSymbolTable = 0;
-}
-
 
 void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 {
-	Dispose();
+	mErrorBuffer.Reset();
 
-	// Tally symbol table space requirements.
-	ParseNodeCounter counter;
-	counter.CountList(translationUnitList);
-	const ParseNodeCount &nodeCount = counter.GetCount();
-
-	const int symbolCount =
-		nodeCount.mNamespaceDefinition +
-		nodeCount.mEnumDeclaration +
-		nodeCount.mEnumerator +
-		nodeCount.mStructDeclaration +
-		nodeCount.mFunctionDefinition +
-		nodeCount.mParameter +
-		nodeCount.mNamedInitializer +
-		nodeCount.mCompoundStatement +
-		nodeCount.mSwitchSection +
-		nodeCount.mForStatement;
-
-	const int size = sizeof(SymbolTable) + (symbolCount * sizeof(Symbol));
-	char *buffer = mAllocator.Alloc<char>(size);
-	LinearAllocator linearAllocator(buffer, size);
-
-	mSymbolTable = new (linearAllocator.Alloc<SymbolTable>()) SymbolTable();
-
-	Analyze(translationUnitList, linearAllocator);
-}
-
-
-void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList, Allocator &allocator)
-{
 	// Add all type declarations to the symbol table first, since they can be used prior to their declaration
 	// in other typed declarations (e.g. function return type and parameter types).
-	TypeAndConstantDeclarationPass typeAndConstantPass(mErrorBuffer, allocator, *mSymbolTable);
+	TypeAndConstantDeclarationPass typeAndConstantPass(mErrorBuffer, mSymbolTable);
 	typeAndConstantPass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
@@ -255,7 +196,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList, Allocator &
 		return;
 	}
 
-	TopLevelTypeEvaluationPass topLevelTypePass(mErrorBuffer, allocator, *mSymbolTable);
+	TopLevelTypeEvaluationPass topLevelTypePass(mErrorBuffer, mSymbolTable);
 	topLevelTypePass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
@@ -263,7 +204,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList, Allocator &
 		return;
 	}
 
-	TopLevelValueEvaluationPass topLevelValuePass(mErrorBuffer, allocator, *mSymbolTable);
+	TopLevelValueEvaluationPass topLevelValuePass(mErrorBuffer, mSymbolTable);
 	topLevelValuePass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())

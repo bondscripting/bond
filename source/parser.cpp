@@ -28,7 +28,7 @@ void Parser::Parse(TokenStream &stream)
 {
 	Status status;
 	TranslationUnit *translationUnit = ParseTranslationUnit(status, stream);
-	translationUnit->SetNext(mTranslationUnitList);
+	translationUnit->SetNextNode(mTranslationUnitList);
 	mTranslationUnitList = translationUnit;
 }
 
@@ -66,7 +66,7 @@ ListParseNode *Parser::ParseExternalDeclarationList(Status &status, TokenStream 
 				}
 				else
 				{
-					current->SetNext(next);
+					current->SetNextNode(next);
 				}
 				current = next;
 			}
@@ -168,7 +168,7 @@ EnumDeclaration *Parser::ParseEnumDeclaration(Status &status, TokenStream &strea
 				}
 				else
 				{
-					current->SetNext(next);
+					current->SetNextNode(next);
 				}
 				current = next;
 			}
@@ -238,7 +238,7 @@ StructDeclaration *Parser::ParseStructDeclaration(Status &status, TokenStream &s
 					}
 					else
 					{
-						current->SetNext(next);
+						current->SetNextNode(next);
 					}
 					current = next;
 				}
@@ -343,7 +343,7 @@ Parameter *Parser::ParseParameterList(Status &status, TokenStream &stream)
 	{
 		Parameter *next = ParseParameter(status, stream);
 		AssertNode(status, stream, next);
-		current->SetNext(next);
+		current->SetNextNode(next);
 		current = next;
 	}
 
@@ -481,7 +481,7 @@ NamedInitializer *Parser::ParseNamedInitializerList(
 	{
 		NamedInitializer *next = ParseNamedInitializer(status, stream, typeDescriptor);
 		AssertNode(status, stream, next);
-		current->SetNext(next);
+		current->SetNextNode(next);
 		current = next;
 	}
 
@@ -557,7 +557,7 @@ Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
 				}
 				else
 				{
-					current->SetNext(next);
+					current->SetNextNode(next);
 				}
 				current = next;
 			}
@@ -594,7 +594,7 @@ QualifiedIdentifier *Parser::ParseQualifiedIdentifier(Status &status, TokenStrea
 		{
 			QualifiedIdentifier *next = ParseQualifiedIdentifier(status, stream);
 			AssertNode(status, stream, next);
-			id->SetNext(next);
+			id->SetNextNode(next);
 		}
 	}
 
@@ -683,7 +683,7 @@ CompoundStatement *Parser::ParseCompoundStatement(Status &status, TokenStream &s
 				}
 				else
 				{
-					current->SetNext(next);
+					current->SetNextNode(next);
 				}
 				current = next;
 			}
@@ -745,7 +745,7 @@ SwitchStatement *Parser::ParseSwitchStatement(Status &status, TokenStream &strea
 		while (stream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			SwitchSection *next = ParseSwitchSection(status, stream);
-			current->SetNext(next);
+			current->SetNextNode(next);
 			current = next;
 		}
 		// TODO: Semantic analyser must ensure the list is not empty.
@@ -768,7 +768,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 	while (currentLabel != 0)
 	{
 		SwitchLabel *next = ParseSwitchLabel(status, stream);
-		currentLabel->SetNext(next);
+		currentLabel->SetNextNode(next);
 		currentLabel = next;
 	}
 	// TODO: Semantic analyser must ensure the list is not empty.
@@ -789,7 +789,7 @@ SwitchSection *Parser::ParseSwitchSection(Status &status, TokenStream &stream)
 			}
 			else
 			{
-				currentStatement->SetNext(next);
+				currentStatement->SetNextNode(next);
 			}
 			currentStatement = next;
 		}
@@ -1527,7 +1527,7 @@ Expression *Parser::ParseArgumentList(Status &status, TokenStream &stream)
 	{
 		Expression *next = ParseExpression(status, stream);
 		AssertNode(status, stream, next);
-		current->SetNext(next);
+		current->SetNextNode(next);
 		current = next;
 	}
 

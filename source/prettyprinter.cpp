@@ -25,7 +25,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode)
 	while (current != 0)
 	{
 		Print(current);
-		current = current->GetNext();
+		current = current->GetNextNode();
 	}
 }
 
@@ -486,14 +486,14 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 	if (current != 0)
 	{
 		Print(current);
-		current = current->GetNext();
+		current = current->GetNextNode();
 	}
 
 	while (current != 0)
 	{
 		mWriter.Write("%s", separator);
 		Print(current);
-		current = current->GetNext();
+		current = current->GetNextNode();
 	}
 }
 

@@ -6,6 +6,7 @@ namespace Bond
 
 	class ParseNode;
 	class ListParseNode;
+	class Symbol;
 	class TranslationUnit;
 	class NamespaceDefinition;
 	class EnumDeclaration;

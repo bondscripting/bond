@@ -7,12 +7,12 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
-	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
-	const Bond::Symbol *globalScope = table->GetGlobalScope();
+	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
+	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *outerSpace = globalScope->FindSymbol("OuterSpace");
 	ASSERT_MESSAGE(outerSpace != 0, "Failed to find symbol 'OuterSpace'.");
-	ASSERT_MESSAGE(outerSpace->GetType() == Bond::Symbol::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
+	ASSERT_MESSAGE(outerSpace->GetSymbolType() == Bond::Symbol::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
 
 	const Bond::Symbol *firstInnerSpace = outerSpace->FindSymbol("FirstInnerSpace");
 	ASSERT_MESSAGE(firstInnerSpace != 0, "Failed to find symbol 'FirstInnerSpace'.");
@@ -28,16 +28,16 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
-	const Bond::SymbolTable *table = analyzer.GetSymbolTable();
-	const Bond::Symbol *globalScope = table->GetGlobalScope();
+	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
+	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *empty = globalScope->FindSymbol("Empty");
 	ASSERT_MESSAGE(empty != 0, "Failed to find symbol 'Empty'.");
-	ASSERT_MESSAGE(empty->GetType() == Bond::Symbol::TYPE_ENUM, "Expected 'Empty' to be an enum.");
+	ASSERT_MESSAGE(empty->GetSymbolType() == Bond::Symbol::TYPE_ENUM, "Expected 'Empty' to be an enum.");
 
 	const Bond::Symbol *eighth = globalScope->FindSymbol("EIGHTH");
 	ASSERT_MESSAGE(eighth != 0, "Failed to find symbol 'EIGHTH'.");
-	ASSERT_MESSAGE(eighth->GetType() == Bond::Symbol::TYPE_CONSTANT, "Expected 'EIGHTH' to be a constant.");
+	ASSERT_MESSAGE(eighth->GetSymbolType() == Bond::Symbol::TYPE_CONSTANT, "Expected 'EIGHTH' to be a constant.");
 
 	return true;
 }

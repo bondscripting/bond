@@ -31,7 +31,7 @@ void ParseNodeTraverser::TraverseList(ListParseNode *listNode)
 	ListParseNode *current = listNode;
 	while (current != 0)
 	{
-		ListParseNode *next = current->GetNext();
+		ListParseNode *next = current->GetNextNode();
 		Traverse(current);
 		current = next;
 	}
@@ -43,7 +43,7 @@ void ParseNodeTraverser::TraverseList(const ListParseNode *listNode)
 	const ListParseNode *current = listNode;
 	while (current != 0)
 	{
-		const ListParseNode *next = current->GetNext();
+		const ListParseNode *next = current->GetNextNode();
 		Traverse(current);
 		current = next;
 	}

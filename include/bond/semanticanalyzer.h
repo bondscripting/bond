@@ -2,38 +2,30 @@
 #define BOND_SEMANTICANALYZER_H
 
 #include "bond/parseerror.h"
-#include "bond/parsenodesfwd.h"
+#include "bond/symboltable.h"
 
 namespace Bond
 {
 
-class Allocator;
 class SymbolTable;
 
 class SemanticAnalyzer
 {
 public:
-	SemanticAnalyzer(Allocator &allocator):
-		mAllocator(allocator),
-		mSymbolTable(0)
-	{}
-
-	~SemanticAnalyzer();
-	void Dispose();
+	SemanticAnalyzer() {}
+	~SemanticAnalyzer() {}
 
 	void Analyze(TranslationUnit *translationUnitList);
 
 	bool HasErrors() const { return mErrorBuffer.HasErrors(); }
 	const ParseErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
-	const SymbolTable *GetSymbolTable() const { return mSymbolTable; }
+	const SymbolTable &GetSymbolTable() const { return mSymbolTable; }
 
 private:
-	void Analyze(TranslationUnit *translationUnitList, Allocator &allocator);
 
 	ParseErrorBuffer mErrorBuffer;
-	Allocator &mAllocator;
-	SymbolTable *mSymbolTable;
+	SymbolTable mSymbolTable;
 };
 
 }

@@ -9,8 +9,6 @@
 namespace Bond
 {
 
-class Symbol;
-
 class ParseNode
 {
 public:
@@ -30,32 +28,82 @@ class ListParseNode: public ParseNode
 public:
 	virtual ~ListParseNode() {}
 
-	ListParseNode *GetNext() { return mNext; }
-	const ListParseNode *GetNext() const { return mNext; }
-	void SetNext(ListParseNode *next) { mNext = next; }
+	ListParseNode *GetNextNode() { return mNextNode; }
+	const ListParseNode *GetNextNode() const { return mNextNode; }
+	void SetNextNode(ListParseNode *next) { mNextNode = next; }
 
 protected:
-	ListParseNode(): mNext(0) {}
+	ListParseNode(): mNextNode(0) {}
 
 private:
-	ListParseNode *mNext;
+	ListParseNode *mNextNode;
 };
 
 
-class SymbolicParseNode: public ListParseNode
+class Symbol: public ListParseNode
 {
 public:
-	virtual ~SymbolicParseNode() {}
+	enum SymbolType
+	{
+		TYPE_NAMESPACE,
+		TYPE_STRUCT,
+		TYPE_ENUM,
+		//TYPE_LOCALSCOPE,
+		TYPE_CONSTANT,
+		//TYPE_VARIABLE,
+		TYPE_FUNCTION,
+	};
 
+	virtual ~Symbol() {}
+
+	virtual const Token *GetContextToken() const { return GetName(); }
+
+	virtual SymbolType GetSymbolType() const = 0;
+	virtual const Token *GetName() const = 0;
+
+	TypeAndValue *GetTypeAndValue() { return 0; }
+	const TypeAndValue *GetTypeAndValue() const { return 0; }
+
+	Symbol *GetNextSymbol() { return mNextSymbol; }
+	const Symbol *GetNextSymbol() const { return mNextSymbol; }
+	void SetNextSymbol(Symbol *next) { mNextSymbol = next; }
+
+	Symbol *GetParentSymbol() { return mParentSymbol; }
+	const Symbol *GetParentSymbol() const { return mParentSymbol; }
+	void SetParentSymbol(Symbol *parent) { mParentSymbol = parent; }
+
+	const Symbol *FindSymbol(const char *name) const;
+
+	Symbol *FindSymbol(const Token *name);
+	const Symbol *FindSymbol(const Token *name) const;
+
+	Symbol *FindSymbol(const QualifiedIdentifier *identifier);
+	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
+
+	void InsertSymbol(Symbol *symbol);
+
+	bool Matches(bu32_t hashCode, const char *name) const;
+	bool Matches(const Token *name) const;
+	/*
 	Symbol *GetSymbol() { return mSymbol; }
 	const Symbol *GetSymbol() const { return mSymbol; }
 	void SetSymbol(Symbol *symbol) { mSymbol = symbol; }
-
+	*/
 protected:
-	SymbolicParseNode(): mSymbol(0) {}
+	Symbol():
+		mNextSymbol(0),
+		mParentSymbol(0),
+		mSymbolList(0)
+	{}
 
 private:
-	Symbol *mSymbol;
+	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
+	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
+
+	//Symbol *mSymbol;
+	Symbol *mNextSymbol;
+	Symbol *mParentSymbol;
+	Symbol *mSymbolList;
 };
 
 
@@ -194,10 +242,10 @@ public:
 
 	const Token *GetName() const { return mName; }
 
-	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNext()); }
-	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNext()); }
+	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNextNode()); }
+	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNextNode()); }
 
-	bool IsTerminal() const { return GetNext() == 0; }
+	bool IsTerminal() const { return GetNextNode() == 0; }
 
 private:
 	const Token *mName;
@@ -221,7 +269,7 @@ private:
 };
 
 
-class NamespaceDefinition: public SymbolicParseNode
+class NamespaceDefinition: public Symbol
 {
 public:
 	NamespaceDefinition(const Token *name, ListParseNode *declarationList):
@@ -234,9 +282,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
-
-	const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const { return TYPE_NAMESPACE; }
+	virtual const Token *GetName() const { return mName; }
 
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
@@ -247,7 +294,7 @@ private:
 };
 
 
-class EnumDeclaration: public SymbolicParseNode
+class EnumDeclaration: public Symbol
 {
 public:
 	EnumDeclaration(const Token *name):
@@ -262,9 +309,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return GetName(); }
-
-	const Token *GetName() const { return mIdentifier.GetName(); }
+	virtual SymbolType GetSymbolType() const { return TYPE_ENUM; }
+	virtual const Token *GetName() const { return mIdentifier.GetName(); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
 
@@ -280,7 +326,7 @@ private:
 };
 
 
-class Enumerator: public SymbolicParseNode
+class Enumerator: public Symbol
 {
 public:
 	Enumerator(const Token *name, EnumDeclaration *parent, Expression *value):
@@ -292,9 +338,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
-
-	const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const { return TYPE_CONSTANT; }
+	virtual const Token *GetName() const { return mName; }
 
 	EnumDeclaration *GetParent() { return mParent; }
 	const EnumDeclaration *GetParent() const { return mParent; }
@@ -309,7 +354,7 @@ private:
 };
 
 
-class StructDeclaration: public SymbolicParseNode
+class StructDeclaration: public Symbol
 {
 public:
 	explicit StructDeclaration(const Token *name, ListParseNode *memberList):
@@ -322,9 +367,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
-
-	const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const { return TYPE_STRUCT; }
+	virtual const Token *GetName() const { return mName; }
 
 	ListParseNode *GetMemberList() { return mMemberList; }
 	const ListParseNode *GetMemberList() const { return mMemberList; }

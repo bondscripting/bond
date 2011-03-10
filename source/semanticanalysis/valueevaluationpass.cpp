@@ -9,8 +9,8 @@ public:
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
-	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, allocator, symbolTable)
+	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
 	//virtual void Visit(ConditionalExpression *conditionalExpression);
@@ -33,8 +33,8 @@ private:
 class TopLevelValueEvaluationPass: public ValueEvaluationPass
 {
 public:
-	TopLevelValueEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
-		ValueEvaluationPass(errorBuffer, allocator, symbolTable)
+	TopLevelValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		ValueEvaluationPass(errorBuffer, symbolTable)
 	{}
 
 	~TopLevelValueEvaluationPass() {}

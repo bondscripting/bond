@@ -9,8 +9,8 @@ public:
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
-	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, allocator, symbolTable)
+	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
 	virtual void Visit(ConditionalExpression *conditionalExpression);
@@ -41,8 +41,8 @@ private:
 class TopLevelTypeEvaluationPass: public TypeEvaluationPass
 {
 public:
-	TopLevelTypeEvaluationPass(ParseErrorBuffer &errorBuffer, Allocator &allocator, SymbolTable &symbolTable):
-		TypeEvaluationPass(errorBuffer, allocator, symbolTable)
+	TopLevelTypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		TypeEvaluationPass(errorBuffer, symbolTable)
 	{}
 
 	~TopLevelTypeEvaluationPass() {}
@@ -459,10 +459,11 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		const Symbol *symbol = GetSymbol(identifierExpression->GetIdentifier());
 		if (symbol != 0)
 		{
-			const TypeAndValue &symbolTav = symbol->GetTypeAndValue();
-			if (symbolTav.IsTypeDefined())
+			const TypeAndValue *symbolTav = symbol->GetTypeAndValue();
+			// TODO: Is it an error if symbolTav is null?
+			if ((symbolTav != 0) && (symbolTav->IsTypeDefined()))
 			{
-				tav.SetTypeDescriptor(symbolTav.GetTypeDescriptor());
+				tav.SetTypeDescriptor(symbolTav->GetTypeDescriptor());
 				mMadeChanges = true;
 			}
 		}

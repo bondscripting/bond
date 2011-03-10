@@ -1,7 +1,135 @@
 #include "bond/parsenodes.h"
+#include "bond/stringutil.h"
+#include <string.h>
 
 namespace Bond
 {
+
+const Symbol *Symbol::FindSymbol(const char *name) const
+{
+	const bu32_t hashCode = StringHash(name);
+	const Symbol *symbol = mSymbolList;
+
+	while ((symbol != 0) && !symbol->Matches(hashCode, name))
+	{
+		symbol = symbol->GetNextSymbol();
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindSymbol(const Token *name)
+{
+	Symbol *symbol = mSymbolList;
+
+	while ((symbol != 0) && !symbol->Matches(name))
+	{
+		symbol = symbol->GetNextSymbol();
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindSymbol(const Token *name) const
+{
+	const Symbol *symbol = mSymbolList;
+
+	while ((symbol != 0) && !symbol->Matches(name))
+	{
+		symbol = symbol->GetNextSymbol();
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier)
+{
+	Symbol *symbol = FindQualifiedSymbol(identifier);
+
+	if ((symbol == 0) && (mParentSymbol != 0))
+	{
+		symbol = mParentSymbol->FindSymbol(identifier);
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
+{
+	const Symbol *symbol = FindQualifiedSymbol(identifier);
+
+	if ((symbol == 0) && (mParentSymbol != 0))
+	{
+		symbol = mParentSymbol->FindSymbol(identifier);
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
+{
+	Symbol *symbol = 0;
+
+	if (identifier->IsTerminal())
+	{
+		symbol = FindSymbol(identifier->GetName());
+	}
+	else //if (mType == TYPE_NAMESPACE)
+	{
+		Symbol *nextScope = FindSymbol(identifier->GetName());
+		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier) const
+{
+	const Symbol *symbol = 0;
+
+	if (identifier->IsTerminal())
+	{
+		symbol = FindSymbol(identifier->GetName());
+	}
+	else //if (mType == TYPE_NAMESPACE)
+	{
+		const Symbol *nextScope = FindSymbol(identifier->GetName());
+		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+	}
+
+	return symbol;
+}
+
+
+void Symbol::InsertSymbol(Symbol *symbol)
+{
+	symbol->SetParentSymbol(this);
+	symbol->SetNextSymbol(mSymbolList);
+	mSymbolList = symbol;
+}
+
+
+bool Symbol::Matches(bu32_t hashCode, const char *name) const
+{
+	const Token *n = GetName();
+	return (n != 0) && (hashCode == n->GetHashCode()) && (strcmp(name, n->GetText()) == 0);
+}
+
+
+bool Symbol::Matches(const Token *name) const
+{
+	const Token *n = GetName();
+	return (n != 0) && (name->GetHashCode() == n->GetHashCode()) && (strcmp(name->GetText(), n->GetText()) == 0);
+}
+
 
 const Token *TypeDescriptor::GetContextToken() const
 {
