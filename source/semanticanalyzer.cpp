@@ -170,8 +170,8 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 }
 
 
+#include "semanticanalysis/toplevelsymbolpass.cpp"
 #include "semanticanalysis/typeevaluationpass.cpp"
-#include "semanticanalysis/typeandconstantdeclarationpass.cpp"
 #include "semanticanalysis/valueevaluationpass.cpp"
 
 

@@ -418,7 +418,8 @@ public:
 		mTypeSpecifier(&INT_TOKEN, &mIdentifier),
 		mTypeDescriptor(&mTypeSpecifier, true),
 		mPrototype(prototype),
-		mBody(body)
+		mBody(body),
+		mNextDefinition(0)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -437,6 +438,10 @@ public:
 	CompoundStatement *GetBody() { return mBody; }
 	const CompoundStatement *GetBody() const { return mBody; }
 
+	FunctionDefinition *GetNextDefinition() { return mNextDefinition; }
+	const FunctionDefinition *GetNextDefinition() const { return mNextDefinition; }
+	void AppendDefinition(FunctionDefinition *next) {	next->mNextDefinition = mNextDefinition; mNextDefinition = next; }
+
 	bool IsDeclaration() const { return mBody == 0; }
 
 private:
@@ -445,6 +450,7 @@ private:
 	TypeDescriptor mTypeDescriptor;
 	FunctionPrototype *mPrototype;
 	CompoundStatement *mBody;
+	FunctionDefinition *mNextDefinition;
 };
 
 
