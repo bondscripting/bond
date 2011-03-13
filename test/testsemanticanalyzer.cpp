@@ -1,7 +1,6 @@
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
-
-#include "bond/symboltable.h"
+#include "bond/parsenodeutil.h"
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
@@ -37,25 +36,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 
 	const Bond::Symbol *eighth = globalScope->FindSymbol("EIGHTH");
 	ASSERT_MESSAGE(eighth != 0, "Failed to find symbol 'EIGHTH'.");
-	ASSERT_MESSAGE(eighth->GetSymbolType() == Bond::Symbol::TYPE_CONSTANT, "Expected 'EIGHTH' to be a constant.");
-
-	return true;
-}
-
-/*
-DEFINE_SEMANTICANALYZER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bond")
-{
-	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
-
-	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
-
-	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mFunctionPrototype = 4;
-	expectedCount.mFunctionDefinition = 4;
-	expectedCount.mCompoundStatement = 0;
-	expectedCount.mParameter = 5;
-
-	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+	ASSERT_MESSAGE(eighth->GetSymbolType() == Bond::Symbol::TYPE_VALUE, "Expected 'EIGHTH' to be a value.");
 
 	return true;
 }
@@ -65,20 +46,30 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
 
-	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
+	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
+	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
-	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mFunctionPrototype = 4;
-	expectedCount.mFunctionDefinition = 4;
-	expectedCount.mCompoundStatement = 4;
-	expectedCount.mParameter = 5;
+	const Bond::Symbol *symbol = globalScope->FindSymbol("VoidOneParameter");
+	ASSERT_MESSAGE(symbol != 0, "Failed to find symbol 'VoidOneParameter'.");
+	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'VoidOneParameter' to be a function.");
 
-	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
+	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
+	ASSERT_MESSAGE(function->GetNextDefinition() == 0, "Expected 'VoidOneParameter' to have a single definition.");
+
+	symbol = globalScope->FindSymbol("ComplexFunctionPrototype");
+	ASSERT_MESSAGE(symbol != 0, "Failed to find symbol 'ComplexFunctionPrototype'.");
+	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype' to be a function.");
+
+	function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
+	function = function->GetNextDefinition();
+	ASSERT_MESSAGE(function != 0, "Expected 'ComplexFunctionPrototype' to have a second definition.");
+	ASSERT_MESSAGE(function->GetNextDefinition() == 0, "Expected 'ComplexFunctionPrototype' to have only two definitions.");
 
 	return true;
 }
 
 
+/*
 DEFINE_SEMANTICANALYZER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_DeclarativeAndExpressionStatements.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
@@ -263,9 +254,8 @@ DEFINE_SEMANTICANALYZER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
-	/*
-  TEST_ITEM(FunctionDeclarations)               \
   TEST_ITEM(FunctionDefinitions)                \
+	/*
   TEST_ITEM(DeclarativeAndExpressionStatements) \
   TEST_ITEM(Initializers)                       \
   TEST_ITEM(Structs)                            \

@@ -81,7 +81,7 @@ void SemanticAnalysisPass::Visit(StructDeclaration *structDeclaration)
 
 void SemanticAnalysisPass::Visit(FunctionDefinition *functionDefinition)
 {
-	//ScopeStack::Element stackElement(mScopeStack, functionDefinition);
+	ScopeStack::Element stackElement(mScopeStack, functionDefinition);
 	ParseNodeTraverser::Visit(functionDefinition);
 }
 
@@ -164,7 +164,7 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 		target = symbol;
 	}
 
-	return symbol;
+	return target;
 }
 
 }
@@ -188,8 +188,8 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 
 	// Add all type declarations to the symbol table first, since they can be used prior to their declaration
 	// in other typed declarations (e.g. function return type and parameter types).
-	TypeAndConstantDeclarationPass typeAndConstantPass(mErrorBuffer, mSymbolTable);
-	typeAndConstantPass.Analyze(translationUnitList);
+	TopLevelSymbolPass topLevelSymbolPass(mErrorBuffer, mSymbolTable);
+	topLevelSymbolPass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
 	{

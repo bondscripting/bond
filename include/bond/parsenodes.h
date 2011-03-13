@@ -49,8 +49,7 @@ public:
 		TYPE_STRUCT,
 		TYPE_ENUM,
 		//TYPE_LOCALSCOPE,
-		TYPE_CONSTANT,
-		//TYPE_VARIABLE,
+		TYPE_VALUE,
 		TYPE_FUNCTION,
 	};
 
@@ -63,10 +62,6 @@ public:
 
 	virtual TypeAndValue *GetTypeAndValue() { return 0; }
 	virtual const TypeAndValue *GetTypeAndValue() const { return 0; }
-
-	Symbol *GetNextSymbol() { return mNextSymbol; }
-	const Symbol *GetNextSymbol() const { return mNextSymbol; }
-	void SetNextSymbol(Symbol *next) { mNextSymbol = next; }
 
 	Symbol *GetParentSymbol() { return mParentSymbol; }
 	const Symbol *GetParentSymbol() const { return mParentSymbol; }
@@ -81,6 +76,8 @@ public:
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
 
 	void InsertSymbol(Symbol *symbol);
+
+	bool IsAnonymous() const { return GetName() == 0; }
 
 	bool Matches(bu32_t hashCode, const char *name) const;
 	bool Matches(const Token *name) const;
@@ -338,7 +335,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_CONSTANT; }
+	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
 	virtual const Token *GetName() const { return mName; }
 
 	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
@@ -477,13 +474,13 @@ private:
 };
 
 
-class NamedInitializer: public ListParseNode
+class NamedInitializer: public Symbol
 {
 public:
 	explicit NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
+		mTypeAndValue(typeDescriptor),
 		mName(name),
-		mInitializer(initializer),
-		mTypeDescriptor(typeDescriptor)
+		mInitializer(initializer)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -491,21 +488,19 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
+	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
+	virtual const Token *GetName() const { return mName; }
 
-	const Token *GetName() const { return mName; }
+	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
 
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
 
-	// Reference to the type descriptor owned by the declaration that owns this named initializer.
-	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
-	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-
 private:
+	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
-	TypeDescriptor *mTypeDescriptor;
 };
 
 

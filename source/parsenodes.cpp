@@ -12,7 +12,7 @@ const Symbol *Symbol::FindSymbol(const char *name) const
 
 	while ((symbol != 0) && !symbol->Matches(hashCode, name))
 	{
-		symbol = symbol->GetNextSymbol();
+		symbol = symbol->mNextSymbol;
 	}
 
 	return symbol;
@@ -25,7 +25,7 @@ Symbol *Symbol::FindSymbol(const Token *name)
 
 	while ((symbol != 0) && !symbol->Matches(name))
 	{
-		symbol = symbol->GetNextSymbol();
+		symbol = symbol->mNextSymbol;
 	}
 
 	return symbol;
@@ -38,7 +38,7 @@ const Symbol *Symbol::FindSymbol(const Token *name) const
 
 	while ((symbol != 0) && !symbol->Matches(name))
 	{
-		symbol = symbol->GetNextSymbol();
+		symbol = symbol->mNextSymbol;
 	}
 
 	return symbol;
@@ -112,7 +112,7 @@ const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 void Symbol::InsertSymbol(Symbol *symbol)
 {
 	symbol->SetParentSymbol(this);
-	symbol->SetNextSymbol(mSymbolList);
+	symbol->mNextSymbol = mSymbolList;
 	mSymbolList = symbol;
 }
 
@@ -120,14 +120,14 @@ void Symbol::InsertSymbol(Symbol *symbol)
 bool Symbol::Matches(bu32_t hashCode, const char *name) const
 {
 	const Token *n = GetName();
-	return (n != 0) && (hashCode == n->GetHashCode()) && (strcmp(name, n->GetText()) == 0);
+	return !IsAnonymous() && (hashCode == n->GetHashCode()) && (strcmp(name, n->GetText()) == 0);
 }
 
 
 bool Symbol::Matches(const Token *name) const
 {
 	const Token *n = GetName();
-	return (n != 0) && (name->GetHashCode() == n->GetHashCode()) && (strcmp(name->GetText(), n->GetText()) == 0);
+	return !IsAnonymous() && (name->GetHashCode() == n->GetHashCode()) && (strcmp(name->GetText(), n->GetText()) == 0);
 }
 
 

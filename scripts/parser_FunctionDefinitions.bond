@@ -1,3 +1,9 @@
+// Declarations
+void VoidNoParameters();
+
+const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2);
+
+// Definitions
 void VoidNoParameters()
 {
 }
