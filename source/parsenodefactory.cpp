@@ -279,9 +279,12 @@ ArraySubscriptExpression *ParseNodeFactory::CreateArraySubscriptExpression(const
 }
 
 
-FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(Expression *lhs, Expression *argumentList)
+FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(
+	const Token *context,
+	Expression *lhs,
+	Expression *argumentList)
 {
-	return new (mAllocator.Alloc<FunctionCallExpression>()) FunctionCallExpression(lhs, argumentList);
+	return new (mAllocator.Alloc<FunctionCallExpression>()) FunctionCallExpression(context, lhs, argumentList);
 }
 
 

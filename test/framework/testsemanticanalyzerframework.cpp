@@ -55,15 +55,17 @@ static bool RunSemanticAnalyzerTest(
 		Bond::TokenStream stream = lexer.GetTokenStream();
 		Bond::Parser parser(parserAllocator);
 		parser.Parse(stream);
+		__ASSERT_FORMAT__(!parser.HasErrors(), logger, assertFile, assertLine,
+			("Cannot run semantic analysis, since parser returned errors.\n"));
 		Bond::SemanticAnalyzer analyzer;
 		analyzer.Analyze(parser.GetTranslationUnitList());
-		result = validationFunction(logger, analyzer);
+		result = validationFunction(logger, parser, analyzer);
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		("Lexer leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		("Parser leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
 
 	return result;
 }

@@ -3,9 +3,13 @@
 
 #include "framework/testframework.h"
 #include "bond/semanticanalyzer.h"
+#include "bond/parser.h"
 
 #define DEFINE_SEMANTICANALYZER_TEST(testName, scriptName)                                       \
-  bool __Validate ## testName ## __(Bond::TextWriter &logger, Bond::SemanticAnalyzer &analyzer); \
+  bool __Validate ## testName ## __(                                                             \
+    Bond::TextWriter &logger,                                                                    \
+    Bond::Parser &parser,                                                                        \
+    Bond::SemanticAnalyzer &analyzer);                                                           \
                                                                                                  \
   bool __Test ## testName ## __(Bond::TextWriter &logger)                                        \
   {                                                                                              \
@@ -13,13 +17,19 @@
       logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __);                    \
   }                                                                                              \
                                                                                                  \
-  bool __Validate ## testName ## __(Bond::TextWriter &logger, Bond::SemanticAnalyzer &analyzer)  \
+  bool __Validate ## testName ## __(                                                             \
+    Bond::TextWriter &logger,                                                                    \
+    Bond::Parser &parser,                                                                        \
+    Bond::SemanticAnalyzer &analyzer)                                                            \
 
 
 namespace TestFramework
 {
 
-typedef bool SemanticAnalyzerValidationFunction(Bond::TextWriter &logger, Bond::SemanticAnalyzer &analyzer);
+typedef bool SemanticAnalyzerValidationFunction(
+	Bond::TextWriter &logger,
+	Bond::Parser &parser,
+	Bond::SemanticAnalyzer &analyzer);
 
 bool RunSemanticAnalyzerTest(
 	Bond::TextWriter &logger,

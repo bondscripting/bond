@@ -5,6 +5,13 @@
 namespace Bond
 {
 
+bool Symbol::IsTypeDefinition() const
+{
+	SymbolType type = GetSymbolType();
+	return (type == TYPE_ENUM) || (type == TYPE_STRUCT);
+}
+
+
 const Symbol *Symbol::FindSymbol(const char *name) const
 {
 	const bu32_t hashCode = StringHash(name);
@@ -79,7 +86,7 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	{
 		symbol = FindSymbol(identifier->GetName());
 	}
-	else
+	else if (GetSymbolType() == TYPE_NAMESPACE)
 	{
 		Symbol *nextScope = FindSymbol(identifier->GetName());
 		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();

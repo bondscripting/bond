@@ -10,22 +10,24 @@ namespace Bond
 class Symbol;
 
 template<typename T>
+class CastVisitor: public ParseNodeVisitorAdapter
+{
+public:
+	CastVisitor(): mNode(0) {}
+
+	virtual void Visit(T *node) { mNode = node; }
+
+	T *GetNode() { return mNode; }
+
+private:
+	T *mNode;
+};
+
+
+template<typename T>
 T *CastNode(ParseNode *node)
 {
-	class CastVisitor: public ParseNodeVisitorAdapter
-	{
-	public:
-		CastVisitor(): mNode(0) {}
-
-		virtual void Visit(T *node) { mNode = node; }
-
-		T *GetNode() { return mNode; }
-
-	private:
-		T *mNode;
-	};
-
-	CastVisitor castVisitor;
+	CastVisitor<T> castVisitor;
 	node->Accept(castVisitor);
 	return castVisitor.GetNode();
 }
@@ -34,20 +36,7 @@ T *CastNode(ParseNode *node)
 template<typename T>
 const T *CastNode(const ParseNode *node)
 {
-	class CastVisitor: public ParseNodeVisitorAdapter
-	{
-	public:
-		CastVisitor(): mNode(0) {}
-
-		virtual void Visit(const T *node) { mNode = node; }
-
-		const T *GetNode() { return mNode; }
-
-	private:
-		const T *mNode;
-	};
-
-	CastVisitor castVisitor;
+	CastVisitor<const T> castVisitor;
 	node->Accept(castVisitor);
 	return castVisitor.GetNode();
 }

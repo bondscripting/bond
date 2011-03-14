@@ -21,7 +21,6 @@ private:
 		virtual void Accept(ParseNodeVisitor &visitor) {}
 		virtual void Accept(ParseNodeVisitor &visitor) const {}
 		virtual SymbolType GetSymbolType() const { return TYPE_NAMESPACE; }
-		virtual const Token *GetName() const { return 0; }
 	};
 
 	GlobalScope mGlobalScope;

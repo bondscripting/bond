@@ -85,7 +85,12 @@ public:
 	PostfixExpression *CreatePostfixExpression(const Token *op, Expression *lhs);
 	MemberExpression *CreateMemberExpression(const Token *op, const Token *memberName, Expression *lhs);
 	ArraySubscriptExpression *CreateArraySubscriptExpression(const Token *op, Expression *lhs, Expression *index);
-	FunctionCallExpression *CreateFunctionCallExpression(Expression *lhs, Expression *argumentList);
+
+	FunctionCallExpression *CreateFunctionCallExpression(
+		const Token *context,
+		Expression *lhs,
+		Expression *argumentList);
+
 	CastExpression *CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs);
 	SizeofExpression *CreateSizeofExpression(TypeDescriptor *typeDescriptor);
 	SizeofExpression *CreateSizeofExpression(Expression *rhs);

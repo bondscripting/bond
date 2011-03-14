@@ -32,6 +32,8 @@ protected:
 	virtual void Visit(SwitchSection *switchSection);
 	virtual void Visit(ForStatement *forStatement);
 
+	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
+
 	Symbol *GetSymbol(const Token *name);
 	Symbol *GetSymbol(const QualifiedIdentifier *identifier);
 	void InsertSymbol(Symbol *symbol);
@@ -43,7 +45,6 @@ private:
 	SemanticAnalysisPass(const SemanticAnalysisPass &other);
 	SemanticAnalysisPass &operator=(const SemanticAnalysisPass &other);
 
-	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
 	void InsertSymbol(Symbol *parent, Symbol *symbol);
 	Symbol *GetOrInsertSymbol(Symbol *parent, Symbol *symbol);
 
@@ -88,21 +89,21 @@ void SemanticAnalysisPass::Visit(FunctionDefinition *functionDefinition)
 
 void SemanticAnalysisPass::Visit(CompoundStatement *compoundStatement)
 {
-	//ScopeStack::Element stackElement(mScopeStack, compoundStatement);
+	ScopeStack::Element stackElement(mScopeStack, compoundStatement);
 	ParseNodeTraverser::Visit(compoundStatement);
 }
 
 
 void SemanticAnalysisPass::Visit(SwitchSection *switchSection)
 {
-	//ScopeStack::Element stackElement(mScopeStack, switchSection);
+	ScopeStack::Element stackElement(mScopeStack, switchSection);
 	ParseNodeTraverser::Visit(switchSection);
 }
 
 
 void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 {
-	//ScopeStack::Element stackElement(mScopeStack, forStatement);
+	ScopeStack::Element stackElement(mScopeStack, forStatement);
 	ParseNodeTraverser::Visit(forStatement);
 }
 
@@ -172,6 +173,7 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 
 #include "semanticanalysis/toplevelsymbolpass.cpp"
 #include "semanticanalysis/typeevaluationpass.cpp"
+#include "semanticanalysis/typespecifierresolutionpass.cpp"
 #include "semanticanalysis/valueevaluationpass.cpp"
 
 
@@ -196,8 +198,17 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 		return;
 	}
 
-	TopLevelTypeEvaluationPass topLevelTypePass(mErrorBuffer, mSymbolTable);
-	topLevelTypePass.Analyze(translationUnitList);
+
+	TypeSpecifierResolutionPass typeSpecifierResolutionPass(mErrorBuffer, mSymbolTable);
+	typeSpecifierResolutionPass.Analyze(translationUnitList);
+
+	if (mErrorBuffer.HasErrors())
+	{
+		return;
+	}
+
+	TypeEvaluationPass typeEvaluationPass(mErrorBuffer, mSymbolTable);
+	typeEvaluationPass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
 	{

@@ -1454,7 +1454,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				case Token::OPAREN:
 				{
 					Expression *argumentList = ParseArgumentList(status, stream);
-					expression = mFactory.CreateFunctionCallExpression(expression, argumentList);
+					expression = mFactory.CreateFunctionCallExpression(token, expression, argumentList);
 					AssertNonConstExpression(status, ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, token);
 					ExpectToken(status, stream, Token::CPAREN);
 				}

@@ -4,20 +4,20 @@ namespace Bond
 class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
+	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		SemanticAnalysisPass(errorBuffer, symbolTable)
+	{}
+
 	virtual ~TypeEvaluationPass() {}
 
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
-	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
-	{}
-
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
 	virtual void Visit(PostfixExpression *postfixExpression);
-	//virtual void Visit(MemberExpression *memberExpression);
+	virtual void Visit(MemberExpression *memberExpression);
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
 	virtual void Visit(FunctionCallExpression *functionCallExpression);
 	virtual void Visit(CastExpression *castExpression);
@@ -38,22 +38,6 @@ private:
 };
 
 
-class TopLevelTypeEvaluationPass: public TypeEvaluationPass
-{
-public:
-	TopLevelTypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		TypeEvaluationPass(errorBuffer, symbolTable)
-	{}
-
-	~TopLevelTypeEvaluationPass() {}
-
-protected:
-	// This pass doesn't descend into structs and functions.
-	virtual void Visit(StructDeclaration *structDeclaration) {}
-	virtual void Visit(FunctionDefinition *functionDefinition) {}
-};
-
-
 void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
@@ -61,7 +45,7 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 		mMadeChanges = false;
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mMadeChanges);
+	while ((mMadeChanges) && !mErrorBuffer.HasErrors());
 }
 
 
@@ -267,7 +251,10 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 				case Token::OP_MULT:
 					AssertPointerType(rhDescriptor, op);
-					resultType = *rhDescriptor->GetParent();
+					if (rhDescriptor->IsPointerType())
+					{
+						resultType = *rhDescriptor->GetParent();
+					}
 					isRValue = false;
 					break;
 
@@ -311,6 +298,49 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 }
 
 
+void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
+{
+	TypeAndValue &tav = memberExpression->GetTypeAndValue();
+
+	if (!tav.IsTypeDefined())
+	{
+		ParseNodeTraverser::Visit(memberExpression);
+		const TypeAndValue &lhTav = memberExpression->GetLhs()->GetTypeAndValue();
+
+		if (lhTav.IsTypeDefined())
+		{
+			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+			const TypeDescriptor *structDescriptor = lhDescriptor;
+			const Token *op = memberExpression->GetOperator();
+			const Token *memberName = memberExpression->GetMemberName();
+
+			if (op->GetTokenType() == Token::OP_ARROW)
+			{
+				AssertPointerType(lhDescriptor, op);
+				if (lhDescriptor->IsPointerType())
+				{
+					structDescriptor = lhDescriptor->GetParent();
+				}
+			}
+
+			const TypeSpecifier *structSpecifier = structDescriptor->GetTypeSpecifier();
+			if ((structSpecifier == 0) || (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
+			{
+				mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, structDescriptor);
+			}
+			else
+			{
+				const Symbol *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
+				const Symbol *member = structDeclaration->FindSymbol(memberName);
+				tav.SetTypeDescriptor(member->GetTypeAndValue()->GetTypeDescriptor());
+				tav.Resolve();
+				mMadeChanges = true;
+			}
+		}
+	}
+}
+
+
 void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 {
 	TypeAndValue &tav = arraySubscriptExpression->GetTypeAndValue();
@@ -325,14 +355,20 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 		{
 			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 			const TypeDescriptor *indexDescriptor = indexTav.GetTypeDescriptor();
+			const Token *op = arraySubscriptExpression->GetOperator();
+
 			if (!indexDescriptor->IsIntegerType())
 			{
-				const Token *op = arraySubscriptExpression->GetOperator();
 				mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, indexDescriptor);
 			}
-			tav.SetTypeDescriptor(lhDescriptor->GetParent());
-			tav.Resolve();
-			mMadeChanges = true;
+
+			AssertPointerType(lhDescriptor, op);
+			if (lhDescriptor->IsPointerType())
+			{
+				tav.SetTypeDescriptor(lhDescriptor->GetParent());
+				tav.Resolve();
+				mMadeChanges = true;
+			}
 		}
 	}
 }
@@ -345,9 +381,26 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 	if (!tav.IsTypeDefined())
 	{
-		// TODO: Holy crap. How does an expression evaluate to a symbol?
-		//tav.SetTypeDescriptor(lhDescriptor);
-		mMadeChanges = true;
+		const TypeAndValue &lhTav = functionCallExpression->GetLhs()->GetTypeAndValue();
+
+		if (lhTav.IsTypeDefined())
+		{
+			const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+			const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+
+			if ((lhSpecifier == 0) || (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
+			{
+				mErrorBuffer.PushError(ParseError::EXPRESSION_IS_NOT_CALLABLE, functionCallExpression->GetContextToken());
+			}
+			else
+			{
+				const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
+				const FunctionPrototype *prototype = function->GetPrototype();
+				const TypeDescriptor *returnType = prototype->GetReturnType();
+				tav.SetTypeDescriptor(returnType);
+				mMadeChanges = true;
+			}
+		}
 	}
 }
 

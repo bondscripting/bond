@@ -28,6 +28,14 @@
     "Mismatching function prototype '%c' previously defined on line '%l'.") \
   BOND_PARSE_ERROR(UNEXPECTED_TOKEN,                                        \
     "Expected '%s' before '%c'." )                                          \
+  BOND_PARSE_ERROR(SYMBOL_IS_NOT_DEFINED,                                   \
+    "Symbol '%n' is not defined." )                                         \
+  BOND_PARSE_ERROR(SYMBOL_IS_NOT_A_TYPE,                                    \
+    "Symbol '%n' is not a type." )                                          \
+  BOND_PARSE_ERROR(NON_STRUCT_MEMBER_REQUEST,                               \
+    "Request for member '%c' in non-struct type '%n'." )                    \
+  BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                              \
+    "Expression is not callable." )                                         \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                               \
     "Operator '%c' cannot be applied to type '%n'." )                       \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                       \

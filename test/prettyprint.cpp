@@ -1,13 +1,11 @@
 #include "framework/testparserframework.h"
+#include "framework/testsemanticanalyzerframework.h"
 #include "bond/stdouttextwriter.h"
 #include "bond/prettyprinter.h"
+#include <string.h>
 
-bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
+void PrintErrors(Bond::TextWriter &logger, const Bond::ParseErrorBuffer &errorBuffer)
 {
-	Bond::PrettyPrinter printer(logger);
-	printer.PrintList(parser.GetTranslationUnitList());
-
-	const Bond::ParseErrorBuffer &errorBuffer = parser.GetErrorBuffer();
 	if (errorBuffer.HasErrors())
 	{
 		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
@@ -17,7 +15,23 @@ bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
 			logger.Write("\n");
 		}
 	}
+}
 
+
+bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
+{
+	Bond::PrettyPrinter printer(logger);
+	printer.PrintList(parser.GetTranslationUnitList());
+	PrintErrors(logger, parser.GetErrorBuffer());
+
+	return true;
+}
+
+
+bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser, Bond::SemanticAnalyzer &analyzer)
+{
+	PrettyPrint(logger, parser);
+	PrintErrors(logger, analyzer.GetErrorBuffer());
 	return true;
 }
 
@@ -26,9 +40,22 @@ int main(int argc, const char *argv[])
 {
 	Bond::StdoutTextWriter logger;
 
-	for (int i = 1; i < argc; ++i)
+	// Do semantic analysis after parsing.
+	if ((argc > 1) && (strcmp(argv[1], "-s") == 0))
 	{
-		TestFramework::RunParserTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+		for (int i = 2; i < argc; ++i)
+		{
+			TestFramework::RunSemanticAnalyzerTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+		}
+	}
+
+	// Otherwise, just parse.
+	else
+	{
+		for (int i = 1; i < argc; ++i)
+		{
+			TestFramework::RunParserTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+		}
 	}
 
 	return 0;

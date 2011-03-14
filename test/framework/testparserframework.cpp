@@ -59,9 +59,9 @@ static bool RunParserTest(
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		("Lexer leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		("Parser leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
 
 	return result;
 }
