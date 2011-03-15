@@ -55,6 +55,8 @@ void TopLevelSymbolPass::Visit(FunctionDefinition *functionDefinition)
 	if (prev != functionDefinition)
 	{
 		prev->AppendDefinition(functionDefinition);
+		Symbol *parent = GetCurrentScope();
+		functionDefinition->SetParentSymbol(parent);
 	}
 }
 

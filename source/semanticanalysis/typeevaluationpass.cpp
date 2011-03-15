@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 namespace Bond
 {
 
@@ -66,7 +68,6 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 			TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
 			conditionalExpression->SetTypeDescriptor(resultType);
 			tav.SetTypeDescriptor(conditionalExpression->GetTypeDescriptor());
-			tav.Resolve();
 			mMadeChanges = true;
 		}
 	}
@@ -203,7 +204,6 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			resultType.SetRValue();
 			binaryExpression->SetTypeDescriptor(resultType);
 			tav.SetTypeDescriptor(binaryExpression->GetTypeDescriptor());
-			tav.Resolve();
 			mMadeChanges = true;
 		}
 	}
@@ -269,7 +269,6 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 			unaryExpression->SetTypeDescriptor(resultType);
 			tav.SetTypeDescriptor(unaryExpression->GetTypeDescriptor());
-			tav.Resolve();
 			mMadeChanges = true;
 		}
 	}
@@ -291,7 +290,6 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 			const Token *op = postfixExpression->GetOperator();
 			AssertNumericType(lhDescriptor, op);
 			tav.SetTypeDescriptor(lhDescriptor);
-			tav.Resolve();
 			mMadeChanges = true;
 		}
 	}
@@ -332,9 +330,15 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			{
 				const Symbol *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 				const Symbol *member = structDeclaration->FindSymbol(memberName);
-				tav.SetTypeDescriptor(member->GetTypeAndValue()->GetTypeDescriptor());
-				tav.Resolve();
-				mMadeChanges = true;
+				if (member == 0)
+				{
+					mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, structDescriptor);
+				}
+				else
+				{
+					tav.SetTypeDescriptor(member->GetTypeAndValue()->GetTypeDescriptor());
+					mMadeChanges = true;
+				}
 			}
 		}
 	}
@@ -366,7 +370,6 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 			if (lhDescriptor->IsPointerType())
 			{
 				tav.SetTypeDescriptor(lhDescriptor->GetParent());
-				tav.Resolve();
 				mMadeChanges = true;
 			}
 		}
