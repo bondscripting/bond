@@ -60,6 +60,7 @@ void TopLevelSymbolPass::Visit(FunctionDefinition *functionDefinition)
 	}
 }
 
+
 void TopLevelSymbolPass::Visit(NamedInitializer *namedInitializer)
 {
 	InsertSymbol(namedInitializer);

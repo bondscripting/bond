@@ -7,12 +7,16 @@ class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
 	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
+		SemanticAnalysisPass(errorBuffer, symbolTable),
+		mAddNamedInitializers(false)
 	{}
 
 	virtual ~TypeEvaluationPass() {}
 
 protected:
+	virtual void Visit(FunctionDefinition *functionDefinition);
+	virtual void Visit(Parameter *parameter);
+	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
@@ -33,7 +37,38 @@ private:
 	void AssertLValueType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
+
+	bool mAddNamedInitializers;
 };
+
+
+void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
+{
+	// Top-level named initializers have already been added to the symbol table, but not ones in local scopes.
+	// Top-level identifiers can be referenced out of order from their declarations, but local ones must be
+	// declared before being referenced, so they must be added as the expressions are evaluated.
+	mAddNamedInitializers = true;
+	SemanticAnalysisPass::Visit(functionDefinition);
+	mAddNamedInitializers = false;
+}
+
+
+void TypeEvaluationPass::Visit(Parameter *parameter)
+{
+	ParseNodeTraverser::Visit(parameter);
+	InsertSymbol(parameter);
+}
+
+
+void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
+{
+	ParseNodeTraverser::Visit(namedInitializer);
+
+	if (mAddNamedInitializers)
+	{
+		InsertSymbol(namedInitializer);
+	}
+}
 
 
 void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
@@ -47,6 +82,7 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 	{
 		const TypeDescriptor *trueDescriptor = trueTav.GetTypeDescriptor();
 		const TypeDescriptor *falseDescriptor = falseTav.GetTypeDescriptor();
+		// TODO: Need to test if types are combinable.
 		TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
 		conditionalExpression->SetTypeDescriptor(resultType);
 		TypeAndValue &tav = conditionalExpression->GetTypeAndValue();
@@ -84,8 +120,9 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::ASSIGN_LEFT:
 			case Token::ASSIGN_RIGHT:
 			case Token::ASSIGN_MOD:
-			case Token::OP_LEFT:
-			case Token::OP_RIGHT:
+			case Token::ASSIGN_AND:
+			case Token::ASSIGN_OR:
+			case Token::ASSIGN_XOR:
 				AssertIntegerType(lhDescriptor, op);
 				AssertIntegerType(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
@@ -120,14 +157,10 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				resultType = *lhDescriptor;
 				break;
 
-			case Token::ASSIGN_AND:
-			case Token::ASSIGN_OR:
-			case Token::ASSIGN_XOR:
 			case Token::OP_AND:
 			case Token::OP_OR:
 				AssertBooleanType(lhDescriptor, op);
 				AssertBooleanType(rhDescriptor, op);
-				AssertAssignableType(lhDescriptor, op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -138,6 +171,13 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				AssertIntegerType(lhDescriptor, op);
 				AssertIntegerType(rhDescriptor, op);
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				break;
+
+			case Token::OP_LEFT:
+			case Token::OP_RIGHT:
+				AssertIntegerType(lhDescriptor, op);
+				AssertIntegerType(rhDescriptor, op);
+				resultType = *lhDescriptor;
 				break;
 
 			case Token::OP_EQUAL:
@@ -456,12 +496,22 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 
 void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 {
-	const Symbol *symbol = GetSymbol(identifierExpression->GetIdentifier());
-	if (symbol != 0)
+	const QualifiedIdentifier *identifier = identifierExpression->GetIdentifier();
+	const Symbol *symbol = GetSymbol(identifier);
+
+	if (symbol == 0)
+	{
+		mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+	}
+	else
 	{
 		const TypeAndValue *symbolTav = symbol->GetTypeAndValue();
-		// TODO: Is it an error if symbolTav is null?
-		if ((symbolTav != 0) && (symbolTav->IsTypeDefined()))
+
+		if (symbolTav == 0)
+		{
+			mErrorBuffer.PushError(ParseError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
+		}
+		else if (symbolTav->IsTypeDefined())
 		{
 			TypeAndValue &tav = identifierExpression->GetTypeAndValue();
 			tav.SetTypeDescriptor(symbolTav->GetTypeDescriptor());

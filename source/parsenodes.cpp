@@ -152,6 +152,16 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
+void TypeDescriptor::SetDeepLValue()
+{
+	SetLValue();
+	if (GetParent() != 0)
+	{
+		GetParent()->SetDeepLValue();
+	}
+}
+
+
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (mTypeSpecifier != 0)
@@ -222,7 +232,7 @@ bool TypeSpecifier::IsBooleanType() const
 	{
 		return BOOLEAN_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
-	return Token::INVALID;
+	return false;
 }
 
 
@@ -232,7 +242,7 @@ bool TypeSpecifier::IsIntegerType() const
 	{
 		return INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
-	return Token::INVALID;
+	return false;
 }
 
 
@@ -242,7 +252,7 @@ bool TypeSpecifier::IsNumericType() const
 	{
 		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
-	return Token::INVALID;
+	return false;
 }
 
 

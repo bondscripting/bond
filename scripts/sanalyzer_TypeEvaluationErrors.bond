@@ -1,0 +1,32 @@
+struct DummyStruct {};
+
+void DummyFunction(const DummyStruct ds)
+{
+	int[2] array1;
+	int[2] array2;
+	int *ptr1 = 0;
+	int *ptr2 = 0;
+	int i1 = 1;
+	int i2 = 2;
+	float f1 = 1.0;
+	float f2 = 2.0;
+	bool b1 = true;
+	bool b2 = false;
+
+	// Valid statements.
+	array1[0] = i1;
+	i1 = 1 << 2;
+	i1 <<= i2;
+	ptr2 = ptr1 + i1;
+	f2 = i1 + f1;
+	i1 /= i2;
+	b1 = b2 || false;
+
+	// Invalid statements.
+	array1 = array2;
+	f1 <<= i1;
+	i2 %= f2;
+	ptr2 = ptr1 + f1;
+	i1 /= ptr1;
+	b1 = b2 || ds;
+}

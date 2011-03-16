@@ -170,6 +170,7 @@ public:
 
 	bool IsLValue() const { return mIsLValue; }
 	void SetLValue() { mIsLValue = true; }
+	void SetDeepLValue();
 
 	bool IsRValue() const { return !mIsLValue; }
 	void SetRValue() { mIsLValue = false; }
@@ -463,24 +464,31 @@ private:
 };
 
 
-class Parameter: public ListParseNode
+class Parameter: public Symbol
 {
 public:
-	Parameter(const Token *name, TypeDescriptor *typeDescriptor): mName(name), mTypeDescriptor(typeDescriptor) {}
+	Parameter(const Token *name, TypeDescriptor *typeDescriptor):
+		mTypeAndValue(typeDescriptor),
+		mName(name),
+		mTypeDescriptor(typeDescriptor)
+	{}
 
 	virtual ~Parameter() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
+	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
+	virtual const Token *GetName() const { return mName; }
 
-	const Token *GetName() const { return mName; }
+	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
 
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 
 private:
+	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
 };

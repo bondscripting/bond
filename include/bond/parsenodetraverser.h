@@ -36,10 +36,10 @@ public:
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 
 	virtual void Visit(FunctionPrototype *functionPrototype);
-	virtual void Visit(const Parameter *parameter);
+	virtual void Visit(const FunctionPrototype *functionPrototype);
 
 	virtual void Visit(Parameter *parameter);
-	virtual void Visit(const FunctionPrototype *functionPrototype);
+	virtual void Visit(const Parameter *parameter);
 
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(const TypeDescriptor *typeDescriptor);

@@ -1,0 +1,7 @@
+int NotATypeName = 1;
+
+void Dummy()
+{
+	NotATypeName a;
+	NotATypeName2 b;
+}

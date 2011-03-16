@@ -313,7 +313,7 @@ ListParseNode *Parser::ParseFunctionOrDeclarativeStatement(Status &status, Token
 
 				if (initializerList != 0)
 				{
-					descriptor->SetLValue();
+					descriptor->SetDeepLValue();
 					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 					ExpectDeclarationTerminator(status, stream);
 				}
@@ -360,7 +360,7 @@ Parameter *Parser::ParseParameter(Status &status, TokenStream &stream)
 
 	if (descriptor != 0)
 	{
-		descriptor->SetLValue();
+		descriptor->SetDeepLValue();
 		const Token *name = ExpectToken(status, stream, Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);
 	}
@@ -943,7 +943,7 @@ ListParseNode *Parser::ParseExpressionOrDeclarativeStatement(Status &status, Tok
 
 		if (initializerList != 0)
 		{
-			descriptor->SetLValue();
+			descriptor->SetDeepLValue();
 			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 			ExpectStatementTerminator(status, stream);
 		}

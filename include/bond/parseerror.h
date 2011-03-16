@@ -32,6 +32,8 @@
     "Symbol '%n' is not defined." )                                         \
   BOND_PARSE_ERROR(SYMBOL_IS_NOT_A_TYPE,                                    \
     "Symbol '%n' is not a type." )                                          \
+  BOND_PARSE_ERROR(INVALID_SYMBOL_IN_EXPRESSION,                            \
+    "Symbol '%n' cannot be used in an expression." )                        \
   BOND_PARSE_ERROR(NON_STRUCT_MEMBER_REQUEST,                               \
     "Request for member '%c' in non-struct type '%n'." )                    \
   BOND_PARSE_ERROR(INVALID_MEMBER_REQUEST,                                  \
