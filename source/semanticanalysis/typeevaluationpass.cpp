@@ -245,9 +245,16 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 		{
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
+				AssertNumericType(rhDescriptor, op);
+				break;
+
 			case Token::OP_INC:
 			case Token::OP_DEC:
-				AssertNumericType(rhDescriptor, op);
+				AssertAssignableType(rhDescriptor, op);
+				if (!rhDescriptor->IsPointerType())
+				{
+					AssertNumericType(rhDescriptor, op);
+				}
 				break;
 
 			case Token::OP_NOT:
@@ -298,7 +305,11 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 	{
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 		const Token *op = postfixExpression->GetOperator();
-		AssertNumericType(lhDescriptor, op);
+		AssertAssignableType(lhDescriptor, op);
+		if (!lhDescriptor->IsPointerType())
+		{
+			AssertNumericType(lhDescriptor, op);
+		}
 		TypeAndValue &tav = postfixExpression->GetTypeAndValue();
 		tav.SetTypeDescriptor(lhDescriptor);
 	}
@@ -425,7 +436,7 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 		{
 			convertible = rhDescriptor->IsNumericType() && lhDescriptor->IsNumericType();
 		}
-		else
+		else if (rhDescriptor->IsPointerType())
 		{
 			convertible = lhDescriptor->GetVariant() == TypeDescriptor::VARIANT_POINTER;
 		}

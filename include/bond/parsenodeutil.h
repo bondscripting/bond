@@ -42,8 +42,9 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-bool AreMatchingTypes(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB);
-bool AreMatchingTypes(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+// Can only be used once type specifiers have been resolved.
+bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
+bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB);
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);

@@ -170,7 +170,6 @@ public:
 
 	bool IsLValue() const { return mIsLValue; }
 	void SetLValue() { mIsLValue = true; }
-	void SetDeepLValue();
 
 	bool IsRValue() const { return !mIsLValue; }
 	void SetRValue() { mIsLValue = false; }

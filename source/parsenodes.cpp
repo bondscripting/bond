@@ -152,16 +152,6 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
-void TypeDescriptor::SetDeepLValue()
-{
-	SetLValue();
-	if (GetParent() != 0)
-	{
-		GetParent()->SetDeepLValue();
-	}
-}
-
-
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (mTypeSpecifier != 0)

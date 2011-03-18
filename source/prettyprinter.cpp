@@ -444,10 +444,11 @@ void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
 
 void PrettyPrinter::Visit(const CastExpression *castExpression)
 {
-	mWriter.Write("(");
+	mWriter.Write("cast<");
 	Print(castExpression->GetTypeDescriptor());
-	mWriter.Write(") ");
+	mWriter.Write(">(");
 	Print(castExpression->GetRhs());
+	mWriter.Write(")");
 }
 
 

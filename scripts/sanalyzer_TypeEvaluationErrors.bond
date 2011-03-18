@@ -1,5 +1,7 @@
 struct DummyStruct {};
 
+int [2]* FunnyReturnType();
+
 void DummyFunction(const DummyStruct ds)
 {
 	int[2] array1;
@@ -15,18 +17,36 @@ void DummyFunction(const DummyStruct ds)
 
 	// Valid statements.
 	array1[0] = i1;
+	(*FunnyReturnType())[0] = 1;
 	i1 = 1 << 2;
 	i1 <<= i2;
 	ptr2 = ptr1 + i1;
 	f2 = i1 + f1;
 	i1 /= i2;
 	b1 = b2 || false;
+	i1 = 1 & 2;
+	i2 = 1 | 2;
+	b1 = 1 < f1;
+	i1 = +-i2;
+	i1 = *ptr1;
+	ptr2 = ++ptr1;
+	ptr2 = ptr1--;
+	ptr1 = cast<int *>(&ds);
 
 	// Invalid statements.
 	array1 = array2;
+	*FunnyReturnType() = array2;
 	f1 <<= i1;
 	i2 %= f2;
 	ptr2 = ptr1 + f1;
 	i1 /= ptr1;
 	b1 = b2 || ds;
+	i1 = true & 1.0;
+	b1 = false < f1;
+	i1 = -b1;
+	b1 = !f1;
+	*ds;
+	~f1;
+	++ds;
+	ptr1 = cast<int *>(ds);
 }

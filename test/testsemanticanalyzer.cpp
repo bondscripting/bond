@@ -71,7 +71,6 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 }
 
 
-
 DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());

@@ -118,7 +118,7 @@ public:
 	const ParseError *GetError(int index) const { return mErrors + index; }
 
 private:
-	static const int MAX_ERRORS = 16;
+	static const int MAX_ERRORS = 32;
 
 	ParseError mErrors[MAX_ERRORS];
 	int mNumErrors;

@@ -4,46 +4,30 @@
 namespace Bond
 {
 
-bool AreMatchingTypes(const Symbol *scope, const TypeSpecifier *typeA, const TypeSpecifier *typeB)
+bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
 	if ((typeA != 0) && (typeB != 0))
 	{
 		const Token *primitiveTypeA = typeA->GetPrimitiveTypeToken();
 		const Token *primitiveTypeB = typeB->GetPrimitiveTypeToken();
-		const QualifiedIdentifier *identifierA = typeA->GetIdentifier();
-		const QualifiedIdentifier *identifierB = typeB->GetIdentifier();
 
 		if ((primitiveTypeA != 0) && (primitiveTypeA != 0))
 		{
 			return primitiveTypeA->GetTokenType() == primitiveTypeB->GetTokenType();
 		}
-		else if (!((primitiveTypeA == 0) && (primitiveTypeA == 0)))
-		{
-			return false;
-		}
-		else if ((identifierA != 0) && (identifierB != 0))
-		{
-			const Symbol *symbolA = scope->FindSymbol(identifierA);
-			const Symbol *symbolB = scope->FindSymbol(identifierB);
-			return (symbolA != 0) && (symbolA == symbolB);
-		}
-		else if (!((identifierA == 0) && (identifierB == 0)))
+		else if (!((primitiveTypeA == 0) && (primitiveTypeB == 0)))
 		{
 			return false;
 		}
 
-		return true;
-	}
-	else if (!((typeA == 0) && (typeB == 0)))
-	{
-		return false;
+		return typeA->GetDefinition() == typeB->GetDefinition();
 	}
 
-	return true;
+	return ((typeA == 0) && (typeB == 0));
 }
 
 
-bool AreMatchingTypes(const Symbol *scope, const TypeDescriptor *typeA, const TypeDescriptor *typeB)
+bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
 	while ((typeA != 0) && (typeB != 0))
 	{
@@ -55,7 +39,7 @@ bool AreMatchingTypes(const Symbol *scope, const TypeDescriptor *typeA, const Ty
 		{
 			return false;
 		}
-		if (AreMatchingTypes(scope, typeA->GetTypeSpecifier(), typeB->GetTypeSpecifier()))
+		if (!AreMatchingTypes(typeA->GetTypeSpecifier(), typeB->GetTypeSpecifier()))
 		{
 			return false;
 		}

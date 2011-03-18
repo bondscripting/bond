@@ -438,6 +438,7 @@ void ParseNodeTraverser::Visit(const FunctionCallExpression *functionCallExpress
 
 void ParseNodeTraverser::Visit(CastExpression *castExpression)
 {
+	Traverse(castExpression->GetTypeDescriptor());
 	Traverse(castExpression->GetRhs());
 }
 
