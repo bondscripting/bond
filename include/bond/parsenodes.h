@@ -1034,7 +1034,7 @@ class FunctionCallExpression: public Expression
 {
 public:
 	FunctionCallExpression(const Token *context, Expression *lhs, Expression *argumentList):
-		mContext(0),
+		mContext(context),
 		mLhs(lhs),
 		mArgumentList(argumentList)
 	{}

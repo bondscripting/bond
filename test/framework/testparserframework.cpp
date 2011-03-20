@@ -158,10 +158,9 @@ bool AssertParseErrors(
 	const ExpectedParseError *expectedErrors,
 	int numErrors)
 {
-	__ASSERT_FORMAT__(errorBuffer.GetNumErrors() == numErrors, logger, assertFile, assertLine,
-		("Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors()));
+	const int count = (errorBuffer.GetNumErrors() < numErrors) ? errorBuffer.GetNumErrors() : numErrors;
 
-	for (int i = 0; i < numErrors; ++i)
+	for (int i = 0; i < count; ++i)
 	{
 		const ExpectedParseError *expected = expectedErrors + i;
 		const Bond::ParseError *actual = errorBuffer.GetError(i);
@@ -175,6 +174,9 @@ bool AssertParseErrors(
 		__ASSERT_FORMAT__(expected->line == pos.line, logger, assertFile, assertLine,
 			("Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line));
 	}
+
+	__ASSERT_FORMAT__(errorBuffer.GetNumErrors() == numErrors, logger, assertFile, assertLine,
+		("Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors()));
 
 	return true;
 }

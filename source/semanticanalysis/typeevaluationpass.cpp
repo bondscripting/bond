@@ -339,7 +339,9 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 		}
 
 		const TypeSpecifier *structSpecifier = structDescriptor->GetTypeSpecifier();
-		if ((structSpecifier == 0) || (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
+		if ((structSpecifier == 0) ||
+		    (structSpecifier->GetDefinition() == 0) ||
+		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
 		{
 			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, structDescriptor);
 		}
@@ -404,12 +406,15 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 		const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
 
-		if ((lhSpecifier == 0) || (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
+		if ((lhSpecifier == 0) ||
+		    (lhSpecifier->GetDefinition() == 0) ||
+		    (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
 		{
 			mErrorBuffer.PushError(ParseError::EXPRESSION_IS_NOT_CALLABLE, functionCallExpression->GetContextToken());
 		}
 		else
 		{
+			// TODO: Validate the number of arguments.
 			const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 			const FunctionPrototype *prototype = function->GetPrototype();
 			const TypeDescriptor *returnType = prototype->GetReturnType();

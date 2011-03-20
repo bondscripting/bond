@@ -1,4 +1,8 @@
-struct DummyStruct {};
+struct DummyStruct
+{
+	int x;
+	int DummyFunction(float arg);
+};
 
 int [2]* FunnyReturnType();
 
@@ -16,7 +20,6 @@ void DummyFunction(const DummyStruct ds)
 	bool b2 = false;
 
 	// Valid statements.
-	array1[0] = i1;
 	(*FunnyReturnType())[0] = 1;
 	i1 = 1 << 2;
 	i1 <<= i2;
@@ -31,6 +34,10 @@ void DummyFunction(const DummyStruct ds)
 	i1 = *ptr1;
 	ptr2 = ++ptr1;
 	ptr2 = ptr1--;
+	ds.x = 3;
+	i1 = ds.DummyFunction(f1);
+	array1[0] = i1;
+	ptr1[0] = 2;
 	ptr1 = cast<int *>(&ds);
 
 	// Invalid statements.
@@ -39,6 +46,7 @@ void DummyFunction(const DummyStruct ds)
 	f1 <<= i1;
 	i2 %= f2;
 	ptr2 = ptr1 + f1;
+	1 + FunnyReturnType;
 	i1 /= ptr1;
 	b1 = b2 || ds;
 	i1 = true & 1.0;
@@ -48,5 +56,22 @@ void DummyFunction(const DummyStruct ds)
 	*ds;
 	~f1;
 	++ds;
+	ds->x;
+	ptr1->x;
+	ds.y;
+	array1[f1];
+	f1[0];
+	ds.x();
 	ptr1 = cast<int *>(ds);
+	1 + DummyStruct;
+	1 + SymbolToBeDefined;
+
+	int SymbolToBeDefined = 0;
+
+	{
+		int SymbolThatWillGoOutOfScope = 0;
+		i1 = SymbolThatWillGoOutOfScope;
+	}
+
+	i1 = SymbolThatWillGoOutOfScope;
 }

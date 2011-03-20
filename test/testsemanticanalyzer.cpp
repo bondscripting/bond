@@ -110,11 +110,53 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvaluationErrors.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 44},
+		{Bond::ParseError::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 45},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_LEFT, 46},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_MOD, 47},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_PLUS, 48},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_PLUS, 49},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_DIV, 50},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_OR, 51},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_BIT_AND, 52},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_BIT_AND, 52},
+		{Bond::ParseError::ParseError::INVALID_COMPARISON, Bond::Token::OP_LT, 53},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_MINUS, 54},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_NOT, 55},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_MULT, 56},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_BIT_NOT, 57},
+		{Bond::ParseError::ParseError::UNASSIGNABLE_TYPE, Bond::Token::OP_INC, 58},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_INC, 58},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_ARROW, 59},
+		{Bond::ParseError::ParseError::NON_STRUCT_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 60},
+		{Bond::ParseError::ParseError::INVALID_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 61},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, Bond::Token::OBRACKET, 62},
+		{Bond::ParseError::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OBRACKET, 63},
+		{Bond::ParseError::ParseError::EXPRESSION_IS_NOT_CALLABLE, Bond::Token::OPAREN, 64},
+		{Bond::ParseError::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::KEY_INT, 65},
+		{Bond::ParseError::ParseError::INVALID_SYMBOL_IN_EXPRESSION, Bond::Token::IDENTIFIER, 66},
+		{Bond::ParseError::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 67},
+		{Bond::ParseError::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 76},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
   TEST_ITEM(FunctionDefinitions)                \
   TEST_ITEM(Structs)                            \
   TEST_ITEM(TypeSpecifierErrors)                \
+  TEST_ITEM(TypeEvaluationErrors)               \
 
 RUN_TESTS(Parser, TEST_ITEMS)
