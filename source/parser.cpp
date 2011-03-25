@@ -586,21 +586,24 @@ Initializer *Parser::ParseInitializer(Status &status, TokenStream &stream)
 //   | qualified_id '::' IDENTIFIER
 QualifiedIdentifier *Parser::ParseQualifiedIdentifier(Status &status, TokenStream &stream)
 {
-	QualifiedIdentifier *id = 0;
+	QualifiedIdentifier *head = 0;
 	const Token *name = stream.NextIf(Token::IDENTIFIER);
 
 	if (name != 0)
 	{
-		id = mFactory.CreateQualifiedIdentifier(name);
-		if (stream.NextIf(Token::SCOPE))
+		head = mFactory.CreateQualifiedIdentifier(name);
+		QualifiedIdentifier *current = head;
+
+		while ((current != 0) && stream.NextIf(Token::SCOPE))
 		{
-			QualifiedIdentifier *next = ParseQualifiedIdentifier(status, stream);
-			AssertNode(status, stream, next);
-			id->SetNextNode(next);
+			name = ExpectToken(status, stream, Token::IDENTIFIER);
+			QualifiedIdentifier *next = mFactory.CreateQualifiedIdentifier(name);
+			current->SetNextNode(next);
+			current = next;
 		}
 	}
 
-	return id;
+	return head;
 }
 
 

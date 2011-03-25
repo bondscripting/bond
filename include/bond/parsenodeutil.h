@@ -42,7 +42,6 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-// Can only be used once type specifiers have been resolved.
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
 bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB);
@@ -51,7 +50,11 @@ bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB
 
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
-TypeAndValue CastValue(const TypeAndValue &value, const TypeDescriptor *type);
+Value CastValue(const TypeAndValue &value, const TypeDescriptor *type);
+
+Value UnaryMinus(const TypeAndValue &value);
+
+Value UnaryBitNot(const TypeAndValue &value);
 
 }
 

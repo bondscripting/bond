@@ -52,23 +52,23 @@ public:
 	void SetValue(const Value &value) { mValue = value; mValueDefined = true; }
 
 	bool GetBoolValue() const { return mValue.mBool; }
-	void SetBoolValue(bool value) { mValue.mBool = value; }
+	void SetBoolValue(bool value) { mValue.mBool = value; mValueDefined = true; }
 
 	char GetCharValue() const { return mValue.mChar; }
-	void SetCharValue(char value) { mValue.mChar = value; }
+	void SetCharValue(char value) { mValue.mChar = value; mValueDefined = true; }
 
 	bf32_t GetFloatValue() const { return mValue.mFloat; }
-	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
+	void SetFloatValue(bf32_t value) { mValue.mFloat = value; mValueDefined = true; }
 
 	bi32_t GetIntValue() const { return mValue.mInt; }
-	void SetIntValue(bi32_t value) { mValue.mInt = value; }
+	void SetIntValue(bi32_t value) { mValue.mInt = value; mValueDefined = true; }
 
 	bu32_t GetUIntValue() const { return mValue.mUInt; }
-	void SetUIntValue(bu32_t value) { mValue.mUInt = value; }
+	void SetUIntValue(bu32_t value) { mValue.mUInt = value; mValueDefined = true; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
 	int GetStringLength() const { return mValue.mString.length; }
-	void SetStringValue(const char *buffer, int length);
+	//void SetStringValue(const char *buffer, int length);
 
 	bool IsResolved() const { return mResolved; }
 	void Resolve() { mResolved = true; }

@@ -6,6 +6,7 @@ namespace Bond
 
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
+	// This function can only be used once type specifiers have been resolved.
 	if ((typeA != 0) && (typeB != 0))
 	{
 		const Token *primitiveTypeA = typeA->GetPrimitiveTypeToken();
@@ -29,6 +30,7 @@ bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 
 bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
+	// This function can only be used once type specifiers have been resolved.
 	while ((typeA != 0) && (typeB != 0))
 	{
 		if (typeA->GetVariant() != typeB->GetVariant())
@@ -112,7 +114,7 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 }
 
 
-TypeAndValue CastValue(const TypeAndValue &value, const TypeDescriptor *type)
+Value CastValue(const TypeAndValue &value, const TypeDescriptor *type)
 {
 	// This function assumes that it is only called for valid casts on defined values.
 	Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
@@ -214,7 +216,69 @@ TypeAndValue CastValue(const TypeAndValue &value, const TypeDescriptor *type)
 			break;
 	}
 
-	return TypeAndValue(type, resultValue);
+	return resultValue;
+}
+
+
+Value UnaryMinus(const TypeAndValue &value)
+{
+	// This function can only be called for values with defined numeric types.
+	const TypeDescriptor *typeDescriptor = value.GetTypeDescriptor();
+	Value resultValue;
+
+	if (value.IsValueDefined())
+	{
+		switch (typeDescriptor->GetPrimitiveType())
+		{
+			case Token::KEY_CHAR:
+				resultValue.mChar = -value.GetCharValue();
+				break;
+			case Token::KEY_FLOAT:
+				resultValue.mFloat = -value.GetFloatValue();
+				break;
+			case Token::KEY_INT:
+				resultValue.mInt = -value.GetIntValue();
+				break;
+			case Token::KEY_UINT:
+				resultValue.mUInt = -value.GetUIntValue();
+				break;
+			default:
+				break;
+		}
+	}
+
+	return resultValue;
+}
+
+
+Value UnaryBitNot(const TypeAndValue &value)
+{
+	// This function can only be called for values with defined numeric types.
+	const TypeDescriptor *typeDescriptor = value.GetTypeDescriptor();
+	Value resultValue;
+
+	if (value.IsValueDefined())
+	{
+		switch (typeDescriptor->GetPrimitiveType())
+		{
+			case Token::KEY_CHAR:
+				resultValue.mChar = -value.GetCharValue();
+				break;
+			case Token::KEY_FLOAT:
+				resultValue.mFloat = -value.GetFloatValue();
+				break;
+			case Token::KEY_INT:
+				resultValue.mInt = -value.GetIntValue();
+				break;
+			case Token::KEY_UINT:
+				resultValue.mUInt = -value.GetUIntValue();
+				break;
+			default:
+				break;
+		}
+	}
+
+	return resultValue;
 }
 
 }

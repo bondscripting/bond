@@ -79,12 +79,15 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					break;
 
 				case Token::OP_MINUS:
+					tav.SetValue(UnaryMinus(rhs));
 					break;
 
 				case Token::OP_NOT:
+					tav.SetBoolValue(!rhs.GetBoolValue());
 					break;
 
 				case Token::OP_BIT_AND:
+					// TODO
 					break;
 
 				case Token::OP_BIT_NOT:

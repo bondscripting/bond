@@ -1,3 +1,11 @@
+namespace OuterSpace
+{
+	namespace InnerSpace
+	{
+		const int Number = 1;
+	}
+}
+
 struct DummyStruct
 {
 	int x;
@@ -18,27 +26,6 @@ void DummyFunction(const DummyStruct ds)
 	float f2 = 2.0;
 	bool b1 = true;
 	bool b2 = false;
-
-	// Valid statements.
-	(*FunnyReturnType())[0] = 1;
-	i1 = 1 << 2;
-	i1 <<= i2;
-	ptr2 = ptr1 + i1;
-	f2 = i1 + f1;
-	i1 /= i2;
-	b1 = b2 || false;
-	i1 = 1 & 2;
-	i2 = 1 | 2;
-	b1 = 1 < f1;
-	i1 = +-i2;
-	i1 = *ptr1;
-	ptr2 = ++ptr1;
-	ptr2 = ptr1--;
-	ds.x = 3;
-	i1 = ds.DummyFunction(f1);
-	array1[0] = i1;
-	ptr1[0] = 2;
-	ptr1 = cast<int *>(&ds);
 
 	// Invalid statements.
 	array1 = array2;
@@ -74,4 +61,27 @@ void DummyFunction(const DummyStruct ds)
 	}
 
 	i1 = SymbolThatWillGoOutOfScope;
+
+
+	// Valid statements.
+	(*FunnyReturnType())[0] = 1;
+	i1 = 1 << 2;
+	i1 <<= i2;
+	ptr2 = ptr1 + i1;
+	f2 = i1 + f1;
+	i1 /= i2;
+	b1 = b2 || false;
+	i1 = 1 & 2;
+	i2 = 1 | 2;
+	b1 = 1 < f1;
+	i1 = +-i2;
+	i1 = *ptr1;
+	ptr2 = ++ptr1;
+	ptr2 = ptr1--;
+	ds.x = 3;
+	i1 = ds.DummyFunction(f1);
+	array1[0] = i1;
+	ptr1[0] = 2;
+	ptr1 = cast<int *>(&ds);
+	i1 = OuterSpace::InnerSpace::Number;
 }
