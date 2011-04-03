@@ -870,7 +870,12 @@ private:
 class ConditionalExpression: public TemporaryExpression
 {
 public:
-	ConditionalExpression(Expression *condition, Expression *trueExpression, Expression *falseExpression):
+	ConditionalExpression(
+			const Token *op,
+			Expression *condition,
+			Expression *trueExpression,
+			Expression *falseExpression):
+		mOperator(op),
 		mCondition(condition),
 		mTrueExpression(trueExpression),
 		mFalseExpression(falseExpression)
@@ -880,6 +885,8 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mOperator; }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -891,6 +898,7 @@ public:
 	const Expression *GetFalseExpression() const { return mFalseExpression; }
 
 private:
+	const Token *mOperator;
 	Expression *mCondition;
 	Expression *mTrueExpression;
 	Expression *mFalseExpression;
@@ -986,6 +994,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const { return mOperator; }
+
 	const Token *GetOperator() const { return mOperator; }
 	const Token *GetMemberName() const { return mMemberName; }
 
@@ -1062,7 +1072,8 @@ private:
 class CastExpression: public Expression
 {
 public:
-	CastExpression(TypeDescriptor *typeDescriptor, Expression *rhs):
+	CastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs):
+		mOperator(op),
 		mTypeDescriptor(typeDescriptor),
 		mRhs(rhs)
 	{}
@@ -1072,6 +1083,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const { return mOperator; }
+
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 
@@ -1079,6 +1092,7 @@ public:
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
+	const Token *mOperator;
 	TypeDescriptor *mTypeDescriptor;
 	Expression *mRhs;
 };
@@ -1087,12 +1101,24 @@ private:
 class SizeofExpression: public Expression
 {
 public:
-	explicit SizeofExpression(TypeDescriptor *typeDescriptor): mTypeDescriptor(typeDescriptor), mRhs(0) {}
-	explicit SizeofExpression(Expression *rhs): mTypeDescriptor(0), mRhs(rhs) {}
+	SizeofExpression(const Token *op, TypeDescriptor *typeDescriptor):
+		mOperator(op),
+		mTypeDescriptor(typeDescriptor),
+		mRhs(0)
+	{}
+
+	SizeofExpression(const Token *op, Expression *rhs):
+		mOperator(op),
+		mTypeDescriptor(0),
+		mRhs(rhs)
+	{}
+
 	virtual ~SizeofExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mOperator; }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -1101,6 +1127,7 @@ public:
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
+	const Token *mOperator;
 	TypeDescriptor *mTypeDescriptor;
 	Expression *mRhs;
 };
@@ -1127,19 +1154,27 @@ private:
 class IdentifierExpression: public Expression
 {
 public:
-	explicit IdentifierExpression(QualifiedIdentifier *identifier): mIdentifier(identifier) {}
+	explicit IdentifierExpression(QualifiedIdentifier *identifier):
+		mIdentifier(identifier),
+		mDefinition(0)
+	{}
+
 	virtual ~IdentifierExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const;
+	virtual const Token *GetContextToken() const { return mIdentifier->GetContextToken(); }
 
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
 
+	const Symbol *GetDefinition() const { return mDefinition; }
+	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
+
 private:
 	QualifiedIdentifier *mIdentifier;
+	const Symbol *mDefinition;
 };
 
 
@@ -1149,10 +1184,15 @@ extern const TypeSpecifier INT_TYPE_SPECIFIER;
 extern const TypeSpecifier UINT_TYPE_SPECIFIER;
 extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
 
+extern const TypeDescriptor BOOL_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_BOOL_TYPE_DESCRIPTOR;
+extern const TypeDescriptor CHAR_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR;
+extern const TypeDescriptor INT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_INT_TYPE_DESCRIPTOR;
+extern const TypeDescriptor UINT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_UINT_TYPE_DESCRIPTOR;
+extern const TypeDescriptor FLOAT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_FLOAT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR;
 

@@ -246,22 +246,21 @@ bool TypeSpecifier::IsNumericType() const
 }
 
 
-const Token *IdentifierExpression::GetContextToken() const
-{
-	return (mIdentifier != 0) ? mIdentifier->GetContextToken() : 0;
-}
-
-
 const TypeSpecifier BOOL_TYPE_SPECIFIER(&BOOL_TOKEN);
 const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);
 const TypeSpecifier INT_TYPE_SPECIFIER(&INT_TOKEN);
 const TypeSpecifier UINT_TYPE_SPECIFIER(&UINT_TOKEN);
 const TypeSpecifier FLOAT_TYPE_SPECIFIER(&FLOAT_TOKEN);
 
+const TypeDescriptor BOOL_TYPE_DESCRIPTOR(&BOOL_TYPE_SPECIFIER, false);
 const TypeDescriptor CONST_BOOL_TYPE_DESCRIPTOR(&BOOL_TYPE_SPECIFIER, true);
+const TypeDescriptor CHAR_TYPE_DESCRIPTOR(&CHAR_TYPE_SPECIFIER, false);
 const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR(&CHAR_TYPE_SPECIFIER, true);
+const TypeDescriptor INT_TYPE_DESCRIPTOR(&INT_TYPE_SPECIFIER, false);
 const TypeDescriptor CONST_INT_TYPE_DESCRIPTOR(&INT_TYPE_SPECIFIER, true);
+const TypeDescriptor UINT_TYPE_DESCRIPTOR(&UINT_TYPE_SPECIFIER, false);
 const TypeDescriptor CONST_UINT_TYPE_DESCRIPTOR(&UINT_TYPE_SPECIFIER, true);
+const TypeDescriptor FLOAT_TYPE_DESCRIPTOR(&FLOAT_TYPE_SPECIFIER, false);
 const TypeDescriptor CONST_FLOAT_TYPE_DESCRIPTOR(&FLOAT_TYPE_SPECIFIER, true);
 const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR(&CONST_CHAR_TYPE_DESCRIPTOR, true);
 

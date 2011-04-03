@@ -76,6 +76,7 @@ public:
 	ExpressionStatement *CreateExpressionStatement(Expression *expression);
 
 	ConditionalExpression *CreateConditionalExpression(
+		const Token *op,
 		Expression *condition,
 		Expression *trueExpression,
 		Expression *falseExpression);
@@ -91,9 +92,9 @@ public:
 		Expression *lhs,
 		Expression *argumentList);
 
-	CastExpression *CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs);
-	SizeofExpression *CreateSizeofExpression(TypeDescriptor *typeDescriptor);
-	SizeofExpression *CreateSizeofExpression(Expression *rhs);
+	CastExpression *CreateCastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs);
+	SizeofExpression *CreateSizeofExpression(const Token *op, TypeDescriptor *typeDescriptor);
+	SizeofExpression *CreateSizeofExpression(const Token *op, Expression *rhs);
 	ConstantExpression *CreateConstantExpression(const Token *value);
 	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
 

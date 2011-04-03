@@ -1085,14 +1085,18 @@ Expression *Parser::ParseConditionalExpression(Status &status, TokenStream &stre
 {
 	Expression *expression = ParseLogicalOrExpression(status, stream);
 
-	if ((expression != 0) && (stream.NextIf(Token::OP_TERNARY) != 0))
+	if (expression != 0)
 	{
-		Expression *trueExpression = ParseExpression(status, stream);
-		AssertNode(status, stream, trueExpression);
-		ExpectToken(status, stream, Token::COLON);
-		Expression *falseExpression = ParseConditionalExpression(status, stream);
-		AssertNode(status, stream, falseExpression);
-		expression = mFactory.CreateConditionalExpression(expression, trueExpression, falseExpression);
+		const Token *token = stream.NextIf(Token::OP_TERNARY);
+		if (token != 0)
+		{
+			Expression *trueExpression = ParseExpression(status, stream);
+			AssertNode(status, stream, trueExpression);
+			ExpectToken(status, stream, Token::COLON);
+			Expression *falseExpression = ParseConditionalExpression(status, stream);
+			AssertNode(status, stream, falseExpression);
+			expression = mFactory.CreateConditionalExpression(token, expression, trueExpression, falseExpression);
+		}
 	}
 
 	return expression;
@@ -1343,8 +1347,9 @@ Expression *Parser::ParseMultiplicativeExpression(Status &status, TokenStream &s
 Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
+	const Token *token = stream.NextIf(Token::KEY_CAST);
 
-	if (stream.NextIf(Token::KEY_CAST))
+	if (token != 0)
 	{
 		ExpectToken(status, stream, Token::OP_LT);
 		TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
@@ -1354,7 +1359,7 @@ Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 		Expression *rhs = ParseCastExpression(status, stream);
 		AssertNode(status, stream, rhs);
 		ExpectToken(status, stream, Token::CPAREN);
-		expression = mFactory.CreateCastExpression(descriptor, rhs);
+		expression = mFactory.CreateCastExpression(token, descriptor, rhs);
 	}
 	else
 	{
@@ -1380,9 +1385,9 @@ Expression *Parser::ParseCastExpression(Status &status, TokenStream &stream)
 Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 {
 	Expression *expression = 0;
-	const Token *op = stream.NextIf(UNARY_OPERATORS_TYPESET);
+	const Token *op = 0;
 
-	if (op != 0)
+	if ((op = stream.NextIf(UNARY_OPERATORS_TYPESET)) != 0)
 	{
 		Expression *rhs = 0;
 
@@ -1403,23 +1408,22 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 		expression = mFactory.CreateUnaryExpression(op, rhs);
 	}
 
-	else if (stream.NextIf(Token::KEY_SIZEOF) != 0)
+	else if ((op = stream.NextIf(Token::KEY_SIZEOF)) != 0)
 	{
 		if (stream.NextIf(Token::OP_LT) != 0)
 		{
 			TypeDescriptor *descriptor = ParseTypeDescriptor(status, stream);
 			AssertNode(status, stream, descriptor);
 			ExpectToken(status, stream, Token::OP_GT);
-			expression = mFactory.CreateSizeofExpression(descriptor);
+			expression = mFactory.CreateSizeofExpression(op, descriptor);
 		}
 		else
 		{
 			Expression *unary = ParseUnaryExpression(status, stream);
 			AssertNode(status, stream, unary);
-			expression = mFactory.CreateSizeofExpression(unary);
+			expression = mFactory.CreateSizeofExpression(op, unary);
 		}
 	}
-
 	else
 	{
 		expression = ParsePostfixExpression(status, stream);

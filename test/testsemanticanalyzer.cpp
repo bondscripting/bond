@@ -112,6 +112,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 
 DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvaluationErrors.bond")
 {
+	// Focus on expression type evaluation erros.
 	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
 	{
 		{Bond::ParseError::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 31},
@@ -151,6 +152,29 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvaluationErrors2.bond")
+{
+	// Focus on remaining type evaluation erros.
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 3},
+		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 4},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 22},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 24},
+		{Bond::ParseError::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 20},
+		{Bond::ParseError::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 28},
+		{Bond::ParseError::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 29},
+		{Bond::ParseError::ParseError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 30},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -158,5 +182,6 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
   TEST_ITEM(Structs)                            \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
+  TEST_ITEM(TypeEvaluationErrors2)              \
 
 RUN_TESTS(Parser, TEST_ITEMS)

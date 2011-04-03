@@ -241,11 +241,12 @@ ExpressionStatement *ParseNodeFactory::CreateExpressionStatement(Expression *exp
 
 
 ConditionalExpression *ParseNodeFactory::CreateConditionalExpression(
+	const Token *op,
 	Expression *condition,
 	Expression *trueExpression,
 	Expression *falseExpression)
 {
-	return new (mAllocator.Alloc<ConditionalExpression>()) ConditionalExpression(condition, trueExpression, falseExpression);
+	return new (mAllocator.Alloc<ConditionalExpression>()) ConditionalExpression(op, condition, trueExpression, falseExpression);
 }
 
 
@@ -288,21 +289,21 @@ FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(
 }
 
 
-CastExpression *ParseNodeFactory::CreateCastExpression(TypeDescriptor *typeDescriptor, Expression *rhs)
+CastExpression *ParseNodeFactory::CreateCastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs)
 {
-	return new (mAllocator.Alloc<CastExpression>()) CastExpression(typeDescriptor, rhs);
+	return new (mAllocator.Alloc<CastExpression>()) CastExpression(op, typeDescriptor, rhs);
 }
 
 
-SizeofExpression *ParseNodeFactory::CreateSizeofExpression(TypeDescriptor *typeDescriptor)
+SizeofExpression *ParseNodeFactory::CreateSizeofExpression(const Token *op, TypeDescriptor *typeDescriptor)
 {
-	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(typeDescriptor);
+	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(op, typeDescriptor);
 }
 
 
-SizeofExpression *ParseNodeFactory::CreateSizeofExpression(Expression *rhs)
+SizeofExpression *ParseNodeFactory::CreateSizeofExpression(const Token *op, Expression *rhs)
 {
-	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(rhs);
+	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(op, rhs);
 }
 
 

@@ -48,12 +48,24 @@
     "Index operator cannot be applied to non-integer type '%n'.")           \
   BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                 \
     "Cannot convert type '%0n' to '%1n'." )                                 \
+  BOND_PARSE_ERROR(ENUMERATOR_VALUE_IS_NOT_INTEGER,                         \
+    "Enumerator value for '%t' is not an integer constant.")                \
+  BOND_PARSE_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                           \
+    "Switch control is not an intger.")                                     \
+  BOND_PARSE_ERROR(SWITCH_LABEL_IS_NOT_INTEGER,                             \
+    "Case label is not an intger constant.")                                \
+  BOND_PARSE_ERROR(IF_CONDITION_IS_NOT_BOOLEAN,                             \
+    "If statement condition is not boolean.")                               \
+  BOND_PARSE_ERROR(WHILE_CONDITION_IS_NOT_BOOLEAN,                          \
+    "While statement condition is not boolean.")                            \
+  BOND_PARSE_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                            \
+    "For statement condition is not boolean.")                              \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                         \
-    "Cannot apply operator '%c' to non lvalue type '%n'." )                 \
+    "Cannot apply operator '%c' to non lvalue type '%n'.")                  \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
-    "Cannot assign to type '%n' near operator '%c'." )                      \
+    "Cannot assign to type '%n' near operator '%c'.")                       \
   BOND_PARSE_ERROR(INVALID_COMPARISON,                                      \
-    "Operator '%c' cannot compare type '%0n' with type '%1n'." )            \
+    "Operator '%c' cannot compare type '%0n' with type '%1n'.")             \
 
 
 namespace Bond

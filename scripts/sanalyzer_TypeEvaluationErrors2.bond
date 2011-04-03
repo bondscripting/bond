@@ -1,0 +1,44 @@
+enum BadEnum
+{
+	BadEnumerator1 = 1.2,
+	BadEnumerator2 = false,
+};
+
+enum GoodEnum
+{
+	Zero,
+	One,
+	Two,
+};
+
+void DummyFunction()
+{
+	int i1 = 1;
+	float f1 = 1.0;
+
+	// Invalid statements.
+	switch (f1 < 2.0)
+	{
+		case 2.0:
+			break;
+		case false:
+			break;
+	}
+
+	if (f1 + 1.0) {}
+	while (i1 -= 1) {}
+	for (int j = 0; j + i1; ++j) {}
+
+	// Valid statements.
+	switch (i1)
+	{
+		case 0:
+			break;
+		case One:
+			break;
+	}
+
+	if (f1 < 2.0) {}
+	while ((i1 -= 1) != 0) {}
+	for (int j = 0; j < Two; ++j) {}
+}

@@ -16,7 +16,8 @@ public:
 	TypeAndValue(const TypeDescriptor *descriptor):
 		mTypeDescriptor(descriptor),
 		mValueDefined(false),
-		mResolved(false) {}
+		mResolved(false)
+	{}
 
 	TypeAndValue(const TypeDescriptor *descriptor, const Value value):
 		mValue(value),

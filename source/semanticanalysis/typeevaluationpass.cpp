@@ -14,9 +14,15 @@ public:
 	virtual ~TypeEvaluationPass() {}
 
 protected:
+	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(Parameter *parameter);
 	virtual void Visit(NamedInitializer *namedInitializer);
+	virtual void Visit(IfStatement *ifStatement);
+	virtual void Visit(SwitchStatement *switchStatement);
+	virtual void Visit(SwitchLabel *switchLabel);
+	virtual void Visit(WhileStatement *whileStatement);
+	virtual void Visit(ForStatement *forStatement);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
@@ -30,16 +36,32 @@ protected:
 	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
-	void AssertBooleanType(const TypeDescriptor *descriptor, const Token *op);
-	void AssertIntegerType(const TypeDescriptor *descriptor, const Token *op);
-	void AssertNumericType(const TypeDescriptor *descriptor, const Token *op);
-	void AssertPointerType(const TypeDescriptor *descriptor, const Token *op);
+	bool IsBooleanExpression(const Expression *expression) const;
+	bool IsIntegerExpression(const Expression *expression) const;;
+	void AssertBooleanOperand(const TypeDescriptor *descriptor, const Token *op);
+	void AssertIntegerOperand(const TypeDescriptor *descriptor, const Token *op);
+	void AssertNumericOperand(const TypeDescriptor *descriptor, const Token *op);
+	void AssertPointerOperand(const TypeDescriptor *descriptor, const Token *op);
 	void AssertLValueType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
 
 	bool mAddNamedInitializers;
 };
+
+
+void TypeEvaluationPass::Visit(Enumerator *enumerator)
+{
+	ParseNodeTraverser::Visit(enumerator);
+	const Expression *value = enumerator->GetValue();
+	if ((value != 0) && !IsIntegerExpression(value))
+	{
+		mErrorBuffer.PushError(
+			ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER,
+			value->GetContextToken(),
+			enumerator->GetName());
+	}
+}
 
 
 void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
@@ -67,6 +89,71 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	if (mAddNamedInitializers)
 	{
 		InsertSymbol(namedInitializer);
+	}
+}
+
+
+void TypeEvaluationPass::Visit(IfStatement *ifStatement)
+{
+	ParseNodeTraverser::Visit(ifStatement);
+	const Expression *condition = ifStatement->GetCondition();
+	if ((condition != 0) && !IsBooleanExpression(condition))
+	{
+		mErrorBuffer.PushError(
+			ParseError::IF_CONDITION_IS_NOT_BOOLEAN,
+			condition->GetContextToken());
+	}
+}
+
+
+void TypeEvaluationPass::Visit(SwitchStatement *switchStatement)
+{
+	ParseNodeTraverser::Visit(switchStatement);
+	const Expression *control = switchStatement->GetControl();
+	if ((control != 0) && !IsIntegerExpression(control))
+	{
+		mErrorBuffer.PushError(
+			ParseError::SWITCH_CONTROL_IS_NOT_INTEGER,
+			control->GetContextToken());
+	}
+}
+
+
+void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
+{
+	ParseNodeTraverser::Visit(switchLabel);
+	const Expression *expression = switchLabel->GetExpression();
+	if ((expression != 0) && !IsIntegerExpression(expression))
+	{
+		mErrorBuffer.PushError(
+			ParseError::SWITCH_LABEL_IS_NOT_INTEGER,
+			expression->GetContextToken());
+	}
+}
+
+
+void TypeEvaluationPass::Visit(WhileStatement *whileStatement)
+{
+	ParseNodeTraverser::Visit(whileStatement);
+	const Expression *condition = whileStatement->GetCondition();
+	if ((condition != 0) && !IsBooleanExpression(condition))
+	{
+		mErrorBuffer.PushError(
+			ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN,
+			condition->GetContextToken());
+	}
+}
+
+
+void TypeEvaluationPass::Visit(ForStatement *forStatement)
+{
+	SemanticAnalysisPass::Visit(forStatement);
+	const Expression *condition = forStatement->GetCondition();
+	if ((condition != 0) && !IsBooleanExpression(condition))
+	{
+		mErrorBuffer.PushError(
+			ParseError::FOR_CONDITION_IS_NOT_BOOLEAN,
+			condition->GetContextToken());
 	}
 }
 
@@ -123,8 +210,8 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::ASSIGN_AND:
 			case Token::ASSIGN_OR:
 			case Token::ASSIGN_XOR:
-				AssertIntegerType(lhDescriptor, op);
-				AssertIntegerType(rhDescriptor, op);
+				AssertIntegerOperand(lhDescriptor, op);
+				AssertIntegerOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
 				resultType = *lhDescriptor;
 				break;
@@ -133,16 +220,16 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::ASSIGN_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
-					AssertIntegerType(rhDescriptor, op);
+					AssertIntegerOperand(rhDescriptor, op);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					AssertIntegerType(lhDescriptor, op);
+					AssertIntegerOperand(lhDescriptor, op);
 				}
 				else
 				{
-					AssertNumericType(lhDescriptor, op);
-					AssertNumericType(rhDescriptor, op);
+					AssertNumericOperand(lhDescriptor, op);
+					AssertNumericOperand(rhDescriptor, op);
 				}
 
 				AssertAssignableType(lhDescriptor, op);
@@ -151,16 +238,16 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 			case Token::ASSIGN_MULT:
 			case Token::ASSIGN_DIV:
-				AssertNumericType(lhDescriptor, op);
-				AssertNumericType(rhDescriptor, op);
+				AssertNumericOperand(lhDescriptor, op);
+				AssertNumericOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
 				resultType = *lhDescriptor;
 				break;
 
 			case Token::OP_AND:
 			case Token::OP_OR:
-				AssertBooleanType(lhDescriptor, op);
-				AssertBooleanType(rhDescriptor, op);
+				AssertBooleanOperand(lhDescriptor, op);
+				AssertBooleanOperand(rhDescriptor, op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -168,15 +255,15 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_BIT_OR:
 			case Token::OP_BIT_XOR:
 			case Token::OP_MOD:
-				AssertIntegerType(lhDescriptor, op);
-				AssertIntegerType(rhDescriptor, op);
+				AssertIntegerOperand(lhDescriptor, op);
+				AssertIntegerOperand(rhDescriptor, op);
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			case Token::OP_LEFT:
 			case Token::OP_RIGHT:
-				AssertIntegerType(lhDescriptor, op);
-				AssertIntegerType(rhDescriptor, op);
+				AssertIntegerOperand(lhDescriptor, op);
+				AssertIntegerOperand(rhDescriptor, op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -194,24 +281,24 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
-					AssertIntegerType(rhDescriptor, op);
+					AssertIntegerOperand(rhDescriptor, op);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					AssertIntegerType(lhDescriptor, op);
+					AssertIntegerOperand(lhDescriptor, op);
 				}
 				else
 				{
-					AssertNumericType(lhDescriptor, op);
-					AssertNumericType(rhDescriptor, op);
+					AssertNumericOperand(lhDescriptor, op);
+					AssertNumericOperand(rhDescriptor, op);
 				}
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			case Token::OP_MULT:
 			case Token::OP_DIV:
-				AssertNumericType(lhDescriptor, op);
-				AssertNumericType(rhDescriptor, op);
+				AssertNumericOperand(lhDescriptor, op);
+				AssertNumericOperand(rhDescriptor, op);
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
@@ -245,7 +332,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 		{
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
-				AssertNumericType(rhDescriptor, op);
+				AssertNumericOperand(rhDescriptor, op);
 				break;
 
 			case Token::OP_INC:
@@ -253,12 +340,12 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				AssertAssignableType(rhDescriptor, op);
 				if (!rhDescriptor->IsPointerType())
 				{
-					AssertNumericType(rhDescriptor, op);
+					AssertNumericOperand(rhDescriptor, op);
 				}
 				break;
 
 			case Token::OP_NOT:
-				AssertBooleanType(rhDescriptor, op);
+				AssertBooleanOperand(rhDescriptor, op);
 				break;
 
 			case Token::OP_BIT_AND:
@@ -267,11 +354,11 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_BIT_NOT:
-				AssertIntegerType(rhDescriptor, op);
+				AssertIntegerOperand(rhDescriptor, op);
 				break;
 
 			case Token::OP_MULT:
-				AssertPointerType(rhDescriptor, op);
+				AssertPointerOperand(rhDescriptor, op);
 				if (rhDescriptor->IsPointerType())
 				{
 					resultType = *rhDescriptor->GetParent();
@@ -308,7 +395,7 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		AssertAssignableType(lhDescriptor, op);
 		if (!lhDescriptor->IsPointerType())
 		{
-			AssertNumericType(lhDescriptor, op);
+			AssertNumericOperand(lhDescriptor, op);
 		}
 		TypeAndValue &tav = postfixExpression->GetTypeAndValue();
 		tav.SetTypeDescriptor(lhDescriptor);
@@ -331,7 +418,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 
 		if (op->GetTokenType() == Token::OP_ARROW)
 		{
-			AssertPointerType(lhDescriptor, op);
+			AssertPointerOperand(lhDescriptor, op);
 			if (lhDescriptor->IsPointerType())
 			{
 				structDescriptor = lhDescriptor->GetParent();
@@ -385,7 +472,7 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 	{
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 
-		AssertPointerType(lhDescriptor, op);
+		AssertPointerOperand(lhDescriptor, op);
 		if (lhDescriptor->IsPointerType())
 		{
 			TypeAndValue &tav = arraySubscriptExpression->GetTypeAndValue();
@@ -483,19 +570,19 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 	switch (token->GetTokenType())
 	{
 		case Token::CONST_BOOL:
-			descriptor = &CONST_BOOL_TYPE_DESCRIPTOR;
+			descriptor = &BOOL_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_CHAR:
-			descriptor = &CONST_CHAR_TYPE_DESCRIPTOR;
+			descriptor = &CHAR_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_INT:
-			descriptor = &CONST_INT_TYPE_DESCRIPTOR;
+			descriptor = &INT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_UINT:
-			descriptor = &CONST_UINT_TYPE_DESCRIPTOR;
+			descriptor = &UINT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_FLOAT:
-			descriptor = &CONST_FLOAT_TYPE_DESCRIPTOR;
+			descriptor = &FLOAT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_STRING:
 			descriptor = &CONST_STRING_TYPE_DESCRIPTOR;
@@ -521,6 +608,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 	}
 	else
 	{
+		identifierExpression->SetDefinition(symbol);
 		const TypeAndValue *symbolTav = symbol->GetTypeAndValue();
 
 		if (symbolTav == 0)
@@ -536,7 +624,37 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 }
 
 
-void TypeEvaluationPass::AssertBooleanType(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::IsBooleanExpression(const Expression *expression) const
+{
+	if (expression != 0)
+	{
+		const TypeAndValue &tav = expression->GetTypeAndValue();
+		if (tav.IsTypeDefined())
+		{
+			const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
+			return descriptor->IsBooleanType();
+		}
+	}
+	return false;
+}
+
+
+bool TypeEvaluationPass::IsIntegerExpression(const Expression *expression) const
+{
+	if (expression != 0)
+	{
+		const TypeAndValue &tav = expression->GetTypeAndValue();
+		if (tav.IsTypeDefined())
+		{
+			const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
+			return descriptor->IsIntegerType();
+		}
+	}
+	return false;
+}
+
+
+void TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsBooleanType())
 	{
@@ -545,7 +663,7 @@ void TypeEvaluationPass::AssertBooleanType(const TypeDescriptor *descriptor, con
 }
 
 
-void TypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsIntegerType())
 	{
@@ -554,20 +672,20 @@ void TypeEvaluationPass::AssertIntegerType(const TypeDescriptor *descriptor, con
 }
 
 
-void TypeEvaluationPass::AssertPointerType(const TypeDescriptor *descriptor, const Token *op)
-{
-	if (!descriptor->IsPointerType())
-	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, descriptor);
-	}
-}
-
-
-void TypeEvaluationPass::AssertNumericType(const TypeDescriptor *descriptor, const Token *op)
+void TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor *descriptor, const Token *op)
 {
 	if (!descriptor->IsNumericType())
 	{
 		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, descriptor);
+	}
+}
+
+
+void TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *descriptor, const Token *op)
+{
+	if (!descriptor->IsPointerType())
+	{
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, descriptor);
 	}
 }
 
