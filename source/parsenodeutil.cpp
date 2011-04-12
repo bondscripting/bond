@@ -223,28 +223,25 @@ Value CastValue(const TypeAndValue &value, const TypeDescriptor *type)
 Value UnaryMinus(const TypeAndValue &value)
 {
 	// This function can only be called for values with defined numeric types.
-	const TypeDescriptor *typeDescriptor = value.GetTypeDescriptor();
+	const TypeDescriptor *type = value.GetTypeDescriptor();
 	Value resultValue;
 
-	if (value.IsValueDefined())
+	switch (type->GetPrimitiveType())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
-		{
-			case Token::KEY_CHAR:
-				resultValue.mChar = -value.GetCharValue();
-				break;
-			case Token::KEY_FLOAT:
-				resultValue.mFloat = -value.GetFloatValue();
-				break;
-			case Token::KEY_INT:
-				resultValue.mInt = -value.GetIntValue();
-				break;
-			case Token::KEY_UINT:
-				resultValue.mUInt = -value.GetUIntValue();
-				break;
-			default:
-				break;
-		}
+		case Token::KEY_CHAR:
+			resultValue.mChar = -value.GetCharValue();
+			break;
+		case Token::KEY_FLOAT:
+			resultValue.mFloat = -value.GetFloatValue();
+			break;
+		case Token::KEY_INT:
+			resultValue.mInt = -value.GetIntValue();
+			break;
+		case Token::KEY_UINT:
+			resultValue.mUInt = -value.GetUIntValue();
+			break;
+		default:
+			break;
 	}
 
 	return resultValue;
@@ -254,12 +251,12 @@ Value UnaryMinus(const TypeAndValue &value)
 Value UnaryBitNot(const TypeAndValue &value)
 {
 	// This function can only be called for values with defined numeric types.
-	const TypeDescriptor *typeDescriptor = value.GetTypeDescriptor();
+	const TypeDescriptor *type = value.GetTypeDescriptor();
 	Value resultValue;
 
 	if (value.IsValueDefined())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
+		switch (type->GetPrimitiveType())
 		{
 			case Token::KEY_CHAR:
 				resultValue.mChar = -value.GetCharValue();

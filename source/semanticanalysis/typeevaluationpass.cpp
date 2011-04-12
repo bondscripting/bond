@@ -267,14 +267,14 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				resultType = *lhDescriptor;
 				break;
 
-			case Token::OP_EQUAL:
-			case Token::OP_NOT_EQUAL:
 			case Token::OP_LT:
 			case Token::OP_LTE:
 			case Token::OP_GT:
 			case Token::OP_GTE:
+			case Token::OP_EQUAL:
+			case Token::OP_NOT_EQUAL:
 				AssertComparableTypes(lhDescriptor, rhDescriptor, op);
-				resultType = CONST_BOOL_TYPE_DESCRIPTOR;
+				resultType = BOOL_TYPE_DESCRIPTOR;
 				break;
 
 			case Token::OP_PLUS:
@@ -558,14 +558,14 @@ void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 	ParseNodeTraverser::Visit(sizeofExpression);
 
 	TypeAndValue &tav = sizeofExpression->GetTypeAndValue();
-	tav.SetTypeDescriptor(&CONST_UINT_TYPE_DESCRIPTOR);
+	tav.SetTypeDescriptor(&UINT_TYPE_DESCRIPTOR);
 }
 
 
 void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 {
 	const Token *token = constantExpression->GetValueToken();
-	const TypeDescriptor *descriptor = &CONST_INT_TYPE_DESCRIPTOR;
+	const TypeDescriptor *descriptor = &INT_TYPE_DESCRIPTOR;
 
 	switch (token->GetTokenType())
 	{
