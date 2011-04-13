@@ -222,7 +222,6 @@ Value CastValue(const TypeAndValue &value, const TypeDescriptor *type)
 
 Value UnaryMinus(const TypeAndValue &value)
 {
-	// This function can only be called for values with defined numeric types.
 	const TypeDescriptor *type = value.GetTypeDescriptor();
 	Value resultValue;
 
@@ -250,7 +249,6 @@ Value UnaryMinus(const TypeAndValue &value)
 
 Value UnaryBitNot(const TypeAndValue &value)
 {
-	// This function can only be called for values with defined numeric types.
 	const TypeDescriptor *type = value.GetTypeDescriptor();
 	Value resultValue;
 
@@ -259,16 +257,13 @@ Value UnaryBitNot(const TypeAndValue &value)
 		switch (type->GetPrimitiveType())
 		{
 			case Token::KEY_CHAR:
-				resultValue.mChar = -value.GetCharValue();
-				break;
-			case Token::KEY_FLOAT:
-				resultValue.mFloat = -value.GetFloatValue();
+				resultValue.mChar = ~value.GetCharValue();
 				break;
 			case Token::KEY_INT:
-				resultValue.mInt = -value.GetIntValue();
+				resultValue.mInt = ~value.GetIntValue();
 				break;
 			case Token::KEY_UINT:
-				resultValue.mUInt = -value.GetUIntValue();
+				resultValue.mUInt = ~value.GetUIntValue();
 				break;
 			default:
 				break;
