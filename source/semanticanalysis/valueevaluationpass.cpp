@@ -4,23 +4,23 @@ namespace Bond
 class ValueEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	virtual ~ValueEvaluationPass() {}
-
-	virtual void Analyze(TranslationUnit *translationUnitList);
-
-protected:
 	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
 		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
+	virtual ~ValueEvaluationPass() {}
+
+	//virtual void Analyze(TranslationUnit *translationUnitList);
+
+protected:
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
-	//virtual void Visit(PostfixExpression *postfixExpression);
-	//virtual void Visit(MemberExpression *memberExpression);
+	virtual void Visit(PostfixExpression *postfixExpression);
+	virtual void Visit(MemberExpression *memberExpression);
 	//virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
-	//virtual void Visit(FunctionCallExpression *functionCallExpression);
-	//virtual void Visit(CastExpression *castExpression);
+	virtual void Visit(FunctionCallExpression *functionCallExpression);
+	virtual void Visit(CastExpression *castExpression);
 	//virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
 	//virtual void Visit(IdentifierExpression *identifierExpression);
@@ -30,33 +30,17 @@ private:
 };
 
 
-class TopLevelValueEvaluationPass: public ValueEvaluationPass
-{
-public:
-	TopLevelValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		ValueEvaluationPass(errorBuffer, symbolTable)
-	{}
-
-	~TopLevelValueEvaluationPass() {}
-
-protected:
-	// This pass doesn't descend into structs and functions.
-	virtual void Visit(StructDeclaration *structDeclaration) {}
-	virtual void Visit(FunctionDefinition *functionDefinition) {}
-};
-
-
+/*
 void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
-	/*
 	do
 	{
 		mMadeChanges = false;
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
 	while (mMadeChanges);
-	*/
 }
+*/
 
 
 void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
@@ -212,6 +196,83 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 						break;
 				}
 			}
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Visit(PostfixExpression *postfixExpression)
+{
+	// Value can't be evaluated at compile time. Mark as resolved when operand is resolved.
+	TypeAndValue &tav = postfixExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(postfixExpression);
+		const TypeAndValue &lhs = postfixExpression->GetLhs()->GetTypeAndValue();
+		if (lhs.IsResolved())
+		{
+			tav.Resolve();
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Visit(MemberExpression *memberExpression)
+{
+	// Value can't be evaluated at compile time. Mark as resolved when operand is resolved.
+	TypeAndValue &tav = memberExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(memberExpression);
+		const TypeAndValue &lhs = memberExpression->GetLhs()->GetTypeAndValue();
+		if (lhs.IsResolved())
+		{
+			tav.Resolve();
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
+{
+	// Value can't be evaluated at compile time. Mark as resolved when lhs and all arguments are resolved.
+	TypeAndValue &tav = functionCallExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(functionCallExpression);
+		const TypeAndValue &lhs = functionCallExpression->GetLhs()->GetTypeAndValue();
+		if (!lhs.IsResolved())
+		{
+			return;
+		}
+
+		const Expression *argument = functionCallExpression->GetArgumentList();
+		while (argument != 0)
+		{
+			const TypeAndValue &argTav = argument->GetTypeAndValue();
+			if (!argTav.IsResolved())
+			{
+				return;
+			}
+			argument = static_cast<const Expression *>(argument->GetNextNode());
+		}
+		tav.Resolve();
+	}
+}
+
+
+void ValueEvaluationPass::Visit(CastExpression *castExpression)
+{
+	TypeAndValue &tav = castExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(castExpression);
+		const TypeAndValue &rhs = castExpression->GetRhs()->GetTypeAndValue();
+		if (rhs.IsResolved())
+		{
+			tav.Resolve();
+			const TypeDescriptor *resultType = tav.GetTypeDescriptor();
+			tav.SetValue(CastValue(rhs, resultType));
 		}
 	}
 }

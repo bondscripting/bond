@@ -1,3 +1,4 @@
+
 #include "bond/autostack.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
@@ -215,8 +216,8 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 		return;
 	}
 
-	TopLevelValueEvaluationPass topLevelValuePass(mErrorBuffer, mSymbolTable);
-	topLevelValuePass.Analyze(translationUnitList);
+	ValueEvaluationPass valueEvaluationPass(mErrorBuffer, mSymbolTable);
+	valueEvaluationPass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())
 	{
