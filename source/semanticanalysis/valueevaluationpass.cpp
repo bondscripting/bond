@@ -1,3 +1,4 @@
+
 namespace Bond
 {
 
@@ -5,48 +6,111 @@ class ValueEvaluationPass: public SemanticAnalysisPass
 {
 public:
 	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
+		SemanticAnalysisPass(errorBuffer, symbolTable),
+		mPrevEnumerator(0),
+		mItemResolved(false)
 	{}
 
 	virtual ~ValueEvaluationPass() {}
 
-	//virtual void Analyze(TranslationUnit *translationUnitList);
+	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
+	virtual void Visit(EnumDeclaration *enumDeclaration);
+	virtual void Visit(Enumerator *enumerator);
+	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
 	virtual void Visit(PostfixExpression *postfixExpression);
 	virtual void Visit(MemberExpression *memberExpression);
-	//virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
+	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
 	virtual void Visit(FunctionCallExpression *functionCallExpression);
 	virtual void Visit(CastExpression *castExpression);
-	//virtual void Visit(SizeofExpression *sizeofExpression);
+	virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
-	//virtual void Visit(IdentifierExpression *identifierExpression);
+	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
-	bool mMadeChanges;
+	void Resolve(TypeAndValue &tav);
+
+	Enumerator *mPrevEnumerator;
+	bool mItemResolved;
 };
 
 
-/*
 void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
 	{
-		mMadeChanges = false;
+		mItemResolved = false;
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mMadeChanges);
+	while (mItemResolved);
 }
-*/
+
+
+void ValueEvaluationPass::Visit(EnumDeclaration *enumDeclaration)
+{
+	mPrevEnumerator = 0;
+	ParseNodeTraverser::Visit(enumDeclaration);
+	mPrevEnumerator = 0;
+}
+
+
+void ValueEvaluationPass::Visit(Enumerator *enumerator)
+{
+	TypeAndValue &tav = *enumerator->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(enumerator);
+
+		if (enumerator->GetValue() != 0)
+		{
+			const TypeAndValue &valueTav = enumerator->GetValue()->GetTypeAndValue();
+			if (valueTav.IsValueDefined())
+			{
+				Resolve(tav);
+				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
+				tav.SetValue(CastValue(valueTav, resultType));
+			}
+		}
+		else
+		{
+			if (mPrevEnumerator != 0)
+			{
+				const TypeAndValue &prevTav = *mPrevEnumerator->GetTypeAndValue();
+				if (prevTav.IsValueDefined())
+				{
+					Resolve(tav);
+					tav.SetIntValue(prevTav.GetIntValue() + 1);
+				}
+			}
+			else
+			{
+				Resolve(tav);
+				tav.SetIntValue(0);
+			}
+		}
+	}
+
+	mPrevEnumerator = enumerator;
+}
+
+
+void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
+{
+	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(namedInitializer);
+	}
+}
 
 
 void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 {
 	TypeAndValue &tav = conditionalExpression->GetTypeAndValue();
-
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(conditionalExpression);
@@ -56,7 +120,7 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 
 		if (condTav.IsResolved() && trueTav.IsResolved() && falseTav.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
 
 			if (condTav.IsValueDefined() && trueTav.IsValueDefined() && falseTav.IsValueDefined())
 			{
@@ -72,16 +136,15 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 {
 	TypeAndValue &tav = binaryExpression->GetTypeAndValue();
-
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(binaryExpression);
-		const TypeAndValue &lhs = binaryExpression->GetRhs()->GetTypeAndValue();
+		const TypeAndValue &lhs = binaryExpression->GetLhs()->GetTypeAndValue();
 		const TypeAndValue &rhs = binaryExpression->GetRhs()->GetTypeAndValue();
 
 		if (lhs.IsResolved() && rhs.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
 
 			if (lhs.IsValueDefined() && rhs.IsValueDefined())
 			{
@@ -159,7 +222,6 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 {
 	TypeAndValue &tav = unaryExpression->GetTypeAndValue();
-
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(unaryExpression);
@@ -167,7 +229,7 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 		if (rhs.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
 
 			if (rhs.IsValueDefined())
 			{
@@ -211,7 +273,7 @@ void ValueEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		const TypeAndValue &lhs = postfixExpression->GetLhs()->GetTypeAndValue();
 		if (lhs.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
 		}
 	}
 }
@@ -227,7 +289,25 @@ void ValueEvaluationPass::Visit(MemberExpression *memberExpression)
 		const TypeAndValue &lhs = memberExpression->GetLhs()->GetTypeAndValue();
 		if (lhs.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
+{
+	// TODO: A constant index into a constant array could be be evaluated at compile time.
+	// Mark as resolved when array and index are resolved.
+	TypeAndValue &tav = arraySubscriptExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(arraySubscriptExpression);
+		const TypeAndValue &lhs = arraySubscriptExpression->GetLhs()->GetTypeAndValue();
+		const TypeAndValue &indexTav = arraySubscriptExpression->GetIndex()->GetTypeAndValue();
+		if (lhs.IsResolved() && indexTav.IsResolved())
+		{
+			Resolve(tav);
 		}
 	}
 }
@@ -256,7 +336,7 @@ void ValueEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 			}
 			argument = static_cast<const Expression *>(argument->GetNextNode());
 		}
-		tav.Resolve();
+		Resolve(tav);
 	}
 }
 
@@ -270,7 +350,7 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 		const TypeAndValue &rhs = castExpression->GetRhs()->GetTypeAndValue();
 		if (rhs.IsResolved())
 		{
-			tav.Resolve();
+			Resolve(tav);
 			const TypeDescriptor *resultType = tav.GetTypeDescriptor();
 			tav.SetValue(CastValue(rhs, resultType));
 		}
@@ -278,12 +358,92 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 }
 
 
+void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
+{
+	TypeAndValue &tav = sizeofExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		ParseNodeTraverser::Visit(sizeofExpression);
+		const TypeDescriptor *typeDescriptor = 0;
+
+		if (sizeofExpression->GetRhs() != 0)
+		{
+			const TypeAndValue &rhs = sizeofExpression->GetRhs()->GetTypeAndValue();
+			if (rhs.IsResolved())
+			{
+				typeDescriptor = rhs.GetTypeDescriptor();
+			}
+		}
+		else
+		{
+			typeDescriptor = sizeofExpression->GetTypeDescriptor();
+		}
+
+		if (typeDescriptor != 0)
+		{
+			Resolve(tav);
+
+			switch (typeDescriptor->GetPrimitiveType())
+			{
+				// TODO: Define constants somewhere.
+				case Token::KEY_BOOL:
+					tav.SetUIntValue(BOND_BOOL_SIZE);
+					break;
+				case Token::KEY_CHAR:
+					tav.SetUIntValue(BOND_CHAR_SIZE);
+					break;
+				case Token::KEY_FLOAT:
+					tav.SetUIntValue(BOND_FLOAT_SIZE);
+					break;
+				case Token::KEY_INT:
+					tav.SetUIntValue(BOND_INT_SIZE);
+					break;
+				case Token::KEY_UINT:
+					tav.SetUIntValue(BOND_UINT_SIZE);
+					break;
+				default:
+					// TODO: Handle structs, arrays and pointers.
+					break;
+			}
+		}
+	}
+}
+
+
 void ValueEvaluationPass::Visit(ConstantExpression *constantExpression)
 {
-	const Token *token = constantExpression->GetValueToken();
 	TypeAndValue &tav = constantExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		const Token *token = constantExpression->GetValueToken();
+		Resolve(tav);
+		tav.SetValue(token->GetValue());
+	}
+}
+
+
+void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
+{
+	TypeAndValue &tav = identifierExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		const TypeAndValue &definitionTav = *identifierExpression->GetDefinition()->GetTypeAndValue();
+		if (definitionTav.IsResolved())
+		{
+			Resolve(tav);
+			if (definitionTav.IsValueDefined())
+			{
+				tav.SetValue(definitionTav.GetValue());
+			}
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Resolve(TypeAndValue &tav)
+{
 	tav.Resolve();
-	tav.SetValue(token->GetValue());
+	mItemResolved = true;
 }
 
 }

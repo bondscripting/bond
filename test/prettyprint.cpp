@@ -4,6 +4,8 @@
 #include "bond/prettyprinter.h"
 #include <string.h>
 
+static bool gFoldConstants = false;
+
 void PrintErrors(Bond::TextWriter &logger, const Bond::ParseErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
@@ -20,7 +22,7 @@ void PrintErrors(Bond::TextWriter &logger, const Bond::ParseErrorBuffer &errorBu
 
 bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
 {
-	Bond::PrettyPrinter printer(logger);
+	Bond::PrettyPrinter printer(logger, gFoldConstants);
 	printer.PrintList(parser.GetTranslationUnitList());
 	PrintErrors(logger, parser.GetErrorBuffer());
 
@@ -39,22 +41,30 @@ bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser, Bond::SemanticA
 int main(int argc, const char *argv[])
 {
 	Bond::StdoutTextWriter logger;
+	bool doSemanticAnalysis = false;
 
-	// Do semantic analysis after parsing.
-	if ((argc > 1) && (strcmp(argv[1], "-s") == 0))
+	for (int i = 1; i < argc; ++i)
 	{
-		for (int i = 2; i < argc; ++i)
+		if (strcmp(argv[i], "-f") == 0)
 		{
-			TestFramework::RunSemanticAnalyzerTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+			// Constant folding happens during semantic analysis.
+			gFoldConstants = true;
+			doSemanticAnalysis = true;
 		}
-	}
-
-	// Otherwise, just parse.
-	else
-	{
-		for (int i = 1; i < argc; ++i)
+		else if (strcmp(argv[i], "-s") == 0)
 		{
-			TestFramework::RunParserTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+			doSemanticAnalysis = true;
+		}
+		else
+		{
+			if (doSemanticAnalysis)
+			{
+				TestFramework::RunSemanticAnalyzerTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+			}
+			else
+			{
+				TestFramework::RunParserTest(logger, __FILE__, __LINE__, argv[i], PrettyPrint);
+			}
 		}
 	}
 

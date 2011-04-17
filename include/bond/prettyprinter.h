@@ -12,10 +12,11 @@ class Token;
 class PrettyPrinter: private ParseNodeVisitorAdapter
 {
 public:
-	PrettyPrinter(TextWriter &writer):
+	PrettyPrinter(TextWriter &writer, bool printFoldedConstants = false):
 		mWriter(writer),
 		mTabLevel(0),
-		mPrintTabsAndNewlines(true)
+		mPrintTabsAndNewlines(true),
+		mPrintFoldedConstants(printFoldedConstants)
 	{}
 
 	virtual ~PrettyPrinter() {}
@@ -23,6 +24,7 @@ public:
 	void Print(const ParseNode *parseNode);
 	void PrintList(const ListParseNode *listNode);
 
+private:
 	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const EnumDeclaration *enumDeclaration);
@@ -58,19 +60,20 @@ public:
 	virtual void Visit(const ConstantExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 
-private:
 	void PrintList(const ListParseNode *listNode, const char *separator);
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
 	void Newline();
 	void Print(const Token *token);
+	bool PrintFoldedConstant(const Expression *expression);
 	void PrintTabsAndNewlines() { mPrintTabsAndNewlines = true; }
 	void SuppressTabsAndNewlines() { mPrintTabsAndNewlines = false; }
 
 	TextWriter &mWriter;
 	int mTabLevel;
 	bool mPrintTabsAndNewlines;
+	bool mPrintFoldedConstants;
 };
 
 }

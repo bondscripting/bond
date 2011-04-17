@@ -72,7 +72,11 @@ void PrettyPrinter::Visit(const Enumerator *enumerator)
 {
 	Tab();
 	Print(enumerator->GetName());
-	if (enumerator->GetValue() != 0)
+	if (mPrintFoldedConstants && enumerator->GetTypeAndValue()->IsValueDefined())
+	{
+		mWriter.Write(" = " BOND_DECIMAL_FORMAT, enumerator->GetTypeAndValue()->GetIntValue());
+	}
+	else if (enumerator->GetValue() != 0)
 	{
 		mWriter.Write(" = ");
 		Print(enumerator->GetValue());
@@ -376,34 +380,43 @@ void PrettyPrinter::Visit(const ExpressionStatement *expressionStatement)
 
 void PrettyPrinter::Visit(const ConditionalExpression *conditionalExpression)
 {
-	mWriter.Write("(");
-	Print(conditionalExpression->GetCondition());
-	mWriter.Write(" ? ");
-	Print(conditionalExpression->GetTrueExpression());
-	mWriter.Write(" : ");
-	Print(conditionalExpression->GetFalseExpression());
-	mWriter.Write(")");
+	if (!PrintFoldedConstant(conditionalExpression))
+	{
+		mWriter.Write("(");
+		Print(conditionalExpression->GetCondition());
+		mWriter.Write(" ? ");
+		Print(conditionalExpression->GetTrueExpression());
+		mWriter.Write(" : ");
+		Print(conditionalExpression->GetFalseExpression());
+		mWriter.Write(")");
+	}
 }
 
 
 void PrettyPrinter::Visit(const BinaryExpression *binaryExpression)
 {
-	mWriter.Write("(");
-	Print(binaryExpression->GetLhs());
-	mWriter.Write(" ");
-	Print(binaryExpression->GetOperator());
-	mWriter.Write(" ");
-	Print(binaryExpression->GetRhs());
-	mWriter.Write(")");
+	if (!PrintFoldedConstant(binaryExpression))
+	{
+		mWriter.Write("(");
+		Print(binaryExpression->GetLhs());
+		mWriter.Write(" ");
+		Print(binaryExpression->GetOperator());
+		mWriter.Write(" ");
+		Print(binaryExpression->GetRhs());
+		mWriter.Write(")");
+	}
 }
 
 
 void PrettyPrinter::Visit(const UnaryExpression *unaryExpression)
 {
-	//mWriter.Write("(");
-	Print(unaryExpression->GetOperator());
-	Print(unaryExpression->GetRhs());
-	//mWriter.Write(")");
+	if (!PrintFoldedConstant(unaryExpression))
+	{
+		//mWriter.Write("(");
+		Print(unaryExpression->GetOperator());
+		Print(unaryExpression->GetRhs());
+		//mWriter.Write(")");
+	}
 }
 
 
@@ -444,26 +457,32 @@ void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
 
 void PrettyPrinter::Visit(const CastExpression *castExpression)
 {
-	mWriter.Write("cast<");
-	Print(castExpression->GetTypeDescriptor());
-	mWriter.Write(">(");
-	Print(castExpression->GetRhs());
-	mWriter.Write(")");
+	if (!PrintFoldedConstant(castExpression))
+	{
+		mWriter.Write("cast<");
+		Print(castExpression->GetTypeDescriptor());
+		mWriter.Write(">(");
+		Print(castExpression->GetRhs());
+		mWriter.Write(")");
+	}
 }
 
 
 void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 {
-	mWriter.Write("sizeof");
-	if (sizeofExpression->GetTypeDescriptor() != 0)
+	if (!PrintFoldedConstant(sizeofExpression))
 	{
-		mWriter.Write("<");
-		Print(sizeofExpression->GetTypeDescriptor());
-		mWriter.Write(">");
-	}
-	else
-	{
-		Print(sizeofExpression->GetRhs());
+		mWriter.Write("sizeof");
+		if (sizeofExpression->GetTypeDescriptor() != 0)
+		{
+			mWriter.Write("<");
+			Print(sizeofExpression->GetTypeDescriptor());
+			mWriter.Write(">");
+		}
+		else
+		{
+			Print(sizeofExpression->GetRhs());
+		}
 	}
 }
 
@@ -476,7 +495,10 @@ void PrettyPrinter::Visit(const ConstantExpression *constantExpression)
 
 void PrettyPrinter::Visit(const IdentifierExpression *identifierExpression)
 {
-	PrintList(identifierExpression->GetIdentifier(), "::");
+	if (!PrintFoldedConstant(identifierExpression))
+	{
+		PrintList(identifierExpression->GetIdentifier(), "::");
+	}
 }
 
 
@@ -526,6 +548,37 @@ void PrettyPrinter::Print(const Token *token)
 	{
 		mWriter.Write("%s", token->GetText());
 	}
+}
+
+
+bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
+{
+	const TypeAndValue &tav = expression->GetTypeAndValue();
+	if (mPrintFoldedConstants && tav.IsValueDefined())
+	{
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		switch (typeDescriptor->GetPrimitiveType())
+		{
+			case Token::KEY_BOOL:
+				mWriter.Write("%s", tav.GetBoolValue() ? "true" : "false");
+				return true;
+			case Token::KEY_CHAR:
+				mWriter.Write("%c", tav.GetCharValue());
+				return true;
+			case Token::KEY_FLOAT:
+				mWriter.Write(BOND_FLOAT_FORMAT, tav.GetFloatValue());
+				return true;
+			case Token::KEY_INT:
+				mWriter.Write(BOND_DECIMAL_FORMAT, tav.GetIntValue());
+				return true;
+			case Token::KEY_UINT:
+				mWriter.Write(BOND_UDECIMAL_FORMAT, tav.GetUIntValue());
+				return true;
+			default:
+				break;
+		}
+	}
+	return false;
 }
 
 }
