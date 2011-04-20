@@ -1058,8 +1058,6 @@ Expression *Parser::ParseExpression(Status &status, TokenStream &stream)
 //   | unary_expression '|=' assignment_expression
 Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &stream)
 {
-	// TODO: This function can produce pretty much any type of expression on the lhs of an assignment.
-	// Will need to do further analysis in the semantic analyser to ensure validity.
 	Expression *expression = ParseConditionalExpression(status, stream);
 
 	if (expression != 0)

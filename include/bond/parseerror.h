@@ -60,6 +60,8 @@
     "Uninitialized const '%c'.")                                            \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                         \
     "Cannot apply operator '%c' to non lvalue type '%n'.")                  \
+  BOND_PARSE_ERROR(RVALUE_ASSIGNMENT,                                       \
+    "Cannot assign to non l-value near operator '%c'.")                     \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
     "Cannot assign to type '%n' near operator '%c'.")                       \
   BOND_PARSE_ERROR(INVALID_COMPARISON,                                      \

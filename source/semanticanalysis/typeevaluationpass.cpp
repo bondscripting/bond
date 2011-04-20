@@ -229,6 +229,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::COMMA:
 				AssertNonConstExpression(op);
 				resultType = *rhDescriptor;
+				resultType.SetRValue();
 				break;
 
 			case Token::ASSIGN:
@@ -755,7 +756,11 @@ void TypeEvaluationPass::AssertLValueType(const TypeDescriptor *descriptor, cons
 
 void TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *descriptor, const Token *op)
 {
-	if (!descriptor->IsAssignable())
+	if (descriptor->IsRValue())
+	{
+		mErrorBuffer.PushError(ParseError::RVALUE_ASSIGNMENT, op);
+	}
+	else if (!descriptor->IsAssignable())
 	{
 		mErrorBuffer.PushError(ParseError::UNASSIGNABLE_TYPE, op, descriptor);
 	}
