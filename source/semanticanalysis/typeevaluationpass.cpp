@@ -7,16 +7,18 @@ class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
 	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable),
-		mAddNamedInitializers(false)
+		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
 	virtual ~TypeEvaluationPass() {}
+
+	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(Parameter *parameter);
+	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(IfStatement *ifStatement);
 	virtual void Visit(SwitchStatement *switchStatement);
@@ -38,6 +40,7 @@ protected:
 private:
 	bool IsBooleanExpression(const Expression *expression) const;
 	bool IsIntegerExpression(const Expression *expression) const;;
+	void AssertNonConstExpression(const Token *op);
 	void AssertBooleanOperand(const TypeDescriptor *descriptor, const Token *op);
 	void AssertIntegerOperand(const TypeDescriptor *descriptor, const Token *op);
 	void AssertNumericOperand(const TypeDescriptor *descriptor, const Token *op);
@@ -46,12 +49,22 @@ private:
 	void AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
 	void AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
 
-	bool mAddNamedInitializers;
+	BoolStack mAddNamedInitializers;
+	BoolStack mEnforceConstExpressions;
 };
+
+
+void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
+{
+	BoolStack::Element initalizerElement(mAddNamedInitializers, false);
+	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
+	SemanticAnalysisPass::Analyze(translationUnitList);
+}
 
 
 void TypeEvaluationPass::Visit(Enumerator *enumerator)
 {
+	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(enumerator);
 	const Expression *value = enumerator->GetValue();
 	if ((value != 0) && !IsIntegerExpression(value))
@@ -69,9 +82,8 @@ void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 	// Top-level named initializers have already been added to the symbol table, but not ones in local scopes.
 	// Top-level identifiers can be referenced out of order from their declarations, but local ones must be
 	// declared before being referenced, so they must be added as the expressions are evaluated.
-	mAddNamedInitializers = true;
+	BoolStack::Element initalizerElement(mAddNamedInitializers, true);
 	SemanticAnalysisPass::Visit(functionDefinition);
-	mAddNamedInitializers = false;
 }
 
 
@@ -82,13 +94,32 @@ void TypeEvaluationPass::Visit(Parameter *parameter)
 }
 
 
+void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
+{
+	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
+	ParseNodeTraverser::Visit(typeDescriptor);
+}
+
+
 void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 {
 	ParseNodeTraverser::Visit(namedInitializer);
 
-	if (mAddNamedInitializers)
+	if (mAddNamedInitializers.GetTop())
 	{
 		InsertSymbol(namedInitializer);
+	}
+
+	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
+	if (tav.IsTypeDefined())
+	{
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		if (typeDescriptor->IsSingleAssignable() && (namedInitializer->GetInitializer() == 0))
+		{
+			mErrorBuffer.PushError(
+				ParseError::UNINITIALIZED_CONST,
+				namedInitializer->GetName());
+		}
 	}
 }
 
@@ -121,6 +152,7 @@ void TypeEvaluationPass::Visit(SwitchStatement *switchStatement)
 
 void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 {
+	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
 	if ((expression != 0) && !IsIntegerExpression(expression))
@@ -195,11 +227,13 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 		switch (op->GetTokenType())
 		{
 			case Token::COMMA:
+				AssertNonConstExpression(op);
 				resultType = *rhDescriptor;
 				break;
 
 			case Token::ASSIGN:
 				AssertAssignableType(lhDescriptor, op);
+				AssertNonConstExpression(op);
 				// TODO: Assert that rhTav type can be assigned to lhTav.
 				resultType = *lhDescriptor;
 				break;
@@ -213,6 +247,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				AssertIntegerOperand(lhDescriptor, op);
 				AssertIntegerOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
+				AssertNonConstExpression(op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -233,6 +268,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				}
 
 				AssertAssignableType(lhDescriptor, op);
+				AssertNonConstExpression(op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -241,6 +277,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				AssertNumericOperand(lhDescriptor, op);
 				AssertNumericOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
+				AssertNonConstExpression(op);
 				resultType = *lhDescriptor;
 				break;
 
@@ -338,6 +375,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				AssertAssignableType(rhDescriptor, op);
+				AssertNonConstExpression(op);
 				if (!rhDescriptor->IsPointerType())
 				{
 					AssertNumericOperand(rhDescriptor, op);
@@ -393,6 +431,7 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 		const Token *op = postfixExpression->GetOperator();
 		AssertAssignableType(lhDescriptor, op);
+		AssertNonConstExpression(op);
 		if (!lhDescriptor->IsPointerType())
 		{
 			AssertNumericOperand(lhDescriptor, op);
@@ -501,6 +540,12 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		}
 		else
 		{
+			if (mEnforceConstExpressions.GetTop())
+			{
+				mErrorBuffer.PushError(
+					ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION,
+					functionCallExpression->GetContextToken());
+			}
 			// TODO: Validate the number of arguments.
 			const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 			const FunctionPrototype *prototype = function->GetPrototype();
@@ -651,6 +696,15 @@ bool TypeEvaluationPass::IsIntegerExpression(const Expression *expression) const
 		}
 	}
 	return false;
+}
+
+
+void TypeEvaluationPass::AssertNonConstExpression(const Token *op)
+{
+	if (mEnforceConstExpressions.GetTop())
+	{
+		mErrorBuffer.PushError(ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
+	}
 }
 
 

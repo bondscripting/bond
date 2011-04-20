@@ -11,6 +11,8 @@ enum GoodEnum
 	Two,
 };
 
+int Five() { return 5; }
+
 void DummyFunction()
 {
 	int i1 = 1;
@@ -28,6 +30,8 @@ void DummyFunction()
 	if (f1 + 1.0) {}
 	while (i1 -= 1) {}
 	for (int j = 0; j + i1; ++j) {}
+
+	float [(i1++ + One), Five()] crazyArray;
 
 	// Valid statements.
 	switch (i1)

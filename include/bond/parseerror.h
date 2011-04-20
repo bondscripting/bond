@@ -8,12 +8,8 @@
     "Duplicate 'const' keyword.")                                           \
   BOND_PARSE_ERROR(PARSE_ERROR,                                             \
     "Parse error near '%c'.")                                               \
-  BOND_PARSE_ERROR(COMMA_IN_CONST_EXPRESSION,                               \
-    "Comma in constant expression near '%c'.")                              \
-  BOND_PARSE_ERROR(ASSIGNMENT_IN_CONST_EXPRESSION,                          \
-    "Assignment in constant expression at '%c'." )                          \
-  BOND_PARSE_ERROR(INCREMENT_IN_CONST_EXPRESSION,                           \
-    "'%c' operator in constant expression.")                                \
+  BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                    \
+    "Operator '%c' not allowed in constant expression.")                    \
   BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                       \
     "Function call in constant expression near '%c'.")                      \
   BOND_PARSE_ERROR(FUNCTION_DEFINITION_NOT_ALLOWED,                         \
@@ -60,6 +56,8 @@
     "While statement condition is not boolean.")                            \
   BOND_PARSE_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                            \
     "For statement condition is not boolean.")                              \
+  BOND_PARSE_ERROR(UNINITIALIZED_CONST,                                     \
+    "Uninitialized const '%c'.")                                            \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                         \
     "Cannot apply operator '%c' to non lvalue type '%n'.")                  \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \

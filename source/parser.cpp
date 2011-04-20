@@ -1067,7 +1067,7 @@ Expression *Parser::ParseAssignmentExpression(Status &status, TokenStream &strea
 		const Token *token = stream.NextIf(ASSIGNMENT_OPERATORS_TYPESET);
 		if (token != 0)
 		{
-			AssertNonConstExpression(status, ParseError::ASSIGNMENT_IN_CONST_EXPRESSION, token);
+			AssertNonConstExpression(status, ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression(status, stream);
 			AssertNode(status, stream, rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
@@ -1396,7 +1396,7 @@ Expression *Parser::ParseUnaryExpression(Status &status, TokenStream &stream)
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				rhs = ParseUnaryExpression(status, stream);
-				AssertNonConstExpression(status, ParseError::INCREMENT_IN_CONST_EXPRESSION, op);
+				AssertNonConstExpression(status, ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
 				break;
 
 			default:
@@ -1480,7 +1480,7 @@ Expression *Parser::ParsePostfixExpression(Status &status, TokenStream &stream)
 				default:
 				{
 					expression = mFactory.CreatePostfixExpression(token, expression);
-					AssertNonConstExpression(status, ParseError::INCREMENT_IN_CONST_EXPRESSION, token);
+					AssertNonConstExpression(status, ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 				}
 				break;
 			}

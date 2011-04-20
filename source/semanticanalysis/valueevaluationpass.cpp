@@ -104,6 +104,28 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(namedInitializer);
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		const Initializer *initializer = namedInitializer->GetInitializer();
+
+		if (initializer == 0)
+		{
+			Resolve(tav);
+		}
+		else if (initializer->IsResolved() && typeDescriptor->IsResolved())
+		{
+			Resolve(tav);
+
+			// TODO: Handle non-primitive types (e.g. arrays of primitive types or string literals).
+			if ((typeDescriptor->GetPrimitiveType() != Token::INVALID) && typeDescriptor->IsConst())
+			{
+				// TODO: TypeEvaluationPass needs to assert that there is a single initializer.
+				const TypeAndValue initializerTav = initializer->GetExpression()->GetTypeAndValue();
+				if (initializerTav.IsValueDefined())
+				{
+					tav.SetValue(CastValue(initializerTav, typeDescriptor));
+				}
+			}
+		}
 	}
 }
 

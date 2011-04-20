@@ -166,6 +166,8 @@ public:
 	Variant GetVariant() const { return mVariant; }
 	void SetVariant(Variant variant) { mVariant = variant; }
 
+	bool IsResolved() const;
+
 	bool IsConst() const { return mIsConst; }
 
 	bool IsLValue() const { return mIsLValue; }
@@ -174,7 +176,8 @@ public:
 	bool IsRValue() const { return !mIsLValue; }
 	void SetRValue() { mIsLValue = false; }
 
-	bool IsAssignable() const { return !mIsConst && mIsLValue && (mVariant != VARIANT_ARRAY); }
+	bool IsAssignable() const { return mIsLValue && !mIsConst && (mVariant != VARIANT_ARRAY); }
+	bool IsSingleAssignable() const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -546,6 +549,8 @@ public:
 
 	Initializer *GetInitializerList() { return mInitializerList; }
 	const Initializer *GetInitializerList() const { return mInitializerList; }
+
+	bool IsResolved() const;
 
 private:
 	Expression *mExpression;

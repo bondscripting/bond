@@ -162,7 +162,10 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 		case TypeDescriptor::VARIANT_ARRAY:
 			Visit(typeDescriptor->GetParent());
 			mWriter.Write(" [");
-			Print(typeDescriptor->GetLength());
+			if (typeDescriptor->GetLength() != 0)
+			{
+				Print(typeDescriptor->GetLength());
+			}
 			mWriter.Write("]");
 			break;
 	}

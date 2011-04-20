@@ -159,12 +159,15 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 	{
 		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 3},
 		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 4},
-		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 22},
-		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 24},
-		{Bond::ParseError::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 20},
-		{Bond::ParseError::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 28},
-		{Bond::ParseError::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 29},
-		{Bond::ParseError::ParseError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 30},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 24},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 26},
+		{Bond::ParseError::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 22},
+		{Bond::ParseError::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 30},
+		{Bond::ParseError::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 31},
+		{Bond::ParseError::ParseError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 32},
+		{Bond::ParseError::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 34},
+		{Bond::ParseError::ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 34},
+		{Bond::ParseError::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::COMMA, 34},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

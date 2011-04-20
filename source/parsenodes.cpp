@@ -152,6 +152,19 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
+bool TypeDescriptor::IsResolved() const
+{
+	return ((mLength == 0) || (mLength->GetTypeAndValue().IsResolved())) &&
+		((mParent == 0) || mParent->IsResolved());
+}
+
+
+bool TypeDescriptor::IsSingleAssignable() const
+{
+	return mIsLValue && (mIsConst || ((mVariant == VARIANT_ARRAY) && mParent->IsSingleAssignable()));
+}
+
+
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (mTypeSpecifier != 0)
@@ -245,6 +258,28 @@ bool TypeSpecifier::IsNumericType() const
 	return false;
 }
 
+
+bool Initializer::IsResolved() const
+{
+	if (mExpression != 0)
+	{
+		return mExpression->GetTypeAndValue().IsResolved();
+	}
+	else
+	{
+		const Initializer *initializer = mInitializerList;
+		while (initializer != 0)
+		{
+			if (!initializer->IsResolved())
+			{
+				return false;
+			}
+			initializer = static_cast<const Initializer*>(initializer->GetNextNode());
+		}
+	}
+
+	return true;
+}
 
 const TypeSpecifier BOOL_TYPE_SPECIFIER(&BOOL_TOKEN);
 const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);

@@ -94,6 +94,9 @@ private:
 	Element *mTop;
 };
 
+
+typedef AutoStack<bool> BoolStack;
+
 }
 
 #endif
