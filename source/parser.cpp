@@ -505,15 +505,36 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
+		TypeDescriptor *arrayHead = 0;
+		TypeDescriptor *arrayCurrent = 0;
 
 		const Token *token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		while (token != 0)
 		{
-			descriptor->SetLValue();
-
+			// This loop gets tricky. Suppose we have the following type descriptor:
+			//
+			// int [1][2][3] * [4][5][6]
+			//
+			// We need to chain the nodes together as follows in order to get the array dimensions
+			// to be consistent with C.
+			//
+			// 4 -> 5-> 6 -> * -> 1 -> 2 -> 3 -> int
+			//
+			// Moreover, all nodes in the chain except for the head need to be designated as l-values.
+			// Whether the head should be an l-value is context sensitive and is dealt with in the
+			// appropriate places in the parser.
 			if (token->GetTokenType() == Token::OP_MULT)
 			{
+				if (arrayCurrent != 0)
+				{
+					descriptor->SetLValue();
+					arrayCurrent->SetParent(descriptor);
+					descriptor = arrayHead;
+					arrayHead = 0;
+					arrayCurrent = 0;
+				}
 				const bool isConst = mStream.NextIf(Token::KEY_CONST) != 0;
+				descriptor->SetLValue();
 				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
 			}
 			else
@@ -521,9 +542,30 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 				Expression *length = mParseRelaxedTypeDescriptors.GetTop() ?
 					ParseExpression() : ParseConstExpression();
 				ExpectToken(Token::CBRACKET);
-				descriptor = mFactory.CreateTypeDescriptor(descriptor, length);
+				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length);
+				if (arrayCurrent == 0)
+				{
+					arrayHead = parent;
+					arrayCurrent = parent;
+				}
+				else
+				{
+					parent->SetLValue();
+					arrayCurrent->SetParent(parent);
+					arrayCurrent = parent;
+					arrayCurrent->SetLValue();
+				}
 			}
 			token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
+		}
+
+		if (arrayCurrent != 0)
+		{
+			descriptor->SetLValue();
+			arrayCurrent->SetParent(descriptor);
+			descriptor = arrayHead;
+			arrayHead = 0;
+			arrayCurrent = 0;
 		}
 	}
 	else

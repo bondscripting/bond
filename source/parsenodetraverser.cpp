@@ -154,7 +154,7 @@ void ParseNodeTraverser::Visit(TypeDescriptor *typeDescriptor)
 {
 	Traverse(typeDescriptor->GetTypeSpecifier());
 	Traverse(typeDescriptor->GetParent());
-	Traverse(typeDescriptor->GetLength());
+	Traverse(typeDescriptor->GetLengthExpression());
 }
 
 
@@ -162,7 +162,7 @@ void ParseNodeTraverser::Visit(const TypeDescriptor *typeDescriptor)
 {
 	Traverse(typeDescriptor->GetTypeSpecifier());
 	Traverse(typeDescriptor->GetParent());
-	Traverse(typeDescriptor->GetLength());
+	Traverse(typeDescriptor->GetLengthExpression());
 }
 
 

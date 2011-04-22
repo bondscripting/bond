@@ -114,8 +114,10 @@ public:
 	TypeDescriptor():
 		mTypeSpecifier(0),
 		mParent(0),
-		mLength(0),
+		mLengthExpression(0),
 		mVariant(VARIANT_VALUE),
+		mLength(0),
+		mLengthDefined(false),
 		mIsConst(false),
 		mIsLValue(false)
 	{}
@@ -123,8 +125,10 @@ public:
 	TypeDescriptor(const TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
 		mParent(0),
-		mLength(0),
+		mLengthExpression(0),
 		mVariant(VARIANT_VALUE),
+		mLength(0),
+		mLengthDefined(false),
 		mIsConst(isConst),
 		mIsLValue(false)
 	{}
@@ -132,17 +136,21 @@ public:
 	TypeDescriptor(const TypeDescriptor *parent, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
-		mLength(0),
+		mLengthExpression(0),
 		mVariant(VARIANT_POINTER),
+		mLength(0),
+		mLengthDefined(false),
 		mIsConst(isConst),
 		mIsLValue(false)
 	{}
 
-	TypeDescriptor(const TypeDescriptor *parent, Expression *length):
+	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpression):
 		mTypeSpecifier(0),
 		mParent(parent),
-		mLength(length),
+		mLengthExpression(lengthExpression),
 		mVariant(VARIANT_ARRAY),
+		mLength(0),
+		mLengthDefined(false),
 		mIsConst(false),
 		mIsLValue(false)
 	{}
@@ -159,12 +167,17 @@ public:
 
 	TypeDescriptor *GetParent() { return const_cast<TypeDescriptor *>(mParent); }
 	const TypeDescriptor *GetParent() const { return mParent; }
+	void SetParent(TypeDescriptor *parent) { mParent = parent; }
 
-	Expression *GetLength() { return mLength; }
-	const Expression *GetLength() const { return mLength; }
+	Expression *GetLengthExpression() { return mLengthExpression; }
+	const Expression *GetLengthExpression() const { return mLengthExpression; }
 
 	Variant GetVariant() const { return mVariant; }
 	void SetVariant(Variant variant) { mVariant = variant; }
+
+	bu32_t GetLength() const { return mLength; }
+	void SetLength(bu32_t length) { mLength = length; mLengthDefined = true; }
+	bool IsLengthDefined() const { return mLengthDefined; }
 
 	bool IsResolved() const;
 
@@ -188,8 +201,10 @@ public:
 private:
 	const TypeSpecifier *mTypeSpecifier;
 	const TypeDescriptor *mParent;
-	Expression *mLength;
+	Expression *mLengthExpression;
 	Variant mVariant;
+	bu32_t mLength;
+	bool mLengthDefined;
 	bool mIsConst;
 	bool mIsLValue;
 };

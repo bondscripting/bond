@@ -154,7 +154,7 @@ const Token *TypeDescriptor::GetContextToken() const
 
 bool TypeDescriptor::IsResolved() const
 {
-	return ((mLength == 0) || (mLength->GetTypeAndValue().IsResolved())) &&
+	return ((mLengthExpression == 0) || (mLengthExpression->GetTypeAndValue().IsResolved())) &&
 		((mParent == 0) || mParent->IsResolved());
 }
 
