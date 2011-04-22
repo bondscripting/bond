@@ -1,71 +1,75 @@
 #ifndef BOND_PARSEERROR_H
 #define BOND_PARSEERROR_H
 
-#define BOND_PARSE_ERROR_LIST                                               \
-  BOND_PARSE_ERROR(NO_ERROR,                                                \
-    "")                                                                     \
-  BOND_PARSE_ERROR(DUPLICATE_CONST,                                         \
-    "Duplicate 'const' keyword.")                                           \
-  BOND_PARSE_ERROR(PARSE_ERROR,                                             \
-    "Parse error near '%c'.")                                               \
-  BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                    \
-    "Operator '%c' not allowed in constant expression.")                    \
-  BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                       \
-    "Function call in constant expression near '%c'.")                      \
-  BOND_PARSE_ERROR(FUNCTION_DEFINITION_NOT_ALLOWED,                         \
-    "Function definition not allowed near '%c'.")                           \
-  BOND_PARSE_ERROR(INITIALIZER_NOT_ALLOWED,                                 \
-    "Initializer not allowed near '%c'.")                                   \
-  BOND_PARSE_ERROR(DUPLICATE_SYMBOL,                                        \
-    "Duplicate symbol '%c' previously defined on line '%l'.")               \
-  BOND_PARSE_ERROR(DUPLICATE_FUNCTION_DEFINITION,                           \
-    "Duplicate function definition '%c' previously defined on line '%l'.")  \
-  BOND_PARSE_ERROR(FUNCTION_PROTOTYPE_MISMATCH,                             \
-    "Mismatching function prototype '%c' previously defined on line '%l'.") \
-  BOND_PARSE_ERROR(UNEXPECTED_TOKEN,                                        \
-    "Expected '%s' before '%c'." )                                          \
-  BOND_PARSE_ERROR(SYMBOL_IS_NOT_DEFINED,                                   \
-    "Symbol '%n' is not defined." )                                         \
-  BOND_PARSE_ERROR(SYMBOL_IS_NOT_A_TYPE,                                    \
-    "Symbol '%n' is not a type." )                                          \
-  BOND_PARSE_ERROR(INVALID_SYMBOL_IN_EXPRESSION,                            \
-    "Symbol '%n' cannot be used in an expression." )                        \
-  BOND_PARSE_ERROR(NON_STRUCT_MEMBER_REQUEST,                               \
-    "Request for member '%c' in non-struct type '%n'." )                    \
-  BOND_PARSE_ERROR(INVALID_MEMBER_REQUEST,                                  \
-    "Struct '%n' has no member named '%c'." )                               \
-  BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                              \
-    "Expression is not callable." )                                         \
-  BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                               \
-    "Operator '%c' cannot be applied to type '%n'." )                       \
-  BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                       \
-    "Operator '%c' cannot be applied to non-pointer type '%n'.")            \
-  BOND_PARSE_ERROR(INVALID_TYPE_FOR_INDEX_OPERATOR,                         \
-    "Index operator cannot be applied to non-integer type '%n'.")           \
-  BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                 \
-    "Cannot convert type '%0n' to '%1n'." )                                 \
-  BOND_PARSE_ERROR(ENUMERATOR_VALUE_IS_NOT_INTEGER,                         \
-    "Enumerator value for '%t' is not an integer constant.")                \
-  BOND_PARSE_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                           \
-    "Switch control is not an intger.")                                     \
-  BOND_PARSE_ERROR(SWITCH_LABEL_IS_NOT_INTEGER,                             \
-    "Case label is not an intger constant.")                                \
-  BOND_PARSE_ERROR(IF_CONDITION_IS_NOT_BOOLEAN,                             \
-    "If statement condition is not boolean.")                               \
-  BOND_PARSE_ERROR(WHILE_CONDITION_IS_NOT_BOOLEAN,                          \
-    "While statement condition is not boolean.")                            \
-  BOND_PARSE_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                            \
-    "For statement condition is not boolean.")                              \
-  BOND_PARSE_ERROR(UNINITIALIZED_CONST,                                     \
-    "Uninitialized const '%c'.")                                            \
-  BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                         \
-    "Cannot apply operator '%c' to non lvalue type '%n'.")                  \
-  BOND_PARSE_ERROR(RVALUE_ASSIGNMENT,                                       \
-    "Cannot assign to non l-value near operator '%c'.")                     \
-  BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                       \
-    "Cannot assign to type '%n' near operator '%c'.")                       \
-  BOND_PARSE_ERROR(INVALID_COMPARISON,                                      \
-    "Operator '%c' cannot compare type '%0n' with type '%1n'.")             \
+#define BOND_PARSE_ERROR_LIST                                                       \
+  BOND_PARSE_ERROR(NO_ERROR,                                                        \
+    "")                                                                             \
+  BOND_PARSE_ERROR(DUPLICATE_CONST,                                                 \
+    "Duplicate 'const' keyword.")                                                   \
+  BOND_PARSE_ERROR(PARSE_ERROR,                                                     \
+    "Parse error near '%c'.")                                                       \
+  BOND_PARSE_ERROR(MULTIDIMENTIONAL_ARRAY_BOUNDS,                                   \
+    "Multidimensional array must have bounds for all dimensions except the first.") \
+  BOND_PARSE_ERROR(FUNCTION_DEFINITION_NOT_ALLOWED,                                 \
+    "Function definition not allowed near '%c'.")                                   \
+  BOND_PARSE_ERROR(INITIALIZER_NOT_ALLOWED,                                         \
+    "Initializer not allowed near '%c'.")                                           \
+  BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                            \
+    "Operator '%c' not allowed in constant expression.")                            \
+  BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                               \
+    "Function call in constant expression near '%c'.")                              \
+  BOND_PARSE_ERROR(DUPLICATE_SYMBOL,                                                \
+    "Duplicate symbol '%c' previously defined on line '%l'.")                       \
+  BOND_PARSE_ERROR(DUPLICATE_FUNCTION_DEFINITION,                                   \
+    "Duplicate function definition '%c' previously defined on line '%l'.")          \
+  BOND_PARSE_ERROR(FUNCTION_PROTOTYPE_MISMATCH,                                     \
+    "Mismatching function prototype '%c' previously defined on line '%l'.")         \
+  BOND_PARSE_ERROR(UNEXPECTED_TOKEN,                                                \
+    "Expected '%s' before '%c'." )                                                  \
+  BOND_PARSE_ERROR(SYMBOL_IS_NOT_DEFINED,                                           \
+    "Symbol '%n' is not defined." )                                                 \
+  BOND_PARSE_ERROR(SYMBOL_IS_NOT_A_TYPE,                                            \
+    "Symbol '%n' is not a type." )                                                  \
+  BOND_PARSE_ERROR(INVALID_SYMBOL_IN_EXPRESSION,                                    \
+    "Symbol '%n' cannot be used in an expression." )                                \
+  BOND_PARSE_ERROR(NON_STRUCT_MEMBER_REQUEST,                                       \
+    "Request for member '%c' in non-struct type '%n'." )                            \
+  BOND_PARSE_ERROR(INVALID_MEMBER_REQUEST,                                          \
+    "Struct '%n' has no member named '%c'." )                                       \
+  BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                                      \
+    "Expression is not callable." )                                                 \
+  BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                                       \
+    "Operator '%c' cannot be applied to type '%n'." )                               \
+  BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                               \
+    "Operator '%c' cannot be applied to non-pointer type '%n'.")                    \
+  BOND_PARSE_ERROR(INVALID_TYPE_FOR_INDEX_OPERATOR,                                 \
+    "Index operator cannot be applied to non-integer type '%n'.")                   \
+  BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                         \
+    "Cannot convert type '%0n' to '%1n'." )                                         \
+  BOND_PARSE_ERROR(ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER,                           \
+    "Enumerator value for '%t' is not an integer constant.")                        \
+  BOND_PARSE_ERROR(ARRAY_SIZE_IS_NOT_CONST_INTEGER,                                 \
+    "Array size is not an integer constant.")                                       \
+  BOND_PARSE_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                                   \
+    "Switch control is not an integer.")                                            \
+  BOND_PARSE_ERROR(SWITCH_LABEL_IS_NOT_CONST_INTEGER,                               \
+    "Case label is not an integer constant.")                                       \
+  BOND_PARSE_ERROR(IF_CONDITION_IS_NOT_BOOLEAN,                                     \
+    "If statement condition is not boolean.")                                       \
+  BOND_PARSE_ERROR(WHILE_CONDITION_IS_NOT_BOOLEAN,                                  \
+    "While statement condition is not boolean.")                                    \
+  BOND_PARSE_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                                    \
+    "For statement condition is not boolean.")                                      \
+  BOND_PARSE_ERROR(UNINITIALIZED_CONST,                                             \
+    "Uninitialized const '%c'.")                                                    \
+  BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                                 \
+    "Cannot apply operator '%c' to non lvalue type '%n'.")                          \
+  BOND_PARSE_ERROR(RVALUE_ASSIGNMENT,                                               \
+    "Cannot assign to non l-value near operator '%c'.")                             \
+  BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                               \
+    "Cannot assign to type '%n' near operator '%c'.")                               \
+  BOND_PARSE_ERROR(INVALID_COMPARISON,                                              \
+    "Operator '%c' cannot compare type '%0n' with type '%1n'.")                     \
 
 
 namespace Bond

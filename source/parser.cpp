@@ -550,6 +550,10 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 				}
 				else
 				{
+					if (length == 0)
+					{
+						PushError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
+					}
 					parent->SetLValue();
 					arrayCurrent->SetParent(parent);
 					arrayCurrent = parent;

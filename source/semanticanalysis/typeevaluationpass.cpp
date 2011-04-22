@@ -68,7 +68,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 	if ((value != 0) && !IsIntegerExpression(value))
 	{
 		mErrorBuffer.PushError(
-			ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER,
+			ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER,
 			value->GetContextToken(),
 			enumerator->GetName());
 	}
@@ -96,6 +96,13 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 {
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(typeDescriptor);
+	const Expression *expression = typeDescriptor->GetLengthExpression();
+	if ((expression != 0) && !IsIntegerExpression(expression))
+	{
+		mErrorBuffer.PushError(
+			ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER,
+			expression->GetContextToken());
+	}
 }
 
 
@@ -156,7 +163,7 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	if ((expression != 0) && !IsIntegerExpression(expression))
 	{
 		mErrorBuffer.PushError(
-			ParseError::SWITCH_LABEL_IS_NOT_INTEGER,
+			ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER,
 			expression->GetContextToken());
 	}
 }
@@ -670,14 +677,11 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 bool TypeEvaluationPass::IsBooleanExpression(const Expression *expression) const
 {
-	if (expression != 0)
+	const TypeAndValue &tav = expression->GetTypeAndValue();
+	if (tav.IsTypeDefined())
 	{
-		const TypeAndValue &tav = expression->GetTypeAndValue();
-		if (tav.IsTypeDefined())
-		{
-			const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
-			return descriptor->IsBooleanType();
-		}
+		const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
+		return descriptor->IsBooleanType();
 	}
 	return false;
 }
@@ -685,14 +689,11 @@ bool TypeEvaluationPass::IsBooleanExpression(const Expression *expression) const
 
 bool TypeEvaluationPass::IsIntegerExpression(const Expression *expression) const
 {
-	if (expression != 0)
+	const TypeAndValue &tav = expression->GetTypeAndValue();
+	if (tav.IsTypeDefined())
 	{
-		const TypeAndValue &tav = expression->GetTypeAndValue();
-		if (tav.IsTypeDefined())
-		{
-			const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
-			return descriptor->IsIntegerType();
-		}
+		const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
+		return descriptor->IsIntegerType();
 	}
 	return false;
 }

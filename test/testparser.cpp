@@ -285,6 +285,8 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 		{Bond::ParseError::PARSE_ERROR, Bond::Token::SEMICOLON, 33},
 		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 36},
 		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 39},
+		{Bond::ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 44},
+		{Bond::ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 45},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -294,7 +296,7 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mDeclarativeStatement = 6;
+	expectedCount.mDeclarativeStatement = 9;
 	expectedCount.mIfStatement = 3;
 	expectedCount.mSwitchStatement = 1;
 	expectedCount.mWhileStatement = 3;

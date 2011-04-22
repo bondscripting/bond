@@ -157,10 +157,10 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 	// Focus on remaining type evaluation erros.
 	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
 	{
-		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 3},
-		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 4},
-		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_FLOAT, 24},
-		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_INTEGER, Bond::Token::CONST_BOOL, 26},
+		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 3},
+		{Bond::ParseError::ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 4},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 24},
+		{Bond::ParseError::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 26},
 		{Bond::ParseError::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 22},
 		{Bond::ParseError::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 30},
 		{Bond::ParseError::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 31},

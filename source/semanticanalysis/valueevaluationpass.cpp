@@ -17,6 +17,7 @@ public:
 protected:
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
+	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
@@ -45,7 +46,7 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 		mItemResolved = false;
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mItemResolved);
+	while (mItemResolved && !mErrorBuffer.HasErrors());
 }
 
 
@@ -94,6 +95,35 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 	}
 
 	mPrevEnumerator = enumerator;
+}
+
+
+void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
+{
+	if (!typeDescriptor->IsResolved())
+	{
+		ParseNodeTraverser::Visit(typeDescriptor);
+
+		const Expression *expression = typeDescriptor->GetLengthExpression();
+		if (expression != 0)
+		{
+			const TypeAndValue &tav = expression->GetTypeAndValue();
+			if (tav.IsResolved())
+			{
+				if (tav.IsValueDefined())
+				{
+					const Value length = CastValue(tav, &UINT_TYPE_DESCRIPTOR);
+					typeDescriptor->SetLength(length.mUInt);
+				}
+				else
+				{
+					mErrorBuffer.PushError(
+						ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER,
+						expression->GetContextToken());
+				}
+			}
+		}
+	}
 }
 
 
