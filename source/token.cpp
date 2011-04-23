@@ -144,7 +144,7 @@ const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET(
 
 const TokenTypeSet TYPE_DESCRIPTORS_TYPESET(
 	"TYPE_DESCRIPTOR",
-	Token::OP_MULT,
+	Token::OP_STAR,
 	Token::OBRACKET
 );
 
@@ -212,7 +212,7 @@ const TokenTypeSet ADDITIVE_OPERATORS_TYPESET(
 
 const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET(
 	"MULTIPLICATIVE_OPERATOR",
-	Token::OP_MULT,
+	Token::OP_STAR,
 	Token::OP_DIV,
 	Token::OP_MOD
 );
@@ -222,11 +222,11 @@ const TokenTypeSet UNARY_OPERATORS_TYPESET(
 	"UNARY_OPERATOR",
 	Token::OP_PLUS,
 	Token::OP_MINUS,
-	Token::OP_MULT,
+	Token::OP_STAR,
 	Token::OP_INC,
 	Token::OP_DEC,
 	Token::OP_NOT,
-	Token::OP_BIT_AND,
+	Token::OP_AMP,
 	Token::OP_BIT_NOT
 );
 

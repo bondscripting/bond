@@ -523,7 +523,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 			// Moreover, all nodes in the chain except for the head need to be designated as l-values.
 			// Whether the head should be an l-value is context sensitive and is dealt with in the
 			// appropriate places in the parser.
-			if (token->GetTokenType() == Token::OP_MULT)
+			if (token->GetTokenType() == Token::OP_STAR)
 			{
 				if (arrayCurrent != 0)
 				{
@@ -1349,13 +1349,13 @@ Expression *ParserCore::ParseAndExpression()
 
 	if (expression != 0)
 	{
-		const Token *token = mStream.NextIf(Token::OP_BIT_AND);
+		const Token *token = mStream.NextIf(Token::OP_AMP);
 		while (token != 0)
 		{
 			Expression *rhs = ParseEqualityExpression();
 			AssertNode(rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
-			token = mStream.NextIf(Token::OP_BIT_AND);
+			token = mStream.NextIf(Token::OP_AMP);
 		}
 	}
 

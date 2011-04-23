@@ -297,7 +297,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::OP_MULT);
+					token.SetTokenType(Token::OP_STAR);
 					state = STATE_DONE;
 				}
 				break;
@@ -444,7 +444,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::OP_BIT_AND);
+					token.SetTokenType(Token::OP_AMP);
 					state = STATE_DONE;
 				}
 				break;

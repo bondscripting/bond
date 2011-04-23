@@ -213,7 +213,7 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 					case Token::OP_MINUS:
 						tav.SetValue(BinarySub(lhs, rhs, resultType));
 						break;
-					case Token::OP_MULT:
+					case Token::OP_STAR:
 						tav.SetValue(BinaryMult(lhs, rhs, resultType));
 						break;
 					case Token::OP_DIV:
@@ -228,7 +228,7 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 					case Token::OP_RIGHT:
 						tav.SetValue(BinaryRight(lhs, rhs, resultType));
 						break;
-					case Token::OP_BIT_AND:
+					case Token::OP_AMP:
 						tav.SetValue(BinaryBitAnd(lhs, rhs, resultType));
 						break;
 					case Token::OP_BIT_OR:
@@ -297,12 +297,9 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					case Token::OP_NOT:
 						tav.SetBoolValue(!rhs.GetBoolValue());
 						break;
-					case Token::OP_BIT_AND:
-						// TODO
-						break;
 					case Token::OP_BIT_NOT:
 						break;
-					case Token::OP_MULT:
+					case Token::OP_STAR:
 						// TODO
 						break;
 					default:
@@ -436,7 +433,6 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 
 			switch (typeDescriptor->GetPrimitiveType())
 			{
-				// TODO: Define constants somewhere.
 				case Token::KEY_BOOL:
 					tav.SetUIntValue(BOND_BOOL_SIZE);
 					break;

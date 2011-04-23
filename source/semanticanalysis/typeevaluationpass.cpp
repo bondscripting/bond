@@ -294,7 +294,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				resultType = *lhDescriptor;
 				break;
 
-			case Token::OP_BIT_AND:
+			case Token::OP_AMP:
 			case Token::OP_BIT_OR:
 			case Token::OP_BIT_XOR:
 			case Token::OP_MOD:
@@ -338,7 +338,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
-			case Token::OP_MULT:
+			case Token::OP_STAR:
 			case Token::OP_DIV:
 				AssertNumericOperand(lhDescriptor, op);
 				AssertNumericOperand(rhDescriptor, op);
@@ -392,7 +392,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				AssertBooleanOperand(rhDescriptor, op);
 				break;
 
-			case Token::OP_BIT_AND:
+			case Token::OP_AMP:
 				AssertLValueType(rhDescriptor, op);
 				resultType = TypeDescriptor(rhDescriptor, true);
 				break;
@@ -401,7 +401,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				AssertIntegerOperand(rhDescriptor, op);
 				break;
 
-			case Token::OP_MULT:
+			case Token::OP_STAR:
 				AssertPointerOperand(rhDescriptor, op);
 				if (rhDescriptor->IsPointerType())
 				{

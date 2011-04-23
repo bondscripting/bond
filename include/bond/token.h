@@ -36,7 +36,7 @@
 	/* Operators */                           \
 	BOND_TOKEN_ITEM(OP_PLUS)      /* '+' */   \
 	BOND_TOKEN_ITEM(OP_MINUS)     /* '-' */   \
-	BOND_TOKEN_ITEM(OP_MULT)      /* '*' */   \
+	BOND_TOKEN_ITEM(OP_STAR)      /* '*' */   \
 	BOND_TOKEN_ITEM(OP_DIV)       /* '/' */   \
 	BOND_TOKEN_ITEM(OP_MOD)       /* '%' */   \
 	BOND_TOKEN_ITEM(OP_INC)       /* '++' */  \
@@ -52,7 +52,7 @@
 	BOND_TOKEN_ITEM(OP_NOT)       /* '!' */   \
 	BOND_TOKEN_ITEM(OP_AND)       /* '&&' */  \
 	BOND_TOKEN_ITEM(OP_OR)        /* '||' */  \
-	BOND_TOKEN_ITEM(OP_BIT_AND)   /* '&'  */  \
+	BOND_TOKEN_ITEM(OP_AMP)       /* '&'  */  \
 	BOND_TOKEN_ITEM(OP_BIT_OR)    /* '|'  */  \
 	BOND_TOKEN_ITEM(OP_BIT_XOR)   /* '^'  */  \
 	BOND_TOKEN_ITEM(OP_BIT_NOT)   /* '~'  */  \
