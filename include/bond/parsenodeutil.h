@@ -42,11 +42,13 @@ const T *CastNode(const ParseNode *node)
 }
 
 
+int GetLength(const ListParseNode *head);
+
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
 bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
-bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB);
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
 
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 

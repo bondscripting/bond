@@ -35,7 +35,7 @@ public:
 	Parameter *CreateParameter(const Token *name, TypeDescriptor *typeDescriptor);
 	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, bool isConst);
-	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length);
+	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length, bool isConst);
 	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
 

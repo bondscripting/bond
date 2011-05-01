@@ -167,7 +167,9 @@ bool AssertParseErrors(
 		const Bond::Token *context = actual->GetContext();
 		const Bond::StreamPos &pos = context->GetStartPos();
 		__ASSERT_FORMAT__(expected->errorType == actual->GetType(), logger, assertFile, assertLine,
-			("Expected type of error %d to be %d but was %d.", i, expected->errorType, actual->GetType()));
+			("Expected type of error %d to be %s but was %s.", i,
+			Bond::ParseError::GetErrorName(expected->errorType),
+			actual->GetErrorName()));
 		__ASSERT_FORMAT__(expected->context == context->GetTokenType(), logger, assertFile, assertLine,
 			("Expected context of error %d to be %s but was %s.", i,
 			Bond::Token::GetTokenName(expected->context), context->GetTokenName()));

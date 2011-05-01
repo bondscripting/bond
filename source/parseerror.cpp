@@ -25,6 +25,25 @@ const char *ParseError::GetFormat(Type type)
 }
 
 
+const char *ParseError::GetErrorName() const
+{
+	return GetErrorName(mType);
+}
+
+
+const char *ParseError::GetErrorName(Type type)
+{
+	static const char *const ERROR_NAMES[] =
+	{
+#define BOND_PARSE_ERROR(type, format) #type,
+		BOND_PARSE_ERROR_LIST
+#undef BOND_PARSE_ERROR
+	};
+
+	return ERROR_NAMES[type];
+}
+
+
 void ParseError::Print(TextWriter &writer) const
 {
 	const char *format = GetFormat();

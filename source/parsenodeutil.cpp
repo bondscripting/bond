@@ -4,6 +4,19 @@
 namespace Bond
 {
 
+int GetLength(const ListParseNode *head)
+{
+	int length = 0;
+	const ListParseNode *current = head;
+	while (current != 0)
+	{
+		++length;
+		current = current->GetNextNode();
+	}
+	return length;
+}
+
+
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
 	// This function can only be used once type specifiers have been resolved.
@@ -55,19 +68,18 @@ bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 }
 
 
-bool AreMatchingFunctionPrototypes(const Symbol *scope, const FunctionPrototype *functionA, const FunctionPrototype *functionB)
-{
-	// TODO
-	return true;
-}
-
-
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
 	return
 		(typeA->IsPointerType() && typeB->IsPointerType()) ||
 		(typeA->IsNumericType() && typeB->IsNumericType()) ||
 		(typeA->IsBooleanType() && typeB->IsBooleanType());
+}
+
+
+bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+{
+	return AreComparableTypes(fromType, toType);
 }
 
 

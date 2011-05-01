@@ -144,14 +144,14 @@ public:
 		mIsLValue(false)
 	{}
 
-	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpression):
+	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpression, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
 		mLengthExpression(lengthExpression),
 		mVariant(VARIANT_ARRAY),
 		mLength(0),
 		mLengthDefined(false),
-		mIsConst(false),
+		mIsConst(isConst),
 		mIsLValue(false)
 	{}
 
@@ -190,7 +190,6 @@ public:
 	void SetRValue() { mIsLValue = false; }
 
 	bool IsAssignable() const { return mIsLValue && !mIsConst && (mVariant != VARIANT_ARRAY); }
-	bool IsSingleAssignable() const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;

@@ -61,7 +61,8 @@ void DummyFunction(const DummyStruct ds)
 	}
 
 	i1 = SymbolThatWillGoOutOfScope;
-
+	ds.DummyFunction(f1, f2);
+	ds.DummyFunction(ds);
 
 	// Valid statements.
 	(*FunnyReturnType())[0] = 1;

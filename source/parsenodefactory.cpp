@@ -114,9 +114,9 @@ TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, b
 }
 
 
-TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, Expression *length)
+TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, Expression *length, bool isConst)
 {
-	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, length);
+	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, length, isConst);
 }
 
 

@@ -159,12 +159,6 @@ bool TypeDescriptor::IsResolved() const
 }
 
 
-bool TypeDescriptor::IsSingleAssignable() const
-{
-	return mIsLValue && (mIsConst || ((mVariant == VARIANT_ARRAY) && mParent->IsSingleAssignable()));
-}
-
-
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (mTypeSpecifier != 0)

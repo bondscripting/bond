@@ -25,31 +25,37 @@
   BOND_PARSE_ERROR(FUNCTION_PROTOTYPE_MISMATCH,                                     \
     "Mismatching function prototype '%c' previously defined on line '%l'.")         \
   BOND_PARSE_ERROR(UNEXPECTED_TOKEN,                                                \
-    "Expected '%s' before '%c'." )                                                  \
+    "Expected '%s' before '%c'.")                                                   \
   BOND_PARSE_ERROR(SYMBOL_IS_NOT_DEFINED,                                           \
-    "Symbol '%n' is not defined." )                                                 \
+    "Symbol '%n' is not defined.")                                                  \
   BOND_PARSE_ERROR(SYMBOL_IS_NOT_A_TYPE,                                            \
-    "Symbol '%n' is not a type." )                                                  \
+    "Symbol '%n' is not a type.")                                                   \
   BOND_PARSE_ERROR(INVALID_SYMBOL_IN_EXPRESSION,                                    \
-    "Symbol '%n' cannot be used in an expression." )                                \
+    "Symbol '%n' cannot be used in an expression.")                                 \
   BOND_PARSE_ERROR(NON_STRUCT_MEMBER_REQUEST,                                       \
-    "Request for member '%c' in non-struct type '%n'." )                            \
+    "Request for member '%c' in non-struct type '%n'.")                             \
   BOND_PARSE_ERROR(INVALID_MEMBER_REQUEST,                                          \
-    "Struct '%n' has no member named '%c'." )                                       \
+    "Struct '%n' has no member named '%c'.")                                        \
   BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                                      \
-    "Expression is not callable." )                                                 \
+    "Expression is not callable.")                                                  \
+  BOND_PARSE_ERROR(INCORRECT_NUMBER_OF_ARGS,                                        \
+    "Incorrect number of arguments to function '%n'.")                              \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_OPERATOR,                                       \
-    "Operator '%c' cannot be applied to type '%n'." )                               \
+    "Operator '%c' cannot be applied to type '%n'.")                                \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                               \
     "Operator '%c' cannot be applied to non-pointer type '%n'.")                    \
   BOND_PARSE_ERROR(INVALID_TYPE_FOR_INDEX_OPERATOR,                                 \
     "Index operator cannot be applied to non-integer type '%n'.")                   \
   BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                         \
-    "Cannot convert type '%0n' to '%1n'." )                                         \
+    "Cannot convert type '%0n' to '%1n'.")                                          \
+  BOND_PARSE_ERROR(INVALID_TYPE_ASSIGNMENT,                                         \
+    "Cannot assign type '%0n' to '%1n'.")                                           \
   BOND_PARSE_ERROR(ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER,                           \
     "Enumerator value for '%t' is not an integer constant.")                        \
   BOND_PARSE_ERROR(ARRAY_SIZE_IS_NOT_CONST_INTEGER,                                 \
     "Array size is not an integer constant.")                                       \
+  BOND_PARSE_ERROR(ARRAY_SIZE_IS_ZERO,                                              \
+    "Array size cannot be zero.")                                                   \
   BOND_PARSE_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                                   \
     "Switch control is not an integer.")                                            \
   BOND_PARSE_ERROR(SWITCH_LABEL_IS_NOT_CONST_INTEGER,                               \
@@ -60,6 +66,8 @@
     "While statement condition is not boolean.")                                    \
   BOND_PARSE_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                                    \
     "For statement condition is not boolean.")                                      \
+  BOND_PARSE_ERROR(TERNARY_OPERAND_TYPE_MISMATCH,                                   \
+    "Operands to ?: have different types '%0n' and '%1n'.")                         \
   BOND_PARSE_ERROR(UNINITIALIZED_CONST,                                             \
     "Uninitialized const '%c'.")                                                    \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                                 \
@@ -110,6 +118,9 @@ public:
 
 	const char *GetFormat() const;
 	static const char *GetFormat(Type type);
+
+	const char *GetErrorName() const;
+	static const char *GetErrorName(Type type);
 
 	void Print(TextWriter &writer) const;
 

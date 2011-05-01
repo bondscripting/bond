@@ -19,6 +19,7 @@ protected:
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
+	virtual void Visit(SwitchLabel *switchLabel);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
@@ -46,7 +47,7 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 		mItemResolved = false;
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mItemResolved && !mErrorBuffer.HasErrors());
+	while (mItemResolved);
 }
 
 
@@ -114,12 +115,17 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 				{
 					const Value length = CastValue(tav, &UINT_TYPE_DESCRIPTOR);
 					typeDescriptor->SetLength(length.mUInt);
+
+					if (length.mUInt == 0)
+					{
+						mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_ZERO, expression->GetContextToken());
+						typeDescriptor->SetLength(1);
+					}
 				}
 				else
 				{
-					mErrorBuffer.PushError(
-						ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER,
-						expression->GetContextToken());
+					mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expression->GetContextToken());
+					typeDescriptor->SetLength(1);
 				}
 			}
 		}
@@ -154,6 +160,21 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 					tav.SetValue(CastValue(initializerTav, typeDescriptor));
 				}
 			}
+		}
+	}
+}
+
+
+void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
+{
+	ParseNodeTraverser::Visit(switchLabel);
+	const Expression *expression = switchLabel->GetExpression();
+	if (expression != 0)
+	{
+		const TypeAndValue &tav = expression->GetTypeAndValue();
+		if (tav.IsResolved() && !tav.IsValueDefined())
+		{
+			mErrorBuffer.PushError(ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, expression->GetContextToken());
 		}
 	}
 }
@@ -298,6 +319,7 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 						tav.SetBoolValue(!rhs.GetBoolValue());
 						break;
 					case Token::OP_BIT_NOT:
+						tav.SetValue(UnaryBitNot(rhs));
 						break;
 					case Token::OP_STAR:
 						// TODO

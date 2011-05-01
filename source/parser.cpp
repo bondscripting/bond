@@ -542,7 +542,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 				Expression *length = mParseRelaxedTypeDescriptors.GetTop() ?
 					ParseExpression() : ParseConstExpression();
 				ExpectToken(Token::CBRACKET);
-				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length);
+				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length, descriptor->IsConst());
 				if (arrayCurrent == 0)
 				{
 					arrayHead = parent;
@@ -557,7 +557,6 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 					parent->SetLValue();
 					arrayCurrent->SetParent(parent);
 					arrayCurrent = parent;
-					arrayCurrent->SetLValue();
 				}
 			}
 			token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
@@ -1674,12 +1673,12 @@ Expression *ParserCore::ParsePrimaryExpression()
 //   | argument_expression_list ',' assignment_expression
 Expression *ParserCore::ParseArgumentList()
 {
-	Expression *head = ParseExpression();
+	Expression *head = ParseAssignmentExpression();
 	Expression *current = head;
 
 	while ((current != 0) && (mStream.NextIf(Token::COMMA) != 0))
 	{
-		Expression *next = ParseExpression();
+		Expression *next = ParseAssignmentExpression();
 		AssertNode(next);
 		current->SetNextNode(next);
 		current = next;
