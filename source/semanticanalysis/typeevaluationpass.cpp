@@ -42,12 +42,12 @@ private:
 	bool AssertBooleanExpression(const Expression *expression, ParseError::Type errorType) const;
 	bool AssertIntegerExpression(const Expression *expression, ParseError::Type errorType, const void *arg = 0) const;
 	bool AssertNonConstExpression(const Token *op);
-	bool AssertBooleanOperand(const TypeDescriptor *descriptor, const Token *op);
-	bool AssertIntegerOperand(const TypeDescriptor *descriptor, const Token *op);
-	bool AssertNumericOperand(const TypeDescriptor *descriptor, const Token *op);
-	bool AssertPointerOperand(const TypeDescriptor *descriptor, const Token *op);
-	bool AssertLValueType(const TypeDescriptor *descriptor, const Token *op);
-	bool AssertAssignableType(const TypeDescriptor *descriptor, const Token *op);
+	bool AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertNumericOperand(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertPointerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertLValueType(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op);
 
 	bool AssertConvertibleTypes(
 		const TypeDescriptor *fromType,
@@ -56,6 +56,11 @@ private:
 		ParseError::Type errorType);
 
 	bool AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
+
+	void ValidateInitializer(
+		const Token *name,
+		const Initializer *initializer,
+		const TypeDescriptor *typeDescrioptor);
 
 	BoolStack mAddNamedInitializers;
 	BoolStack mEnforceConstExpressions;
@@ -124,7 +129,13 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	if (tav.IsTypeDefined())
 	{
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		if (typeDescriptor->IsConst() && (namedInitializer->GetInitializer() == 0))
+		const Initializer *initializer = namedInitializer->GetInitializer();
+
+		if (initializer != 0)
+		{
+			ValidateInitializer(namedInitializer->GetName(), initializer, typeDescriptor);
+		}
+		else if (typeDescriptor->IsConst())
 		{
 			mErrorBuffer.PushError(ParseError::UNINITIALIZED_CONST, namedInitializer->GetName());
 		}
@@ -627,27 +638,27 @@ void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 {
 	const Token *token = constantExpression->GetValueToken();
-	const TypeDescriptor *descriptor = &INT_TYPE_DESCRIPTOR;
+	const TypeDescriptor *typeDescriptor = &INT_TYPE_DESCRIPTOR;
 
 	switch (token->GetTokenType())
 	{
 		case Token::CONST_BOOL:
-			descriptor = &BOOL_TYPE_DESCRIPTOR;
+			typeDescriptor = &BOOL_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_CHAR:
-			descriptor = &CHAR_TYPE_DESCRIPTOR;
+			typeDescriptor = &CHAR_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_INT:
-			descriptor = &INT_TYPE_DESCRIPTOR;
+			typeDescriptor = &INT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_UINT:
-			descriptor = &UINT_TYPE_DESCRIPTOR;
+			typeDescriptor = &UINT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_FLOAT:
-			descriptor = &FLOAT_TYPE_DESCRIPTOR;
+			typeDescriptor = &FLOAT_TYPE_DESCRIPTOR;
 			break;
 		case Token::CONST_STRING:
-			descriptor = &CONST_STRING_TYPE_DESCRIPTOR;
+			typeDescriptor = &CONST_STRING_TYPE_DESCRIPTOR;
 			break;
 		default:
 			// Ignore the default case because the parser is not supposed to allow it to happen.
@@ -655,7 +666,7 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 	}
 
 	TypeAndValue &tav = constantExpression->GetTypeAndValue();
-	tav.SetTypeDescriptor(descriptor);
+	tav.SetTypeDescriptor(typeDescriptor);
 }
 
 
@@ -691,8 +702,8 @@ bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, P
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsTypeDefined())
 	{
-		const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
-		if (!descriptor->IsBooleanType())
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		if (!typeDescriptor->IsBooleanType())
 		{
 			mErrorBuffer.PushError(errorType, expression->GetContextToken());
 			return false;
@@ -710,8 +721,8 @@ bool TypeEvaluationPass::AssertIntegerExpression(
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsTypeDefined())
 	{
-		const TypeDescriptor *descriptor = tav.GetTypeDescriptor();
-		if (!descriptor->IsIntegerType())
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		if (!typeDescriptor->IsIntegerType())
 		{
 			mErrorBuffer.PushError(errorType, expression->GetContextToken(), arg);
 			return false;
@@ -732,71 +743,71 @@ bool TypeEvaluationPass::AssertNonConstExpression(const Token *op)
 }
 
 
-bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!descriptor->IsBooleanType())
+	if (!typeDescriptor->IsBooleanType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, descriptor);
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;		
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!descriptor->IsIntegerType())
+	if (!typeDescriptor->IsIntegerType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, descriptor);
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!descriptor->IsNumericType())
+	if (!typeDescriptor->IsNumericType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, descriptor);
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!descriptor->IsPointerType())
+	if (!typeDescriptor->IsPointerType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, descriptor);
+		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertLValueType(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertLValueType(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!descriptor->IsLValue())
+	if (!typeDescriptor->IsLValue())
 	{
-		mErrorBuffer.PushError(ParseError::NON_LVALUE_TYPE, op, descriptor);
+		mErrorBuffer.PushError(ParseError::NON_LVALUE_TYPE, op, typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *descriptor, const Token *op)
+bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (descriptor->IsRValue())
+	if (typeDescriptor->IsRValue())
 	{
-		mErrorBuffer.PushError(ParseError::RVALUE_ASSIGNMENT, op);
+		mErrorBuffer.PushError(ParseError::NON_LVALUE_ASSIGNMENT, op);
 		return false;
 	}
-	else if (!descriptor->IsAssignable())
+	else if (!typeDescriptor->IsAssignable())
 	{
-		mErrorBuffer.PushError(ParseError::UNASSIGNABLE_TYPE, op, descriptor);
+		mErrorBuffer.PushError(ParseError::UNASSIGNABLE_TYPE, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -826,6 +837,54 @@ bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, cons
 		return false;
 	}
 	return true;
+}
+
+
+void TypeEvaluationPass::ValidateInitializer(
+	const Token *name,
+	const Initializer *initializer,
+	const TypeDescriptor *typeDescriptor)
+{
+	const Expression *expression = initializer->GetExpression();
+	const Initializer *initializerList = initializer->GetInitializerList();
+
+	if (typeDescriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
+	{
+		if (initializerList != 0)
+		{
+			const TypeDescriptor *parent = typeDescriptor->GetParent();
+			while (initializerList != 0)
+			{
+				ValidateInitializer(name, initializerList, parent);
+				initializerList = static_cast<const Initializer *>(initializerList->GetNextNode());
+			}
+		}
+		else if (expression != 0)
+		{
+			mErrorBuffer.PushError(
+				ParseError::MISSING_BRACES_IN_INITIALIZER,
+				initializer->GetContextToken(),
+				typeDescriptor);
+		}
+	}
+	else
+	{
+		if (expression != 0)
+		{
+			AssertConvertibleTypes(
+				expression->GetTypeAndValue().GetTypeDescriptor(),
+				typeDescriptor,
+				expression->GetContextToken(),
+				ParseError::INVALID_TYPE_CONVERSION);
+		}
+		else if (initializerList != 0)
+		{
+			mErrorBuffer.PushError(
+				ParseError::BRACES_AROUND_SCALAR_INITIALIZER,
+				initializerList->GetContextToken(),
+				typeDescriptor);
+		}
+	}
 }
 
 }

@@ -18,8 +18,8 @@ void DummyFunction(const DummyStruct ds)
 {
 	int[2] array1;
 	int[2] array2;
-	int *ptr1 = 0;
-	int *ptr2 = 0;
+	int *ptr1 = array1;
+	int *ptr2 = array2;
 	int i1 = 1;
 	int i2 = 2;
 	float f1 = 1.0;
@@ -52,6 +52,11 @@ void DummyFunction(const DummyStruct ds)
 	ptr1 = cast<int *>(ds);
 	1 + DummyStruct;
 	1 + SymbolToBeDefined;
+	true ? 1 : false;
+	&6 = ptr1;
+
+	const int uninitialized;
+	uninitialized = 6;
 
 	int SymbolToBeDefined = 0;
 

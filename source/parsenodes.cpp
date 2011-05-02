@@ -253,6 +253,20 @@ bool TypeSpecifier::IsNumericType() const
 }
 
 
+const Token *Initializer::GetContextToken() const
+{
+	if (mExpression != 0)
+	{
+		return mExpression->GetContextToken();
+	}
+	else if (mInitializerList != 0)
+	{
+		return mInitializerList->GetContextToken();
+	}
+	return 0;
+}
+
+
 bool Initializer::IsResolved() const
 {
 	if (mExpression != 0)
@@ -274,6 +288,7 @@ bool Initializer::IsResolved() const
 
 	return true;
 }
+
 
 const TypeSpecifier BOOL_TYPE_SPECIFIER(&BOOL_TOKEN);
 const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);

@@ -558,6 +558,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const;
+
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
 

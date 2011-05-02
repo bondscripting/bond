@@ -72,12 +72,16 @@
     "Uninitialized const '%c'.")                                                    \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                                 \
     "Cannot apply operator '%c' to non lvalue type '%n'.")                          \
-  BOND_PARSE_ERROR(RVALUE_ASSIGNMENT,                                               \
+  BOND_PARSE_ERROR(NON_LVALUE_ASSIGNMENT,                                               \
     "Cannot assign to non l-value near operator '%c'.")                             \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                               \
     "Cannot assign to type '%n' near operator '%c'.")                               \
   BOND_PARSE_ERROR(INVALID_COMPARISON,                                              \
     "Operator '%c' cannot compare type '%0n' with type '%1n'.")                     \
+  BOND_PARSE_ERROR(MISSING_BRACES_IN_INITIALIZER,                                   \
+    "Missing braces in initializer for type '%n'.")                                 \
+  BOND_PARSE_ERROR(BRACES_AROUND_SCALAR_INITIALIZER,                                \
+    "Braces around initializer for scalar type '%n'.")                              \
 
 
 namespace Bond

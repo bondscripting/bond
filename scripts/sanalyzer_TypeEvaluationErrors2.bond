@@ -31,7 +31,10 @@ void DummyFunction()
 	while (i1 -= 1) {}
 	for (int j = 0; j + i1; ++j) {}
 
-	float [(i1++ + One), Five()] crazyArray;
+	float [(i1++ + One), Five()] array1;
+	const int [2][1] array2 = {1, 2};
+	const int [2] array3 = {{1, 2}};
+	const int [2] array4 = {false};
 
 	// Valid statements.
 	switch (i1)
