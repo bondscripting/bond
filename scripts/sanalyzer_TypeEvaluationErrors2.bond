@@ -13,6 +13,8 @@ enum GoodEnum
 
 int Five() { return 5; }
 
+int nonconst = 1;
+
 void DummyFunction()
 {
 	int i1 = 1;

@@ -38,7 +38,13 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	ASSERT_MESSAGE(eighth != 0, "Failed to find symbol 'EIGHTH'.");
 	ASSERT_MESSAGE(eighth->GetSymbolType() == Bond::Symbol::TYPE_VALUE, "Expected 'EIGHTH' to be a value.");
 
-	// TODO: check type and value.
+	const Bond::Enumerator *enumerator = Bond::CastNode<Bond::Enumerator>(eighth);
+	ASSERT_MESSAGE(enumerator != 0, "Expected 'EIGHTH' to be an enumerator.");
+
+	const Bond::TypeAndValue *tav = enumerator->GetTypeAndValue();
+	ASSERT_MESSAGE(tav->GetTypeDescriptor()->GetPrimitiveType() == Bond::Token::KEY_INT,
+		"Expected 'EIGHTH' to have an integer value.");
+	ASSERT_MESSAGE(tav->GetIntValue() == 5, "Expected 'EIGHTH' to have the value 5");
 
 	return true;
 }
@@ -117,36 +123,37 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 	{
 		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 31},
 		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 32},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_LEFT, 33},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_MOD, 34},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_PLUS, 35},
+		{Bond::ParseError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 33},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_LEFT, 34},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_MOD, 35},
 		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_PLUS, 36},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_DIV, 37},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_OR, 38},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_AMP, 39},
-		{Bond::ParseError::INVALID_COMPARISON, Bond::Token::OP_LT, 40},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_MINUS, 41},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_NOT, 42},
-		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_STAR, 43},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_BIT_NOT, 44},
-		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_INC, 45},
-		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_ARROW, 46},
-		{Bond::ParseError::NON_STRUCT_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 47},
-		{Bond::ParseError::INVALID_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 48},
-		{Bond::ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, Bond::Token::OBRACKET, 49},
-		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OBRACKET, 50},
-		{Bond::ParseError::EXPRESSION_IS_NOT_CALLABLE, Bond::Token::OPAREN, 51},
-		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::KEY_INT, 52},
-		{Bond::ParseError::INVALID_SYMBOL_IN_EXPRESSION, Bond::Token::IDENTIFIER, 53},
-		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 54},
-		{Bond::ParseError::TERNARY_OPERAND_TYPE_MISMATCH, Bond::Token::OP_TERNARY, 55},
-		{Bond::ParseError::NON_LVALUE_TYPE, Bond::Token::OP_AMP, 56},
-		{Bond::ParseError::NON_LVALUE_ASSIGNMENT, Bond::Token::ASSIGN, 56},
-		{Bond::ParseError::UNINITIALIZED_CONST, Bond::Token::IDENTIFIER, 58},
-		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 59},
-		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 68},
-		{Bond::ParseError::INCORRECT_NUMBER_OF_ARGS, Bond::Token::OPAREN, 69},
-		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::IDENTIFIER, 70},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_PLUS, 37},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::ASSIGN_DIV, 38},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_OR, 39},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_AMP, 40},
+		{Bond::ParseError::INVALID_COMPARISON, Bond::Token::OP_LT, 41},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_MINUS, 42},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_NOT, 43},
+		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_STAR, 44},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_BIT_NOT, 45},
+		{Bond::ParseError::INVALID_TYPE_FOR_OPERATOR, Bond::Token::OP_INC, 46},
+		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OP_ARROW, 47},
+		{Bond::ParseError::NON_STRUCT_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 48},
+		{Bond::ParseError::INVALID_MEMBER_REQUEST, Bond::Token::IDENTIFIER, 49},
+		{Bond::ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, Bond::Token::OBRACKET, 50},
+		{Bond::ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, Bond::Token::OBRACKET, 51},
+		{Bond::ParseError::EXPRESSION_IS_NOT_CALLABLE, Bond::Token::OPAREN, 52},
+		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::KEY_INT, 53},
+		{Bond::ParseError::INVALID_SYMBOL_IN_EXPRESSION, Bond::Token::IDENTIFIER, 54},
+		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 55},
+		{Bond::ParseError::TERNARY_OPERAND_TYPE_MISMATCH, Bond::Token::OP_TERNARY, 56},
+		{Bond::ParseError::NON_LVALUE_TYPE, Bond::Token::OP_AMP, 57},
+		{Bond::ParseError::NON_LVALUE_ASSIGNMENT, Bond::Token::ASSIGN, 57},
+		{Bond::ParseError::UNINITIALIZED_CONST, Bond::Token::IDENTIFIER, 59},
+		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 60},
+		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 69},
+		{Bond::ParseError::INCORRECT_NUMBER_OF_ARGS, Bond::Token::OPAREN, 70},
+		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::IDENTIFIER, 71},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -164,19 +171,36 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 	{
 		{Bond::ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 3},
 		{Bond::ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 4},
-		{Bond::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 24},
-		{Bond::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 26},
-		{Bond::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 22},
-		{Bond::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 30},
-		{Bond::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 31},
-		{Bond::ParseError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 32},
-		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 34},
-		{Bond::ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 34},
-		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::COMMA, 34},
-		{Bond::ParseError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 35},
-		{Bond::ParseError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 35},
-		{Bond::ParseError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::CONST_INT, 36},
-		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_BOOL, 37},
+		{Bond::ParseError::NON_CONST_DECLARATION, Bond::Token::IDENTIFIER, 16},
+		{Bond::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 26},
+		{Bond::ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 28},
+		{Bond::ParseError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 24},
+		{Bond::ParseError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 32},
+		{Bond::ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 33},
+		{Bond::ParseError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 34},
+		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 36},
+		{Bond::ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 36},
+		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::COMMA, 36},
+		{Bond::ParseError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 37},
+		{Bond::ParseError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 37},
+		{Bond::ParseError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::CONST_INT, 38},
+		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_BOOL, 39},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEvaluationErrors.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 5},
+		{Bond::ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 6},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -195,5 +219,6 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
+  TEST_ITEM(ValueEvaluationErrors)              \
 
 RUN_TESTS(Parser, TEST_ITEMS)

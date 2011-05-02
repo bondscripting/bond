@@ -42,7 +42,7 @@ public:
 	NamedInitializer *CreateNamedInitializer(
 	 const Token *name,
 	 Initializer *initializer,
-	 TypeDescriptor *typeDescriptor);
+	 const TypeDescriptor *typeDescriptor);
 
 	Initializer *CreateInitializer(Expression *expression);
 	Initializer *CreateInitializer(Initializer *initializerList);

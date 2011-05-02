@@ -30,6 +30,7 @@ void DummyFunction(const DummyStruct ds)
 	// Invalid statements.
 	array1 = array2;
 	*FunnyReturnType() = array2;
+	f1 = ds;
 	f1 <<= i1;
 	i2 %= f2;
 	ptr2 = ptr1 + f1;

@@ -513,7 +513,7 @@ private:
 class NamedInitializer: public Symbol
 {
 public:
-	explicit NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
+	NamedInitializer(const Token *name, Initializer *initializer, const TypeDescriptor *typeDescriptor):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mInitializer(initializer)

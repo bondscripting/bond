@@ -135,7 +135,7 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 NamedInitializer *ParseNodeFactory::CreateNamedInitializer(
 	const Token *name,
 	Initializer *initializer,
-	TypeDescriptor *typeDescriptor)
+	const TypeDescriptor *typeDescriptor)
 {
 	return new (mAllocator.Alloc<NamedInitializer>()) NamedInitializer(name, initializer, typeDescriptor);
 }

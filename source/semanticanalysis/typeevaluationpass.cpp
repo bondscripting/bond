@@ -17,6 +17,7 @@ public:
 
 protected:
 	virtual void Visit(Enumerator *enumerator);
+	virtual void Visit(StructDeclaration *structDeclaration);
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(Parameter *parameter);
 	virtual void Visit(TypeDescriptor *typeDescriptor);
@@ -64,6 +65,7 @@ private:
 
 	BoolStack mAddNamedInitializers;
 	BoolStack mEnforceConstExpressions;
+	BoolStack mEnforceConstDeclarations;
 };
 
 
@@ -71,6 +73,7 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	BoolStack::Element initalizerElement(mAddNamedInitializers, false);
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
+	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, true);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -87,12 +90,20 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 }
 
 
+void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
+{
+	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
+	SemanticAnalysisPass::Visit(structDeclaration);
+}
+
+
 void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 {
 	// Top-level named initializers have already been added to the symbol table, but not ones in local scopes.
 	// Top-level identifiers can be referenced out of order from their declarations, but local ones must be
 	// declared before being referenced, so they must be added as the expressions are evaluated.
 	BoolStack::Element initalizerElement(mAddNamedInitializers, true);
+	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
 	SemanticAnalysisPass::Visit(functionDefinition);
 }
 
@@ -138,6 +149,11 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		else if (typeDescriptor->IsConst())
 		{
 			mErrorBuffer.PushError(ParseError::UNINITIALIZED_CONST, namedInitializer->GetName());
+		}
+
+		if (mEnforceConstDeclarations.GetTop() && !typeDescriptor->IsConst())
+		{
+			mErrorBuffer.PushError(ParseError::NON_CONST_DECLARATION, namedInitializer->GetName());
 		}
 	}
 }

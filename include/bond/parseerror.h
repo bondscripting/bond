@@ -70,9 +70,11 @@
     "Operands to ?: have different types '%0n' and '%1n'.")                         \
   BOND_PARSE_ERROR(UNINITIALIZED_CONST,                                             \
     "Uninitialized const '%c'.")                                                    \
+  BOND_PARSE_ERROR(NON_CONST_DECLARATION,                                           \
+    "Declaration of '%c' must be const.")                                           \
   BOND_PARSE_ERROR(NON_LVALUE_TYPE,                                                 \
     "Cannot apply operator '%c' to non lvalue type '%n'.")                          \
-  BOND_PARSE_ERROR(NON_LVALUE_ASSIGNMENT,                                               \
+  BOND_PARSE_ERROR(NON_LVALUE_ASSIGNMENT,                                           \
     "Cannot assign to non l-value near operator '%c'.")                             \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                               \
     "Cannot assign to type '%n' near operator '%c'.")                               \
@@ -149,7 +151,7 @@ public:
 	const ParseError *GetError(int index) const { return mErrors + index; }
 
 private:
-	static const int MAX_ERRORS = 32;
+	static const int MAX_ERRORS = 64;
 
 	ParseError mErrors[MAX_ERRORS];
 	int mNumErrors;

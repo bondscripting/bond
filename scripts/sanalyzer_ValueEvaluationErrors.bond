@@ -1,0 +1,7 @@
+void DummyFunction()
+{
+	const int ZERO = 0;
+	int five = 5;
+	int [ZERO] array1;
+	int [five] array2;
+}
