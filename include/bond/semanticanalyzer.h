@@ -12,7 +12,7 @@ class SymbolTable;
 class SemanticAnalyzer
 {
 public:
-	SemanticAnalyzer() {}
+	SemanticAnalyzer(bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE): mPointerSize(pointerSize) {}
 	~SemanticAnalyzer() {}
 
 	void Analyze(TranslationUnit *translationUnitList);
@@ -23,9 +23,9 @@ public:
 	const SymbolTable &GetSymbolTable() const { return mSymbolTable; }
 
 private:
-
 	ParseErrorBuffer mErrorBuffer;
 	SymbolTable mSymbolTable;
+	bu32_t mPointerSize;
 };
 
 }

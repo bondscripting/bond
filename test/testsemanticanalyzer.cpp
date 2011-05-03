@@ -201,6 +201,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
 	{
 		{Bond::ParseError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 5},
 		{Bond::ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 6},
+		{Bond::ParseError::ARRAY_SIZE_IS_UNSPECIFIED, Bond::Token::KEY_INT, 7},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

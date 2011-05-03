@@ -469,6 +469,10 @@ Parameter *ParserCore::ParseParameter()
 
 	if (descriptor != 0)
 	{
+		if (descriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
+		{
+			descriptor->SetVariant(TypeDescriptor::VARIANT_POINTER);
+		}
 		descriptor->SetLValue();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);

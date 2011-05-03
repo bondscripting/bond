@@ -4,9 +4,10 @@ namespace Bond
 class ValueEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
 		SemanticAnalysisPass(errorBuffer, symbolTable),
 		mPrevEnumerator(0),
+		mPointerSize(pointerSize),
 		mItemResolved(false)
 	{}
 
@@ -20,6 +21,7 @@ protected:
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(SwitchLabel *switchLabel);
+	virtual void Visit(DeclarativeStatement *declarativeStatement);
 	virtual void Visit(ConditionalExpression *conditionalExpression);
 	virtual void Visit(BinaryExpression *binaryExpression);
 	virtual void Visit(UnaryExpression *unaryExpression);
@@ -36,6 +38,7 @@ private:
 	void Resolve(TypeAndValue &tav);
 
 	Enumerator *mPrevEnumerator;
+	bu32_t mPointerSize;
 	bool mItemResolved;
 };
 
@@ -127,6 +130,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 					mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expression->GetContextToken());
 					typeDescriptor->SetLength(1);
 				}
+				// TODO: Compute size of type.
 			}
 		}
 	}
@@ -153,7 +157,6 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 			// TODO: Handle non-primitive types (e.g. arrays of primitive types or string literals).
 			if ((typeDescriptor->GetPrimitiveType() != Token::INVALID) && typeDescriptor->IsConst())
 			{
-				// TODO: TypeEvaluationPass needs to assert that there is a single initializer.
 				const TypeAndValue initializerTav = initializer->GetExpression()->GetTypeAndValue();
 				if (initializerTav.IsValueDefined())
 				{
@@ -177,6 +180,37 @@ void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
 			mErrorBuffer.PushError(ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, expression->GetContextToken());
 		}
 	}
+}
+
+
+void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
+{
+	TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
+	if ((typeDescriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY) &&
+	    (typeDescriptor->GetLengthExpression() == 0) &&
+	    !typeDescriptor->IsLengthDefined())
+	{
+		bu32_t length = 0;
+		const NamedInitializer *current = declarativeStatement->GetNamedInitializerList();
+		while (current != 0)
+		{
+			const Initializer *initializer = current->GetInitializer();
+			if ((initializer != 0) && (initializer->GetInitializerList()) != 0)
+			{
+				const bu32_t initializerListLength = GetLength(initializer->GetInitializerList());
+				length = (initializerListLength > length) ? initializerListLength : length;
+			}
+			current = static_cast<const NamedInitializer *>(current->GetNextNode());
+		}
+
+		if (length == 0)
+		{
+			mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_UNSPECIFIED, typeDescriptor->GetContextToken(), typeDescriptor);
+		}
+		typeDescriptor->SetLength(length);
+	}
+
+	ParseNodeTraverser::Visit(declarativeStatement);
 }
 
 
@@ -449,29 +483,42 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 			typeDescriptor = sizeofExpression->GetTypeDescriptor();
 		}
 
-		if (typeDescriptor != 0)
+		if ((typeDescriptor != 0) && typeDescriptor->IsResolved())
 		{
 			Resolve(tav);
 
-			switch (typeDescriptor->GetPrimitiveType())
+			switch (typeDescriptor->GetVariant())
 			{
-				case Token::KEY_BOOL:
-					tav.SetUIntValue(BOND_BOOL_SIZE);
+				case TypeDescriptor::VARIANT_VALUE:
+					switch (typeDescriptor->GetPrimitiveType())
+					{
+						case Token::KEY_BOOL:
+							tav.SetUIntValue(BOND_BOOL_SIZE);
+							break;
+						case Token::KEY_CHAR:
+							tav.SetUIntValue(BOND_CHAR_SIZE);
+							break;
+						case Token::KEY_FLOAT:
+							tav.SetUIntValue(BOND_FLOAT_SIZE);
+							break;
+						case Token::KEY_INT:
+							tav.SetUIntValue(BOND_INT_SIZE);
+							break;
+						case Token::KEY_UINT:
+							tav.SetUIntValue(BOND_UINT_SIZE);
+							break;
+						default:
+							// TODO: Handle structs.
+							break;
+					}
 					break;
-				case Token::KEY_CHAR:
-					tav.SetUIntValue(BOND_CHAR_SIZE);
+
+				case TypeDescriptor::VARIANT_POINTER:
+					tav.SetUIntValue(mPointerSize);
 					break;
-				case Token::KEY_FLOAT:
-					tav.SetUIntValue(BOND_FLOAT_SIZE);
-					break;
-				case Token::KEY_INT:
-					tav.SetUIntValue(BOND_INT_SIZE);
-					break;
-				case Token::KEY_UINT:
-					tav.SetUIntValue(BOND_UINT_SIZE);
-					break;
-				default:
-					// TODO: Handle structs, arrays and pointers.
+
+				case TypeDescriptor::VARIANT_ARRAY:
+					// TODO: Handle structs.
 					break;
 			}
 		}

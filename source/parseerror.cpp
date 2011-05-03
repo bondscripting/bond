@@ -109,7 +109,7 @@ void ParseError::Print(TextWriter &writer) const
 				case 'n':
 				{
 					const ParseNode *node = static_cast<const ParseNode *>(arg);
-					PrettyPrinter printer(writer);
+					PrettyPrinter printer(writer, true);
 					printer.Print(node);
 					state = STATE_NORMAL;
 				}

@@ -4,9 +4,9 @@
 namespace Bond
 {
 
-int GetLength(const ListParseNode *head)
+bu32_t GetLength(const ListParseNode *head)
 {
-	int length = 0;
+	bu32_t length = 0;
 	const ListParseNode *current = head;
 	while (current != 0)
 	{

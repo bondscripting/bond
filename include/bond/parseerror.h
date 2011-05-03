@@ -56,6 +56,8 @@
     "Array size is not an integer constant.")                                       \
   BOND_PARSE_ERROR(ARRAY_SIZE_IS_ZERO,                                              \
     "Array size cannot be zero.")                                                   \
+  BOND_PARSE_ERROR(ARRAY_SIZE_IS_UNSPECIFIED,                                       \
+    "Array size must be specified in type '%n'.")                                   \
   BOND_PARSE_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                                   \
     "Switch control is not an integer.")                                            \
   BOND_PARSE_ERROR(SWITCH_LABEL_IS_NOT_CONST_INTEGER,                               \

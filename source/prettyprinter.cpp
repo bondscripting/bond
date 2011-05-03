@@ -171,7 +171,11 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 			while (current->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
 			{
 				mWriter.Write(" [");
-				if (current->GetLengthExpression() != 0)
+				if (mPrintFoldedConstants && current->IsLengthDefined())
+				{
+					mWriter.Write(BOND_UDECIMAL_FORMAT, current->GetLength());
+				}
+				else if (current->GetLengthExpression() != 0)
 				{
 					Print(current->GetLengthExpression());
 				}
