@@ -149,11 +149,12 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 		{Bond::ParseError::TERNARY_OPERAND_TYPE_MISMATCH, Bond::Token::OP_TERNARY, 56},
 		{Bond::ParseError::NON_LVALUE_TYPE, Bond::Token::OP_AMP, 57},
 		{Bond::ParseError::NON_LVALUE_ASSIGNMENT, Bond::Token::ASSIGN, 57},
-		{Bond::ParseError::UNINITIALIZED_CONST, Bond::Token::IDENTIFIER, 59},
-		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 60},
-		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 69},
-		{Bond::ParseError::INCORRECT_NUMBER_OF_ARGS, Bond::Token::OPAREN, 70},
-		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::IDENTIFIER, 71},
+		{Bond::ParseError::VOID_POINTER_DEREFERENCE, Bond::Token::OP_STAR, 58},
+		{Bond::ParseError::UNINITIALIZED_CONST, Bond::Token::IDENTIFIER, 60},
+		{Bond::ParseError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 61},
+		{Bond::ParseError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 70},
+		{Bond::ParseError::INCORRECT_NUMBER_OF_ARGS, Bond::Token::OPAREN, 71},
+		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::IDENTIFIER, 72},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

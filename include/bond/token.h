@@ -300,6 +300,7 @@ extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
 extern const TokenTypeSet JUMP_OPERATORS_TYPESET;
 extern const TokenTypeSet SWITCH_LABELS_TYPESET;

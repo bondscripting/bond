@@ -427,6 +427,10 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				if (rhDescriptor->IsPointerType())
 				{
 					resultType = *rhDescriptor->GetParent();
+					if (resultType.IsVoidType())
+					{
+						mErrorBuffer.PushError(ParseError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
+					}
 				}
 				isRValue = false;
 				break;

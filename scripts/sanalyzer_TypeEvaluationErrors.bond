@@ -14,7 +14,7 @@ struct DummyStruct
 
 int [2]* FunnyReturnType();
 
-void DummyFunction(const DummyStruct ds)
+void DummyFunction(const DummyStruct ds, void *ptr)
 {
 	int[2] array1;
 	int[2] array2;
@@ -55,6 +55,7 @@ void DummyFunction(const DummyStruct ds)
 	1 + SymbolToBeDefined;
 	true ? 1 : false;
 	&6 = ptr1;
+	*ptr;
 
 	const int uninitialized;
 	uninitialized = 6;

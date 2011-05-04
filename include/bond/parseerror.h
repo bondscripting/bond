@@ -8,6 +8,8 @@
     "Duplicate 'const' keyword.")                                                   \
   BOND_PARSE_ERROR(PARSE_ERROR,                                                     \
     "Parse error near '%c'.")                                                       \
+  BOND_PARSE_ERROR(ARRAY_OF_VOID,                                                   \
+    "Cannot specify an array of void.")                                             \
   BOND_PARSE_ERROR(MULTIDIMENTIONAL_ARRAY_BOUNDS,                                   \
     "Multidimensional array must have bounds for all dimensions except the first.") \
   BOND_PARSE_ERROR(FUNCTION_DEFINITION_NOT_ALLOWED,                                 \
@@ -80,6 +82,8 @@
     "Cannot assign to non l-value near operator '%c'.")                             \
   BOND_PARSE_ERROR(UNASSIGNABLE_TYPE,                                               \
     "Cannot assign to type '%n' near operator '%c'.")                               \
+  BOND_PARSE_ERROR(VOID_POINTER_DEREFERENCE,                                        \
+    "Cannot dereference pointer of type '%n'.")                                     \
   BOND_PARSE_ERROR(INVALID_COMPARISON,                                              \
     "Operator '%c' cannot compare type '%0n' with type '%1n'.")                     \
   BOND_PARSE_ERROR(MISSING_BRACES_IN_INITIALIZER,                                   \

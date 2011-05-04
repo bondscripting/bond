@@ -199,6 +199,16 @@ bool TypeDescriptor::IsNumericType() const
 }
 
 
+bool TypeDescriptor::IsVoidType() const
+{
+	if (mTypeSpecifier != 0)
+	{
+		return mTypeSpecifier->IsVoidType();
+	}
+	return false;
+}
+
+
 const Token *TypeSpecifier::GetContextToken() const
 {
 	if (mPrimitiveType != 0)
@@ -248,6 +258,16 @@ bool TypeSpecifier::IsNumericType() const
 	if (mPrimitiveType != 0)
 	{
 		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+	}
+	return false;
+}
+
+
+bool TypeSpecifier::IsVoidType() const
+{
+	if (mPrimitiveType != 0)
+	{
+		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return false;
 }

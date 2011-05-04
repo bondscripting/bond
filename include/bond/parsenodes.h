@@ -196,6 +196,7 @@ public:
 	bool IsIntegerType() const;
 	bool IsNumericType() const;
 	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
+	bool IsVoidType() const;
 
 private:
 	const TypeSpecifier *mTypeSpecifier;
@@ -244,6 +245,7 @@ public:
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
 	bool IsNumericType() const;
+	bool IsVoidType() const;
 
 private:
 	const Token *mPrimitiveType;

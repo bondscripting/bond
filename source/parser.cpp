@@ -549,6 +549,10 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length, descriptor->IsConst());
 				if (arrayCurrent == 0)
 				{
+					if (descriptor->IsVoidType())
+					{
+						PushError(ParseError::ARRAY_OF_VOID, token);
+					}
 					arrayHead = parent;
 					arrayCurrent = parent;
 				}

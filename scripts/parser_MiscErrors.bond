@@ -1,4 +1,4 @@
-void Function1(int a)
+void TheFunction(int a)
 {
 	const int const b = 6;
 
@@ -46,4 +46,7 @@ void Function1(int a)
 
 	// This one is good.
 	int const [][2][3] * [][5][6] array1;
+
+	// Array of void.
+	void [2] voidArray;
 }
