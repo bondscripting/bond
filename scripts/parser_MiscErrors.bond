@@ -49,4 +49,14 @@ void TheFunction(int a)
 
 	// Array of void.
 	void [2] voidArray;
+
+	// Variable of type void.
+	void voidVariable;
 }
+
+void BadFunction(void voidParam) {}
+
+struct BadStruct
+{
+	void voidMember;
+};

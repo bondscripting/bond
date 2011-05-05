@@ -8,6 +8,8 @@
     "Duplicate 'const' keyword.")                                                   \
   BOND_PARSE_ERROR(PARSE_ERROR,                                                     \
     "Parse error near '%c'.")                                                       \
+  BOND_PARSE_ERROR(VOID_NOT_ALLOWED,                                                \
+    "Invalid use of 'void'.")                                                       \
   BOND_PARSE_ERROR(ARRAY_OF_VOID,                                                   \
     "Cannot specify an array of void.")                                             \
   BOND_PARSE_ERROR(MULTIDIMENTIONAL_ARRAY_BOUNDS,                                   \

@@ -89,6 +89,7 @@ private:
 	const Token *ExpectToken(const TokenTypeSet &expectedTypes);
 	void AssertNode(ParseNode *node);
 	void AssertNonConstExpression(ParseError::Type type, const Token *token);
+	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
 	void PushError(ParseError::Type errorType, const Token *token, const char *expected = "");
 
 	ParseErrorBuffer &mErrorBuffer;
@@ -422,6 +423,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement()
 
 				if (initializerList != 0)
 				{
+					AssertNonVoidType(descriptor);
 					descriptor->SetLValue();
 					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 					ExpectDeclarationTerminator();
@@ -473,6 +475,7 @@ Parameter *ParserCore::ParseParameter()
 		{
 			descriptor->SetVariant(TypeDescriptor::VARIANT_POINTER);
 		}
+		AssertNonVoidType(descriptor);
 		descriptor->SetLValue();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);
@@ -1103,6 +1106,7 @@ ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 
 		if (initializerList != 0)
 		{
+			AssertNonVoidType(descriptor);
 			descriptor->SetLValue();
 			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 			ExpectStatementTerminator();
@@ -1506,6 +1510,7 @@ Expression *ParserCore::ParseCastExpression()
 		ExpectToken(Token::OP_LT);
 		TypeDescriptor *descriptor = ParseTypeDescriptor();
 		AssertNode(descriptor);
+		AssertNonVoidType(descriptor);
 		ExpectToken(Token::OP_GT);
 		ExpectToken(Token::OPAREN);
 		Expression *rhs = ParseCastExpression();
@@ -1566,6 +1571,7 @@ Expression *ParserCore::ParseUnaryExpression()
 		{
 			TypeDescriptor *descriptor = ParseTypeDescriptor();
 			AssertNode(descriptor);
+			AssertNonVoidType(descriptor);
 			ExpectToken(Token::OP_GT);
 			expression = mFactory.CreateSizeofExpression(op, descriptor);
 		}
@@ -1808,6 +1814,15 @@ void ParserCore::AssertNonConstExpression(ParseError::Type errorType, const Toke
 	if (mParseConstExpressions.GetTop())
 	{
 		PushError(errorType, context);
+	}
+}
+
+
+void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
+{
+	if ((typeDescriptor != 0) && typeDescriptor->IsVoidType())
+	{
+		PushError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
 	}
 }
 

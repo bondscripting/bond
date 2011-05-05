@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-class ParseNodeTraverser : public ParseNodeVisitor
+class ParseNodeTraverser: public ParseNodeVisitor
 {
 public:
 	virtual ~ParseNodeTraverser() {}
