@@ -47,7 +47,6 @@ public:
 			mStack.Pop();
 		}
 
-		Element &operator=(const Element &other) { mValue = other.mValue; return *this; }
 		Element &operator=(const ElementType &value) { mValue = value; return *this; }
 
 		operator ElementType&() { return mValue; }
@@ -64,6 +63,7 @@ public:
 		friend class AutoStack;
 
 		Element *GetNext() { return mNext; }
+		const Element *GetNext() const { return mNext; }
 		void SetNext(Element *next) { mNext = next; }
 
 		ElementType mValue;
@@ -88,6 +88,22 @@ public:
 	}
 
 	Element &GetTop() { return *mTop; }
+
+	bool IsEmpty() const { return mTop == 0; }
+
+	bool Contains(const ElementType &value) const
+	{
+		const Element *element = mTop;
+		while (element != 0)
+		{
+			if (element->GetValue() == value)
+			{
+				return true;
+			}
+			element = element->GetNext();
+		}
+		return false;
+	}
 
 private:
 

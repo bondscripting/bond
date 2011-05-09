@@ -92,6 +92,8 @@
     "Missing braces in initializer for type '%n'.")                                 \
   BOND_PARSE_ERROR(BRACES_AROUND_SCALAR_INITIALIZER,                                \
     "Braces around initializer for scalar type '%n'.")                              \
+  BOND_PARSE_ERROR(RECURSIVE_STRUCT,                                                \
+    "Struct '%c' is recursive.")                                                    \
 
 
 namespace Bond

@@ -15,6 +15,11 @@ int Five() { return 5; }
 
 int nonconst = 1;
 
+struct A { A a; };    // Directly recursive.
+struct B { C[2] c; }; // Indirectly recursive.
+struct C { B b; };
+struct D { D *d; };   // This is valid.
+
 void DummyFunction()
 {
 	int i1 = 1;

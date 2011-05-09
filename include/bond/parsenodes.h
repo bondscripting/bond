@@ -215,7 +215,8 @@ class TypeSpecifier: public ParseNode
 public:
 	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = 0):
 		mPrimitiveType(primitiveType),
-		mIdentifier(identifier)
+		mIdentifier(identifier),
+		mDefinition(0)
 	{}
 
 	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}

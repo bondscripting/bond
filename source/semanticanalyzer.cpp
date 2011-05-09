@@ -55,7 +55,7 @@ private:
 
 void SemanticAnalysisPass::Analyze(TranslationUnit *translationUnitList)
 {
-	ParseNodeTraverser::TraverseList(translationUnitList);
+	TraverseList(translationUnitList);
 }
 
 

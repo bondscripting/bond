@@ -40,6 +40,31 @@ protected:
 	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
+	class RecursiveStructAnalyzer: private ParseNodeTraverser
+	{
+	public:
+		RecursiveStructAnalyzer(ParseErrorBuffer &errorBuffer):
+			mErrorBuffer(errorBuffer),
+			mTopLevelStruct(0)
+		{}
+
+		virtual ~RecursiveStructAnalyzer() {}
+
+		void Analyze(const StructDeclaration *structDeclaration);
+
+	private:
+		virtual void Visit(const StructDeclaration *structDeclaration);
+		virtual void Visit(const FunctionDefinition *functionDefinition) {}
+		virtual void Visit(const DeclarativeStatement *declarativeStatement);
+		virtual void Visit(const TypeDescriptor *typeDescriptor);
+		virtual void Visit(const TypeSpecifier *typeSpecifier);
+
+		typedef AutoStack<const StructDeclaration *> StructStack;
+		StructStack mStructStack;
+		ParseErrorBuffer &mErrorBuffer;
+		const StructDeclaration *mTopLevelStruct;
+	};
+
 	bool AssertBooleanExpression(const Expression *expression, ParseError::Type errorType) const;
 	bool AssertIntegerExpression(const Expression *expression, ParseError::Type errorType, const void *arg = 0) const;
 	bool AssertNonConstExpression(const Token *op);
@@ -94,6 +119,8 @@ void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 {
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
 	SemanticAnalysisPass::Visit(structDeclaration);
+	RecursiveStructAnalyzer analyzer(mErrorBuffer);
+	analyzer.Analyze(structDeclaration);
 }
 
 
@@ -904,6 +931,54 @@ void TypeEvaluationPass::ValidateInitializer(
 				initializerList->GetContextToken(),
 				typeDescriptor);
 		}
+	}
+}
+
+
+void TypeEvaluationPass::RecursiveStructAnalyzer::Analyze(const StructDeclaration *structDeclaration)
+{
+	mTopLevelStruct = structDeclaration;
+	StructStack::Element stackElement(mStructStack, structDeclaration);
+	ParseNodeTraverser::Visit(structDeclaration);
+	mTopLevelStruct = 0;
+}
+
+
+void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const StructDeclaration *structDeclaration)
+{
+	if (structDeclaration == mTopLevelStruct)
+	{
+		mErrorBuffer.PushError(ParseError::RECURSIVE_STRUCT, structDeclaration->GetName());
+	}
+
+	if (!mStructStack.Contains(structDeclaration))
+	{
+		StructStack::Element stackElement(mStructStack, structDeclaration);
+		ParseNodeTraverser::Visit(structDeclaration);
+	}
+}
+
+
+void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const DeclarativeStatement *declarativeStatement)
+{
+	Traverse(declarativeStatement->GetTypeDescriptor());
+}
+
+
+void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeDescriptor *typeDescriptor)
+{
+	if (typeDescriptor->GetVariant() != TypeDescriptor::VARIANT_POINTER)
+	{
+		ParseNodeTraverser::Visit(typeDescriptor);
+	}
+}
+
+
+void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeSpecifier *typeSpecifier)
+{
+	if (typeSpecifier->GetDefinition() != 0)
+	{
+		Traverse(CastNode<StructDeclaration>(typeSpecifier->GetDefinition()));
 	}
 }
 
