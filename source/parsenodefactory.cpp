@@ -90,9 +90,10 @@ FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(FunctionPrototype
 FunctionPrototype *ParseNodeFactory::CreateFunctionPrototype(
 	const Token *name,
 	TypeDescriptor *returnType,
-	Parameter *parameterList)
+	Parameter *parameterList,
+	bool isConst)
 {
-	return new (mAllocator.Alloc<FunctionPrototype>()) FunctionPrototype(name, returnType, parameterList);
+	return new (mAllocator.Alloc<FunctionPrototype>()) FunctionPrototype(name, returnType, parameterList, isConst);
 }
 
 

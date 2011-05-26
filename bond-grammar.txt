@@ -47,10 +47,12 @@ enumerator
 
 struct_declaration
   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+  | STRUCT NATIVE IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' '{' struct_member_declaration+ '}' ';'
 
 struct_member_declaration
   : type_descriptor identifier_list ';'
-  | function_declaration
+  | function_prototype [ CONST ] ';'
+  | function_prototype [ CONST ] compound_statement
 
 type_descriptor
   : CONST type_specifier

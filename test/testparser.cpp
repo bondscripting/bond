@@ -110,7 +110,8 @@ DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mStructDeclaration = 4;
 	expectedCount.mDeclarativeStatement = 4;
-	expectedCount.mFunctionPrototype = 4;
+	expectedCount.mFunctionPrototype = 5;
+	expectedCount.mFunctionDefinition = 5;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
@@ -239,13 +240,11 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 	{
 		{Bond::ParseError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
 		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
-		{Bond::ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, Bond::Token::OBRACE, 12},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 15},
-		{Bond::ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, Bond::Token::OBRACE, 15},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 12},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 16},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 23},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 29},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 31},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -257,7 +256,7 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 6;
 	expectedCount.mStructDeclaration = 4;
-	expectedCount.mFunctionPrototype = 3;
+	expectedCount.mFunctionPrototype = 2;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
@@ -290,7 +289,8 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 		{Bond::ParseError::ARRAY_OF_VOID, Bond::Token::OBRACKET, 51},
 		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 54},
 		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 57},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 61},
+		{Bond::ParseError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 58},
+		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 62},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

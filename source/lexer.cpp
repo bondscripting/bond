@@ -1003,6 +1003,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_NAMESPACE);
 	}
+	else if (strcmp(token.GetText(), "native") == 0)
+	{
+		token.SetTokenType(Token::KEY_NATIVE);
+	}
 	else if (strcmp(token.GetText(), "return") == 0)
 	{
 		token.SetTokenType(Token::KEY_RETURN);

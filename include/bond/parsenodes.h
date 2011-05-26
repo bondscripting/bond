@@ -408,10 +408,11 @@ private:
 class FunctionPrototype: public ParseNode
 {
 public:
-	FunctionPrototype(const Token *name, TypeDescriptor *returnType, Parameter *parameterList):
+	FunctionPrototype(const Token *name, TypeDescriptor *returnType, Parameter *parameterList, bool isConst):
 		mName(name),
 		mReturnType(returnType),
-		mParameterList(parameterList)
+		mParameterList(parameterList),
+		mIsConst(isConst)
 	{}
 
 	virtual ~FunctionPrototype() {}
@@ -429,10 +430,13 @@ public:
 	Parameter *GetParameterList() { return mParameterList; }
 	const Parameter *GetParameterList() const { return mParameterList; }
 
+	bool IsConst() const { return mIsConst; }
+
 private:
 	const Token *mName;
 	TypeDescriptor *mReturnType;
 	Parameter *mParameterList;
+	bool mIsConst;
 };
 
 

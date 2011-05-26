@@ -14,10 +14,10 @@
     "Cannot specify an array of void.")                                             \
   BOND_PARSE_ERROR(MULTIDIMENTIONAL_ARRAY_BOUNDS,                                   \
     "Multidimensional array must have bounds for all dimensions except the first.") \
-  BOND_PARSE_ERROR(FUNCTION_DEFINITION_NOT_ALLOWED,                                 \
-    "Function definition not allowed near '%c'.")                                   \
   BOND_PARSE_ERROR(INITIALIZER_NOT_ALLOWED,                                         \
     "Initializer not allowed near '%c'.")                                           \
+  BOND_PARSE_ERROR(CONST_NON_MEMBER_FUNCTION,                                       \
+    "Non-member function '%t' cannot be const.")                                    \
   BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                            \
     "Operator '%c' not allowed in constant expression.")                            \
   BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                               \

@@ -31,15 +31,15 @@ private:
 	EnumDeclaration *ParseEnumDeclaration();
 	Enumerator *ParseEnumerator(const TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
-	ListParseNode *ParseFunctionOrDeclarativeStatement();
+	ListParseNode *ParseFunctionOrDeclarativeStatement(bool isStructMember = false);
 	Parameter *ParseParameterList();
 	Parameter *ParseParameter();
 	TypeDescriptor *ParseRelaxedTypeDescriptor();
-	TypeDescriptor *ParseTypeDescriptor();
+	TypeDescriptor *ParseTypeDescriptor(bool isRelaxedTypeDescriptor = false);
 	TypeSpecifier *ParseTypeSpecifier();
 	TypeSpecifier *ParsePrimitiveTypeSpecifier();
-	NamedInitializer *ParseNamedInitializerList(TypeDescriptor *typeDescriptor);
-	NamedInitializer *ParseNamedInitializer(TypeDescriptor *typeDescriptor);
+	NamedInitializer *ParseNamedInitializerList(TypeDescriptor *typeDescriptor, bool allowInitializers = true);
+	NamedInitializer *ParseNamedInitializer(TypeDescriptor *typeDescriptor, bool allowInitializers);
 	Initializer *ParseInitializer();
 	QualifiedIdentifier *ParseQualifiedIdentifier();
 	ListParseNode *ParseStatement();
@@ -90,16 +90,14 @@ private:
 	void AssertNode(ParseNode *node);
 	void AssertNonConstExpression(ParseError::Type type, const Token *token);
 	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
-	void PushError(ParseError::Type errorType, const Token *token, const char *expected = "");
+	void PushError(ParseError::Type errorType, const Token *token, const void *arg = 0);
+	void PushRecoverableError(ParseError::Type errorType, const Token *token, const void *arg = 0);
 
 	ParseErrorBuffer &mErrorBuffer;
 	ParseNodeFactory &mFactory;
 	TokenStream &mStream;
 
-	BoolStack mAllowFunctionDefinitions;
-	BoolStack mAllowInitializers;
 	BoolStack mParseConstExpressions;
-	BoolStack mParseRelaxedTypeDescriptors;
 
 	bool mHasUnrecoveredError;
 };
@@ -144,10 +142,7 @@ TranslationUnit *ParserCore::Parse()
 //  : external_declaration*
 TranslationUnit *ParserCore::ParseTranslationUnit()
 {
-	BoolStack::Element allowFunctionDefinitionsElement(mAllowFunctionDefinitions, true);
-	BoolStack::Element allowInitializersElement(mAllowInitializers, true);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
-	BoolStack::Element parseRelaxedTypeDescriptorsElement(mParseRelaxedTypeDescriptors, false);
 	ListParseNode *declarations = ParseExternalDeclarationList();
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
 	ExpectToken(Token::END);
@@ -324,8 +319,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 	if (mStream.NextIf(Token::KEY_STRUCT) != 0)
 	{
-		BoolStack::Element allowFunctionDefinitionsElement(mAllowFunctionDefinitions, false);
-		BoolStack::Element allowInitializersElement(mAllowInitializers, false);
+		//const bool isNative = mStream.NextIf(Token_KEY_NATIVE) != 0;
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
 		ListParseNode *memberList = 0;
@@ -336,7 +330,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			// Eat up superfluous semicolons.
 			if (mStream.NextIf(Token::SEMICOLON) == 0)
 			{
-				ListParseNode *next = ParseFunctionOrDeclarativeStatement();
+				ListParseNode *next = ParseFunctionOrDeclarativeStatement(true);
 				AssertNode(next);
 				SyncToStructMemberTerminator();
 
@@ -376,7 +370,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 // *const_declarative_statement
 //   : declarative_statement 
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
-ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement()
+ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(bool isStructMember)
 {
 	ListParseNode *node = 0;
 	const int startPos = mStream.GetPosition();
@@ -394,18 +388,22 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement()
 			{
 				Parameter *parameterList = ParseParameterList();
 				ExpectToken(Token::CPAREN);
-				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList);
+				const Token *keywordConst = mStream.NextIf(Token::KEY_CONST);
+				bool isConst = keywordConst != 0;
+
+				if (!isStructMember && isConst)
+				{
+					PushRecoverableError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
+					isConst = false;
+				}
+
+				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList, isConst);
 				CompoundStatement *body = 0;
 				const Token *obrace = mStream.PeekIf(Token::OBRACE);
 
 				if (obrace != 0)
 				{
 					body = ParseCompoundStatement();
-					if (!mAllowFunctionDefinitions.GetTop())
-					{
-						PushError(ParseError::FUNCTION_DEFINITION_NOT_ALLOWED, obrace);
-						mHasUnrecoveredError = false;
-					}
 				}
 				else
 				{
@@ -418,7 +416,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement()
 			{
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
-				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
+				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, !isStructMember);
 				// TODO: Forgot to handle failure.
 
 				if (initializerList != 0)
@@ -492,10 +490,10 @@ Parameter *ParserCore::ParseParameter()
 //   | type_descriptor '[' [const_expression] ']'
 TypeDescriptor *ParserCore::ParseRelaxedTypeDescriptor()
 {
-	BoolStack::Element parseRelaxedTypeDescriptorsElement(mParseRelaxedTypeDescriptors, true);
-	return ParseTypeDescriptor();
+	//BoolStack::Element parseRelaxedTypeDescriptorsElement(mParseRelaxedTypeDescriptors, true);
+	return ParseTypeDescriptor(true);
 }
-TypeDescriptor *ParserCore::ParseTypeDescriptor()
+TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 {
 	TypeDescriptor *descriptor = 0;
 	const int pos = mStream.GetPosition();
@@ -546,8 +544,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor()
 			}
 			else
 			{
-				Expression *length = mParseRelaxedTypeDescriptors.GetTop() ?
-					ParseExpression() : ParseConstExpression();
+				Expression *length = isRelaxedTypeDescriptor ? ParseExpression() : ParseConstExpression();
 				ExpectToken(Token::CBRACKET);
 				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length, descriptor->IsConst());
 				if (arrayCurrent == 0)
@@ -635,14 +632,14 @@ TypeSpecifier *ParserCore::ParsePrimitiveTypeSpecifier()
 // named_initializer_list
 //   : named_initializer
 //   | named_initializer_list ',' named_initializer
-NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDescriptor)
+NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDescriptor, bool allowInitializers)
 {
-	NamedInitializer *head = ParseNamedInitializer(typeDescriptor);
+	NamedInitializer *head = ParseNamedInitializer(typeDescriptor, allowInitializers);
 	NamedInitializer *current = head;
 
 	while ((current != 0) && (mStream.NextIf(Token::COMMA) != 0))
 	{
-		NamedInitializer *next = ParseNamedInitializer(typeDescriptor);
+		NamedInitializer *next = ParseNamedInitializer(typeDescriptor, allowInitializers);
 		AssertNode(next);
 		current->SetNextNode(next);
 		current = next;
@@ -654,7 +651,7 @@ NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDesc
 
 // named_initializer
 //   : IDENTIFIER ['=' initializer]
-NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescriptor)
+NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescriptor, bool allowInitializers)
 {
 	NamedInitializer *namedInitializer = 0;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
@@ -667,7 +664,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 		if (assign != 0)
 		{
 			initializer = ParseInitializer();
-			if (!mAllowInitializers.GetTop())
+			if (!allowInitializers)
 			{
 				PushError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
 			}
@@ -1822,17 +1819,26 @@ void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
 {
 	if ((typeDescriptor != 0) && typeDescriptor->IsVoidType())
 	{
-		PushError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
+		PushRecoverableError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
 	}
 }
 
 
-void ParserCore::PushError(ParseError::Type type, const Token *context, const char *expected)
+void ParserCore::PushError(ParseError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{
-		mErrorBuffer.PushError(type, context, expected);
+		mErrorBuffer.PushError(type, context, arg);
 		mHasUnrecoveredError = true;
+	}
+}
+
+
+void ParserCore::PushRecoverableError(ParseError::Type type, const Token *context, const void *arg)
+{
+	if (!mHasUnrecoveredError)
+	{
+		mErrorBuffer.PushError(type, context, arg);
 	}
 }
 

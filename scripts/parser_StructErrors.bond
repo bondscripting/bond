@@ -8,10 +8,7 @@ struct Struct1
 	// Even worse, an initializer with a parse error on a member.
 	int y = (1 + 2;
 
-	// Function definition on member.
-	int Function1(int a) { return a; }
-
-	// Even worse, a function definition with a parse error on a member.
+	// A member function definition with a parse error.
 	int Function2(int a) { return / 2; }
 };
 

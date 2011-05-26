@@ -22,6 +22,7 @@
 	BOND_TOKEN_ITEM(KEY_IF)                   \
 	BOND_TOKEN_ITEM(KEY_INT)                  \
 	BOND_TOKEN_ITEM(KEY_NAMESPACE)            \
+	BOND_TOKEN_ITEM(KEY_NATIVE)               \
 	BOND_TOKEN_ITEM(KEY_RETURN)               \
 	BOND_TOKEN_ITEM(KEY_SIZEOF)               \
 	BOND_TOKEN_ITEM(KEY_STRUCT)               \

@@ -90,17 +90,4 @@ void TokenStream::SkipTo(const TokenTypeSet &typeSet)
 	}
 }
 
-/*
-void TokenStream::SkipTo(const TokenTypeSet &inclusiveDelimiters, const TokenTypeSet &exclusiveDelimiters)
-{
-	while (mIndex < (mLength - 1))
-	{
-		if ((PeekIf(exclusiveDelimiters) != 0) || (NextIf(inclusiveDelimiters) != 0))
-		{
-			break;
-		}
-		Advance();
-	}
-}
-*/
 }

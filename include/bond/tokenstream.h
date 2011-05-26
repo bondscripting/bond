@@ -38,7 +38,6 @@ public:
 
 	void SkipTo(Token::TokenType type);
 	void SkipTo(const TokenTypeSet &typeSet);
-	//void SkipTo(const TokenTypeSet &inclusiveDelimiters, const TokenTypeSet &exclusiveDelimiters);
 
 	int GetPosition() const { return mIndex; }
 	void SetPosition(int index) { mIndex = ValidIndex(index); }

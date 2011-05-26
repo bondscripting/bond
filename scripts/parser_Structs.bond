@@ -9,7 +9,8 @@ struct Data
 struct Functions
 {
 	void DoStuff();
-	int DoMoreStuff(int a);
+	int DoMoreStuff(int a) const;
+	int ReturnANumber() const { return 31; }
 };
 
 struct DataAndFunctions
@@ -19,5 +20,5 @@ struct DataAndFunctions
 	; // A couple of superfluous semicolons.
 	;
 	float y;
-	void DoMoreStuff();
+	void DoMoreStuff() {}
 };

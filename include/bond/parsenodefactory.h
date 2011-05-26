@@ -30,7 +30,8 @@ public:
 	FunctionPrototype *CreateFunctionPrototype(
 		const Token *name,
 		TypeDescriptor *returnType,
-		Parameter *parameterList);
+		Parameter *parameterList,
+		bool isConst);
 
 	Parameter *CreateParameter(const Token *name, TypeDescriptor *typeDescriptor);
 	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
