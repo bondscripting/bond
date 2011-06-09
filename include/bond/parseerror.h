@@ -18,6 +18,10 @@
     "Initializer not allowed near '%c'.")                                           \
   BOND_PARSE_ERROR(CONST_NON_MEMBER_FUNCTION,                                       \
     "Non-member function '%t' cannot be const.")                                    \
+  BOND_PARSE_ERROR(NATIVE_MEMBER_FUNCTION_DEFINITION,                               \
+    "Native member function '%c' cannot be defined.")                               \
+  BOND_PARSE_ERROR(NON_NATIVE_MEMBER_FUNCTION_DECLARATION,                          \
+    "Member function '%c' must be defined.")                                        \
   BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                            \
     "Operator '%c' not allowed in constant expression.")                            \
   BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                               \

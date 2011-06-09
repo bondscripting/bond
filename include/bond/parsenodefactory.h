@@ -2,7 +2,7 @@
 #define BOND_PARSENODEFACTORY_H
 
 #include "bond/allocator.h"
-#include "bond/parsenodesfwd.h"
+#include "bond/parsenodes.h"
 #include "bond/token.h"
 
 namespace Bond
@@ -24,7 +24,13 @@ public:
 		const TypeDescriptor *typeDescriptor,
 		Expression *value);
 
-	StructDeclaration *CreateStructDeclaration(const Token *name, ListParseNode *memberList);
+	StructDeclaration *CreateStructDeclaration(
+		const Token *name,
+		const Token *size,
+		const Token *alignment,
+		ListParseNode *memberList,
+		StructDeclaration::Variant variant);
+
 	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);
 
 	FunctionPrototype *CreateFunctionPrototype(

@@ -1007,6 +1007,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_NATIVE);
 	}
+	else if (strcmp(token.GetText(), "ref") == 0)
+	{
+		token.SetTokenType(Token::KEY_REF);
+	}
 	else if (strcmp(token.GetText(), "return") == 0)
 	{
 		token.SetTokenType(Token::KEY_RETURN);

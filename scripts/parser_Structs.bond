@@ -8,15 +8,15 @@ struct Data
 
 struct Functions
 {
-	void DoStuff();
-	int DoMoreStuff(int a) const;
+	void DoStuff() {}
+	void DoMoreStuff(int a) const {}
 	int ReturnANumber() const { return 31; }
 };
 
 struct DataAndFunctions
 {
 	int x;
-	Data *DoStuff();
+	Data *DoStuff() {}
 	; // A couple of superfluous semicolons.
 	;
 	float y;

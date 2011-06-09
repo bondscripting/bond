@@ -20,6 +20,13 @@ public:
 	TranslationUnit *Parse();
 
 private:
+	enum DeclarationContext
+	{
+		TOP_LEVEL,
+		STRUCT_MEMBER,
+		NATIVE_STRUCT_MEMBER
+	};
+
 	// Copying disallowed.
 	ParserCore(const ParserCore &other);
 	ParserCore &operator=(const ParserCore &other);
@@ -31,7 +38,7 @@ private:
 	EnumDeclaration *ParseEnumDeclaration();
 	Enumerator *ParseEnumerator(const TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
-	ListParseNode *ParseFunctionOrDeclarativeStatement(bool isStructMember = false);
+	ListParseNode *ParseFunctionOrDeclarativeStatement(DeclarationContext context = TOP_LEVEL);
 	Parameter *ParseParameterList();
 	Parameter *ParseParameter();
 	TypeDescriptor *ParseRelaxedTypeDescriptor();
@@ -319,8 +326,34 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 	if (mStream.NextIf(Token::KEY_STRUCT) != 0)
 	{
-		//const bool isNative = mStream.NextIf(Token_KEY_NATIVE) != 0;
+		const Token *native = mStream.NextIf(STRUCT_VARIANT_TYPESET);
 		const Token *name = ExpectToken(Token::IDENTIFIER);
+		const Token *size = 0;
+		const Token *alignment = 0;
+		StructDeclaration::Variant variant;
+
+		if (native == 0)
+		{
+			variant = StructDeclaration::VARIANT_BOND;
+		}
+		else if (native->GetTokenType() == Token::KEY_NATIVE)
+		{
+			variant = StructDeclaration::VARIANT_NATIVE;
+			ExpectToken(Token::OP_LT);
+			size = ExpectToken(INTEGER_TYPE_SPECIFIERS_TYPESET);
+
+			if (mStream.NextIf(Token::COMMA))
+			{
+				alignment = ExpectToken(INTEGER_TYPE_SPECIFIERS_TYPESET);
+			}
+
+			ExpectToken(Token::OP_GT);
+		}
+		else
+		{
+			variant = StructDeclaration::VARIANT_REFERENCE;
+		}
+
 		ExpectToken(Token::OBRACE);
 		ListParseNode *memberList = 0;
 		ListParseNode *current = 0;
@@ -330,7 +363,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			// Eat up superfluous semicolons.
 			if (mStream.NextIf(Token::SEMICOLON) == 0)
 			{
-				ListParseNode *next = ParseFunctionOrDeclarativeStatement(true);
+				ListParseNode *next = ParseFunctionOrDeclarativeStatement(STRUCT_MEMBER);
 				AssertNode(next);
 				SyncToStructMemberTerminator();
 
@@ -351,7 +384,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
-		declaration = mFactory.CreateStructDeclaration(name, memberList);
+ declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList, variant);
 	}
 
 	return declaration;
@@ -370,7 +403,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 // *const_declarative_statement
 //   : declarative_statement 
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
-ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(bool isStructMember)
+ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContext context)
 {
 	ListParseNode *node = 0;
 	const int startPos = mStream.GetPosition();
@@ -391,7 +424,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(bool isStructMemb
 				const Token *keywordConst = mStream.NextIf(Token::KEY_CONST);
 				bool isConst = keywordConst != 0;
 
-				if (!isStructMember && isConst)
+				if (isConst && (context == TOP_LEVEL))
 				{
 					PushRecoverableError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
 					isConst = false;
@@ -404,10 +437,18 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(bool isStructMemb
 				if (obrace != 0)
 				{
 					body = ParseCompoundStatement();
+					if (context == NATIVE_STRUCT_MEMBER)
+					{
+						PushRecoverableError(ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
+					}
 				}
 				else
 				{
 					ExpectDeclarationTerminator();
+					if (context == STRUCT_MEMBER)
+					{
+						PushRecoverableError(ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
+					}
 				}
 
 				node = mFactory.CreateFunctionDefinition(prototype, body);
@@ -416,7 +457,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(bool isStructMemb
 			{
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
-				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, !isStructMember);
+				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, context == TOP_LEVEL);
 				// TODO: Forgot to handle failure.
 
 				if (initializerList != 0)

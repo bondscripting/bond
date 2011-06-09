@@ -28,7 +28,7 @@ struct Struct4
 	// Malformed data member.
 	const int;
 	// Malformed function member.
-	int Function(int , blarg ,,;
+	int Function(int , ) {}
 };
 
 const int SENTINEL2 = 2;

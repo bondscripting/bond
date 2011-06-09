@@ -1,4 +1,4 @@
-bool break char case cast const continue default do else enum float for if int namespace return sizeof struct switch uint void while
+bool break char case cast const continue default do else enum float for if int namespace native ref return sizeof struct switch uint void while
 +-*/%++--< <=> >=<<>> ==!=!&&||&|^~?->
 =>>=<<=+=-=*=/=%=&=|=^=
 (){}[].;:::,

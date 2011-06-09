@@ -8,8 +8,8 @@ external_declaration
   : namespace_definition
   | enum_declaration
   | struct_declaration
-  | function_declaration
   | function_definition
+  | native_function_declaration
   | const_declarative_statement
 
 namespace_definition
@@ -22,7 +22,7 @@ function_definition
 Declarations
 ------------
 
-function_declaration
+native_function_declaration
   : function_prototype ';'
 
 function_prototype
@@ -47,12 +47,16 @@ enumerator
 
 struct_declaration
   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
-  | STRUCT NATIVE IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' '{' struct_member_declaration+ '}' ';'
+  | STRUCT REF IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+  | STRUCT NATIVE IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' '{' native_struct_member_declaration+ '}' ';'
 
 struct_member_declaration
   : type_descriptor identifier_list ';'
-  | function_prototype [ CONST ] ';'
   | function_prototype [ CONST ] compound_statement
+
+native_struct_member_declaration
+  : type_descriptor identifier_list ';'
+  | function_prototype [ CONST ] ';'
 
 type_descriptor
   : CONST type_specifier

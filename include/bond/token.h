@@ -23,6 +23,7 @@
 	BOND_TOKEN_ITEM(KEY_INT)                  \
 	BOND_TOKEN_ITEM(KEY_NAMESPACE)            \
 	BOND_TOKEN_ITEM(KEY_NATIVE)               \
+	BOND_TOKEN_ITEM(KEY_REF)                  \
 	BOND_TOKEN_ITEM(KEY_RETURN)               \
 	BOND_TOKEN_ITEM(KEY_SIZEOF)               \
 	BOND_TOKEN_ITEM(KEY_STRUCT)               \
@@ -303,6 +304,7 @@ extern const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
+extern const TokenTypeSet STRUCT_VARIANT_TYPESET;
 extern const TokenTypeSet JUMP_OPERATORS_TYPESET;
 extern const TokenTypeSet SWITCH_LABELS_TYPESET;
 extern const TokenTypeSet ASSIGNMENT_OPERATORS_TYPESET;

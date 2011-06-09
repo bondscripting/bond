@@ -20,6 +20,8 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 		Bond::Token::KEY_IF,
 		Bond::Token::KEY_INT,
 		Bond::Token::KEY_NAMESPACE,
+		Bond::Token::KEY_NATIVE,
+		Bond::Token::KEY_REF,
 		Bond::Token::KEY_RETURN,
 		Bond::Token::KEY_SIZEOF,
 		Bond::Token::KEY_STRUCT,

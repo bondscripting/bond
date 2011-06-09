@@ -9,7 +9,7 @@ namespace OuterSpace
 struct DummyStruct
 {
 	int x;
-	int DummyFunction(float arg);
+	int DummyFunction(float arg) { return 1; }
 };
 
 int [2]* FunnyReturnType();

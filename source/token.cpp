@@ -155,6 +155,13 @@ const TokenTypeSet TYPE_DESCRIPTORS_TYPESET(
 );
 
 
+const TokenTypeSet STRUCT_VARIANT_TYPESET(
+	"STRUCT_VARIANT",
+	Token::KEY_NATIVE,
+	Token::KEY_REF
+);
+
+
 const TokenTypeSet JUMP_OPERATORS_TYPESET(
 	"JUMP_OPERATOR",
 	Token::KEY_BREAK,

@@ -383,9 +383,24 @@ private:
 class StructDeclaration: public Symbol
 {
 public:
-	explicit StructDeclaration(const Token *name, ListParseNode *memberList):
+	enum Variant
+	{
+		VARIANT_BOND,
+		VARIANT_NATIVE,
+		VARIANT_REFERENCE,
+	};
+
+	explicit StructDeclaration(
+			const Token *name,
+			const Token *size,
+			const Token *alignment,
+			ListParseNode *memberList,
+			Variant variant):
 		mName(name),
-		mMemberList(memberList)
+		mSizeToken(size),
+		mAlignmentToken(alignment),
+		mMemberList(memberList),
+		mVariant(variant)
 	{}
 
 	virtual ~StructDeclaration() {}
@@ -401,7 +416,10 @@ public:
 
 private:
 	const Token *mName;
+	const Token *mSizeToken;
+	const Token *mAlignmentToken;
 	ListParseNode *mMemberList;
+	Variant mVariant;
 };
 
 

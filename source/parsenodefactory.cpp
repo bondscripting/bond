@@ -56,7 +56,8 @@ NamespaceDefinition *ParseNodeFactory::CreateNamespaceDefinition(
 	const Token *name,
 	ListParseNode *declarationList)
 {
-	return new (mAllocator.Alloc<NamespaceDefinition>()) NamespaceDefinition(name, declarationList);
+	return new (mAllocator.Alloc<NamespaceDefinition>())
+		NamespaceDefinition(name, declarationList);
 }
 
 
@@ -75,9 +76,15 @@ Enumerator *ParseNodeFactory::CreateEnumerator(
 }
 
 
-StructDeclaration *ParseNodeFactory::CreateStructDeclaration(const Token *name, ListParseNode *memberList)
+StructDeclaration *ParseNodeFactory::CreateStructDeclaration(
+	const Token *name,
+	const Token *size,
+	const Token *alignment,
+	ListParseNode *memberList,
+	StructDeclaration::Variant variant)
 {
-	return new (mAllocator.Alloc<StructDeclaration>()) StructDeclaration(name, memberList);
+	return new (mAllocator.Alloc<StructDeclaration>())
+		StructDeclaration(name, size, alignment, memberList, variant);
 }
 
 
@@ -138,7 +145,8 @@ NamedInitializer *ParseNodeFactory::CreateNamedInitializer(
 	Initializer *initializer,
 	const TypeDescriptor *typeDescriptor)
 {
-	return new (mAllocator.Alloc<NamedInitializer>()) NamedInitializer(name, initializer, typeDescriptor);
+	return new (mAllocator.Alloc<NamedInitializer>())
+		NamedInitializer(name, initializer, typeDescriptor);
 }
 
 
@@ -171,7 +179,8 @@ IfStatement *ParseNodeFactory::CreateIfStatement(
 	ParseNode *thenStatement,
 	ParseNode *elseStatement)
 {
-	return new (mAllocator.Alloc<IfStatement>()) IfStatement(condition, thenStatement, elseStatement);
+	return new (mAllocator.Alloc<IfStatement>())
+		IfStatement(condition, thenStatement, elseStatement);
 }
 
 
@@ -201,13 +210,15 @@ SwitchLabel *ParseNodeFactory::CreateDefaultLabel(const Token *label)
 
 WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, ParseNode *body)
 {
-	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
+	return new (mAllocator.Alloc<WhileStatement>())
+		WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
 }
 
 
 WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, ParseNode *body)
 {
-	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
+	return new (mAllocator.Alloc<WhileStatement>())
+		WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
 }
 
 
@@ -217,7 +228,8 @@ ForStatement *ParseNodeFactory::CreateForStatement(
 	Expression *countingExpression,
 	ParseNode *body)
 {
-	return new (mAllocator.Alloc<ForStatement>()) ForStatement(initializer, condition, countingExpression, body);
+	return new (mAllocator.Alloc<ForStatement>())
+		ForStatement(initializer, condition, countingExpression, body);
 }
 
 
@@ -231,7 +243,8 @@ DeclarativeStatement *ParseNodeFactory::CreateDeclarativeStatement(
 	TypeDescriptor *typeDescriptor,
 	NamedInitializer *initializerList)
 {
-	return new (mAllocator.Alloc<DeclarativeStatement>()) DeclarativeStatement(typeDescriptor, initializerList);
+	return new (mAllocator.Alloc<DeclarativeStatement>())
+		DeclarativeStatement(typeDescriptor, initializerList);
 }
 
 
@@ -247,7 +260,8 @@ ConditionalExpression *ParseNodeFactory::CreateConditionalExpression(
 	Expression *trueExpression,
 	Expression *falseExpression)
 {
-	return new (mAllocator.Alloc<ConditionalExpression>()) ConditionalExpression(op, condition, trueExpression, falseExpression);
+	return new (mAllocator.Alloc<ConditionalExpression>())
+		ConditionalExpression(op, condition, trueExpression, falseExpression);
 }
 
 
@@ -277,7 +291,8 @@ MemberExpression *ParseNodeFactory::CreateMemberExpression(const Token *op, cons
 
 ArraySubscriptExpression *ParseNodeFactory::CreateArraySubscriptExpression(const Token *op, Expression *lhs, Expression *index)
 {
-	return new (mAllocator.Alloc<ArraySubscriptExpression>()) ArraySubscriptExpression(op, lhs, index);
+	return new (mAllocator.Alloc<ArraySubscriptExpression>())
+		ArraySubscriptExpression(op, lhs, index);
 }
 
 
@@ -286,7 +301,8 @@ FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(
 	Expression *lhs,
 	Expression *argumentList)
 {
-	return new (mAllocator.Alloc<FunctionCallExpression>()) FunctionCallExpression(context, lhs, argumentList);
+	return new (mAllocator.Alloc<FunctionCallExpression>())
+		FunctionCallExpression(context, lhs, argumentList);
 }
 
 
@@ -331,6 +347,7 @@ void ParseNodeFactory::DestroyHierarchy(ParseNode *parseNode)
 	ParseNodeDeallocator deallocator(mAllocator);
 	deallocator.Destroy(parseNode);
 }
+
 
 void ParseNodeFactory::DestroyListHierarchy(ListParseNode *listNode)
 {
