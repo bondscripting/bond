@@ -91,6 +91,7 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(NamespaceDefinition);
 	ASSERT_COUNT(EnumDeclaration);
 	ASSERT_COUNT(Enumerator);
+	ASSERT_COUNT(StructDeclaration);
 	ASSERT_COUNT(FunctionDefinition);
 	ASSERT_COUNT(FunctionPrototype);
 	ASSERT_COUNT(Parameter);
@@ -105,6 +106,7 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(SwitchSection);
 	ASSERT_COUNT(SwitchLabel);
 	ASSERT_COUNT(WhileStatement);
+	ASSERT_COUNT(ForStatement);
 	ASSERT_COUNT(JumpStatement);
 	ASSERT_COUNT(DeclarativeStatement);
 	ASSERT_COUNT(ExpressionStatement);

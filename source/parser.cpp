@@ -327,24 +327,27 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 	if (mStream.NextIf(Token::KEY_STRUCT) != 0)
 	{
 		const Token *native = mStream.NextIf(STRUCT_VARIANT_TYPESET);
-		const Token *name = ExpectToken(Token::IDENTIFIER);
 		const Token *size = 0;
 		const Token *alignment = 0;
-		StructDeclaration::Variant variant;
+		StructDeclaration::Variant variant = StructDeclaration::VARIANT_BOND;
+		DeclarationContext context = STRUCT_MEMBER;
 
 		if (native == 0)
 		{
 			variant = StructDeclaration::VARIANT_BOND;
+			context = STRUCT_MEMBER;
 		}
 		else if (native->GetTokenType() == Token::KEY_NATIVE)
 		{
 			variant = StructDeclaration::VARIANT_NATIVE;
+			context = NATIVE_STRUCT_MEMBER;
+
 			ExpectToken(Token::OP_LT);
-			size = ExpectToken(INTEGER_TYPE_SPECIFIERS_TYPESET);
+			size = ExpectToken(INTEGER_CONSTANTS_TYPESET);
 
 			if (mStream.NextIf(Token::COMMA))
 			{
-				alignment = ExpectToken(INTEGER_TYPE_SPECIFIERS_TYPESET);
+				alignment = ExpectToken(INTEGER_CONSTANTS_TYPESET);
 			}
 
 			ExpectToken(Token::OP_GT);
@@ -352,8 +355,10 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 		else
 		{
 			variant = StructDeclaration::VARIANT_REFERENCE;
+			context = NATIVE_STRUCT_MEMBER;
 		}
 
+		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
 		ListParseNode *memberList = 0;
 		ListParseNode *current = 0;
@@ -363,7 +368,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			// Eat up superfluous semicolons.
 			if (mStream.NextIf(Token::SEMICOLON) == 0)
 			{
-				ListParseNode *next = ParseFunctionOrDeclarativeStatement(STRUCT_MEMBER);
+				ListParseNode *next = ParseFunctionOrDeclarativeStatement(context);
 				AssertNode(next);
 				SyncToStructMemberTerminator();
 
@@ -384,7 +389,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
- declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList, variant);
+		declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList, variant);
 	}
 
 	return declaration;

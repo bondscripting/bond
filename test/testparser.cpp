@@ -108,10 +108,10 @@ DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mStructDeclaration = 4;
-	expectedCount.mDeclarativeStatement = 4;
-	expectedCount.mFunctionPrototype = 5;
-	expectedCount.mFunctionDefinition = 5;
+	expectedCount.mStructDeclaration = 7;
+	expectedCount.mDeclarativeStatement = 7;
+	expectedCount.mFunctionPrototype = 8;
+	expectedCount.mFunctionDefinition = 8;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
@@ -241,10 +241,12 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 		{Bond::ParseError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
 		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
 		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 12},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 16},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 23},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 29},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 31},
+		{Bond::ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 15},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
+		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
+		{Bond::ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 39},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -255,8 +257,8 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 6;
-	expectedCount.mStructDeclaration = 4;
-	expectedCount.mFunctionPrototype = 2;
+	expectedCount.mStructDeclaration = 5;
+	expectedCount.mFunctionPrototype = 4;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 

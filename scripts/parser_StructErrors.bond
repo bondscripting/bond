@@ -10,6 +10,9 @@ struct Struct1
 
 	// A member function definition with a parse error.
 	int Function2(int a) { return / 2; }
+
+	// An undefined member function.
+	int Undefined();
 };
 
 struct // Missing name.
@@ -29,6 +32,11 @@ struct Struct4
 	const int;
 	// Malformed function member.
 	int Function(int , ) {}
+};
+
+struct ref ReferenceStruct
+{
+	void Defined() {}
 };
 
 const int SENTINEL2 = 2;

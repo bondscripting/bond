@@ -22,3 +22,21 @@ struct DataAndFunctions
 	float y;
 	void DoMoreStuff() {}
 };
+
+struct ref ReferenceNativeStruct
+{
+	int x;
+	void DoSomething();
+};
+
+struct native<16> NativeStructWithNoAlignment
+{
+	int x;
+	int ReturnNumber() const;
+};
+
+struct native<16, 16> NativeStructWithAlignment
+{
+	int x;
+	void DoSomething();
+};

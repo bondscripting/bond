@@ -48,7 +48,7 @@ enumerator
 struct_declaration
   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
   | STRUCT REF IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-  | STRUCT NATIVE IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' '{' native_struct_member_declaration+ '}' ';'
+  | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
 
 struct_member_declaration
   : type_descriptor identifier_list ';'
