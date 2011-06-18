@@ -250,8 +250,6 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 
 		TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
 		conditionalExpression->SetTypeDescriptor(resultType);
-		TypeAndValue &tav = conditionalExpression->GetTypeAndValue();
-		tav.SetTypeDescriptor(conditionalExpression->GetTypeDescriptor());
 	}
 }
 
@@ -399,8 +397,6 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 		{
 			resultType.SetRValue();
 			binaryExpression->SetTypeDescriptor(resultType);
-			TypeAndValue &tav = binaryExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(binaryExpression->GetTypeDescriptor());
 		}
 	}
 }
@@ -474,8 +470,6 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			}
 
 			unaryExpression->SetTypeDescriptor(resultType);
-			TypeAndValue &tav = unaryExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(unaryExpression->GetTypeDescriptor());
 		}
 	}
 }
@@ -495,8 +489,7 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		{
 			AssertAssignableType(lhDescriptor, op);
 			AssertNonConstExpression(op);
-			TypeAndValue &tav = postfixExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(lhDescriptor);
+			postfixExpression->SetTypeDescriptor(*lhDescriptor);
 		}
 	}
 }
@@ -541,8 +534,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			}
 			else
 			{
-				TypeAndValue &tav = memberExpression->GetTypeAndValue();
-				tav.SetTypeDescriptor(member->GetTypeAndValue()->GetTypeDescriptor());
+				memberExpression->SetTypeDescriptor(*member->GetTypeAndValue()->GetTypeDescriptor());
 			}
 		}
 	}
@@ -574,8 +566,7 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 		AssertPointerOperand(lhDescriptor, op);
 		if (lhDescriptor->IsPointerType())
 		{
-			TypeAndValue &tav = arraySubscriptExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(lhDescriptor->GetParent());
+			arraySubscriptExpression->SetTypeDescriptor(*lhDescriptor->GetParent());
 		}
 	}
 }
@@ -638,8 +629,7 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 			}
 
 			const TypeDescriptor *returnType = prototype->GetReturnType();
-			TypeAndValue &tav = functionCallExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(returnType);
+			functionCallExpression->SetTypeDescriptor(*returnType);
 		}
 	}
 }
@@ -667,8 +657,7 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 			lhDescriptor->SetLValue();
 		}
 
-		TypeAndValue &tav = castExpression->GetTypeAndValue();
-		tav.SetTypeDescriptor(lhDescriptor);
+		castExpression->SetTypeDescriptor(*lhDescriptor);
 	}
 }
 
@@ -676,9 +665,7 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 {
 	ParseNodeTraverser::Visit(sizeofExpression);
-
-	TypeAndValue &tav = sizeofExpression->GetTypeAndValue();
-	tav.SetTypeDescriptor(&UINT_TYPE_DESCRIPTOR);
+	sizeofExpression->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
 }
 
 
@@ -712,8 +699,7 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 			break;
 	}
 
-	TypeAndValue &tav = constantExpression->GetTypeAndValue();
-	tav.SetTypeDescriptor(typeDescriptor);
+	constantExpression->SetTypeDescriptor(*typeDescriptor);
 }
 
 
@@ -737,8 +723,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		}
 		else if (symbolTav->IsTypeDefined())
 		{
-			TypeAndValue &tav = identifierExpression->GetTypeAndValue();
-			tav.SetTypeDescriptor(symbolTav->GetTypeDescriptor());
+			identifierExpression->SetTypeDescriptor(*symbolTav->GetTypeDescriptor());
 		}
 	}
 }

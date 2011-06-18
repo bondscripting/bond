@@ -887,6 +887,9 @@ class Expression: public ListParseNode
 public:
 	virtual ~Expression() {}
 
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; mTypeAndValue.SetTypeDescriptor(&mTypeDescriptor); }
+
 	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
 	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
 
@@ -894,26 +897,12 @@ protected:
 	Expression() {}
 
 private:
+	TypeDescriptor mTypeDescriptor;
 	TypeAndValue mTypeAndValue;
 };
 
 
-// Expression that results in a temporary value that may differ from its operand type, thus requiring
-// the instantiation of a new TypeDescriptor to describe the resulting type.
-class TemporaryExpression: public Expression
-{
-public:
-	virtual ~TemporaryExpression() {}
-
-	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
-	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
-
-private:
-	TypeDescriptor mTypeDescriptor;
-};
-
-
-class ConditionalExpression: public TemporaryExpression
+class ConditionalExpression: public Expression
 {
 public:
 	ConditionalExpression(
@@ -951,7 +940,7 @@ private:
 };
 
 
-class BinaryExpression: public TemporaryExpression
+class BinaryExpression: public Expression
 {
 public:
 	BinaryExpression(const Token *op, Expression *lhs, Expression *rhs):
@@ -982,7 +971,7 @@ private:
 };
 
 
-class UnaryExpression: public TemporaryExpression
+class UnaryExpression: public Expression
 {
 public:
 	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
@@ -1231,15 +1220,10 @@ extern const TypeSpecifier UINT_TYPE_SPECIFIER;
 extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
 
 extern const TypeDescriptor BOOL_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_BOOL_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CHAR_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR;
 extern const TypeDescriptor INT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_INT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor UINT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_UINT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor FLOAT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_FLOAT_TYPE_DESCRIPTOR;
 extern const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR;
 
 }
