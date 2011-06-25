@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\test">
+      <UniqueIdentifier>{10016d2f-00d8-4206-9152-af510b4b35eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\test\framework">
+      <UniqueIdentifier>{86683650-6359-4617-aa2d-c7a1cc055436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\test">
+      <UniqueIdentifier>{c3ce1453-d77e-4bff-a37b-c88d349a671e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\test\framework">
+      <UniqueIdentifier>{acce708e-a3db-4269-aeb5-d8bd00631dbc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\test\framework\testframework.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\framework\testlexerframework.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\framework\testparserframework.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\framework\testsemanticanalyzerframework.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\framework\util.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\test\framework\testframework.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\framework\testlexerframework.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\framework\testparserframework.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\framework\testsemanticanalyzerframework.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\framework\util.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

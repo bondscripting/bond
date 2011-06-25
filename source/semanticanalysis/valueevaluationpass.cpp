@@ -108,30 +108,41 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 	{
 		ParseNodeTraverser::Visit(typeDescriptor);
 
-		const Expression *expression = typeDescriptor->GetLengthExpression();
-		if (expression != 0)
+		Expression *expressionList = typeDescriptor->GetLengthExpressionList();
+		while (expressionList != 0)
 		{
-			const TypeAndValue &tav = expression->GetTypeAndValue();
+			// Validate the value and cast it to an unsigned integar.
+			TypeAndValue &tav = expressionList->GetTypeAndValue();
 			if (tav.IsResolved())
 			{
+				const bool isUInt = tav.GetTypeDescriptor()->GetPrimitiveType() == Token::KEY_UINT;
+
 				if (tav.IsValueDefined())
 				{
-					const Value length = CastValue(tav, &UINT_TYPE_DESCRIPTOR);
-					typeDescriptor->SetLength(length.mUInt);
-
-					if (length.mUInt == 0)
+					if (!isUInt)
 					{
-						mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_ZERO, expression->GetContextToken());
-						typeDescriptor->SetLength(1);
+						const Value length = CastValue(tav, &UINT_TYPE_DESCRIPTOR);
+						tav.SetValue(length);
+					}
+
+					if (tav.GetUIntValue() == 0)
+					{
+						mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_ZERO, expressionList->GetContextToken());
 					}
 				}
 				else
 				{
-					mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expression->GetContextToken());
-					typeDescriptor->SetLength(1);
+					mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expressionList->GetContextToken());
+					tav.SetUIntValue(1);
 				}
+
 				// TODO: Compute size of type.
+				if (!isUInt)
+				{
+					expressionList->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
+				}
 			}
+			expressionList = static_cast<Expression *>(expressionList->GetNextNode());
 		}
 	}
 }
@@ -187,8 +198,8 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
 	TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
 	if ((typeDescriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY) &&
-	    (typeDescriptor->GetLengthExpression() == 0) &&
-	    !typeDescriptor->IsLengthDefined())
+	    (CastNode<EmptyExpression>(typeDescriptor->GetLengthExpressionList()) != 0) &&
+	    !typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().IsValueDefined())
 	{
 		bu32_t length = 0;
 		const NamedInitializer *current = declarativeStatement->GetNamedInitializerList();
@@ -207,9 +218,8 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 		{
 			mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_UNSPECIFIED, typeDescriptor->GetContextToken(), typeDescriptor);
 		}
-		typeDescriptor->SetLength(length);
+		typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().SetUIntValue(length);
 	}
-
 	ParseNodeTraverser::Visit(declarativeStatement);
 }
 

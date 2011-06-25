@@ -118,6 +118,9 @@ public:
 
 	virtual void Visit(IdentifierExpression *identifierExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
+
+	virtual void Visit(EmptyExpression *emptyExpression) {}
+	virtual void Visit(const EmptyExpression *emptyExpression) {}
 };
 
 }

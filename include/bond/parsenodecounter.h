@@ -42,7 +42,8 @@ struct ParseNodeCount
 		mCastExpression(defaultValue),
 		mSizeofExpression(defaultValue),
 		mConstantExpression(defaultValue),
-		mIdentifierExpression(defaultValue)
+		mIdentifierExpression(defaultValue),
+		mEmptyExpression(defaultValue)
 	{}
 
 	int mTranslationUnit;
@@ -79,6 +80,7 @@ struct ParseNodeCount
 	int mSizeofExpression;
 	int mConstantExpression;
 	int mIdentifierExpression;
+	int mEmptyExpression;
 };
 
 
@@ -127,6 +129,7 @@ private:
 	virtual void Visit(const SizeofExpression *sizeofExpression);
 	virtual void Visit(const ConstantExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
+	virtual void Visit(const EmptyExpression *emptyExpression);
 
 	ParseNodeCount mCount;
 };

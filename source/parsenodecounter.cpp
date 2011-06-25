@@ -241,4 +241,11 @@ void ParseNodeCounter::Visit(const IdentifierExpression *identifierExpression)
 	ParseNodeTraverser::Visit(identifierExpression);
 }
 
+
+void ParseNodeCounter::Visit(const EmptyExpression *emptyExpression)
+{
+	++mCount.mEmptyExpression;
+	ParseNodeTraverser::Visit(emptyExpression);
+}
+
 }

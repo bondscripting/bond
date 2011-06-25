@@ -146,10 +146,18 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 {
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(typeDescriptor);
-	const Expression *expression = typeDescriptor->GetLengthExpression();
-	if (expression != 0)
+	Expression *expressionList = typeDescriptor->GetLengthExpressionList();
+	while (expressionList != 0)
 	{
-		AssertIntegerExpression(expression, ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
+		if (CastNode<EmptyExpression>(expressionList) != 0)
+		{
+			expressionList->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
+		}
+		else
+		{
+			AssertIntegerExpression(expressionList, ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
+		}
+		expressionList = static_cast<Expression *>(expressionList->GetNextNode());
 	}
 }
 
@@ -884,10 +892,10 @@ void TypeEvaluationPass::ValidateInitializer(
 	{
 		if (initializerList != 0)
 		{
-			const TypeDescriptor *parent = typeDescriptor->GetParent();
+			const TypeDescriptor parent = typeDescriptor->Dereference();
 			while (initializerList != 0)
 			{
-				ValidateInitializer(name, initializerList, parent);
+				ValidateInitializer(name, initializerList, &parent);
 				initializerList = static_cast<const Initializer *>(initializerList->GetNextNode());
 			}
 		}

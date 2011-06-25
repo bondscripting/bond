@@ -536,7 +536,6 @@ Parameter *ParserCore::ParseParameter()
 //   | type_descriptor '[' [const_expression] ']'
 TypeDescriptor *ParserCore::ParseRelaxedTypeDescriptor()
 {
-	//BoolStack::Element parseRelaxedTypeDescriptorsElement(mParseRelaxedTypeDescriptors, true);
 	return ParseTypeDescriptor(true);
 }
 TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
@@ -556,8 +555,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
-		TypeDescriptor *arrayHead = 0;
-		TypeDescriptor *arrayCurrent = 0;
+		Expression *lengthTail = 0;
 
 		const Token *token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
 		while (token != 0)
@@ -576,53 +574,42 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			// appropriate places in the parser.
 			if (token->GetTokenType() == Token::OP_STAR)
 			{
-				if (arrayCurrent != 0)
-				{
-					descriptor->SetLValue();
-					arrayCurrent->SetParent(descriptor);
-					descriptor = arrayHead;
-					arrayHead = 0;
-					arrayCurrent = 0;
-				}
 				const bool isConst = mStream.NextIf(Token::KEY_CONST) != 0;
 				descriptor->SetLValue();
 				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
+				lengthTail = 0;
 			}
 			else
 			{
 				Expression *length = isRelaxedTypeDescriptor ? ParseExpression() : ParseConstExpression();
+
+				const bool lengthAbsent = length == 0;
+				if (lengthAbsent)
+				{
+					length = mFactory.CreateEmptyExpression();
+				}
+
 				ExpectToken(Token::CBRACKET);
-				TypeDescriptor *parent = mFactory.CreateTypeDescriptor(0, length, descriptor->IsConst());
-				if (arrayCurrent == 0)
+				if (lengthTail == 0)
 				{
 					if (descriptor->IsVoidType())
 					{
 						PushError(ParseError::ARRAY_OF_VOID, token);
 					}
-					arrayHead = parent;
-					arrayCurrent = parent;
+					descriptor->SetLValue();
+					descriptor = mFactory.CreateTypeDescriptor(descriptor, length, descriptor->IsConst());
 				}
 				else
 				{
-					if (length == 0)
+					if (lengthAbsent)
 					{
 						PushError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
 					}
-					parent->SetLValue();
-					arrayCurrent->SetParent(parent);
-					arrayCurrent = parent;
+					lengthTail->SetNextNode(length);
 				}
+				lengthTail = length;
 			}
 			token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
-		}
-
-		if (arrayCurrent != 0)
-		{
-			descriptor->SetLValue();
-			arrayCurrent->SetParent(descriptor);
-			descriptor = arrayHead;
-			arrayHead = 0;
-			arrayCurrent = 0;
 		}
 	}
 	else

@@ -152,10 +152,51 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
+TypeDescriptor TypeDescriptor::Dereference() const
+{
+	TypeDescriptor typeDescriptor;
+
+	switch (mVariant)
+	{
+		case VARIANT_VALUE:
+			// Only pointers can be dereferenced.
+			break;
+
+		case VARIANT_POINTER:
+			typeDescriptor = *mParent;
+			break;
+
+		case VARIANT_ARRAY:
+		{
+			Expression *nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
+			if (nextLength == 0)
+			{
+				typeDescriptor = *mParent;
+			}
+			else
+			{
+				typeDescriptor = *this;
+				typeDescriptor.mLengthExpressionList = nextLength;
+			}
+		}
+		break;
+	}
+	return typeDescriptor;
+}
+
+
 bool TypeDescriptor::IsResolved() const
 {
-	return ((mLengthExpression == 0) || IsLengthDefined()) &&
-		((mParent == 0) || mParent->IsResolved());
+	const Expression *lengthExpressionList = mLengthExpressionList;
+	while (lengthExpressionList != 0)
+	{
+		if (!lengthExpressionList->GetTypeAndValue().IsValueDefined())
+		{
+			return false;
+		}
+		lengthExpressionList = static_cast<const Expression *>(lengthExpressionList->GetNextNode());
+	}
+	return (mParent == 0) || mParent->IsResolved();
 }
 
 

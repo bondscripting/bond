@@ -49,7 +49,7 @@ typedef bool TestFunction(Bond::TextWriter &logger);
 struct TestItem
 {
 	const char *testName;
-	const TestFunction *testFunction;
+	TestFunction *testFunction;
 };
 
 struct TestGroup

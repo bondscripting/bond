@@ -42,7 +42,12 @@ public:
 	Parameter *CreateParameter(const Token *name, TypeDescriptor *typeDescriptor);
 	TypeDescriptor *CreateTypeDescriptor(TypeSpecifier *specifier, bool isConst);
 	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, bool isConst);
-	TypeDescriptor *CreateTypeDescriptor(TypeDescriptor *parent, Expression *length, bool isConst);
+
+	TypeDescriptor *CreateTypeDescriptor(
+		TypeDescriptor *parent,
+		Expression *lengthExpressionList,
+		bool isConst);
+
 	TypeSpecifier *CreateTypeSpecifier(const Token *primitiveType);
 	TypeSpecifier *CreateTypeSpecifier(QualifiedIdentifier *identifier);
 
@@ -104,6 +109,7 @@ public:
 	SizeofExpression *CreateSizeofExpression(const Token *op, Expression *rhs);
 	ConstantExpression *CreateConstantExpression(const Token *value);
 	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
+	EmptyExpression *CreateEmptyExpression();
 
 	void Destroy(ParseNode *parseNode);
 	void DestroyHierarchy(ParseNode *parseNode);

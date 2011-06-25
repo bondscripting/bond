@@ -114,10 +114,8 @@ public:
 	TypeDescriptor():
 		mTypeSpecifier(0),
 		mParent(0),
-		mLengthExpression(0),
+		mLengthExpressionList(0),
 		mVariant(VARIANT_VALUE),
-		mLength(0),
-		mLengthDefined(false),
 		mIsConst(false),
 		mIsLValue(false)
 	{}
@@ -125,10 +123,8 @@ public:
 	TypeDescriptor(const TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
 		mParent(0),
-		mLengthExpression(0),
+		mLengthExpressionList(0),
 		mVariant(VARIANT_VALUE),
-		mLength(0),
-		mLengthDefined(false),
 		mIsConst(isConst),
 		mIsLValue(false)
 	{}
@@ -136,21 +132,17 @@ public:
 	TypeDescriptor(const TypeDescriptor *parent, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
-		mLengthExpression(0),
+		mLengthExpressionList(0),
 		mVariant(VARIANT_POINTER),
-		mLength(0),
-		mLengthDefined(false),
 		mIsConst(isConst),
 		mIsLValue(false)
 	{}
 
-	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpression, bool isConst):
+	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpressionList, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
-		mLengthExpression(lengthExpression),
+		mLengthExpressionList(lengthExpressionList),
 		mVariant(VARIANT_ARRAY),
-		mLength(0),
-		mLengthDefined(false),
 		mIsConst(isConst),
 		mIsLValue(false)
 	{}
@@ -169,15 +161,13 @@ public:
 	const TypeDescriptor *GetParent() const { return mParent; }
 	void SetParent(TypeDescriptor *parent) { mParent = parent; }
 
-	Expression *GetLengthExpression() { return mLengthExpression; }
-	const Expression *GetLengthExpression() const { return mLengthExpression; }
+	Expression *GetLengthExpressionList() { return mLengthExpressionList; }
+	const Expression *GetLengthExpressionList() const { return mLengthExpressionList; }
 
 	Variant GetVariant() const { return mVariant; }
 	void SetVariant(Variant variant) { mVariant = variant; }
 
-	bu32_t GetLength() const { return mLength; }
-	void SetLength(bu32_t length) { mLength = length; mLengthDefined = true; }
-	bool IsLengthDefined() const { return mLengthDefined; }
+	TypeDescriptor Dereference() const;
 
 	bool IsResolved() const;
 
@@ -201,10 +191,8 @@ public:
 private:
 	const TypeSpecifier *mTypeSpecifier;
 	const TypeDescriptor *mParent;
-	Expression *mLengthExpression;
+	Expression *mLengthExpressionList;
 	Variant mVariant;
-	bu32_t mLength;
-	bool mLengthDefined;
 	bool mIsConst;
 	bool mIsLValue;
 };
@@ -1210,6 +1198,16 @@ public:
 private:
 	QualifiedIdentifier *mIdentifier;
 	const Symbol *mDefinition;
+};
+
+
+class EmptyExpression: public Expression
+{
+public:
+	virtual ~EmptyExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 };
 
 

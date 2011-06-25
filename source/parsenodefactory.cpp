@@ -122,9 +122,12 @@ TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, b
 }
 
 
-TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, Expression *length, bool isConst)
+TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(
+	TypeDescriptor *parent,
+	Expression *lengthExpressionList,
+	bool isConst)
 {
-	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, length, isConst);
+	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, lengthExpressionList, isConst);
 }
 
 
@@ -333,6 +336,12 @@ ConstantExpression *ParseNodeFactory::CreateConstantExpression(const Token *valu
 IdentifierExpression *ParseNodeFactory::CreateIdentifierExpression(QualifiedIdentifier *identifier)
 {
 	return new (mAllocator.Alloc<IdentifierExpression>()) IdentifierExpression(identifier);
+}
+
+
+EmptyExpression *ParseNodeFactory::CreateEmptyExpression()
+{
+	return new (mAllocator.Alloc<EmptyExpression>()) EmptyExpression();
 }
 
 

@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\source">
+      <UniqueIdentifier>{7462532d-bc18-4505-8d7d-7369cec77e4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\source\semanticanalysis">
+      <UniqueIdentifier>{d4c2e2f2-b436-49c0-b09f-6ba4b24718a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{c6537a59-a69c-4103-b05b-1b89fc633371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond">
+      <UniqueIdentifier>{5fe028b2-2174-4c5c-9e64-6fb5fb389dfb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\charstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\lexer.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\linearallocator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parseerror.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parsenodecounter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parsenodefactory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parsenodes.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parsenodetraverser.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parsenodeutil.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\parser.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\prettyprinter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\semanticanalyzer.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stdouttextwriter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stringallocator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stringutil.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\token.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\tokenstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\semanticanalysis\toplevelsymbolpass.cpp">
+      <Filter>Source Files\source\semanticanalysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\semanticanalysis\typeevaluationpass.cpp">
+      <Filter>Source Files\source\semanticanalysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\semanticanalysis\typespecifierresolutionpass.cpp">
+      <Filter>Source Files\source\semanticanalysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\semanticanalysis\valueevaluationpass.cpp">
+      <Filter>Source Files\source\semanticanalysis</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\bond\allocator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\autostack.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\bufferedtextwriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\charstream.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\conf.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\defaultallocator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\lexer.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\linearallocator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parseerror.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodecounter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodefactory.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodes.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodesfwd.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodetraverser.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodeutil.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parsenodevisitor.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\parser.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\prettyprinter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\semanticanalyzer.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stdouttextwriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\streampos.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stringallocator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stringutil.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\symboltable.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\textwriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\token.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tokenstream.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\typeandvalue.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\value.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

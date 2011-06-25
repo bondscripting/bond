@@ -112,6 +112,9 @@ public:
 
 	virtual void Visit(IdentifierExpression *identifierExpression) = 0;
 	virtual void Visit(const IdentifierExpression *identifierExpression) = 0;
+
+	virtual void Visit(EmptyExpression *emptyExpression) = 0;
+	virtual void Visit(const EmptyExpression *emptyExpression) = 0;
 };
 
 
@@ -221,6 +224,9 @@ public:
 
 	virtual void Visit(IdentifierExpression *identifierExpression) {}
 	virtual void Visit(const IdentifierExpression *identifierExpression) {}
+
+	virtual void Visit(EmptyExpression *emptyExpression) {}
+	virtual void Visit(const EmptyExpression *emptyExpression) {}
 };
 
 }

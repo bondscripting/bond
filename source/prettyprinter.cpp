@@ -160,28 +160,10 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 			break;
 
 		case TypeDescriptor::VARIANT_ARRAY:
-			const TypeDescriptor *parent = typeDescriptor->GetParent();
-			while (parent->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
-			{
-				parent = parent->GetParent();
-			}
-			Visit(parent);
-
-			const TypeDescriptor *current = typeDescriptor;
-			while (current->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
-			{
-				mWriter.Write(" [");
-				if (mPrintFoldedConstants && current->IsLengthDefined())
-				{
-					mWriter.Write(BOND_UDECIMAL_FORMAT, current->GetLength());
-				}
-				else if (current->GetLengthExpression() != 0)
-				{
-					Print(current->GetLengthExpression());
-				}
-				mWriter.Write("]");
-				current = current->GetParent();
-			}
+			Visit(typeDescriptor->GetParent());
+			mWriter.Write("[");
+			PrintList(typeDescriptor->GetLengthExpressionList(), "][");
+			mWriter.Write("]");
 			break;
 	}
 }
