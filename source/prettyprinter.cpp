@@ -140,31 +140,42 @@ void PrettyPrinter::Visit(const Parameter *parameter)
 
 void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 {
-	switch (typeDescriptor->GetVariant())
+	if (typeDescriptor->IsValueType())
 	{
-		case TypeDescriptor::VARIANT_VALUE:
-			if (typeDescriptor->IsConst())
-			{
-				mWriter.Write("const ");
-			}
-			Print(typeDescriptor->GetTypeSpecifier());
-			break;
+		if (typeDescriptor->IsConst())
+		{
+			mWriter.Write("const ");
+		}
+		Print(typeDescriptor->GetTypeSpecifier());
+	}
+	else if (typeDescriptor->IsArrayType())
+	{
+		Visit(typeDescriptor->GetParent());
 
-		case TypeDescriptor::VARIANT_POINTER:
-			Visit(typeDescriptor->GetParent());
-			mWriter.Write(" *");
-			if (typeDescriptor->IsConst())
-			{
-				mWriter.Write(" const");
-			}
-			break;
-
-		case TypeDescriptor::VARIANT_ARRAY:
-			Visit(typeDescriptor->GetParent());
+		const ListParseNode *lengthExpressionList = typeDescriptor->GetLengthExpressionList();
+		if ((typeDescriptor->IsPointerIntrinsicType()) && (lengthExpressionList != 0))
+		{
+			lengthExpressionList = lengthExpressionList->GetNextNode();
+		}
+		if (lengthExpressionList != 0)
+		{
 			mWriter.Write("[");
-			PrintList(typeDescriptor->GetLengthExpressionList(), "][");
+			PrintList(lengthExpressionList, "][");
 			mWriter.Write("]");
-			break;
+		}
+		if (typeDescriptor->IsPointerIntrinsicType())
+		{
+			mWriter.Write(" *");
+		}
+	}
+	else if (typeDescriptor->IsPointerIntrinsicType())
+	{
+		Visit(typeDescriptor->GetParent());
+		mWriter.Write(" *");
+		if (typeDescriptor->IsConst())
+		{
+			mWriter.Write(" const");
+		}
 	}
 }
 

@@ -152,35 +152,31 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
-TypeDescriptor TypeDescriptor::Dereference() const
+TypeDescriptor TypeDescriptor::DereferenceType() const
 {
 	TypeDescriptor typeDescriptor;
 
-	switch (mVariant)
+	// Only pointers can be dereferenced.
+	if (IsPointerType())
 	{
-		case VARIANT_VALUE:
-			// Only pointers can be dereferenced.
-			break;
-
-		case VARIANT_POINTER:
-			typeDescriptor = *mParent;
-			break;
-
-		case VARIANT_ARRAY:
+		Expression *nextLength = 0;
+		if (mLengthExpressionList != 0)
 		{
-			Expression *nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
-			if (nextLength == 0)
-			{
-				typeDescriptor = *mParent;
-			}
-			else
-			{
-				typeDescriptor = *this;
-				typeDescriptor.mLengthExpressionList = nextLength;
-			}
+			nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
 		}
-		break;
+
+		if (nextLength == 0)
+		{
+			typeDescriptor = *mParent;
+		}
+		else
+		{
+			typeDescriptor = *this;
+			typeDescriptor.mLengthExpressionList = nextLength;
+			typeDescriptor.mFlags &= ~FLAG_FORCED_INTRINSIC;
+		}
 	}
+
 	return typeDescriptor;
 }
 

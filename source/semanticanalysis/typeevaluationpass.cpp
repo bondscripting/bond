@@ -888,11 +888,11 @@ void TypeEvaluationPass::ValidateInitializer(
 	const Expression *expression = initializer->GetExpression();
 	const Initializer *initializerList = initializer->GetInitializerList();
 
-	if (typeDescriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
+	if (typeDescriptor->IsArrayType())
 	{
 		if (initializerList != 0)
 		{
-			const TypeDescriptor parent = typeDescriptor->Dereference();
+			const TypeDescriptor parent = typeDescriptor->DereferenceType();
 			while (initializerList != 0)
 			{
 				ValidateInitializer(name, initializerList, &parent);
@@ -960,7 +960,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const DeclarativeStateme
 
 void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeDescriptor *typeDescriptor)
 {
-	if (typeDescriptor->GetVariant() != TypeDescriptor::VARIANT_POINTER)
+	if (!typeDescriptor->IsPointerIntrinsicType())
 	{
 		ParseNodeTraverser::Visit(typeDescriptor);
 	}

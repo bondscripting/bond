@@ -44,8 +44,8 @@ const T *CastNode(const ParseNode *node)
 
 bu32_t GetLength(const ListParseNode *head);
 
-bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
-bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
+//bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
+//bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);

@@ -515,9 +515,9 @@ Parameter *ParserCore::ParseParameter()
 
 	if (descriptor != 0)
 	{
-		if (descriptor->GetVariant() == TypeDescriptor::VARIANT_ARRAY)
+		if (descriptor->IsArrayType())
 		{
-			descriptor->SetVariant(TypeDescriptor::VARIANT_POINTER);
+			descriptor->ConvertToPointerIntrinsic();
 		}
 		AssertNonVoidType(descriptor);
 		descriptor->SetLValue();

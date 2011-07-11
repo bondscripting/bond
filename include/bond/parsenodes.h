@@ -104,47 +104,32 @@ private:
 class TypeDescriptor: public ParseNode
 {
 public:
-	enum Variant
-	{
-		VARIANT_VALUE,
-		VARIANT_POINTER,
-		VARIANT_ARRAY,
-	};
-
 	TypeDescriptor():
 		mTypeSpecifier(0),
 		mParent(0),
 		mLengthExpressionList(0),
-		mVariant(VARIANT_VALUE),
-		mIsConst(false),
-		mIsLValue(false)
+		mFlags(0)
 	{}
 
 	TypeDescriptor(const TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
 		mParent(0),
 		mLengthExpressionList(0),
-		mVariant(VARIANT_VALUE),
-		mIsConst(isConst),
-		mIsLValue(false)
+		mFlags(FLAG_VALUE | (isConst ? FLAG_CONST : 0))
 	{}
 
 	TypeDescriptor(const TypeDescriptor *parent, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
 		mLengthExpressionList(0),
-		mVariant(VARIANT_POINTER),
-		mIsConst(isConst),
-		mIsLValue(false)
+		mFlags(FLAG_POINTER | (isConst ? FLAG_CONST : 0))
 	{}
 
 	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpressionList, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
 		mLengthExpressionList(lengthExpressionList),
-		mVariant(VARIANT_ARRAY),
-		mIsConst(isConst),
-		mIsLValue(false)
+		mFlags(FLAG_ARRAY)
 	{}
 
 	virtual ~TypeDescriptor() {}
@@ -164,37 +149,52 @@ public:
 	Expression *GetLengthExpressionList() { return mLengthExpressionList; }
 	const Expression *GetLengthExpressionList() const { return mLengthExpressionList; }
 
-	Variant GetVariant() const { return mVariant; }
-	void SetVariant(Variant variant) { mVariant = variant; }
+	bool IsConvertedToPointerIntrinsic() const { return (mFlags & FLAG_FORCED_INTRINSIC) != 0; }
+	void ConvertToPointerIntrinsic() { mFlags |= FLAG_FORCED_INTRINSIC; }
 
-	TypeDescriptor Dereference() const;
+	TypeDescriptor DereferenceType() const;
 
 	bool IsResolved() const;
 
-	bool IsConst() const { return mIsConst; }
+	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
 
-	bool IsLValue() const { return mIsLValue; }
-	void SetLValue() { mIsLValue = true; }
+	bool IsLValue() const { return (mFlags & FLAG_LVALUE) != 0; }
+	void SetLValue() { mFlags |= FLAG_LVALUE; }
 
-	bool IsRValue() const { return !mIsLValue; }
-	void SetRValue() { mIsLValue = false; }
+	bool IsRValue() const { return (mFlags & FLAG_LVALUE) == 0; }
+	void SetRValue() { mFlags &= ~FLAG_LVALUE; }
 
-	bool IsAssignable() const { return mIsLValue && !mIsConst && (mVariant != VARIANT_ARRAY); }
+	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
 	bool IsNumericType() const;
-	bool IsPointerType() const { return mVariant != VARIANT_VALUE; }
+	bool IsValueType() const { return (mFlags & FLAG_VALUE) != 0; }
+	bool IsArrayType() const { return (mFlags & FLAG_ARRAY) != 0; }
+	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER_INTRINSIC) != 0; }
+	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
 	bool IsVoidType() const;
 
 private:
+	enum Flags
+	{
+		FLAG_VALUE = 1 << 0,
+		FLAG_POINTER = 1 << 1,
+		FLAG_ARRAY = 1 << 2,
+		FLAG_CONST = 1 << 3,
+		FLAG_LVALUE = 1 << 4,
+		FLAG_FORCED_INTRINSIC = 1 << 5,
+
+		// Flag combinations.
+		FLAG_POINTER_INTRINSIC = FLAG_POINTER | FLAG_FORCED_INTRINSIC,
+		FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY,
+	};
+
 	const TypeSpecifier *mTypeSpecifier;
 	const TypeDescriptor *mParent;
 	Expression *mLengthExpressionList;
-	Variant mVariant;
-	bool mIsConst;
-	bool mIsLValue;
+	bu32_t mFlags;
 };
 
 

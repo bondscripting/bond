@@ -16,7 +16,7 @@ bu32_t GetLength(const ListParseNode *head)
 	return length;
 }
 
-
+	/*
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
 	// This function can only be used once type specifiers have been resolved.
@@ -66,7 +66,7 @@ bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 
 	return (typeA == 0) && (typeB == 0);
 }
-
+	*/
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
@@ -92,13 +92,13 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	if (typeA->IsPointerType())
 	{
 		result = *typeA;
-		result.SetVariant(TypeDescriptor::VARIANT_POINTER);
+		result.ConvertToPointerIntrinsic();
 	}
 
 	else if (typeB->IsPointerType())
 	{
 		result = *typeB;
-		result.SetVariant(TypeDescriptor::VARIANT_POINTER);
+		result.ConvertToPointerIntrinsic();
 	}
 
 	else if ((a == Token::KEY_FLOAT) || (b == Token::KEY_FLOAT))
