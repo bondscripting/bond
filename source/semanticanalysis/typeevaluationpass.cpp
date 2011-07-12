@@ -457,7 +457,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				isResolvable = AssertPointerOperand(rhDescriptor, op);
 				if (rhDescriptor->IsPointerType())
 				{
-					resultType = *rhDescriptor->GetParent();
+					resultType = rhDescriptor->DereferenceType();
 					if (resultType.IsVoidType())
 					{
 						mErrorBuffer.PushError(ParseError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
@@ -512,7 +512,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 	if (lhTav.IsTypeDefined())
 	{
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-		const TypeDescriptor *structDescriptor = lhDescriptor;
+		TypeDescriptor structDescriptor = *lhDescriptor;
 		const Token *op = memberExpression->GetOperator();
 		const Token *memberName = memberExpression->GetMemberName();
 
@@ -521,16 +521,16 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			AssertPointerOperand(lhDescriptor, op);
 			if (lhDescriptor->IsPointerType())
 			{
-				structDescriptor = lhDescriptor->GetParent();
+				structDescriptor = lhDescriptor->DereferenceType();
 			}
 		}
 
-		const TypeSpecifier *structSpecifier = structDescriptor->GetTypeSpecifier();
+		const TypeSpecifier *structSpecifier = structDescriptor.GetTypeSpecifier();
 		if ((structSpecifier == 0) ||
 		    (structSpecifier->GetDefinition() == 0) ||
 		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
 		{
-			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, structDescriptor);
+			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, &structDescriptor);
 		}
 		else
 		{
@@ -538,7 +538,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
 			if (member == 0)
 			{
-				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, structDescriptor);
+				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, &structDescriptor);
 			}
 			else
 			{
@@ -574,7 +574,7 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 		AssertPointerOperand(lhDescriptor, op);
 		if (lhDescriptor->IsPointerType())
 		{
-			arraySubscriptExpression->SetTypeDescriptor(*lhDescriptor->GetParent());
+			arraySubscriptExpression->SetTypeDescriptor(lhDescriptor->DereferenceType());
 		}
 	}
 }
