@@ -122,15 +122,6 @@ TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(TypeDescriptor *parent, b
 }
 
 
-TypeDescriptor *ParseNodeFactory::CreateTypeDescriptor(
-	TypeDescriptor *parent,
-	Expression *lengthExpressionList,
-	bool isConst)
-{
-	return new (mAllocator.Alloc<TypeDescriptor>()) TypeDescriptor(parent, lengthExpressionList, isConst);
-}
-
-
 TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(const Token *primitiveType)
 {
 	return new (mAllocator.Alloc<TypeSpecifier>()) TypeSpecifier(primitiveType);

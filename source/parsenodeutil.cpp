@@ -87,7 +87,7 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 {
  	const Token::TokenType a = typeA->GetPrimitiveType();
 	const Token::TokenType b = typeB->GetPrimitiveType();
-	TypeDescriptor result = INT_TYPE_DESCRIPTOR;
+	TypeDescriptor result = TypeDescriptor::GetIntType();
 
 	if (typeA->IsPointerType())
 	{
@@ -103,23 +103,23 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 
 	else if ((a == Token::KEY_FLOAT) || (b == Token::KEY_FLOAT))
 	{
-		result = FLOAT_TYPE_DESCRIPTOR;
+		result = TypeDescriptor::GetFloatType();
 	}
 	else if ((a == Token::KEY_INT) || (b == Token::KEY_INT))
 	{
-		result = INT_TYPE_DESCRIPTOR;
+		result = TypeDescriptor::GetIntType();
 	}
 	else if ((a == Token::KEY_UINT) || (b == Token::KEY_UINT))
 	{
-		result = UINT_TYPE_DESCRIPTOR;
+		result = TypeDescriptor::GetUIntType();
 	}
 	else if ((a == Token::KEY_CHAR) || (b == Token::KEY_CHAR))
 	{
-		result = CHAR_TYPE_DESCRIPTOR;
+		result = TypeDescriptor::GetCharType();
 	}
 	else if ((a == Token::KEY_BOOL) || (b == Token::KEY_BOOL))
 	{
-		result = BOOL_TYPE_DESCRIPTOR;
+		result = TypeDescriptor::GetBoolType();
 	}
 
 	return result;

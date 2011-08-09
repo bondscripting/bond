@@ -121,7 +121,8 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 				{
 					if (!isUInt)
 					{
-						const Value length = CastValue(tav, &UINT_TYPE_DESCRIPTOR);
+						const TypeDescriptor uintType = TypeDescriptor::GetUIntType();
+						const Value length = CastValue(tav, &uintType);
 						tav.SetValue(length);
 					}
 
@@ -139,7 +140,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 				// TODO: Compute size of type.
 				if (!isUInt)
 				{
-					expressionList->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
+					expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 				}
 			}
 			expressionList = static_cast<Expression *>(expressionList->GetNextNode());

@@ -152,31 +152,75 @@ const Token *TypeDescriptor::GetContextToken() const
 }
 
 
-TypeDescriptor TypeDescriptor::DereferenceType() const
+void TypeDescriptor::ConvertToArray(Expression *expressionList)
+{
+	const bu32_t constFlag = mFlags & FLAG_CONST;
+	mFlags = ((mFlags | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_ARRAY | constFlag;
+	mLengthExpressionList = expressionList;
+}
+
+
+TypeDescriptor TypeDescriptor::GetDereferencedType() const
 {
 	TypeDescriptor typeDescriptor;
 
-	// Only pointers can be dereferenced.
-	if (IsPointerType())
+	if (IsArrayType())
 	{
-		Expression *nextLength = 0;
-		if (mLengthExpressionList != 0)
-		{
-			nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
-		}
-
-		if (nextLength == 0)
-		{
-			typeDescriptor = *mParent;
-		}
-		else
+		Expression *nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
+		if (nextLength != 0)
 		{
 			typeDescriptor = *this;
 			typeDescriptor.mLengthExpressionList = nextLength;
-			typeDescriptor.mFlags &= ~FLAG_FORCED_INTRINSIC;
+		}
+		else if (HasFlattenedParent())
+		{
+			typeDescriptor = *this;
+			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
+			typeDescriptor.mLengthExpressionList = 0;
+		}
+		else
+		{
+			typeDescriptor = *mParent;
+		}
+	}
+	else if (IsPointerIntrinsicType())
+	{
+		if (HasFlattenedParent())
+		{
+			typeDescriptor = *this;
+			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
+			if (typeDescriptor.IsArrayType())
+			{
+				typeDescriptor.mLengthExpressionList = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
+			}
+		}
+		else
+		{
+			typeDescriptor = *mParent;
 		}
 	}
 
+	return typeDescriptor;
+}
+
+
+TypeDescriptor TypeDescriptor::GetArrayValueType() const
+{
+	TypeDescriptor typeDescriptor;
+
+	if (IsArrayType())
+	{
+		if (HasFlattenedParent())
+		{
+			typeDescriptor = *this;
+			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
+			typeDescriptor.mLengthExpressionList = 0;
+		}
+		else
+		{
+			typeDescriptor = *mParent;
+		}
+	}
 	return typeDescriptor;
 }
 
@@ -198,7 +242,7 @@ bool TypeDescriptor::IsResolved() const
 
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
-	if (mTypeSpecifier != 0)
+	if (IsValueType())
 	{
 		return mTypeSpecifier->GetPrimitiveType();
 	}
@@ -208,7 +252,7 @@ Token::TokenType TypeDescriptor::GetPrimitiveType() const
 
 bool TypeDescriptor::IsBooleanType() const
 {
-	if (mTypeSpecifier != 0)
+	if (IsValueType())
 	{
 		return mTypeSpecifier->IsBooleanType();
 	}
@@ -218,7 +262,7 @@ bool TypeDescriptor::IsBooleanType() const
 
 bool TypeDescriptor::IsIntegerType() const
 {
-	if (mTypeSpecifier != 0)
+	if (IsValueType())
 	{
 		return mTypeSpecifier->IsIntegerType();
 	}
@@ -228,7 +272,7 @@ bool TypeDescriptor::IsIntegerType() const
 
 bool TypeDescriptor::IsNumericType() const
 {
-	if (mTypeSpecifier != 0)
+	if (IsValueType())
 	{
 		return mTypeSpecifier->IsNumericType();
 	}
@@ -238,11 +282,47 @@ bool TypeDescriptor::IsNumericType() const
 
 bool TypeDescriptor::IsVoidType() const
 {
-	if (mTypeSpecifier != 0)
+	if (IsValueType())
 	{
 		return mTypeSpecifier->IsVoidType();
 	}
 	return false;
+}
+
+
+TypeDescriptor TypeDescriptor::GetBoolType()
+{
+	return TypeDescriptor(&BOOL_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetCharType()
+{
+	return TypeDescriptor(&CHAR_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetIntType()
+{
+	return TypeDescriptor(&INT_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetUIntType()
+{
+	return TypeDescriptor(&UINT_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetFloatType()
+{
+	return TypeDescriptor(&FLOAT_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetStringType()
+{
+	return TypeDescriptor(&CHAR_TYPE_SPECIFIER, ((FLAG_VALUE | FLAG_CONST | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
 }
 
 
@@ -352,13 +432,5 @@ const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);
 const TypeSpecifier INT_TYPE_SPECIFIER(&INT_TOKEN);
 const TypeSpecifier UINT_TYPE_SPECIFIER(&UINT_TOKEN);
 const TypeSpecifier FLOAT_TYPE_SPECIFIER(&FLOAT_TOKEN);
-
-const TypeDescriptor BOOL_TYPE_DESCRIPTOR(&BOOL_TYPE_SPECIFIER, false);
-const TypeDescriptor CHAR_TYPE_DESCRIPTOR(&CHAR_TYPE_SPECIFIER, false);
-const TypeDescriptor CONST_CHAR_TYPE_DESCRIPTOR(&CHAR_TYPE_SPECIFIER, true);
-const TypeDescriptor INT_TYPE_DESCRIPTOR(&INT_TYPE_SPECIFIER, false);
-const TypeDescriptor UINT_TYPE_DESCRIPTOR(&UINT_TYPE_SPECIFIER, false);
-const TypeDescriptor FLOAT_TYPE_DESCRIPTOR(&FLOAT_TYPE_SPECIFIER, false);
-const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR(&CONST_CHAR_TYPE_DESCRIPTOR, true);
 
 }

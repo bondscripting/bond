@@ -551,7 +551,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 		const bool isConst2 = const2 != 0;
 		if (isConst1 && isConst2)
 		{
-			PushError(ParseError::DUPLICATE_CONST, const2);
+			PushRecoverableError(ParseError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
@@ -594,16 +594,15 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				{
 					if (descriptor->IsVoidType())
 					{
-						PushError(ParseError::ARRAY_OF_VOID, token);
+						PushRecoverableError(ParseError::ARRAY_OF_VOID, token);
 					}
-					descriptor->SetLValue();
-					descriptor = mFactory.CreateTypeDescriptor(descriptor, length, descriptor->IsConst());
+					descriptor->ConvertToArray(length);
 				}
 				else
 				{
 					if (lengthAbsent)
 					{
-						PushError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
+						PushRecoverableError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
 					}
 					lengthTail->SetNextNode(length);
 				}
@@ -699,7 +698,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 			initializer = ParseInitializer();
 			if (!allowInitializers)
 			{
-				PushError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
+				PushRecoverableError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
 			}
 			AssertNode(initializer);
 		}
@@ -1843,7 +1842,7 @@ void ParserCore::AssertNonConstExpression(ParseError::Type errorType, const Toke
 {
 	if (mParseConstExpressions.GetTop())
 	{
-		PushError(errorType, context);
+		PushRecoverableError(errorType, context);
 	}
 }
 

@@ -151,7 +151,7 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 	{
 		if (CastNode<EmptyExpression>(expressionList) != 0)
 		{
-			expressionList->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
+			expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 		}
 		else
 		{
@@ -367,7 +367,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_EQUAL:
 			case Token::OP_NOT_EQUAL:
 				AssertComparableTypes(lhDescriptor, rhDescriptor, op);
-				resultType = BOOL_TYPE_DESCRIPTOR;
+				resultType = TypeDescriptor::GetBoolType();
 				break;
 
 			case Token::OP_PLUS:
@@ -457,7 +457,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				isResolvable = AssertPointerOperand(rhDescriptor, op);
 				if (rhDescriptor->IsPointerType())
 				{
-					resultType = rhDescriptor->DereferenceType();
+					resultType = rhDescriptor->GetDereferencedType();
 					if (resultType.IsVoidType())
 					{
 						mErrorBuffer.PushError(ParseError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
@@ -521,7 +521,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			AssertPointerOperand(lhDescriptor, op);
 			if (lhDescriptor->IsPointerType())
 			{
-				structDescriptor = lhDescriptor->DereferenceType();
+				structDescriptor = lhDescriptor->GetDereferencedType();
 			}
 		}
 
@@ -574,7 +574,7 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 		AssertPointerOperand(lhDescriptor, op);
 		if (lhDescriptor->IsPointerType())
 		{
-			arraySubscriptExpression->SetTypeDescriptor(lhDescriptor->DereferenceType());
+			arraySubscriptExpression->SetTypeDescriptor(lhDescriptor->GetDereferencedType());
 		}
 	}
 }
@@ -673,41 +673,41 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 {
 	ParseNodeTraverser::Visit(sizeofExpression);
-	sizeofExpression->SetTypeDescriptor(UINT_TYPE_DESCRIPTOR);
+	sizeofExpression->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 }
 
 
 void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 {
 	const Token *token = constantExpression->GetValueToken();
-	const TypeDescriptor *typeDescriptor = &INT_TYPE_DESCRIPTOR;
+	TypeDescriptor typeDescriptor = TypeDescriptor::GetIntType();
 
 	switch (token->GetTokenType())
 	{
 		case Token::CONST_BOOL:
-			typeDescriptor = &BOOL_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetBoolType();
 			break;
 		case Token::CONST_CHAR:
-			typeDescriptor = &CHAR_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetCharType();
 			break;
 		case Token::CONST_INT:
-			typeDescriptor = &INT_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetIntType();
 			break;
 		case Token::CONST_UINT:
-			typeDescriptor = &UINT_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetUIntType();
 			break;
 		case Token::CONST_FLOAT:
-			typeDescriptor = &FLOAT_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetFloatType();
 			break;
 		case Token::CONST_STRING:
-			typeDescriptor = &CONST_STRING_TYPE_DESCRIPTOR;
+			typeDescriptor = TypeDescriptor::GetStringType();
 			break;
 		default:
 			// Ignore the default case because the parser is not supposed to allow it to happen.
 			break;
 	}
 
-	constantExpression->SetTypeDescriptor(*typeDescriptor);
+	constantExpression->SetTypeDescriptor(typeDescriptor);
 }
 
 
@@ -892,7 +892,7 @@ void TypeEvaluationPass::ValidateInitializer(
 	{
 		if (initializerList != 0)
 		{
-			const TypeDescriptor parent = typeDescriptor->DereferenceType();
+			const TypeDescriptor parent = typeDescriptor->GetDereferencedType();
 			while (initializerList != 0)
 			{
 				ValidateInitializer(name, initializerList, &parent);

@@ -142,7 +142,7 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 {
 	if (typeDescriptor->IsPointerIntrinsicType())
 	{
-		const TypeDescriptor parent = typeDescriptor->DereferenceType();
+		const TypeDescriptor parent = typeDescriptor->GetDereferencedType();
 		Visit(&parent);
 		mWriter.Write(" *");
 		if (typeDescriptor->IsConst())
@@ -152,7 +152,8 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 	}
 	else if (typeDescriptor->IsArrayType())
 	{
-		Visit(typeDescriptor->GetParent());
+		const TypeDescriptor value = typeDescriptor->GetArrayValueType();
+		Visit(&value);
 		mWriter.Write("[");
 		PrintList(typeDescriptor->GetLengthExpressionList(), "][");
 		mWriter.Write("]");

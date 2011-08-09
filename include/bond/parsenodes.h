@@ -125,13 +125,6 @@ public:
 		mFlags(FLAG_POINTER | (isConst ? FLAG_CONST : 0))
 	{}
 
-	TypeDescriptor(const TypeDescriptor *parent, Expression *lengthExpressionList, bool isConst):
-		mTypeSpecifier(0),
-		mParent(parent),
-		mLengthExpressionList(lengthExpressionList),
-		mFlags(FLAG_ARRAY)
-	{}
-
 	virtual ~TypeDescriptor() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
@@ -149,10 +142,11 @@ public:
 	Expression *GetLengthExpressionList() { return mLengthExpressionList; }
 	const Expression *GetLengthExpressionList() const { return mLengthExpressionList; }
 
-	bool IsConvertedToPointerIntrinsic() const { return (mFlags & FLAG_FORCED_INTRINSIC) != 0; }
-	void ConvertToPointerIntrinsic() { mFlags |= FLAG_FORCED_INTRINSIC; }
+	void ConvertToArray(Expression *expressionList);
+	void ConvertToPointerIntrinsic() { mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER | FLAG_CONST; }
 
-	TypeDescriptor DereferenceType() const;
+	TypeDescriptor GetDereferencedType() const;
+	TypeDescriptor GetArrayValueType() const;
 
 	bool IsResolved() const;
 
@@ -172,24 +166,36 @@ public:
 	bool IsNumericType() const;
 	bool IsValueType() const { return (mFlags & FLAG_VALUE) != 0; }
 	bool IsArrayType() const { return (mFlags & FLAG_ARRAY) != 0; }
-	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER_INTRINSIC) != 0; }
+	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER) != 0; }
 	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
 	bool IsVoidType() const;
 
-private:
-	enum Flags
-	{
-		FLAG_VALUE = 1 << 0,
-		FLAG_POINTER = 1 << 1,
-		FLAG_ARRAY = 1 << 2,
-		FLAG_CONST = 1 << 3,
-		FLAG_LVALUE = 1 << 4,
-		FLAG_FORCED_INTRINSIC = 1 << 5,
+	static TypeDescriptor GetBoolType();
+	static TypeDescriptor GetCharType();
+	static TypeDescriptor GetIntType();
+	static TypeDescriptor GetUIntType();
+	static TypeDescriptor GetFloatType();
+	static TypeDescriptor GetStringType();
 
-		// Flag combinations.
-		FLAG_POINTER_INTRINSIC = FLAG_POINTER | FLAG_FORCED_INTRINSIC,
-		FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY,
-	};
+private:
+	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
+		mTypeSpecifier(specifier),
+		mParent(0),
+		mLengthExpressionList(0),
+		mFlags(flags)
+	{}
+
+	bool HasFlattenedParent() const { return ((mFlags >> PARENT_SHIFT) & STORAGE_MASK) != 0; }
+
+	static const bu32_t FLAG_VALUE = 1 << 0;
+	static const bu32_t FLAG_POINTER = 1 << 1;
+	static const bu32_t FLAG_ARRAY = 1 << 2;
+	static const bu32_t FLAG_CONST = 1 << 3;
+	static const bu32_t FLAG_LVALUE = 1 << 4;
+	static const bu32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY;
+	static const bu32_t PARENT_SHIFT = 8;
+	static const bu32_t STORAGE_MASK = FLAG_VALUE | FLAG_POINTER | FLAG_ARRAY;
+	static const bu32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
 
 	const TypeSpecifier *mTypeSpecifier;
 	const TypeDescriptor *mParent;
@@ -1216,13 +1222,6 @@ extern const TypeSpecifier CHAR_TYPE_SPECIFIER;
 extern const TypeSpecifier INT_TYPE_SPECIFIER;
 extern const TypeSpecifier UINT_TYPE_SPECIFIER;
 extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
-
-extern const TypeDescriptor BOOL_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CHAR_TYPE_DESCRIPTOR;
-extern const TypeDescriptor INT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor UINT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor FLOAT_TYPE_DESCRIPTOR;
-extern const TypeDescriptor CONST_STRING_TYPE_DESCRIPTOR;
 
 }
 
