@@ -414,11 +414,11 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 {
 	ParseNodeTraverser::Visit(unaryExpression);
 
-	const TypeAndValue &rhTav = unaryExpression->GetRhs()->GetTypeAndValue();
+	TypeAndValue &rhTav = unaryExpression->GetRhs()->GetTypeAndValue();
 
 	if (rhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
 		TypeDescriptor resultType = *rhDescriptor;
 		resultType.SetRValue();
 		const Token *op = unaryExpression->GetOperator();

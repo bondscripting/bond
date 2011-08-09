@@ -36,7 +36,7 @@ private:
 	ListParseNode *ParseExternalDeclaration();
 	NamespaceDefinition *ParseNamespaceDefinition();
 	EnumDeclaration *ParseEnumDeclaration();
-	Enumerator *ParseEnumerator(const TypeDescriptor *typeDescriptor);
+	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
 	ListParseNode *ParseFunctionOrDeclarativeStatement(DeclarationContext context = TOP_LEVEL);
 	Parameter *ParseParameterList();
@@ -298,7 +298,7 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 
 // enumerator
 //   : IDENTIFIER ['=' const_expression]
-Enumerator *ParserCore::ParseEnumerator(const TypeDescriptor *typeDescriptor)
+Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 {
 	Enumerator *enumerator = 0;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);

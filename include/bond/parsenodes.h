@@ -118,7 +118,7 @@ public:
 		mFlags(FLAG_VALUE | (isConst ? FLAG_CONST : 0))
 	{}
 
-	TypeDescriptor(const TypeDescriptor *parent, bool isConst):
+	TypeDescriptor(TypeDescriptor *parent, bool isConst):
 		mTypeSpecifier(0),
 		mParent(parent),
 		mLengthExpressionList(0),
@@ -135,7 +135,7 @@ public:
 	TypeSpecifier *GetTypeSpecifier() { return const_cast<TypeSpecifier *>(mTypeSpecifier); }
 	const TypeSpecifier *GetTypeSpecifier() const { return mTypeSpecifier; }
 
-	TypeDescriptor *GetParent() { return const_cast<TypeDescriptor *>(mParent); }
+	TypeDescriptor *GetParent() { return mParent; }
 	const TypeDescriptor *GetParent() const { return mParent; }
 	void SetParent(TypeDescriptor *parent) { mParent = parent; }
 
@@ -198,7 +198,7 @@ private:
 	static const bu32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
 
 	const TypeSpecifier *mTypeSpecifier;
-	const TypeDescriptor *mParent;
+	TypeDescriptor *mParent;
 	Expression *mLengthExpressionList;
 	bu32_t mFlags;
 };
@@ -332,6 +332,7 @@ public:
 	virtual SymbolType GetSymbolType() const { return TYPE_ENUM; }
 	virtual const Token *GetName() const { return mIdentifier.GetName(); }
 
+	TypeDescriptor *GetTypeDescriptor() { return &mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
 
 	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
@@ -349,7 +350,7 @@ private:
 class Enumerator: public Symbol
 {
 public:
-	Enumerator(const Token *name, const TypeDescriptor *typeDescriptor, Expression *value):
+	Enumerator(const Token *name, TypeDescriptor *typeDescriptor, Expression *value):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mValue(value) {}
@@ -532,7 +533,7 @@ private:
 class NamedInitializer: public Symbol
 {
 public:
-	NamedInitializer(const Token *name, Initializer *initializer, const TypeDescriptor *typeDescriptor):
+	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mInitializer(initializer)

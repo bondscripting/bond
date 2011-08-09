@@ -69,7 +69,7 @@ EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name)
 
 Enumerator *ParseNodeFactory::CreateEnumerator(
 	const Token *name,
-	const TypeDescriptor *typeDescriptor,
+	TypeDescriptor *typeDescriptor,
 	Expression *value)
 {
 	return new (mAllocator.Alloc<Enumerator>()) Enumerator(name, typeDescriptor, value);
@@ -137,7 +137,7 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 NamedInitializer *ParseNodeFactory::CreateNamedInitializer(
 	const Token *name,
 	Initializer *initializer,
-	const TypeDescriptor *typeDescriptor)
+	TypeDescriptor *typeDescriptor)
 {
 	return new (mAllocator.Alloc<NamedInitializer>())
 		NamedInitializer(name, initializer, typeDescriptor);

@@ -13,13 +13,13 @@ class TypeAndValue
 public:
 	TypeAndValue(): mTypeDescriptor(0), mValueDefined(false), mResolved(false) {}
 
-	TypeAndValue(const TypeDescriptor *descriptor):
+	TypeAndValue(TypeDescriptor *descriptor):
 		mTypeDescriptor(descriptor),
 		mValueDefined(false),
 		mResolved(false)
 	{}
 
-	TypeAndValue(const TypeDescriptor *descriptor, const Value value):
+	TypeAndValue(TypeDescriptor *descriptor, const Value value):
 		mValue(value),
 		mTypeDescriptor(descriptor),
 		mValueDefined(true),
@@ -44,8 +44,9 @@ public:
 
 	bool IsTypeDefined() const { return mTypeDescriptor != 0; }
 
+	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	void SetTypeDescriptor(const TypeDescriptor *descriptor) { mTypeDescriptor = descriptor; }
+	void SetTypeDescriptor(TypeDescriptor *descriptor) { mTypeDescriptor = descriptor; }
 
 	bool IsValueDefined() const { return mValueDefined; }
 
@@ -76,7 +77,7 @@ public:
 
 private:
 	Value mValue;
-	const TypeDescriptor *mTypeDescriptor;
+	TypeDescriptor *mTypeDescriptor;
 	bool mValueDefined;
 	bool mResolved;
 };

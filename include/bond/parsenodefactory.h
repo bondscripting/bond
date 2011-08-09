@@ -21,7 +21,7 @@ public:
 
 	Enumerator *CreateEnumerator(
 		const Token *name,
-		const TypeDescriptor *typeDescriptor,
+		TypeDescriptor *typeDescriptor,
 		Expression *value);
 
 	StructDeclaration *CreateStructDeclaration(
@@ -48,7 +48,7 @@ public:
 	NamedInitializer *CreateNamedInitializer(
 	 const Token *name,
 	 Initializer *initializer,
-	 const TypeDescriptor *typeDescriptor);
+	 TypeDescriptor *typeDescriptor);
 
 	Initializer *CreateInitializer(Expression *expression);
 	Initializer *CreateInitializer(Initializer *initializerList);
