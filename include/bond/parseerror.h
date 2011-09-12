@@ -44,6 +44,8 @@
     "Request for member '%c' in non-struct type '%n'.")                             \
   BOND_PARSE_ERROR(INVALID_MEMBER_REQUEST,                                          \
     "Struct '%n' has no member named '%c'.")                                        \
+  BOND_PARSE_ERROR(NON_CONST_MEMBER_FUNCTION_REQUEST,                               \
+    "Cannot access '%0n' from '%1n'.")                                              \
   BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                                      \
     "Expression is not callable.")                                                  \
   BOND_PARSE_ERROR(INCORRECT_NUMBER_OF_ARGS,                                        \

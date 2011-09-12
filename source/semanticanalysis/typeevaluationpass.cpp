@@ -40,6 +40,8 @@ protected:
 	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
+	typedef AutoStack<const StructDeclaration *> StructStack;
+
 	class RecursiveStructAnalyzer: private ParseNodeTraverser
 	{
 	public:
@@ -59,7 +61,6 @@ private:
 		virtual void Visit(const TypeDescriptor *typeDescriptor);
 		virtual void Visit(const TypeSpecifier *typeSpecifier);
 
-		typedef AutoStack<const StructDeclaration *> StructStack;
 		StructStack mStructStack;
 		ParseErrorBuffer &mErrorBuffer;
 		const StructDeclaration *mTopLevelStruct;
@@ -91,6 +92,8 @@ private:
 	BoolStack mAddNamedInitializers;
 	BoolStack mEnforceConstExpressions;
 	BoolStack mEnforceConstDeclarations;
+	BoolStack mInConstFunction;
+	StructStack mStructStack;
 };
 
 
@@ -99,6 +102,8 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element initalizerElement(mAddNamedInitializers, false);
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, true);
+	BoolStack::Element inConstFunctionElement(mInConstFunction, false);
+	StructStack::Element stackElement(mStructStack, 0);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -118,6 +123,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 {
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
+	StructStack::Element stackElement(mStructStack, structDeclaration);
 	SemanticAnalysisPass::Visit(structDeclaration);
 	RecursiveStructAnalyzer analyzer(mErrorBuffer);
 	analyzer.Analyze(structDeclaration);
@@ -131,6 +137,7 @@ void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 	// declared before being referenced, so they must be added as the expressions are evaluated.
 	BoolStack::Element initalizerElement(mAddNamedInitializers, true);
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
+	BoolStack::Element inConstFunctionElement(mInConstFunction, functionDefinition->GetPrototype()->IsConst());
 	SemanticAnalysisPass::Visit(functionDefinition);
 }
 
@@ -530,7 +537,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 		    (structSpecifier->GetDefinition() == 0) ||
 		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
 		{
-			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, &structDescriptor);
+			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
 		}
 		else
 		{
@@ -538,11 +545,32 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
 			if (member == 0)
 			{
-				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, &structDescriptor);
+				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
 			}
 			else
 			{
-				memberExpression->SetTypeDescriptor(*member->GetTypeAndValue()->GetTypeDescriptor());
+				TypeDescriptor memberDescriptor = *member->GetTypeAndValue()->GetTypeDescriptor();
+				if (structDescriptor.IsConst())
+				{
+					const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(member);
+					if (namedInitializer != 0)
+					{
+						memberDescriptor.SetConst();
+					}
+					else
+					{
+						const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(member);
+						if ((functionDefinition != 0) && !functionDefinition->GetPrototype()->IsConst())
+						{
+							mErrorBuffer.PushError(
+								ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
+								memberName,
+								functionDefinition->GetPrototype(),
+								lhDescriptor);
+						}
+					}
+				}
+				memberExpression->SetTypeDescriptor(memberDescriptor);
 			}
 		}
 	}
@@ -731,7 +759,30 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		}
 		else if (symbolTav->IsTypeDefined())
 		{
-			identifierExpression->SetTypeDescriptor(*symbolTav->GetTypeDescriptor());
+			TypeDescriptor typeDescriptor = *symbolTav->GetTypeDescriptor();
+
+			// Verify if the symbol was reached by implicitly dereferencing a const 'this' pointer.
+			if ((symbol->GetParentSymbol() == mStructStack.GetTop()) && mInConstFunction.GetTop())
+			{
+				const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
+				if (namedInitializer != 0)
+				{
+					typeDescriptor.SetConst();
+				}
+				else
+				{
+					const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(symbol);
+					if ((functionDefinition != 0) && !functionDefinition->GetPrototype()->IsConst())
+					{
+						mErrorBuffer.PushError(
+							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
+							identifier->GetContextToken(),
+							functionDefinition->GetPrototype(),
+							0); // TODO: Get the type descriptor for the this pointer.
+					}
+				}
+			}
+			identifierExpression->SetTypeDescriptor(typeDescriptor);
 		}
 	}
 }

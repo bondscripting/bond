@@ -9,12 +9,15 @@ namespace OuterSpace
 struct DummyStruct
 {
 	int x;
-	int DummyFunction(float arg) { return 1; }
+	int GetX() const { return x; }
+	void Mutator(int arg) { return x = arg; }
+	int ConstMutator(int arg) const { x = arg; }
+	int ConstAddMutator(int arg) const { Mutator(GetX() + arg); }
 };
 
 int [2]* FunnyReturnType();
 
-void DummyFunction(const DummyStruct ds, void *ptr)
+void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 {
 	int[2] array1;
 	int[2] array2;
@@ -30,27 +33,27 @@ void DummyFunction(const DummyStruct ds, void *ptr)
 	// Invalid statements.
 	array1 = array2;
 	*FunnyReturnType() = array2;
-	f1 = ds;
+	f1 = ds1;
 	f1 <<= i1;
 	i2 %= f2;
 	ptr2 = ptr1 + f1;
 	1 + FunnyReturnType;
 	i1 /= ptr1;
-	b1 = b2 || ds;
+	b1 = b2 || ds1;
 	i1 = true & 1.0;
 	b1 = false < f1;
 	i1 = -b1;
 	b1 = !f1;
-	*ds;
+	*ds1;
 	~f1;
-	++ds;
-	ds->x;
+	++ds1;
+	ds1->x;
 	ptr1->x;
-	ds.y;
+	ds1.y;
 	array1[f1];
 	f1[0];
-	ds.x();
-	ptr1 = cast<int *>(ds);
+	ds1.x();
+	ptr1 = cast<int *>(ds1);
 	1 + DummyStruct;
 	1 + SymbolToBeDefined;
 	true ? 1 : false;
@@ -68,8 +71,10 @@ void DummyFunction(const DummyStruct ds, void *ptr)
 	}
 
 	i1 = SymbolThatWillGoOutOfScope;
-	ds.DummyFunction(f1, f2);
-	ds.DummyFunction(ds);
+	ds2.Mutator(i1, i2);
+	ds2.Mutator(ds1);
+	ds1.x = 3;
+	ds1.Mutator(3);
 
 	// Valid statements.
 	(*FunnyReturnType())[0] = 1;
@@ -86,10 +91,10 @@ void DummyFunction(const DummyStruct ds, void *ptr)
 	i1 = *ptr1;
 	ptr2 = ++ptr1;
 	ptr2 = ptr1--;
-	ds.x = 3;
-	i1 = ds.DummyFunction(f1);
+	ds2.x = 3;
+	i1 = ds1.GetX();
 	array1[0] = i1;
 	ptr1[0] = 2;
-	ptr1 = cast<int *>(&ds);
+	ptr1 = cast<int *>(&ds1);
 	i1 = OuterSpace::InnerSpace::Number;
 }

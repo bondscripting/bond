@@ -127,6 +127,11 @@ void PrettyPrinter::Visit(const FunctionPrototype *functionPrototype)
 	mWriter.Write("(");
 	PrintList(functionPrototype->GetParameterList(), ", ");
 	mWriter.Write(")");
+
+	if (functionPrototype->IsConst())
+	{
+		mWriter.Write(" const");
+	}
 }
 
 

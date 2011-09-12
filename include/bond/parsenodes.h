@@ -151,6 +151,7 @@ public:
 	bool IsResolved() const;
 
 	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
+	void SetConst() { mFlags |= FLAG_CONST; }
 
 	bool IsLValue() const { return (mFlags & FLAG_LVALUE) != 0; }
 	void SetLValue() { mFlags |= FLAG_LVALUE; }

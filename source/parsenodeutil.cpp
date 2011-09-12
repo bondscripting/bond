@@ -4,6 +4,35 @@
 namespace Bond
 {
 
+bool IsConstMember(const Symbol *symbol)
+{
+	class IsConstVisitor: public ParseNodeVisitorAdapter
+	{
+	public:
+		IsConstVisitor(): mIsConst(false) {}
+
+		virtual void Visit(const FunctionDefinition *functionDefinition)
+		{
+			mIsConst = functionDefinition->GetPrototype()->IsConst();
+		}
+
+		virtual void Visit(const NamedInitializer *namedInitializer)
+		{
+			mIsConst = namedInitializer->GetTypeAndValue()->GetTypeDescriptor()->IsConst();
+		}
+
+		bool IsConst() const { return mIsConst; }
+
+	private:
+		bool mIsConst;
+	};
+
+	IsConstVisitor isConstVisitor;
+	symbol->Accept(isConstVisitor);
+	return isConstVisitor.IsConst();
+}
+
+
 bu32_t GetLength(const ListParseNode *head)
 {
 	bu32_t length = 0;
