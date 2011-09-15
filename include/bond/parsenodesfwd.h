@@ -43,6 +43,7 @@ namespace Bond
 	class SizeofExpression;
 	class ConstantExpression;
 	class IdentifierExpression;
+	class ThisExpression;
 	class EmptyExpression;
 }
 

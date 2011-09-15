@@ -103,6 +103,7 @@ public:
 	SizeofExpression *CreateSizeofExpression(const Token *op, Expression *rhs);
 	ConstantExpression *CreateConstantExpression(const Token *value);
 	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
+	ThisExpression *CreateThisExpression(const Token *token);
 	EmptyExpression *CreateEmptyExpression();
 
 	void Destroy(ParseNode *parseNode);

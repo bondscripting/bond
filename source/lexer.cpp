@@ -1027,6 +1027,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_SWITCH);
 	}
+	else if (strcmp(token.GetText(), "this") == 0)
+	{
+		token.SetTokenType(Token::KEY_THIS);
+	}
 	else if (strcmp(token.GetText(), "uint") == 0)
 	{
 		token.SetTokenType(Token::KEY_UINT);

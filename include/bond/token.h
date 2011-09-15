@@ -28,6 +28,7 @@
 	BOND_TOKEN_ITEM(KEY_SIZEOF)               \
 	BOND_TOKEN_ITEM(KEY_STRUCT)               \
 	BOND_TOKEN_ITEM(KEY_SWITCH)               \
+	BOND_TOKEN_ITEM(KEY_THIS)                 \
 	BOND_TOKEN_ITEM(KEY_UINT)                 \
 	BOND_TOKEN_ITEM(KEY_VOID)                 \
 	BOND_TOKEN_ITEM(KEY_WHILE)                \

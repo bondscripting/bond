@@ -42,8 +42,6 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-bool IsConstMember(const Symbol *symbol);
-
 bu32_t GetLength(const ListParseNode *head);
 
 //bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);

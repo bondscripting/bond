@@ -59,6 +59,7 @@ private:
 	virtual void Visit(const SizeofExpression *sizeofExpression);
 	virtual void Visit(const ConstantExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
+	virtual void Visit(const ThisExpression *thisExpression);
 
 	void PrintList(const ListParseNode *listNode, const char *separator);
 	void IncrementTab() { ++mTabLevel; }

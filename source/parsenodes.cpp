@@ -326,6 +326,18 @@ TypeDescriptor TypeDescriptor::GetStringType()
 }
 
 
+TypeDescriptor TypeDescriptor::GetPointerType(const TypeSpecifier *specifier)
+{
+	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+}
+
+
+TypeDescriptor TypeDescriptor::GetConstPointerType(const TypeSpecifier *specifier)
+{
+	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_CONST | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+}
+
+
 const Token *TypeSpecifier::GetContextToken() const
 {
 	if (mPrimitiveType != 0)

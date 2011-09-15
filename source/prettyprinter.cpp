@@ -498,6 +498,12 @@ void PrettyPrinter::Visit(const ConstantExpression *constantExpression)
 }
 
 
+void PrettyPrinter::Visit(const ThisExpression *thisExpression)
+{
+	mWriter.Write("this");
+}
+
+
 void PrettyPrinter::Visit(const IdentifierExpression *identifierExpression)
 {
 	if (!PrintFoldedConstant(identifierExpression))

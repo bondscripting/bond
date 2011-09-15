@@ -38,6 +38,7 @@ protected:
 	virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
 	virtual void Visit(IdentifierExpression *identifierExpression);
+	virtual void Visit(ThisExpression *thisExpression);
 
 private:
 	typedef AutoStack<const StructDeclaration *> StructStack;
@@ -778,12 +779,33 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 							identifier->GetContextToken(),
 							functionDefinition->GetPrototype(),
-							0); // TODO: Get the type descriptor for the this pointer.
+							mStructStack.GetTop().GetValue()->GetConstThisTypeDescriptor());
 					}
 				}
 			}
 			identifierExpression->SetTypeDescriptor(typeDescriptor);
 		}
+	}
+}
+
+
+void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
+{
+	const StructDeclaration *structDeclaration = mStructStack.GetTop();
+	if (structDeclaration != 0)
+	{
+		if (mInConstFunction.GetTop())
+		{
+			thisExpression->SetTypeDescriptor(*structDeclaration->GetConstThisTypeDescriptor());
+		}
+		else
+		{
+			thisExpression->SetTypeDescriptor(*structDeclaration->GetThisTypeDescriptor());
+		}
+	}
+	else
+	{
+		// TODO: Error - 'this' used outside of member function.
 	}
 }
 

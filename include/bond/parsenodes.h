@@ -177,6 +177,8 @@ public:
 	static TypeDescriptor GetUIntType();
 	static TypeDescriptor GetFloatType();
 	static TypeDescriptor GetStringType();
+	static TypeDescriptor GetPointerType(const TypeSpecifier *specifier);
+	static TypeDescriptor GetConstPointerType(const TypeSpecifier *specifier);
 
 private:
 	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
@@ -208,13 +210,18 @@ private:
 class TypeSpecifier: public ParseNode
 {
 public:
+
 	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = 0):
 		mPrimitiveType(primitiveType),
 		mIdentifier(identifier),
 		mDefinition(0)
 	{}
 
-	explicit TypeSpecifier(QualifiedIdentifier *identifier): mPrimitiveType(0), mIdentifier(identifier) {}
+	explicit TypeSpecifier(QualifiedIdentifier *identifier):
+		mPrimitiveType(0),
+		mIdentifier(identifier),
+		mDefinition(0)
+	{}
 
 	TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier, const Symbol *definition):
 		mPrimitiveType(primitiveType),
@@ -392,7 +399,10 @@ public:
 			const Token *alignment,
 			ListParseNode *memberList,
 			Variant variant):
-		mName(name),
+		mIdentifier(name),
+		mTypeSpecifier(0, &mIdentifier, this),
+		mThisTypeDescriptor(TypeDescriptor::GetPointerType(&mTypeSpecifier)),
+		mConstThisTypeDescriptor(TypeDescriptor::GetConstPointerType(&mTypeSpecifier)),
 		mSizeToken(size),
 		mAlignmentToken(alignment),
 		mMemberList(memberList),
@@ -405,13 +415,22 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	virtual SymbolType GetSymbolType() const { return TYPE_STRUCT; }
-	virtual const Token *GetName() const { return mName; }
+	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+
+	TypeDescriptor *GetThisTypeDescriptor() { return &mThisTypeDescriptor; }
+	const TypeDescriptor *GetThisTypeDescriptor() const { return &mThisTypeDescriptor; }
+
+	TypeDescriptor *GetConstThisTypeDescriptor() { return &mConstThisTypeDescriptor; }
+	const TypeDescriptor *GetConstThisTypeDescriptor() const { return &mConstThisTypeDescriptor; }
 
 	ListParseNode *GetMemberList() { return mMemberList; }
 	const ListParseNode *GetMemberList() const { return mMemberList; }
 
 private:
-	const Token *mName;
+	QualifiedIdentifier mIdentifier;
+	TypeSpecifier mTypeSpecifier;
+	TypeDescriptor mThisTypeDescriptor;
+	TypeDescriptor mConstThisTypeDescriptor;
 	const Token *mSizeToken;
 	const Token *mAlignmentToken;
 	ListParseNode *mMemberList;
@@ -1206,6 +1225,22 @@ public:
 private:
 	QualifiedIdentifier *mIdentifier;
 	const Symbol *mDefinition;
+};
+
+
+class ThisExpression: public Expression
+{
+public:
+	ThisExpression(const Token *token): mToken(token) {}
+	virtual ~ThisExpression() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mToken; }
+
+private:
+	const Token *mToken;
 };
 
 

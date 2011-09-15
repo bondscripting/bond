@@ -1682,15 +1682,20 @@ Expression *ParserCore::ParsePostfixExpression()
 // primary_expression
 //   : qualified_id
 //   | CONSTANT
+//   | THIS
 //   | '(' expression ')'
 Expression *ParserCore::ParsePrimaryExpression()
 {
 	Expression *expression = 0;
-	const Token *value = mStream.NextIf(CONSTANT_VALUES_TYPESET);
+	const Token *token = mStream.NextIf(CONSTANT_VALUES_TYPESET);
 
-	if (value != 0)
+	if (token != 0)
 	{
-		expression = mFactory.CreateConstantExpression(value);
+		expression = mFactory.CreateConstantExpression(token);
+	}
+	else if ((token = mStream.NextIf(Token::KEY_THIS)) != 0)
+	{
+		expression = mFactory.CreateThisExpression(token);
 	}
 	else if (mStream.NextIf(Token::OPAREN) != 0)
 	{

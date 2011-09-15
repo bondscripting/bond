@@ -324,6 +324,12 @@ ConstantExpression *ParseNodeFactory::CreateConstantExpression(const Token *valu
 }
 
 
+ThisExpression *ParseNodeFactory::CreateThisExpression(const Token *token)
+{
+	return new (mAllocator.Alloc<ThisExpression>()) ThisExpression(token);
+}
+
+
 IdentifierExpression *ParseNodeFactory::CreateIdentifierExpression(QualifiedIdentifier *identifier)
 {
 	return new (mAllocator.Alloc<IdentifierExpression>()) IdentifierExpression(identifier);

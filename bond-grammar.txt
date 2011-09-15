@@ -165,6 +165,7 @@ Expressions
 primary_expression
   : qualified_id
   | CONSTANT
+  | THIS
   | '(' expression ')'
 
 postfix_expression
