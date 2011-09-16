@@ -10,9 +10,13 @@ struct DummyStruct
 {
 	int x;
 	int GetX() const { return x; }
-	void Mutator(int arg) { return x = arg; }
+	int GetX() const { return this->x; }
+	void Mutator(int arg) { x = arg; }
+	void Mutator2(int arg) { this->x = arg; }
 	int ConstMutator(int arg) const { x = arg; }
+	int ConstMutator2(int arg) const { this->x = arg; }
 	int ConstAddMutator(int arg) const { Mutator(GetX() + arg); }
+	int ConstAddMutator2(int arg) const { this->Mutator(this->GetX() + arg); }
 };
 
 int [2]* FunnyReturnType();

@@ -26,6 +26,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 		Bond::Token::KEY_SIZEOF,
 		Bond::Token::KEY_STRUCT,
 		Bond::Token::KEY_SWITCH,
+		Bond::Token::KEY_THIS,
 		Bond::Token::KEY_UINT,
 		Bond::Token::KEY_VOID,
 		Bond::Token::KEY_WHILE,
