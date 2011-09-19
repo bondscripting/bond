@@ -2,7 +2,7 @@
 
 DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -17,7 +17,7 @@ DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 
 DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -33,7 +33,7 @@ DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 
 DEFINE_PARSER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -51,7 +51,7 @@ DEFINE_PARSER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bo
 
 DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -69,7 +69,7 @@ DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond
 
 DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_DeclarativeAndExpressionStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -86,7 +86,7 @@ DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_Declarati
 
 DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -103,7 +103,7 @@ DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 
 DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -121,7 +121,7 @@ DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 
 DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -138,7 +138,7 @@ DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 
 DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -157,7 +157,7 @@ DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 
 DEFINE_PARSER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -177,7 +177,7 @@ DEFINE_PARSER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 
 DEFINE_PARSER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -195,7 +195,7 @@ DEFINE_PARSER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 
 DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(parser.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -219,7 +219,7 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -251,7 +251,7 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
@@ -297,7 +297,7 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(parser.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 

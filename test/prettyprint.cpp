@@ -20,21 +20,23 @@ void PrintErrors(Bond::TextWriter &logger, const Bond::ParseErrorBuffer &errorBu
 }
 
 
-bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser)
+bool PrettyPrint(Bond::TextWriter &logger, Bond::ParseErrorBuffer &errorBuffer, Bond::Parser &parser)
 {
 	Bond::PrettyPrinter printer(logger, gFoldConstants);
 	printer.PrintList(parser.GetTranslationUnitList());
-	PrintErrors(logger, parser.GetErrorBuffer());
+	PrintErrors(logger, errorBuffer);
 
 	return true;
 }
 
 
-bool PrettyPrint(Bond::TextWriter &logger, Bond::Parser &parser, Bond::SemanticAnalyzer &analyzer)
+bool PrettyPrint(
+	Bond::TextWriter &logger,
+	Bond::ParseErrorBuffer &errorBuffer,
+	Bond::Parser &parser,
+	Bond::SemanticAnalyzer &analyzer)
 {
-	PrettyPrint(logger, parser);
-	PrintErrors(logger, analyzer.GetErrorBuffer());
-	return true;
+	return PrettyPrint(logger, errorBuffer, parser);
 }
 
 

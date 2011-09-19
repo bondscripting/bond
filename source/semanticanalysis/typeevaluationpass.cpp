@@ -805,7 +805,7 @@ void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 	}
 	else
 	{
-		// TODO: Error - 'this' used outside of member function.
+		mErrorBuffer.PushError(ParseError::THIS_IN_NON_MEMBER_FUNCTION, thisExpression->GetContextToken());
 	}
 }
 

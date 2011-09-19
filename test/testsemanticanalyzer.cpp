@@ -4,7 +4,7 @@
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -25,7 +25,7 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -52,7 +52,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -79,7 +79,7 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 
 DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(analyzer.GetErrorBuffer());
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -110,7 +110,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -165,7 +165,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -199,7 +199,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -216,7 +216,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(analyzer.GetErrorBuffer(), EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }

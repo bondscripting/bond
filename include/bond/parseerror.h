@@ -46,6 +46,8 @@
     "Struct '%n' has no member named '%c'.")                                        \
   BOND_PARSE_ERROR(NON_CONST_MEMBER_FUNCTION_REQUEST,                               \
     "Cannot access '%0n' from '%1n'.")                                              \
+  BOND_PARSE_ERROR(THIS_IN_NON_MEMBER_FUNCTION,                                     \
+    "Invalid use of 'this' in non-member function.")                                \
   BOND_PARSE_ERROR(EXPRESSION_IS_NOT_CALLABLE,                                      \
     "Expression is not callable.")                                                  \
   BOND_PARSE_ERROR(INCORRECT_NUMBER_OF_ARGS,                                        \

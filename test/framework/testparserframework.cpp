@@ -53,9 +53,10 @@ static bool RunParserTest(
 		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.data, script.length);
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::Parser parser(parserAllocator);
+		Bond::ParseErrorBuffer errorBuffer;
+		Bond::Parser parser(parserAllocator, errorBuffer);
 		parser.Parse(stream);
-		result = validationFunction(logger, parser);
+		result = validationFunction(logger, errorBuffer, parser);
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
@@ -65,6 +66,7 @@ static bool RunParserTest(
 
 	return result;
 }
+
 
 bool AssertParseNodeCount(
 	Bond::TextWriter &logger,

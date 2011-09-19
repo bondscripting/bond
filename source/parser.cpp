@@ -1,5 +1,6 @@
 #include "bond/autostack.h"
 #include "bond/parser.h"
+#include "bond/parseerror.h"
 #include "bond/tokenstream.h"
 
 namespace Bond
@@ -110,8 +111,9 @@ private:
 };
 
 
-Parser::Parser(Allocator &allocator):
+Parser::Parser(Allocator &allocator, ParseErrorBuffer &errorBuffer):
 	mFactory(allocator),
+	mErrorBuffer(errorBuffer),
 	mTranslationUnitList(0)
 {
 }

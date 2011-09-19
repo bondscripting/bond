@@ -2,6 +2,7 @@
 #include "framework/util.h"
 #include "bond/defaultallocator.h"
 #include "bond/lexer.h"
+#include "bond/parseerror.h"
 #include "bond/parser.h"
 #include "bond/textwriter.h"
 
@@ -53,13 +54,17 @@ static bool RunSemanticAnalyzerTest(
 		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.data, script.length);
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::Parser parser(parserAllocator);
+		Bond::ParseErrorBuffer errorBuffer;
+		Bond::Parser parser(parserAllocator, errorBuffer);
 		parser.Parse(stream);
-		__ASSERT_FORMAT__(!parser.HasErrors(), logger, assertFile, assertLine,
-			("Cannot run semantic analysis, since parser returned errors.\n"));
-		Bond::SemanticAnalyzer analyzer;
-		analyzer.Analyze(parser.GetTranslationUnitList());
-		result = validationFunction(logger, parser, analyzer);
+		//__ASSERT_FORMAT__(!parser.HasErrors(), logger, assertFile, assertLine,
+		//	("Cannot run semantic analysis, since parser returned errors.\n"));
+		Bond::SemanticAnalyzer analyzer(errorBuffer);
+		if (!errorBuffer.HasErrors())
+		{
+			analyzer.Analyze(parser.GetTranslationUnitList());
+		}
+		result = validationFunction(logger, errorBuffer, parser, analyzer);
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

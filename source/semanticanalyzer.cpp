@@ -1,4 +1,5 @@
 #include "bond/autostack.h"
+#include "bond/parseerror.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
 #include "bond/semanticanalyzer.h"
@@ -186,8 +187,6 @@ namespace Bond
 
 void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 {
-	mErrorBuffer.Reset();
-
 	// Add all type declarations to the symbol table first, since they can be used prior to their declaration
 	// in other typed declarations (e.g. function return type and parameter types).
 	TopLevelSymbolPass topLevelSymbolPass(mErrorBuffer, mSymbolTable);
@@ -197,7 +196,6 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	{
 		return;
 	}
-
 
 	TypeSpecifierResolutionPass typeSpecifierResolutionPass(mErrorBuffer, mSymbolTable);
 	typeSpecifierResolutionPass.Analyze(translationUnitList);
