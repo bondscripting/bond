@@ -27,18 +27,26 @@ private:
 template<typename T>
 T *CastNode(ParseNode *node)
 {
-	CastVisitor<T> castVisitor;
-	node->Accept(castVisitor);
-	return castVisitor.GetNode();
+	if (node != 0)
+	{
+		CastVisitor<T> castVisitor;
+		node->Accept(castVisitor);
+		return castVisitor.GetNode();
+	}
+	return static_cast<T *>(0);
 }
 
 
 template<typename T>
 const T *CastNode(const ParseNode *node)
 {
-	CastVisitor<const T> castVisitor;
-	node->Accept(castVisitor);
-	return castVisitor.GetNode();
+	if (node != 0)
+	{
+		CastVisitor<const T> castVisitor;
+		node->Accept(castVisitor);
+		return castVisitor.GetNode();
+	}
+	return static_cast<const T *>(0);
 }
 
 

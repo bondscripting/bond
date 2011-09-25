@@ -148,6 +148,7 @@ public:
 	TypeDescriptor GetDereferencedType() const;
 	TypeDescriptor GetArrayValueType() const;
 
+	bool IsDefined() const { return (mFlags & STORAGE_MASK) != 0; }
 	bool IsResolved() const;
 
 	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
@@ -160,6 +161,8 @@ public:
 	void SetRValue() { mFlags &= ~FLAG_LVALUE; }
 
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
+
+	bu32_t GetSize(bu32_t pointerSize) const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -243,6 +246,8 @@ public:
 
 	const Symbol *GetDefinition() const { return mDefinition; }
 	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
+
+	bu32_t GetSize(bu32_t pointerSize) const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -425,6 +430,9 @@ public:
 
 	ListParseNode *GetMemberList() { return mMemberList; }
 	const ListParseNode *GetMemberList() const { return mMemberList; }
+
+	// TODO: Implement this function.
+	bu32_t GetSize() const { return 0; }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -903,13 +911,13 @@ public:
 	virtual ~Expression() {}
 
 	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
-	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; mTypeAndValue.SetTypeDescriptor(&mTypeDescriptor); }
+	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
 
 	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
 	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
 
 protected:
-	Expression() {}
+	Expression(): mTypeAndValue(&mTypeDescriptor) {}
 
 private:
 	TypeDescriptor mTypeDescriptor;

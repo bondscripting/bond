@@ -137,7 +137,6 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 					tav.SetUIntValue(1);
 				}
 
-				// TODO: Compute size of type.
 				if (!isUInt)
 				{
 					expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
@@ -497,39 +496,8 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 		if ((typeDescriptor != 0) && typeDescriptor->IsResolved())
 		{
 			Resolve(tav);
-
-			if (typeDescriptor->IsValueType())
-			{
-				switch (typeDescriptor->GetPrimitiveType())
-				{
-					case Token::KEY_BOOL:
-						tav.SetUIntValue(BOND_BOOL_SIZE);
-						break;
-					case Token::KEY_CHAR:
-						tav.SetUIntValue(BOND_CHAR_SIZE);
-						break;
-					case Token::KEY_FLOAT:
-						tav.SetUIntValue(BOND_FLOAT_SIZE);
-						break;
-					case Token::KEY_INT:
-						tav.SetUIntValue(BOND_INT_SIZE);
-						break;
-					case Token::KEY_UINT:
-						tav.SetUIntValue(BOND_UINT_SIZE);
-						break;
-					default:
-						// TODO: Handle structs.
-						break;
-				}
-			}
-			else if (typeDescriptor->IsPointerIntrinsicType())
-			{
-				tav.SetUIntValue(mPointerSize);
-			}
-			else if (typeDescriptor->IsArrayType())
-			{
-				// TODO: Handle structs.
-			}
+			// TODO: Is it possible for a type descriptor to be resolved, but its size to be undefined?
+			tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #include "bond/parsenodes.h"
+#include "bond/parsenodeutil.h"
 #include "bond/stringutil.h"
 #include <string.h>
 
@@ -240,6 +241,28 @@ bool TypeDescriptor::IsResolved() const
 }
 
 
+bu32_t TypeDescriptor::GetSize(bu32_t pointerSize) const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->GetSize(pointerSize);
+	}
+	else if (IsPointerIntrinsicType())
+	{
+		return pointerSize;
+	}
+	else if (IsArrayType())
+	{
+		const TypeDescriptor parent = GetDereferencedType();
+		const bu32_t parentSize = parent.GetSize(pointerSize);
+		const bu32_t arraySize = mLengthExpressionList->GetTypeAndValue().GetUIntValue();
+		const bu32_t size = arraySize * parentSize;
+		return size;
+	}
+	return 0;
+}
+
+
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (IsValueType())
@@ -347,6 +370,34 @@ const Token *TypeSpecifier::GetContextToken() const
 	if (mIdentifier != 0)
 	{
 		return mIdentifier->GetContextToken();
+	}
+	return 0;
+}
+
+
+bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
+{
+	switch (GetPrimitiveType())
+	{
+		case Token::KEY_BOOL:
+			return BOND_BOOL_SIZE;
+		case Token::KEY_CHAR:
+			return BOND_CHAR_SIZE;
+		case Token::KEY_FLOAT:
+			return BOND_FLOAT_SIZE;
+		case Token::KEY_INT:
+			return BOND_INT_SIZE;
+		case Token::KEY_UINT:
+			return BOND_UINT_SIZE;
+
+		default:
+		{
+			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
+			if (structDeclaration != 0)
+			{
+				return structDeclaration->GetSize();
+			}
+		}
 	}
 	return 0;
 }

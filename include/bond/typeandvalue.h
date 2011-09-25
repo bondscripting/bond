@@ -42,7 +42,7 @@ public:
 		return *this;
 	}
 
-	bool IsTypeDefined() const { return mTypeDescriptor != 0; }
+	bool IsTypeDefined() const;
 
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
