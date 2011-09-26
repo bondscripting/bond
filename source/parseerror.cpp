@@ -171,4 +171,17 @@ void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, co
 	}
 }
 
+
+void ParseErrorBuffer::CopyFrom(const ParseErrorBuffer &other)
+{
+	for (int i = 0; i < other.mNumErrors; ++i)
+	{
+		if (mNumErrors < MAX_ERRORS)
+		{
+			mErrors[mNumErrors] = other.mErrors[i];
+			++mNumErrors;
+		}
+	}
+}
+
 }

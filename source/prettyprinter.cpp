@@ -486,7 +486,9 @@ void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 		}
 		else
 		{
+			mWriter.Write("(");
 			Print(sizeofExpression->GetRhs());
+			mWriter.Write(")");
 		}
 	}
 }

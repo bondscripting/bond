@@ -102,6 +102,8 @@
     "Braces around initializer for scalar type '%n'.")                              \
   BOND_PARSE_ERROR(RECURSIVE_STRUCT,                                                \
     "Struct '%c' is recursive.")                                                    \
+  BOND_PARSE_ERROR(CANNOT_RESOLVE_SYMBOL_VALUE,                                     \
+    "Cannot resolve the value of symbol '%c'.")                                     \
 
 
 namespace Bond
@@ -121,20 +123,13 @@ public:
 #undef BOND_PARSE_ERROR
 	};
 
-	ParseError(): mType(NO_ERROR), mContext(0) {}
+	ParseError(): mType(NO_ERROR), mContext(0), mArg0(0), mArg1(0) {}
 
 	ParseError(Type type, const Token *context, const void *arg0 = 0, const void *arg1 = 0):
 		mType(type),
 		mContext(context),
 		mArg0(arg0),
 		mArg1(arg1)
-	{}
-
-	ParseError(const ParseError &other):
-		mType(other.mType),
-		mContext(other.mContext),
-		mArg0(other.mArg0),
-		mArg1(other.mArg1)
 	{}
 
 	Type GetType() const { return mType; }
@@ -167,6 +162,8 @@ public:
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
 	const ParseError *GetError(int index) const { return mErrors + index; }
+
+	void CopyFrom(const ParseErrorBuffer &other);
 
 private:
 	static const int MAX_ERRORS = 64;

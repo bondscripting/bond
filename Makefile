@@ -11,6 +11,7 @@ CC := g++
 ETAGS := etags
 MKDIR := mkdir
 RM := rm
+BASE_CFLAGS = -Wall -O2
 
 # Bond library files, folders and configuration.
 INCLUDEDIR := include
@@ -23,7 +24,7 @@ SRCFILES := $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES := $(patsubst $(SRCFILE),$(OBJFILE),$(SRCFILES))
 DEPFILES := $(patsubst $(SRCFILE),$(OBJDEPFILE),$(SRCFILES))
 LIB := $(LIBDIR)/bond.a
-CFLAGS := -Wall -O2 -I$(INCLUDEDIR) -Isource
+CFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Isource
 
 # Test Framework library files, folders and configuration.
 TFSRCDIR := test/framework
@@ -35,7 +36,7 @@ TFSRCFILES := $(wildcard $(TFSRCDIR)/*.cpp)
 TFOBJFILES := $(patsubst $(TFSRCFILE),$(TFOBJFILE),$(TFSRCFILES))
 TFDEPFILES := $(patsubst $(TFSRCFILE),$(TFOBJDEPFILE),$(TFSRCFILES))
 TFLIB := $(LIBDIR)/framework.a
-TFCFLAGS := -Wall -O2 -I$(INCLUDEDIR) -Itest
+TFCFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Itest
 
 # Unit Test files, folders and configuration.
 UTSRCDIR := test
@@ -45,7 +46,7 @@ UTSRCFILES := $(wildcard $(UTSRCDIR)/*.cpp)
 UTEXES := $(patsubst $(UTSRCFILE),$(EXEFILE),$(UTSRCFILES))
 UTDEPFILES := $(patsubst $(UTSRCFILE),$(EXEDEPFILE),$(UTSRCFILES))
 UTESTS := $(patsubst $(UTSRCFILE),$(UTEST),$(UTSRCFILES))
-UTCFLAGS := -Wall -O2 -I$(INCLUDEDIR) -Itest
+UTCFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Itest
 
 .PHONY: all clean deepclean test tags
 

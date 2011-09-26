@@ -411,7 +411,8 @@ public:
 		mSizeToken(size),
 		mAlignmentToken(alignment),
 		mMemberList(memberList),
-		mVariant(variant)
+		mVariant(variant),
+		mSize(0)
 	{}
 
 	virtual ~StructDeclaration() {}
@@ -431,8 +432,7 @@ public:
 	ListParseNode *GetMemberList() { return mMemberList; }
 	const ListParseNode *GetMemberList() const { return mMemberList; }
 
-	// TODO: Implement this function.
-	bu32_t GetSize() const { return 0; }
+	bu32_t GetSize() const { return mSize; }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -443,6 +443,7 @@ private:
 	const Token *mAlignmentToken;
 	ListParseNode *mMemberList;
 	Variant mVariant;
+	bu32_t mSize;
 };
 
 

@@ -8,7 +8,8 @@ public:
 		SemanticAnalysisPass(errorBuffer, symbolTable),
 		mPrevEnumerator(0),
 		mPointerSize(pointerSize),
-		mItemResolved(false)
+		mHasResolvedItems(false),
+		mHasUnresolvedItems(false)
 	{}
 
 	virtual ~ValueEvaluationPass() {}
@@ -36,10 +37,13 @@ protected:
 
 private:
 	void Resolve(TypeAndValue &tav);
+	void CheckUnresolved(const TypeAndValue &tav);
 
+	ParseErrorBuffer mUnresolvedErrorBuffer;
 	Enumerator *mPrevEnumerator;
 	bu32_t mPointerSize;
-	bool mItemResolved;
+	bool mHasResolvedItems;
+	bool mHasUnresolvedItems;
 };
 
 
@@ -47,10 +51,14 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
 	{
-		mItemResolved = false;
+		mHasResolvedItems = false;
+		mHasUnresolvedItems = false;
+		mUnresolvedErrorBuffer.Reset();
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mItemResolved);
+	while (mHasResolvedItems && mHasUnresolvedItems);
+
+	mErrorBuffer.CopyFrom(mUnresolvedErrorBuffer);
 }
 
 
@@ -96,6 +104,12 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 				tav.SetIntValue(0);
 			}
 		}
+
+		if (!tav.IsResolved())
+		{
+			mUnresolvedErrorBuffer.PushError(ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, enumerator->GetName());
+		}
+		CheckUnresolved(tav);
 	}
 
 	mPrevEnumerator = enumerator;
@@ -175,6 +189,7 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 				}
 			}
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -190,6 +205,7 @@ void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
 		{
 			mErrorBuffer.PushError(ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, expression->GetContextToken());
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -245,6 +261,7 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 				tav.SetValue(CastValue(cond ? trueTav : falseTav, resultType));
 			}
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -331,6 +348,7 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				}
 			}
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -373,6 +391,7 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				}
 			}
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -389,6 +408,7 @@ void ValueEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		{
 			Resolve(tav);
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -405,6 +425,7 @@ void ValueEvaluationPass::Visit(MemberExpression *memberExpression)
 		{
 			Resolve(tav);
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -423,6 +444,7 @@ void ValueEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressi
 		{
 			Resolve(tav);
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -468,6 +490,7 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 			const TypeDescriptor *resultType = tav.GetTypeDescriptor();
 			tav.SetValue(CastValue(rhs, resultType));
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -499,6 +522,7 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 			// TODO: Is it possible for a type descriptor to be resolved, but its size to be undefined?
 			tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -511,6 +535,7 @@ void ValueEvaluationPass::Visit(ConstantExpression *constantExpression)
 		const Token *token = constantExpression->GetValueToken();
 		Resolve(tav);
 		tav.SetValue(token->GetValue());
+		CheckUnresolved(tav);
 	}
 }
 
@@ -529,6 +554,7 @@ void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 				tav.SetValue(definitionTav.GetValue());
 			}
 		}
+		CheckUnresolved(tav);
 	}
 }
 
@@ -536,7 +562,13 @@ void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 void ValueEvaluationPass::Resolve(TypeAndValue &tav)
 {
 	tav.Resolve();
-	mItemResolved = true;
+	mHasResolvedItems = true;
+}
+
+
+void ValueEvaluationPass::CheckUnresolved(const TypeAndValue &tav)
+{
+	mHasUnresolvedItems = mHasUnresolvedItems || !tav.IsResolved();
 }
 
 }
