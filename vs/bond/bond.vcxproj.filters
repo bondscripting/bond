@@ -93,6 +93,9 @@
     <ClCompile Include="..\..\source\semanticanalysis\valueevaluationpass.cpp">
       <Filter>Source Files\source\semanticanalysis</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\typeandvalue.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\allocator.h">

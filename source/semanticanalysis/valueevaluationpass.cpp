@@ -58,6 +58,13 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 	}
 	while (mHasResolvedItems && mHasUnresolvedItems);
 
+	// If something has not been resolved but no errors were reported, then
+	// then the compiler did something wrong.
+	if (mHasUnresolvedItems && !mUnresolvedErrorBuffer.HasErrors())
+	{
+		mErrorBuffer.PushError(ParseError::INTERNAL_ERROR);
+	}
+
 	mErrorBuffer.CopyFrom(mUnresolvedErrorBuffer);
 }
 
@@ -535,7 +542,6 @@ void ValueEvaluationPass::Visit(ConstantExpression *constantExpression)
 		const Token *token = constantExpression->GetValueToken();
 		Resolve(tav);
 		tav.SetValue(token->GetValue());
-		CheckUnresolved(tav);
 	}
 }
 
@@ -553,6 +559,10 @@ void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 			{
 				tav.SetValue(definitionTav.GetValue());
 			}
+		}
+		else
+		{
+			mUnresolvedErrorBuffer.PushError(ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, identifierExpression->GetContextToken());
 		}
 		CheckUnresolved(tav);
 	}

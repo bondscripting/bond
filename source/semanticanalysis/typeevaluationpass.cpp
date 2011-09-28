@@ -984,11 +984,15 @@ void TypeEvaluationPass::ValidateInitializer(
 	{
 		if (expression != 0)
 		{
-			AssertConvertibleTypes(
-				expression->GetTypeAndValue().GetTypeDescriptor(),
-				typeDescriptor,
-				expression->GetContextToken(),
-				ParseError::INVALID_TYPE_CONVERSION);
+			const TypeAndValue &tav = expression->GetTypeAndValue();
+			if (tav.IsTypeDefined())
+			{
+				AssertConvertibleTypes(
+					expression->GetTypeAndValue().GetTypeDescriptor(),
+					typeDescriptor,
+					expression->GetContextToken(),
+					ParseError::INVALID_TYPE_CONVERSION);
+			}
 		}
 		else if (initializerList != 0)
 		{

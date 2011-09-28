@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />
+    <ClCompile Include="..\..\source\typeandvalue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\allocator.h" />

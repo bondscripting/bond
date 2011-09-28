@@ -48,8 +48,11 @@ void ParseError::Print(TextWriter &writer) const
 {
 	const char *format = GetFormat();
 
-	const Bond::StreamPos &pos = mContext->GetStartPos();
-	writer.Write("(%d, %d): ", pos.line, pos.column);
+	if (mContext != 0)
+	{
+		const Bond::StreamPos &pos = mContext->GetStartPos();
+		writer.Write("(%d, %d): ", pos.line, pos.column);
+	}
 
 	enum State
 	{

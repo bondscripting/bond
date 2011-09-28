@@ -104,6 +104,8 @@
     "Struct '%c' is recursive.")                                                    \
   BOND_PARSE_ERROR(CANNOT_RESOLVE_SYMBOL_VALUE,                                     \
     "Cannot resolve the value of symbol '%c'.")                                     \
+  BOND_PARSE_ERROR(INTERNAL_ERROR,                                                  \
+    "Internal compiler error.")                                                     \
 
 
 namespace Bond
@@ -158,7 +160,7 @@ public:
 
 	void Reset();
 
-	void PushError(ParseError::Type type, const Token *context, const void *arg0 = 0, const void *arg1 = 0);
+	void PushError(ParseError::Type type, const Token *context = 0, const void *arg0 = 0, const void *arg1 = 0);
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
 	const ParseError *GetError(int index) const { return mErrors + index; }
