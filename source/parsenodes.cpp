@@ -430,6 +430,34 @@ bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
 }
 
 
+bu32_t TypeSpecifier::GetAlignment() const
+{
+	switch (GetPrimitiveType())
+	{
+		case Token::KEY_BOOL:
+			return BOND_BOOL_ALIGN;
+		case Token::KEY_CHAR:
+			return BOND_CHAR_ALIGN;
+		case Token::KEY_FLOAT:
+			return BOND_FLOAT_ALIGN;
+		case Token::KEY_INT:
+			return BOND_INT_ALIGN;
+		case Token::KEY_UINT:
+			return BOND_UINT_ALIGN;
+
+		default:
+		{
+			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
+			if (structDeclaration != 0)
+			{
+				return structDeclaration->GetAlignment();
+			}
+		}
+	}
+	return 0;
+}
+
+
 Token::TokenType TypeSpecifier::GetPrimitiveType() const
 {
 	if (mPrimitiveType != 0)

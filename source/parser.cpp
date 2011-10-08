@@ -161,8 +161,7 @@ TranslationUnit *ParserCore::ParseTranslationUnit()
 
 ListParseNode *ParserCore::ParseExternalDeclarationList()
 {
-	ListParseNode *declarationList = 0;
-	ListParseNode *current = 0;
+	ParseNodeList<ListParseNode> declarationList;
 
 	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 	{
@@ -172,23 +171,11 @@ ListParseNode *ParserCore::ParseExternalDeclarationList()
 			ListParseNode *next = ParseExternalDeclaration();
 			AssertNode(next);
 			SyncToDeclarationTerminator();
-
-			if (next != 0)
-			{
-				if (declarationList == 0)
-				{
-					declarationList = next;
-				}
-				else
-				{
-					current->SetNextNode(next);
-				}
-				current = next;
-			}
+			declarationList.Append(next);
 		}
 	}
 
-	return declarationList;
+	return declarationList.GetHead();
 }
 
 
@@ -260,8 +247,7 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		enumeration = mFactory.CreateEnumDeclaration(name);
 		ExpectToken(Token::OBRACE);
-		Enumerator *enumeratorList = 0;
-		Enumerator *current = 0;
+		ParseNodeList<Enumerator> enumeratorList;
 
 		while (mStream.PeekIf(ENUM_DELIMITERS_TYPESET) == 0)
 		{
@@ -275,21 +261,10 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 				ExpectToken(Token::COMMA);
 			}
 
-			if (next != 0)
-			{
-				if (enumeratorList == 0)
-				{
-					enumeratorList = next;
-				}
-				else
-				{
-					current->SetNextNode(next);
-				}
-				current = next;
-			}
+			enumeratorList.Append(next);
 		}
 
-		enumeration->SetEnumeratorList(enumeratorList);
+		enumeration->SetEnumeratorList(enumeratorList.GetHead());
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
 	}
@@ -362,8 +337,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
-		ListParseNode *memberList = 0;
-		ListParseNode *current = 0;
+		ParseNodeList<ListParseNode> memberList;
 
 		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
@@ -373,25 +347,13 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 				ListParseNode *next = ParseFunctionOrDeclarativeStatement(context);
 				AssertNode(next);
 				SyncToStructMemberTerminator();
-
-				if (next != 0)
-				{
-					if (memberList == 0)
-					{
-						memberList = next;
-					}
-					else
-					{
-						current->SetNextNode(next);
-					}
-					current = next;
-				}
+				memberList.Append(next);
 			}
 		}
 
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
-		declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList, variant);
+		declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList.GetHead(), variant);
 	}
 
 	return declaration;
@@ -725,8 +687,7 @@ Initializer *ParserCore::ParseInitializer()
 
 	if (mStream.NextIf(Token::OBRACE))
 	{
-		Initializer *initializerList = 0;
-		Initializer *current = 0;
+		ParseNodeList<Initializer> initializerList;
 
 		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
@@ -740,22 +701,11 @@ Initializer *ParserCore::ParseInitializer()
 				ExpectToken(Token::COMMA);
 			}
 
-			if (next != 0)
-			{
-				if (initializerList == 0)
-				{
-					initializerList = next;
-				}
-				else
-				{
-					current->SetNextNode(next);
-				}
-				current = next;
-			}
+			initializerList.Append(next);
 		}
 
 		ExpectToken(Token::CBRACE);
-		initializer = mFactory.CreateInitializer(initializerList);
+		initializer = mFactory.CreateInitializer(initializerList.GetHead());
 	}
 	else
 	{
@@ -860,31 +810,18 @@ CompoundStatement *ParserCore::ParseCompoundStatement()
 
 	if (mStream.NextIf(Token::OBRACE))
 	{
-		ListParseNode *statementList = 0;
-		ListParseNode *current = 0;
+		ParseNodeList<ListParseNode> statementList;
 
 		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			ListParseNode *next = ParseStatement();
 			AssertNode(next);
 			SyncToStatementTerminator();
-
-			if (next != 0)
-			{
-				if (statementList == 0)
-				{
-					statementList = next;
-				}
-				else
-				{
-					current->SetNextNode(next);
-				}
-				current = next;
-			}
+			statementList.Append(next);
 		}
 
 		ExpectToken(Token::CBRACE);
-		compoundStatement = mFactory.CreateCompoundStatement(statementList);
+		compoundStatement = mFactory.CreateCompoundStatement(statementList.GetHead());
 	}
 
 	return compoundStatement;
@@ -967,30 +904,17 @@ SwitchSection *ParserCore::ParseSwitchSection()
 	}
 	// TODO: Semantic analyser must ensure the list is not empty.
 
-	ListParseNode *statementList = 0;
-	ListParseNode *currentStatement = 0;
+	ParseNodeList<ListParseNode> statementList;
 	while (mStream.PeekIf(SWITCH_SECTION_DELIMITERS_TYPESET) == 0)
 	{
 		ListParseNode *next = ParseStatement();
 		AssertNode(next);
 		SyncToStatementTerminator();
-
-		if (next != 0)
-		{
-			if (statementList == 0)
-			{
-				statementList = next;
-			}
-			else
-			{
-				currentStatement->SetNextNode(next);
-			}
-			currentStatement = next;
-		}
+		statementList.Append(next);
 	}
 	// TODO: Semantic analyser must ensure the list is not empty.
 
-	section = mFactory.CreateSwitchSection(labelList, statementList);;
+	section = mFactory.CreateSwitchSection(labelList, statementList.GetHead());
 
 	return section;
 }

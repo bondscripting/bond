@@ -40,6 +40,36 @@ private:
 };
 
 
+template <typename NodeType>
+class ParseNodeList
+{
+public:
+	ParseNodeList(): mHead(0), mTail(0) {}
+
+	NodeType *GetHead() const { return mHead; }
+
+	void Append(NodeType *node)
+	{
+		if (node != 0)
+		{
+			if (mHead == 0)
+			{
+				mHead = node;
+			}
+			else
+			{
+				mTail->SetNextNode(node);
+			}
+			mTail = node;
+		}
+	}
+
+private:
+	NodeType *mHead;
+	NodeType *mTail;
+};
+
+
 class Symbol: public ListParseNode
 {
 public:
