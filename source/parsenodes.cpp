@@ -205,7 +205,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 }
 
 
-TypeDescriptor TypeDescriptor::GetArrayValueType() const
+TypeDescriptor TypeDescriptor::GetArrayElementType() const
 {
 	TypeDescriptor typeDescriptor;
 
@@ -237,7 +237,9 @@ bool TypeDescriptor::IsResolved() const
 		}
 		lengthExpressionList = static_cast<const Expression *>(lengthExpressionList->GetNextNode());
 	}
-	return (mParent == 0) || mParent->IsResolved();
+	return
+		((mParent == 0) || mParent->IsResolved()) &&
+		((mTypeSpecifier == 0) || (mTypeSpecifier->IsResolved()));
 }
 
 
@@ -258,6 +260,25 @@ bu32_t TypeDescriptor::GetSize(bu32_t pointerSize) const
 		const bu32_t arraySize = mLengthExpressionList->GetTypeAndValue().GetUIntValue();
 		const bu32_t size = arraySize * parentSize;
 		return size;
+	}
+	return 0;
+}
+
+
+bu32_t TypeDescriptor::GetAlignment() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->GetAlignment();
+	}
+	else if (IsPointerIntrinsicType())
+	{
+		return BOND_NATIVE_POINTER_ALIGN;
+	}
+	else if (IsArrayType())
+	{
+		const TypeDescriptor elementType = GetArrayElementType();
+		return elementType.GetAlignment();
 	}
 	return 0;
 }
@@ -375,6 +396,12 @@ const Token *TypeSpecifier::GetContextToken() const
 }
 
 
+bool TypeSpecifier::IsResolved() const
+{
+	return (mDefinition == 0) || (mDefinition->IsResolved());
+}
+
+
 bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
 {
 	switch (GetPrimitiveType())
@@ -450,6 +477,12 @@ bool TypeSpecifier::IsVoidType() const
 		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return false;
+}
+
+
+bool StructDeclaration::IsResolved() const
+{
+	return (mVariant == VARIANT_REFERENCE) || (mSize > 0);
 }
 
 

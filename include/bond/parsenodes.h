@@ -63,6 +63,8 @@ public:
 	virtual TypeAndValue *GetTypeAndValue() { return 0; }
 	virtual const TypeAndValue *GetTypeAndValue() const { return 0; }
 
+	virtual bool IsResolved() const { return true; }
+
 	bool IsTypeDefinition() const;
 
 	Symbol *GetParentSymbol() { return mParentSymbol; }
@@ -146,7 +148,7 @@ public:
 	void ConvertToPointerIntrinsic() { mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER | FLAG_CONST; }
 
 	TypeDescriptor GetDereferencedType() const;
-	TypeDescriptor GetArrayValueType() const;
+	TypeDescriptor GetArrayElementType() const;
 
 	bool IsDefined() const { return (mFlags & STORAGE_MASK) != 0; }
 	bool IsResolved() const;
@@ -163,6 +165,7 @@ public:
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
 	bu32_t GetSize(bu32_t pointerSize) const;
+	bu32_t GetAlignment() const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -247,7 +250,10 @@ public:
 	const Symbol *GetDefinition() const { return mDefinition; }
 	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
 
+	bool IsResolved() const;
+
 	bu32_t GetSize(bu32_t pointerSize) const;
+	bu32_t GetAlignment() const;
 
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
@@ -412,7 +418,8 @@ public:
 		mAlignmentToken(alignment),
 		mMemberList(memberList),
 		mVariant(variant),
-		mSize(0)
+		mSize(0),
+		mAlignment(0)
 	{}
 
 	virtual ~StructDeclaration() {}
@@ -422,6 +429,8 @@ public:
 
 	virtual SymbolType GetSymbolType() const { return TYPE_STRUCT; }
 	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+
+	virtual bool IsResolved() const;
 
 	TypeDescriptor *GetThisTypeDescriptor() { return &mThisTypeDescriptor; }
 	const TypeDescriptor *GetThisTypeDescriptor() const { return &mThisTypeDescriptor; }
@@ -433,6 +442,7 @@ public:
 	const ListParseNode *GetMemberList() const { return mMemberList; }
 
 	bu32_t GetSize() const { return mSize; }
+	bu32_t GetAlignment() const { return mAlignment; }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -444,6 +454,7 @@ private:
 	ListParseNode *mMemberList;
 	Variant mVariant;
 	bu32_t mSize;
+	bu32_t mAlignment;
 };
 
 

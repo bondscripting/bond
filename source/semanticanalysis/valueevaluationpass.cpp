@@ -19,6 +19,7 @@ public:
 protected:
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
+	virtual void Visit(StructDeclaration *structDeclaration);
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(SwitchLabel *switchLabel);
@@ -120,6 +121,15 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 	}
 
 	mPrevEnumerator = enumerator;
+}
+
+
+void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
+{
+	SemanticAnalysisPass::Visit(structDeclaration);
+	if (!structDeclaration->IsResolved())
+	{
+	}
 }
 
 

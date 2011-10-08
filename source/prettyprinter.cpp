@@ -157,7 +157,7 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 	}
 	else if (typeDescriptor->IsArrayType())
 	{
-		const TypeDescriptor value = typeDescriptor->GetArrayValueType();
+		const TypeDescriptor value = typeDescriptor->GetArrayElementType();
 		Visit(&value);
 		mWriter.Write("[");
 		PrintList(typeDescriptor->GetLengthExpressionList(), "][");
