@@ -1,6 +1,7 @@
 #include "bond/autostack.h"
 #include "bond/parser.h"
 #include "bond/parseerror.h"
+#include "bond/parsenodeutil.h"
 #include "bond/tokenstream.h"
 
 namespace Bond
@@ -39,7 +40,13 @@ private:
 	EnumDeclaration *ParseEnumDeclaration();
 	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
+
 	ListParseNode *ParseFunctionOrDeclarativeStatement(DeclarationContext context = TOP_LEVEL);
+	void ParseFunctionOrDeclarativeStatement(
+		DeclarationContext context,
+		FunctionDefinition **functionDefinition,
+		DeclarativeStatement **declarativeStatement);
+
 	Parameter *ParseParameterList();
 	Parameter *ParseParameter();
 	TypeDescriptor *ParseRelaxedTypeDescriptor();
@@ -344,10 +351,19 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			// Eat up superfluous semicolons.
 			if (mStream.NextIf(Token::SEMICOLON) == 0)
 			{
-				ListParseNode *next = ParseFunctionOrDeclarativeStatement(context);
-				AssertNode(next);
+				FunctionDefinition *functionDefinition;
+				DeclarativeStatement *declarativeStatement;
+				ParseFunctionOrDeclarativeStatement(context, &functionDefinition, &declarativeStatement);
+				if (functionDefinition != 0)
+				{
+					memberList.Append(functionDefinition);
+				}
+				else
+				{
+					AssertNode(declarativeStatement);
+					memberList.Append(declarativeStatement);
+				}
 				SyncToStructMemberTerminator();
-				memberList.Append(next);
 			}
 		}
 
@@ -374,7 +390,24 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContext context)
 {
-	ListParseNode *node = 0;
+	FunctionDefinition *functionDefinition;
+	DeclarativeStatement *declarativeStatement;
+	ParseFunctionOrDeclarativeStatement(context, &functionDefinition, &declarativeStatement);
+	if (functionDefinition != 0)
+	{
+		return functionDefinition;
+	}
+	return declarativeStatement;
+}
+
+
+void ParserCore::ParseFunctionOrDeclarativeStatement(
+	DeclarationContext context,
+	FunctionDefinition **functionDefinition,
+	DeclarativeStatement **declarativeStatement)
+{
+	*functionDefinition = 0;
+	*declarativeStatement = 0;
 	const int startPos = mStream.GetPosition();
 	TypeDescriptor *descriptor = ParseTypeDescriptor();
 
@@ -420,7 +453,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContex
 					}
 				}
 
-				node = mFactory.CreateFunctionDefinition(prototype, body);
+				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body);
 			}
 			else
 			{
@@ -433,7 +466,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContex
 				{
 					AssertNonVoidType(descriptor);
 					descriptor->SetLValue();
-					node = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
+					*declarativeStatement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 					ExpectDeclarationTerminator();
 				}
 			}
@@ -445,8 +478,6 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContex
 			mFactory.DestroyHierarchy(descriptor);
 		}
 	}
-
-	return node;
 }
 
 
