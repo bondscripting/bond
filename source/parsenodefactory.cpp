@@ -80,11 +80,12 @@ StructDeclaration *ParseNodeFactory::CreateStructDeclaration(
 	const Token *name,
 	const Token *size,
 	const Token *alignment,
-	ListParseNode *memberList,
+	FunctionDefinition *memberFunctionList,
+	DeclarativeStatement *memberVariableList,
 	StructDeclaration::Variant variant)
 {
 	return new (mAllocator.Alloc<StructDeclaration>())
-		StructDeclaration(name, size, alignment, memberList, variant);
+		StructDeclaration(name, size, alignment, memberFunctionList, memberVariableList, variant);
 }
 
 

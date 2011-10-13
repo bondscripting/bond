@@ -28,7 +28,8 @@ public:
 		const Token *name,
 		const Token *size,
 		const Token *alignment,
-		ListParseNode *memberList,
+		FunctionDefinition *memberFunctionList,
+		DeclarativeStatement *memberVariableList,
 		StructDeclaration::Variant variant);
 
 	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);

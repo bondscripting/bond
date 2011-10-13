@@ -100,13 +100,15 @@ void ParseNodeTraverser::Visit(const Enumerator *enumerator)
 
 void ParseNodeTraverser::Visit(StructDeclaration *structDeclaration)
 {
-	TraverseList(structDeclaration->GetMemberList());
+	TraverseList(structDeclaration->GetMemberFunctionList());
+	TraverseList(structDeclaration->GetMemberVariableList());
 }
 
 
 void ParseNodeTraverser::Visit(const StructDeclaration *structDeclaration)
 {
-	TraverseList(structDeclaration->GetMemberList());
+	TraverseList(structDeclaration->GetMemberFunctionList());
+	TraverseList(structDeclaration->GetMemberVariableList());
 }
 
 

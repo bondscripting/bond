@@ -438,7 +438,8 @@ public:
 			const Token *name,
 			const Token *size,
 			const Token *alignment,
-			ListParseNode *memberList,
+			FunctionDefinition *memberFunctionList,
+			DeclarativeStatement *memberVariableList,
 			Variant variant):
 		mIdentifier(name),
 		mTypeSpecifier(0, &mIdentifier, this),
@@ -446,7 +447,8 @@ public:
 		mConstThisTypeDescriptor(TypeDescriptor::GetConstPointerType(&mTypeSpecifier)),
 		mSizeToken(size),
 		mAlignmentToken(alignment),
-		mMemberList(memberList),
+		mMemberFunctionList(memberFunctionList),
+		mMemberVariableList(memberVariableList),
 		mVariant(variant),
 		mSize(0),
 		mAlignment(0)
@@ -468,8 +470,11 @@ public:
 	TypeDescriptor *GetConstThisTypeDescriptor() { return &mConstThisTypeDescriptor; }
 	const TypeDescriptor *GetConstThisTypeDescriptor() const { return &mConstThisTypeDescriptor; }
 
-	ListParseNode *GetMemberList() { return mMemberList; }
-	const ListParseNode *GetMemberList() const { return mMemberList; }
+	FunctionDefinition *GetMemberFunctionList() { return mMemberFunctionList; }
+	const FunctionDefinition *GetMemberFunctionList() const { return mMemberFunctionList; }
+
+	DeclarativeStatement *GetMemberVariableList() { return mMemberVariableList; }
+	const DeclarativeStatement *GetMemberVariableList() const { return mMemberVariableList; }
 
 	bu32_t GetSize() const { return mSize; }
 	bu32_t GetAlignment() const { return mAlignment; }
@@ -481,7 +486,8 @@ private:
 	TypeDescriptor mConstThisTypeDescriptor;
 	const Token *mSizeToken;
 	const Token *mAlignmentToken;
-	ListParseNode *mMemberList;
+	FunctionDefinition *mMemberFunctionList;
+	DeclarativeStatement *mMemberVariableList;
 	Variant mVariant;
 	bu32_t mSize;
 	bu32_t mAlignment;

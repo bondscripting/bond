@@ -94,7 +94,8 @@ void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
 	Tab();
 	mWriter.Write("{\n");
 	IncrementTab();
-	PrintList(structDeclaration->GetMemberList());
+	PrintList(structDeclaration->GetMemberFunctionList());
+	PrintList(structDeclaration->GetMemberVariableList());
 	DecrementTab();
 	Tab();
 	mWriter.Write("};\n");

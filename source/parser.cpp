@@ -344,7 +344,8 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
-		ParseNodeList<ListParseNode> memberList;
+		ParseNodeList<FunctionDefinition> memberFunctionList;
+		ParseNodeList<DeclarativeStatement> memberVariableList;
 
 		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
@@ -356,12 +357,12 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 				ParseFunctionOrDeclarativeStatement(context, &functionDefinition, &declarativeStatement);
 				if (functionDefinition != 0)
 				{
-					memberList.Append(functionDefinition);
+					memberFunctionList.Append(functionDefinition);
 				}
 				else
 				{
 					AssertNode(declarativeStatement);
-					memberList.Append(declarativeStatement);
+					memberVariableList.Append(declarativeStatement);
 				}
 				SyncToStructMemberTerminator();
 			}
@@ -369,7 +370,13 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
-		declaration = mFactory.CreateStructDeclaration(name, size, alignment, memberList.GetHead(), variant);
+		declaration = mFactory.CreateStructDeclaration(
+			name,
+			size,
+			alignment,
+			memberFunctionList.GetHead(),
+			memberVariableList.GetHead(),
+			variant);
 	}
 
 	return declaration;
