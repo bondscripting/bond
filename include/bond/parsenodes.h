@@ -475,6 +475,9 @@ public:
 
 	DeclarativeStatement *GetMemberVariableList() { return mMemberVariableList; }
 	const DeclarativeStatement *GetMemberVariableList() const { return mMemberVariableList; }
+	void SetMemberVariableList(DeclarativeStatement *memberVariableList) { mMemberVariableList = memberVariableList; }
+
+	Variant GetVariant() const { return mVariant; }
 
 	bu32_t GetSize() const { return mSize; }
 	bu32_t GetAlignment() const { return mAlignment; }

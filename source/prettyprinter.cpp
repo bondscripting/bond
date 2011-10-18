@@ -89,6 +89,19 @@ void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
 {
 	Tab();
 	mWriter.Write("struct ");
+
+	switch (structDeclaration->GetVariant())
+	{
+		case StructDeclaration::VARIANT_NATIVE:
+			mWriter.Write("native ");
+			break;
+		case StructDeclaration::VARIANT_REFERENCE:
+			mWriter.Write("ref ");
+			break;
+		default:
+			break;
+	}
+
 	Print(structDeclaration->GetName());
 	mWriter.Write("\n");
 	Tab();

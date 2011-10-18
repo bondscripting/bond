@@ -37,6 +37,11 @@ protected:
 	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
+	struct AlignmentComparator
+	{
+		bool operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const;
+	};
+
 	void Resolve(TypeAndValue &tav);
 	void CheckUnresolved(const TypeAndValue &tav);
 
@@ -129,6 +134,39 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 	SemanticAnalysisPass::Visit(structDeclaration);
 	if (!structDeclaration->IsResolved())
 	{
+		switch (structDeclaration->GetVariant())
+		{
+			case StructDeclaration::VARIANT_BOND:
+			{
+				bool membersResolved = true;
+				DeclarativeStatement *memberList = structDeclaration->GetMemberVariableList();
+				while (memberList != 0)
+				{
+					if (!memberList->GetTypeDescriptor()->IsResolved())
+					{
+						membersResolved = false;
+						break;
+					}
+					memberList = static_cast<DeclarativeStatement *>(memberList->GetNextNode());
+				}
+
+				if (membersResolved)
+				{
+					memberList = structDeclaration->GetMemberVariableList();
+					memberList = Sort<DeclarativeStatement, AlignmentComparator>(memberList);
+					structDeclaration->SetMemberVariableList(memberList);
+				}
+			}
+			break;
+
+			case StructDeclaration::VARIANT_NATIVE:
+			{
+			}
+			break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -536,7 +574,6 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 		if ((typeDescriptor != 0) && typeDescriptor->IsResolved())
 		{
 			Resolve(tav);
-			// TODO: Is it possible for a type descriptor to be resolved, but its size to be undefined?
 			tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));
 		}
 		CheckUnresolved(tav);
@@ -589,6 +626,16 @@ void ValueEvaluationPass::Resolve(TypeAndValue &tav)
 void ValueEvaluationPass::CheckUnresolved(const TypeAndValue &tav)
 {
 	mHasUnresolvedItems = mHasUnresolvedItems || !tav.IsResolved();
+}
+
+
+bool ValueEvaluationPass::AlignmentComparator::operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const
+{
+	const TypeDescriptor *aType = a.GetTypeDescriptor();
+	const TypeDescriptor *bType = b.GetTypeDescriptor();
+	const bu32_t aAlign = aType->GetAlignment();
+	const bu32_t bAlign = bType->GetAlignment();
+	return aAlign > bAlign;;
 }
 
 }

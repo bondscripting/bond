@@ -50,7 +50,53 @@ const T *CastNode(const ParseNode *node)
 }
 
 
-bu32_t GetLength(const ListParseNode *head);
+template <typename NodeType, typename Comparator>
+NodeType *Insert(NodeType *head, NodeType *node)
+{
+	Comparator compare;
+	if (head == 0)
+	{
+		node->SetNextNode(0);
+		return node;
+	}
+
+	if (compare(*node, *head))
+	{
+		node->SetNextNode(head);
+		return node;
+	}
+
+	NodeType *current = head;
+	NodeType *next = static_cast<NodeType *>(head->GetNextNode());
+	while ((next != 0) && !compare(*node, *next))
+	{
+		current = next;
+		next = static_cast<NodeType *>(next->GetNextNode());
+	}
+
+	current->SetNextNode(node);
+	node->SetNextNode(next);
+	return head;
+}
+
+
+template <typename NodeType, typename Comparator>
+NodeType *Sort(NodeType *list)
+{
+	NodeType *node = list;
+	NodeType *head = 0;
+	while (node != 0)
+	{
+		NodeType *current = node;
+		node = static_cast<NodeType *>(node->GetNextNode());
+		head = Insert<NodeType, Comparator>(head, current);
+	}
+	return head;
+}
+
+
+bu32_t GetLength(const ListParseNode *list);
+
 
 //bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
 //bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
