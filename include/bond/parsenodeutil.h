@@ -97,6 +97,8 @@ NodeType *Sort(NodeType *list)
 
 bu32_t GetLength(const ListParseNode *list);
 
+template <typename NodeType>
+NodeType *NextNode(NodeType *list) { return static_cast<NodeType *>(list->GetNextNode()); }
 
 //bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
 //bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);

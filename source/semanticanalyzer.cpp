@@ -1,4 +1,5 @@
 #include "bond/autostack.h"
+#include "bond/math.h"
 #include "bond/parseerror.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"

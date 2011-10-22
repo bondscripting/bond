@@ -165,7 +165,7 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 		{
 			AssertIntegerExpression(expressionList, ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
 		}
-		expressionList = static_cast<Expression *>(expressionList->GetNextNode());
+		expressionList = NextNode(expressionList);
 	}
 }
 
@@ -655,8 +655,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 							paramDescriptor,
 							argList->GetContextToken(),
 							ParseError::INVALID_TYPE_CONVERSION);
-						paramList = static_cast<const Parameter *>(paramList->GetNextNode());
-						argList = static_cast<const Expression *>(argList->GetNextNode());
+						paramList = NextNode(paramList);
+						argList = NextNode(argList);
 					}
 				}
 			}
@@ -969,7 +969,7 @@ void TypeEvaluationPass::ValidateInitializer(
 			while (initializerList != 0)
 			{
 				ValidateInitializer(name, initializerList, &parent);
-				initializerList = static_cast<const Initializer *>(initializerList->GetNextNode());
+				initializerList = NextNode(initializerList);
 			}
 		}
 		else if (expression != 0)

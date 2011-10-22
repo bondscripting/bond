@@ -167,7 +167,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 
 	if (IsArrayType())
 	{
-		Expression *nextLength = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
+		Expression *nextLength = NextNode(mLengthExpressionList);
 		if (nextLength != 0)
 		{
 			typeDescriptor = *this;
@@ -192,7 +192,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
 			if (typeDescriptor.IsArrayType())
 			{
-				typeDescriptor.mLengthExpressionList = static_cast<Expression *>(mLengthExpressionList->GetNextNode());
+				typeDescriptor.mLengthExpressionList = NextNode(mLengthExpressionList);
 			}
 		}
 		else
@@ -235,7 +235,7 @@ bool TypeDescriptor::IsResolved() const
 		{
 			return false;
 		}
-		lengthExpressionList = static_cast<const Expression *>(lengthExpressionList->GetNextNode());
+		lengthExpressionList = NextNode(lengthExpressionList);
 	}
 	return
 		((mParent == 0) || mParent->IsResolved()) &&
@@ -543,7 +543,7 @@ bool Initializer::IsResolved() const
 			{
 				return false;
 			}
-			initializer = static_cast<const Initializer*>(initializer->GetNextNode());
+			initializer = NextNode(initializer);
 		}
 	}
 

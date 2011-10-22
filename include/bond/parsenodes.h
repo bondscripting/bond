@@ -470,6 +470,9 @@ public:
 	TypeDescriptor *GetConstThisTypeDescriptor() { return &mConstThisTypeDescriptor; }
 	const TypeDescriptor *GetConstThisTypeDescriptor() const { return &mConstThisTypeDescriptor; }
 
+	const Token *GetSizeToken() const { return mSizeToken; }
+	const Token *GetAlignmentToken() const { return mSizeToken; }
+
 	FunctionDefinition *GetMemberFunctionList() { return mMemberFunctionList; }
 	const FunctionDefinition *GetMemberFunctionList() const { return mMemberFunctionList; }
 
@@ -480,7 +483,10 @@ public:
 	Variant GetVariant() const { return mVariant; }
 
 	bu32_t GetSize() const { return mSize; }
+	void SetSize(bu32_t size) { mSize = size; }
+
 	bu32_t GetAlignment() const { return mAlignment; }
+	void SetAlignment(bu32_t alignment) { mAlignment = alignment; }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -615,7 +621,8 @@ public:
 	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
-		mInitializer(initializer)
+		mInitializer(initializer),
+		mOffset(0)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -632,10 +639,14 @@ public:
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
 
+	bu32_t GetOffset() const { return mOffset; }
+	void SetOffset(bu32_t offset) { mOffset = offset; }
+
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
+	bu32_t mOffset;
 };
 
 

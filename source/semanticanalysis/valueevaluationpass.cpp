@@ -65,7 +65,7 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 	while (mHasResolvedItems && mHasUnresolvedItems);
 
 	// If something has not been resolved but no errors were reported, then
-	// then the compiler did something wrong.
+	// the compiler did something wrong.
 	if (mHasUnresolvedItems && !mUnresolvedErrorBuffer.HasErrors())
 	{
 		mErrorBuffer.PushError(ParseError::INTERNAL_ERROR);
@@ -147,7 +147,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						membersResolved = false;
 						break;
 					}
-					memberList = static_cast<DeclarativeStatement *>(memberList->GetNextNode());
+					memberList = NextNode(memberList);
 				}
 
 				if (membersResolved)
@@ -155,6 +155,32 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					memberList = structDeclaration->GetMemberVariableList();
 					memberList = Sort<DeclarativeStatement, AlignmentComparator>(memberList);
 					structDeclaration->SetMemberVariableList(memberList);
+
+					bu32_t structSize = 0;
+					bu32_t structAlign = 1;
+					while (memberList != 0)
+					{
+						const TypeDescriptor *memberDescriptor = memberList->GetTypeDescriptor();
+						const bu32_t memberSize = memberDescriptor->GetSize(mPointerSize);
+						const bu32_t memberAlign = memberDescriptor->GetAlignment();
+
+						structSize = Align(structSize, memberAlign);
+						structAlign = Max(structAlign, memberAlign);
+
+						NamedInitializer *initializerList = memberList->GetNamedInitializerList();
+						while (initializerList != 0)
+						{
+							initializerList->SetOffset(structSize);
+							structSize += memberSize;
+							initializerList = NextNode(initializerList);
+						}
+
+						memberList = NextNode(memberList);
+					}
+
+					structSize = Align(structSize, structAlign);
+					structDeclaration->SetSize(structSize);
+					structDeclaration->SetAlignment(structAlign);
 				}
 			}
 			break;
@@ -211,7 +237,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 					expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 				}
 			}
-			expressionList = static_cast<Expression *>(expressionList->GetNextNode());
+			expressionList = NextNode(expressionList);
 		}
 	}
 }
@@ -282,7 +308,7 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 				const bu32_t initializerListLength = GetLength(initializer->GetInitializerList());
 				length = (initializerListLength > length) ? initializerListLength : length;
 			}
-			current = static_cast<const NamedInitializer *>(current->GetNextNode());
+			current = NextNode(current);
 		}
 
 		if (length == 0)
@@ -525,7 +551,7 @@ void ValueEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 			{
 				return;
 			}
-			argument = static_cast<const Expression *>(argument->GetNextNode());
+			argument = NextNode(argument);
 		}
 		Resolve(tav);
 	}
