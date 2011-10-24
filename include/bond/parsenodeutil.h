@@ -9,6 +9,13 @@ namespace Bond
 
 class Symbol;
 
+bu32_t GetLength(const ListParseNode *list);
+
+
+template <typename NodeType>
+NodeType *NextNode(NodeType *list) { return static_cast<NodeType *>(list->GetNextNode()); }
+
+
 template<typename T>
 class CastVisitor: public ParseNodeVisitorAdapter
 {
@@ -67,11 +74,11 @@ NodeType *Insert(NodeType *head, NodeType *node)
 	}
 
 	NodeType *current = head;
-	NodeType *next = static_cast<NodeType *>(head->GetNextNode());
+	NodeType *next = NextNode(head);
 	while ((next != 0) && !compare(*node, *next))
 	{
 		current = next;
-		next = static_cast<NodeType *>(next->GetNextNode());
+		next = NextNode(next);
 	}
 
 	current->SetNextNode(node);
@@ -88,17 +95,12 @@ NodeType *Sort(NodeType *list)
 	while (node != 0)
 	{
 		NodeType *current = node;
-		node = static_cast<NodeType *>(node->GetNextNode());
+		node = NextNode(node);
 		head = Insert<NodeType, Comparator>(head, current);
 	}
 	return head;
 }
 
-
-bu32_t GetLength(const ListParseNode *list);
-
-template <typename NodeType>
-NodeType *NextNode(NodeType *list) { return static_cast<NodeType *>(list->GetNextNode()); }
 
 //bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB);
 //bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
@@ -108,6 +110,7 @@ bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *t
 
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
+Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenType destType);
 Value CastValue(const TypeAndValue &value, const TypeDescriptor *type);
 
 

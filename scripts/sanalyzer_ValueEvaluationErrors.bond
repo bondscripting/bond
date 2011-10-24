@@ -1,3 +1,7 @@
+struct native <0x800000001> BadStruct1 {};
+struct native <6, 3> BadStruct2 {};
+struct native <6, 4> BadStruct3 {};
+
 void DummyFunction()
 {
 	const int ZERO = 0;

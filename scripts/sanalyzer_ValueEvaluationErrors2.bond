@@ -1,0 +1,14 @@
+const uint SIZE = sizeof<A>;
+
+struct A
+{
+	int [SIZE] values;
+};
+
+enum BadEnum
+{
+	Value1 = Value3,
+	Value2
+};
+
+const int Value3 = Value2;

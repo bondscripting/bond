@@ -51,6 +51,7 @@ void TopLevelSymbolPass::Visit(FunctionDefinition *functionDefinition)
 	Symbol *symbol = GetOrInsertSymbol(functionDefinition);
 	FunctionDefinition *prev = CastNode<FunctionDefinition>(symbol);
 
+	// TODO: Remove this stuff. Top-level function declarations don't exist anymore.
 	// If we got a different symbol from GetOrInsertSymbol, then we have a previous occurence.
 	if (prev != functionDefinition)
 	{

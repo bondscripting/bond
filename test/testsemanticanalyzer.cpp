@@ -195,6 +195,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 		{Bond::ParseError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 42},
 		{Bond::ParseError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::CONST_INT, 43},
 		{Bond::ParseError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_BOOL, 44},
+		{Bond::ParseError::THIS_IN_NON_MEMBER_FUNCTION, Bond::Token::KEY_THIS, 45},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -209,9 +210,29 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
 {
 	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
 	{
-		{Bond::ParseError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 5},
-		{Bond::ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 6},
-		{Bond::ParseError::ARRAY_SIZE_IS_UNSPECIFIED, Bond::Token::KEY_INT, 7},
+		{Bond::ParseError::INVALID_STRUCT_SIZE, Bond::Token::CONST_INT, 1},
+		{Bond::ParseError::INVALID_STRUCT_ALIGNMENT, Bond::Token::CONST_INT, 2},
+		{Bond::ParseError::STRUCT_SIZE_ALIGNMENT_MISMATCH, Bond::Token::CONST_INT, 3},
+		{Bond::ParseError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 9},
+		{Bond::ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 10},
+		{Bond::ParseError::ARRAY_SIZE_IS_UNSPECIFIED, Bond::Token::KEY_INT, 11},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEvaluationErrors2.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, Bond::Token::IDENTIFIER, 5},
+		{Bond::ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, Bond::Token::IDENTIFIER, 10},
+		{Bond::ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, Bond::Token::IDENTIFIER, 14},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -231,5 +252,6 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
   TEST_ITEM(ValueEvaluationErrors)              \
+  TEST_ITEM(ValueEvaluationErrors2)              \
 
 RUN_TESTS(Parser, TEST_ITEMS)

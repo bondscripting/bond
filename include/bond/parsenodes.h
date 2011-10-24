@@ -451,7 +451,7 @@ public:
 		mMemberVariableList(memberVariableList),
 		mVariant(variant),
 		mSize(0),
-		mAlignment(0)
+		mAlignment(BOND_DEFAULT_STRUCT_ALIGN)
 	{}
 
 	virtual ~StructDeclaration() {}
@@ -471,7 +471,7 @@ public:
 	const TypeDescriptor *GetConstThisTypeDescriptor() const { return &mConstThisTypeDescriptor; }
 
 	const Token *GetSizeToken() const { return mSizeToken; }
-	const Token *GetAlignmentToken() const { return mSizeToken; }
+	const Token *GetAlignmentToken() const { return mAlignmentToken; }
 
 	FunctionDefinition *GetMemberFunctionList() { return mMemberFunctionList; }
 	const FunctionDefinition *GetMemberFunctionList() const { return mMemberFunctionList; }

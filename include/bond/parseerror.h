@@ -28,10 +28,6 @@
     "Function call in constant expression near '%c'.")                              \
   BOND_PARSE_ERROR(DUPLICATE_SYMBOL,                                                \
     "Duplicate symbol '%c' previously defined on line '%l'.")                       \
-  BOND_PARSE_ERROR(DUPLICATE_FUNCTION_DEFINITION,                                   \
-    "Duplicate function definition '%c' previously defined on line '%l'.")          \
-  BOND_PARSE_ERROR(FUNCTION_PROTOTYPE_MISMATCH,                                     \
-    "Mismatching function prototype '%c' previously defined on line '%l'.")         \
   BOND_PARSE_ERROR(UNEXPECTED_TOKEN,                                                \
     "Expected '%s' before '%c'.")                                                   \
   BOND_PARSE_ERROR(SYMBOL_IS_NOT_DEFINED,                                           \
@@ -104,6 +100,14 @@
     "Struct '%c' is recursive.")                                                    \
   BOND_PARSE_ERROR(CANNOT_RESOLVE_SYMBOL_VALUE,                                     \
     "Cannot resolve the value of symbol '%c'.")                                     \
+  BOND_PARSE_ERROR(CANNOT_RESOLVE_STRUCT_SIZE,                                      \
+    "Cannot resolve the size of struct '%c'.")                                      \
+  BOND_PARSE_ERROR(INVALID_STRUCT_SIZE,                                             \
+    "Struct size must be greater than zero.")                                       \
+  BOND_PARSE_ERROR(INVALID_STRUCT_ALIGNMENT,                                        \
+    "Struct alignment must be a power of 2 greater than or equal to 1.")            \
+  BOND_PARSE_ERROR(STRUCT_SIZE_ALIGNMENT_MISMATCH,                                  \
+    "Struct size must be a multiple of alignment.")                                 \
   BOND_PARSE_ERROR(INTERNAL_ERROR,                                                  \
     "Internal compiler error.")                                                     \
 

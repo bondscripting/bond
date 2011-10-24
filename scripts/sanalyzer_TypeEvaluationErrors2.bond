@@ -42,6 +42,7 @@ void DummyFunction()
 	const int [2][1] array2 = {1, 2};
 	const int [2] array3 = {{1, 2}};
 	const int [2] array4 = {false};
+	this;
 
 	// Valid statements.
 	switch (i1)

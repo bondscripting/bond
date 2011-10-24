@@ -62,16 +62,19 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 		mUnresolvedErrorBuffer.Reset();
 		SemanticAnalysisPass::Analyze(translationUnitList);
 	}
-	while (mHasResolvedItems && mHasUnresolvedItems);
+	while (mHasResolvedItems && mHasUnresolvedItems && !mErrorBuffer.HasErrors());
 
-	// If something has not been resolved but no errors were reported, then
-	// the compiler did something wrong.
-	if (mHasUnresolvedItems && !mUnresolvedErrorBuffer.HasErrors())
+	if (!mErrorBuffer.HasErrors())
 	{
-		mErrorBuffer.PushError(ParseError::INTERNAL_ERROR);
-	}
+		// If something has not been resolved but no errors were reported, then
+		// the compiler did something wrong.
+		if (mHasUnresolvedItems && !mUnresolvedErrorBuffer.HasErrors())
+		{
+			mErrorBuffer.PushError(ParseError::INTERNAL_ERROR);
+		}
 
-	mErrorBuffer.CopyFrom(mUnresolvedErrorBuffer);
+		mErrorBuffer.CopyFrom(mUnresolvedErrorBuffer);
+	}
 }
 
 
@@ -118,10 +121,6 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 			}
 		}
 
-		if (!tav.IsResolved())
-		{
-			mUnresolvedErrorBuffer.PushError(ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, enumerator->GetName());
-		}
 		CheckUnresolved(tav);
 	}
 
@@ -187,6 +186,38 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 
 			case StructDeclaration::VARIANT_NATIVE:
 			{
+				bool hasError = false;
+				const Token *sizeToken = structDeclaration->GetSizeToken();
+				const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
+				if (size <= 0)
+				{
+					hasError = true;
+					mErrorBuffer.PushError(ParseError::INVALID_STRUCT_SIZE, sizeToken);
+				}
+				else
+				{
+					structDeclaration->SetSize(static_cast<bu32_t>(size));
+				}
+
+				const Token *alignToken = structDeclaration->GetAlignmentToken();
+				if (alignToken != 0)
+				{
+					const bi32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;
+					if ((align <= 1) || !IsPowerOfTwo(align))
+					{
+						hasError = true;
+						mErrorBuffer.PushError(ParseError::INVALID_STRUCT_ALIGNMENT, alignToken);
+					}
+					else
+					{
+						structDeclaration->SetAlignment(static_cast<bu32_t>(align));
+					}
+				}
+
+				if (!hasError && ((structDeclaration->GetSize() % structDeclaration->GetAlignment()) != 0))
+				{
+					mErrorBuffer.PushError(ParseError::STRUCT_SIZE_ALIGNMENT_MISMATCH, sizeToken);
+				}
 			}
 			break;
 
