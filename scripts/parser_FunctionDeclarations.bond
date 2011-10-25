@@ -1,3 +1,4 @@
+enum Identifier {};
 void VoidNoParameters();
 void VoidOneParameter(int arg);
 void VoidTwoParameters(int arg1, int arg2);

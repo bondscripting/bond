@@ -10,7 +10,7 @@ struct DummyStruct
 {
 	int x;
 	int GetX() const { return x; }
-	int GetX() const { return this->x; }
+	int GetX2() const { return this->x; }
 	void Mutator(int arg) { x = arg; }
 	void Mutator2(int arg) { this->x = arg; }
 	int ConstMutator(int arg) const { x = arg; }

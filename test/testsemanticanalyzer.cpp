@@ -60,18 +60,14 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 	const Bond::Symbol *symbol = globalScope->FindSymbol("VoidOneParameter");
 	ASSERT_MESSAGE(symbol != 0, "Failed to find symbol 'VoidOneParameter'.");
 	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'VoidOneParameter' to be a function.");
-
 	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
-	ASSERT_MESSAGE(function->GetNextDefinition() == 0, "Expected 'VoidOneParameter' to have a single definition.");
+	ASSERT_MESSAGE(function->GetBody() == 0, "Expected 'VoidOneParameter' to have no body.");
 
-	symbol = globalScope->FindSymbol("ComplexFunctionPrototype");
-	ASSERT_MESSAGE(symbol != 0, "Failed to find symbol 'ComplexFunctionPrototype'.");
-	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype' to be a function.");
-
+	symbol = globalScope->FindSymbol("ComplexFunctionPrototype2");
+	ASSERT_MESSAGE(symbol != 0, "Failed to find symbol 'ComplexFunctionPrototype2'.");
+	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype2' to be a function.");
 	function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
-	function = function->GetNextDefinition();
-	ASSERT_MESSAGE(function != 0, "Expected 'ComplexFunctionPrototype' to have a second definition.");
-	ASSERT_MESSAGE(function->GetNextDefinition() == 0, "Expected 'ComplexFunctionPrototype' to have only two definitions.");
+	ASSERT_MESSAGE(function->GetBody() != 0, "Expected 'ComplexFunctionPrototype2' to have a body.");
 
 	return true;
 }

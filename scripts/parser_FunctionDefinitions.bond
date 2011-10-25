@@ -3,18 +3,22 @@ enum Identifier {};
 
 void VoidNoParameters();
 
+void VoidOneParameter(int arg);
+
+void VoidTwoParameters(int arg1, int arg2);
+
 const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2);
 
 // Definitions
-void VoidNoParameters()
+void VoidNoParameters2()
 {
 }
 
-void VoidOneParameter(int arg) {}
+void VoidOneParameter2(int arg) {}
 
-void VoidTwoParameters(int arg1, int arg2){}
+void VoidTwoParameters2(int arg1, int arg2){}
 
-const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2)
+const char *ComplexFunctionPrototype2(const float [2] *arg1, Identifier * const * arg2)
 {
 
 }

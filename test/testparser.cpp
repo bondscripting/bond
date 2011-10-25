@@ -56,10 +56,10 @@ DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mFunctionPrototype = 6;
-	expectedCount.mFunctionDefinition = 6;
+	expectedCount.mFunctionPrototype = 8;
+	expectedCount.mFunctionDefinition = 8;
 	expectedCount.mCompoundStatement = 4;
-	expectedCount.mParameter = 7;
+	expectedCount.mParameter = 10;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 
