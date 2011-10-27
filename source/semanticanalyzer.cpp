@@ -177,6 +177,7 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 #include "semanticanalysis/typeevaluationpass.cpp"
 #include "semanticanalysis/typespecifierresolutionpass.cpp"
 #include "semanticanalysis/valueevaluationpass.cpp"
+#include "semanticanalysis/validationpass.cpp"
 
 
 namespace Bond
@@ -221,6 +222,9 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 	{
 		return;
 	}
+
+	ValidationPass validationPass(mErrorBuffer, mSymbolTable);
+	validationPass.Analyze(translationUnitList);
 }
 
 }

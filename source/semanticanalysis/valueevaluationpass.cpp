@@ -692,7 +692,7 @@ bool ValueEvaluationPass::AlignmentComparator::operator()(const DeclarativeState
 	const TypeDescriptor *bType = b.GetTypeDescriptor();
 	const bu32_t aAlign = aType->GetAlignment();
 	const bu32_t bAlign = bType->GetAlignment();
-	return aAlign > bAlign;;
+	return aAlign > bAlign;
 }
 
 }

@@ -89,6 +89,14 @@ public:
 
 	Element &GetTop() { return *mTop; }
 
+	void SetTop(const ElementType &value)
+	{
+		if (mTop != 0)
+		{
+			mTop->SetValue(value);
+		}
+	}
+
 	bool IsEmpty() const { return mTop == 0; }
 
 	bool Contains(const ElementType &value) const
