@@ -20,6 +20,7 @@ protected:
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(StructDeclaration *structDeclaration);
+	virtual void Visit(Parameter *parameter);
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(SwitchLabel *switchLabel);
@@ -225,6 +226,13 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				break;
 		}
 	}
+}
+
+
+void ValueEvaluationPass::Visit(Parameter *parameter)
+{
+	ParseNodeTraverser::Visit(parameter);
+	Resolve(*parameter->GetTypeAndValue());
 }
 
 

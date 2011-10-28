@@ -18,7 +18,7 @@ void VoidOneParameter2(int arg) {}
 
 void VoidTwoParameters2(int arg1, int arg2){}
 
-const char *ComplexFunctionPrototype2(const float [2] *arg1, Identifier * const * arg2)
+int ComplexFunctionPrototype2(const float [2] *arg1, Identifier * const * arg2)
 {
-
+	return 1;
 }

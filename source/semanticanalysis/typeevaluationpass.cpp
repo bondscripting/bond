@@ -223,7 +223,10 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
-	AssertIntegerExpression(expression, ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
+	if (expression != 0)
+	{
+		AssertIntegerExpression(expression, ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
+	}
 }
 
 
@@ -239,7 +242,10 @@ void TypeEvaluationPass::Visit(ForStatement *forStatement)
 {
 	SemanticAnalysisPass::Visit(forStatement);
 	const Expression *condition = forStatement->GetCondition();
-	AssertBooleanExpression(condition, ParseError::FOR_CONDITION_IS_NOT_BOOLEAN);
+	if (condition != 0)
+	{
+		AssertBooleanExpression(condition, ParseError::FOR_CONDITION_IS_NOT_BOOLEAN);
+	}
 }
 
 

@@ -108,6 +108,8 @@
     "Struct alignment must be a power of 2 greater than or equal to 1.")            \
   BOND_PARSE_ERROR(STRUCT_SIZE_ALIGNMENT_MISMATCH,                                  \
     "Struct size must be a multiple of alignment.")                                 \
+  BOND_PARSE_ERROR(NOT_ALL_PATHS_RETURN_A_VALUE,                                    \
+    "Not all paths return a value in function '%c'.")                               \
   BOND_PARSE_ERROR(INTERNAL_ERROR,                                                  \
     "Internal compiler error.")                                                     \
 

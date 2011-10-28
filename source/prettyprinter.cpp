@@ -12,10 +12,6 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 	{
 		parseNode->Accept(*this);
 	}
-	else
-	{
-		mWriter.Write("<invalid>");
-	}
 }
 
 
