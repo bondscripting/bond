@@ -22,6 +22,12 @@
     "Native member function '%c' cannot be defined.")                               \
   BOND_PARSE_ERROR(NON_NATIVE_MEMBER_FUNCTION_DECLARATION,                          \
     "Member function '%c' must be defined.")                                        \
+  BOND_PARSE_ERROR(EMPTY_SWITCH_STATEMENT,                                          \
+    "Empty switch statement.")                                                      \
+  BOND_PARSE_ERROR(EMPTY_SWITCH_LABEL_LIST,                                         \
+    "Empty switch label list.")                                                     \
+  BOND_PARSE_ERROR(UNTERMINATED_SWITCH_SECTION,                                     \
+    "Switch section does not end with a jump statement.")                           \
   BOND_PARSE_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                            \
     "Operator '%c' not allowed in constant expression.")                            \
   BOND_PARSE_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                               \

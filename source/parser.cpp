@@ -105,8 +105,8 @@ private:
 	void AssertNode(ParseNode *node);
 	void AssertNonConstExpression(ParseError::Type type, const Token *token);
 	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
+	void PushUnrecoverableError(ParseError::Type errorType, const Token *token, const void *arg = 0);
 	void PushError(ParseError::Type errorType, const Token *token, const void *arg = 0);
-	void PushRecoverableError(ParseError::Type errorType, const Token *token, const void *arg = 0);
 
 	ParseErrorBuffer &mErrorBuffer;
 	ParseNodeFactory &mFactory;
@@ -435,7 +435,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 
 				if (isConst && (context == TOP_LEVEL))
 				{
-					PushRecoverableError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
+					PushError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
 					isConst = false;
 				}
 
@@ -448,7 +448,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					body = ParseCompoundStatement();
 					if (context == NATIVE_STRUCT_MEMBER)
 					{
-						PushRecoverableError(ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
+						PushError(ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
 					}
 				}
 				else
@@ -456,7 +456,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					ExpectDeclarationTerminator();
 					if (context == STRUCT_MEMBER)
 					{
-						PushRecoverableError(ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
+						PushError(ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
 					}
 				}
 
@@ -553,7 +553,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 		const bool isConst2 = const2 != 0;
 		if (isConst1 && isConst2)
 		{
-			PushRecoverableError(ParseError::DUPLICATE_CONST, const2);
+			PushError(ParseError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
@@ -596,7 +596,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				{
 					if (descriptor->IsVoidType())
 					{
-						PushRecoverableError(ParseError::ARRAY_OF_VOID, token);
+						PushError(ParseError::ARRAY_OF_VOID, token);
 					}
 					descriptor->ConvertToArray(length);
 				}
@@ -604,7 +604,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				{
 					if (lengthAbsent)
 					{
-						PushRecoverableError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
+						PushError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
 					}
 					lengthTail->SetNextNode(length);
 				}
@@ -700,7 +700,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 			initializer = ParseInitializer();
 			if (!allowInitializers)
 			{
-				PushRecoverableError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
+				PushError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
 			}
 			AssertNode(initializer);
 		}
@@ -900,8 +900,9 @@ IfStatement *ParserCore::ParseIfStatement()
 SwitchStatement *ParserCore::ParseSwitchStatement()
 {
 	SwitchStatement *switchStatement = 0;
+	const Token *keyword = mStream.NextIf(Token::KEY_SWITCH);
 
-	if (mStream.NextIf(Token::KEY_SWITCH) != 0)
+	if (keyword != 0)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *control = ParseExpression();
@@ -909,18 +910,21 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 		ExpectToken(Token::CPAREN);
 		ExpectToken(Token::OBRACE);
 
-		SwitchSection *sectionList = ParseSwitchSection();
-		SwitchSection *current = sectionList;
+		ParseNodeList<SwitchSection> sectionList;
 		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == 0)
 		{
 			SwitchSection *next = ParseSwitchSection();
-			current->SetNextNode(next);
-			current = next;
+			sectionList.Append(next);
 		}
-		// TODO: Semantic analyser must ensure the list is not empty.
 
 		ExpectToken(Token::CBRACE);
-		switchStatement = mFactory.CreateSwitchStatement(control, sectionList);
+
+		if (sectionList.GetHead() == 0)
+		{
+			PushError(ParseError::EMPTY_SWITCH_STATEMENT, keyword);
+		}
+
+		switchStatement = mFactory.CreateSwitchStatement(control, sectionList.GetHead());
 	}
 
 	return switchStatement;
@@ -940,7 +944,11 @@ SwitchSection *ParserCore::ParseSwitchSection()
 		currentLabel->SetNextNode(next);
 		currentLabel = next;
 	}
-	// TODO: Semantic analyser must ensure the list is not empty.
+
+	if (labelList == 0)
+	{
+		PushError(ParseError::EMPTY_SWITCH_LABEL_LIST, mStream.Peek());
+	}
 
 	ParseNodeList<ListParseNode> statementList;
 	while (mStream.PeekIf(SWITCH_SECTION_DELIMITERS_TYPESET) == 0)
@@ -950,7 +958,6 @@ SwitchSection *ParserCore::ParseSwitchSection()
 		SyncToStatementTerminator();
 		statementList.Append(next);
 	}
-	// TODO: Semantic analyser must ensure the list is not empty.
 
 	section = mFactory.CreateSwitchSection(labelList, statementList.GetHead());
 
@@ -1781,7 +1788,7 @@ const Token *ParserCore::ExpectToken(Token::TokenType expectedType)
 	const Token *token = mStream.NextIf(expectedType);
 	if (token == 0)
 	{
-		PushError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
+		PushUnrecoverableError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
 	}
 	return token;
 }
@@ -1792,7 +1799,7 @@ const Token *ParserCore::ExpectToken(const TokenTypeSet &expectedTypes)
 	const Token *token = mStream.NextIf(expectedTypes);
 	if (token == 0)
 	{
-		PushError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
+		PushUnrecoverableError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
 	}
 	return token;
 }
@@ -1802,7 +1809,7 @@ void ParserCore::AssertNode(ParseNode *node)
 {
 	if (node == 0)
 	{
-		PushError(ParseError::PARSE_ERROR, mStream.Peek());
+		PushUnrecoverableError(ParseError::PARSE_ERROR, mStream.Peek());
 	}
 }
 
@@ -1811,7 +1818,7 @@ void ParserCore::AssertNonConstExpression(ParseError::Type errorType, const Toke
 {
 	if (mParseConstExpressions.GetTop())
 	{
-		PushRecoverableError(errorType, context);
+		PushError(errorType, context);
 	}
 }
 
@@ -1820,12 +1827,12 @@ void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
 {
 	if ((typeDescriptor != 0) && typeDescriptor->IsVoidType())
 	{
-		PushRecoverableError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
+		PushError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
 	}
 }
 
 
-void ParserCore::PushError(ParseError::Type type, const Token *context, const void *arg)
+void ParserCore::PushUnrecoverableError(ParseError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{
@@ -1835,7 +1842,7 @@ void ParserCore::PushError(ParseError::Type type, const Token *context, const vo
 }
 
 
-void ParserCore::PushRecoverableError(ParseError::Type type, const Token *context, const void *arg)
+void ParserCore::PushError(ParseError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{
