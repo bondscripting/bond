@@ -20,6 +20,7 @@ protected:
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(StructDeclaration *structDeclaration);
+	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(Parameter *parameter);
 	virtual void Visit(TypeDescriptor *typeDescriptor);
 	virtual void Visit(NamedInitializer *namedInitializer);
@@ -229,10 +230,25 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 }
 
 
+void ValueEvaluationPass::Visit(FunctionDefinition *functionDefinition)
+{
+	ParseNodeTraverser::Visit(functionDefinition);
+	TypeAndValue &tav = *functionDefinition->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		Resolve(tav);
+	}
+}
+
+
 void ValueEvaluationPass::Visit(Parameter *parameter)
 {
 	ParseNodeTraverser::Visit(parameter);
-	Resolve(*parameter->GetTypeAndValue());
+	TypeAndValue &tav = *parameter->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		Resolve(tav);
+	}
 }
 
 

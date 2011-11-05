@@ -88,6 +88,7 @@ public:
 	}
 
 	Element &GetTop() { return *mTop; }
+	const Element &GetTop() const { return *mTop; }
 
 	void SetTop(const ElementType &value)
 	{

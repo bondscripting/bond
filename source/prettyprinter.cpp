@@ -1,4 +1,5 @@
 #include "bond/parsenodes.h"
+#include "bond/parsenodeutil.h"
 #include "bond/prettyprinter.h"
 #include "bond/textwriter.h"
 #include <stdio.h>
@@ -118,9 +119,7 @@ void PrettyPrinter::Visit(const FunctionDefinition *functionDefinition)
 	if (functionDefinition->GetBody() != 0)
 	{
 		mWriter.Write("\n");
-		IncrementTab();
 		Print(functionDefinition->GetBody());
-		DecrementTab();
 	}
 	else
 	{
@@ -232,7 +231,6 @@ void PrettyPrinter::Visit(const QualifiedIdentifier *identifier)
 
 void PrettyPrinter::Visit(const CompoundStatement *compoundStatement)
 {
-	DecrementTab();
 	Tab();
 	mWriter.Write("{\n");
 	IncrementTab();
@@ -240,7 +238,6 @@ void PrettyPrinter::Visit(const CompoundStatement *compoundStatement)
 	DecrementTab();
 	Tab();
 	mWriter.Write("}\n");
-	IncrementTab();
 }
 
 
@@ -251,18 +248,13 @@ void PrettyPrinter::Visit(const IfStatement *ifStatement)
 	Print(ifStatement->GetCondition());
 	mWriter.Write(")\n");
 
-	IncrementTab();
-	Print(ifStatement->GetThenStatement());
-	DecrementTab();
+	PrintBlockOrStatement(ifStatement->GetThenStatement());
 
 	if (ifStatement->GetElseStatement() != 0)
 	{
 		Tab();
 		mWriter.Write("else\n");
-
-		IncrementTab();
-		Print(ifStatement->GetElseStatement());
-		DecrementTab();
+		PrintBlockOrStatement(ifStatement->GetElseStatement());
 	}
 }
 
@@ -314,9 +306,7 @@ void PrettyPrinter::Visit(const WhileStatement *whileStatement)
 	if (whileStatement->GetVariant() == WhileStatement::VARIANT_DO_WHILE)
 	{
 		mWriter.Write("do\n");
-		IncrementTab();
-		Print(whileStatement->GetBody());
-		DecrementTab();
+		PrintBlockOrStatement(whileStatement->GetBody());
 		Tab();
 		mWriter.Write("while (");
 		Print(whileStatement->GetCondition());
@@ -327,9 +317,7 @@ void PrettyPrinter::Visit(const WhileStatement *whileStatement)
 		mWriter.Write("while (");
 		Print(whileStatement->GetCondition());
 		mWriter.Write(")\n");
-		IncrementTab();
-		Print(whileStatement->GetBody());
-		DecrementTab();
+		PrintBlockOrStatement(whileStatement->GetBody());
 	}
 }
 
@@ -346,9 +334,7 @@ void PrettyPrinter::Visit(const ForStatement *forStatement)
 	mWriter.Write("; ");
 	Print(forStatement->GetCountingExpression());
 	mWriter.Write(")\n");
-	IncrementTab();
-	Print(forStatement->GetBody());
-	DecrementTab();
+	PrintBlockOrStatement(forStatement->GetBody());
 }
 
 
@@ -397,13 +383,19 @@ void PrettyPrinter::Visit(const ConditionalExpression *conditionalExpression)
 {
 	if (!PrintFoldedConstant(conditionalExpression))
 	{
-		mWriter.Write("(");
-		Print(conditionalExpression->GetCondition());
+		if (!IsTopLevelExpression())
+		{
+			mWriter.Write("(");
+		}
+		PrintExpression(conditionalExpression->GetCondition());
 		mWriter.Write(" ? ");
-		Print(conditionalExpression->GetTrueExpression());
+		PrintExpression(conditionalExpression->GetTrueExpression());
 		mWriter.Write(" : ");
-		Print(conditionalExpression->GetFalseExpression());
-		mWriter.Write(")");
+		PrintExpression(conditionalExpression->GetFalseExpression());
+		if (!IsTopLevelExpression())
+		{
+			mWriter.Write(")");
+		}
 	}
 }
 
@@ -412,13 +404,19 @@ void PrettyPrinter::Visit(const BinaryExpression *binaryExpression)
 {
 	if (!PrintFoldedConstant(binaryExpression))
 	{
-		mWriter.Write("(");
-		Print(binaryExpression->GetLhs());
+		if (!IsTopLevelExpression())
+		{
+			mWriter.Write("(");
+		}
+		PrintExpression(binaryExpression->GetLhs());
 		mWriter.Write(" ");
 		Print(binaryExpression->GetOperator());
 		mWriter.Write(" ");
-		Print(binaryExpression->GetRhs());
-		mWriter.Write(")");
+		PrintExpression(binaryExpression->GetRhs());
+		if (!IsTopLevelExpression())
+		{
+			mWriter.Write(")");
+		}
 	}
 }
 
@@ -427,26 +425,22 @@ void PrettyPrinter::Visit(const UnaryExpression *unaryExpression)
 {
 	if (!PrintFoldedConstant(unaryExpression))
 	{
-		//mWriter.Write("(");
 		Print(unaryExpression->GetOperator());
-		Print(unaryExpression->GetRhs());
-		//mWriter.Write(")");
+		PrintExpression(unaryExpression->GetRhs());
 	}
 }
 
 
 void PrettyPrinter::Visit(const PostfixExpression *postfixExpression)
 {
-	//mWriter.Write("(");
-	Print(postfixExpression->GetLhs());
+	PrintExpression(postfixExpression->GetLhs());
 	Print(postfixExpression->GetOperator());
-	//mWriter.Write(")");
 }
 
 
 void PrettyPrinter::Visit(const MemberExpression *memberExpression)
 {
-	Print(memberExpression->GetLhs());
+	PrintExpression(memberExpression->GetLhs());
 	Print(memberExpression->GetOperator());
 	Print(memberExpression->GetMemberName());
 }
@@ -454,15 +448,16 @@ void PrettyPrinter::Visit(const MemberExpression *memberExpression)
 
 void PrettyPrinter::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
 {
-	Print(arraySubscriptExpression->GetLhs());
+	PrintExpression(arraySubscriptExpression->GetLhs());
 	mWriter.Write("[");
-	Print(arraySubscriptExpression->GetIndex());
+	PrintTopLevelExpression(arraySubscriptExpression->GetIndex());
 	mWriter.Write("]");
 }
 
 
 void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
 {
+	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
 	Print(functionCallExpression->GetLhs());
 	mWriter.Write("(");
 	PrintList(functionCallExpression->GetArgumentList(), ", ");
@@ -477,7 +472,7 @@ void PrettyPrinter::Visit(const CastExpression *castExpression)
 		mWriter.Write("cast<");
 		Print(castExpression->GetTypeDescriptor());
 		mWriter.Write(">(");
-		Print(castExpression->GetRhs());
+		PrintTopLevelExpression(castExpression->GetRhs());
 		mWriter.Write(")");
 	}
 }
@@ -497,7 +492,7 @@ void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 		else
 		{
 			mWriter.Write("(");
-			Print(sizeofExpression->GetRhs());
+			PrintTopLevelExpression(sizeofExpression->GetRhs());
 			mWriter.Write(")");
 		}
 	}
@@ -544,33 +539,41 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 }
 
 
-void PrettyPrinter::Tab()
-{
-	if (mPrintTabsAndNewlines)
-	{
-		for (int i = 0; i < mTabLevel; ++i)
-		{
-			mWriter.Write("\t");
-		}
-	}
-}
-
-
-void PrettyPrinter::Newline()
-{
-	if (mPrintTabsAndNewlines)
-	{
-		mWriter.Write("\n");
-	}
-}
-
-
 void PrettyPrinter::Print(const Token *token)
 {
 	if (token != 0)
 	{
 		mWriter.Write("%s", token->GetText());
 	}
+}
+
+
+void PrettyPrinter::PrintBlockOrStatement(const ParseNode *parseNode)
+{
+	if (CastNode<CompoundStatement>(parseNode) != 0)
+	{
+		Print(parseNode);
+	}
+	else
+	{
+		IncrementTab();
+		Print(parseNode);
+		DecrementTab();
+	}
+}
+
+
+void PrettyPrinter::PrintExpression(const Expression *expression)
+{
+	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, false);
+	Print(expression);
+}
+
+
+void PrettyPrinter::PrintTopLevelExpression(const Expression *expression)
+{
+	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
+	Print(expression);
 }
 
 
@@ -603,5 +606,27 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 	}
 	return false;
 }
+
+
+void PrettyPrinter::Tab()
+{
+	if (mPrintTabsAndNewlines)
+	{
+		for (int i = 0; i < mTabLevel; ++i)
+		{
+			mWriter.Write("\t");
+		}
+	}
+}
+
+
+void PrettyPrinter::Newline()
+{
+	if (mPrintTabsAndNewlines)
+	{
+		mWriter.Write("\n");
+	}
+}
+
 
 }

@@ -1,6 +1,7 @@
 #ifndef BOND_PRETTYPRINTER_H
 #define BOND_PRETTYPRINTER_H
 
+#include "bond/autostack.h"
 #include "bond/parsenodevisitor.h"
 
 namespace Bond
@@ -62,15 +63,20 @@ private:
 	virtual void Visit(const ThisExpression *thisExpression);
 
 	void PrintList(const ListParseNode *listNode, const char *separator);
+	void Print(const Token *token);
+	void PrintBlockOrStatement(const ParseNode *parseNode);
+	void PrintExpression(const Expression *expression);
+	void PrintTopLevelExpression(const Expression *expression);
+	bool PrintFoldedConstant(const Expression *expression);
+	void PrintTabsAndNewlines() { mPrintTabsAndNewlines = true; }
+	void SuppressTabsAndNewlines() { mPrintTabsAndNewlines = false; }
 	void IncrementTab() { ++mTabLevel; }
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
 	void Newline();
-	void Print(const Token *token);
-	bool PrintFoldedConstant(const Expression *expression);
-	void PrintTabsAndNewlines() { mPrintTabsAndNewlines = true; }
-	void SuppressTabsAndNewlines() { mPrintTabsAndNewlines = false; }
+	bool IsTopLevelExpression() const { return mTopLevelExpression.IsEmpty() || mTopLevelExpression.GetTop(); }
 
+	BoolStack mTopLevelExpression;
 	TextWriter &mWriter;
 	int mTabLevel;
 	bool mPrintTabsAndNewlines;
