@@ -303,7 +303,7 @@ void PrettyPrinter::Visit(const SwitchLabel *switchLabel)
 void PrettyPrinter::Visit(const WhileStatement *whileStatement)
 {
 	Tab();
-	if (whileStatement->GetVariant() == WhileStatement::VARIANT_DO_WHILE)
+	if (whileStatement->IsDoLoop())
 	{
 		mWriter.Write("do\n");
 		PrintBlockOrStatement(whileStatement->GetBody());
@@ -341,11 +341,10 @@ void PrettyPrinter::Visit(const ForStatement *forStatement)
 void PrettyPrinter::Visit(const JumpStatement *jumpStatement)
 {
 	Tab();
-	const Token *op = jumpStatement->GetOperator();
-	Print(op);
+	Print(jumpStatement->GetKeyword());
 
 	const Expression *rhs = jumpStatement->GetRhs(); 
-	if ((op->GetTokenType() == Token::KEY_RETURN) && (rhs != 0))
+	if (jumpStatement->IsReturn() && (rhs != 0))
 	{
 		mWriter.Write(" ");
 		Print(rhs);

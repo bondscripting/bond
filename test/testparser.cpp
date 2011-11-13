@@ -290,9 +290,11 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 		{Bond::ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 45},
 		{Bond::ParseError::ARRAY_OF_VOID, Bond::Token::OBRACKET, 51},
 		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 54},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 57},
-		{Bond::ParseError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 58},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 62},
+		{Bond::ParseError::EMPTY_SWITCH_STATEMENT, Bond::Token::KEY_SWITCH, 57},
+		{Bond::ParseError::EMPTY_SWITCH_LABEL_LIST, Bond::Token::IDENTIFIER, 62},
+		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 66},
+		{Bond::ParseError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 67},
+		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 71},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -304,7 +306,7 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 12;
 	expectedCount.mIfStatement = 3;
-	expectedCount.mSwitchStatement = 1;
+	expectedCount.mSwitchStatement = 3;
 	expectedCount.mWhileStatement = 3;
 	expectedCount.mForStatement = 5;
 

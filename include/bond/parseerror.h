@@ -116,6 +116,12 @@
     "Struct size must be a multiple of alignment.")                                 \
   BOND_PARSE_ERROR(NOT_ALL_PATHS_RETURN_A_VALUE,                                    \
     "Not all paths return a value in function '%c'.")                               \
+  BOND_PARSE_ERROR(INVALID_BREAK,                                                   \
+    "Break statement not within a loop or switch statement.")                       \
+  BOND_PARSE_ERROR(INVALID_CONTINUE,                                                \
+    "Continue statement not within a loop.")                                        \
+  BOND_PARSE_ERROR(UNREACHABLE_CODE,                                                \
+    "Unreachable code.")                                                            \
   BOND_PARSE_ERROR(INTERNAL_ERROR,                                                  \
     "Internal compiler error.")                                                     \
 

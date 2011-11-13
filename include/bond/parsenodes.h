@@ -16,7 +16,7 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) = 0;
 	virtual void Accept(ParseNodeVisitor &visitor) const = 0;
-	virtual const Token *GetContextToken() const { return 0; }
+	virtual const Token *GetContextToken() const = 0;
 
 protected:
 	ParseNode() {}
@@ -329,6 +329,8 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return 0; }
 
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
@@ -700,7 +702,8 @@ private:
 class IfStatement: public ListParseNode
 {
 public:
-	IfStatement(Expression *condition, ParseNode *thenStatement, ParseNode *elseStatement):
+	IfStatement(const Token *keyword, Expression *condition, ParseNode *thenStatement, ParseNode *elseStatement):
+		mKeyword(keyword),
 		mCondition(condition),
 		mThenStatement(thenStatement),
 		mElseStatement(elseStatement)
@@ -710,6 +713,10 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mKeyword; }
+
+	const Token *GetKeyword() const { return mKeyword; }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -721,6 +728,7 @@ public:
 	const ParseNode *GetElseStatement() const { return mElseStatement; }
 
 private:
+	const Token *mKeyword;
 	Expression *mCondition;
 	ParseNode *mThenStatement;
 	ParseNode *mElseStatement;
@@ -730,7 +738,8 @@ private:
 class SwitchStatement: public ListParseNode
 {
 public:
-	SwitchStatement(Expression *control, SwitchSection *sectionList):
+	SwitchStatement(const Token *keyword, Expression *control, SwitchSection *sectionList):
+		mKeyword(keyword),
 		mControl(control),
 		mSectionList(sectionList)
 	{}
@@ -740,6 +749,10 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const { return mKeyword; }
+
+	const Token *GetKeyword() const { return mKeyword; }
+
 	Expression *GetControl() { return mControl; }
 	const Expression *GetControl() const { return mControl; }
 
@@ -747,6 +760,7 @@ public:
 	const SwitchSection *GetSectionList() const { return mSectionList; }
 
 private:
+	const Token *mKeyword;
 	Expression *mControl;
 	SwitchSection *mSectionList;
 };
@@ -782,22 +796,14 @@ private:
 class SwitchLabel: public ListParseNode
 {
 public:
-	enum Variant
-	{
-		VARIANT_CASE,
-		VARIANT_DEFAULT,
-	};
-
 	explicit SwitchLabel(const Token *label):
 		mLabel(label),
-		mExpression(0),
-		mVariant(VARIANT_DEFAULT)
+		mExpression(0)
 	{}
 
 	SwitchLabel(const Token *label, Expression *expression):
 		mLabel(label),
-		mExpression(expression),
-		mVariant(VARIANT_CASE)
+		mExpression(expression)
 	{}
 
 	virtual ~SwitchLabel() {}
@@ -812,28 +818,19 @@ public:
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
 
-	Variant GetVariant() const { return mVariant; }
-
 private:
 	const Token *mLabel;
 	Expression *mExpression;
-	Variant mVariant;
 };
 
 
 class WhileStatement: public ListParseNode
 {
 public:
-	enum Variant
-	{
-		VARIANT_WHILE,
-		VARIANT_DO_WHILE,
-	};
-
-	WhileStatement(Expression *condition, ParseNode *body, Variant variant):
+	WhileStatement(const Token *keyword, Expression *condition, ParseNode *body):
+		mKeyword(keyword),
 		mCondition(condition),
-		mBody(body),
-		mVariant(variant)
+		mBody(body)
 	{}
 
 	virtual ~WhileStatement() {}
@@ -841,18 +838,22 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const { return mKeyword; }
+
+	const Token *GetKeyword() const { return mKeyword; }
+
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
 
 	ParseNode *GetBody() { return mBody; }
 	const ParseNode *GetBody() const { return mBody; }
 
-	Variant GetVariant() const { return mVariant; }
+	bool IsDoLoop() const { return mKeyword->GetTokenType() == Token::KEY_DO; }
 
 private:
+	const Token *mKeyword;
 	Expression *mCondition;
 	ParseNode *mBody;
-	Variant mVariant;
 };
 
 
@@ -860,10 +861,12 @@ class ForStatement: public Symbol
 {
 public:
 	ForStatement(
+			const Token *keyword,
 			ParseNode *initializer,
 			Expression *condition,
 			Expression *countingExpression,
 			ParseNode *body):
+		mKeyword(keyword),
 		mInitializer(initializer),
 		mCondition(condition),
 		mCountingExpression(countingExpression),
@@ -876,6 +879,10 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	virtual SymbolType GetSymbolType() const { return TYPE_LOCALSCOPE; }
+
+	virtual const Token *GetContextToken() const { return mKeyword; }
+
+	const Token *GetKeyword() const { return mKeyword; }
 
 	ParseNode *GetInitializer() { return mInitializer; }
 	const ParseNode *GetInitializer() const { return mInitializer; }
@@ -890,6 +897,7 @@ public:
 	const ParseNode *GetBody() const { return mBody; }
 
 private:
+	const Token *mKeyword;
 	ParseNode *mInitializer;
 	Expression *mCondition;
 	Expression *mCountingExpression;
@@ -900,21 +908,25 @@ private:
 class JumpStatement: public ListParseNode
 {
 public:
-	JumpStatement(const Token *op, Expression *rhs):	mOperator(op), mRhs(rhs) {}
+	JumpStatement(const Token *keyword, Expression *rhs): mKeyword(keyword), mRhs(rhs) {}
 	virtual ~JumpStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const { return mKeyword; }
 
-	const Token *GetOperator() const { return mOperator; }
+	const Token *GetKeyword() const { return mKeyword; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
 
+	bool IsBreak() const { return mKeyword->GetTokenType() == Token::KEY_BREAK; }
+	bool IsContinue() const { return mKeyword->GetTokenType() == Token::KEY_CONTINUE; }
+	bool IsReturn() const { return mKeyword->GetTokenType() == Token::KEY_RETURN; }
+
 private:
-	const Token *mOperator;
+	const Token *mKeyword;
 	Expression *mRhs;
 };
 
@@ -932,6 +944,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
+	virtual const Token *GetContextToken() const { return mTypeDescriptor->GetContextToken(); }
+
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 
@@ -941,23 +955,6 @@ public:
 private:
 	TypeDescriptor *mTypeDescriptor;
 	NamedInitializer *mNamedInitializerList;
-};
-
-
-class ExpressionStatement: public ListParseNode
-{
-public:
-	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
-	virtual ~ExpressionStatement() {}
-
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
-
-	Expression *GetExpression() { return mExpression; }
-	const Expression *GetExpression() const { return mExpression; }
-
-private:
-	Expression *mExpression;
 };
 
 
@@ -978,6 +975,25 @@ protected:
 private:
 	TypeDescriptor mTypeDescriptor;
 	TypeAndValue mTypeAndValue;
+};
+
+
+class ExpressionStatement: public ListParseNode
+{
+public:
+	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
+	virtual ~ExpressionStatement() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return (mExpression == 0) ? 0 : mExpression->GetContextToken(); }
+
+	Expression *GetExpression() { return mExpression; }
+	const Expression *GetExpression() const { return mExpression; }
+
+private:
+	Expression *mExpression;
 };
 
 
@@ -1315,6 +1331,8 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return 0; }
 };
 
 

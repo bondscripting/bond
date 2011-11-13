@@ -101,7 +101,8 @@ FunctionPrototype *ParseNodeFactory::CreateFunctionPrototype(
 	Parameter *parameterList,
 	bool isConst)
 {
-	return new (mAllocator.Alloc<FunctionPrototype>()) FunctionPrototype(name, returnType, parameterList, isConst);
+	return new (mAllocator.Alloc<FunctionPrototype>())
+		FunctionPrototype(name, returnType, parameterList, isConst);
 }
 
 
@@ -170,18 +171,22 @@ CompoundStatement *ParseNodeFactory::CreateCompoundStatement(ListParseNode *stat
 
 
 IfStatement *ParseNodeFactory::CreateIfStatement(
+	const Token *keyword,
 	Expression *condition,
 	ParseNode *thenStatement,
 	ParseNode *elseStatement)
 {
 	return new (mAllocator.Alloc<IfStatement>())
-		IfStatement(condition, thenStatement, elseStatement);
+		IfStatement(keyword, condition, thenStatement, elseStatement);
 }
 
 
-SwitchStatement *ParseNodeFactory::CreateSwitchStatement(Expression *control, SwitchSection *sectionList)
+SwitchStatement *ParseNodeFactory::CreateSwitchStatement(
+	const Token *keyword,
+	Expression *control,
+	SwitchSection *sectionList)
 {
-	return new (mAllocator.Alloc<SwitchStatement>()) SwitchStatement(control, sectionList);
+	return new (mAllocator.Alloc<SwitchStatement>()) SwitchStatement(keyword, control, sectionList);
 }
 
 
@@ -203,34 +208,30 @@ SwitchLabel *ParseNodeFactory::CreateDefaultLabel(const Token *label)
 }
 
 
-WhileStatement *ParseNodeFactory::CreateWhileStatement(Expression *condition, ParseNode *body)
+WhileStatement *ParseNodeFactory::CreateWhileStatement(
+	const Token *keyword,
+	Expression *condition,
+	ParseNode *body)
 {
-	return new (mAllocator.Alloc<WhileStatement>())
-		WhileStatement(condition, body, WhileStatement::VARIANT_WHILE);
-}
-
-
-WhileStatement *ParseNodeFactory::CreateDoWhileStatement(Expression *condition, ParseNode *body)
-{
-	return new (mAllocator.Alloc<WhileStatement>())
-		WhileStatement(condition, body, WhileStatement::VARIANT_DO_WHILE);
+	return new (mAllocator.Alloc<WhileStatement>()) WhileStatement(keyword, condition, body);
 }
 
 
 ForStatement *ParseNodeFactory::CreateForStatement(
+	const Token *keyword,
 	ParseNode *initializer,
 	Expression *condition,
 	Expression *countingExpression,
 	ParseNode *body)
 {
 	return new (mAllocator.Alloc<ForStatement>())
-		ForStatement(initializer, condition, countingExpression, body);
+		ForStatement(keyword, initializer, condition, countingExpression, body);
 }
 
 
-JumpStatement *ParseNodeFactory::CreateJumpStatement(const Token *op, Expression *rhs)
+JumpStatement *ParseNodeFactory::CreateJumpStatement(const Token *keyword, Expression *rhs)
 {
-	return new (mAllocator.Alloc<JumpStatement>()) JumpStatement(op, rhs);
+	return new (mAllocator.Alloc<JumpStatement>()) JumpStatement(keyword, rhs);
 }
 
 

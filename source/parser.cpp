@@ -871,8 +871,9 @@ CompoundStatement *ParserCore::ParseCompoundStatement()
 IfStatement *ParserCore::ParseIfStatement()
 {
 	IfStatement *ifStatement = 0;
+	const Token *keyword = mStream.NextIf(Token::KEY_IF);
 
-	if (mStream.NextIf(Token::KEY_IF) != 0)
+	if (keyword)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -888,7 +889,7 @@ IfStatement *ParserCore::ParseIfStatement()
 			AssertNode(elseStatement);
 		}
 
-		ifStatement = mFactory.CreateIfStatement(condition, thenStatement, elseStatement);
+		ifStatement = mFactory.CreateIfStatement(keyword, condition, thenStatement, elseStatement);
 	}
 
 	return ifStatement;
@@ -924,7 +925,7 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 			PushError(ParseError::EMPTY_SWITCH_STATEMENT, keyword);
 		}
 
-		switchStatement = mFactory.CreateSwitchStatement(control, sectionList.GetHead());
+		switchStatement = mFactory.CreateSwitchStatement(keyword, control, sectionList.GetHead());
 	}
 
 	return switchStatement;
@@ -998,8 +999,9 @@ SwitchLabel *ParserCore::ParseSwitchLabel()
 WhileStatement *ParserCore::ParseWhileStatement()
 {
 	WhileStatement *whileStatement = 0;
+	const Token *keyword = mStream.NextIf(Token::KEY_WHILE);
 
-	if (mStream.NextIf(Token::KEY_WHILE) != 0)
+	if (keyword)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -1007,7 +1009,7 @@ WhileStatement *ParserCore::ParseWhileStatement()
 		ExpectToken(Token::CPAREN);
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
-		whileStatement = mFactory.CreateWhileStatement(condition, body);
+		whileStatement = mFactory.CreateWhileStatement(keyword, condition, body);
 	}
 
 	return whileStatement;
@@ -1019,8 +1021,9 @@ WhileStatement *ParserCore::ParseWhileStatement()
 WhileStatement *ParserCore::ParseDoWhileStatement()
 {
 	WhileStatement *whileStatement = 0;
+	const Token *keyword = mStream.NextIf(Token::KEY_DO);
 
-	if (mStream.NextIf(Token::KEY_DO) != 0)
+	if (keyword)
 	{
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
@@ -1030,7 +1033,7 @@ WhileStatement *ParserCore::ParseDoWhileStatement()
 		AssertNode(condition);
 		ExpectToken(Token::CPAREN);
 		ExpectToken(Token::SEMICOLON);
-		whileStatement = mFactory.CreateDoWhileStatement(condition, body);
+		whileStatement = mFactory.CreateWhileStatement(keyword, condition, body);
 	}
 
 	return whileStatement;
@@ -1046,8 +1049,9 @@ WhileStatement *ParserCore::ParseDoWhileStatement()
 ForStatement *ParserCore::ParseForStatement()
 {
 	ForStatement *forStatement = 0;
+	const Token *keyword = mStream.NextIf(Token::KEY_FOR);
 
-	if (mStream.NextIf(Token::KEY_FOR) != 0)
+	if (keyword)
 	{
 		ExpectToken(Token::OPAREN);
 		ParseNode *initializer = ParseExpressionOrDeclarativeStatement();
@@ -1058,7 +1062,7 @@ ForStatement *ParserCore::ParseForStatement()
 		ExpectToken(Token::CPAREN);
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
-		forStatement = mFactory.CreateForStatement(initializer, condition, countingExpression, body);
+		forStatement = mFactory.CreateForStatement(keyword, initializer, condition, countingExpression, body);
 	}
 
 	return forStatement;
@@ -1072,17 +1076,17 @@ ForStatement *ParserCore::ParseForStatement()
 JumpStatement *ParserCore::ParseJumpStatement()
 {
 	JumpStatement *jumpStatement = 0;
-	const Token *op = mStream.NextIf(JUMP_OPERATORS_TYPESET);
+	const Token *keyword = mStream.NextIf(JUMP_KEYWORDS_TYPESET);
 
-	if (op != 0)
+	if (keyword != 0)
 	{
 		Expression *rhs = 0;
-		if (op->GetTokenType() == Token::KEY_RETURN)
+		if (keyword->GetTokenType() == Token::KEY_RETURN)
 		{
 			rhs = ParseExpression();
 		}
 		ExpectStatementTerminator();
-		jumpStatement = mFactory.CreateJumpStatement(op, rhs);
+		jumpStatement = mFactory.CreateJumpStatement(keyword, rhs);
 	}
 
 	return jumpStatement;

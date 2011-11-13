@@ -73,6 +73,13 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(Initializers, "scripts/parser_Initializers.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	return true;
+}
+
+
 DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 {
 	ASSERT_NO_PARSE_ERRORS(errorBuffer);
@@ -92,6 +99,34 @@ DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 	ASSERT_MESSAGE(memberSymbol != 0, "Failed to find symbol 'DoStuff'.");
 	ASSERT_MESSAGE(memberSymbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'DoStuff to be a function.");
 
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
+{
+	ASSERT_NO_PARSE_ERRORS(errorBuffer);
 	return true;
 }
 
@@ -243,11 +278,16 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEva
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
   TEST_ITEM(FunctionDefinitions)                \
+  TEST_ITEM(Initializers)                       \
   TEST_ITEM(Structs)                            \
+  TEST_ITEM(IfStatements)                       \
+  TEST_ITEM(WhileStatements)                    \
+  TEST_ITEM(ForStatements)                      \
+  TEST_ITEM(SwitchStatements)                   \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
   TEST_ITEM(ValueEvaluationErrors)              \
-  TEST_ITEM(ValueEvaluationErrors2)              \
+  TEST_ITEM(ValueEvaluationErrors2)             \
 
 RUN_TESTS(Parser, TEST_ITEMS)

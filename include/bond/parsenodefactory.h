@@ -57,24 +57,25 @@ public:
 	CompoundStatement *CreateCompoundStatement(ListParseNode *statementList);
 
 	IfStatement *CreateIfStatement(
+		const Token *keyword,
 		Expression *condition,
 		ParseNode *thenStatement,
 		ParseNode *elseStatement);
 
-	SwitchStatement *CreateSwitchStatement(Expression *control, SwitchSection *sectionList);
+	SwitchStatement *CreateSwitchStatement(const Token *keyword, Expression *control, SwitchSection *sectionList);
 	SwitchSection *CreateSwitchSection(SwitchLabel *labelList, ListParseNode* statementList);
 	SwitchLabel *CreateSwitchLabel(const Token *label, Expression *expression);
 	SwitchLabel *CreateDefaultLabel(const Token *label);
-	WhileStatement *CreateWhileStatement(Expression *condition, ParseNode *body);
-	WhileStatement *CreateDoWhileStatement(Expression *condition, ParseNode *body);
+	WhileStatement *CreateWhileStatement(const Token *keyword, Expression *condition, ParseNode *body);
 
 	ForStatement *CreateForStatement(
+		const Token *keyword,
 		ParseNode *initializer,
 		Expression *condition,
 		Expression *countingExpression,
 		ParseNode *body);
 
-	JumpStatement *CreateJumpStatement(const Token *op, Expression *rhs);
+	JumpStatement *CreateJumpStatement(const Token *keyword, Expression *rhs);
 
 	DeclarativeStatement *CreateDeclarativeStatement(
 		TypeDescriptor *typeDescriptor,

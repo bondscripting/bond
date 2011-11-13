@@ -52,6 +52,15 @@ void TheFunction(int a)
 
 	// Variable of type void.
 	void voidVariable;
+
+	// Empty switch statement.
+	switch (a) {}
+
+	// Empty switch label list.
+	switch (a)
+	{
+		a = 1;
+	}
 }
 
 void BadFunction(void voidParam) {}
