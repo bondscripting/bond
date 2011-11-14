@@ -274,6 +274,30 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEva
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErrors.bond")
+{
+	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	{
+		{Bond::ParseError::UNTERMINATED_SWITCH_SECTION, Bond::Token::KEY_CASE, 5},
+		{Bond::ParseError::INVALID_BREAK, Bond::Token::KEY_BREAK, 17},
+		{Bond::ParseError::INVALID_CONTINUE, Bond::Token::KEY_CONTINUE, 21},
+		{Bond::ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 25},
+		{Bond::ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 37},
+		{Bond::ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 46},
+		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 68},
+		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 81},
+		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 94},
+		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 109},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -289,5 +313,6 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEva
   TEST_ITEM(TypeEvaluationErrors2)              \
   TEST_ITEM(ValueEvaluationErrors)              \
   TEST_ITEM(ValueEvaluationErrors2)             \
+  TEST_ITEM(ValidationErrors)                   \
 
 RUN_TESTS(Parser, TEST_ITEMS)

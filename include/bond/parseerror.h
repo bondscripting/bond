@@ -106,8 +106,6 @@
     "Struct '%c' is recursive.")                                                    \
   BOND_PARSE_ERROR(CANNOT_RESOLVE_SYMBOL_VALUE,                                     \
     "Cannot resolve the value of symbol '%c'.")                                     \
-  BOND_PARSE_ERROR(CANNOT_RESOLVE_STRUCT_SIZE,                                      \
-    "Cannot resolve the size of struct '%c'.")                                      \
   BOND_PARSE_ERROR(INVALID_STRUCT_SIZE,                                             \
     "Struct size must be greater than zero.")                                       \
   BOND_PARSE_ERROR(INVALID_STRUCT_ALIGNMENT,                                        \

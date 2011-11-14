@@ -79,11 +79,13 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 	Traverse(ifStatement->GetCondition());
 
 	bool hasReturn = ifStatement->GetElseStatement() != 0;
+	bool endsWithJump = hasReturn;
 	{
 		BoolStack::Element hasReturnElement(mHasReturn, false);
 		BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 		Traverse(ifStatement->GetThenStatement());
 		hasReturn = hasReturn && hasReturnElement;
+		endsWithJump = endsWithJump && endsWithJumpElement;
 	}
 
 	{
@@ -91,9 +93,10 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 		BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 		Traverse(ifStatement->GetElseStatement());
 		hasReturn = hasReturn && hasReturnElement;
+		endsWithJump = endsWithJump && endsWithJumpElement;
 	}
 	mHasReturn.SetTop(mHasReturn.GetTop() || hasReturn);
-	mEndsWithJump.SetTop(hasReturn);
+	mEndsWithJump.SetTop(endsWithJump || hasReturn);
 }
 
 
