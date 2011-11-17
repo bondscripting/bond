@@ -1,0 +1,112 @@
+load8               ..., address -> ..., 8bit
+loadc               ..., address -> ..., int
+loaduc              ..., address -> ..., uint
+load16              ..., address -> ..., 16bit
+loads               ..., address -> ..., int
+loadus              ..., address -> ..., uint
+load32              ..., address -> ..., 32bit
+load64              ..., address -> ..., 64bit
+
+store8              ..., address, 8bit -> ...
+storec              ..., address, int -> ...
+storeuc             ..., address, uint -> ...
+store16             ..., address, 16bit -> ...
+stores              ..., address, int -> ...
+storeus             ..., address, uint -> ...
+store32             ..., address, 32bit -> ...
+store64             ..., address, 64bit -> ...
+
+push8, short        ... -> 8bit
+pushc, short        ... -> int
+pushuc, short       ... -> uint
+push16, short       ... -> 16bit
+pushs, short        ... -> int
+pushus, short       ... -> uint
+push32, short       ... -> 32bit
+push32_0            ... -> 32bit
+push32_1            ... -> 32bit
+push32_2            ... -> 32bit
+push32_3            ... -> 32bit
+push64, short       ... -> 64bit
+
+pop8, short         ..., 8bit -> ...
+popbc, short        ..., int -> ...
+popuc, short        ..., uint -> ...
+pop16, short        ..., 16bit -> ...
+popbs, short        ..., int -> ...
+popus, short        ..., uint -> ...
+pop32, short        ..., 32bit -> ...
+pop32_0             ..., 32bit -> ...
+pop32_1             ..., 32bit -> ...
+pop32_2             ..., 32bit -> ...
+pop32_3             ..., 32bit -> ...
+pop64, short        ..., 64bit -> ...
+
+dup8                ..., 8bit -> ..., 8bit, 8bit
+dup16               ..., 16bit -> ..., 16bit, 16bit
+dup32               ..., 32bit -> ..., 32bit, 32bit
+dup64               ..., 64bit -> ..., 64bit, 64bit
+
+ctoi                ..., int -> ..., int
+uctoui              ..., uint -> ..., uint
+stoi                ..., int -> ..., int
+ustoui              ..., uint -> ..., uint
+
+itoc                ..., int -> ..., int
+itos                ..., int -> ..., int
+itoui               ..., int -> ..., uint
+itol                ..., int -> ..., long
+itof                ..., int -> ..., float
+itod                ..., int -> ..., double
+
+uitouc              ..., uint -> ..., uchar
+uitous              ..., uint -> ..., ushort
+uitoi               ..., uint -> ..., int
+uitoul              ..., uint -> ..., ulong
+uitof               ..., uint -> ..., float
+uitod               ..., uint -> ..., double
+
+ltoi                ..., long -> ..., int
+ltoul               ..., long -> ..., ulong
+ltof                ..., long -> ..., float
+ltod                ..., long -> ..., double
+
+ultoui              ..., ulong -> ..., uint
+ultol               ..., ulong -> ..., long
+ultof               ..., ulong -> ..., float
+ultod               ..., ulong -> ..., double
+
+ftoi                ..., float -> ..., int
+ftoui               ..., float -> ..., uint
+ftol                ..., float -> ..., long
+ftoul               ..., float -> ..., ulong
+ftod                ..., float -> ..., double
+
+dtoi                ..., double -> ..., int
+dtoui               ..., double -> ..., uint
+dtol                ..., double -> ..., long
+dtoul               ..., double -> ..., ulong
+dtof                ..., double -> ..., float
+
+goto, short          -
+
+
+extend
+
+Modifies the following op-codes by extending the 16 bit offsets to 32 bits:
+push8
+pushc
+pushuc
+push16
+pushs
+pushus
+push32
+push64
+pop8
+popbc
+popuc
+pop16
+popbs
+popus
+pop32
+pop64
