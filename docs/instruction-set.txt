@@ -1,79 +1,121 @@
-load8               ..., address -> ..., 8bit
+//W263784172
+
+constc, char        ... -> int
+constuc, uchar      ... -> uint
+consts, short       ... -> int
+constus, ushort     ... -> uint
+const32, 32bit      ... -> 32bit
+const64, 64bit      ... -> 64bit
+consti_n2           ... -> int
+consti_n1           ... -> int
+consti_0            ... -> int
+consti_1            ... -> int
+consti_2            ... -> int
+consti_3            ... -> int
+consti_4            ... -> int
+consti_5            ... -> int
+consti_6            ... -> int
+consti_7            ... -> int
+consti_8            ... -> int
+constl_n1           ... -> long
+constl_0            ... -> long
+constl_1            ... -> long
+constf_n2           ... -> float
+constf_n1           ... -> float
+constf_nh           ... -> float
+constf_0            ... -> float
+constf_h            ... -> float
+constf_1            ... -> float
+constf_2            ... -> float
+constd_n2           ... -> double
+constd_n1           ... -> double
+constd_nh           ... -> double
+constd_0            ... -> double
+constd_h            ... -> double
+constd_1            ... -> double
+constd_2            ... -> double
+
+loadea, hash        ... -> address
 loadc               ..., address -> ..., int
 loaduc              ..., address -> ..., uint
-load16              ..., address -> ..., 16bit
 loads               ..., address -> ..., int
 loadus              ..., address -> ..., uint
 load32              ..., address -> ..., 32bit
 load64              ..., address -> ..., 64bit
 
-store8              ..., address, 8bit -> ...
 storec              ..., address, int -> ...
-storeuc             ..., address, uint -> ...
-store16             ..., address, 16bit -> ...
 stores              ..., address, int -> ...
-storeus             ..., address, uint -> ...
 store32             ..., address, 32bit -> ...
 store64             ..., address, 64bit -> ...
 
-push8, short        ... -> 8bit
-pushc, short        ... -> int
-pushuc, short       ... -> uint
-push16, short       ... -> 16bit
+pushc, char         ... -> int
+pushuc, char        ... -> uint
 pushs, short        ... -> int
 pushus, short       ... -> uint
 push32, short       ... -> 32bit
-push32_0            ... -> 32bit
-push32_1            ... -> 32bit
-push32_2            ... -> 32bit
-push32_3            ... -> 32bit
+push32_a0           ... -> 32bit
+push32_a1           ... -> 32bit
+push32_a2           ... -> 32bit
+push32_a3           ... -> 32bit
+push32_v0           ... -> 32bit
+push32_v1           ... -> 32bit
+push32_v2           ... -> 32bit
+push32_v3           ... -> 32bit
 push64, short       ... -> 64bit
+push64_a0           ... -> 64bit
+push64_a1           ... -> 64bit
+push64_a2           ... -> 64bit
+push64_a3           ... -> 64bit
+push64_v0           ... -> 64bit
+push64_v1           ... -> 64bit
+push64_v2           ... -> 64bit
+push64_v3           ... -> 64bit
 
-pop8, short         ..., 8bit -> ...
-popbc, short        ..., int -> ...
-popuc, short        ..., uint -> ...
-pop16, short        ..., 16bit -> ...
-popbs, short        ..., int -> ...
-popus, short        ..., uint -> ...
+popc, short         ..., int -> ...
+pops, short         ..., int -> ...
 pop32, short        ..., 32bit -> ...
-pop32_0             ..., 32bit -> ...
-pop32_1             ..., 32bit -> ...
-pop32_2             ..., 32bit -> ...
-pop32_3             ..., 32bit -> ...
+pop32_a0            ..., 32bit -> ...
+pop32_a1            ..., 32bit -> ...
+pop32_a2            ..., 32bit -> ...
+pop32_a3            ..., 32bit -> ...
+pop32_l0            ..., 32bit -> ...
+pop32_l1            ..., 32bit -> ...
+pop32_l2            ..., 32bit -> ...
+pop32_l3            ..., 32bit -> ...
 pop64, short        ..., 64bit -> ...
+pop64_a0            ..., 64bit -> ...
+pop64_a1            ..., 64bit -> ...
+pop64_a2            ..., 64bit -> ...
+pop64_a3            ..., 64bit -> ...
+pop64_l0            ..., 64bit -> ...
+pop64_l1            ..., 64bit -> ...
+pop64_l2            ..., 64bit -> ...
+pop64_l3            ..., 64bit -> ...
 
-dup8                ..., 8bit -> ..., 8bit, 8bit
-dup16               ..., 16bit -> ..., 16bit, 16bit
+movesp, short       ?
+
 dup32               ..., 32bit -> ..., 32bit, 32bit
 dup64               ..., 64bit -> ..., 64bit, 64bit
 
 ctoi                ..., int -> ..., int
 uctoui              ..., uint -> ..., uint
+
 stoi                ..., int -> ..., int
 ustoui              ..., uint -> ..., uint
 
 itoc                ..., int -> ..., int
 itos                ..., int -> ..., int
-itoui               ..., int -> ..., uint
 itol                ..., int -> ..., long
-itof                ..., int -> ..., float
-itod                ..., int -> ..., double
-
-uitouc              ..., uint -> ..., uchar
-uitous              ..., uint -> ..., ushort
-uitoi               ..., uint -> ..., int
 uitoul              ..., uint -> ..., ulong
+itof                ..., int -> ..., float
 uitof               ..., uint -> ..., float
+itod                ..., int -> ..., double
 uitod               ..., uint -> ..., double
 
 ltoi                ..., long -> ..., int
-ltoul               ..., long -> ..., ulong
 ltof                ..., long -> ..., float
-ltod                ..., long -> ..., double
-
-ultoui              ..., ulong -> ..., uint
-ultol               ..., ulong -> ..., long
 ultof               ..., ulong -> ..., float
+ltod                ..., long -> ..., double
 ultod               ..., ulong -> ..., double
 
 ftoi                ..., float -> ..., int
@@ -81,32 +123,144 @@ ftoui               ..., float -> ..., uint
 ftol                ..., float -> ..., long
 ftoul               ..., float -> ..., ulong
 ftod                ..., float -> ..., double
-
 dtoi                ..., double -> ..., int
 dtoui               ..., double -> ..., uint
 dtol                ..., double -> ..., long
 dtoul               ..., double -> ..., ulong
 dtof                ..., double -> ..., float
 
-goto, short          -
+addi                ..., int, int -> ..., int
+addl                ..., long, long -> ..., long
+addf                ..., float, float -> ..., float
+addd                ..., double, double -> ..., double
 
+subi                ..., int, int -> ..., int
+subl                ..., long, long -> ..., long
+subf                ..., float, float -> ..., float
+subd                ..., double, double -> ..., double
+
+muli                ..., int, int -> ..., int
+mului               ..., uint, uint -> ..., uint
+mull                ..., long, long -> ..., long
+mulul               ..., ulong, ulong -> ..., ulong
+mulf                ..., float, float -> ..., float
+muld                ..., double, double -> ..., double
+
+divi                ..., int, int -> ..., int
+divui               ..., uint, uint -> ..., uint
+divl                ..., long, long -> ..., long
+divul               ..., ulong, ulong -> ..., ulong
+divf                ..., float, float -> ..., float
+divd                ..., double, double -> ..., double
+
+remi                ..., int, int -> ..., int
+remui               ..., uint, uint -> ..., uint
+reml                ..., long, long -> ..., long
+remul               ..., ulong, ulong -> ..., ulong
+
+lshi                ..., int, int -> ..., int
+lshl                ..., long, int -> ..., long
+rshi                ..., int, int -> ..., int
+rshui               ..., uint, int -> ..., uint
+rshl                ..., long, int -> ..., long
+rshul               ..., ulong, int -> ..., ulong
+
+andi                ..., int, int -> ..., int
+andl                ..., long, long -> ..., long
+ori                 ..., int, int -> ..., int
+orl                 ..., long, long -> ..., long
+xori                ..., int, int -> ..., int
+xorl                ..., long, long -> ..., long
+
+negi                ..., int -> int
+negl                ..., long -> long
+negf                ..., float -> float
+negd                ..., double -> double
+
+noti                ..., int -> int
+notl                ..., long -> long
+
+cmpi                ..., int, int -> ..., int
+cmpui               ..., uint, uint -> ..., int
+cmpl                ..., long, long -> ..., int
+cmpul               ..., ulong, ulong -> ..., int
+cmpf                ..., float, float -> ..., int
+
+cmpeq               ..., int -> ..., int
+cmpne               ..., int -> ..., int
+cmplt               ..., int -> ..., int
+cmple               ..., int -> ..., int
+cmpgt               ..., int -> ..., int
+cmpge               ..., int -> ..., int
+
+ifeq, short         ..., int -> ...
+ifne, short         ..., int -> ...
+iflt, short         ..., int -> ...
+ifle, short         ..., int -> ...
+ifgt, short         ..., int -> ...
+ifge, short         ..., int -> ...
+
+ifcmpieq, short     ..., int, int -> ...
+ifcmpine, short     ..., int, int -> ...
+ifcmpilt, short     ..., int, int -> ...
+ifcmpile, short     ..., int, int -> ...
+ifcmpigt, short     ..., int, int -> ...
+ifcmpige, short     ..., int, int -> ...
+
+ifcmpuilt, short    ..., uint, uint -> ...
+ifcmpuile, short    ..., uint, uint -> ...
+ifcmpuigt, short    ..., uint, uint -> ...
+ifcmpuige, short    ..., uint, uint -> ...
+
+goto, short         ... -> ...
+
+invoke, hash        ... -> ...
+invokenative, hash  ... -> ...
+
+return
 
 extend
 
 Modifies the following op-codes by extending the 16 bit offsets to 32 bits:
-push8
 pushc
 pushuc
-push16
 pushs
 pushus
 push32
 push64
-pop8
-popbc
-popuc
-pop16
-popbs
-popus
+popc
+pops
 pop32
 pop64
+movesp
+ifeq
+ifne
+iflt
+ifle
+ifgt
+ifge
+ifcmpieq
+ifcmpine
+ifcmpilt
+ifcmpile
+ifcmpigt
+ifcmpige
+ifcmpuilt
+ifcmpuile
+ifcmpuigt
+ifcmpuige
+goto
+
+
+Unaccounted for
+87 (0x57)	 pop
+88 (0x58)	 pop2
+089 (0x59)	 dup
+090 (0x5a)	 dup_x1
+091 (0x5b)	 dup_x2
+092 (0x5c)	 dup2
+093 (0x5d)	 dup2_x1
+094 (0x5e)	 dup2_x2
+095 (0x5f)	 swap
+170 (0xaa)	 tableswitch
+171 (0xab)	 lookupswitch
