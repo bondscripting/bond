@@ -161,6 +161,15 @@ void TypeDescriptor::ConvertToArray(Expression *expressionList)
 }
 
 
+void TypeDescriptor::ConvertToPointerIntrinsic()
+{
+	if (IsArrayType())
+	{
+		mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER;
+	}
+}
+
+
 TypeDescriptor TypeDescriptor::GetDereferencedType() const
 {
 	TypeDescriptor typeDescriptor;
@@ -192,7 +201,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
 			if (typeDescriptor.IsArrayType())
 			{
-				typeDescriptor.mLengthExpressionList = NextNode(mLengthExpressionList);
+				typeDescriptor = typeDescriptor.GetDereferencedType();
 			}
 		}
 		else
@@ -379,6 +388,12 @@ TypeDescriptor TypeDescriptor::GetPointerType(const TypeSpecifier *specifier)
 TypeDescriptor TypeDescriptor::GetConstPointerType(const TypeSpecifier *specifier)
 {
 	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_CONST | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+}
+
+
+TypeDescriptor TypeDescriptor::GetNullType()
+{
+	return TypeDescriptor(0, FLAG_NULL);
 }
 
 

@@ -180,6 +180,10 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 		}
 		Print(typeDescriptor->GetTypeSpecifier());
 	}
+	else if (typeDescriptor->IsNullType())
+	{
+		mWriter.Write("null");
+	}
 }
 
 

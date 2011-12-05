@@ -95,6 +95,7 @@
 	BOND_TOKEN_ITEM(CONST_UINT)               \
 	BOND_TOKEN_ITEM(CONST_FLOAT)              \
 	BOND_TOKEN_ITEM(CONST_STRING)             \
+	BOND_TOKEN_ITEM(CONST_NULL)               \
 	                                          \
 	/* Special values */                      \
 	BOND_TOKEN_ITEM(INVALID)                  \

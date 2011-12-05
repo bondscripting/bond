@@ -175,7 +175,7 @@ public:
 	const Expression *GetLengthExpressionList() const { return mLengthExpressionList; }
 
 	void ConvertToArray(Expression *expressionList);
-	void ConvertToPointerIntrinsic() { mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER | FLAG_CONST; }
+	void ConvertToPointerIntrinsic();
 
 	TypeDescriptor GetDereferencedType() const;
 	TypeDescriptor GetArrayElementType() const;
@@ -203,6 +203,7 @@ public:
 	bool IsNumericType() const;
 	bool IsValueType() const { return (mFlags & FLAG_VALUE) != 0; }
 	bool IsArrayType() const { return (mFlags & FLAG_ARRAY) != 0; }
+	bool IsNullType() const { return (mFlags & FLAG_NULL) != 0; }
 	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER) != 0; }
 	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
 	bool IsVoidType() const;
@@ -215,6 +216,7 @@ public:
 	static TypeDescriptor GetStringType();
 	static TypeDescriptor GetPointerType(const TypeSpecifier *specifier);
 	static TypeDescriptor GetConstPointerType(const TypeSpecifier *specifier);
+	static TypeDescriptor GetNullType();
 
 private:
 	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
@@ -229,11 +231,12 @@ private:
 	static const bu32_t FLAG_VALUE = 1 << 0;
 	static const bu32_t FLAG_POINTER = 1 << 1;
 	static const bu32_t FLAG_ARRAY = 1 << 2;
-	static const bu32_t FLAG_CONST = 1 << 3;
-	static const bu32_t FLAG_LVALUE = 1 << 4;
-	static const bu32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY;
+	static const bu32_t FLAG_NULL = 1 << 3;
+	static const bu32_t FLAG_CONST = 1 << 4;
+	static const bu32_t FLAG_LVALUE = 1 << 5;
+	static const bu32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY | FLAG_NULL;
 	static const bu32_t PARENT_SHIFT = 8;
-	static const bu32_t STORAGE_MASK = FLAG_VALUE | FLAG_POINTER | FLAG_ARRAY;
+	static const bu32_t STORAGE_MASK = FLAG_VALUE | FLAG_ANY_POINTER;
 	static const bu32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
 
 	const TypeSpecifier *mTypeSpecifier;

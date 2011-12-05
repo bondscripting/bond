@@ -270,7 +270,8 @@ const TokenTypeSet CONSTANT_VALUES_TYPESET(
 	Token::CONST_INT,
 	Token::CONST_UINT,
 	Token::CONST_FLOAT,
-	Token::CONST_STRING
+	Token::CONST_STRING,
+	Token::CONST_NULL
 );
 
 

@@ -1053,6 +1053,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 		token.SetTokenType(Token::CONST_BOOL);
 		token.SetBoolValue(true);
 	}
+	else if (strcmp(token.GetText(), "null") == 0)
+	{
+		token.SetTokenType(Token::CONST_NULL);
+	}
 	else
 	{
 		// Compute and cache the identifier's hash code.

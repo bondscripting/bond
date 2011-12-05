@@ -105,17 +105,14 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	{
 		result = TypeDescriptor::GetFloatType();
 	}
-	else if ((a == Token::KEY_INT) || (b == Token::KEY_INT))
+	else if ((a == Token::KEY_INT) || (b == Token::KEY_INT) ||
+	         (a == Token::KEY_CHAR) || (b == Token::KEY_CHAR))
 	{
 		result = TypeDescriptor::GetIntType();
 	}
 	else if ((a == Token::KEY_UINT) || (b == Token::KEY_UINT))
 	{
 		result = TypeDescriptor::GetUIntType();
-	}
-	else if ((a == Token::KEY_CHAR) || (b == Token::KEY_CHAR))
-	{
-		result = TypeDescriptor::GetCharType();
 	}
 	else if ((a == Token::KEY_BOOL) || (b == Token::KEY_BOOL))
 	{

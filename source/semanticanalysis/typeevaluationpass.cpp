@@ -737,6 +737,9 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 		case Token::CONST_STRING:
 			typeDescriptor = TypeDescriptor::GetStringType();
 			break;
+		case Token::CONST_NULL:
+			typeDescriptor = TypeDescriptor::GetNullType();
+			break;
 		default:
 			// Ignore the default case because the parser is not supposed to allow it to happen.
 			break;

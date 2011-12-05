@@ -262,5 +262,6 @@ Unaccounted for
 093 (0x5d)	 dup2_x1
 094 (0x5e)	 dup2_x2
 095 (0x5f)	 swap
+132 (0x84)	 iinc
 170 (0xaa)	 tableswitch
 171 (0xab)	 lookupswitch

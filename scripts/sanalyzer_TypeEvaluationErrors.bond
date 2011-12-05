@@ -101,4 +101,6 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	ptr1[0] = 2;
 	ptr1 = cast<int *>(&ds1);
 	i1 = OuterSpace::InnerSpace::Number;
+	i1 = *(ptr1 + 1);
+	i1 = *(array1 + 1);
 }

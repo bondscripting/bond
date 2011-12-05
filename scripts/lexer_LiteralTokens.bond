@@ -1,4 +1,4 @@
-true false
+true false null
 98765 07777 0x7fffffff 0xffffffff
 98765u 07777u 0x7fffffffu 0xffffffffu
 15.75 1.575E1 1575e-2 2.5e-3 25E-4 .0075e+2

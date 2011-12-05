@@ -126,6 +126,10 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
 	}
 
+	const Bond::Token *nullToken = stream.Next();
+	ASSERT_FORMAT(Bond::Token::CONST_NULL == nullToken->GetTokenType(),
+		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_NULL), nullToken->GetTokenName()));
+
 	for (int i = 0; i < NUM_INTS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
