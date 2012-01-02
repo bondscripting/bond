@@ -444,6 +444,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
 				isResolvable = AssertNumericOperand(rhDescriptor, op);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_INC:
@@ -452,19 +453,22 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					(rhDescriptor->IsPointerType() || AssertNumericOperand(rhDescriptor, op)) &&
 					AssertAssignableType(rhDescriptor, op);
 				AssertNonConstExpression(op);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_NOT:
 				isResolvable = AssertBooleanOperand(rhDescriptor, op);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_AMP:
 				AssertLValueType(rhDescriptor, op);
-				resultType = TypeDescriptor(rhDescriptor, true);
+				resultType = TypeDescriptor(rhDescriptor, false);
 				break;
 
 			case Token::OP_BIT_NOT:
 				isResolvable = AssertIntegerOperand(rhDescriptor, op);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_STAR:

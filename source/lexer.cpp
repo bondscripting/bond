@@ -1019,6 +1019,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_SIZEOF);
 	}
+	else if (strcmp(token.GetText(), "short") == 0)
+	{
+		token.SetTokenType(Token::KEY_SHORT);
+	}
 	else if (strcmp(token.GetText(), "struct") == 0)
 	{
 		token.SetTokenType(Token::KEY_STRUCT);
@@ -1034,6 +1038,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	else if (strcmp(token.GetText(), "uint") == 0)
 	{
 		token.SetTokenType(Token::KEY_UINT);
+	}
+	else if (strcmp(token.GetText(), "ushort") == 0)
+	{
+		token.SetTokenType(Token::KEY_USHORT);
 	}
 	else if (strcmp(token.GetText(), "void") == 0)
 	{
@@ -1069,7 +1077,7 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 void Lexer::EvaluateCharToken(Token &token) const
 {
 	const char value = EvaluateChar(token.GetText() + 1).value;
-	token.SetCharValue(value);
+	token.SetIntValue(value);
 }
 
 

@@ -25,11 +25,13 @@
 	BOND_TOKEN_ITEM(KEY_NATIVE)               \
 	BOND_TOKEN_ITEM(KEY_REF)                  \
 	BOND_TOKEN_ITEM(KEY_RETURN)               \
+	BOND_TOKEN_ITEM(KEY_SHORT)                \
 	BOND_TOKEN_ITEM(KEY_SIZEOF)               \
 	BOND_TOKEN_ITEM(KEY_STRUCT)               \
 	BOND_TOKEN_ITEM(KEY_SWITCH)               \
 	BOND_TOKEN_ITEM(KEY_THIS)                 \
 	BOND_TOKEN_ITEM(KEY_UINT)                 \
+	BOND_TOKEN_ITEM(KEY_USHORT)               \
 	BOND_TOKEN_ITEM(KEY_VOID)                 \
 	BOND_TOKEN_ITEM(KEY_WHILE)                \
 	                                          \
@@ -222,9 +224,6 @@ public:
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; }
 
-	char GetCharValue() const { return mValue.mChar; }
-	void SetCharValue(char value) { mValue.mChar = value; }
-
 	bf32_t GetFloatValue() const { return mValue.mFloat; }
 	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
 
@@ -303,6 +302,8 @@ extern const Token FLOAT_TOKEN;
 extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern const TokenTypeSet UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;

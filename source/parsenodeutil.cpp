@@ -83,6 +83,38 @@ bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *t
 }
 
 
+TypeDescriptor PromoteType(const TypeDescriptor *type)
+{
+	const Token::TokenType t = type->GetPrimitiveType();
+	TypeDescriptor result = TypeDescriptor::GetIntType();
+
+	if (type->IsPointerType())
+	{
+		result = *type;
+		result.ConvertToPointerIntrinsic();
+		result.SetRValue();
+	}
+	else if (t == Token::KEY_FLOAT)
+	{
+		result = TypeDescriptor::GetFloatType();
+	}
+	else if (SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(t))
+	{
+		result = TypeDescriptor::GetIntType();
+	}
+	else if (UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(t))
+	{
+		result = TypeDescriptor::GetUIntType();
+	}
+	else if (t == Token::KEY_BOOL)
+	{
+		result = TypeDescriptor::GetBoolType();
+	}
+
+	return result;
+}
+
+
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
  	const Token::TokenType a = typeA->GetPrimitiveType();
@@ -93,24 +125,25 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	{
 		result = *typeA;
 		result.ConvertToPointerIntrinsic();
+		result.SetRValue();
 	}
-
 	else if (typeB->IsPointerType())
 	{
 		result = *typeB;
 		result.ConvertToPointerIntrinsic();
+		result.SetRValue();
 	}
-
 	else if ((a == Token::KEY_FLOAT) || (b == Token::KEY_FLOAT))
 	{
 		result = TypeDescriptor::GetFloatType();
 	}
-	else if ((a == Token::KEY_INT) || (b == Token::KEY_INT) ||
-	         (a == Token::KEY_CHAR) || (b == Token::KEY_CHAR))
+	else if (SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
+	         SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
 	{
 		result = TypeDescriptor::GetIntType();
 	}
-	else if ((a == Token::KEY_UINT) || (b == Token::KEY_UINT))
+	else if (UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
+	         UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
 	{
 		result = TypeDescriptor::GetUIntType();
 	}
@@ -147,19 +180,19 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			{
 				case Token::KEY_CHAR:
 				case Token::CONST_CHAR:
-					resultValue.mChar = static_cast<char>(value.mChar);
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+				case Token::CONST_INT:
+					resultValue.mInt = static_cast<char>(value.mInt);
+					break;
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+				case Token::CONST_UINT:
+					resultValue.mInt = static_cast<char>(value.mUInt);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mChar = static_cast<char>(value.mFloat);
-					break;
-				case Token::KEY_INT:
-				case Token::CONST_INT:
-					resultValue.mChar = static_cast<char>(value.mInt);
-					break;
-				case Token::KEY_UINT:
-				case Token::CONST_UINT:
-					resultValue.mChar = static_cast<char>(value.mUInt);
+					resultValue.mInt = static_cast<char>(value.mFloat);
 					break;
 				default:
 					break;
@@ -172,19 +205,19 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			{
 				case Token::KEY_CHAR:
 				case Token::CONST_CHAR:
-					resultValue.mFloat = static_cast<bf32_t>(value.mChar);
-					break;
-				case Token::KEY_FLOAT:
-				case Token::CONST_FLOAT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mFloat);
-					break;
+				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
 					resultValue.mFloat = static_cast<bf32_t>(value.mInt);
 					break;
+				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
 					resultValue.mFloat = static_cast<bf32_t>(value.mUInt);
+					break;
+				case Token::KEY_FLOAT:
+				case Token::CONST_FLOAT:
+					resultValue.mFloat = static_cast<bf32_t>(value.mFloat);
 					break;
 				default:
 					break;
@@ -197,19 +230,19 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			{
 				case Token::KEY_CHAR:
 				case Token::CONST_CHAR:
-					resultValue.mInt = static_cast<bi32_t>(value.mChar);
-					break;
-				case Token::KEY_FLOAT:
-				case Token::CONST_FLOAT:
-					resultValue.mInt = static_cast<bi32_t>(value.mFloat);
-					break;
+				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
 					resultValue.mInt = static_cast<bi32_t>(value.mInt);
 					break;
+				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
 					resultValue.mInt = static_cast<bi32_t>(value.mUInt);
+					break;
+				case Token::KEY_FLOAT:
+				case Token::CONST_FLOAT:
+					resultValue.mInt = static_cast<bi32_t>(value.mFloat);
 					break;
 				default:
 					break;
@@ -222,19 +255,19 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			{
 				case Token::KEY_CHAR:
 				case Token::CONST_CHAR:
-					resultValue.mUInt = static_cast<bu32_t>(value.mChar);
-					break;
-				case Token::KEY_FLOAT:
-				case Token::CONST_FLOAT:
-					resultValue.mUInt = static_cast<bu32_t>(value.mFloat);
-					break;
+				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
 					resultValue.mUInt = static_cast<bu32_t>(value.mInt);
 					break;
+				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
 					resultValue.mUInt = static_cast<bu32_t>(value.mUInt);
+					break;
+				case Token::KEY_FLOAT:
+				case Token::CONST_FLOAT:
+					resultValue.mUInt = static_cast<bu32_t>(value.mFloat);
 					break;
 				default:
 					break;
@@ -264,9 +297,6 @@ Value UnaryMinus(const TypeAndValue &value)
 
 	switch (type->GetPrimitiveType())
 	{
-		case Token::KEY_CHAR:
-			resultValue.mChar = -value.GetCharValue();
-			break;
 		case Token::KEY_FLOAT:
 			resultValue.mFloat = -value.GetFloatValue();
 			break;
@@ -293,9 +323,6 @@ Value UnaryBitNot(const TypeAndValue &value)
 	{
 		switch (type->GetPrimitiveType())
 		{
-			case Token::KEY_CHAR:
-				resultValue.mChar = ~value.GetCharValue();
-				break;
 			case Token::KEY_INT:
 				resultValue.mInt = ~value.GetIntValue();
 				break;

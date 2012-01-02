@@ -108,6 +108,7 @@ NodeType *Sort(NodeType *list)
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
 
+TypeDescriptor PromoteType(const TypeDescriptor *type);
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 
 Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenType destType);
@@ -123,9 +124,6 @@ Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 
 	switch (type->GetPrimitiveType())
 	{
-		case Token::KEY_CHAR:
-			resultValue.mChar = op(l.mChar, r.mChar);
-			break;
 		case Token::KEY_FLOAT:
 			resultValue.mFloat = op(l.mFloat, r.mFloat);
 			break;
@@ -152,9 +150,6 @@ Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 
 	switch (type->GetPrimitiveType())
 	{
-		case Token::KEY_CHAR:
-			resultValue.mChar = op(l.mChar, r.mChar);
-			break;
 		case Token::KEY_INT:
 			resultValue.mInt = op(l.mInt, r.mInt);
 			break;
@@ -181,9 +176,6 @@ Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs,
 	{
 		case Token::KEY_BOOL:
 			resultValue.mBool = op(l.mBool, r.mBool);
-			break;
-		case Token::KEY_CHAR:
-			resultValue.mBool = op(l.mChar, r.mChar);
 			break;
 		case Token::KEY_FLOAT:
 			resultValue.mBool = op(l.mFloat, r.mFloat);

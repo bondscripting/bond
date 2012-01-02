@@ -172,8 +172,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_CHAR == token->GetTokenType(),
 			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
 
-		const char expected = EXPECTED_CHARS[i];
-		const char actual = token->GetCharValue();
+		const Bond::bi32_t expected = EXPECTED_CHARS[i];
+		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
 	}

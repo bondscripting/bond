@@ -56,9 +56,6 @@ public:
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; mValueDefined = true; }
 
-	char GetCharValue() const { return mValue.mChar; }
-	void SetCharValue(char value) { mValue.mChar = value; mValueDefined = true; }
-
 	bf32_t GetFloatValue() const { return mValue.mFloat; }
 	void SetFloatValue(bf32_t value) { mValue.mFloat = value; mValueDefined = true; }
 

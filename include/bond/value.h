@@ -10,7 +10,6 @@ union Value
 {
 	Value(): mInt(0) {}
 	bool mBool;
-	char mChar;
 	bi32_t mInt;
 	bu32_t mUInt;
 	bf32_t mFloat;

@@ -592,7 +592,7 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 				mWriter.Write("%s", tav.GetBoolValue() ? "true" : "false");
 				return true;
 			case Token::KEY_CHAR:
-				mWriter.Write("%c", tav.GetCharValue());
+				mWriter.Write("%c", static_cast<char>(tav.GetIntValue()));
 				return true;
 			case Token::KEY_FLOAT:
 				mWriter.Write(BOND_FLOAT_FORMAT, tav.GetFloatValue());
