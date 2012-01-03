@@ -171,7 +171,8 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						NamedInitializer *initializerList = memberList->GetNamedInitializerList();
 						while (initializerList != 0)
 						{
-							initializerList->SetOffset(structSize);
+							// TODO: Ensure that the offset does not overflow.
+							initializerList->SetOffset(static_cast<bi32_t>(structSize));
 							structSize += memberSize;
 							initializerList = NextNode(initializerList);
 						}
@@ -404,6 +405,11 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 
 void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 {
+	// TODO: Constant folding is currently very naive and will only perform operations on adjacent constants.
+	// For example, the expression 1 + 2 will be evaluated to the constant 3. However, the expression
+	// 1 + b + 2, will not be evaluated to 3 + b, since it would first require the expression to be rearranged
+	// to 1 + 2 + b. Moreover, there are likely more intricate cases involving negations, subtractions and
+	// divisions that could be further improved.
 	TypeAndValue &tav = binaryExpression->GetTypeAndValue();
 	if (!tav.IsResolved())
 	{

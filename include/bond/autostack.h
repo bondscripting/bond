@@ -1,6 +1,8 @@
 #ifndef BOND_AUTOSTACK_H
 #define BOND_AUTOSTACK_H
 
+#include "bond/conf.h"
+
 namespace Bond
 {
 
@@ -121,6 +123,7 @@ private:
 
 
 typedef AutoStack<bool> BoolStack;
+typedef AutoStack<bi32_t> IntStack;
 
 }
 

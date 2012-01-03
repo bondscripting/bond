@@ -590,7 +590,8 @@ public:
 	Parameter(const Token *name, TypeDescriptor *typeDescriptor):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
-		mTypeDescriptor(typeDescriptor)
+		mTypeDescriptor(typeDescriptor),
+		mOffset(0)
 	{}
 
 	virtual ~Parameter() {}
@@ -607,10 +608,14 @@ public:
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 
+	bi32_t GetOffset() const { return mOffset; }
+	void SetOffset(bi32_t offset) { mOffset = offset; }
+
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
+	bi32_t mOffset;
 };
 
 
@@ -638,14 +643,14 @@ public:
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
 
-	bu32_t GetOffset() const { return mOffset; }
-	void SetOffset(bu32_t offset) { mOffset = offset; }
+	bi32_t GetOffset() const { return mOffset; }
+	void SetOffset(bi32_t offset) { mOffset = offset; }
 
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
-	bu32_t mOffset;
+	bi32_t mOffset;
 };
 
 

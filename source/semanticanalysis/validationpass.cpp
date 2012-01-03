@@ -4,8 +4,9 @@ namespace Bond
 class ValidationPass: public SemanticAnalysisPass
 {
 public:
-	ValidationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
+	ValidationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
+		SemanticAnalysisPass(errorBuffer, symbolTable),
+		mPointerSize(pointerSize)
 	{}
 
 	virtual ~ValidationPass() {}
@@ -14,6 +15,8 @@ public:
 
 protected:
 	virtual void Visit(FunctionDefinition *functionDefinition);
+	virtual void Visit(FunctionPrototype *functionPrototype);
+	virtual void Visit(Parameter *parameter);
 	virtual void Visit(CompoundStatement *compoundStatement);
 	virtual void Visit(IfStatement *ifStatement);
 	virtual void Visit(SwitchStatement *switchStatement);
@@ -35,7 +38,9 @@ private:
 	BoolStack mHasReturn;
 	BoolStack mIsInLoop;
 	BoolStack mIsInSwitch;
+	IntStack mVariableOffset;
 	TypeStack mReturnType;
+	bu32_t mPointerSize;
 };
 
 
@@ -46,6 +51,7 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element hasReturnElement(mHasReturn, false);
 	BoolStack::Element isInLoopElement(mIsInLoop, false);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
+	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	TypeStack::Element returnTypeElement(mReturnType, 0);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
@@ -56,6 +62,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	const TypeDescriptor *returnType = functionDefinition->GetPrototype()->GetReturnType();
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 	BoolStack::Element hasReturnElement(mHasReturn, false);
+	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
@@ -66,8 +73,27 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 }
 
 
+void ValidationPass::Visit(FunctionPrototype *functionPrototype)
+{
+	IntStack::Element variableOffsetElement(mVariableOffset, 0);
+	ParseNodeTraverser::Visit(functionPrototype);
+}
+
+
+void ValidationPass::Visit(Parameter *parameter)
+{
+	const TypeDescriptor *typeDescriptor = parameter->GetTypeDescriptor();
+	const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+	const bi32_t offset = mVariableOffset.GetTop() - variableSize;
+	parameter->SetOffset(offset);
+	mVariableOffset.SetTop(offset);
+	ParseNodeTraverser::Visit(parameter);
+}
+
+
 void ValidationPass::Visit(CompoundStatement *compoundStatement)
 {
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	SemanticAnalysisPass::Visit(compoundStatement);
 }
 
@@ -165,6 +191,7 @@ void ValidationPass::Visit(ForStatement *forStatement)
 	BoolStack::Element isInLoopElement(mIsInLoop, true);
 	mEndsWithJump.SetTop(false);
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	SemanticAnalysisPass::Visit(forStatement);
 }
 
@@ -203,6 +230,22 @@ void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
 	AssertReachableCode(declarativeStatement);
 	mEndsWithJump.SetTop(false);
+
+	const TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
+	const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+
+	bi32_t offset = mVariableOffset.GetTop();
+	NamedInitializer *initializerList = declarativeStatement->GetNamedInitializerList();
+	while (initializerList != 0)
+	{
+		// TODO: Ensure that the offset does not overflow.
+		initializerList->SetOffset(static_cast<bi32_t>(offset));
+		offset += variableSize;
+		initializerList = NextNode(initializerList);
+	}
+
+	mVariableOffset.SetTop(offset);
+
 	ParseNodeTraverser::Visit(declarativeStatement);
 }
 
