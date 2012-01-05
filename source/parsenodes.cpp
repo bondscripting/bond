@@ -1,7 +1,6 @@
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/stringutil.h"
-#include <string.h>
 
 namespace Bond
 {
@@ -13,21 +12,7 @@ bool Symbol::IsTypeDefinition() const
 }
 
 
-const Symbol *Symbol::FindSymbol(const char *name) const
-{
-	const bu32_t hashCode = StringHash(name);
-	const Symbol *symbol = mSymbolList;
-
-	while ((symbol != 0) && !symbol->Matches(hashCode, name))
-	{
-		symbol = symbol->mNextSymbol;
-	}
-
-	return symbol;
-}
-
-
-Symbol *Symbol::FindSymbol(const Token *name)
+Symbol *Symbol::FindSymbol(const HashedString &name)
 {
 	Symbol *symbol = mSymbolList;
 
@@ -40,7 +25,7 @@ Symbol *Symbol::FindSymbol(const Token *name)
 }
 
 
-const Symbol *Symbol::FindSymbol(const Token *name) const
+const Symbol *Symbol::FindSymbol(const HashedString &name) const
 {
 	const Symbol *symbol = mSymbolList;
 
@@ -125,17 +110,10 @@ void Symbol::InsertSymbol(Symbol *symbol)
 }
 
 
-bool Symbol::Matches(bu32_t hashCode, const char *name) const
+bool Symbol::Matches(const HashedString &name) const
 {
 	const Token *n = GetName();
-	return !IsAnonymous() && (hashCode == n->GetHashCode()) && (strcmp(name, n->GetText()) == 0);
-}
-
-
-bool Symbol::Matches(const Token *name) const
-{
-	const Token *n = GetName();
-	return !IsAnonymous() && (name->GetHashCode() == n->GetHashCode()) && (strcmp(name->GetText(), n->GetText()) == 0);
+	return !IsAnonymous() && (n->GetHashedText() == name);
 }
 
 

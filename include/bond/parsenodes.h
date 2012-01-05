@@ -101,10 +101,11 @@ public:
 	const Symbol *GetParentSymbol() const { return mParentSymbol; }
 	void SetParentSymbol(Symbol *parent) { mParentSymbol = parent; }
 
-	const Symbol *FindSymbol(const char *name) const;
+	Symbol *FindSymbol(const HashedString &name);
+	const Symbol *FindSymbol(const HashedString &name) const;
 
-	Symbol *FindSymbol(const Token *name);
-	const Symbol *FindSymbol(const Token *name) const;
+	Symbol *FindSymbol(const Token *name) { return FindSymbol(name->GetHashedText()); }
+	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetHashedText()); }
 
 	Symbol *FindSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
@@ -113,8 +114,7 @@ public:
 
 	bool IsAnonymous() const { return GetName() == 0; }
 
-	bool Matches(bu32_t hashCode, const char *name) const;
-	bool Matches(const Token *name) const;
+	bool Matches(const HashedString &name) const;
 
 protected:
 	Symbol():

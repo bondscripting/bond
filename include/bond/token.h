@@ -1,6 +1,7 @@
 #ifndef BOND_TOKEN_H
 #define BOND_TOKEN_H
 
+#include "bond/hashedstring.h"
 #include "bond/streampos.h"
 #include "bond/value.h"
 
@@ -156,8 +157,8 @@ public:
 		mStartPos(-1, -1, -1),
 		mEndPos(-1, -1, -1),
 		mErrorPos(-1, -1, -1),
-		mValue(),
 		mText(text),
+		mValue(),
 		mTokenType(tokenType),
 		mErrorType(NO_ERROR),
 		mAnnotations(0)
@@ -176,8 +177,8 @@ public:
 		mStartPos(startPos),
 		mEndPos(endPos),
 		mErrorPos(errorPos),
-		mValue(value),
 		mText(text),
+		mValue(value),
 		mTokenType(tokenType),
 		mErrorType(errorType),
 		mAnnotations(annotations)
@@ -188,8 +189,8 @@ public:
 		mStartPos(other.mStartPos),
 		mEndPos(other.mEndPos),
 		mErrorPos(other.mErrorPos),
-		mValue(other.mValue),
 		mText(other.mText),
+		mValue(other.mValue),
 		mTokenType(other.mTokenType),
 		mErrorType(other.mErrorType),
 		mAnnotations(other.mAnnotations)
@@ -207,8 +208,11 @@ public:
 	const StreamPos &GetErrorPos() const { return mErrorPos; }
 	void SetErrorPos(const StreamPos &pos) { mErrorPos = pos; }
 
-	const char *GetText() const { return mText; }
-	void SetText(const char *text) { mText = text; }
+	const char *GetText() const { return mText.GetString(); }
+	void SetText(const char *text) { mText = HashedString(text); }
+	void SetText(const char *text, int length) { mText = HashedString(text, length); }
+
+	const HashedString &GetHashedText() const { return mText; }
 
 	TokenType GetTokenType() const { return mTokenType; }
 	void SetTokenType(const TokenType &type) { mTokenType = type; }
@@ -237,9 +241,6 @@ public:
 	int GetStringLength() const { return mValue.mString.length; }
 	void SetStringValue(const char *buffer, int length);
 
-	bu32_t GetHashCode() const { return mValue.mUInt; }
-	void SetHashCode(bu32_t hash) { mValue.mUInt = hash; }
-
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);
 
@@ -250,8 +251,8 @@ private:
 	StreamPos mStartPos;
 	StreamPos mEndPos;
 	StreamPos mErrorPos;
+	HashedString mText;
 	Value mValue;
-	const char *mText;
 	TokenType mTokenType;
 	ErrorType mErrorType;
 	short mAnnotations;

@@ -1,5 +1,4 @@
 #include "bond/lexer.h"
-#include "bond/stringutil.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -900,7 +899,7 @@ void Lexer::ExtractToken(CharStream &stream, StringAllocator &allocator, Token &
 		const int startIndex = token.GetStartPos().index;
 		const int length = token.GetEndPos().index - startIndex;
 		const char *tokenString = allocator.Alloc(stream.GetBuffer() + startIndex, length);
-		token.SetText(tokenString);
+		token.SetText(tokenString, length);
 	}
 }
 
@@ -1064,12 +1063,6 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	else if (strcmp(token.GetText(), "null") == 0)
 	{
 		token.SetTokenType(Token::CONST_NULL);
-	}
-	else
-	{
-		// Compute and cache the identifier's hash code.
-		const bu32_t hash = StringHash(token.GetText());
-		token.SetHashCode(hash);
 	}
 }
 
