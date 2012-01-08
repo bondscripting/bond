@@ -48,7 +48,7 @@ void ParseError::Print(TextWriter &writer) const
 {
 	const char *format = GetFormat();
 
-	if (mContext != 0)
+	if (mContext != NULL)
 	{
 		const Bond::StreamPos &pos = mContext->GetStartPos();
 		writer.Write("(%d, %d): ", pos.line, pos.column);
@@ -61,7 +61,7 @@ void ParseError::Print(TextWriter &writer) const
 	};
 	State state = STATE_NORMAL;
 
-	const void *arg = 0;
+	const void *arg = NULL;
 
 	while (*format != '\0')
 	{

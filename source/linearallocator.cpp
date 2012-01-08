@@ -4,7 +4,7 @@
 namespace Bond
 {
 
-void LinearAllocator::SetBuffer(char *buffer, int length)
+void LinearAllocator::SetBuffer(char *buffer, size_t length)
 {
 	mBuffer = buffer;
 	mLength = length;
@@ -12,7 +12,7 @@ void LinearAllocator::SetBuffer(char *buffer, int length)
 }
 
 
-void *LinearAllocator::Allocate(int size)
+void *LinearAllocator::Allocate(size_t size)
 {
 	assert((size >= 0) && ((mIndex + size) <= mLength));
 	char *buffer = mBuffer + mIndex;

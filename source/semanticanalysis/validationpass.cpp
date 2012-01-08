@@ -52,7 +52,7 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element isInLoopElement(mIsInLoop, false);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
-	TypeStack::Element returnTypeElement(mReturnType, 0);
+	TypeStack::Element returnTypeElement(mReturnType, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -66,7 +66,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
-	if (!returnType->IsVoidType() && !hasReturnElement && (functionDefinition->GetBody() != 0))
+	if (!returnType->IsVoidType() && !hasReturnElement && (functionDefinition->GetBody() != NULL))
 	{
 		mErrorBuffer.PushError(ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, functionDefinition->GetName());
 	}
@@ -104,7 +104,7 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 	mEndsWithJump.SetTop(false);
 	Traverse(ifStatement->GetCondition());
 
-	bool hasReturn = ifStatement->GetElseStatement() != 0;
+	bool hasReturn = ifStatement->GetElseStatement() != NULL;
 	bool endsWithJump = hasReturn;
 	{
 		BoolStack::Element hasReturnElement(mHasReturn, false);
@@ -135,10 +135,10 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 
 	bool hasReturn = true;
 	SwitchSection *sectionList = switchStatement->GetSectionList();
-	if (sectionList != 0)
+	if (sectionList != NULL)
 	{
 		BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
-		while (sectionList != 0)
+		while (sectionList != NULL)
 		{
 			BoolStack::Element hasReturnElement(mHasReturn, false);
 			Traverse(sectionList);
@@ -236,7 +236,7 @@ void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 
 	bi32_t offset = mVariableOffset.GetTop();
 	NamedInitializer *initializerList = declarativeStatement->GetNamedInitializerList();
-	while (initializerList != 0)
+	while (initializerList != NULL)
 	{
 		// TODO: Ensure that the offset does not overflow.
 		initializerList->SetOffset(static_cast<bi32_t>(offset));
@@ -252,7 +252,7 @@ void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 
 void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 {
-	if (expressionStatement->GetExpression() != 0)
+	if (expressionStatement->GetExpression() != NULL)
 	{
 		AssertReachableCode(expressionStatement);
 	}

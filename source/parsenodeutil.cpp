@@ -8,7 +8,7 @@ bu32_t GetLength(const ListParseNode *list)
 {
 	bu32_t length = 0;
 	const ListParseNode *current = list;
-	while (current != 0)
+	while (current != NULL)
 	{
 		++length;
 		current = current->GetNextNode();
@@ -20,16 +20,16 @@ bu32_t GetLength(const ListParseNode *list)
 bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 {
 	// This function can only be used once type specifiers have been resolved.
-	if ((typeA != 0) && (typeB != 0))
+	if ((typeA != NULL) && (typeB != NULL))
 	{
 		const Token *primitiveTypeA = typeA->GetPrimitiveTypeToken();
 		const Token *primitiveTypeB = typeB->GetPrimitiveTypeToken();
 
-		if ((primitiveTypeA != 0) && (primitiveTypeA != 0))
+		if ((primitiveTypeA != NULL) && (primitiveTypeA != NULL))
 		{
 			return primitiveTypeA->GetTokenType() == primitiveTypeB->GetTokenType();
 		}
-		else if (!((primitiveTypeA == 0) && (primitiveTypeB == 0)))
+		else if (!((primitiveTypeA == NULL) && (primitiveTypeB == NULL)))
 		{
 			return false;
 		}
@@ -37,14 +37,14 @@ bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
 		return typeA->GetDefinition() == typeB->GetDefinition();
 	}
 
-	return ((typeA == 0) && (typeB == 0));
+	return ((typeA == NULL) && (typeB == NULL));
 }
 
 
 bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {
 	// This function can only be used once type specifiers have been resolved.
-	while ((typeA != 0) && (typeB != 0))
+	while ((typeA != NULL) && (typeB != NULL))
 	{
 		if (typeA->GetVariant() != typeB->GetVariant())
 		{
@@ -64,7 +64,7 @@ bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 		typeB = typeB->GetParent();
 	}
 
-	return (typeA == 0) && (typeB == 0);
+	return (typeA == NULL) && (typeB == NULL);
 }
 	*/
 

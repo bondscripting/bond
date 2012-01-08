@@ -11,7 +11,7 @@ class TypeDescriptor;
 class TypeAndValue
 {
 public:
-	TypeAndValue(): mTypeDescriptor(0), mValueDefined(false), mResolved(false) {}
+	TypeAndValue(): mTypeDescriptor(NULL), mValueDefined(false), mResolved(false) {}
 
 	TypeAndValue(TypeDescriptor *descriptor):
 		mTypeDescriptor(descriptor),

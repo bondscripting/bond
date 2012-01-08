@@ -1,7 +1,7 @@
 #ifndef BOND_VALUE_H
 #define BOND_VALUE_H
 
-#include "bond/conf.h"
+#include "bond/types.h"
 
 namespace Bond
 {

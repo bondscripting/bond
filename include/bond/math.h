@@ -1,8 +1,6 @@
 #ifndef BOND_MATH_H
 #define BOND_MATH_H
 
-#include "bond/conf.h"
-
 namespace Bond
 {
 

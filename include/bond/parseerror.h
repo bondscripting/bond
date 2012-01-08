@@ -1,6 +1,8 @@
 #ifndef BOND_PARSEERROR_H
 #define BOND_PARSEERROR_H
 
+#include "bond/conf.h"
+
 #define BOND_PARSE_ERROR_LIST                                                       \
   BOND_PARSE_ERROR(NO_ERROR,                                                        \
     "")                                                                             \
@@ -141,9 +143,9 @@ public:
 #undef BOND_PARSE_ERROR
 	};
 
-	ParseError(): mType(NO_ERROR), mContext(0), mArg0(0), mArg1(0) {}
+	ParseError(): mType(NO_ERROR), mContext(NULL), mArg0(NULL), mArg1(NULL) {}
 
-	ParseError(Type type, const Token *context, const void *arg0 = 0, const void *arg1 = 0):
+	ParseError(Type type, const Token *context, const void *arg0 = NULL, const void *arg1 = NULL):
 		mType(type),
 		mContext(context),
 		mArg0(arg0),
@@ -176,7 +178,7 @@ public:
 
 	void Reset();
 
-	void PushError(ParseError::Type type, const Token *context = 0, const void *arg0 = 0, const void *arg1 = 0);
+	void PushError(ParseError::Type type, const Token *context = NULL, const void *arg0 = NULL, const void *arg1 = NULL);
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
 	const ParseError *GetError(int index) const { return mErrors + index; }

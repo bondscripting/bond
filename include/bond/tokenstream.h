@@ -10,7 +10,7 @@ class TokenStream
 {
 public:
 	TokenStream():
-		mBuffer(0),
+		mBuffer(NULL),
 		mLength(-1),
 		mIndex(0)
 	{

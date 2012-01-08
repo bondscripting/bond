@@ -2,14 +2,13 @@
 #include "bond/parsenodeutil.h"
 #include "bond/prettyprinter.h"
 #include "bond/textwriter.h"
-#include <stdio.h>
 
 namespace Bond
 {
 
 void PrettyPrinter::Print(const ParseNode *parseNode)
 {
-	if (parseNode != 0)
+	if (parseNode != NULL)
 	{
 		parseNode->Accept(*this);
 	}
@@ -19,7 +18,7 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 void PrettyPrinter::PrintList(const ListParseNode *listNode)
 {
 	const ListParseNode *current = listNode;
-	while (current != 0)
+	while (current != NULL)
 	{
 		Print(current);
 		current = current->GetNextNode();
@@ -73,7 +72,7 @@ void PrettyPrinter::Visit(const Enumerator *enumerator)
 	{
 		mWriter.Write(" = " BOND_DECIMAL_FORMAT, enumerator->GetTypeAndValue()->GetIntValue());
 	}
-	else if (enumerator->GetValue() != 0)
+	else if (enumerator->GetValue() != NULL)
 	{
 		mWriter.Write(" = ");
 		Print(enumerator->GetValue());
@@ -116,7 +115,7 @@ void PrettyPrinter::Visit(const FunctionDefinition *functionDefinition)
 {
 	Tab();
 	Print(functionDefinition->GetPrototype());
-	if (functionDefinition->GetBody() != 0)
+	if (functionDefinition->GetBody() != NULL)
 	{
 		mWriter.Write("\n");
 		Print(functionDefinition->GetBody());
@@ -189,7 +188,7 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 
 void PrettyPrinter::Visit(const TypeSpecifier *typeSpecifier)
 {
-	if (typeSpecifier->GetPrimitiveTypeToken() != 0)
+	if (typeSpecifier->GetPrimitiveTypeToken() != NULL)
 	{
 		Print(typeSpecifier->GetPrimitiveTypeToken());
 	}
@@ -204,7 +203,7 @@ void PrettyPrinter::Visit(const NamedInitializer *namedInitializer)
 {
 	Print(namedInitializer->GetName());
 
-	if (namedInitializer->GetInitializer() != 0)
+	if (namedInitializer->GetInitializer() != NULL)
 	{
 		mWriter.Write(" = ");
 		Print(namedInitializer->GetInitializer());
@@ -214,7 +213,7 @@ void PrettyPrinter::Visit(const NamedInitializer *namedInitializer)
 
 void PrettyPrinter::Visit(const Initializer *initializer)
 {
-	if (initializer->GetExpression() != 0)
+	if (initializer->GetExpression() != NULL)
 	{
 		Print(initializer->GetExpression());
 	}
@@ -254,7 +253,7 @@ void PrettyPrinter::Visit(const IfStatement *ifStatement)
 
 	PrintBlockOrStatement(ifStatement->GetThenStatement());
 
-	if (ifStatement->GetElseStatement() != 0)
+	if (ifStatement->GetElseStatement() != NULL)
 	{
 		Tab();
 		mWriter.Write("else\n");
@@ -294,7 +293,7 @@ void PrettyPrinter::Visit(const SwitchLabel *switchLabel)
 	Tab();
 	Print(switchLabel->GetLabel());
 
-	if (switchLabel->GetExpression() != 0)
+	if (switchLabel->GetExpression() != NULL)
 	{
 		mWriter.Write(" ");
 		Print(switchLabel->GetExpression());
@@ -348,7 +347,7 @@ void PrettyPrinter::Visit(const JumpStatement *jumpStatement)
 	Print(jumpStatement->GetKeyword());
 
 	const Expression *rhs = jumpStatement->GetRhs(); 
-	if (jumpStatement->IsReturn() && (rhs != 0))
+	if (jumpStatement->IsReturn() && (rhs != NULL))
 	{
 		mWriter.Write(" ");
 		Print(rhs);
@@ -373,7 +372,7 @@ void PrettyPrinter::Visit(const DeclarativeStatement *declarativeStatement)
 void PrettyPrinter::Visit(const ExpressionStatement *expressionStatement)
 {
 	Tab();
-	if (expressionStatement->GetExpression() != 0)
+	if (expressionStatement->GetExpression() != NULL)
 	{
 		Print(expressionStatement->GetExpression());
 	}
@@ -486,7 +485,7 @@ void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 	if (!PrintFoldedConstant(sizeofExpression))
 	{
 		mWriter.Write("sizeof");
-		if (sizeofExpression->GetTypeDescriptor() != 0)
+		if (sizeofExpression->GetTypeDescriptor() != NULL)
 		{
 			mWriter.Write("<");
 			Print(sizeofExpression->GetTypeDescriptor());
@@ -527,13 +526,13 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 {
 	const ListParseNode *current = listNode;
 
-	if (current != 0)
+	if (current != NULL)
 	{
 		Print(current);
 		current = current->GetNextNode();
 	}
 
-	while (current != 0)
+	while (current != NULL)
 	{
 		mWriter.Write("%s", separator);
 		Print(current);
@@ -544,7 +543,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 
 void PrettyPrinter::Print(const Token *token)
 {
-	if (token != 0)
+	if (token != NULL)
 	{
 		mWriter.Write("%s", token->GetText());
 	}
@@ -553,7 +552,7 @@ void PrettyPrinter::Print(const Token *token)
 
 void PrettyPrinter::PrintBlockOrStatement(const ParseNode *parseNode)
 {
-	if (CastNode<CompoundStatement>(parseNode) != 0)
+	if (CastNode<CompoundStatement>(parseNode) != NULL)
 	{
 		Print(parseNode);
 	}

@@ -16,9 +16,9 @@ Lexer::~Lexer()
 void Lexer::Dispose()
 {
 	mAllocator.Free(mStringBuffer);
-	mStringBuffer = 0;
+	mStringBuffer = NULL;
 	mAllocator.Free(mTokens);
-	mTokens = 0;
+	mTokens = NULL;
 	mNumTokens = 0;
 }
 

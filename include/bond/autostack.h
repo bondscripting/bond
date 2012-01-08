@@ -1,7 +1,7 @@
 #ifndef BOND_AUTOSTACK_H
 #define BOND_AUTOSTACK_H
 
-#include "bond/conf.h"
+#include "bond/types.h"
 
 namespace Bond
 {
@@ -15,7 +15,7 @@ public:
 	public:
 		explicit Element(AutoStack &stack):
 			mStack(stack),
-			mNext(0)
+			mNext(NULL)
 		{
 			mStack.Push(this);
 		}
@@ -23,7 +23,7 @@ public:
 		Element(AutoStack &stack, const ElementType &value):
 			mValue(value),
 			mStack(stack),
-			mNext(0)
+			mNext(NULL)
 		{
 			mStack.Push(this);
 		}
@@ -31,7 +31,7 @@ public:
 		Element(AutoStack &stack, const Element &other):
 			mValue(other.mValue),
 			mStack(stack),
-			mNext(0)
+			mNext(NULL)
 		{
 			mStack.Push(this);
 		}
@@ -39,7 +39,7 @@ public:
 		Element(const Element &other):
 			mValue(other.mValue),
 			mStack(other.mStack),
-			mNext(0)
+			mNext(NULL)
 		{
 			mStack.Push(this);
 		}
@@ -73,7 +73,7 @@ public:
 		Element *mNext;
 	};
 
-	AutoStack(): mTop(0) {}
+	AutoStack(): mTop(NULL) {}
 
 	void Push(Element *element)
 	{
@@ -83,7 +83,7 @@ public:
 
 	void Pop()
 	{
-		if (mTop != 0)
+		if (mTop != NULL)
 		{
 			mTop = mTop->GetNext();
 		}
@@ -94,18 +94,18 @@ public:
 
 	void SetTop(const ElementType &value)
 	{
-		if (mTop != 0)
+		if (mTop != NULL)
 		{
 			mTop->SetValue(value);
 		}
 	}
 
-	bool IsEmpty() const { return mTop == 0; }
+	bool IsEmpty() const { return mTop == NULL; }
 
 	bool Contains(const ElementType &value) const
 	{
 		const Element *element = mTop;
-		while (element != 0)
+		while (element != NULL)
 		{
 			if (element->GetValue() == value)
 			{

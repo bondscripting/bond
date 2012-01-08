@@ -146,7 +146,7 @@ public:
 	};
 
 	Token():
-		mText(0),
+		mText(NULL),
 		mTokenType(INVALID),
 		mErrorType(NO_ERROR),
 		mAnnotations(0)

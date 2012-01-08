@@ -1,7 +1,6 @@
 #include "bond/parsenodefactory.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodetraverser.h"
-#include <new>
 
 namespace Bond
 {

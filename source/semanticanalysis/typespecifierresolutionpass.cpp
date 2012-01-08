@@ -20,10 +20,10 @@ public:
 void TypeSpecifierResolutionPass::Visit(TypeSpecifier *typeSpecifier)
 {
 	const QualifiedIdentifier *identifier = typeSpecifier->GetIdentifier();
-	if (identifier != 0)
+	if (identifier != NULL)
 	{
 		const Symbol *symbol = GetSymbol(identifier);
-		if (symbol == 0)
+		if (symbol == NULL)
 		{
 			mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 		}

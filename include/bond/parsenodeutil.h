@@ -20,7 +20,7 @@ template<typename T>
 class CastVisitor: public ParseNodeVisitorAdapter
 {
 public:
-	CastVisitor(): mNode(0) {}
+	CastVisitor(): mNode(NULL) {}
 
 	virtual void Visit(T *node) { mNode = node; }
 
@@ -34,26 +34,26 @@ private:
 template<typename T>
 T *CastNode(ParseNode *node)
 {
-	if (node != 0)
+	if (node != NULL)
 	{
 		CastVisitor<T> castVisitor;
 		node->Accept(castVisitor);
 		return castVisitor.GetNode();
 	}
-	return static_cast<T *>(0);
+	return static_cast<T *>(NULL);
 }
 
 
 template<typename T>
 const T *CastNode(const ParseNode *node)
 {
-	if (node != 0)
+	if (node != NULL)
 	{
 		CastVisitor<const T> castVisitor;
 		node->Accept(castVisitor);
 		return castVisitor.GetNode();
 	}
-	return static_cast<const T *>(0);
+	return static_cast<const T *>(NULL);
 }
 
 
@@ -61,9 +61,9 @@ template <typename NodeType, typename Comparator>
 NodeType *Insert(NodeType *head, NodeType *node)
 {
 	Comparator compare;
-	if (head == 0)
+	if (head == NULL)
 	{
-		node->SetNextNode(0);
+		node->SetNextNode(NULL);
 		return node;
 	}
 
@@ -75,7 +75,7 @@ NodeType *Insert(NodeType *head, NodeType *node)
 
 	NodeType *current = head;
 	NodeType *next = NextNode(head);
-	while ((next != 0) && !compare(*node, *next))
+	while ((next != NULL) && !compare(*node, *next))
 	{
 		current = next;
 		next = NextNode(next);
@@ -91,8 +91,8 @@ template <typename NodeType, typename Comparator>
 NodeType *Sort(NodeType *list)
 {
 	NodeType *node = list;
-	NodeType *head = 0;
-	while (node != 0)
+	NodeType *head = NULL;
+	while (node != NULL)
 	{
 		NodeType *current = node;
 		node = NextNode(node);

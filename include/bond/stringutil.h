@@ -1,7 +1,7 @@
 #ifndef BOND_STRINGUTIL_H
 #define BOND_STRINGUTIL_H
 
-#include "bond/conf.h"
+#include "bond/types.h"
 
 namespace Bond
 {

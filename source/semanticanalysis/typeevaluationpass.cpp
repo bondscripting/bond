@@ -48,7 +48,7 @@ private:
 	public:
 		RecursiveStructAnalyzer(ParseErrorBuffer &errorBuffer):
 			mErrorBuffer(errorBuffer),
-			mTopLevelStruct(0)
+			mTopLevelStruct(NULL)
 		{}
 
 		virtual ~RecursiveStructAnalyzer() {}
@@ -68,7 +68,7 @@ private:
 	};
 
 	bool AssertBooleanExpression(const Expression *expression, ParseError::Type errorType) const;
-	bool AssertIntegerExpression(const Expression *expression, ParseError::Type errorType, const void *arg = 0) const;
+	bool AssertIntegerExpression(const Expression *expression, ParseError::Type errorType, const void *arg = NULL) const;
 	bool AssertNonConstExpression(const Token *op);
 	bool AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
@@ -104,7 +104,7 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, true);
 	BoolStack::Element inConstFunctionElement(mInConstFunction, false);
-	StructStack::Element stackElement(mStructStack, 0);
+	StructStack::Element stackElement(mStructStack, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -114,7 +114,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(enumerator);
 	const Expression *value = enumerator->GetValue();
-	if (value != 0)
+	if (value != NULL)
 	{
 		AssertIntegerExpression(value, ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
 	}
@@ -155,9 +155,9 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(typeDescriptor);
 	Expression *expressionList = typeDescriptor->GetLengthExpressionList();
-	while (expressionList != 0)
+	while (expressionList != NULL)
 	{
-		if (CastNode<EmptyExpression>(expressionList) != 0)
+		if (CastNode<EmptyExpression>(expressionList) != NULL)
 		{
 			expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 		}
@@ -185,7 +185,7 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
 		const Initializer *initializer = namedInitializer->GetInitializer();
 
-		if (initializer != 0)
+		if (initializer != NULL)
 		{
 			ValidateInitializer(namedInitializer->GetName(), initializer, typeDescriptor);
 		}
@@ -223,7 +223,7 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
-	if (expression != 0)
+	if (expression != NULL)
 	{
 		AssertIntegerExpression(expression, ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
 	}
@@ -242,7 +242,7 @@ void TypeEvaluationPass::Visit(ForStatement *forStatement)
 {
 	SemanticAnalysisPass::Visit(forStatement);
 	const Expression *condition = forStatement->GetCondition();
-	if (condition != 0)
+	if (condition != NULL)
 	{
 		AssertBooleanExpression(condition, ParseError::FOR_CONDITION_IS_NOT_BOOLEAN);
 	}
@@ -544,8 +544,8 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 		}
 
 		const TypeSpecifier *structSpecifier = structDescriptor.GetTypeSpecifier();
-		if ((structSpecifier == 0) ||
-		    (structSpecifier->GetDefinition() == 0) ||
+		if ((structSpecifier == NULL) ||
+		    (structSpecifier->GetDefinition() == NULL) ||
 		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
 		{
 			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
@@ -554,7 +554,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 		{
 			const Symbol *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
-			if (member == 0)
+			if (member == NULL)
 			{
 				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
 			}
@@ -564,14 +564,14 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 				if (structDescriptor.IsConst())
 				{
 					const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(member);
-					if (namedInitializer != 0)
+					if (namedInitializer != NULL)
 					{
 						memberDescriptor.SetConst();
 					}
 					else
 					{
 						const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(member);
-						if ((functionDefinition != 0) && !functionDefinition->GetPrototype()->IsConst())
+						if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
 						{
 							mErrorBuffer.PushError(
 								ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
@@ -631,8 +631,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
 		const Token *context = functionCallExpression->GetContextToken();
 
-		if ((lhSpecifier == 0) ||
-		    (lhSpecifier->GetDefinition() == 0) ||
+		if ((lhSpecifier == NULL) ||
+		    (lhSpecifier->GetDefinition() == NULL) ||
 		    (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
 		{
 			mErrorBuffer.PushError(ParseError::EXPRESSION_IS_NOT_CALLABLE, context);
@@ -653,7 +653,7 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 			if (numParams == numArgs)
 			{
-				while ((paramList != 0) && (argList != 0))
+				while ((paramList != NULL) && (argList != NULL))
 				{
 					const TypeAndValue &argTav = argList->GetTypeAndValue();
 					if (argTav.IsTypeDefined())
@@ -758,7 +758,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 	const QualifiedIdentifier *identifier = identifierExpression->GetIdentifier();
 	const Symbol *symbol = GetSymbol(identifier);
 
-	if (symbol == 0)
+	if (symbol == NULL)
 	{
 		mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 	}
@@ -767,7 +767,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		identifierExpression->SetDefinition(symbol);
 		const TypeAndValue *symbolTav = symbol->GetTypeAndValue();
 
-		if (symbolTav == 0)
+		if (symbolTav == NULL)
 		{
 			mErrorBuffer.PushError(ParseError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
 		}
@@ -779,14 +779,14 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 			if ((symbol->GetParentSymbol() == mStructStack.GetTop()) && mInConstFunction.GetTop())
 			{
 				const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
-				if (namedInitializer != 0)
+				if (namedInitializer != NULL)
 				{
 					typeDescriptor.SetConst();
 				}
 				else
 				{
 					const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(symbol);
-					if ((functionDefinition != 0) && !functionDefinition->GetPrototype()->IsConst())
+					if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
 					{
 						mErrorBuffer.PushError(
 							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
@@ -805,7 +805,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 {
 	const StructDeclaration *structDeclaration = mStructStack.GetTop();
-	if (structDeclaration != 0)
+	if (structDeclaration != NULL)
 	{
 		if (mInConstFunction.GetTop())
 		{
@@ -976,16 +976,16 @@ void TypeEvaluationPass::ValidateInitializer(
 
 	if (typeDescriptor->IsArrayType())
 	{
-		if (initializerList != 0)
+		if (initializerList != NULL)
 		{
 			const TypeDescriptor parent = typeDescriptor->GetDereferencedType();
-			while (initializerList != 0)
+			while (initializerList != NULL)
 			{
 				ValidateInitializer(name, initializerList, &parent);
 				initializerList = NextNode(initializerList);
 			}
 		}
-		else if (expression != 0)
+		else if (expression != NULL)
 		{
 			mErrorBuffer.PushError(
 				ParseError::MISSING_BRACES_IN_INITIALIZER,
@@ -995,7 +995,7 @@ void TypeEvaluationPass::ValidateInitializer(
 	}
 	else
 	{
-		if (expression != 0)
+		if (expression != NULL)
 		{
 			const TypeAndValue &tav = expression->GetTypeAndValue();
 			if (tav.IsTypeDefined())
@@ -1007,7 +1007,7 @@ void TypeEvaluationPass::ValidateInitializer(
 					ParseError::INVALID_TYPE_CONVERSION);
 			}
 		}
-		else if (initializerList != 0)
+		else if (initializerList != NULL)
 		{
 			mErrorBuffer.PushError(
 				ParseError::BRACES_AROUND_SCALAR_INITIALIZER,
@@ -1023,7 +1023,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Analyze(const StructDeclaratio
 	mTopLevelStruct = structDeclaration;
 	StructStack::Element stackElement(mStructStack, structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
-	mTopLevelStruct = 0;
+	mTopLevelStruct = NULL;
 }
 
 
@@ -1059,7 +1059,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeDescriptor *ty
 
 void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeSpecifier *typeSpecifier)
 {
-	if (typeSpecifier->GetDefinition() != 0)
+	if (typeSpecifier->GetDefinition() != NULL)
 	{
 		Traverse(CastNode<StructDeclaration>(typeSpecifier->GetDefinition()));
 	}

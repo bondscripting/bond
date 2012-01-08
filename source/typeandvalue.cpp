@@ -4,6 +4,6 @@
 namespace Bond
 {
 
-bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != 0) && mTypeDescriptor->IsDefined(); }
+bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != NULL) && mTypeDescriptor->IsDefined(); }
 
 }

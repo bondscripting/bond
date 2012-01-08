@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-void StringAllocator::SetBuffer(char *buffer, int length)
+void StringAllocator::SetBuffer(char *buffer, size_t length)
 {
 	mBuffer = buffer;
 	mLength = length;
@@ -13,7 +13,7 @@ void StringAllocator::SetBuffer(char *buffer, int length)
 }
 
 
-char *StringAllocator::Alloc(int length)
+char *StringAllocator::Alloc(size_t length)
 {
 	assert((length >= 0) && ((mIndex + length + 1) <= mLength));
 	char *buffer = mBuffer + mIndex;
@@ -22,7 +22,7 @@ char *StringAllocator::Alloc(int length)
 }
 
 
-char *StringAllocator::Alloc(const char *content, int length)
+char *StringAllocator::Alloc(const char *content, size_t length)
 {
 	char *buffer = Alloc(length);
 	memcpy(buffer, content, length);

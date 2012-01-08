@@ -4,7 +4,6 @@
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
 #include "bond/semanticanalyzer.h"
-#include <new>
 
 namespace Bond
 {
@@ -135,7 +134,7 @@ void SemanticAnalysisPass::InsertSymbol(Symbol *parent, Symbol *symbol)
 {
 	Symbol *prev = parent->FindSymbol(symbol->GetName());
 
-	if (prev != 0)
+	if (prev != NULL)
 	{
 		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, symbol->GetName(), prev->GetName());
 	}
@@ -155,13 +154,13 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 {
 	Symbol *target = parent->FindSymbol(symbol->GetName());
 
-	if ((target != 0) && (target->GetSymbolType() != symbol->GetSymbolType()))
+	if ((target != NULL) && (target->GetSymbolType() != symbol->GetSymbolType()))
 	{
 		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, target->GetName(), symbol->GetName());
-		target = 0;
+		target = NULL;
 	}
 
-	if (target == 0)
+	if (target == NULL)
 	{
 		parent->InsertSymbol(symbol);
 		target = symbol;

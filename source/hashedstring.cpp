@@ -7,7 +7,7 @@ HashedString::HashedString(const char *str):
 	mStr(str)
 {
 	int length = 0;
-	if (str != 0)
+	if (str != NULL)
 	{
 		const char *s = str;
 		while (*s != '\0')
@@ -34,7 +34,7 @@ bool HashedString::operator==(const HashedString &other) const
 	return
 		(mHashCode == other.mHashCode) &&
 		(mLength == other.mLength) &&
-		StringEqual(mStr, other.mStr, mLength);
+		((mStr == other.mStr) || StringEqual(mStr, other.mStr, mLength));
 }
 
 }

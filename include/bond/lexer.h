@@ -14,8 +14,8 @@ class Lexer
 public:
 	Lexer(Allocator &allocator):
 		mAllocator(allocator),
-		mStringBuffer(0),
-		mTokens(0),
+		mStringBuffer(NULL),
+		mTokens(NULL),
 		mNumTokens(0)
 	{}
 
