@@ -1,21 +1,9 @@
+#include "bond/parseerror.h"
+#include "bond/parsenodes.h"
+#include "private/typespecifierresolutionpass.h"
+
 namespace Bond
 {
-
-class TypeSpecifierResolutionPass: public SemanticAnalysisPass
-{
-public:
-	TypeSpecifierResolutionPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
-	{}
-
-	virtual ~TypeSpecifierResolutionPass() {}
-
-	virtual void Visit(TypeSpecifier *typeSpecifier);
-	virtual void Visit(CompoundStatement *compoundStatement);
-	virtual void Visit(SwitchSection *switchSection);
-	virtual void Visit(ForStatement *forStatement);
-};
-
 
 void TypeSpecifierResolutionPass::Visit(TypeSpecifier *typeSpecifier)
 {

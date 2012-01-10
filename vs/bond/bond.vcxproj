@@ -11,54 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
-    <ClCompile Include="..\..\source\charstream.cpp" />
-    <ClCompile Include="..\..\source\lexer.cpp" />
-    <ClCompile Include="..\..\source\linearallocator.cpp" />
-    <ClCompile Include="..\..\source\parseerror.cpp" />
-    <ClCompile Include="..\..\source\parsenodecounter.cpp" />
-    <ClCompile Include="..\..\source\parsenodefactory.cpp" />
-    <ClCompile Include="..\..\source\parsenodes.cpp" />
-    <ClCompile Include="..\..\source\parsenodetraverser.cpp" />
-    <ClCompile Include="..\..\source\parsenodeutil.cpp" />
-    <ClCompile Include="..\..\source\parser.cpp" />
-    <ClCompile Include="..\..\source\prettyprinter.cpp" />
-    <ClCompile Include="..\..\source\semanticanalysis\toplevelsymbolpass.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\source\semanticanalysis\typeevaluationpass.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\source\semanticanalysis\typespecifierresolutionpass.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\source\semanticanalysis\validationpass.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\source\semanticanalysis\valueevaluationpass.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
-    <ClCompile Include="..\..\source\stdouttextwriter.cpp" />
-    <ClCompile Include="..\..\source\stringallocator.cpp" />
-    <ClCompile Include="..\..\source\stringutil.cpp" />
-    <ClCompile Include="..\..\source\token.cpp" />
-    <ClCompile Include="..\..\source\tokenstream.cpp" />
-    <ClCompile Include="..\..\source\typeandvalue.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\include\bond\allocator.h" />
     <ClInclude Include="..\..\include\bond\autostack.h" />
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h" />
     <ClInclude Include="..\..\include\bond\charstream.h" />
+    <ClInclude Include="..\..\include\bond\codegenerator.h" />
     <ClInclude Include="..\..\include\bond\conf.h" />
     <ClInclude Include="..\..\include\bond\defaultallocator.h" />
+    <ClInclude Include="..\..\include\bond\defaultfileloader.h" />
+    <ClInclude Include="..\..\include\bond\fileloader.h" />
+    <ClInclude Include="..\..\include\bond\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\lexer.h" />
     <ClInclude Include="..\..\include\bond\linearallocator.h" />
+    <ClInclude Include="..\..\include\bond\math.h" />
     <ClInclude Include="..\..\include\bond\parseerror.h" />
     <ClInclude Include="..\..\include\bond\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\parsenodefactory.h" />
@@ -69,8 +34,13 @@
     <ClInclude Include="..\..\include\bond\parsenodevisitor.h" />
     <ClInclude Include="..\..\include\bond\parser.h" />
     <ClInclude Include="..\..\include\bond\prettyprinter.h" />
+    <ClInclude Include="..\..\include\bond\private\set.h" />
+    <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
+    <ClInclude Include="..\..\include\bond\private\types.h" />
     <ClInclude Include="..\..\include\bond\semanticanalyzer.h" />
+    <ClInclude Include="..\..\include\bond\set.h" />
     <ClInclude Include="..\..\include\bond\stdouttextwriter.h" />
+    <ClInclude Include="..\..\include\bond\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\streampos.h" />
     <ClInclude Include="..\..\include\bond\stringallocator.h" />
     <ClInclude Include="..\..\include\bond\stringutil.h" />
@@ -79,7 +49,45 @@
     <ClInclude Include="..\..\include\bond\token.h" />
     <ClInclude Include="..\..\include\bond\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\typeandvalue.h" />
+    <ClInclude Include="..\..\include\bond\types.h" />
     <ClInclude Include="..\..\include\bond\value.h" />
+    <ClInclude Include="..\..\include\bond\version.h" />
+    <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
+    <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
+    <ClInclude Include="..\..\source\private\typeevaluationpass.h" />
+    <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h" />
+    <ClInclude Include="..\..\source\private\validationpass.h" />
+    <ClInclude Include="..\..\source\private\valueevaluationpass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
+    <ClCompile Include="..\..\source\charstream.cpp" />
+    <ClCompile Include="..\..\source\codegenerator.cpp" />
+    <ClCompile Include="..\..\source\defaultfileloader.cpp" />
+    <ClCompile Include="..\..\source\hashedstring.cpp" />
+    <ClCompile Include="..\..\source\lexer.cpp" />
+    <ClCompile Include="..\..\source\linearallocator.cpp" />
+    <ClCompile Include="..\..\source\parseerror.cpp" />
+    <ClCompile Include="..\..\source\parsenodecounter.cpp" />
+    <ClCompile Include="..\..\source\parsenodefactory.cpp" />
+    <ClCompile Include="..\..\source\parsenodes.cpp" />
+    <ClCompile Include="..\..\source\parsenodetraverser.cpp" />
+    <ClCompile Include="..\..\source\parsenodeutil.cpp" />
+    <ClCompile Include="..\..\source\parser.cpp" />
+    <ClCompile Include="..\..\source\prettyprinter.cpp" />
+    <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
+    <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
+    <ClCompile Include="..\..\source\stdouttextwriter.cpp" />
+    <ClCompile Include="..\..\source\stringallocator.cpp" />
+    <ClCompile Include="..\..\source\stringutil.cpp" />
+    <ClCompile Include="..\..\source\token.cpp" />
+    <ClCompile Include="..\..\source\tokenstream.cpp" />
+    <ClCompile Include="..\..\source\toplevelsymbolpass.cpp" />
+    <ClCompile Include="..\..\source\typeandvalue.cpp" />
+    <ClCompile Include="..\..\source\typeevaluationpass.cpp" />
+    <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp" />
+    <ClCompile Include="..\..\source\validationpass.cpp" />
+    <ClCompile Include="..\..\source\valueevaluationpass.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}</ProjectGuid>

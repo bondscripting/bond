@@ -8,6 +8,7 @@
 
 namespace TestFramework
 {
+
 static bool RunSemanticAnalyzerTest(
 	Bond::TextWriter &logger,
 	const char *assertFile,
