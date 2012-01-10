@@ -5,10 +5,6 @@
 namespace Bond
 {
 
-//------------------------------------------------------------------------------
-// ParseNodeDeallocator
-//------------------------------------------------------------------------------
-
 class ParseNodeDeallocator: private ParseNodeTraverser
 {
 public:
@@ -40,10 +36,6 @@ void ParseNodeDeallocator::Traverse(const ParseNode *parseNode)
 	mAllocator.Free(const_cast<ParseNode *>(parseNode));
 }
 
-
-//------------------------------------------------------------------------------
-// ParseNodeFactory
-//------------------------------------------------------------------------------
 
 TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ListParseNode *declarationList)
 {

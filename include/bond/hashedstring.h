@@ -23,6 +23,7 @@ public:
 	bu32_t GetHashCode() const { return mHashCode; }
 
 	bool operator==(const HashedString &other) const;
+	bool operator<(const HashedString &other) const;
 
 private:
 	const char *mStr;

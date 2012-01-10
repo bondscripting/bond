@@ -45,4 +45,20 @@ bool StringEqual(const char *str1, const char *str2, int length)
 	return equal;
 }
 
+
+int StringCompare(const char *str1, const char *str2, int length)
+{
+	const char *a = str1;
+	const char *b = str2;
+	const char *end = str1 + length;
+	int result = 0;
+	while ((result == 0) && (a < end))
+	{
+		const int c1 = *a++;
+		const int c2 = *b++;
+		result = c1 - c2;
+	}
+	return 0;
+}
+
 }

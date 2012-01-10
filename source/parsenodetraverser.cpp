@@ -4,10 +4,6 @@
 namespace Bond
 {
 
-//------------------------------------------------------------------------------
-// ParseNodeTraverser
-//------------------------------------------------------------------------------
-
 void ParseNodeTraverser::Traverse(ParseNode *parseNode)
 {
 	if (parseNode != NULL)

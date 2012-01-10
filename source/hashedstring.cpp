@@ -37,4 +37,15 @@ bool HashedString::operator==(const HashedString &other) const
 		((mStr == other.mStr) || StringEqual(mStr, other.mStr, mLength));
 }
 
+
+bool HashedString::operator<(const HashedString &other) const
+{
+	return
+		(mHashCode != other.mHashCode) ?
+		(mHashCode < other.mHashCode) :
+		((mLength != other.mLength) ?
+		 (mLength < other.mLength) :
+		 (StringCompare(mStr, other.mStr, mLength) < 0));
+}
+
 }

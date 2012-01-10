@@ -182,10 +182,6 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 namespace Bond
 {
 
-//------------------------------------------------------------------------------
-// SemanticAnalyser
-//------------------------------------------------------------------------------
-
 void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 {
 	// Add all type declarations to the symbol table first, since they can be used prior to their declaration
