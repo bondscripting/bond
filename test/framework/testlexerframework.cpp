@@ -1,6 +1,6 @@
 #include "framework/testlexerframework.h"
-#include "framework/util.h"
 #include "bond/defaultallocator.h"
+#include "bond/defaultfileloader.h"
 #include "bond/textwriter.h"
 
 namespace TestFramework
@@ -10,7 +10,7 @@ static bool RunLexerTest(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const FileData &script,
+	const Bond::FileData &script,
 	LexerValidationFunction *validationFunction);
 
 
@@ -24,14 +24,16 @@ bool RunLexerTest(
 	__ASSERT_FORMAT__(scriptName != 0, logger, assertFile, assertLine, ("Script name is NULL."));
 	__ASSERT_FORMAT__(validationFunction != 0, logger, assertFile, assertLine, ("Validation function is NULL."));
 
-	FileData script = ReadFile(scriptName);
-	__ASSERT_FORMAT__(script.length >= 0, logger, assertFile, assertLine,
+	Bond::DefaultAllocator allocator;
+	Bond::DefaultFileLoader fileLoader(allocator);
+	Bond::FileData script = fileLoader.LoadFile(scriptName);
+	__ASSERT_FORMAT__(script.mLength >= 0, logger, assertFile, assertLine,
 		("Failed to load file '%s'.", scriptName));
 
 	// Delegate to another function so we can still clean up even if something bails during the test.
 	const bool result = RunLexerTest(logger, assertFile, assertLine, script, validationFunction);
 
-	DisposeFile(script);
+	fileLoader.DisposeFile(script);
 
 	return result;
 }
@@ -41,7 +43,7 @@ static bool RunLexerTest(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const FileData &script,
+	const Bond::FileData &script,
 	LexerValidationFunction *validationFunction)
 {
 	bool result = true;
@@ -49,7 +51,7 @@ static bool RunLexerTest(
 	Bond::DefaultAllocator allocator;
 	{
 		Bond::Lexer lexer(allocator);
-		lexer.Lex(script.data, script.length);
+		lexer.Lex(script.mData, script.mLength);
 		result = validationFunction(logger, lexer);
 	}
 
