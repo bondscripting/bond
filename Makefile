@@ -23,6 +23,19 @@ DEPFILES := $(patsubst $(SRCFILE),$(OBJDEPFILE),$(SRCFILES))
 LIB := $(LIBDIR)/bond.a
 CFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Isource
 
+# Tool files, folders and configuration.
+TOOL := %
+TOOL_SRCDIR := tools
+TOOL_SRCFILE := $(TOOL_SRCDIR)/%.cpp
+TOOL_EXEDIR := $(BLDDIR)/bin
+TOOL_EXEFILE := $(TOOL_EXEDIR)/%
+TOOL_SRCFILES := $(wildcard $(TOOL_SRCDIR)/*.cpp)
+TOOL_EXEFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEFILE),$(TOOL_SRCFILES))
+TOOL_EXEDEPFILE := $(TOOL_EXEDIR)/%.d
+TOOL_DEPFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEDEPFILE),$(TOOL_SRCFILES))
+TOOLS := $(patsubst $(TOOL_SRCFILE),$(TOOL),$(TOOL_SRCFILES))
+TOOL_CFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Itools
+
 # Test Framework library files, folders and configuration.
 TF_SRCDIR := test/framework
 TF_SRCFILE := $(TF_SRCDIR)/%.cpp
@@ -47,19 +60,6 @@ UT_EXEDEPFILE := $(UT_EXEDIR)/%.d
 UT_DEPFILES := $(patsubst $(UT_SRCFILE),$(UT_EXEDEPFILE),$(UT_SRCFILES))
 UT_TESTS := $(patsubst $(UT_SRCFILE),$(UT_TEST),$(UT_SRCFILES))
 UT_CFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Itest
-
-# Tool files, folders and configuration.
-TOOL := %
-TOOL_SRCDIR := tools
-TOOL_SRCFILE := $(TOOL_SRCDIR)/%.cpp
-TOOL_EXEDIR := $(BLDDIR)/bin
-TOOL_EXEFILE := $(TOOL_EXEDIR)/%
-TOOL_SRCFILES := $(wildcard $(TOOL_SRCDIR)/*.cpp)
-TOOL_EXEFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEFILE),$(TOOL_SRCFILES))
-TOOL_EXEDEPFILE := $(TOOL_EXEDIR)/%.d
-TOOL_DEPFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEDEPFILE),$(TOOL_SRCFILES))
-TOOLS := $(patsubst $(TOOL_SRCFILE),$(TOOL),$(TOOL_SRCFILES))
-TOOL_CFLAGS := $(BASE_CFLAGS) -I$(INCLUDEDIR) -Itools
 
 
 .PHONY: all clean deepclean test tools tags
@@ -92,6 +92,17 @@ $(OBJFILE): $(SRCFILE) Makefile
 	@$(MKDIR) -p $(OBJDIR)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
+# Tool targets.
+tools: $(TOOLS)
+
+$(TOOL): $(TOOL_EXEFILE) ;
+
+-include $(TOOL_DEPFILES)
+
+$(TOOL_EXEFILE): $(TOOL_SRCFILE) Makefile $(LIB)
+	@$(MKDIR) -p $(TOOL_EXEDIR)
+	$(CC) $(TOOL_CFLAGS) -MMD -MP $< $(LIB) -o $@
+
 # Test Framework targets.
 framework: $(TF_LIB)
 
@@ -116,14 +127,3 @@ $(UT_TEST): $(UT_EXEFILE)
 $(UT_EXEFILE): $(UT_SRCFILE) Makefile $(LIB) $(TF_LIB)
 	@$(MKDIR) -p $(UT_EXEDIR)
 	$(CC) $(UT_CFLAGS) -MMD -MP $< $(TF_LIB) $(LIB) -o $@
-
-# Tool targets.
-tools: $(TOOLS)
-
-$(TOOL): $(TOOL_EXEFILE) ;
-
--include $(TOOL_DEPFILES)
-
-$(TOOL_EXEFILE): $(TOOL_SRCFILE) Makefile $(LIB)
-	@$(MKDIR) -p $(TOOL_EXEDIR)
-	$(CC) $(TOOL_CFLAGS) -MMD -MP $< $(LIB) -o $@

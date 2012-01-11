@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-void StdoutTextWriter::Write(const char *format, ...)
+void StdOutTextWriter::Write(const char *format, ...)
 {
 	va_list argList;
 	va_start(argList, format);

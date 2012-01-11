@@ -6,10 +6,10 @@
 namespace Bond
 {
 
-class StdoutTextWriter: public TextWriter
+class StdOutTextWriter: public TextWriter
 {
 public:
-	virtual ~StdoutTextWriter() {}
+	virtual ~StdOutTextWriter() {}
 	virtual void Write(const char *format, ...);
 };
 
