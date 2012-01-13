@@ -22,13 +22,6 @@ public:
 	TranslationUnit *Parse();
 
 private:
-	enum DeclarationContext
-	{
-		TOP_LEVEL,
-		STRUCT_MEMBER,
-		NATIVE_STRUCT_MEMBER
-	};
-
 	// Copying disallowed.
 	ParserCore(const ParserCore &other);
 	ParserCore &operator=(const ParserCore &other);
@@ -41,9 +34,9 @@ private:
 	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
 
-	ListParseNode *ParseFunctionOrDeclarativeStatement(DeclarationContext context = TOP_LEVEL);
+	ListParseNode *ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration = NULL);
 	void ParseFunctionOrDeclarativeStatement(
-		DeclarationContext context,
+		StructDeclaration *structDeclaration,
 		FunctionDefinition **functionDefinition,
 		DeclarativeStatement **declarativeStatement);
 
@@ -314,18 +307,14 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 		const Token *size = NULL;
 		const Token *alignment = NULL;
 		StructDeclaration::Variant variant = StructDeclaration::VARIANT_BOND;
-		DeclarationContext context = STRUCT_MEMBER;
 
 		if (native == NULL)
 		{
 			variant = StructDeclaration::VARIANT_BOND;
-			context = STRUCT_MEMBER;
 		}
 		else if (native->GetTokenType() == Token::KEY_NATIVE)
 		{
 			variant = StructDeclaration::VARIANT_NATIVE;
-			context = NATIVE_STRUCT_MEMBER;
-
 			ExpectToken(Token::OP_LT);
 			size = ExpectToken(INTEGER_CONSTANTS_TYPESET);
 
@@ -339,11 +328,19 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 		else
 		{
 			variant = StructDeclaration::VARIANT_REFERENCE;
-			context = NATIVE_STRUCT_MEMBER;
 		}
 
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
+
+		declaration = mFactory.CreateStructDeclaration(
+			name,
+			size,
+			alignment,
+			NULL,
+			NULL,
+			variant);
+
 		ParseNodeList<FunctionDefinition> memberFunctionList;
 		ParseNodeList<DeclarativeStatement> memberVariableList;
 
@@ -354,7 +351,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			{
 				FunctionDefinition *functionDefinition;
 				DeclarativeStatement *declarativeStatement;
-				ParseFunctionOrDeclarativeStatement(context, &functionDefinition, &declarativeStatement);
+				ParseFunctionOrDeclarativeStatement(declaration, &functionDefinition, &declarativeStatement);
 				if (functionDefinition != NULL)
 				{
 					memberFunctionList.Append(functionDefinition);
@@ -368,15 +365,10 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			}
 		}
 
+		declaration->SetMemberFunctionList(memberFunctionList.GetHead());
+		declaration->SetMemberVariableList(memberVariableList.GetHead());
 		ExpectToken(Token::CBRACE);
 		ExpectDeclarationTerminator();
-		declaration = mFactory.CreateStructDeclaration(
-			name,
-			size,
-			alignment,
-			memberFunctionList.GetHead(),
-			memberVariableList.GetHead(),
-			variant);
 	}
 
 	return declaration;
@@ -395,11 +387,11 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 // *const_declarative_statement
 //   : declarative_statement 
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
-ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContext context)
+ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration)
 {
 	FunctionDefinition *functionDefinition;
 	DeclarativeStatement *declarativeStatement;
-	ParseFunctionOrDeclarativeStatement(context, &functionDefinition, &declarativeStatement);
+	ParseFunctionOrDeclarativeStatement(structDeclaration, &functionDefinition, &declarativeStatement);
 	if (functionDefinition != NULL)
 	{
 		return functionDefinition;
@@ -409,7 +401,7 @@ ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(DeclarationContex
 
 
 void ParserCore::ParseFunctionOrDeclarativeStatement(
-	DeclarationContext context,
+	StructDeclaration *structDeclaration,
 	FunctionDefinition **functionDefinition,
 	DeclarativeStatement **declarativeStatement)
 {
@@ -432,8 +424,15 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				ExpectToken(Token::CPAREN);
 				const Token *keywordConst = mStream.NextIf(Token::KEY_CONST);
 				bool isConst = keywordConst != NULL;
+				TypeDescriptor *thisTypeDescriptor = NULL;
 
-				if (isConst && (context == TOP_LEVEL))
+				if (structDeclaration != NULL)
+				{
+					thisTypeDescriptor = isConst ?
+						structDeclaration->GetConstThisTypeDescriptor() :
+						structDeclaration->GetThisTypeDescriptor();
+				}
+				else if (isConst)
 				{
 					PushError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
 					isConst = false;
@@ -446,7 +445,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				if (obrace != NULL)
 				{
 					body = ParseCompoundStatement();
-					if (context == NATIVE_STRUCT_MEMBER)
+					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
 					{
 						PushError(ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
 					}
@@ -454,19 +453,19 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				else
 				{
 					ExpectDeclarationTerminator();
-					if (context == STRUCT_MEMBER)
+					if ((structDeclaration != NULL) && (!structDeclaration->IsNative()))
 					{
 						PushError(ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
 					}
 				}
 
-				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body);
+				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body, thisTypeDescriptor);
 			}
 			else
 			{
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
-				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, context == TOP_LEVEL);
+				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, structDeclaration == NULL);
 				// TODO: Forgot to handle failure.
 
 				if (initializerList != NULL)

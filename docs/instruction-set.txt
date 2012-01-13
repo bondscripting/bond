@@ -35,6 +35,7 @@ constd_h            ... -> double
 constd_1            ... -> double
 constd_2            ... -> double
 
+loadfp              ... -> address
 loadea, hash        ... -> address
 loadc               ..., address -> ..., int
 loaduc              ..., address -> ..., uint

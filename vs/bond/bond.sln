@@ -11,7 +11,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prettyprint", "..\prettyprint\prettyprint.vcxproj", "{4B420D40-1329-475C-9D79-AC5D9DA0798F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
-		{7E525B78-8165-452D-BCA1-6855B3FFD564} = {7E525B78-8165-452D-BCA1-6855B3FFD564}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testcharstream", "..\testcharstream\testcharstream.vcxproj", "{EEEC3AD5-2E31-4D33-A864-9273807B6274}"
@@ -36,6 +35,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsemanticanalyzer", "..\
 	ProjectSection(ProjectDependencies) = postProject
 		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
 		{7E525B78-8165-452D-BCA1-6855B3FFD564} = {7E525B78-8165-452D-BCA1-6855B3FFD564}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bondc", "..\bondc\bondc.vcxproj", "{C6939EC7-BD5F-45BA-912D-709EEA9796E9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
 	EndProjectSection
 EndProject
 Global
@@ -72,6 +76,10 @@ Global
 		{2E62F9F1-C155-42B1-BBEF-DC31785EBBC5}.Debug|Win32.Build.0 = Debug|Win32
 		{2E62F9F1-C155-42B1-BBEF-DC31785EBBC5}.Release|Win32.ActiveCfg = Release|Win32
 		{2E62F9F1-C155-42B1-BBEF-DC31785EBBC5}.Release|Win32.Build.0 = Release|Win32
+		{C6939EC7-BD5F-45BA-912D-709EEA9796E9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C6939EC7-BD5F-45BA-912D-709EEA9796E9}.Debug|Win32.Build.0 = Debug|Win32
+		{C6939EC7-BD5F-45BA-912D-709EEA9796E9}.Release|Win32.ActiveCfg = Release|Win32
+		{C6939EC7-BD5F-45BA-912D-709EEA9796E9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

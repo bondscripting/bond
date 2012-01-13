@@ -12,6 +12,34 @@ bool Symbol::IsTypeDefinition() const
 }
 
 
+void Symbol::SetParentSymbol(Symbol *parent)
+{
+	mParentSymbol = parent;
+	mGlobalHashCode = ComputeGlobalHashCode();
+}
+
+
+bu32_t Symbol::ComputeGlobalHashCode() const
+{
+	bu32_t hash = STRING_HASH_SEED;
+	if (!IsAnonymous())
+	{
+		const HashedString &name = GetName()->GetHashedText();
+		if (mParentSymbol != NULL)
+		{
+			hash = mParentSymbol->GetGlobalHashCode();
+			hash = StringHash("::", hash);
+			hash = StringHash(name.GetLength(), name.GetString(), hash);
+		}
+		else
+		{
+			hash = name.GetHashCode();
+		}
+	}
+	return hash;
+}
+
+
 Symbol *Symbol::FindSymbol(const HashedString &name)
 {
 	Symbol *symbol = mSymbolList;

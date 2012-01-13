@@ -79,7 +79,7 @@ deepclean:
 
 tags :
 	rm -f TAGS
-	$(ETAGS) --language-force=C++ -R $(PWD)/$(INCLUDEDIR) $(PWD)/$(SRCDIR) $(PWD)/$(UTSRCDIR)
+	$(ETAGS) --language-force=C++ -R $(PWD)/$(INCLUDEDIR) $(PWD)/$(SRCDIR) $(PWD)/$(TOOL_SRCDIR) $(PWD)/$(UT_SRCDIR)
 
 # Bond library targets.
 $(LIB): $(OBJFILES)

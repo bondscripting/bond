@@ -10,8 +10,8 @@ void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element initalizerElement(mAddNamedInitializers, false);
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, true);
-	BoolStack::Element inConstFunctionElement(mInConstFunction, false);
-	StructStack::Element stackElement(mStructStack, NULL);
+	StructStack::Element structElement(mStruct, NULL);
+	FunctionStack::Element functionElement(mFunction, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -31,7 +31,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 {
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
-	StructStack::Element stackElement(mStructStack, structDeclaration);
+	StructStack::Element structElement(mStruct, structDeclaration);
 	SemanticAnalysisPass::Visit(structDeclaration);
 	RecursiveStructAnalyzer analyzer(mErrorBuffer);
 	analyzer.Analyze(structDeclaration);
@@ -45,7 +45,7 @@ void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 	// declared before being referenced, so they must be added as the expressions are evaluated.
 	BoolStack::Element initalizerElement(mAddNamedInitializers, true);
 	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
-	BoolStack::Element inConstFunctionElement(mInConstFunction, functionDefinition->GetPrototype()->IsConst());
+	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 }
 
@@ -229,11 +229,11 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::ASSIGN_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
-					isResolvable = isResolvable && AssertIntegerOperand(rhDescriptor, op);
+					isResolvable = AssertIntegerOperand(rhDescriptor, op);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					isResolvable = isResolvable && AssertIntegerOperand(lhDescriptor, op);
+					isResolvable = AssertIntegerOperand(lhDescriptor, op);
 				}
 				else
 				{
@@ -295,11 +295,11 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
-					isResolvable = isResolvable && AssertIntegerOperand(rhDescriptor, op);
+					isResolvable = AssertIntegerOperand(rhDescriptor, op);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					isResolvable = isResolvable && AssertIntegerOperand(lhDescriptor, op);
+					isResolvable = AssertIntegerOperand(lhDescriptor, op);
 				}
 				else
 				{
@@ -312,8 +312,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 			case Token::OP_STAR:
 			case Token::OP_DIV:
-				isResolvable = isResolvable &&
-					AssertNumericOperand(lhDescriptor, op) &&
+				isResolvable = AssertNumericOperand(lhDescriptor, op) &&
 					AssertNumericOperand(rhDescriptor, op);
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
@@ -683,7 +682,9 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 			TypeDescriptor typeDescriptor = *symbolTav->GetTypeDescriptor();
 
 			// Verify if the symbol was reached by implicitly dereferencing a const 'this' pointer.
-			if ((symbol->GetParentSymbol() == mStructStack.GetTop()) && mInConstFunction.GetTop())
+			if ((symbol->GetParentSymbol() == mStruct.GetTop()) &&
+			    (mFunction.GetTop() != NULL) &&
+			    (mFunction.GetTop().GetValue()->GetPrototype()->IsConst()))
 			{
 				const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
 				if (namedInitializer != NULL)
@@ -699,7 +700,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 							identifier->GetContextToken(),
 							functionDefinition->GetPrototype(),
-							mStructStack.GetTop().GetValue()->GetConstThisTypeDescriptor());
+							mStruct.GetTop().GetValue()->GetConstThisTypeDescriptor());
 					}
 				}
 			}
@@ -711,17 +712,10 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 {
-	const StructDeclaration *structDeclaration = mStructStack.GetTop();
+	const StructDeclaration *structDeclaration = mStruct.GetTop();
 	if (structDeclaration != NULL)
 	{
-		if (mInConstFunction.GetTop())
-		{
-			thisExpression->SetTypeDescriptor(*structDeclaration->GetConstThisTypeDescriptor());
-		}
-		else
-		{
-			thisExpression->SetTypeDescriptor(*structDeclaration->GetThisTypeDescriptor());
-		}
+		thisExpression->SetTypeDescriptor(*mFunction.GetTop().GetValue()->GetThisTypeDescriptor());
 	}
 	else
 	{
@@ -928,7 +922,7 @@ void TypeEvaluationPass::ValidateInitializer(
 void TypeEvaluationPass::RecursiveStructAnalyzer::Analyze(const StructDeclaration *structDeclaration)
 {
 	mTopLevelStruct = structDeclaration;
-	StructStack::Element stackElement(mStructStack, structDeclaration);
+	StructStack::Element structElement(mStruct, structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
 	mTopLevelStruct = NULL;
 }
@@ -941,9 +935,9 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const StructDeclaration 
 		mErrorBuffer.PushError(ParseError::RECURSIVE_STRUCT, structDeclaration->GetName());
 	}
 
-	if (!mStructStack.Contains(structDeclaration))
+	if (!mStruct.Contains(structDeclaration))
 	{
-		StructStack::Element stackElement(mStructStack, structDeclaration);
+		StructStack::Element structElement(mStruct, structDeclaration);
 		ParseNodeTraverser::Visit(structDeclaration);
 	}
 }

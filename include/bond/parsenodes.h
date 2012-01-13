@@ -33,7 +33,7 @@ public:
 	void SetNextNode(ListParseNode *next) { mNextNode = next; }
 
 protected:
-	ListParseNode(): mNextNode(0) {}
+	ListParseNode(): mNextNode(NULL) {}
 
 private:
 	ListParseNode *mNextNode;
@@ -44,15 +44,15 @@ template <typename NodeType>
 class ParseNodeList
 {
 public:
-	ParseNodeList(): mHead(0), mTail(0) {}
+	ParseNodeList(): mHead(NULL), mTail(NULL) {}
 
 	NodeType *GetHead() const { return mHead; }
 
 	void Append(NodeType *node)
 	{
-		if (node != 0)
+		if (node != NULL)
 		{
-			if (mHead == 0)
+			if (mHead == NULL)
 			{
 				mHead = node;
 			}
@@ -88,10 +88,10 @@ public:
 	virtual const Token *GetContextToken() const { return GetName(); }
 
 	virtual SymbolType GetSymbolType() const = 0;
-	virtual const Token *GetName() const { return 0; }
+	virtual const Token *GetName() const { return NULL; }
 
-	virtual TypeAndValue *GetTypeAndValue() { return 0; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return 0; }
+	virtual TypeAndValue *GetTypeAndValue() { return NULL; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return NULL; }
 
 	virtual bool IsResolved() const { return true; }
 
@@ -99,7 +99,7 @@ public:
 
 	Symbol *GetParentSymbol() { return mParentSymbol; }
 	const Symbol *GetParentSymbol() const { return mParentSymbol; }
-	void SetParentSymbol(Symbol *parent) { mParentSymbol = parent; }
+	void SetParentSymbol(Symbol *parent);
 
 	Symbol *FindSymbol(const HashedString &name);
 	const Symbol *FindSymbol(const HashedString &name) const;
@@ -112,24 +112,29 @@ public:
 
 	void InsertSymbol(Symbol *symbol);
 
-	bool IsAnonymous() const { return GetName() == 0; }
+	bool IsAnonymous() const { return GetName() == NULL; }
 
 	bool Matches(const HashedString &name) const;
 
+	bu32_t GetGlobalHashCode() const { return mGlobalHashCode; }
+
 protected:
 	Symbol():
-		mNextSymbol(0),
-		mParentSymbol(0),
-		mSymbolList(0)
+		mNextSymbol(NULL),
+		mParentSymbol(NULL),
+		mSymbolList(NULL),
+		mGlobalHashCode(STRING_HASH_SEED)
 	{}
 
 private:
 	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
+	bu32_t ComputeGlobalHashCode() const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;
 	Symbol *mSymbolList;
+	bu32_t mGlobalHashCode;
 };
 
 
@@ -137,23 +142,23 @@ class TypeDescriptor: public ParseNode
 {
 public:
 	TypeDescriptor():
-		mTypeSpecifier(0),
-		mParent(0),
-		mLengthExpressionList(0),
+		mTypeSpecifier(NULL),
+		mParent(NULL),
+		mLengthExpressionList(NULL),
 		mFlags(0)
 	{}
 
 	TypeDescriptor(const TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
-		mParent(0),
-		mLengthExpressionList(0),
+		mParent(NULL),
+		mLengthExpressionList(NULL),
 		mFlags(FLAG_VALUE | (isConst ? FLAG_CONST : 0))
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, bool isConst):
-		mTypeSpecifier(0),
+		mTypeSpecifier(NULL),
 		mParent(parent),
-		mLengthExpressionList(0),
+		mLengthExpressionList(NULL),
 		mFlags(FLAG_POINTER | (isConst ? FLAG_CONST : 0))
 	{}
 
@@ -221,8 +226,8 @@ public:
 private:
 	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
 		mTypeSpecifier(specifier),
-		mParent(0),
-		mLengthExpressionList(0),
+		mParent(NULL),
+		mLengthExpressionList(NULL),
 		mFlags(flags)
 	{}
 
@@ -250,16 +255,16 @@ class TypeSpecifier: public ParseNode
 {
 public:
 
-	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = 0):
+	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = NULL):
 		mPrimitiveType(primitiveType),
 		mIdentifier(identifier),
-		mDefinition(0)
+		mDefinition(NULL)
 	{}
 
 	explicit TypeSpecifier(QualifiedIdentifier *identifier):
-		mPrimitiveType(0),
+		mPrimitiveType(NULL),
 		mIdentifier(identifier),
-		mDefinition(0)
+		mDefinition(NULL)
 	{}
 
 	TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier, const Symbol *definition):
@@ -317,7 +322,7 @@ public:
 	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNextNode()); }
 	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNextNode()); }
 
-	bool IsTerminal() const { return GetNextNode() == 0; }
+	bool IsTerminal() const { return GetNextNode() == NULL; }
 
 private:
 	const Token *mName;
@@ -333,7 +338,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return 0; }
+	virtual const Token *GetContextToken() const { return NULL; }
 
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
@@ -375,7 +380,7 @@ public:
 		mIdentifier(name),
 		mTypeSpecifier(&INT_TOKEN, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, true),
-		mEnumeratorList(0)
+		mEnumeratorList(NULL)
 	{}
 
 	virtual ~EnumDeclaration() {}
@@ -439,7 +444,7 @@ public:
 		VARIANT_REFERENCE,
 	};
 
-	explicit StructDeclaration(
+	StructDeclaration(
 			const Token *name,
 			const Token *size,
 			const Token *alignment,
@@ -447,7 +452,7 @@ public:
 			DeclarativeStatement *memberVariableList,
 			Variant variant):
 		mIdentifier(name),
-		mTypeSpecifier(0, &mIdentifier, this),
+		mTypeSpecifier(NULL, &mIdentifier, this),
 		mThisTypeDescriptor(TypeDescriptor::GetPointerType(&mTypeSpecifier)),
 		mConstThisTypeDescriptor(TypeDescriptor::GetConstPointerType(&mTypeSpecifier)),
 		mSizeToken(size),
@@ -480,12 +485,14 @@ public:
 
 	FunctionDefinition *GetMemberFunctionList() { return mMemberFunctionList; }
 	const FunctionDefinition *GetMemberFunctionList() const { return mMemberFunctionList; }
+	void SetMemberFunctionList(FunctionDefinition *memberFunctionList) { mMemberFunctionList = memberFunctionList; }
 
 	DeclarativeStatement *GetMemberVariableList() { return mMemberVariableList; }
 	const DeclarativeStatement *GetMemberVariableList() const { return mMemberVariableList; }
 	void SetMemberVariableList(DeclarativeStatement *memberVariableList) { mMemberVariableList = memberVariableList; }
 
 	Variant GetVariant() const { return mVariant; }
+	bool IsNative() const { return mVariant != VARIANT_BOND; }
 
 	bu32_t GetSize() const { return mSize; }
 	void SetSize(bu32_t size) { mSize = size; }
@@ -546,13 +553,14 @@ private:
 class FunctionDefinition: public Symbol
 {
 public:
-	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body):
+	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body, TypeDescriptor *thisTypeDescriptor):
 		mIdentifier(prototype->GetName()),
-		mTypeSpecifier(0, &mIdentifier, this),
-		mTypeDescriptor(&mTypeSpecifier, true),
+		mTypeSpecifier(NULL, &mIdentifier, this),
+		mTypeDescriptor(&mTypeSpecifier, false),
 		mTypeAndValue(&mTypeDescriptor),
 		mPrototype(prototype),
-		mBody(body)
+		mBody(body),
+		mThisTypeDescriptor(thisTypeDescriptor)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -572,7 +580,10 @@ public:
 	CompoundStatement *GetBody() { return mBody; }
 	const CompoundStatement *GetBody() const { return mBody; }
 
-	bool IsDeclaration() const { return mBody == 0; }
+	TypeDescriptor *GetThisTypeDescriptor() { return mThisTypeDescriptor; }
+	const TypeDescriptor *GetThisTypeDescriptor() const { return mThisTypeDescriptor; }
+
+	bool IsNative() const { return mBody == NULL; }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -581,6 +592,7 @@ private:
 	TypeAndValue mTypeAndValue;
 	FunctionPrototype *mPrototype;
 	CompoundStatement *mBody;
+	TypeDescriptor *mThisTypeDescriptor;
 };
 
 
@@ -659,11 +671,11 @@ class Initializer: public ListParseNode
 public:
 	explicit Initializer(Expression *expression):
 		mExpression(expression),
-		mInitializerList(0)
+		mInitializerList(NULL)
 	{}
 
 	explicit Initializer(Initializer *initializerList):
-		mExpression(0),
+		mExpression(NULL),
 		mInitializerList(initializerList)
 	{}
 
@@ -806,7 +818,7 @@ class SwitchLabel: public ListParseNode
 public:
 	explicit SwitchLabel(const Token *label):
 		mLabel(label),
-		mExpression(0)
+		mExpression(NULL)
 	{}
 
 	SwitchLabel(const Token *label, Expression *expression):
@@ -995,7 +1007,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return (mExpression == 0) ? 0 : mExpression->GetContextToken(); }
+	virtual const Token *GetContextToken() const { return (mExpression == NULL) ? NULL : mExpression->GetContextToken(); }
 
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
@@ -1242,12 +1254,12 @@ public:
 	SizeofExpression(const Token *op, TypeDescriptor *typeDescriptor):
 		mOperator(op),
 		mTypeDescriptor(typeDescriptor),
-		mRhs(0)
+		mRhs(NULL)
 	{}
 
 	SizeofExpression(const Token *op, Expression *rhs):
 		mOperator(op),
-		mTypeDescriptor(0),
+		mTypeDescriptor(NULL),
 		mRhs(rhs)
 	{}
 
@@ -1294,7 +1306,7 @@ class IdentifierExpression: public Expression
 public:
 	explicit IdentifierExpression(QualifiedIdentifier *identifier):
 		mIdentifier(identifier),
-		mDefinition(0)
+		mDefinition(NULL)
 	{}
 
 	virtual ~IdentifierExpression() {}
@@ -1340,7 +1352,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return 0; }
+	virtual const Token *GetContextToken() const { return NULL; }
 };
 
 

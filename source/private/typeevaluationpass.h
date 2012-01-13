@@ -48,6 +48,7 @@ protected:
 
 private:
 	typedef AutoStack<const StructDeclaration *> StructStack;
+	typedef AutoStack<const FunctionDefinition *> FunctionStack;
 
 	class RecursiveStructAnalyzer: private ParseNodeTraverser
 	{
@@ -68,7 +69,7 @@ private:
 		virtual void Visit(const TypeDescriptor *typeDescriptor);
 		virtual void Visit(const TypeSpecifier *typeSpecifier);
 
-		StructStack mStructStack;
+		StructStack mStruct;
 		ParseErrorBuffer &mErrorBuffer;
 		const StructDeclaration *mTopLevelStruct;
 	};
@@ -99,8 +100,8 @@ private:
 	BoolStack mAddNamedInitializers;
 	BoolStack mEnforceConstExpressions;
 	BoolStack mEnforceConstDeclarations;
-	BoolStack mInConstFunction;
-	StructStack mStructStack;
+	StructStack mStruct;
+	FunctionStack mFunction;
 };
 
 }

@@ -1,0 +1,43 @@
+CompiledBondFile
+----------------
+uint magicNumber = 0x57EDFA57;
+ushort majorVersion;
+ushort minorVersion;
+StringTable stringTable;
+ListBlob attributes;
+
+StringTable
+-----------
+uint size;
+ushort numStrings;
+String[numStrings] strings;
+
+String
+------
+ushort length;
+char[length] string;
+
+BlobHeader
+----------
+ushort idIndex;
+uint BlobSize;
+
+ListBlob
+--------
+BlobHeader header("List");
+uint NumBlobs;
+Blob[NumBlobs] Blobs;
+
+FunctionBlob
+------------
+BlobHeader header("Func");
+uint Hash;
+uint CodeSize;
+char[CodeSize] code;
+ListBlob attributes;
+
+DeclarationBlob
+-------------------
+BlobHeader header("Decl");
+uint Hash;
+???

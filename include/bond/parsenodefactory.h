@@ -32,7 +32,10 @@ public:
 		DeclarativeStatement *memberVariableList,
 		StructDeclaration::Variant variant);
 
-	FunctionDefinition *CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body);
+	FunctionDefinition *CreateFunctionDefinition(
+		FunctionPrototype *prototype,
+		CompoundStatement *body,
+		TypeDescriptor *thisTypeDescriptor);
 
 	FunctionPrototype *CreateFunctionPrototype(
 		const Token *name,

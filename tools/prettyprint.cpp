@@ -7,7 +7,7 @@
 #include "bond/semanticanalyzer.h"
 #include "bond/stdouttextwriter.h"
 #include <string.h>
-#include <stdio.h>
+
 
 void PrintErrors(Bond::TextWriter &writer, const Bond::ParseErrorBuffer &errorBuffer)
 {

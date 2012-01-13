@@ -80,9 +80,12 @@ StructDeclaration *ParseNodeFactory::CreateStructDeclaration(
 }
 
 
-FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body)
+FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(
+	FunctionPrototype *prototype,
+	CompoundStatement *body,
+	TypeDescriptor *thisTypeDescriptor)
 {
-	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype, body);
+	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype, body, thisTypeDescriptor);
 }
 
 
