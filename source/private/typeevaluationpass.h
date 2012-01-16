@@ -97,9 +97,7 @@ private:
 		const Initializer *initializer,
 		const TypeDescriptor *typeDescrioptor);
 
-	BoolStack mAddNamedInitializers;
 	BoolStack mEnforceConstExpressions;
-	BoolStack mEnforceConstDeclarations;
 	StructStack mStruct;
 	FunctionStack mFunction;
 };

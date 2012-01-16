@@ -68,6 +68,8 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList)
 
 void GeneratorCore::Generate()
 {
+	StructStack::Element structElement(mStruct, NULL);
+	FunctionStack::Element functionElement(mFunction, NULL);
 	BoolStack::Element isTopLevelDeclarationElement(mIsTopLevelDeclaration, true);
 	mStringPool.insert("List");
 	Traverse(mTranslationUnitList);
@@ -84,6 +86,7 @@ void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 {
 	if (structDeclaration->GetVariant() == StructDeclaration::VARIANT_BOND)
 	{
+		StructStack::Element structElement(mStruct, structDeclaration);
 		BoolStack::Element isTopLevelDeclarationElement(mIsTopLevelDeclaration, false);
 		ParseNodeTraverser::Visit(structDeclaration);
 	}
@@ -92,6 +95,7 @@ void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
+	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	BoolStack::Element isTopLevelDeclarationElement(mIsTopLevelDeclaration, false);
 	mStringPool.insert("Func");
 	mStringPool.insert(functionDefinition->GetName()->GetHashedText());

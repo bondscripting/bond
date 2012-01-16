@@ -110,6 +110,11 @@ void UnreachableCode4(int x)
 	}
 }
 
+void *InvalidReturnType(float x)
+{
+	return x;
+}
+
 // All functions below are valid.
 void ValidBreakAndContinue(int x)
 {

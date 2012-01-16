@@ -5,7 +5,11 @@ namespace Bond
 {
 
 template <typename T>
-inline T Align(T value, T align) { return (value + (align - 1)) & ~(align - 1); }
+inline T AlignUp(T value, T align) { return (value + (align - 1)) & ~(align - 1); }
+
+
+template <typename T>
+inline T AlignDown(T value, T align) { return value & ~(align - 1); }
 
 
 template <typename T>

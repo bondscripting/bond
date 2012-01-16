@@ -7,9 +7,7 @@ namespace Bond
 
 void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
-	BoolStack::Element initalizerElement(mAddNamedInitializers, false);
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
-	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, true);
 	StructStack::Element structElement(mStruct, NULL);
 	FunctionStack::Element functionElement(mFunction, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
@@ -30,7 +28,6 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 
 void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 {
-	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
 	StructStack::Element structElement(mStruct, structDeclaration);
 	SemanticAnalysisPass::Visit(structDeclaration);
 	RecursiveStructAnalyzer analyzer(mErrorBuffer);
@@ -40,11 +37,6 @@ void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 
 void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 {
-	// Top-level named initializers have already been added to the symbol table, but not ones in local scopes.
-	// Top-level identifiers can be referenced out of order from their declarations, but local ones must be
-	// declared before being referenced, so they must be added as the expressions are evaluated.
-	BoolStack::Element initalizerElement(mAddNamedInitializers, true);
-	BoolStack::Element constTypeDescriptorElement(mEnforceConstDeclarations, false);
 	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 }
@@ -81,7 +73,10 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 {
 	ParseNodeTraverser::Visit(namedInitializer);
 
-	if (mAddNamedInitializers.GetTop())
+	// Top-level named initializers have already been added to the symbol table, but not ones in local scopes.
+	// Top-level identifiers can be referenced out of order from their declarations, but local ones must be
+	// declared before being referenced, so they must be added as the expressions are evaluated.
+	if (namedInitializer->GetScope() == SCOPE_LOCAL)
 	{
 		InsertSymbol(namedInitializer);
 	}
@@ -101,7 +96,7 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 			mErrorBuffer.PushError(ParseError::UNINITIALIZED_CONST, namedInitializer->GetName());
 		}
 
-		if (mEnforceConstDeclarations.GetTop() && !typeDescriptor->IsConst())
+		if ((namedInitializer->GetScope() == SCOPE_GLOBAL) && !typeDescriptor->IsConst())
 		{
 			mErrorBuffer.PushError(ParseError::NON_CONST_DECLARATION, namedInitializer->GetName());
 		}
@@ -684,7 +679,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 			// Verify if the symbol was reached by implicitly dereferencing a const 'this' pointer.
 			if ((symbol->GetParentSymbol() == mStruct.GetTop()) &&
 			    (mFunction.GetTop() != NULL) &&
-			    (mFunction.GetTop().GetValue()->GetPrototype()->IsConst()))
+			    (mFunction.GetTop()->GetPrototype()->IsConst()))
 			{
 				const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
 				if (namedInitializer != NULL)
@@ -700,7 +695,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 							identifier->GetContextToken(),
 							functionDefinition->GetPrototype(),
-							mStruct.GetTop().GetValue()->GetConstThisTypeDescriptor());
+							mStruct.GetTop()->GetConstThisTypeDescriptor());
 					}
 				}
 			}
@@ -715,7 +710,7 @@ void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 	const StructDeclaration *structDeclaration = mStruct.GetTop();
 	if (structDeclaration != NULL)
 	{
-		thisExpression->SetTypeDescriptor(*mFunction.GetTop().GetValue()->GetThisTypeDescriptor());
+		thisExpression->SetTypeDescriptor(*mFunction.GetTop()->GetThisTypeDescriptor());
 	}
 	else
 	{

@@ -9,6 +9,14 @@
 namespace Bond
 {
 
+enum Scope
+{
+	SCOPE_GLOBAL,
+	SCOPE_LOCAL,
+	SCOPE_STRUCT_MEMBER
+};
+
+
 class ParseNode
 {
 public:
@@ -553,14 +561,19 @@ private:
 class FunctionDefinition: public Symbol
 {
 public:
-	FunctionDefinition(FunctionPrototype *prototype, CompoundStatement *body, TypeDescriptor *thisTypeDescriptor):
+	FunctionDefinition(
+			FunctionPrototype *prototype,
+			CompoundStatement *body,
+			TypeDescriptor *thisTypeDescriptor,
+			Scope scope):
 		mIdentifier(prototype->GetName()),
 		mTypeSpecifier(NULL, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, false),
 		mTypeAndValue(&mTypeDescriptor),
 		mPrototype(prototype),
 		mBody(body),
-		mThisTypeDescriptor(thisTypeDescriptor)
+		mThisTypeDescriptor(thisTypeDescriptor),
+		mScope(scope)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -583,6 +596,8 @@ public:
 	TypeDescriptor *GetThisTypeDescriptor() { return mThisTypeDescriptor; }
 	const TypeDescriptor *GetThisTypeDescriptor() const { return mThisTypeDescriptor; }
 
+	Scope GetScope() const { return mScope; }
+
 	bool IsNative() const { return mBody == NULL; }
 
 private:
@@ -593,6 +608,7 @@ private:
 	FunctionPrototype *mPrototype;
 	CompoundStatement *mBody;
 	TypeDescriptor *mThisTypeDescriptor;
+	Scope mScope;
 };
 
 
@@ -634,10 +650,11 @@ private:
 class NamedInitializer: public Symbol
 {
 public:
-	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor):
+	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor, Scope scope):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mInitializer(initializer),
+		mScope(scope),
 		mOffset(0)
 	{}
 
@@ -655,6 +672,8 @@ public:
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
 
+	Scope GetScope() const { return mScope; }
+
 	bi32_t GetOffset() const { return mOffset; }
 	void SetOffset(bi32_t offset) { mOffset = offset; }
 
@@ -662,6 +681,7 @@ private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
+	Scope mScope;
 	bi32_t mOffset;
 };
 

@@ -83,9 +83,11 @@ StructDeclaration *ParseNodeFactory::CreateStructDeclaration(
 FunctionDefinition *ParseNodeFactory::CreateFunctionDefinition(
 	FunctionPrototype *prototype,
 	CompoundStatement *body,
-	TypeDescriptor *thisTypeDescriptor)
+	TypeDescriptor *thisTypeDescriptor,
+	Scope scope)
 {
-	return new (mAllocator.Alloc<FunctionDefinition>()) FunctionDefinition(prototype, body, thisTypeDescriptor);
+	return new (mAllocator.Alloc<FunctionDefinition>())
+		FunctionDefinition(prototype, body, thisTypeDescriptor, scope);
 }
 
 
@@ -133,10 +135,11 @@ TypeSpecifier *ParseNodeFactory::CreateTypeSpecifier(QualifiedIdentifier *identi
 NamedInitializer *ParseNodeFactory::CreateNamedInitializer(
 	const Token *name,
 	Initializer *initializer,
-	TypeDescriptor *typeDescriptor)
+	TypeDescriptor *typeDescriptor,
+	Scope scope)
 {
 	return new (mAllocator.Alloc<NamedInitializer>())
-		NamedInitializer(name, initializer, typeDescriptor);
+		NamedInitializer(name, initializer, typeDescriptor, scope);
 }
 
 

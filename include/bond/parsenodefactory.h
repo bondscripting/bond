@@ -35,7 +35,8 @@ public:
 	FunctionDefinition *CreateFunctionDefinition(
 		FunctionPrototype *prototype,
 		CompoundStatement *body,
-		TypeDescriptor *thisTypeDescriptor);
+		TypeDescriptor *thisTypeDescriptor,
+		Scope scope);
 
 	FunctionPrototype *CreateFunctionPrototype(
 		const Token *name,
@@ -52,7 +53,8 @@ public:
 	NamedInitializer *CreateNamedInitializer(
 	 const Token *name,
 	 Initializer *initializer,
-	 TypeDescriptor *typeDescriptor);
+	 TypeDescriptor *typeDescriptor,
+	 Scope scope);
 
 	Initializer *CreateInitializer(Expression *expression);
 	Initializer *CreateInitializer(Initializer *initializerList);

@@ -22,6 +22,8 @@ public:
 	TranslationUnit *Parse();
 
 private:
+	typedef AutoStack<Scope> ScopeStack;
+
 	// Copying disallowed.
 	ParserCore(const ParserCore &other);
 	ParserCore &operator=(const ParserCore &other);
@@ -46,8 +48,8 @@ private:
 	TypeDescriptor *ParseTypeDescriptor(bool isRelaxedTypeDescriptor = false);
 	TypeSpecifier *ParseTypeSpecifier();
 	TypeSpecifier *ParsePrimitiveTypeSpecifier();
-	NamedInitializer *ParseNamedInitializerList(TypeDescriptor *typeDescriptor, bool allowInitializers = true);
-	NamedInitializer *ParseNamedInitializer(TypeDescriptor *typeDescriptor, bool allowInitializers);
+	NamedInitializer *ParseNamedInitializerList(TypeDescriptor *typeDescriptor);
+	NamedInitializer *ParseNamedInitializer(TypeDescriptor *typeDescriptor);
 	Initializer *ParseInitializer();
 	QualifiedIdentifier *ParseQualifiedIdentifier();
 	ListParseNode *ParseStatement();
@@ -105,6 +107,7 @@ private:
 	ParseNodeFactory &mFactory;
 	TokenStream &mStream;
 
+	ScopeStack mScope;
 	BoolStack mParseConstExpressions;
 
 	bool mHasUnrecoveredError;
@@ -151,6 +154,7 @@ TranslationUnit *ParserCore::Parse()
 //  : external_declaration*
 TranslationUnit *ParserCore::ParseTranslationUnit()
 {
+	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
 	ListParseNode *declarations = ParseExternalDeclarationList();
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
@@ -303,6 +307,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 	if (mStream.NextIf(Token::KEY_STRUCT) != NULL)
 	{
+		ScopeStack::Element scopeElement(mScope, SCOPE_STRUCT_MEMBER);
 		const Token *native = mStream.NextIf(STRUCT_VARIANT_TYPESET);
 		const Token *size = NULL;
 		const Token *alignment = NULL;
@@ -444,6 +449,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 
 				if (obrace != NULL)
 				{
+					ScopeStack::Element scopeElement(mScope, SCOPE_LOCAL);
 					body = ParseCompoundStatement();
 					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
 					{
@@ -459,13 +465,13 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					}
 				}
 
-				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body, thisTypeDescriptor);
+				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body, thisTypeDescriptor, mScope.GetTop());
 			}
 			else
 			{
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
-				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor, structDeclaration == NULL);
+				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
 				// TODO: Forgot to handle failure.
 
 				if (initializerList != NULL)
@@ -665,14 +671,14 @@ TypeSpecifier *ParserCore::ParsePrimitiveTypeSpecifier()
 // named_initializer_list
 //   : named_initializer
 //   | named_initializer_list ',' named_initializer
-NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDescriptor, bool allowInitializers)
+NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDescriptor)
 {
-	NamedInitializer *head = ParseNamedInitializer(typeDescriptor, allowInitializers);
+	NamedInitializer *head = ParseNamedInitializer(typeDescriptor);
 	NamedInitializer *current = head;
 
 	while ((current != NULL) && (mStream.NextIf(Token::COMMA) != NULL))
 	{
-		NamedInitializer *next = ParseNamedInitializer(typeDescriptor, allowInitializers);
+		NamedInitializer *next = ParseNamedInitializer(typeDescriptor);
 		AssertNode(next);
 		current->SetNextNode(next);
 		current = next;
@@ -684,7 +690,7 @@ NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDesc
 
 // named_initializer
 //   : IDENTIFIER ['=' initializer]
-NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescriptor, bool allowInitializers)
+NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescriptor)
 {
 	NamedInitializer *namedInitializer = NULL;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
@@ -697,14 +703,14 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 		if (assign != NULL)
 		{
 			initializer = ParseInitializer();
-			if (!allowInitializers)
+			if (mScope.GetTop() == SCOPE_STRUCT_MEMBER)
 			{
 				PushError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
 			}
 			AssertNode(initializer);
 		}
 
-		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor);
+		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor, mScope.GetTop());
 	}
 
 	return namedInitializer;

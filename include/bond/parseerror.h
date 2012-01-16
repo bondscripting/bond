@@ -64,6 +64,8 @@
     "Index operator cannot be applied to non-integer type '%n'.")                   \
   BOND_PARSE_ERROR(INVALID_TYPE_CONVERSION,                                         \
     "Cannot convert type '%0n' to '%1n'.")                                          \
+  BOND_PARSE_ERROR(INVALID_RETURN_TYPE_CONVERSION,                                  \
+    "Cannot convert type '%0n' to '%1n' in return.")                                \
   BOND_PARSE_ERROR(INVALID_TYPE_ASSIGNMENT,                                         \
     "Cannot assign type '%0n' to '%1n'.")                                           \
   BOND_PARSE_ERROR(ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER,                           \
