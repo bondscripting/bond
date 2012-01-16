@@ -22,6 +22,7 @@ protected:
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(FunctionPrototype *functionPrototype);
 	virtual void Visit(Parameter *parameter);
+	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(CompoundStatement *compoundStatement);
 	virtual void Visit(IfStatement *ifStatement);
 	virtual void Visit(SwitchStatement *switchStatement);
@@ -35,6 +36,7 @@ protected:
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;
+	typedef AutoStack<const FunctionDefinition *> FunctionStack;
 
 	void AssertReachableCode(const ParseNode *node);
 
@@ -45,6 +47,7 @@ private:
 	BoolStack mIsInSwitch;
 	IntStack mVariableOffset;
 	TypeStack mReturnType;
+	FunctionStack mFunction;
 	bu32_t mPointerSize;
 };
 

@@ -293,6 +293,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 81},
 		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 94},
 		{Bond::ParseError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 109},
+		{Bond::ParseError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 115},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

@@ -1,3 +1,4 @@
+#include "bond/math.h"
 #include "bond/parseerror.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
@@ -15,6 +16,7 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	TypeStack::Element returnTypeElement(mReturnType, NULL);
+	FunctionStack::Element functionElement(mFunction, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -26,9 +28,10 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	BoolStack::Element hasReturnElement(mHasReturn, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
+	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
-	if (!returnType->IsVoidType() && !hasReturnElement && (functionDefinition->GetBody() != NULL))
+	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
 		mErrorBuffer.PushError(ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, functionDefinition->GetName());
 	}
@@ -37,7 +40,9 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 
 void ValidationPass::Visit(FunctionPrototype *functionPrototype)
 {
-	IntStack::Element variableOffsetElement(mVariableOffset, 0);
+	const bi32_t variableOffset =
+		(mFunction.GetTop()->GetThisTypeDescriptor() != NULL) ? -BOND_NATIVE_POINTER_SIZE : 0;
+	IntStack::Element variableOffsetElement(mVariableOffset, variableOffset);
 	ParseNodeTraverser::Visit(functionPrototype);
 }
 
@@ -45,11 +50,27 @@ void ValidationPass::Visit(FunctionPrototype *functionPrototype)
 void ValidationPass::Visit(Parameter *parameter)
 {
 	const TypeDescriptor *typeDescriptor = parameter->GetTypeDescriptor();
+	const bi32_t variableAlignment = static_cast<bi32_t>(typeDescriptor->GetAlignment());
 	const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-	const bi32_t offset = mVariableOffset.GetTop() - variableSize;
-	parameter->SetOffset(offset);
-	mVariableOffset.SetTop(offset);
+	const bi32_t variableOffset = AlignDown(mVariableOffset.GetTop() - variableSize, variableAlignment);
+	parameter->SetOffset(variableOffset);
+	mVariableOffset.SetTop(variableOffset);
 	ParseNodeTraverser::Visit(parameter);
+}
+
+
+void ValidationPass::Visit(NamedInitializer *namedInitializer)
+{
+	if (namedInitializer->GetScope() == SCOPE_LOCAL)
+	{
+		const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+		const bi32_t variableAlignment = static_cast<bi32_t>(typeDescriptor->GetAlignment());
+		const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+		const bi32_t variableOffset = AlignUp(mVariableOffset.GetTop(), variableAlignment);
+		namedInitializer->SetOffset(variableOffset);
+		mVariableOffset.SetTop(variableOffset + variableSize);
+	}
+	ParseNodeTraverser::Visit(namedInitializer);
 }
 
 
@@ -183,6 +204,15 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	else if (jumpStatement->IsReturn())
 	{
 		mHasReturn.SetTop(true);
+		const TypeDescriptor *returnType = jumpStatement->GetRhs()->GetTypeDescriptor();
+		if (!AreConvertibleTypes(returnType, mReturnType.GetTop()))
+		{
+			mErrorBuffer.PushError(
+				ParseError::INVALID_RETURN_TYPE_CONVERSION,
+				jumpStatement->GetContextToken(),
+				returnType,
+				mReturnType.GetTop());
+		}
 	}
 	mEndsWithJump.SetTop(mEndsWithJump.GetTop() || endsWithJump);
 }
@@ -192,22 +222,6 @@ void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
 	AssertReachableCode(declarativeStatement);
 	mEndsWithJump.SetTop(false);
-
-	const TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
-	const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-
-	bi32_t offset = mVariableOffset.GetTop();
-	NamedInitializer *initializerList = declarativeStatement->GetNamedInitializerList();
-	while (initializerList != NULL)
-	{
-		// TODO: Ensure that the offset does not overflow.
-		initializerList->SetOffset(static_cast<bi32_t>(offset));
-		offset += variableSize;
-		initializerList = NextNode(initializerList);
-	}
-
-	mVariableOffset.SetTop(offset);
-
 	ParseNodeTraverser::Visit(declarativeStatement);
 }
 

@@ -117,7 +117,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						const bu32_t memberSize = memberDescriptor->GetSize(mPointerSize);
 						const bu32_t memberAlign = memberDescriptor->GetAlignment();
 
-						structSize = Align(structSize, memberAlign);
+						structSize = AlignUp(structSize, memberAlign);
 						structAlign = Max(structAlign, memberAlign);
 
 						NamedInitializer *initializerList = memberList->GetNamedInitializerList();
@@ -132,7 +132,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						memberList = NextNode(memberList);
 					}
 
-					structSize = Align(structSize, structAlign);
+					structSize = AlignUp(structSize, structAlign);
 					structDeclaration->SetSize(structSize);
 					structDeclaration->SetAlignment(structAlign);
 				}
