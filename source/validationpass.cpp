@@ -40,8 +40,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 
 void ValidationPass::Visit(FunctionPrototype *functionPrototype)
 {
-	const bi32_t variableOffset =
-		(mFunction.GetTop()->GetThisTypeDescriptor() != NULL) ? -BOND_NATIVE_POINTER_SIZE : 0;
+	const bi32_t variableOffset = (mFunction.GetTop()->GetThisTypeDescriptor() != NULL) ? -mPointerSize : 0;
 	IntStack::Element variableOffsetElement(mVariableOffset, variableOffset);
 	ParseNodeTraverser::Visit(functionPrototype);
 }

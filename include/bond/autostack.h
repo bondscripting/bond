@@ -53,6 +53,7 @@ public:
 
 		operator const ElementType&() const { return mValue; }
 
+		ElementType &GetValue() { return mValue; }
 		const ElementType &GetValue() const  { return mValue; }
 		void SetValue(const ElementType &value) { mValue = value; }
 
@@ -84,6 +85,7 @@ public:
 		}
 	}
 
+	ElementType &GetTop() { return mTop->GetValue(); }
 	const ElementType &GetTop() const { return mTop->GetValue(); }
 
 	void SetTop(const ElementType &value)

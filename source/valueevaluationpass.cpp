@@ -110,7 +110,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					structDeclaration->SetMemberVariableList(memberList);
 
 					bu32_t structSize = 0;
-					bu32_t structAlign = 1;
+					bu32_t structAlign = BOND_DEFAULT_STRUCT_ALIGN;
 					while (memberList != NULL)
 					{
 						const TypeDescriptor *memberDescriptor = memberList->GetTypeDescriptor();
@@ -581,8 +581,11 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 		if (rhs.IsResolved())
 		{
 			Resolve(tav);
-			const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-			tav.SetValue(CastValue(rhs, resultType));
+			if (rhs.IsValueDefined())
+			{
+				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
+				tav.SetValue(CastValue(rhs, resultType));
+			}
 		}
 		CheckUnresolved(tav);
 	}

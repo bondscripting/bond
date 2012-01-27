@@ -288,7 +288,7 @@ bu32_t TypeDescriptor::GetAlignment() const
 	}
 	else if (IsPointerIntrinsicType())
 	{
-		return BOND_NATIVE_POINTER_ALIGN;
+		return BOND_NATIVE_POINTER_SIZE;
 	}
 	else if (IsArrayType())
 	{
@@ -431,12 +431,16 @@ bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
 			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
 			return BOND_CHAR_SIZE;
-		case Token::KEY_FLOAT:
-			return BOND_FLOAT_SIZE;
+		case Token::KEY_SHORT:
+			return BOND_SHORT_SIZE;
+		case Token::KEY_USHORT:
+			return BOND_USHORT_SIZE;
 		case Token::KEY_INT:
 			return BOND_INT_SIZE;
 		case Token::KEY_UINT:
 			return BOND_UINT_SIZE;
+		case Token::KEY_FLOAT:
+			return BOND_FLOAT_SIZE;
 
 		default:
 		{
@@ -456,15 +460,19 @@ bu32_t TypeSpecifier::GetAlignment() const
 	switch (GetPrimitiveType())
 	{
 		case Token::KEY_BOOL:
-			return BOND_BOOL_ALIGN;
+			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
-			return BOND_CHAR_ALIGN;
+			return BOND_CHAR_SIZE;
+		case Token::KEY_SHORT:
+			return BOND_SHORT_SIZE;
+		case Token::KEY_USHORT:
+			return BOND_USHORT_SIZE;
 		case Token::KEY_FLOAT:
-			return BOND_FLOAT_ALIGN;
+			return BOND_FLOAT_SIZE;
 		case Token::KEY_INT:
-			return BOND_INT_ALIGN;
+			return BOND_INT_SIZE;
 		case Token::KEY_UINT:
-			return BOND_UINT_ALIGN;
+			return BOND_UINT_SIZE;
 
 		default:
 		{

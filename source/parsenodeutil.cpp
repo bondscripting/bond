@@ -16,57 +16,6 @@ bu32_t GetLength(const ListParseNode *list)
 	return length;
 }
 
-	/*
-bool AreMatchingTypes(const TypeSpecifier *typeA, const TypeSpecifier *typeB)
-{
-	// This function can only be used once type specifiers have been resolved.
-	if ((typeA != NULL) && (typeB != NULL))
-	{
-		const Token *primitiveTypeA = typeA->GetPrimitiveTypeToken();
-		const Token *primitiveTypeB = typeB->GetPrimitiveTypeToken();
-
-		if ((primitiveTypeA != NULL) && (primitiveTypeA != NULL))
-		{
-			return primitiveTypeA->GetTokenType() == primitiveTypeB->GetTokenType();
-		}
-		else if (!((primitiveTypeA == NULL) && (primitiveTypeB == NULL)))
-		{
-			return false;
-		}
-
-		return typeA->GetDefinition() == typeB->GetDefinition();
-	}
-
-	return ((typeA == NULL) && (typeB == NULL));
-}
-
-
-bool AreMatchingTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
-{
-	// This function can only be used once type specifiers have been resolved.
-	while ((typeA != NULL) && (typeB != NULL))
-	{
-		if (typeA->GetVariant() != typeB->GetVariant())
-		{
-			return false;
-		}
-		if (typeA->IsConst() != typeB->IsConst())
-		{
-			return false;
-		}
-		if (!AreMatchingTypes(typeA->GetTypeSpecifier(), typeB->GetTypeSpecifier()))
-		{
-			return false;
-		}
-		// TODO: Test length.
-
-		typeA = typeA->GetParent();
-		typeB = typeB->GetParent();
-	}
-
-	return (typeA == NULL) && (typeB == NULL);
-}
-	*/
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
 {

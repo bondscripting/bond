@@ -12,23 +12,25 @@ typedef float bf32_t;
 
 const bu32_t BOND_BOOL_SIZE = 1;
 const bu32_t BOND_CHAR_SIZE = 1;
-const bu32_t BOND_SHORT_SIZE = sizeof(bi16_t);
-const bu32_t BOND_USHORT_SIZE = sizeof(bu16_t);
-const bu32_t BOND_INT_SIZE = sizeof(bi32_t);
-const bu32_t BOND_UINT_SIZE = sizeof(bu32_t);
-const bu32_t BOND_FLOAT_SIZE = sizeof(bf32_t);
+const bu32_t BOND_SHORT_SIZE = 2;
+const bu32_t BOND_USHORT_SIZE = 2;
+const bu32_t BOND_INT_SIZE = 4;
+const bu32_t BOND_UINT_SIZE = 4;
+const bu32_t BOND_FLOAT_SIZE = 4;
 const bu32_t BOND_NATIVE_POINTER_SIZE = sizeof(void *); 
 const bu32_t BOND_DEFAULT_STRUCT_SIZE = 4;
+const bu32_t BOND_DEFAULT_STRUCT_ALIGN = BOND_DEFAULT_STRUCT_SIZE;
 
-const bu32_t BOND_BOOL_ALIGN = 1;
-const bu32_t BOND_CHAR_ALIGN = 1;
-const bu32_t BOND_SHORT_ALIGN = 2;
-const bu32_t BOND_USHORT_ALIGN = 2;
-const bu32_t BOND_INT_ALIGN = 4;
-const bu32_t BOND_UINT_ALIGN = 4;
-const bu32_t BOND_FLOAT_ALIGN = 4;
-const bu32_t BOND_NATIVE_POINTER_ALIGN = 4;
-const bu32_t BOND_DEFAULT_STRUCT_ALIGN = 4;
+const bi32_t BOND_CHAR_MIN = -0x80;
+const bi32_t BOND_CHAR_MAX = 0x7F;
+const bi32_t BOND_SHORT_MIN = -0x8000;
+const bi32_t BOND_SHORT_MAX = 0x7FFF;
+const bu32_t BOND_USHORT_MIN = 0x0000;
+const bu32_t BOND_USHORT_MAX = 0xFFFF;
+const bi32_t BOND_INT_MIN = -0x80000000;
+const bi32_t BOND_INT_MAX = 0x7FFFFFFF;
+const bu32_t BOND_UINT_MIN = 0x00000000;
+const bu32_t BOND_UINT_MAX = 0xFFFFFFFF;
 
 #define BOND_DECIMAL_FORMAT "%d"
 #define BOND_UDECIMAL_FORMAT "%u"
