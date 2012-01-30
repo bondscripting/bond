@@ -23,6 +23,8 @@ const bu32_t BOND_DEFAULT_STRUCT_ALIGN = BOND_DEFAULT_STRUCT_SIZE;
 
 const bi32_t BOND_CHAR_MIN = -0x80;
 const bi32_t BOND_CHAR_MAX = 0x7F;
+const bu32_t BOND_UCHAR_MIN = 0x00;
+const bu32_t BOND_UCHAR_MAX = 0xFF;
 const bi32_t BOND_SHORT_MIN = -0x8000;
 const bi32_t BOND_SHORT_MAX = 0x7FFF;
 const bu32_t BOND_USHORT_MIN = 0x0000;
