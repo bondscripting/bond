@@ -45,7 +45,9 @@ bool HashedString::operator<(const HashedString &other) const
 		(mHashCode < other.mHashCode) :
 		((mLength != other.mLength) ?
 		 (mLength < other.mLength) :
-		 (StringCompare(mStr, other.mStr, mLength) < 0));
+		 ((mStr != other.mStr) ?
+			(StringCompare(mStr, other.mStr, mLength) < 0) :
+			false));
 }
 
 }

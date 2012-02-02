@@ -1,13 +1,14 @@
 #include "bond/codegenerator.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
+#include "bond/filebinarywriter.h"
 #include "bond/lexer.h"
 #include "bond/parseerror.h"
 #include "bond/parser.h"
 #include "bond/semanticanalyzer.h"
 #include "bond/stdouttextwriter.h"
+#include "bond/opcodes.h"
 #include <stdio.h>
-
 
 void PrintErrors(Bond::TextWriter &writer, const Bond::ParseErrorBuffer &errorBuffer)
 {
@@ -46,13 +47,19 @@ void Compile(const char *scriptName)
 
 			if (!errorBuffer.HasErrors())
 			{
-				Bond::CodeGenerator generator(allocator);
-				generator.Generate(parser.GetTranslationUnitList());
+				FILE *outputFile = fopen("bond.cbo", "wb");
+				if (outputFile != NULL)
+				{
+					Bond::FileBinaryWriter cboWriter(outputFile);
+					Bond::CodeGenerator generator(allocator);
+					generator.Generate(parser.GetTranslationUnitList(), cboWriter);
+					fclose(outputFile);
+				}
 			}
 		}
 
-		Bond::StdOutTextWriter writer;
-		PrintErrors(writer, errorBuffer);
+		Bond::StdOutTextWriter errorWriter;
+		PrintErrors(errorWriter, errorBuffer);
 	}
 }
 
@@ -63,5 +70,7 @@ int main(int argc, const char *argv[])
 	{
 		Compile(argv[i]);
 	}
+	printf("%d\n", Bond::OPCODE_MAX);
+
 	return 0;
 }

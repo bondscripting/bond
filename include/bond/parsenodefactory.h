@@ -1,12 +1,13 @@
 #ifndef BOND_PARSENODEFACTORY_H
 #define BOND_PARSENODEFACTORY_H
 
-#include "bond/allocator.h"
 #include "bond/parsenodes.h"
 #include "bond/token.h"
 
 namespace Bond
 {
+
+class Allocator;
 
 class ParseNodeFactory
 {

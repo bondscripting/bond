@@ -13,17 +13,21 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\allocator.h" />
     <ClInclude Include="..\..\include\bond\autostack.h" />
+    <ClInclude Include="..\..\include\bond\binarywriter.h" />
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h" />
     <ClInclude Include="..\..\include\bond\charstream.h" />
     <ClInclude Include="..\..\include\bond\codegenerator.h" />
     <ClInclude Include="..\..\include\bond\conf.h" />
     <ClInclude Include="..\..\include\bond\defaultallocator.h" />
     <ClInclude Include="..\..\include\bond\defaultfileloader.h" />
+    <ClInclude Include="..\..\include\bond\endian.h" />
+    <ClInclude Include="..\..\include\bond\filebinarywriter.h" />
     <ClInclude Include="..\..\include\bond\fileloader.h" />
     <ClInclude Include="..\..\include\bond\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\lexer.h" />
     <ClInclude Include="..\..\include\bond\linearallocator.h" />
     <ClInclude Include="..\..\include\bond\math.h" />
+    <ClInclude Include="..\..\include\bond\opcodes.h" />
     <ClInclude Include="..\..\include\bond\parseerror.h" />
     <ClInclude Include="..\..\include\bond\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\parsenodefactory.h" />
@@ -37,6 +41,7 @@
     <ClInclude Include="..\..\include\bond\private\set.h" />
     <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\private\types.h" />
+    <ClInclude Include="..\..\include\bond\private\vector.h" />
     <ClInclude Include="..\..\include\bond\semanticanalyzer.h" />
     <ClInclude Include="..\..\include\bond\set.h" />
     <ClInclude Include="..\..\include\bond\stdouttextwriter.h" />
@@ -51,6 +56,7 @@
     <ClInclude Include="..\..\include\bond\typeandvalue.h" />
     <ClInclude Include="..\..\include\bond\types.h" />
     <ClInclude Include="..\..\include\bond\value.h" />
+    <ClInclude Include="..\..\include\bond\vector.h" />
     <ClInclude Include="..\..\include\bond\version.h" />
     <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
@@ -67,6 +73,7 @@
     <ClCompile Include="..\..\source\hashedstring.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\linearallocator.cpp" />
+    <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parseerror.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />

@@ -42,10 +42,31 @@
     <ClInclude Include="..\..\include\bond\private\types.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\private\semanticanalysispass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\toplevelsymbolpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\typeevaluationpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\validationpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\valueevaluationpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\allocator.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\autostack.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\binarywriter.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h">
@@ -66,6 +87,12 @@
     <ClInclude Include="..\..\include\bond\defaultfileloader.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\endian.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\filebinarywriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\fileloader.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -79,6 +106,9 @@
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\math.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\opcodes.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\parseerror.h">
@@ -153,26 +183,14 @@
     <ClInclude Include="..\..\include\bond\value.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\vector.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\version.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\private\semanticanalysispass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\toplevelsymbolpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\typeevaluationpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\validationpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\valueevaluationpass.h">
-      <Filter>Header Files\source\private</Filter>
+    <ClInclude Include="..\..\include\bond\private\vector.h">
+      <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +213,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\linearallocator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\opcodes.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parseerror.cpp">

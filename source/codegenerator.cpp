@@ -1,10 +1,12 @@
 #include "bond/autostack.h"
+#include "bond/binarywriter.h"
 #include "bond/codegenerator.h"
 #include "bond/endian.h"
+#include "bond/list.h"
 #include "bond/opcodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
-#include "bond/set.h"
+#include "bond/map.h"
 #include "bond/vector.h"
 #include "bond/version.h"
 #include <stdio.h>
@@ -15,9 +17,16 @@ namespace Bond
 class GeneratorCore: private ParseNodeTraverser
 {
 public:
-	GeneratorCore(Allocator &allocator, const TranslationUnit *translationUnitList, bu32_t pointerSize):
-		mStringPool((StringPool::Compare()), (StringPool::Allocator(&allocator))),
+	GeneratorCore(
+			Allocator &allocator,
+			BinaryWriter &writer,
+			const TranslationUnit *translationUnitList,
+			bu32_t pointerSize):
+		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
+		mStringList(StringList::Allocator(&allocator)),
+		mFunctionList(FunctionList::Allocator(&allocator)),
 		mAllocator(allocator),
+		mWriter(writer),
 		mTranslationUnitList(translationUnitList),
 		mPointerSize(pointerSize)
 	{}
@@ -63,12 +72,24 @@ private:
 		bi32_t mOffset;
 	};
 
-	typedef Set<HashedString> StringPool;
 	typedef Vector<unsigned char> ByteCode;
+
+	struct CompiledFunction
+	{
+		CompiledFunction(const FunctionDefinition *definition, Allocator &allocator):
+			mDefinition(definition),
+			mByteCode(ByteCode::Allocator(&allocator))
+		{}
+		const FunctionDefinition *mDefinition;
+		ByteCode::Type mByteCode;
+	};
+
+	typedef Map<HashedString, bu16_t> StringIndexMap;
+	typedef List<HashedString> StringList;
+	typedef List<CompiledFunction> FunctionList;
 	typedef AutoStack<const StructDeclaration *> StructStack;
-	typedef AutoStack<const FunctionDefinition *> FunctionStack;
+	typedef AutoStack<CompiledFunction *> FunctionStack;
 	typedef AutoStack<GeneratorResult> ResultStack;
-	typedef AutoStack<ByteCode::Type> ByteCodeStack;
 
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
@@ -104,22 +125,32 @@ private:
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
 	void EmitValue32(Value32 value);
-	bool Is64BitPointer() const { return mPointerSize == 8; }
 
-	StringPool::Type mStringPool;
+	void WriteValue16(Value16 value);
+	void WriteValue32(Value32 value);
+	void WriteStringTable();
+	void WriteFunctionList(bu16_t functionIndex);
+
+	bool Is64BitPointer() const { return mPointerSize == 8; }
+	ByteCode::Type &GetByteCode();
+	bu16_t MapString(const HashedString &str);
+
+	StringIndexMap::Type mStringIndexMap;
+	StringList::Type mStringList;
+	FunctionList::Type mFunctionList;
 	ResultStack mResult;
 	StructStack mStruct;
 	FunctionStack mFunction;
-	ByteCodeStack mByteCode;
 	Allocator &mAllocator;
+	BinaryWriter &mWriter;
 	const TranslationUnit *mTranslationUnitList;
 	bu32_t mPointerSize;
 };
 
 
-void CodeGenerator::Generate(const TranslationUnit *translationUnitList)
+void CodeGenerator::Generate(const TranslationUnit *translationUnitList, BinaryWriter &writer)
 {
-	GeneratorCore generator(mAllocator, translationUnitList, mPointerSize);
+	GeneratorCore generator(mAllocator, writer, translationUnitList, mPointerSize);
 	generator.Generate();
 }
 
@@ -127,14 +158,36 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList)
 void GeneratorCore::Generate()
 {
 	StructStack::Element structElement(mStruct, NULL);
-	mStringPool.insert("List");
 	Traverse(mTranslationUnitList);
 
-	printf("%p %u\n", mTranslationUnitList, mStringPool.size());
-	for (StringPool::Type::const_iterator it = mStringPool.begin(); it != mStringPool.end(); ++it)
+	WriteValue32(Value32(MAGIC_NUMBER));
+	WriteValue32(Value32(MAJOR_VERSION));
+	WriteValue32(Value32(MINOR_VERSION));
+
+	bu16_t listIndex = MapString("List");
+	bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
+
+	WriteStringTable();
+	WriteFunctionList(functionIndex);
+
+	// Cache the start position and skip 4 bytes for the blob size.
+	const int startPos = mWriter.GetPosition();
+	mWriter.AddOffset(4);
+
+	WriteValue16(Value16(listIndex));
+
+	// Patch up the blob size.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
+	mWriter.SetPosition(endPos);
+	/*
+	printf("string pool size%u\n", mStringList.size());
+	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
 	{
 		printf("%s\n", it->GetString());
 	}
+	*/
 }
 
 
@@ -150,10 +203,11 @@ void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
-	FunctionStack::Element functionElement(mFunction, functionDefinition);
-	ByteCodeStack::Element byteCodeElement(mByteCode);
-	mStringPool.insert("Func");
-	mStringPool.insert(functionDefinition->GetName()->GetHashedText());
+	CompiledFunction &function =
+		*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
+	FunctionStack::Element functionElement(mFunction, &function);
+	//MapString("Func");
+	//MapString(functionDefinition->GetName()->GetHashedText());
 	ParseNodeTraverser::Visit(functionDefinition);
 }
 
@@ -163,8 +217,8 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 	switch (namedInitializer->GetScope())
 	{
 		case SCOPE_GLOBAL:
-			mStringPool.insert("Decl");
-			mStringPool.insert(namedInitializer->GetName()->GetHashedText());
+			//MapString("Decl");
+			//MapString(namedInitializer->GetName()->GetHashedText());
 			// TODO: output initializer data.
 			break;
 
@@ -381,7 +435,7 @@ void GeneratorCore::EmitPushFramePointerRelativeValue(const TypeDescriptor *type
 
 void GeneratorCore::EmitPushFramePointerRelativeValue32(bi32_t offset)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -16:
@@ -417,7 +471,7 @@ void GeneratorCore::EmitPushFramePointerRelativeValue32(bi32_t offset)
 
 void GeneratorCore::EmitPushFramePointerRelativeValue64(bi32_t offset)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -32:
@@ -455,7 +509,7 @@ void GeneratorCore::EmitPushAddressRelativeValue(const TypeDescriptor *typeDescr
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	if (offset != 0)
 	{
 		EmitPushConstantInt(offset);
@@ -512,7 +566,7 @@ void GeneratorCore::EmitPushAddressRelativeValue(const TypeDescriptor *typeDescr
 
 void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *typeDescriptor = typeAndValue.GetTypeDescriptor();
 	switch (typeDescriptor->GetPrimitiveType())
 	{
@@ -544,7 +598,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 
 void GeneratorCore::EmitPushConstantInt(bi32_t value)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case -2:
@@ -603,7 +657,7 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 
 void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case 0:
@@ -656,7 +710,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 
 void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	if (value == -2.0f)
 	{
 		byteCode.push_back(OPCODE_CONSTF_N2);
@@ -755,7 +809,7 @@ void GeneratorCore::EmitPopFramePointerRelativeValue(const TypeDescriptor *typeD
 
 void GeneratorCore::EmitPopFramePointerRelativeValue32(bi32_t offset)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -16:
@@ -791,7 +845,7 @@ void GeneratorCore::EmitPopFramePointerRelativeValue32(bi32_t offset)
 
 void GeneratorCore::EmitPopFramePointerRelativeValue64(bi32_t offset)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -32:
@@ -829,7 +883,7 @@ void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescri
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	if (offset != 0)
 	{
 		EmitPushConstantInt(offset);
@@ -882,7 +936,7 @@ void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescri
 
 void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 {
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	if ((offset >= BOND_SHORT_MIN) && (offset <= BOND_SHORT_MAX))
 	{
 		byteCode.push_back(opCode);
@@ -899,7 +953,7 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 void GeneratorCore::EmitValue16(Value16 value)
 {
 	ConvertBigEndian16(value.mBytes);
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(value.mBytes[0]);
 	byteCode.push_back(value.mBytes[1]);
 }
@@ -907,12 +961,105 @@ void GeneratorCore::EmitValue16(Value16 value)
 
 void GeneratorCore::EmitValue32(Value32 value)
 {
-	ConvertBigEndian16(value.mBytes);
-	ByteCode::Type &byteCode = mByteCode.GetTop();
+	ConvertBigEndian32(value.mBytes);
+	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(value.mBytes[0]);
 	byteCode.push_back(value.mBytes[1]);
 	byteCode.push_back(value.mBytes[2]);
 	byteCode.push_back(value.mBytes[3]);
+}
+
+
+void GeneratorCore::WriteValue16(Value16 value)
+{
+	ConvertBigEndian16(value.mBytes);
+	mWriter.Write(value.mBytes[0]);
+	mWriter.Write(value.mBytes[1]);
+}
+
+
+void GeneratorCore::WriteValue32(Value32 value)
+{
+	ConvertBigEndian32(value.mBytes);
+	mWriter.Write(value.mBytes[0]);
+	mWriter.Write(value.mBytes[1]);
+	mWriter.Write(value.mBytes[2]);
+	mWriter.Write(value.mBytes[3]);
+}
+
+
+void GeneratorCore::WriteStringTable()
+{
+	const int startPos = mWriter.GetPosition();
+
+	// Skip the 4 bytes for the table size.
+	mWriter.AddOffset(4);
+
+	WriteValue16(Value16(static_cast<bu16_t>(mStringList.size())));
+
+	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
+	{
+		const int length = it->GetLength();
+		const char *str = it->GetString();
+		WriteValue16(Value16(static_cast<bu16_t>(length)));
+		for (int i = 0; i < length; ++i)
+		{
+			mWriter.Write(str[i]);
+		}
+	}
+
+	// Patch up the table size.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
+	mWriter.SetPosition(endPos);
+}
+
+
+void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
+{
+	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
+	{
+		// Cache the start position and skip 4 bytes for the blob size.
+		const int startPos = mWriter.GetPosition();
+		mWriter.AddOffset(4);
+
+		WriteValue16(Value16(static_cast<bu16_t>(functionIndex)));
+		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
+		WriteValue32(Value32(static_cast<bu32_t>(flit->mByteCode.size())));
+
+		ByteCode::Type::const_iterator end = flit->mByteCode.end();
+		for (ByteCode::Type::const_iterator bcit = flit->mByteCode.begin(); bcit < end; ++bcit)
+		{
+			mWriter.Write(*bcit);
+		}
+
+		// Patch up the blob size.
+		const int endPos = mWriter.GetPosition();
+		mWriter.SetPosition(startPos);
+		WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
+		mWriter.SetPosition(endPos);
+	}
+}
+
+
+GeneratorCore::ByteCode::Type &GeneratorCore::GetByteCode()
+{
+	return mFunction.GetTop()->mByteCode;
+}
+
+
+bu16_t GeneratorCore::MapString(const HashedString &str)
+{
+	// TODO: Verify that the 16 bit index does not overflow.
+	// TODO: Verify that the string's length fits in 16 bits.
+	const bu16_t index = static_cast<bu16_t>(mStringList.size());
+	StringIndexMap::InsertResult insertResult = mStringIndexMap.insert(StringIndexMap::KeyValue(str, index));
+	if (insertResult.second)
+	{
+		mStringList.push_back(str);
+	}
+	return insertResult.first->second;
 }
 
 }
