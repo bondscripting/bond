@@ -20,12 +20,15 @@
     <ClInclude Include="..\..\include\bond\conf.h" />
     <ClInclude Include="..\..\include\bond\defaultallocator.h" />
     <ClInclude Include="..\..\include\bond\defaultfileloader.h" />
+    <ClInclude Include="..\..\include\bond\disassembler.h" />
     <ClInclude Include="..\..\include\bond\endian.h" />
     <ClInclude Include="..\..\include\bond\filebinarywriter.h" />
     <ClInclude Include="..\..\include\bond\fileloader.h" />
     <ClInclude Include="..\..\include\bond\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\lexer.h" />
     <ClInclude Include="..\..\include\bond\linearallocator.h" />
+    <ClInclude Include="..\..\include\bond\list.h" />
+    <ClInclude Include="..\..\include\bond\map.h" />
     <ClInclude Include="..\..\include\bond\math.h" />
     <ClInclude Include="..\..\include\bond\opcodes.h" />
     <ClInclude Include="..\..\include\bond\parseerror.h" />
@@ -38,6 +41,8 @@
     <ClInclude Include="..\..\include\bond\parsenodevisitor.h" />
     <ClInclude Include="..\..\include\bond\parser.h" />
     <ClInclude Include="..\..\include\bond\prettyprinter.h" />
+    <ClInclude Include="..\..\include\bond\private\list.h" />
+    <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\set.h" />
     <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\private\types.h" />
@@ -70,6 +75,7 @@
     <ClCompile Include="..\..\source\charstream.cpp" />
     <ClCompile Include="..\..\source\codegenerator.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
+    <ClCompile Include="..\..\source\disassembler.cpp" />
     <ClCompile Include="..\..\source\hashedstring.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\linearallocator.cpp" />

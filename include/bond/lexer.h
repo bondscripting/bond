@@ -23,6 +23,7 @@ public:
 	void Dispose();
 
 	void Lex(const char *text, int length);
+	void Lex(const unsigned char *text, int length) { Lex(reinterpret_cast<const char *>(text), length); }
 	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
 private:

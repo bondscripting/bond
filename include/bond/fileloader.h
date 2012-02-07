@@ -9,9 +9,9 @@ namespace Bond
 struct FileData
 {
 	FileData(): mData(NULL), mLength(-1) {}
-	FileData(char *data, size_t length): mData(data), mLength(length) {}
+	FileData(unsigned char *data, size_t length): mData(data), mLength(length) {}
 
-	char *mData;
+	unsigned char *mData;
 	size_t mLength;
 };
 

@@ -1,7 +1,7 @@
 CompiledBondFile
 ----------------
 uint magicNumber = 0x57EDFA57;
-ushort majorVersion;
+ushort majorVersion + flags;
 ushort minorVersion;
 StringTable stringTable;
 ListBlob attributes;
@@ -19,8 +19,8 @@ char[length] string;
 
 BlobHeader
 ----------
-ushort idIndex;
 uint BlobSize;
+ushort idIndex;
 
 ListBlob
 --------

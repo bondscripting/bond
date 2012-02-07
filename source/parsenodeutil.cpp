@@ -148,8 +148,7 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			}
 			break;
 
-		case Token::KEY_FLOAT:
-		case Token::CONST_FLOAT:
+		case Token::KEY_SHORT:
 			switch (sourceType)
 			{
 				case Token::KEY_CHAR:
@@ -157,16 +156,40 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mInt);
+					resultValue.mInt = static_cast<bi16_t>(value.mInt);
 					break;
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mUInt);
+					resultValue.mInt = static_cast<bi16_t>(value.mUInt);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mFloat);
+					resultValue.mInt = static_cast<bi16_t>(value.mFloat);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_USHORT:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+				case Token::CONST_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+				case Token::CONST_INT:
+					resultValue.mUInt = static_cast<bu16_t>(value.mInt);
+					break;
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+				case Token::CONST_UINT:
+					resultValue.mUInt = static_cast<bu16_t>(value.mUInt);
+					break;
+				case Token::KEY_FLOAT:
+				case Token::CONST_FLOAT:
+					resultValue.mUInt = static_cast<bu16_t>(value.mFloat);
 					break;
 				default:
 					break;
@@ -223,6 +246,31 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 			}
 			break;
 
+		case Token::KEY_FLOAT:
+		case Token::CONST_FLOAT:
+			switch (sourceType)
+			{
+				case Token::KEY_CHAR:
+				case Token::CONST_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+				case Token::CONST_INT:
+					resultValue.mFloat = static_cast<bf32_t>(value.mInt);
+					break;
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+				case Token::CONST_UINT:
+					resultValue.mFloat = static_cast<bf32_t>(value.mUInt);
+					break;
+				case Token::KEY_FLOAT:
+				case Token::CONST_FLOAT:
+					resultValue.mFloat = static_cast<bf32_t>(value.mFloat);
+					break;
+				default:
+					break;
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -234,7 +282,7 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 Value CastValue(const TypeAndValue &value, const TypeDescriptor *destType)
 {
 	// This function assumes that it is only called for valid casts on defined values.
-	Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
+	const Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
 	return CastValue(value.GetValue(), sourceType, destType->GetPrimitiveType());
 }
 

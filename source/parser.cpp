@@ -651,6 +651,8 @@ TypeSpecifier *ParserCore::ParseTypeSpecifier()
 //   : VOID
 //   | BOOL
 //   | CHAR
+//   | SHORT
+//   | USHORT
 //   | INT
 //   | UINT
 //   | FLOAT

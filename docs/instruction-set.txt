@@ -105,15 +105,16 @@ pop64_l2            ..., 64bit -> ...
 pop64_l3            ..., 64bit -> ...
 
 movesp, short
+movespw, short
 
 dup32               ..., 32bit -> ..., 32bit, 32bit
 dup64               ..., 64bit -> ..., 64bit, 64bit
 
-ctoi                ..., int -> ..., int
-uctoui              ..., uint -> ..., uint
+?ctoi                ..., int -> ..., int
+?uctoui              ..., uint -> ..., uint
 
-stoi                ..., int -> ..., int
-ustoui              ..., uint -> ..., uint
+?stoi                ..., int -> ..., int
+?ustoui              ..., uint -> ..., uint
 
 itoc                ..., int -> ..., int
 itos                ..., int -> ..., int

@@ -24,7 +24,7 @@ public:
 private:
 	Allocator &mAllocator;
 	bu32_t mPointerSize;
- };
+};
 
 }
 

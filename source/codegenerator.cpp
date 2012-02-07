@@ -122,6 +122,7 @@ private:
 	void EmitPopFramePointerRelativeValue32(bi32_t offset);
 	void EmitPopFramePointerRelativeValue64(bi32_t offset);
 	void EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
 	void EmitValue32(Value32 value);
@@ -161,8 +162,8 @@ void GeneratorCore::Generate()
 	Traverse(mTranslationUnitList);
 
 	WriteValue32(Value32(MAGIC_NUMBER));
-	WriteValue32(Value32(MAJOR_VERSION));
-	WriteValue32(Value32(MINOR_VERSION));
+	WriteValue16(Value16(static_cast<bu16_t>(MAJOR_VERSION | (Is64BitPointer() ? 0x80 : 0))));
+	WriteValue16(Value16(MINOR_VERSION));
 
 	bu16_t listIndex = MapString("List");
 	bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
@@ -175,19 +176,13 @@ void GeneratorCore::Generate()
 	mWriter.AddOffset(4);
 
 	WriteValue16(Value16(listIndex));
+	WriteValue32(Value32(static_cast<bu32_t>(/* mDefinitionList + */ mFunctionList.size())));
 
 	// Patch up the blob size.
 	const int endPos = mWriter.GetPosition();
 	mWriter.SetPosition(startPos);
 	WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
 	mWriter.SetPosition(endPos);
-	/*
-	printf("string pool size%u\n", mStringList.size());
-	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
-	{
-		printf("%s\n", it->GetString());
-	}
-	*/
 }
 
 
@@ -206,7 +201,6 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	CompiledFunction &function =
 		*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
 	FunctionStack::Element functionElement(mFunction, &function);
-	//MapString("Func");
 	//MapString(functionDefinition->GetName()->GetHashedText());
 	ParseNodeTraverser::Visit(functionDefinition);
 }
@@ -225,10 +219,11 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_LOCAL:
 		{
 			ResultStack::Element rhResult(mResult);
-			GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetTypeAndValue()->GetTypeDescriptor(), namedInitializer->GetOffset());
+			const TypeDescriptor *lhType = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+			GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, lhType, namedInitializer->GetOffset());
 			Traverse(namedInitializer->GetInitializer());
 			EmitPushResult(rhResult.GetValue());
-			// TODO: handle type conversions.
+			EmitCast(rhResult.GetValue().mTypeAndValue.GetTypeDescriptor(), lhType);
 			EmitPopResult(lhResult);
 		}
 		break;
@@ -249,7 +244,121 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 
 void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 {
-	ParseNodeTraverser::Visit(binaryExpression);
+	ByteCode::Type &byteCode = GetByteCode();
+	if (!ProcessConstantExpression(binaryExpression))
+	{
+		const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
+		const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
+		const TypeAndValue &resultTav = binaryExpression->GetTypeAndValue();
+		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		const TypeDescriptor *resultDescriptor = resultTav.GetTypeDescriptor();
+		const Token *op = binaryExpression->GetOperator();
+
+		switch (op->GetTokenType())
+		{
+			case Token::COMMA:
+				break;
+
+			case Token::ASSIGN:
+				break;
+
+			case Token::ASSIGN_LEFT:
+			case Token::ASSIGN_RIGHT:
+			case Token::ASSIGN_MOD:
+			case Token::ASSIGN_AND:
+			case Token::ASSIGN_OR:
+			case Token::ASSIGN_XOR:
+				break;
+
+			case Token::ASSIGN_PLUS:
+			case Token::ASSIGN_MINUS:
+				if (lhDescriptor->IsPointerType())
+				{
+				}
+				else if (rhDescriptor->IsPointerType())
+				{
+				}
+				else
+				{
+				}
+
+				break;
+
+			case Token::ASSIGN_MULT:
+			case Token::ASSIGN_DIV:
+				break;
+
+			case Token::OP_AND:
+			case Token::OP_OR:
+				break;
+
+			case Token::OP_AMP:
+			case Token::OP_BIT_OR:
+			case Token::OP_BIT_XOR:
+			case Token::OP_MOD:
+			case Token::OP_LEFT:
+			case Token::OP_RIGHT:
+				break;
+
+			case Token::OP_LT:
+			case Token::OP_LTE:
+			case Token::OP_GT:
+			case Token::OP_GTE:
+			case Token::OP_EQUAL:
+			case Token::OP_NOT_EQUAL:
+				break;
+
+			case Token::OP_PLUS:
+			{
+				if (lhDescriptor->IsPointerType())
+				{
+				}
+				else if (rhDescriptor->IsPointerType())
+				{
+				}
+				else
+				{
+					ResultStack::Element lhResult(mResult);
+					Traverse(binaryExpression->GetLhs());
+					EmitPushResult(lhResult.GetValue());
+					EmitCast(lhDescriptor, resultDescriptor);
+
+					ResultStack::Element rhResult(mResult);
+					Traverse(binaryExpression->GetRhs());
+					EmitPushResult(rhResult.GetValue());
+					EmitCast(rhDescriptor, resultDescriptor);
+
+					switch (resultDescriptor->GetPrimitiveType())
+					{
+						case Token::KEY_INT:
+						case Token::KEY_UINT:
+							byteCode.push_back(OPCODE_ADDI);
+							break;
+						case Token::KEY_FLOAT:
+							byteCode.push_back(OPCODE_ADDF);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			break;
+			case Token::OP_MINUS:
+				break;
+
+			case Token::OP_STAR:
+			case Token::OP_DIV:
+				break;
+
+			default:
+				break;
+		}
+
+		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE, resultTav));
+	}
+
+	//ParseNodeTraverser::Visit(binaryExpression);
 }
 
 
@@ -930,6 +1039,107 @@ void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescri
 		{
 			byteCode.push_back(OPCODE_STORE32);
 		}
+	}
+}
+
+
+void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	switch (destType->GetPrimitiveType())
+	{
+		case Token::KEY_BOOL:
+		case Token::KEY_CHAR:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_SHORT:
+				case Token::KEY_USHORT:
+				case Token::KEY_INT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_ITOC);
+					break;
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOI);
+					byteCode.push_back(OPCODE_ITOC);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_SHORT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_INT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_ITOS);
+					break;
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOI);
+					byteCode.push_back(OPCODE_ITOS);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_USHORT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_INT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_ITOS);
+					break;
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOUI);
+					byteCode.push_back(OPCODE_ITOS);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_INT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_UINT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOUI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_FLOAT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					byteCode.push_back(OPCODE_ITOF);
+					break;
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_UITOF);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
 	}
 }
 

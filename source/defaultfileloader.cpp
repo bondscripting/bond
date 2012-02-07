@@ -6,7 +6,7 @@ namespace Bond
 
 FileData DefaultFileLoader::LoadFile(const char *fileName)
 {
-	char *data = NULL;
+	unsigned char *data = NULL;
 	size_t length = -1;
 	FILE *file = fopen(fileName, "rb");
 
@@ -18,7 +18,7 @@ FileData DefaultFileLoader::LoadFile(const char *fileName)
 
 		if (length > 0)
 		{
-			data = mAllocator.Alloc<char>(length);
+			data = mAllocator.Alloc<unsigned char>(length);
 			fread(data, sizeof(char), length, file);
 		}
 

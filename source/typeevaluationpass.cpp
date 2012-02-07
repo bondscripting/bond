@@ -262,18 +262,12 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_BIT_OR:
 			case Token::OP_BIT_XOR:
 			case Token::OP_MOD:
-				isResolvable =
-					AssertIntegerOperand(lhDescriptor, op) &&
-					AssertIntegerOperand(rhDescriptor, op);
-				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
-				break;
-
 			case Token::OP_LEFT:
 			case Token::OP_RIGHT:
 				isResolvable =
 					AssertIntegerOperand(lhDescriptor, op) &&
 					AssertIntegerOperand(rhDescriptor, op);
-				resultType = *lhDescriptor;
+				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			case Token::OP_LT:

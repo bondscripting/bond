@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\source\private\valueevaluationpass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\vector.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\allocator.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -87,6 +90,9 @@
     <ClInclude Include="..\..\include\bond\defaultfileloader.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\disassembler.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\endian.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -103,6 +109,12 @@
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\linearallocator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\list.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\map.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\math.h">
@@ -189,7 +201,10 @@
     <ClInclude Include="..\..\include\bond\version.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\vector.h">
+    <ClInclude Include="..\..\include\bond\private\list.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\map.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
   </ItemGroup>
@@ -204,6 +219,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\defaultfileloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\disassembler.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\hashedstring.cpp">

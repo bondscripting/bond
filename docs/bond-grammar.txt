@@ -72,6 +72,8 @@ primitive_type_specifier
   : VOID
   | BOOL
   | CHAR
+  | SHORT
+  | USHORT
   | INT
   | UINT
   | FLOAT

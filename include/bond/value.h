@@ -29,6 +29,11 @@ union Value16
 {
 	explicit Value16(bi16_t value): mShort(value) {}
 	explicit Value16(bu16_t value): mUShort(value) {}
+	explicit Value16(const unsigned char *bytes)
+	{
+		mBytes[0] = bytes[0];
+		mBytes[1] = bytes[1];
+	}
 	bi16_t mShort;
 	bu16_t mUShort;
 	unsigned char mBytes[4];
@@ -40,6 +45,13 @@ union Value32
 	explicit Value32(bi32_t value): mInt(value) {}
 	explicit Value32(bu32_t value): mUInt(value) {}
 	explicit Value32(bf32_t value): mFloat(value) {}
+	explicit Value32(const unsigned char *bytes)
+	{
+		mBytes[0] = bytes[0];
+		mBytes[1] = bytes[1];
+		mBytes[2] = bytes[2];
+		mBytes[3] = bytes[3];
+	}
 	bi32_t mInt;
 	bu32_t mUInt;
 	bf32_t mFloat;
