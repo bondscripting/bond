@@ -46,29 +46,25 @@ private:
 			CONTEXT_CONSTANT_VALUE,
 		};
 
-		GeneratorResult(): mContext(CONTEXT_NONE), mOffset(0) {}
-		GeneratorResult(Context context): mContext(context), mOffset(0) {}
+		GeneratorResult(): mContext(CONTEXT_NONE), mTypeAndValue(NULL), mOffset(0) {}
+		GeneratorResult(Context context): mContext(context), mTypeAndValue(NULL), mOffset(0) {}
+		GeneratorResult(Context context, bi32_t offset): mContext(context), mTypeAndValue(NULL), mOffset(offset) {}
 
-		GeneratorResult(Context context, const TypeAndValue &typeAndValue):
+		GeneratorResult(const TypeAndValue *typeAndValue):
+			mContext(CONTEXT_CONSTANT_VALUE),
 			mTypeAndValue(typeAndValue),
-			mContext(context),
 			mOffset(0)
 		{}
-
+		/*
 		GeneratorResult(Context context, const TypeDescriptor *typeDescriptor, const Value &value):
 			mTypeAndValue(typeDescriptor, value),
 			mContext(context),
 			mOffset(0)
 		{}
+		*/
 
-		GeneratorResult(Context context, const TypeDescriptor *typeDescriptor, bi32_t offset):
-			mTypeAndValue(typeDescriptor),
-			mContext(context),
-			mOffset(offset)
-		{}
-
-		TypeAndValue mTypeAndValue;
 		Context mContext;
+		const TypeAndValue *mTypeAndValue;
 		bi32_t mOffset;
 	};
 
@@ -108,7 +104,7 @@ private:
 	virtual void Visit(const ThisExpression *thisExpression);
 
 	bool ProcessConstantExpression(const Expression *expression);
-	void EmitPushResult(const GeneratorResult &result);
+	void EmitPushResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 	void EmitPushFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 	void EmitPushFramePointerRelativeValue32(bi32_t offset);
 	void EmitPushFramePointerRelativeValue64(bi32_t offset);
@@ -117,7 +113,7 @@ private:
 	void EmitPushConstantInt(bi32_t value);
 	void EmitPushConstantUInt(bu32_t value);
 	void EmitPushConstantFloat(bf32_t value);
-	void EmitPopResult(const GeneratorResult &result);
+	void EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 	void EmitPopFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 	void EmitPopFramePointerRelativeValue32(bi32_t offset);
 	void EmitPopFramePointerRelativeValue64(bi32_t offset);
@@ -218,13 +214,22 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 		case SCOPE_LOCAL:
 		{
-			ResultStack::Element rhResult(mResult);
-			const TypeDescriptor *lhType = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-			GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, lhType, namedInitializer->GetOffset());
-			Traverse(namedInitializer->GetInitializer());
-			EmitPushResult(rhResult.GetValue());
-			EmitCast(rhResult.GetValue().mTypeAndValue.GetTypeDescriptor(), lhType);
-			EmitPopResult(lhResult);
+			const Initializer *initializer = namedInitializer->GetInitializer();
+			if (initializer->GetExpression() != NULL)
+			{
+				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+				const TypeDescriptor *rhDescriptor =
+					initializer->GetExpression()->GetTypeAndValue().GetTypeDescriptor();
+				ResultStack::Element rhResult(mResult);
+				GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset());
+				Traverse(initializer);
+				EmitPushResult(rhResult.GetValue(), rhDescriptor);
+				EmitCast(rhDescriptor, lhDescriptor);
+				EmitPopResult(lhResult, lhDescriptor);
+			}
+			else
+			{
+			}
 		}
 		break;
 
@@ -321,12 +326,12 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				{
 					ResultStack::Element lhResult(mResult);
 					Traverse(binaryExpression->GetLhs());
-					EmitPushResult(lhResult.GetValue());
+					EmitPushResult(lhResult.GetValue(), lhDescriptor);
 					EmitCast(lhDescriptor, resultDescriptor);
 
 					ResultStack::Element rhResult(mResult);
 					Traverse(binaryExpression->GetRhs());
-					EmitPushResult(rhResult.GetValue());
+					EmitPushResult(rhResult.GetValue(), rhDescriptor);
 					EmitCast(rhDescriptor, resultDescriptor);
 
 					switch (resultDescriptor->GetPrimitiveType())
@@ -355,7 +360,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 		}
 
-		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE, resultTav));
+		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
 	}
 
 	//ParseNodeTraverser::Visit(binaryExpression);
@@ -417,7 +422,6 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 	if (!ProcessConstantExpression(identifierExpression))
 	{
 		const Symbol *symbol = identifierExpression->GetDefinition();
-		const TypeDescriptor *typeDescriptor = symbol->GetTypeAndValue()->GetTypeDescriptor();
 		const NamedInitializer *namedInitializer = NULL;
 		const Parameter *parameter = NULL;
 		const FunctionDefinition *functionDefinition = NULL;
@@ -429,7 +433,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 					// TODO
 					break;
 				case SCOPE_LOCAL:
-					mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, typeDescriptor, namedInitializer->GetOffset()));
+					mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset()));
 					break;
 				case SCOPE_STRUCT_MEMBER:
 					// TODO
@@ -438,7 +442,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		}
 		else if ((parameter = CastNode<Parameter>(symbol)) != NULL)
 		{
-			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, typeDescriptor, parameter->GetOffset()));
+			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, parameter->GetOffset()));
 		}
 		else if ((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL)
 		{
@@ -450,7 +454,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 
 void GeneratorCore::Visit(const ThisExpression *thisExpression)
 {
-	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, thisExpression->GetTypeDescriptor(), -mPointerSize));
+	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, -mPointerSize));
 }
 
 
@@ -459,19 +463,19 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsValueDefined())
 	{
-		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_CONSTANT_VALUE, tav));
+		mResult.SetTop(GeneratorResult(&tav));
 		return true;
 	}
 	return false;
 }
 
 
-void GeneratorCore::EmitPushResult(const GeneratorResult &result)
+void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor)
 {
 	switch (result.mContext)
 	{
 		case GeneratorResult::CONTEXT_FP_VALUE:
-			EmitPushFramePointerRelativeValue(result.mTypeAndValue.GetTypeDescriptor(), result.mOffset);
+			EmitPushFramePointerRelativeValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_FP_ADDRESS:
@@ -479,11 +483,11 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result)
 			break;
 
 		case GeneratorResult::CONTEXT_STACK_ADDRESS:
-			EmitPushAddressRelativeValue(result.mTypeAndValue.GetTypeDescriptor(), result.mOffset);
+			EmitPushAddressRelativeValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			EmitPushConstant(result.mTypeAndValue);
+			EmitPushConstant(*result.mTypeAndValue);
 			break;
 
 		case GeneratorResult::CONTEXT_STACK_VALUE:
@@ -856,16 +860,16 @@ void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 }
 
 
-void GeneratorCore::EmitPopResult(const GeneratorResult &result)
+void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor)
 {
 	switch (result.mContext)
 	{
 		case GeneratorResult::CONTEXT_FP_VALUE:
-			EmitPopFramePointerRelativeValue(result.mTypeAndValue.GetTypeDescriptor(), result.mOffset);
+			EmitPopFramePointerRelativeValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_STACK_ADDRESS:
-			EmitPopAddressRelativeValue(result.mTypeAndValue.GetTypeDescriptor(), result.mOffset);
+			EmitPopAddressRelativeValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_NONE:

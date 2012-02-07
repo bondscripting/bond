@@ -19,22 +19,9 @@ public:
 		mResolved(false)
 	{}
 
-	TypeAndValue(const TypeDescriptor *descriptor):
-		mTypeDescriptor(const_cast<TypeDescriptor *>(descriptor)),
-		mValueDefined(false),
-		mResolved(false)
-	{}
-
 	TypeAndValue(TypeDescriptor *descriptor, const Value &value):
 		mValue(value),
 		mTypeDescriptor(descriptor),
-		mValueDefined(true),
-		mResolved(true)
-	{}
-
-	TypeAndValue(const TypeDescriptor *descriptor, const Value &value):
-		mValue(value),
-		mTypeDescriptor(const_cast<TypeDescriptor *>(descriptor)),
 		mValueDefined(true),
 		mResolved(true)
 	{}
