@@ -104,21 +104,32 @@ private:
 	virtual void Visit(const ThisExpression *thisExpression);
 
 	bool ProcessConstantExpression(const Expression *expression);
+
 	void EmitPushResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 	void EmitPushFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 	void EmitPushFramePointerRelativeValue32(bi32_t offset);
 	void EmitPushFramePointerRelativeValue64(bi32_t offset);
 	void EmitPushAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+
 	void EmitPushConstant(const TypeAndValue &typeAndValue);
 	void EmitPushConstantInt(bi32_t value);
 	void EmitPushConstantUInt(bu32_t value);
 	void EmitPushConstantFloat(bf32_t value);
+
 	void EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 	void EmitPopFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 	void EmitPopFramePointerRelativeValue32(bi32_t offset);
 	void EmitPopFramePointerRelativeValue64(bi32_t offset);
 	void EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
+
+	void EmitArithmeticBinaryOperator(
+		const BinaryExpression *binaryExpression,
+		OpCode opCodeInt,
+		OpCode opCodeUInt,
+		OpCode opCodeFloat);
+
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
 	void EmitValue32(Value32 value);
@@ -249,15 +260,15 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 
 void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 {
-	ByteCode::Type &byteCode = GetByteCode();
+	//ByteCode::Type &byteCode = GetByteCode();
 	if (!ProcessConstantExpression(binaryExpression))
 	{
 		const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
 		const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
-		const TypeAndValue &resultTav = binaryExpression->GetTypeAndValue();
+		//const TypeAndValue &resultTav = binaryExpression->GetTypeAndValue();
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		const TypeDescriptor *resultDescriptor = resultTav.GetTypeDescriptor();
+		//const TypeDescriptor *resultDescriptor = resultTav.GetTypeDescriptor();
 		const Token *op = binaryExpression->GetOperator();
 
 		switch (op->GetTokenType())
@@ -299,11 +310,22 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 
 			case Token::OP_AMP:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ANDI, OPCODE_ANDI, OPCODE_ANDI);
+				break;
 			case Token::OP_BIT_OR:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ORI, OPCODE_ORI, OPCODE_ORI);
+				break;
 			case Token::OP_BIT_XOR:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_XORI, OPCODE_XORI, OPCODE_XORI);
+				break;
 			case Token::OP_MOD:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_REMI, OPCODE_REMUI, OPCODE_REMI);
+				break;
 			case Token::OP_LEFT:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_LSHI, OPCODE_LSHI, OPCODE_LSHI);
+				break;
 			case Token::OP_RIGHT:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_RSHI, OPCODE_RSHUI, OPCODE_RSHI);
 				break;
 
 			case Token::OP_LT:
@@ -324,36 +346,29 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					ResultStack::Element lhResult(mResult);
-					Traverse(binaryExpression->GetLhs());
-					EmitPushResult(lhResult.GetValue(), lhDescriptor);
-					EmitCast(lhDescriptor, resultDescriptor);
-
-					ResultStack::Element rhResult(mResult);
-					Traverse(binaryExpression->GetRhs());
-					EmitPushResult(rhResult.GetValue(), rhDescriptor);
-					EmitCast(rhDescriptor, resultDescriptor);
-
-					switch (resultDescriptor->GetPrimitiveType())
-					{
-						case Token::KEY_INT:
-						case Token::KEY_UINT:
-							byteCode.push_back(OPCODE_ADDI);
-							break;
-						case Token::KEY_FLOAT:
-							byteCode.push_back(OPCODE_ADDF);
-							break;
-						default:
-							break;
-					}
+					EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ADDI, OPCODE_ADDI, OPCODE_ADDF);
 				}
 			}
 			break;
+
 			case Token::OP_MINUS:
+				if (lhDescriptor->IsPointerType())
+				{
+				}
+				else if (rhDescriptor->IsPointerType())
+				{
+				}
+				else
+				{
+					EmitArithmeticBinaryOperator(binaryExpression, OPCODE_SUBI, OPCODE_SUBI, OPCODE_SUBF);
+				}
 				break;
 
 			case Token::OP_STAR:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_MULI, OPCODE_MULUI, OPCODE_MULF);
+				break;
 			case Token::OP_DIV:
+				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_DIVI, OPCODE_DIVUI, OPCODE_DIVF);
 				break;
 
 			default:
@@ -1142,6 +1157,46 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			}
 			break;
 
+		default:
+			break;
+	}
+}
+
+
+void GeneratorCore::EmitArithmeticBinaryOperator(
+	const BinaryExpression *binaryExpression,
+	OpCode opCodeInt,
+	OpCode opCodeUInt,
+	OpCode opCodeFloat)
+{
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = binaryExpression->GetTypeAndValue().GetTypeDescriptor();
+
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult.GetValue(), lhDescriptor);
+	EmitCast(lhDescriptor, resultDescriptor);
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(binaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+	EmitCast(rhDescriptor, resultDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	switch (resultDescriptor->GetPrimitiveType())
+	{
+		case Token::KEY_INT:
+			byteCode.push_back(opCodeInt);
+			break;
+		case Token::KEY_UINT:
+			byteCode.push_back(opCodeUInt);
+			break;
+		case Token::KEY_FLOAT:
+			byteCode.push_back(opCodeFloat);
+			break;
 		default:
 			break;
 	}
