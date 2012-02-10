@@ -1,5 +1,7 @@
 //W263784172
 
+nop                 ... -> ...
+
 constc, char        ... -> int
 constuc, uchar      ... -> uint
 consts, short       ... -> int
@@ -105,16 +107,10 @@ pop64_l2            ..., 64bit -> ...
 pop64_l3            ..., 64bit -> ...
 
 movesp, short
-movespw, short
+movespw, int
 
 dup32               ..., 32bit -> ..., 32bit, 32bit
 dup64               ..., 64bit -> ..., 64bit, 64bit
-
-?ctoi                ..., int -> ..., int
-?uctoui              ..., uint -> ..., uint
-
-?stoi                ..., int -> ..., int
-?ustoui              ..., uint -> ..., uint
 
 itoc                ..., int -> ..., int
 itos                ..., int -> ..., int
@@ -248,38 +244,6 @@ invoke, hash        ... -> ...
 invokenative, hash  ... -> ...
 
 return
-
-Modifies the following op-codes by extending the 16 bit offsets to 32 bits:
-loadfp
-pushc
-pushuc
-pushs
-pushus
-push32
-push64
-popc
-pops
-pop32
-pop64
-movesp
-ifeq
-ifne
-iflt
-ifle
-ifgt
-ifge
-ifcmpieq
-ifcmpine
-ifcmpilt
-ifcmpile
-ifcmpigt
-ifcmpige
-ifcmpuilt
-ifcmpuile
-ifcmpuigt
-ifcmpuige
-goto
-
 
 Unaccounted for
 87 (0x57)	 pop

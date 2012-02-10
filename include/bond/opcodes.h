@@ -6,6 +6,8 @@ namespace Bond
 
 #define BOND_OPCODE_LIST \
 	/* Opcode, mnemonic, argument */                     \
+	BOND_OPCODE_ITEM(NOP,          nop,          NONE)   \
+	                                                     \
 	BOND_OPCODE_ITEM(CONSTC,       constc,       CHAR)   \
 	BOND_OPCODE_ITEM(CONSTUC,      constuc,      UCHAR)  \
 	BOND_OPCODE_ITEM(CONSTS,       consts,       SHORT)  \
@@ -115,12 +117,6 @@ namespace Bond
 	                                                     \
 	BOND_OPCODE_ITEM(DUP32,        dup32,        NONE)   \
 	BOND_OPCODE_ITEM(DUP64,        dup64,        NONE)   \
-	                                                     \
-	BOND_OPCODE_ITEM(CTOI,         ctoi,         NONE)   \
-	BOND_OPCODE_ITEM(UCTOUI,       uctoui,       NONE)   \
-	                                                     \
-	BOND_OPCODE_ITEM(STOI,         stoi,         NONE)   \
-	BOND_OPCODE_ITEM(USTOUI,       ustoui,       NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(ITOC,         itoc,         NONE)   \
 	BOND_OPCODE_ITEM(ITOS,         itos,         NONE)   \

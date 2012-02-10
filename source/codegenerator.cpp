@@ -14,6 +14,76 @@
 namespace Bond
 {
 
+class OpCodeSet
+{
+public:
+	OpCodeSet(OpCode opCodeI, OpCode opCodeL):
+		mOpCodeInt(opCodeI),
+		mOpCodeUInt(opCodeI),
+		mOpCodeLong(opCodeL),
+		mOpCodeULong(opCodeL),
+		mOpCodeFloat(OPCODE_NOP),
+		mOpCodeDouble(OPCODE_NOP)
+	{}
+
+	OpCodeSet(OpCode opCodeI, OpCode opCodeL, OpCode opCodeF, OpCode opCodeD):
+		mOpCodeInt(opCodeI),
+		mOpCodeUInt(opCodeI),
+		mOpCodeLong(opCodeL),
+		mOpCodeULong(opCodeL),
+		mOpCodeFloat(opCodeF),
+		mOpCodeDouble(opCodeD)
+	{}
+
+	OpCodeSet(OpCode opCodeI, OpCode opCodeUI, OpCode opCodeL, OpCode opCodeUL, OpCode opCodeF, OpCode opCodeD):
+		mOpCodeInt(opCodeI),
+		mOpCodeUInt(opCodeUI),
+		mOpCodeLong(opCodeL),
+		mOpCodeULong(opCodeUL),
+		mOpCodeFloat(opCodeF),
+		mOpCodeDouble(opCodeD)
+	{}
+
+	OpCode GetOpCode(Token::TokenType type) const
+	{
+		switch (type)
+		{
+			case Token::KEY_INT:
+				return mOpCodeInt;
+			case Token::KEY_UINT:
+				return mOpCodeUInt;
+			case Token::KEY_FLOAT:
+				return mOpCodeFloat;
+				// TODO Handle long and double.
+			default:
+				return OPCODE_NOP;
+		}
+	}
+
+private:
+	OpCode mOpCodeInt;
+	OpCode mOpCodeUInt;
+	OpCode mOpCodeLong;
+	OpCode mOpCodeULong;
+	OpCode mOpCodeFloat;
+	OpCode mOpCodeDouble;
+};
+
+
+static const OpCodeSet ADD_OPCODES(OPCODE_ADDI, OPCODE_ADDL, OPCODE_ADDF, OPCODE_ADDD);
+static const OpCodeSet SUB_OPCODES(OPCODE_SUBI, OPCODE_SUBL, OPCODE_SUBF, OPCODE_SUBD);
+static const OpCodeSet MUL_OPCODES(OPCODE_MULI, OPCODE_MULUI, OPCODE_MULL, OPCODE_MULUL, OPCODE_MULF, OPCODE_MULD);
+static const OpCodeSet DIV_OPCODES(OPCODE_DIVI, OPCODE_DIVUI, OPCODE_DIVL, OPCODE_DIVUL, OPCODE_DIVF, OPCODE_DIVD);
+static const OpCodeSet REM_OPCODES(OPCODE_REMI, OPCODE_REMUI, OPCODE_REML, OPCODE_REMUL, OPCODE_NOP, OPCODE_NOP);
+static const OpCodeSet LSH_OPCODES(OPCODE_LSHI, OPCODE_LSHL);
+static const OpCodeSet RSH_OPCODES(OPCODE_RSHI, OPCODE_RSHUI, OPCODE_RSHL, OPCODE_RSHUL, OPCODE_NOP, OPCODE_NOP);
+static const OpCodeSet AND_OPCODES(OPCODE_ANDI, OPCODE_ANDL);
+static const OpCodeSet OR_OPCODES(OPCODE_ORI, OPCODE_ORL);
+static const OpCodeSet XOR_OPCODES(OPCODE_XORI, OPCODE_XORL);
+static const OpCodeSet NEG_OPCODES(OPCODE_NEGI, OPCODE_NEGL, OPCODE_NEGF, OPCODE_NEGD);
+static const OpCodeSet NOT_OPCODES(OPCODE_NOTI, OPCODE_NOTL);
+
+
 class GeneratorCore: private ParseNodeTraverser
 {
 public:
@@ -55,13 +125,6 @@ private:
 			mTypeAndValue(typeAndValue),
 			mOffset(0)
 		{}
-		/*
-		GeneratorResult(Context context, const TypeDescriptor *typeDescriptor, const Value &value):
-			mTypeAndValue(typeDescriptor, value),
-			mContext(context),
-			mOffset(0)
-		{}
-		*/
 
 		Context mContext;
 		const TypeAndValue *mTypeAndValue;
@@ -124,11 +187,8 @@ private:
 
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 
-	void EmitArithmeticBinaryOperator(
-		const BinaryExpression *binaryExpression,
-		OpCode opCodeInt,
-		OpCode opCodeUInt,
-		OpCode opCodeFloat);
+	void EmitArithmeticOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	void EmitArithmeticAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
@@ -280,14 +340,37 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 
 			case Token::ASSIGN_LEFT:
+				EmitArithmeticAssignmentOperator(binaryExpression, LSH_OPCODES);
+				break;
 			case Token::ASSIGN_RIGHT:
+				EmitArithmeticAssignmentOperator(binaryExpression, RSH_OPCODES);
+				break;
 			case Token::ASSIGN_MOD:
+				EmitArithmeticAssignmentOperator(binaryExpression, REM_OPCODES);
+				break;
 			case Token::ASSIGN_AND:
+				EmitArithmeticAssignmentOperator(binaryExpression, AND_OPCODES);
+				break;
 			case Token::ASSIGN_OR:
+				EmitArithmeticAssignmentOperator(binaryExpression, OR_OPCODES);
+				break;
 			case Token::ASSIGN_XOR:
+				EmitArithmeticAssignmentOperator(binaryExpression, XOR_OPCODES);
 				break;
 
 			case Token::ASSIGN_PLUS:
+				if (lhDescriptor->IsPointerType())
+				{
+				}
+				else if (rhDescriptor->IsPointerType())
+				{
+				}
+				else
+				{
+					EmitArithmeticAssignmentOperator(binaryExpression, ADD_OPCODES);
+				}
+				break;
+
 			case Token::ASSIGN_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
@@ -297,12 +380,15 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
+					EmitArithmeticAssignmentOperator(binaryExpression, SUB_OPCODES);
 				}
-
 				break;
 
 			case Token::ASSIGN_MULT:
+				EmitArithmeticAssignmentOperator(binaryExpression, MUL_OPCODES);
+				break;
 			case Token::ASSIGN_DIV:
+				EmitArithmeticAssignmentOperator(binaryExpression, DIV_OPCODES);
 				break;
 
 			case Token::OP_AND:
@@ -310,22 +396,22 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 
 			case Token::OP_AMP:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ANDI, OPCODE_ANDI, OPCODE_ANDI);
+				EmitArithmeticOperator(binaryExpression, AND_OPCODES);
 				break;
 			case Token::OP_BIT_OR:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ORI, OPCODE_ORI, OPCODE_ORI);
+				EmitArithmeticOperator(binaryExpression, OR_OPCODES);
 				break;
 			case Token::OP_BIT_XOR:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_XORI, OPCODE_XORI, OPCODE_XORI);
+				EmitArithmeticOperator(binaryExpression, XOR_OPCODES);
 				break;
 			case Token::OP_MOD:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_REMI, OPCODE_REMUI, OPCODE_REMI);
+				EmitArithmeticOperator(binaryExpression, REM_OPCODES);
 				break;
 			case Token::OP_LEFT:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_LSHI, OPCODE_LSHI, OPCODE_LSHI);
+				EmitArithmeticOperator(binaryExpression, LSH_OPCODES);
 				break;
 			case Token::OP_RIGHT:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_RSHI, OPCODE_RSHUI, OPCODE_RSHI);
+				EmitArithmeticOperator(binaryExpression, RSH_OPCODES);
 				break;
 
 			case Token::OP_LT:
@@ -346,7 +432,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitArithmeticBinaryOperator(binaryExpression, OPCODE_ADDI, OPCODE_ADDI, OPCODE_ADDF);
+					EmitArithmeticOperator(binaryExpression, ADD_OPCODES);
 				}
 			}
 			break;
@@ -360,15 +446,15 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitArithmeticBinaryOperator(binaryExpression, OPCODE_SUBI, OPCODE_SUBI, OPCODE_SUBF);
+					EmitArithmeticOperator(binaryExpression, SUB_OPCODES);
 				}
 				break;
 
 			case Token::OP_STAR:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_MULI, OPCODE_MULUI, OPCODE_MULF);
+				EmitArithmeticOperator(binaryExpression, MUL_OPCODES);
 				break;
 			case Token::OP_DIV:
-				EmitArithmeticBinaryOperator(binaryExpression, OPCODE_DIVI, OPCODE_DIVUI, OPCODE_DIVF);
+				EmitArithmeticOperator(binaryExpression, DIV_OPCODES);
 				break;
 
 			default:
@@ -1163,11 +1249,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 }
 
 
-void GeneratorCore::EmitArithmeticBinaryOperator(
-	const BinaryExpression *binaryExpression,
-	OpCode opCodeInt,
-	OpCode opCodeUInt,
-	OpCode opCodeFloat)
+void GeneratorCore::EmitArithmeticOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
@@ -1186,20 +1268,36 @@ void GeneratorCore::EmitArithmeticBinaryOperator(
 	EmitCast(rhDescriptor, resultDescriptor);
 
 	ByteCode::Type &byteCode = GetByteCode();
-	switch (resultDescriptor->GetPrimitiveType())
-	{
-		case Token::KEY_INT:
-			byteCode.push_back(opCodeInt);
-			break;
-		case Token::KEY_UINT:
-			byteCode.push_back(opCodeUInt);
-			break;
-		case Token::KEY_FLOAT:
-			byteCode.push_back(opCodeFloat);
-			break;
-		default:
-			break;
-	}
+	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor->GetPrimitiveType()));
+}
+
+
+void GeneratorCore::EmitArithmeticAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
+{
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor *assignmentDescriptor = binaryExpression->GetTypeAndValue().GetTypeDescriptor();
+
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult.GetValue(), lhDescriptor);
+	EmitCast(lhDescriptor, &resultDescriptor);
+
+	// TODO: If the result produces an address, it needs to be duped.
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(binaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+	EmitCast(rhDescriptor, &resultDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor.GetPrimitiveType()));
+
+	EmitCast(&resultDescriptor, assignmentDescriptor);
+	EmitPopResult(lhResult, assignmentDescriptor);
 }
 
 
