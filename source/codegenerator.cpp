@@ -82,6 +82,12 @@ static const OpCodeSet OR_OPCODES(OPCODE_ORI, OPCODE_ORL);
 static const OpCodeSet XOR_OPCODES(OPCODE_XORI, OPCODE_XORL);
 static const OpCodeSet NEG_OPCODES(OPCODE_NEGI, OPCODE_NEGL, OPCODE_NEGF, OPCODE_NEGD);
 static const OpCodeSet NOT_OPCODES(OPCODE_NOTI, OPCODE_NOTL);
+static const OpCodeSet CMPEQ_OPCODES(OPCODE_CMPEQI, OPCODE_CMPEQL, OPCODE_CMPEQF, OPCODE_CMPEQD);
+static const OpCodeSet CMPNEQ_OPCODES(OPCODE_CMPNEQI, OPCODE_CMPNEQL, OPCODE_CMPNEQF, OPCODE_CMPNEQD);
+static const OpCodeSet CMPLT_OPCODES(OPCODE_CMPLTI, OPCODE_CMPLTUI, OPCODE_CMPLTL, OPCODE_CMPLTUL, OPCODE_CMPLTF, OPCODE_CMPLTD);
+static const OpCodeSet CMPLE_OPCODES(OPCODE_CMPLEI, OPCODE_CMPLEUI, OPCODE_CMPLEL, OPCODE_CMPLEUL, OPCODE_CMPLEF, OPCODE_CMPLED);
+static const OpCodeSet CMPGT_OPCODES(OPCODE_CMPGTI, OPCODE_CMPGTUI, OPCODE_CMPGTL, OPCODE_CMPGTUL, OPCODE_CMPGTF, OPCODE_CMPGTD);
+static const OpCodeSet CMPGE_OPCODES(OPCODE_CMPGEI, OPCODE_CMPGEUI, OPCODE_CMPGEL, OPCODE_CMPGEUL, OPCODE_CMPGEF, OPCODE_CMPGED);
 
 
 class GeneratorCore: private ParseNodeTraverser
@@ -153,6 +159,7 @@ private:
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const NamedInitializer *namedInitializer);
+	virtual void Visit(const WhileStatement *whileStatement);
 	virtual void Visit(const ConditionalExpression *conditionalExpression);
 	virtual void Visit(const BinaryExpression *binaryExpression);
 	virtual void Visit(const UnaryExpression *unaryExpression);
@@ -187,12 +194,16 @@ private:
 
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 
-	void EmitArithmeticOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
-	void EmitArithmeticAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	void EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	void EmitAssignmentOperator(const BinaryExpression *binaryExpression);
+	void EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	void EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode);
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
+	void EmitValue16(Value16 value, size_t pos);
 	void EmitValue32(Value32 value);
+	void EmitValue32(Value32 value, size_t pos);
 
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
@@ -286,7 +297,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_LOCAL:
 		{
 			const Initializer *initializer = namedInitializer->GetInitializer();
-			if (initializer->GetExpression() != NULL)
+			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
 				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 				const TypeDescriptor *rhDescriptor =
@@ -312,6 +323,54 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 }
 
 
+void GeneratorCore::Visit(const WhileStatement *whileStatement)
+{
+	const Expression *condition = whileStatement->GetCondition();
+	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+
+	ByteCode::Type &byteCode = GetByteCode();
+	const size_t startPos = byteCode.size();
+
+	if (whileStatement->IsDoLoop())
+	{
+		Traverse(whileStatement->GetBody());
+
+		ResultStack::Element conditionResult(mResult);
+		Traverse(condition);
+		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+
+		// Jump back to the top of the loop if the condition does not fail.
+		byteCode.push_back(OPCODE_IFNZW);
+		const size_t endPos = byteCode.size();
+		EmitValue32(Value32(static_cast<bi32_t>(startPos - endPos - 4)));
+	}
+	else
+	{
+		ResultStack::Element conditionResult(mResult);
+		Traverse(condition);
+		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+
+		// Jump out of the loop if the condition fails.
+		byteCode.push_back(OPCODE_IFZW);
+
+		// Cache the jump offset position and skip 4 bytes for it.
+		const size_t offsetPos = byteCode.size();
+		EmitValue32(Value32(0));
+
+		Traverse(whileStatement->GetBody());
+
+		// Jump back to the top of the loop.
+		byteCode.push_back(OPCODE_GOTOW);
+		const size_t endPos = byteCode.size();
+		EmitValue32(Value32(static_cast<bi32_t>(startPos - endPos - 4)));
+
+		// Patch up the offset position.
+		const size_t exitPos = byteCode.size();
+		EmitValue32(Value32(static_cast<bi32_t>(exitPos - offsetPos - 4)), offsetPos);
+	}
+}
+
+
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
 	ParseNodeTraverser::Visit(conditionalExpression);
@@ -334,105 +393,122 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 		switch (op->GetTokenType())
 		{
 			case Token::COMMA:
+				// TODO
 				break;
-
 			case Token::ASSIGN:
+				EmitAssignmentOperator(binaryExpression);
 				break;
-
 			case Token::ASSIGN_LEFT:
-				EmitArithmeticAssignmentOperator(binaryExpression, LSH_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, LSH_OPCODES);
 				break;
 			case Token::ASSIGN_RIGHT:
-				EmitArithmeticAssignmentOperator(binaryExpression, RSH_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, RSH_OPCODES);
 				break;
 			case Token::ASSIGN_MOD:
-				EmitArithmeticAssignmentOperator(binaryExpression, REM_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, REM_OPCODES);
 				break;
 			case Token::ASSIGN_AND:
-				EmitArithmeticAssignmentOperator(binaryExpression, AND_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, AND_OPCODES);
 				break;
 			case Token::ASSIGN_OR:
-				EmitArithmeticAssignmentOperator(binaryExpression, OR_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, OR_OPCODES);
 				break;
 			case Token::ASSIGN_XOR:
-				EmitArithmeticAssignmentOperator(binaryExpression, XOR_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, XOR_OPCODES);
 				break;
 
 			case Token::ASSIGN_PLUS:
 				if (lhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else
 				{
-					EmitArithmeticAssignmentOperator(binaryExpression, ADD_OPCODES);
+					EmitCompoundAssignmentOperator(binaryExpression, ADD_OPCODES);
 				}
 				break;
 
 			case Token::ASSIGN_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else
 				{
-					EmitArithmeticAssignmentOperator(binaryExpression, SUB_OPCODES);
+					EmitCompoundAssignmentOperator(binaryExpression, SUB_OPCODES);
 				}
 				break;
 
 			case Token::ASSIGN_MULT:
-				EmitArithmeticAssignmentOperator(binaryExpression, MUL_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, MUL_OPCODES);
 				break;
 			case Token::ASSIGN_DIV:
-				EmitArithmeticAssignmentOperator(binaryExpression, DIV_OPCODES);
+				EmitCompoundAssignmentOperator(binaryExpression, DIV_OPCODES);
 				break;
-
 			case Token::OP_AND:
-			case Token::OP_OR:
+				EmitLogicalOperator(binaryExpression, OPCODE_BRZW);
 				break;
-
+			case Token::OP_OR:
+				EmitLogicalOperator(binaryExpression, OPCODE_BRNZW);
+				break;
 			case Token::OP_AMP:
-				EmitArithmeticOperator(binaryExpression, AND_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, AND_OPCODES);
 				break;
 			case Token::OP_BIT_OR:
-				EmitArithmeticOperator(binaryExpression, OR_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, OR_OPCODES);
 				break;
 			case Token::OP_BIT_XOR:
-				EmitArithmeticOperator(binaryExpression, XOR_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, XOR_OPCODES);
 				break;
 			case Token::OP_MOD:
-				EmitArithmeticOperator(binaryExpression, REM_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, REM_OPCODES);
 				break;
 			case Token::OP_LEFT:
-				EmitArithmeticOperator(binaryExpression, LSH_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, LSH_OPCODES);
 				break;
 			case Token::OP_RIGHT:
-				EmitArithmeticOperator(binaryExpression, RSH_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, RSH_OPCODES);
 				break;
-
 			case Token::OP_LT:
+				EmitSimpleBinaryOperator(binaryExpression, CMPLT_OPCODES);
+				break;
 			case Token::OP_LTE:
+				EmitSimpleBinaryOperator(binaryExpression, CMPLE_OPCODES);
+				break;
 			case Token::OP_GT:
+				EmitSimpleBinaryOperator(binaryExpression, CMPGT_OPCODES);
+				break;
 			case Token::OP_GTE:
+				EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
+				break;
 			case Token::OP_EQUAL:
+				EmitSimpleBinaryOperator(binaryExpression, CMPEQ_OPCODES);
+				break;
 			case Token::OP_NOT_EQUAL:
+				EmitSimpleBinaryOperator(binaryExpression, CMPNEQ_OPCODES);
 				break;
 
 			case Token::OP_PLUS:
 			{
 				if (lhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else
 				{
-					EmitArithmeticOperator(binaryExpression, ADD_OPCODES);
+					EmitSimpleBinaryOperator(binaryExpression, ADD_OPCODES);
 				}
 			}
 			break;
@@ -440,21 +516,23 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
+					// TODO: Pointer arithmetic.
 				}
 				else
 				{
-					EmitArithmeticOperator(binaryExpression, SUB_OPCODES);
+					EmitSimpleBinaryOperator(binaryExpression, SUB_OPCODES);
 				}
 				break;
 
 			case Token::OP_STAR:
-				EmitArithmeticOperator(binaryExpression, MUL_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, MUL_OPCODES);
 				break;
 			case Token::OP_DIV:
-				EmitArithmeticOperator(binaryExpression, DIV_OPCODES);
+				EmitSimpleBinaryOperator(binaryExpression, DIV_OPCODES);
 				break;
 
 			default:
@@ -463,8 +541,6 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 
 		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
 	}
-
-	//ParseNodeTraverser::Visit(binaryExpression);
 }
 
 
@@ -1249,37 +1325,57 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 }
 
 
-void GeneratorCore::EmitArithmeticOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
-{
-	const Expression *lhs = binaryExpression->GetLhs();
-	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *resultDescriptor = binaryExpression->GetTypeAndValue().GetTypeDescriptor();
-
-	ResultStack::Element lhResult(mResult);
-	Traverse(lhs);
-	EmitPushResult(lhResult.GetValue(), lhDescriptor);
-	EmitCast(lhDescriptor, resultDescriptor);
-
-	ResultStack::Element rhResult(mResult);
-	Traverse(binaryExpression->GetRhs());
-	EmitPushResult(rhResult.GetValue(), rhDescriptor);
-	EmitCast(rhDescriptor, resultDescriptor);
-
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor->GetPrimitiveType()));
-}
-
-
-void GeneratorCore::EmitArithmeticAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
+void GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
-	const TypeDescriptor *assignmentDescriptor = binaryExpression->GetTypeAndValue().GetTypeDescriptor();
+
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult.GetValue(), lhDescriptor);
+	EmitCast(lhDescriptor, &resultDescriptor);
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(binaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+	EmitCast(rhDescriptor, &resultDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor.GetPrimitiveType()));
+}
+
+
+void GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
+{
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(binaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	EmitCast(rhDescriptor, lhDescriptor);
+	EmitPopResult(lhResult, lhDescriptor);
+
+	// TODO: Check if a temporary needs to be left on the stack.
+}
+
+
+void GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
+{
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
@@ -1296,8 +1392,39 @@ void GeneratorCore::EmitArithmeticAssignmentOperator(const BinaryExpression *bin
 	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor.GetPrimitiveType()));
 
-	EmitCast(&resultDescriptor, assignmentDescriptor);
-	EmitPopResult(lhResult, assignmentDescriptor);
+	EmitCast(&resultDescriptor, lhDescriptor);
+	EmitPopResult(lhResult, lhDescriptor);
+
+	// TODO: Check if a temporary needs to be left on the stack.
+}
+
+
+void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode)
+{
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult.GetValue(), lhDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(branchOpCode);
+
+	// Cache the jump offset position and skip 4 bytes for it.
+	const size_t offsetPos = byteCode.size();
+	EmitValue32(Value32(0));
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(binaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	// Patch up the offset position.
+	const size_t targetPos = byteCode.size();
+	EmitValue32(Value32(static_cast<bi32_t>(targetPos - offsetPos - 4)), offsetPos);
 }
 
 
@@ -1326,6 +1453,15 @@ void GeneratorCore::EmitValue16(Value16 value)
 }
 
 
+void GeneratorCore::EmitValue16(Value16 value, size_t pos)
+{
+	ConvertBigEndian16(value.mBytes);
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode[pos] = value.mBytes[0];
+	byteCode[pos + 1] = value.mBytes[1];
+}
+
+
 void GeneratorCore::EmitValue32(Value32 value)
 {
 	ConvertBigEndian32(value.mBytes);
@@ -1334,6 +1470,17 @@ void GeneratorCore::EmitValue32(Value32 value)
 	byteCode.push_back(value.mBytes[1]);
 	byteCode.push_back(value.mBytes[2]);
 	byteCode.push_back(value.mBytes[3]);
+}
+
+
+void GeneratorCore::EmitValue32(Value32 value, size_t pos)
+{
+	ConvertBigEndian32(value.mBytes);
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode[pos] = value.mBytes[0];
+	byteCode[pos + 1] = value.mBytes[1];
+	byteCode[pos + 2] = value.mBytes[2];
+	byteCode[pos + 3] = value.mBytes[3];
 }
 
 

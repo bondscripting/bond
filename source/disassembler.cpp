@@ -213,16 +213,16 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 				break;
 			case OC_PARAM_OFF16:
 			{
-				const int baseAddress = static_cast<int>(mIndex - 1);
 				const int offset = static_cast<int>(ReadValue16().mShort);
-				mWriter.Write("%d", baseAddress - offset);
+				const int baseAddress = static_cast<int>(mIndex - codeStart);
+				mWriter.Write("%d (%d)", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
-				const int baseAddress = static_cast<int>(mIndex - 1);
 				const int offset = static_cast<int>(ReadValue32().mInt);
-				mWriter.Write("%d", baseAddress - offset);
+				const int baseAddress = static_cast<int>(mIndex - codeStart);
+				mWriter.Write("%d (%d)", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_HASH:

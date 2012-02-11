@@ -195,53 +195,69 @@ namespace Bond
 	BOND_OPCODE_ITEM(NOTI,         noti,         NONE)   \
 	BOND_OPCODE_ITEM(NOTL,         notl,         NONE)   \
 	                                                     \
-	BOND_OPCODE_ITEM(CMPI,         cmpi,         NONE)   \
-	BOND_OPCODE_ITEM(CMPUI,        cmpui,        NONE)   \
-	BOND_OPCODE_ITEM(CMPL,         cmpl,         NONE)   \
-	BOND_OPCODE_ITEM(CMPUL,        cmpul,        NONE)   \
-	BOND_OPCODE_ITEM(CMPF,         cmpf,         NONE)   \
+	BOND_OPCODE_ITEM(CMPEQI,       cmpeqi,       NONE)   \
+	BOND_OPCODE_ITEM(CMPEQL,       cmpeql,       NONE)   \
+	BOND_OPCODE_ITEM(CMPEQF,       cmpeqf,       NONE)   \
+	BOND_OPCODE_ITEM(CMPEQD,       cmpeqd,       NONE)   \
+	BOND_OPCODE_ITEM(CMPNEQI,      cmpneqi,      NONE)   \
+	BOND_OPCODE_ITEM(CMPNEQL,      cmpneql,      NONE)   \
+	BOND_OPCODE_ITEM(CMPNEQF,      cmpneqf,      NONE)   \
+	BOND_OPCODE_ITEM(CMPNEQD,      cmpneqd,      NONE)   \
+	BOND_OPCODE_ITEM(CMPLTI,       cmplti,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLTUI,      cmpltui,      NONE)   \
+	BOND_OPCODE_ITEM(CMPLTL,       cmpltl,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLTUL,      cmpltul,      NONE)   \
+	BOND_OPCODE_ITEM(CMPLTF,       cmpltf,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLTD,       cmpltd,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLEI,       cmplei,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLEUI,      cmpleui,      NONE)   \
+	BOND_OPCODE_ITEM(CMPLEL,       cmplel,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLEUL,      cmpleul,      NONE)   \
+	BOND_OPCODE_ITEM(CMPLEF,       cmplef,       NONE)   \
+	BOND_OPCODE_ITEM(CMPLED,       cmpled,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGTI,       cmpgti,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGTUI,      cmpgtui,      NONE)   \
+	BOND_OPCODE_ITEM(CMPGTL,       cmpgtl,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGTUL,      cmpgtul,      NONE)   \
+	BOND_OPCODE_ITEM(CMPGTF,       cmpgtf,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGTD,       cmpgtd,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGEI,       cmpgei,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGEUI,      cmpgeui,      NONE)   \
+	BOND_OPCODE_ITEM(CMPGEL,       cmpgel,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGEUL,      cmpgeul,      NONE)   \
+	BOND_OPCODE_ITEM(CMPGEF,       cmpgef,       NONE)   \
+	BOND_OPCODE_ITEM(CMPGED,       cmpged,       NONE)   \
 	                                                     \
-	BOND_OPCODE_ITEM(CMPEQ,        cmpeq,        NONE)   \
-	BOND_OPCODE_ITEM(CMPNE,        cmpne,        NONE)   \
-	BOND_OPCODE_ITEM(CMPLT,        cmplt,        NONE)   \
-	BOND_OPCODE_ITEM(CMPLE,        cmple,        NONE)   \
-	BOND_OPCODE_ITEM(CMPGT,        cmpgt,        NONE)   \
-	BOND_OPCODE_ITEM(CMPGE,        cmpge,        NONE)   \
+	BOND_OPCODE_ITEM(BRZ,          brz,          OFF16)  \
+	BOND_OPCODE_ITEM(BRZW,         brzw,         OFF32)  \
+	BOND_OPCODE_ITEM(BRNZ,         brnz,         OFF16)  \
+	BOND_OPCODE_ITEM(BRNZW,        brnzw,        OFF32)  \
+	BOND_OPCODE_ITEM(IFZ,          ifz,          OFF16)  \
+	BOND_OPCODE_ITEM(IFZW,         ifzw,         OFF32)  \
+	BOND_OPCODE_ITEM(IFNZ,         ifnz,         OFF16)  \
+	BOND_OPCODE_ITEM(IFNZW,        ifnzw,        OFF32)  \
 	                                                     \
-	BOND_OPCODE_ITEM(IFEQ,         ifeq,         OFF16)  \
-	BOND_OPCODE_ITEM(IFEQW,        ifeqw,        OFF32)  \
-	BOND_OPCODE_ITEM(IFNE,         ifne,         OFF16)  \
-	BOND_OPCODE_ITEM(IFNEW,        ifnew,        OFF32)  \
-	BOND_OPCODE_ITEM(IFLT,         iflt,         OFF16)  \
-	BOND_OPCODE_ITEM(IFLTW,        ifltw,        OFF32)  \
-	BOND_OPCODE_ITEM(IFLE,         ifle,         OFF16)  \
-	BOND_OPCODE_ITEM(IFLEW,        iflew,        OFF32)  \
-	BOND_OPCODE_ITEM(IFGT,         ifgt,         OFF16)  \
-	BOND_OPCODE_ITEM(IFGTW,        ifgtw,        OFF32)  \
-	BOND_OPCODE_ITEM(IFGE,         ifge,         OFF16)  \
-	BOND_OPCODE_ITEM(IFGEW,        ifgew,        OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPEQI,     ifcmpeqi,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPEQIW,    ifcmpeqiw,    OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPNEI,     ifcmpnei,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPNEIW,    ifcmpneiw,    OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPLTI,     ifcmplti,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPLTIW,    ifcmpltiw,    OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPLEI,     ifcmplei,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPLEIW,    ifcmpleiw,    OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPGTI,     ifcmpgti,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPGTIW,    ifcmpgtiw,    OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPGEI,     ifcmpgei,     OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPGEIW,    ifcmpgeiw,    OFF32)  \
 	                                                     \
-	BOND_OPCODE_ITEM(IFCMPIEQ,     ifcmpieq,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPIEQW,    ifcmpieqw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPINE,     ifcmpine,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPINEW,    ifcmpinew,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPILT,     ifcmpilt,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPILTW,    ifcmpiltw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPILE,     ifcmpile,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPILEW,    ifcmpilew,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPIGT,     ifcmpigt,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPIGTW,    ifcmpigtw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPIGE,     ifcmpige,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPIGEW,    ifcmpigew,    OFF32)  \
-	                                                     \
-	BOND_OPCODE_ITEM(IFCMPUILT,    ifcmpuilt,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPUILTW,   ifcmpuiltw,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPUILE,    ifcmpuile,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPUILEW,   ifcmpuilew,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPUIGT,    ifcmpuigt,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPUIGTW,   ifcmpuigtw,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPUIGE,    ifcmpuige,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPUIGEW,   ifcmpuigew,   OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPLTUI,    ifcmpltui,    OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPLTUIW,   ifcmpltuiw,   OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPLEUI,    ifcmpleui,    OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPLEUIW,   ifcmpleuiw,   OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPGTUI,    ifcmpgtui,    OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPGTUIW,   ifcmpgtuiw,   OFF32)  \
+	BOND_OPCODE_ITEM(IFCMPGEUI,    ifcmpgeui,    OFF16)  \
+	BOND_OPCODE_ITEM(IFCMPGEUIW,   ifcmpgeuiw,   OFF32)  \
 	                                                     \
 	BOND_OPCODE_ITEM(GOTO,         goto,         OFF16)  \
 	BOND_OPCODE_ITEM(GOTOW,        gotow,        OFF32)  \
