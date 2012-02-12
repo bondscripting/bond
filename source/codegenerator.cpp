@@ -160,6 +160,7 @@ private:
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const NamedInitializer *namedInitializer);
 	virtual void Visit(const WhileStatement *whileStatement);
+	virtual void Visit(const ForStatement *forStatement);
 	virtual void Visit(const ConditionalExpression *conditionalExpression);
 	virtual void Visit(const BinaryExpression *binaryExpression);
 	virtual void Visit(const UnaryExpression *unaryExpression);
@@ -325,6 +326,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
+	// TODO: Handle continue and break statements.
 	const Expression *condition = whileStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
 
@@ -364,6 +366,47 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		const size_t endPos = byteCode.size();
 		EmitValue32(Value32(static_cast<bi32_t>(startPos - endPos - 4)));
 
+		// Patch up the offset position.
+		const size_t exitPos = byteCode.size();
+		EmitValue32(Value32(static_cast<bi32_t>(exitPos - offsetPos - 4)), offsetPos);
+	}
+}
+
+
+void GeneratorCore::Visit(const ForStatement *forStatement)
+{
+	// TODO: Handle continue and break statements.
+	Traverse(forStatement->GetInitializer());
+
+	ByteCode::Type &byteCode = GetByteCode();
+	const size_t startPos = byteCode.size();
+	size_t offsetPos = 0;
+	const Expression *condition = forStatement->GetCondition();
+	if (condition != NULL)
+	{
+		const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+		ResultStack::Element conditionResult(mResult);
+		Traverse(condition);
+		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+
+		// Jump out of the loop if the condition fails.
+		byteCode.push_back(OPCODE_IFZW);
+
+		// Cache the jump offset position and skip 4 bytes for it.
+		offsetPos = byteCode.size();
+		EmitValue32(Value32(0));
+	}
+
+	Traverse(forStatement->GetBody());
+	Traverse(forStatement->GetCountingExpression());
+
+	// Jump back to the top of the loop.
+	byteCode.push_back(OPCODE_GOTOW);
+	const size_t endPos = byteCode.size();
+	EmitValue32(Value32(static_cast<bi32_t>(startPos - endPos - 4)));
+
+	if (condition != NULL)
+	{
 		// Patch up the offset position.
 		const size_t exitPos = byteCode.size();
 		EmitValue32(Value32(static_cast<bi32_t>(exitPos - offsetPos - 4)), offsetPos);
