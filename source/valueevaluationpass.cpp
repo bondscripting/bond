@@ -373,6 +373,7 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 		{
 			Resolve(tav);
 
+			// TODO: Handle && and || if one side is a constant.
 			if (lhs.IsValueDefined() && rhs.IsValueDefined())
 			{
 				const Token *op = binaryExpression->GetOperator();
