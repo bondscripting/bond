@@ -144,6 +144,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(DTOUL,        dtoul,        NONE)   \
 	BOND_OPCODE_ITEM(DTOF,         dtof,         NONE)   \
 	                                                     \
+	BOND_OPCODE_ITEM(PTROFF,       ptroff,       SHORT)  \
+	                                                     \
 	BOND_OPCODE_ITEM(ADDI,         addi,         NONE)   \
 	BOND_OPCODE_ITEM(ADDL,         addl,         NONE)   \
 	BOND_OPCODE_ITEM(ADDF,         addf,         NONE)   \

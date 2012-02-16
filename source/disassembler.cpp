@@ -191,7 +191,7 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(mByteCode[mIndex++]));
+				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(static_cast<char>(mByteCode[mIndex++])));
 				break;
 			case OC_PARAM_UCHAR:
 				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(mByteCode[mIndex++]));

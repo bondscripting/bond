@@ -138,6 +138,8 @@ dtol                ..., double -> ..., long
 dtoul               ..., double -> ..., ulong
 dtof                ..., double -> ..., float
 
+ptroff, short       ..., address, int -> ..., address
+
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long
 addf                ..., float, float -> ..., float

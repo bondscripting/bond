@@ -226,10 +226,6 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				{
 					isResolvable = AssertIntegerOperand(rhDescriptor, op);
 				}
-				else if (rhDescriptor->IsPointerType())
-				{
-					isResolvable = AssertIntegerOperand(lhDescriptor, op);
-				}
 				else
 				{
 					isResolvable = isResolvable &&

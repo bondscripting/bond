@@ -173,6 +173,7 @@ private:
 	typedef AutoStack<const StructDeclaration *> StructStack;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
 	typedef AutoStack<GeneratorResult> ResultStack;
+	typedef AutoStack<size_t> LabelStack;
 
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
@@ -180,6 +181,7 @@ private:
 	virtual void Visit(const IfStatement *ifStatement);
 	virtual void Visit(const WhileStatement *whileStatement);
 	virtual void Visit(const ForStatement *forStatement);
+	virtual void Visit(const JumpStatement *jumpStatement);
 	virtual void Visit(const ConditionalExpression *conditionalExpression);
 	virtual void Visit(const BinaryExpression *binaryExpression);
 	virtual void Visit(const UnaryExpression *unaryExpression);
@@ -218,6 +220,9 @@ private:
 	void EmitAssignmentOperator(const BinaryExpression *binaryExpression);
 	void EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 	void EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode);
+	GeneratorResult EmitPointerAddition(const Expression *pointerExpression, const Expression *offsetExpression);
+	GeneratorResult EmitPointerSubtraction(const Expression *pointerExpression, const Expression *offsetExpression);
+	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 
@@ -244,6 +249,8 @@ private:
 	ResultStack mResult;
 	StructStack mStruct;
 	FunctionStack mFunction;
+	LabelStack mContinueLabel;
+	LabelStack mBreakLabel;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
 	const TranslationUnit *mTranslationUnitList;
@@ -357,8 +364,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 	Traverse(condition);
 	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
 
-	// Jump past the then statement if the condition fails.
-	size_t thenEndLabel = CreateLabel();
+	const size_t thenEndLabel = CreateLabel();
 	EmitJump(OPCODE_IFZW, thenEndLabel);
 
 	Traverse(ifStatement->GetThenStatement());
@@ -366,10 +372,10 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 
 	if (ifStatement->GetElseStatement() != NULL)
 	{
-		// If there's an else statement, the then statement must end with a jump past the else.
 		size_t elseEndLabel = CreateLabel();
 		EmitJump(OPCODE_GOTOW, elseEndLabel);
 		thenEndPos = byteCode.size();
+
 		Traverse(ifStatement->GetElseStatement());
 		SetLabelValue(elseEndLabel, byteCode.size());
 	}
@@ -380,10 +386,14 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
-	// TODO: Handle continue and break statements.
 	ByteCode::Type &byteCode = GetByteCode();
 	const size_t loopStartLabel = CreateLabel();
+	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, byteCode.size());
+
+	LabelStack::Element continueElement(mContinueLabel, loopStartLabel);
+	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
+
 	const Expression *condition = whileStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
 
@@ -394,8 +404,6 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-
-		// Jump back to the top of the loop if the condition does not fail.
 		EmitJump(OPCODE_IFNZW, loopStartLabel);
 	}
 	else
@@ -403,73 +411,114 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-
-		// Jump out of the loop if the condition fails.
-		const size_t loopEndLabel = CreateLabel();
 		EmitJump(OPCODE_IFZW, loopEndLabel);
 
 		Traverse(whileStatement->GetBody());
 
-		// Jump back to the top of the loop.
 		EmitJump(OPCODE_GOTOW, loopStartLabel);
 	}
+
+	SetLabelValue(loopEndLabel, byteCode.size());
 }
 
 
 void GeneratorCore::Visit(const ForStatement *forStatement)
 {
-	// TODO: Handle continue and break statements.
 	Traverse(forStatement->GetInitializer());
 
 	ByteCode::Type &byteCode = GetByteCode();
 	const size_t loopStartLabel = CreateLabel();
+	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, byteCode.size());
 
+	LabelStack::Element continueElement(mContinueLabel, loopStartLabel);
+	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
+
 	const Expression *condition = forStatement->GetCondition();
-	size_t loopEndLabel = 0;
 	if (condition != NULL)
 	{
 		const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-
-		// Jump out of the loop if the condition fails.
-		loopEndLabel = CreateLabel();
 		EmitJump(OPCODE_IFZW, loopEndLabel);
 	}
 
 	Traverse(forStatement->GetBody());
 	Traverse(forStatement->GetCountingExpression());
 
-	// Jump back to the top of the loop.
-	byteCode.push_back(OPCODE_GOTOW);
+	EmitJump(OPCODE_GOTOW, loopStartLabel);
+	SetLabelValue(loopEndLabel, byteCode.size());
+}
 
-	if (condition != NULL)
+
+void GeneratorCore::Visit(const JumpStatement *jumpStatement)
+{
+	if (jumpStatement->IsBreak())
 	{
-		SetLabelValue(loopEndLabel, byteCode.size());
+		EmitJump(OPCODE_GOTOW, mBreakLabel.GetTop());
+	}
+	else if (jumpStatement->IsContinue())
+	{
+		EmitJump(OPCODE_GOTOW, mContinueLabel.GetTop());
+	}
+	else if (jumpStatement->IsReturn())
+	{
+		ByteCode::Type &byteCode = GetByteCode();
+		byteCode.push_back(OPCODE_RETURN);
 	}
 }
 
 
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
-	ParseNodeTraverser::Visit(conditionalExpression);
+	ByteCode::Type &byteCode = GetByteCode();
+	const Expression *condition = conditionalExpression->GetCondition();
+	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
+	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
+	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *trueDescriptor = trueExpression->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeAndValue().GetTypeDescriptor();
+
+	ResultStack::Element conditionResult(mResult);
+	Traverse(condition);
+	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+
+	const size_t trueEndLabel = CreateLabel();
+	EmitJump(OPCODE_IFZW, trueEndLabel);
+
+	ResultStack::Element trueResult(mResult);
+	Traverse(trueExpression);
+	EmitPushResult(trueResult.GetValue(), trueDescriptor);
+	EmitCast(trueDescriptor, resultDescriptor);
+
+	const size_t falseEndLabel = CreateLabel();
+	EmitJump(OPCODE_GOTOW, falseEndLabel);
+	SetLabelValue(trueEndLabel, byteCode.size());
+
+	ResultStack::Element falseResult(mResult);
+	Traverse(falseExpression);
+	EmitPushResult(falseResult.GetValue(), falseDescriptor);
+	EmitCast(falseDescriptor, resultDescriptor);
+
+	SetLabelValue(falseEndLabel, byteCode.size());
 }
 
 
 void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 {
-	//ByteCode::Type &byteCode = GetByteCode();
 	if (!ProcessConstantExpression(binaryExpression))
 	{
-		const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
-		const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
-		//const TypeAndValue &resultTav = binaryExpression->GetTypeAndValue();
+		const Expression *lhs = binaryExpression->GetLhs();
+		const Expression *rhs = binaryExpression->GetRhs();
+		const TypeAndValue &lhTav = lhs->GetTypeAndValue();
+		const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
 		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		//const TypeDescriptor *resultDescriptor = resultTav.GetTypeDescriptor();
 		const Token *op = binaryExpression->GetOperator();
+
+		GeneratorResult result = GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 
 		switch (op->GetTokenType())
 		{
@@ -503,10 +552,6 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				{
 					// TODO: Pointer arithmetic.
 				}
-				else if (rhDescriptor->IsPointerType())
-				{
-					// TODO: Pointer arithmetic.
-				}
 				else
 				{
 					EmitCompoundAssignmentOperator(binaryExpression, ADD_OPCODES);
@@ -515,10 +560,6 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 
 			case Token::ASSIGN_MINUS:
 				if (lhDescriptor->IsPointerType())
-				{
-					// TODO: Pointer arithmetic.
-				}
-				else if (rhDescriptor->IsPointerType())
 				{
 					// TODO: Pointer arithmetic.
 				}
@@ -581,11 +622,11 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			{
 				if (lhDescriptor->IsPointerType())
 				{
-					// TODO: Pointer arithmetic.
+					result = EmitPointerAddition(lhs, rhs);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					// TODO: Pointer arithmetic.
+					result = EmitPointerAddition(rhs, lhs);
 				}
 				else
 				{
@@ -597,11 +638,11 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_MINUS:
 				if (lhDescriptor->IsPointerType())
 				{
-					// TODO: Pointer arithmetic.
+					result = EmitPointerSubtraction(lhs, rhs);
 				}
 				else if (rhDescriptor->IsPointerType())
 				{
-					// TODO: Pointer arithmetic.
+					result = EmitPointerSubtraction(rhs, lhs);
 				}
 				else
 				{
@@ -620,7 +661,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 		}
 
-		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
+		mResult.SetTop(result);
 	}
 }
 
@@ -691,7 +732,14 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 					// TODO
 					break;
 				case SCOPE_LOCAL:
-					mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset()));
+					if (namedInitializer->GetTypeAndValue()->GetTypeDescriptor()->IsArrayType())
+					{
+						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_ADDRESS, namedInitializer->GetOffset()));
+					}
+					else
+					{
+						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset()));
+					}
 					break;
 				case SCOPE_STRUCT_MEMBER:
 					// TODO
@@ -712,7 +760,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 
 void GeneratorCore::Visit(const ThisExpression *thisExpression)
 {
-	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, -mPointerSize));
+	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, -static_cast<bi32_t>(mPointerSize)));
 }
 
 
@@ -956,6 +1004,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 		case Token::KEY_FLOAT:
 			EmitPushConstantFloat(typeAndValue.GetFloatValue());
 			break;
+		// TODO: Deal with long types.
 		default:
 			if (typeDescriptor->IsNullType())
 			{
@@ -1440,7 +1489,7 @@ void GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpress
 	Traverse(lhs);
 
 	ResultStack::Element rhResult(mResult);
-	Traverse(binaryExpression->GetRhs());
+	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 
 	EmitCast(rhDescriptor, lhDescriptor);
@@ -1466,7 +1515,7 @@ void GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binar
 	// TODO: If the result produces an address, it needs to be duped.
 
 	ResultStack::Element rhResult(mResult);
-	Traverse(binaryExpression->GetRhs());
+	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 	EmitCast(rhDescriptor, &resultDescriptor);
 
@@ -1482,30 +1531,104 @@ void GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binar
 
 void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode)
 {
+	// TODO: Collapse ! operators.
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 	EmitPushResult(lhResult.GetValue(), lhDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(branchOpCode);
-
-	// Cache the jump offset position and skip 4 bytes for it.
-	const size_t offsetPos = byteCode.size();
-	EmitValue32(Value32(0));
+	const size_t endLabel = CreateLabel();
+	EmitJump(branchOpCode, endLabel);
 
 	ResultStack::Element rhResult(mResult);
-	Traverse(binaryExpression->GetRhs());
+	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 
-	// Patch up the offset position.
-	const size_t targetPos = byteCode.size();
-	EmitValue32(Value32(static_cast<bi32_t>(targetPos - offsetPos - 4)), offsetPos);
+	SetLabelValue(endLabel, GetByteCode().size());
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitPointerAddition(const Expression *pointerExpression, const Expression *offsetExpression)
+{
+	return EmitPointerArithmetic(pointerExpression, offsetExpression, 1);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitPointerSubtraction(const Expression *pointerExpression, const Expression *offsetExpression)
+{
+	return EmitPointerArithmetic(pointerExpression, offsetExpression, -1);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
+{
+	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeAndValue().GetTypeDescriptor();
+	const bi32_t elementSize = static_cast<bi32_t>(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
+	const TypeDescriptor *offsetDescriptor = offsetTav.GetTypeDescriptor();
+
+	ResultStack::Element pointerResult(mResult);
+	Traverse(pointerExpression);
+
+	GeneratorResult result(GeneratorResult::CONTEXT_STACK_VALUE);
+
+	if (offsetTav.IsValueDefined())
+	{
+		if ((pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_STACK_ADDRESS) ||
+		    (pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_VALUE))
+		{
+			EmitPushResult(pointerResult.GetValue(), pointerDescriptor);
+		}
+		else
+		{
+			result = pointerResult;
+		}
+
+		// TODO: Handle long offsets.
+		// TODO: handle subtraction.
+		result.mOffset += (offsetTav.GetIntValue() * elementSize);
+	}
+	else
+	{
+		EmitPushResult(pointerResult.GetValue(), pointerDescriptor);
+
+		ResultStack::Element offsetResult(mResult);
+		Traverse(offsetExpression);
+		EmitPushResult(offsetResult, offsetDescriptor);
+
+		TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
+		ByteCode::Type &byteCode = GetByteCode();
+		if ((elementSize >= BOND_SHORT_MIN) && (elementSize <= BOND_SHORT_MAX))
+		{
+			EmitCast(offsetDescriptor, &intTypeDescriptor);
+			byteCode.push_back(OPCODE_PTROFF);
+			EmitValue16(Value16(static_cast<bi16_t>(elementSize)));
+		}
+		else if (Is64BitPointer())
+		{
+			// TODO: Cast offset to long.
+			// TODO: Push element size as a long.
+			TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
+			TypeAndValue elementSizeTav(&intTypeDescriptor, Value(elementSize));
+			EmitPushConstant(elementSizeTav);
+			byteCode.push_back(OPCODE_MULL);
+			byteCode.push_back(OPCODE_ADDL);
+		}
+		else
+		{
+			TypeAndValue elementSizeTav(&intTypeDescriptor, Value(elementSize));
+			EmitCast(offsetDescriptor, &intTypeDescriptor);
+			EmitPushConstant(elementSizeTav);
+			byteCode.push_back(OPCODE_MULI);
+			byteCode.push_back(OPCODE_ADDI);
+		}
+	}
+
+	return result;
 }
 
 

@@ -301,7 +301,7 @@ Value UnaryMinus(const TypeAndValue &value)
 			resultValue.mInt = -value.GetIntValue();
 			break;
 		case Token::KEY_UINT:
-			resultValue.mUInt = -value.GetUIntValue();
+			resultValue.mUInt = -static_cast<bi32_t>(value.GetUIntValue());
 			break;
 		default:
 			break;
