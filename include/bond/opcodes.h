@@ -117,6 +117,7 @@ namespace Bond
 	                                                     \
 	BOND_OPCODE_ITEM(DUP32,        dup32,        NONE)   \
 	BOND_OPCODE_ITEM(DUP64,        dup64,        NONE)   \
+	BOND_OPCODE_ITEM(DUPMOD,       dupmod,       NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(ITOC,         itoc,         NONE)   \
 	BOND_OPCODE_ITEM(ITOS,         itos,         NONE)   \
@@ -238,28 +239,6 @@ namespace Bond
 	BOND_OPCODE_ITEM(IFZW,         ifzw,         OFF32)  \
 	BOND_OPCODE_ITEM(IFNZ,         ifnz,         OFF16)  \
 	BOND_OPCODE_ITEM(IFNZW,        ifnzw,        OFF32)  \
-	                                                     \
-	BOND_OPCODE_ITEM(IFCMPEQI,     ifcmpeqi,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPEQIW,    ifcmpeqiw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPNEI,     ifcmpnei,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPNEIW,    ifcmpneiw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPLTI,     ifcmplti,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPLTIW,    ifcmpltiw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPLEI,     ifcmplei,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPLEIW,    ifcmpleiw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPGTI,     ifcmpgti,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPGTIW,    ifcmpgtiw,    OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPGEI,     ifcmpgei,     OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPGEIW,    ifcmpgeiw,    OFF32)  \
-	                                                     \
-	BOND_OPCODE_ITEM(IFCMPLTUI,    ifcmpltui,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPLTUIW,   ifcmpltuiw,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPLEUI,    ifcmpleui,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPLEUIW,   ifcmpleuiw,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPGTUI,    ifcmpgtui,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPGTUIW,   ifcmpgtuiw,   OFF32)  \
-	BOND_OPCODE_ITEM(IFCMPGEUI,    ifcmpgeui,    OFF16)  \
-	BOND_OPCODE_ITEM(IFCMPGEUIW,   ifcmpgeuiw,   OFF32)  \
 	                                                     \
 	BOND_OPCODE_ITEM(GOTO,         goto,         OFF16)  \
 	BOND_OPCODE_ITEM(GOTOW,        gotow,        OFF32)  \

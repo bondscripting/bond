@@ -1,3 +1,4 @@
+#include "bond/math.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/stringutil.h"
@@ -255,6 +256,19 @@ bool TypeDescriptor::IsResolved() const
 	return
 		((mParent == NULL) || mParent->IsResolved()) &&
 		((mTypeSpecifier == NULL) || (mTypeSpecifier->IsResolved()));
+}
+
+
+bu32_t TypeDescriptor::GetStackSize(bu32_t pointerSize) const
+{
+	if (IsPointerType())
+	{
+		return pointerSize;
+	}
+	else
+	{
+		return AlignUp(GetSize(pointerSize), static_cast<bu32_t>(4));
+	}
 }
 
 

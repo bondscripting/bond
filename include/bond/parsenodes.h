@@ -207,6 +207,7 @@ public:
 
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
+	bu32_t GetStackSize(bu32_t pointerSize) const;
 	bu32_t GetSize(bu32_t pointerSize) const;
 	bu32_t GetAlignment() const;
 
@@ -1006,8 +1007,8 @@ public:
 	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
 	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
 
-	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
 	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
+	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
 
 protected:
 	Expression(): mTypeAndValue(&mTypeDescriptor) {}

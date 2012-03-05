@@ -48,6 +48,7 @@ public:
 	{
 		switch (type)
 		{
+			case Token::KEY_BOOL:
 			case Token::KEY_INT:
 				return mOpCodeInt;
 			case Token::KEY_UINT:
@@ -175,6 +176,9 @@ private:
 	typedef AutoStack<GeneratorResult> ResultStack;
 	typedef AutoStack<size_t> LabelStack;
 
+	virtual void Traverse(const ParseNode *parseNode);
+	void TraverseOmitOptionalTemporaries(const Expression *expression);
+
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const NamedInitializer *namedInitializer);
@@ -182,6 +186,7 @@ private:
 	virtual void Visit(const WhileStatement *whileStatement);
 	virtual void Visit(const ForStatement *forStatement);
 	virtual void Visit(const JumpStatement *jumpStatement);
+	virtual void Visit(const ExpressionStatement *expressionStatement);
 	virtual void Visit(const ConditionalExpression *conditionalExpression);
 	virtual void Visit(const BinaryExpression *binaryExpression);
 	virtual void Visit(const UnaryExpression *unaryExpression);
@@ -213,16 +218,20 @@ private:
 	void EmitPopFramePointerRelativeValue32(bi32_t offset);
 	void EmitPopFramePointerRelativeValue64(bi32_t offset);
 	void EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	GeneratorResult EmitAccumulateAddressOffset(const GeneratorResult &result);
+	void EmitAccumulateAddressOffset(bi32_t offset);
 
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 
-	void EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
-	void EmitAssignmentOperator(const BinaryExpression *binaryExpression);
-	void EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	GeneratorResult EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	GeneratorResult EmitAssignmentOperator(const BinaryExpression *binaryExpression);
+	GeneratorResult EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 	void EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode);
 	GeneratorResult EmitPointerAddition(const Expression *pointerExpression, const Expression *offsetExpression);
 	GeneratorResult EmitPointerSubtraction(const Expression *pointerExpression, const Expression *offsetExpression);
 	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
+
+	GeneratorResult EmitSimpleUnaryOperator(const UnaryExpression *unaryExpression, const OpCodeSet &opCodeSet);
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 
@@ -251,6 +260,7 @@ private:
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
 	LabelStack mBreakLabel;
+	BoolStack mEmitOptionalTemporaries;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
 	const TranslationUnit *mTranslationUnitList;
@@ -296,6 +306,32 @@ void GeneratorCore::Generate()
 }
 
 
+void GeneratorCore::Traverse(const ParseNode *parseNode)
+{
+	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, true);
+	ParseNodeTraverser::Traverse(parseNode);
+}
+
+
+void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression)
+{
+	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, false);
+	ParseNodeTraverser::Traverse(expression);
+
+	// Remove any temporaries that may have been left on the stack.
+	const GeneratorResult::Context context = mResult.GetTop().mContext;
+	if (context == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	{
+		EmitOpCodeWithOffset(OPCODE_MOVESP, -static_cast<bi32_t>(mPointerSize));
+	}
+	else if (context == GeneratorResult::CONTEXT_STACK_VALUE)
+	{
+		const bu32_t typeSize = expression->GetTypeDescriptor()->GetStackSize(mPointerSize);
+		EmitOpCodeWithOffset(OPCODE_MOVESP, -static_cast<bi32_t>(typeSize));
+	}
+}
+
+
 void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 {
 	if (structDeclaration->GetVariant() == StructDeclaration::VARIANT_BOND)
@@ -332,8 +368,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
 				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-				const TypeDescriptor *rhDescriptor =
-					initializer->GetExpression()->GetTypeAndValue().GetTypeDescriptor();
+				const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 				ResultStack::Element rhResult(mResult);
 				GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset());
 				Traverse(initializer);
@@ -359,7 +394,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *condition = ifStatement->GetCondition();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 	ResultStack::Element conditionResult(mResult);
 	Traverse(condition);
 	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
@@ -395,7 +430,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 
 	if (whileStatement->IsDoLoop())
 	{
@@ -437,7 +472,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != NULL)
 	{
-		const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
+		const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
@@ -470,16 +505,23 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 }
 
 
+void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
+{
+	ResultStack::Element expressionResult(mResult);
+	TraverseOmitOptionalTemporaries(expressionStatement->GetExpression());
+}
+
+
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *condition = conditionalExpression->GetCondition();
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *trueDescriptor = trueExpression->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
+	const TypeDescriptor *trueDescriptor = trueExpression->GetTypeDescriptor();
+	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeDescriptor();
 
 	ResultStack::Element conditionResult(mResult);
 	Traverse(condition);
@@ -526,25 +568,25 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				// TODO
 				break;
 			case Token::ASSIGN:
-				EmitAssignmentOperator(binaryExpression);
+				result = EmitAssignmentOperator(binaryExpression);
 				break;
 			case Token::ASSIGN_LEFT:
-				EmitCompoundAssignmentOperator(binaryExpression, LSH_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, LSH_OPCODES);
 				break;
 			case Token::ASSIGN_RIGHT:
-				EmitCompoundAssignmentOperator(binaryExpression, RSH_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, RSH_OPCODES);
 				break;
 			case Token::ASSIGN_MOD:
-				EmitCompoundAssignmentOperator(binaryExpression, REM_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, REM_OPCODES);
 				break;
 			case Token::ASSIGN_AND:
-				EmitCompoundAssignmentOperator(binaryExpression, AND_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, AND_OPCODES);
 				break;
 			case Token::ASSIGN_OR:
-				EmitCompoundAssignmentOperator(binaryExpression, OR_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, OR_OPCODES);
 				break;
 			case Token::ASSIGN_XOR:
-				EmitCompoundAssignmentOperator(binaryExpression, XOR_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, XOR_OPCODES);
 				break;
 
 			case Token::ASSIGN_PLUS:
@@ -554,7 +596,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitCompoundAssignmentOperator(binaryExpression, ADD_OPCODES);
+					result = EmitCompoundAssignmentOperator(binaryExpression, ADD_OPCODES);
 				}
 				break;
 
@@ -565,15 +607,15 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitCompoundAssignmentOperator(binaryExpression, SUB_OPCODES);
+					result = EmitCompoundAssignmentOperator(binaryExpression, SUB_OPCODES);
 				}
 				break;
 
 			case Token::ASSIGN_MULT:
-				EmitCompoundAssignmentOperator(binaryExpression, MUL_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, MUL_OPCODES);
 				break;
 			case Token::ASSIGN_DIV:
-				EmitCompoundAssignmentOperator(binaryExpression, DIV_OPCODES);
+				result = EmitCompoundAssignmentOperator(binaryExpression, DIV_OPCODES);
 				break;
 			case Token::OP_AND:
 				EmitLogicalOperator(binaryExpression, OPCODE_BRZW);
@@ -582,40 +624,40 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				EmitLogicalOperator(binaryExpression, OPCODE_BRNZW);
 				break;
 			case Token::OP_AMP:
-				EmitSimpleBinaryOperator(binaryExpression, AND_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, AND_OPCODES);
 				break;
 			case Token::OP_BIT_OR:
-				EmitSimpleBinaryOperator(binaryExpression, OR_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, OR_OPCODES);
 				break;
 			case Token::OP_BIT_XOR:
-				EmitSimpleBinaryOperator(binaryExpression, XOR_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, XOR_OPCODES);
 				break;
 			case Token::OP_MOD:
-				EmitSimpleBinaryOperator(binaryExpression, REM_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, REM_OPCODES);
 				break;
 			case Token::OP_LEFT:
-				EmitSimpleBinaryOperator(binaryExpression, LSH_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, LSH_OPCODES);
 				break;
 			case Token::OP_RIGHT:
-				EmitSimpleBinaryOperator(binaryExpression, RSH_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, RSH_OPCODES);
 				break;
 			case Token::OP_LT:
-				EmitSimpleBinaryOperator(binaryExpression, CMPLT_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPLT_OPCODES);
 				break;
 			case Token::OP_LTE:
-				EmitSimpleBinaryOperator(binaryExpression, CMPLE_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPLE_OPCODES);
 				break;
 			case Token::OP_GT:
-				EmitSimpleBinaryOperator(binaryExpression, CMPGT_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPGT_OPCODES);
 				break;
 			case Token::OP_GTE:
-				EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
 				break;
 			case Token::OP_EQUAL:
-				EmitSimpleBinaryOperator(binaryExpression, CMPEQ_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPEQ_OPCODES);
 				break;
 			case Token::OP_NOT_EQUAL:
-				EmitSimpleBinaryOperator(binaryExpression, CMPNEQ_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, CMPNEQ_OPCODES);
 				break;
 
 			case Token::OP_PLUS:
@@ -630,7 +672,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitSimpleBinaryOperator(binaryExpression, ADD_OPCODES);
+					result = EmitSimpleBinaryOperator(binaryExpression, ADD_OPCODES);
 				}
 			}
 			break;
@@ -646,15 +688,15 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					EmitSimpleBinaryOperator(binaryExpression, SUB_OPCODES);
+					result = EmitSimpleBinaryOperator(binaryExpression, SUB_OPCODES);
 				}
 				break;
 
 			case Token::OP_STAR:
-				EmitSimpleBinaryOperator(binaryExpression, MUL_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, MUL_OPCODES);
 				break;
 			case Token::OP_DIV:
-				EmitSimpleBinaryOperator(binaryExpression, DIV_OPCODES);
+				result = EmitSimpleBinaryOperator(binaryExpression, DIV_OPCODES);
 				break;
 
 			default:
@@ -668,7 +710,52 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 
 void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 {
-	ParseNodeTraverser::Visit(unaryExpression);
+	if (!ProcessConstantExpression(unaryExpression))
+	{
+		/*
+		const Expression *rhs = unaryExpression->GetRhs();
+		const TypeAndValue &rhTav = rhs->GetTypeAndValue();
+		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		*/
+		const Token *op = unaryExpression->GetOperator();
+
+		GeneratorResult result = GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+
+		switch (op->GetTokenType())
+		{
+			case Token::OP_PLUS:
+				// Nothing to do.
+				break;
+
+			case Token::OP_MINUS:
+				result = EmitSimpleUnaryOperator(unaryExpression, NEG_OPCODES);
+				break;
+
+			case Token::OP_INC:
+				break;
+
+			case Token::OP_DEC:
+				break;
+
+			case Token::OP_NOT:
+				result = EmitSimpleUnaryOperator(unaryExpression, NOT_OPCODES);
+				break;
+
+			case Token::OP_AMP:
+				break;
+
+			case Token::OP_BIT_NOT:
+				break;
+
+			case Token::OP_STAR:
+				break;
+
+			default:
+				break;
+		}
+
+		mResult.SetTop(result);
+	}
 }
 
 
@@ -1301,22 +1388,8 @@ void GeneratorCore::EmitPopFramePointerRelativeValue64(bi32_t offset)
 
 void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
-	// Add the accumulated offset to the address that is already on the stack. Then push the value
-	// at the resulting address.
 	ByteCode::Type &byteCode = GetByteCode();
-	if (offset != 0)
-	{
-		EmitPushConstantInt(offset);
-		if (Is64BitPointer())
-		{
-			byteCode.push_back(OPCODE_ITOL);
-			byteCode.push_back(OPCODE_ADDL);
-		}
-		else
-		{
-			byteCode.push_back(OPCODE_ADDI);
-		}
-	}
+	EmitAccumulateAddressOffset(offset);
 
 	if (typeDescriptor->IsValueType())
 	{
@@ -1349,6 +1422,37 @@ void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescri
 		else
 		{
 			byteCode.push_back(OPCODE_STORE32);
+		}
+	}
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitAccumulateAddressOffset(const GeneratorResult &result)
+{
+	GeneratorResult output = result;
+	if (result.mContext == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	{
+		EmitAccumulateAddressOffset(result.mOffset);
+		output.mOffset = 0;
+	}
+	return output;
+}
+
+
+void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	if (offset != 0)
+	{
+		EmitPushConstantInt(offset);
+		if (Is64BitPointer())
+		{
+			byteCode.push_back(OPCODE_ITOL);
+			byteCode.push_back(OPCODE_ADDL);
+		}
+		else
+		{
+			byteCode.push_back(OPCODE_ADDI);
 		}
 	}
 }
@@ -1455,12 +1559,12 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 }
 
 
-void GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
+GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 
 	ResultStack::Element lhResult(mResult);
@@ -1475,57 +1579,85 @@ void GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpression *binaryExpre
 
 	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor.GetPrimitiveType()));
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 }
 
 
-void GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
+GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	GeneratorResult result;
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
+	lhResult = EmitAccumulateAddressOffset(lhResult);
 
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
-
 	EmitCast(rhDescriptor, lhDescriptor);
-	EmitPopResult(lhResult, lhDescriptor);
 
-	// TODO: Check if a temporary needs to be left on the stack.
+	if (mEmitOptionalTemporaries.GetTop())
+	{
+		ByteCode::Type &byteCode = GetByteCode();
+		byteCode.push_back(OPCODE_DUPMOD);
+		result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+	}
+
+	EmitPopResult(lhResult, lhDescriptor);
+	return result;
 }
 
 
-void GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
+GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	GeneratorResult result;
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	{
+		lhResult = EmitAccumulateAddressOffset(lhResult);
+		if (Is64BitPointer())
+		{
+			byteCode.push_back(OPCODE_DUP64);
+		}
+		else
+		{
+			byteCode.push_back(OPCODE_DUP32);
+		}
+	}
+
 	EmitPushResult(lhResult.GetValue(), lhDescriptor);
 	EmitCast(lhDescriptor, &resultDescriptor);
-
-	// TODO: If the result produces an address, it needs to be duped.
 
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 	EmitCast(rhDescriptor, &resultDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor.GetPrimitiveType()));
-
 	EmitCast(&resultDescriptor, lhDescriptor);
-	EmitPopResult(lhResult, lhDescriptor);
 
-	// TODO: Check if a temporary needs to be left on the stack.
+	if (mEmitOptionalTemporaries.GetTop())
+	{
+		byteCode.push_back(OPCODE_DUPMOD);
+		result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+	}
+
+	EmitPopResult(lhResult, lhDescriptor);
+	return result;
 }
 
 
@@ -1534,8 +1666,8 @@ void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression
 	// TODO: Collapse ! operators.
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeAndValue().GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
@@ -1566,7 +1698,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerSubtraction(const Expre
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
-	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeAndValue().GetTypeDescriptor();
+	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
 	const bi32_t elementSize = static_cast<bi32_t>(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const TypeDescriptor *offsetDescriptor = offsetTav.GetTypeDescriptor();
@@ -1629,6 +1761,23 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 	}
 
 	return result;
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleUnaryOperator(const UnaryExpression *unaryExpression, const OpCodeSet &opCodeSet)
+{
+	const Expression *rhs = unaryExpression->GetRhs();
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+
+	ResultStack::Element rhResult(mResult);
+	Traverse(unaryExpression->GetRhs());
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor->GetPrimitiveType()));
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 }
 
 
