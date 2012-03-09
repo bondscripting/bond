@@ -55,7 +55,7 @@ public:
 				return mOpCodeUInt;
 			case Token::KEY_FLOAT:
 				return mOpCodeFloat;
-				// TODO Handle long and double.
+				// TODO Handle long types when they are implemented.
 			default:
 				return OPCODE_NOP;
 		}
@@ -82,7 +82,6 @@ static const OpCodeSet AND_OPCODES(OPCODE_ANDI, OPCODE_ANDL);
 static const OpCodeSet OR_OPCODES(OPCODE_ORI, OPCODE_ORL);
 static const OpCodeSet XOR_OPCODES(OPCODE_XORI, OPCODE_XORL);
 static const OpCodeSet NEG_OPCODES(OPCODE_NEGI, OPCODE_NEGL, OPCODE_NEGF, OPCODE_NEGD);
-static const OpCodeSet NOT_OPCODES(OPCODE_NOTI, OPCODE_NOTL);
 static const OpCodeSet CMPEQ_OPCODES(OPCODE_CMPEQI, OPCODE_CMPEQL, OPCODE_CMPEQF, OPCODE_CMPEQD);
 static const OpCodeSet CMPNEQ_OPCODES(OPCODE_CMPNEQI, OPCODE_CMPNEQL, OPCODE_CMPNEQF, OPCODE_CMPNEQD);
 static const OpCodeSet CMPLT_OPCODES(OPCODE_CMPLTI, OPCODE_CMPLTUI, OPCODE_CMPLTL, OPCODE_CMPLTUL, OPCODE_CMPLTF, OPCODE_CMPLTD);
@@ -116,10 +115,10 @@ private:
 		enum Context
 		{
 			CONTEXT_NONE,
-			CONTEXT_FP_VALUE,
-			CONTEXT_FP_ADDRESS,
+			CONTEXT_FP_INDIRECT,
+			CONTEXT_FP_OFFSET,
 			CONTEXT_STACK_VALUE,
-			CONTEXT_STACK_ADDRESS,
+			CONTEXT_ADDRESS_INDIRECT,
 			CONTEXT_CONSTANT_VALUE,
 		};
 
@@ -203,10 +202,10 @@ private:
 	bool ProcessConstantExpression(const Expression *expression);
 
 	void EmitPushResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
-	void EmitPushFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
-	void EmitPushFramePointerRelativeValue32(bi32_t offset);
-	void EmitPushFramePointerRelativeValue64(bi32_t offset);
-	void EmitPushAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPushFramePointerIndirectValue32(bi32_t offset);
+	void EmitPushFramePointerIndirectValue64(bi32_t offset);
+	void EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 
 	void EmitPushConstant(const TypeAndValue &typeAndValue);
 	void EmitPushConstantInt(bi32_t value);
@@ -214,10 +213,10 @@ private:
 	void EmitPushConstantFloat(bf32_t value);
 
 	void EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
-	void EmitPopFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
-	void EmitPopFramePointerRelativeValue32(bi32_t offset);
-	void EmitPopFramePointerRelativeValue64(bi32_t offset);
-	void EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPopFramePointerIndirectValue32(bi32_t offset);
+	void EmitPopFramePointerIndirectValue64(bi32_t offset);
+	void EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
 	GeneratorResult EmitAccumulateAddressOffset(const GeneratorResult &result);
 	void EmitAccumulateAddressOffset(bi32_t offset);
 
@@ -231,7 +230,11 @@ private:
 	GeneratorResult EmitPointerSubtraction(const Expression *pointerExpression, const Expression *offsetExpression);
 	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 
-	GeneratorResult EmitSimpleUnaryOperator(const UnaryExpression *unaryExpression, const OpCodeSet &opCodeSet);
+	GeneratorResult EmitSignOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitNotOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitBitwiseNotOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitDereferenceOperator(const UnaryExpression *unaryExpression);
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 
@@ -320,7 +323,7 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 
 	// Remove any temporaries that may have been left on the stack.
 	const GeneratorResult::Context context = mResult.GetTop().mContext;
-	if (context == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	if (context == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 	{
 		EmitOpCodeWithOffset(OPCODE_MOVESP, -static_cast<bi32_t>(mPointerSize));
 	}
@@ -370,7 +373,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 				const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 				ResultStack::Element rhResult(mResult);
-				GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset());
+				GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset());
 				Traverse(initializer);
 				EmitPushResult(rhResult.GetValue(), rhDescriptor);
 				EmitCast(rhDescriptor, lhDescriptor);
@@ -724,11 +727,8 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 		switch (op->GetTokenType())
 		{
 			case Token::OP_PLUS:
-				// Nothing to do.
-				break;
-
 			case Token::OP_MINUS:
-				result = EmitSimpleUnaryOperator(unaryExpression, NEG_OPCODES);
+				EmitSignOperator(unaryExpression);
 				break;
 
 			case Token::OP_INC:
@@ -738,16 +738,19 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_NOT:
-				result = EmitSimpleUnaryOperator(unaryExpression, NOT_OPCODES);
+				result = EmitNotOperator(unaryExpression);
 				break;
 
 			case Token::OP_AMP:
+				result = EmitAddressOfOperator(unaryExpression);
 				break;
 
 			case Token::OP_BIT_NOT:
+				result = EmitBitwiseNotOperator(unaryExpression);
 				break;
 
 			case Token::OP_STAR:
+				result = EmitDereferenceOperator(unaryExpression);
 				break;
 
 			default:
@@ -821,11 +824,11 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 				case SCOPE_LOCAL:
 					if (namedInitializer->GetTypeAndValue()->GetTypeDescriptor()->IsArrayType())
 					{
-						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_ADDRESS, namedInitializer->GetOffset()));
+						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_OFFSET, namedInitializer->GetOffset()));
 					}
 					else
 					{
-						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, namedInitializer->GetOffset()));
+						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset()));
 					}
 					break;
 				case SCOPE_STRUCT_MEMBER:
@@ -835,7 +838,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		}
 		else if ((parameter = CastNode<Parameter>(symbol)) != NULL)
 		{
-			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, parameter->GetOffset()));
+			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, parameter->GetOffset()));
 		}
 		else if ((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL)
 		{
@@ -847,7 +850,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 
 void GeneratorCore::Visit(const ThisExpression *thisExpression)
 {
-	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_VALUE, -static_cast<bi32_t>(mPointerSize)));
+	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, -static_cast<bi32_t>(mPointerSize)));
 }
 
 
@@ -867,16 +870,16 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 {
 	switch (result.mContext)
 	{
-		case GeneratorResult::CONTEXT_FP_VALUE:
-			EmitPushFramePointerRelativeValue(typeDescriptor, result.mOffset);
+		case GeneratorResult::CONTEXT_FP_INDIRECT:
+			EmitPushFramePointerIndirectValue(typeDescriptor, result.mOffset);
 			break;
 
-		case GeneratorResult::CONTEXT_FP_ADDRESS:
+		case GeneratorResult::CONTEXT_FP_OFFSET:
 			EmitOpCodeWithOffset(OPCODE_LOADFP, result.mOffset);
 			break;
 
-		case GeneratorResult::CONTEXT_STACK_ADDRESS:
-			EmitPushAddressRelativeValue(typeDescriptor, result.mOffset);
+		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+			EmitPushAddressIndirectValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
@@ -897,7 +900,7 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 }
 
 
-void GeneratorCore::EmitPushFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
 	if (typeDescriptor->IsValueType())
 	{
@@ -918,7 +921,7 @@ void GeneratorCore::EmitPushFramePointerRelativeValue(const TypeDescriptor *type
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
-				EmitPushFramePointerRelativeValue32(offset);
+				EmitPushFramePointerIndirectValue32(offset);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -929,17 +932,17 @@ void GeneratorCore::EmitPushFramePointerRelativeValue(const TypeDescriptor *type
 	{
 		if (Is64BitPointer())
 		{
-			EmitPushFramePointerRelativeValue64(offset);
+			EmitPushFramePointerIndirectValue64(offset);
 		}
 		else
 		{
-			EmitPushFramePointerRelativeValue32(offset);
+			EmitPushFramePointerIndirectValue32(offset);
 		}
 	}
 }
 
 
-void GeneratorCore::EmitPushFramePointerRelativeValue32(bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
@@ -975,7 +978,7 @@ void GeneratorCore::EmitPushFramePointerRelativeValue32(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPushFramePointerRelativeValue64(bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue64(bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
@@ -1011,7 +1014,7 @@ void GeneratorCore::EmitPushFramePointerRelativeValue64(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPushAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
@@ -1091,7 +1094,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 		case Token::KEY_FLOAT:
 			EmitPushConstantFloat(typeAndValue.GetFloatValue());
 			break;
-		// TODO: Deal with long types.
+		// TODO: Deal with long types when they are implemented.
 		default:
 			if (typeDescriptor->IsNullType())
 			{
@@ -1258,16 +1261,16 @@ void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescr
 {
 	switch (result.mContext)
 	{
-		case GeneratorResult::CONTEXT_FP_VALUE:
-			EmitPopFramePointerRelativeValue(typeDescriptor, result.mOffset);
+		case GeneratorResult::CONTEXT_FP_INDIRECT:
+			EmitPopFramePointerIndirectValue(typeDescriptor, result.mOffset);
 			break;
 
-		case GeneratorResult::CONTEXT_STACK_ADDRESS:
-			EmitPopAddressRelativeValue(typeDescriptor, result.mOffset);
+		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+			EmitPopAddressIndirectValue(typeDescriptor, result.mOffset);
 			break;
 
 		case GeneratorResult::CONTEXT_NONE:
-		case GeneratorResult::CONTEXT_FP_ADDRESS:
+		case GeneratorResult::CONTEXT_FP_OFFSET:
 		case GeneratorResult::CONTEXT_STACK_VALUE:
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
 			// TODO: Assert that getting here is bad because it does not make sense.
@@ -1276,7 +1279,7 @@ void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescr
 }
 
 
-void GeneratorCore::EmitPopFramePointerRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
 	if (typeDescriptor->IsValueType())
 	{
@@ -1293,7 +1296,7 @@ void GeneratorCore::EmitPopFramePointerRelativeValue(const TypeDescriptor *typeD
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
-				EmitPopFramePointerRelativeValue32(offset);
+				EmitPopFramePointerIndirectValue32(offset);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -1304,17 +1307,17 @@ void GeneratorCore::EmitPopFramePointerRelativeValue(const TypeDescriptor *typeD
 	{
 		if (Is64BitPointer())
 		{
-			EmitPopFramePointerRelativeValue64(offset);
+			EmitPopFramePointerIndirectValue64(offset);
 		}
 		else
 		{
-			EmitPopFramePointerRelativeValue32(offset);
+			EmitPopFramePointerIndirectValue32(offset);
 		}
 	}
 }
 
 
-void GeneratorCore::EmitPopFramePointerRelativeValue32(bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
@@ -1350,7 +1353,7 @@ void GeneratorCore::EmitPopFramePointerRelativeValue32(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPopFramePointerRelativeValue64(bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
@@ -1386,7 +1389,7 @@ void GeneratorCore::EmitPopFramePointerRelativeValue64(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	EmitAccumulateAddressOffset(offset);
@@ -1430,7 +1433,7 @@ void GeneratorCore::EmitPopAddressRelativeValue(const TypeDescriptor *typeDescri
 GeneratorCore::GeneratorResult GeneratorCore::EmitAccumulateAddressOffset(const GeneratorResult &result)
 {
 	GeneratorResult output = result;
-	if (result.mContext == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	if (result.mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 	{
 		EmitAccumulateAddressOffset(result.mOffset);
 		output.mOffset = 0;
@@ -1573,7 +1576,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleBinaryOperator(const Bin
 	EmitCast(lhDescriptor, &resultDescriptor);
 
 	ResultStack::Element rhResult(mResult);
-	Traverse(binaryExpression->GetRhs());
+	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 	EmitCast(rhDescriptor, &resultDescriptor);
 
@@ -1626,7 +1629,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	Traverse(lhs);
 
 	ByteCode::Type &byteCode = GetByteCode();
-	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_STACK_ADDRESS)
+	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 	{
 		lhResult = EmitAccumulateAddressOffset(lhResult);
 		if (Is64BitPointer())
@@ -1710,8 +1713,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 
 	if (offsetTav.IsValueDefined())
 	{
-		if ((pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_STACK_ADDRESS) ||
-		    (pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_VALUE))
+		if ((pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT) ||
+		    (pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_INDIRECT))
 		{
 			EmitPushResult(pointerResult.GetValue(), pointerDescriptor);
 		}
@@ -1721,7 +1724,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 		}
 
 		// TODO: Handle long offsets.
-		// TODO: handle subtraction.
 		result.mOffset += (offsetTav.GetIntValue() * elementSize);
 	}
 	else
@@ -1764,20 +1766,185 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 }
 
 
-GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleUnaryOperator(const UnaryExpression *unaryExpression, const OpCodeSet &opCodeSet)
+GeneratorCore::GeneratorResult GeneratorCore::EmitSignOperator(const UnaryExpression *unaryExpression)
 {
-	const Expression *rhs = unaryExpression->GetRhs();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const UnaryExpression *unary = unaryExpression;
+	const Expression *rhs = unaryExpression;
 	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+	bool negated = false;
+	while (unary != NULL)
+	{
+		const Token::TokenType op = unary->GetOperator()->GetTokenType();
+		if (op == Token::OP_MINUS)
+		{
+			negated = !negated;
+		}
+		else if (op != Token::OP_PLUS)
+		{
+			break;
+		}
+		rhs = unary->GetRhs();
+		unary = CastNode<UnaryExpression>(rhs);
+	}
 
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
-	Traverse(unaryExpression->GetRhs());
+	Traverse(rhs);
 	EmitPushResult(rhResult.GetValue(), rhDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor->GetPrimitiveType()));
+	if (negated)
+	{
+		ByteCode::Type &byteCode = GetByteCode();
+		byteCode.push_back(NEG_OPCODES.GetOpCode(resultDescriptor->GetPrimitiveType()));
+	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const UnaryExpression *unaryExpression)
+{
+	const UnaryExpression *unary = unaryExpression;
+	const Expression *rhs = unaryExpression;
+	//const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+	bool negated = false;
+	while (unary != NULL)
+	{
+		const Token::TokenType op = unary->GetOperator()->GetTokenType();
+		if (op == Token::OP_BIT_NOT)
+		{
+			negated = !negated;
+		}
+		else
+		{
+			break;
+		}
+		rhs = unary->GetRhs();
+		unary = CastNode<UnaryExpression>(rhs);
+	}
+
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	if (negated)
+	{
+		// TODO: Handle long type when it is implemented.
+		//if (resultDescriptor->GetPrimitiveType() == Token::KEY_LONG)
+		//{
+		//	ByteCode::Type &byteCode = GetByteCode();
+		//	byteCode.push_back(OPCODE_CONSTL_1);
+		//	byteCode.push_back(OPCODE_XORL);
+		//}
+		//else
+		{
+			ByteCode::Type &byteCode = GetByteCode();
+			byteCode.push_back(OPCODE_CONSTI_1);
+			byteCode.push_back(OPCODE_XORI);
+		}
+	}
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
+{
+	const UnaryExpression *unary = unaryExpression;
+	const Expression *rhs = unaryExpression;
+	bool negated = false;
+	while (unary != NULL)
+	{
+		const Token::TokenType op = unary->GetOperator()->GetTokenType();
+		if (op == Token::OP_BIT_NOT)
+		{
+			negated = !negated;
+		}
+		else
+		{
+			break;
+		}
+		rhs = unary->GetRhs();
+		unary = CastNode<UnaryExpression>(rhs);
+	}
+
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	if (negated)
+	{
+		ByteCode::Type &byteCode = GetByteCode();
+		byteCode.push_back(OPCODE_NOT);
+	}
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfOperator(const UnaryExpression *unaryExpression)
+{
+	// TODO: Non-literal constants must not be resolved to constants. Must be FP indirect, for example.
+	const Expression *rhs = unaryExpression->GetRhs();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	GeneratorResult result = rhResult;
+
+	switch (rhResult.GetValue().mContext)
+	{
+		case GeneratorResult::CONTEXT_FP_INDIRECT:
+			result.mContext = GeneratorResult::CONTEXT_FP_OFFSET;
+			break;
+
+		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+			result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+			break;
+
+		case GeneratorResult::CONTEXT_NONE:
+		case GeneratorResult::CONTEXT_FP_OFFSET:
+		case GeneratorResult::CONTEXT_STACK_VALUE:
+		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
+			// TODO: Assert that getting here is bad because it does not make sense.
+			break;
+	}
+
+	return result;
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const UnaryExpression *unaryExpression)
+{
+	// TODO: Non-literal constants must not be resolved to constants. Must be FP indirect, for example.
+	const Expression *rhs = unaryExpression->GetRhs();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	GeneratorResult result = rhResult;
+
+	switch (rhResult.GetValue().mContext)
+	{
+		case GeneratorResult::CONTEXT_FP_OFFSET:
+			result.mContext = GeneratorResult::CONTEXT_FP_INDIRECT;
+			break;
+
+		case GeneratorResult::CONTEXT_STACK_VALUE:
+			result.mContext = GeneratorResult::CONTEXT_ADDRESS_INDIRECT;
+			break;
+
+		case GeneratorResult::CONTEXT_FP_INDIRECT:
+		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+			EmitPushResult(rhResult, unaryExpression->GetTypeDescriptor());
+			result = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
+			break;
+
+		case GeneratorResult::CONTEXT_NONE:
+		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
+			// TODO: Assert that getting here is bad because it does not make sense.
+			break;
+	}
+
+	return result;
 }
 
 
