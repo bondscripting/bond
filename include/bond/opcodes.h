@@ -195,8 +195,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(NEGF,         negf,         NONE)   \
 	BOND_OPCODE_ITEM(NEGD,         negd,         NONE)   \
 	                                                     \
-	BOND_OPCODE_ITEM(NOTI,         noti,         NONE)   \
-	BOND_OPCODE_ITEM(NOTL,         notl,         NONE)   \
+	BOND_OPCODE_ITEM(NOT,          not,          NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(CMPEQI,       cmpeqi,       NONE)   \
 	BOND_OPCODE_ITEM(CMPEQL,       cmpeql,       NONE)   \

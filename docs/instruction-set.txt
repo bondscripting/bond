@@ -189,8 +189,7 @@ negl                ..., long -> long
 negf                ..., float -> float
 negd                ..., double -> double
 
-noti                ..., int -> int
-notl                ..., long -> long
+not                 ..., int -> int
 
 cmpeqi              ..., int, int -> ..., int
 cmpeql              ..., long, long -> ..., int
