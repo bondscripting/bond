@@ -231,6 +231,7 @@ private:
 	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 
 	GeneratorResult EmitSignOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitPreincrementOperator(const UnaryExpression *unaryExpression, int value);
 	GeneratorResult EmitNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitBitwiseNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
@@ -732,9 +733,11 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_INC:
+				EmitPreincrementOperator(unaryExpression, 1);
 				break;
 
 			case Token::OP_DEC:
+				EmitPreincrementOperator(unaryExpression, -1);
 				break;
 
 			case Token::OP_NOT:
@@ -1802,6 +1805,48 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSignOperator(const UnaryExpres
 }
 
 
+GeneratorCore::GeneratorResult GeneratorCore::EmitPreincrementOperator(const UnaryExpression *unaryExpression, int value)
+{
+	GeneratorResult result;
+	return result;
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
+{
+	const UnaryExpression *unary = unaryExpression;
+	const Expression *rhs = unaryExpression;
+	bool negated = false;
+	while (unary != NULL)
+	{
+		const Token::TokenType op = unary->GetOperator()->GetTokenType();
+		if (op == Token::OP_NOT)
+		{
+			negated = !negated;
+		}
+		else
+		{
+			break;
+		}
+		rhs = unary->GetRhs();
+		unary = CastNode<UnaryExpression>(rhs);
+	}
+
+	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	EmitPushResult(rhResult.GetValue(), rhDescriptor);
+
+	if (negated)
+	{
+		ByteCode::Type &byteCode = GetByteCode();
+		byteCode.push_back(OPCODE_NOT);
+	}
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+}
+
+
 GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const UnaryExpression *unaryExpression)
 {
 	const UnaryExpression *unary = unaryExpression;
@@ -1843,41 +1888,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const Unary
 			byteCode.push_back(OPCODE_CONSTI_1);
 			byteCode.push_back(OPCODE_XORI);
 		}
-	}
-
-	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
-}
-
-
-GeneratorCore::GeneratorResult GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
-{
-	const UnaryExpression *unary = unaryExpression;
-	const Expression *rhs = unaryExpression;
-	bool negated = false;
-	while (unary != NULL)
-	{
-		const Token::TokenType op = unary->GetOperator()->GetTokenType();
-		if (op == Token::OP_BIT_NOT)
-		{
-			negated = !negated;
-		}
-		else
-		{
-			break;
-		}
-		rhs = unary->GetRhs();
-		unary = CastNode<UnaryExpression>(rhs);
-	}
-
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
-	Traverse(rhs);
-	EmitPushResult(rhResult.GetValue(), rhDescriptor);
-
-	if (negated)
-	{
-		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(OPCODE_NOT);
 	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
