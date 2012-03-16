@@ -15,6 +15,8 @@ class DisassemblerCore
 public:
 	DisassemblerCore(Allocator &allocator, TextWriter &writer, const unsigned char *byteCode, size_t length):
 		mStringList(StringList::Allocator(&allocator)),
+		mValue32List(Value32List::Allocator(&allocator)),
+		mValue64List(Value64List::Allocator(&allocator)),
 		mAllocator(allocator),
 		mWriter(writer),
 		mByteCode(byteCode),
@@ -26,16 +28,25 @@ public:
 
 private:
 	typedef Vector<HashedString> StringList;
+	typedef Vector<Value32> Value32List;
+	typedef Vector<Value64> Value64List;
 
-	Value16 ReadValue16();
-	Value32 ReadValue32();
-	void ReadStringTable();
+	void ReadConstantTable();
 	void ReadBlob();
 	void ReadListBlob(size_t expectedEnd);
 	void ReadFunctionBlob(size_t expectedEnd);
+	void ReadQualifiedIdentifier();
+	Value16 ReadValue16();
+	Value32 ReadValue32();
+	Value64 ReadValue64();
+
+	void WriteHashedString(const HashedString &str);
+
 	void ReportMalformedCBO();
 
 	StringList::Type mStringList;
+	Value32List::Type mValue32List;
+	Value64List::Type mValue64List;
 	Allocator &mAllocator;
 	TextWriter &mWriter;
 	const unsigned char *mByteCode;
@@ -69,14 +80,14 @@ void DisassemblerCore::Disassemble()
 	const bu32_t minorVersion = ReadValue16().mUShort;
 	mWriter.Write("Version %d.%02d\n", majorVersion, minorVersion);
 
-	ReadStringTable();
+	ReadConstantTable();
 	ReadBlob();
 }
 
 
-void DisassemblerCore::ReadStringTable()
+void DisassemblerCore::ReadConstantTable()
 {
-	if ((mIndex < mLength) && ((mIndex + 6) > mLength))
+	if ((mIndex < mLength) && ((mIndex + 8) > mLength))
 	{
 		ReportMalformedCBO();
 		return;
@@ -85,6 +96,32 @@ void DisassemblerCore::ReadStringTable()
 	const size_t size = ReadValue32().mUInt;
 	const size_t expectedEnd = mIndex + size - 4;
 	if (expectedEnd > mLength)
+	{
+		ReportMalformedCBO();
+		return;
+	}
+
+	const int numValue64s = ReadValue16().mUShort;
+	const int numValue32s = ReadValue16().mUShort;
+	if (((numValue64s * sizeof(Value64)) + (numValue64s * sizeof(Value64))) > mLength)
+	{
+		ReportMalformedCBO();
+		return;
+	}
+
+	mValue64List.reserve(numValue64s);
+	for (int i = 0; i < numValue64s; ++i)
+	{
+		mValue64List.push_back(ReadValue64());
+	}
+
+	mValue32List.reserve(numValue32s);
+	for (int i = 0; i < numValue32s; ++i)
+	{
+		mValue32List.push_back(ReadValue32());
+	}
+
+	if ((mIndex + 2) > mLength)
 	{
 		ReportMalformedCBO();
 		return;
@@ -136,7 +173,7 @@ void DisassemblerCore::ReadBlob()
 		return;
 	}
 
-	const HashedString id = mStringList[idIndex];
+	const HashedString &id = mStringList[idIndex];
 	if (id == HashedString("List"))
 	{
 		ReadListBlob(expectedEnd);
@@ -174,8 +211,12 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 	}
 
 	const bu32_t hash = ReadValue32().mUInt;
+
+	mWriter.Write("Function: ");
+	ReadQualifiedIdentifier();
+
 	const size_t codeSize = ReadValue32().mUInt;
-	mWriter.Write("Function hash: 0x" BOND_UHEX_FORMAT " code size: %u\n", hash, codeSize);
+	mWriter.Write("\n  hash: 0x" BOND_UHEX_FORMAT "\n  code size: %u\n", hash, codeSize);
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
 
@@ -234,6 +275,34 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 }
 
 
+void DisassemblerCore::ReadQualifiedIdentifier()
+{
+	if ((mIndex < mLength) && ((mIndex + 2) > mLength))
+	{
+		ReportMalformedCBO();
+		return;
+	}
+
+	const int numElements = ReadValue16().mUShort;
+	if ((numElements * sizeof(Value16)) > mLength)
+	{
+		ReportMalformedCBO();
+		return;
+	}
+
+	for (int i = 0; i < numElements; ++i)
+	{
+		const size_t idIndex = ReadValue16().mUShort;
+		const HashedString &id = mStringList[idIndex];
+		if (i > 0)
+		{
+			mWriter.Write("::");
+		}
+		WriteHashedString(id);
+	}
+}
+
+
 Value16 DisassemblerCore::ReadValue16()
 {
 	Value16 value(mByteCode + mIndex);
@@ -249,6 +318,26 @@ Value32 DisassemblerCore::ReadValue32()
 	mIndex += 4;
 	ConvertBigEndian32(value.mBytes);
 	return value;
+}
+
+
+Value64 DisassemblerCore::ReadValue64()
+{
+	Value64 value(mByteCode + mIndex);
+	mIndex += 4;
+	ConvertBigEndian64(value.mBytes);
+	return value;
+}
+
+
+void DisassemblerCore::WriteHashedString(const HashedString &str)
+{
+	const int length = str.GetLength();
+	const char *s = str.GetString();
+	for (int i = 0; i < length; ++i)
+	{
+		mWriter.Write("%c", s[i]);
+	}
 }
 
 

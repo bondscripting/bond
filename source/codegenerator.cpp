@@ -100,6 +100,10 @@ public:
 			bu32_t pointerSize):
 		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
 		mStringList(StringList::Allocator(&allocator)),
+		mValue32IndexMap(Value32IndexMap::Compare(), Value32IndexMap::Allocator(&allocator)),
+		mValue32List(Value32List::Allocator(&allocator)),
+		mValue64IndexMap(Value64IndexMap::Compare(), Value64IndexMap::Allocator(&allocator)),
+		mValue64List(Value64List::Allocator(&allocator)),
 		mFunctionList(FunctionList::Allocator(&allocator)),
 		mAllocator(allocator),
 		mWriter(writer),
@@ -168,7 +172,11 @@ private:
 	};
 
 	typedef Map<HashedString, bu16_t> StringIndexMap;
+	typedef Map<Value32, bu16_t> Value32IndexMap;
+	typedef Map<Value64, bu16_t> Value64IndexMap;
 	typedef List<HashedString> StringList;
+	typedef List<Value32> Value32List;
+	typedef List<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
 	typedef AutoStack<const StructDeclaration *> StructStack;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
@@ -245,19 +253,30 @@ private:
 	void EmitValue32(Value32 value);
 	void EmitValue32(Value32 value, size_t pos);
 
+	void WriteConstantTable();
+	void WriteFunctionList(bu16_t functionIndex);
+	void WriteQualifiedSymbolName(const Symbol *symbol);
+	void WriteSymbolNameIndices(const Symbol *symbol);
+	void WriteQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
-	void WriteStringTable();
-	void WriteFunctionList(bu16_t functionIndex);
+	void WriteValue64(Value64 value);
 
 	bool Is64BitPointer() const { return mPointerSize == 8; }
 	ByteCode::Type &GetByteCode();
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
+	void MapQualifiedSymbolName(const Symbol *symbol);
 	bu16_t MapString(const HashedString &str);
+	bu16_t MapValue32(const Value32 &value32);
+	bu16_t MapValue64(const Value64 &value32);
 
 	StringIndexMap::Type mStringIndexMap;
 	StringList::Type mStringList;
+	Value32IndexMap::Type mValue32IndexMap;
+	Value32List::Type mValue32List;
+	Value64IndexMap::Type mValue64IndexMap;
+	Value64List::Type mValue64List;
 	FunctionList::Type mFunctionList;
 	ResultStack mResult;
 	StructStack mStruct;
@@ -285,27 +304,27 @@ void GeneratorCore::Generate()
 	Traverse(mTranslationUnitList);
 
 	WriteValue32(Value32(MAGIC_NUMBER));
-	WriteValue16(Value16(static_cast<bu16_t>(MAJOR_VERSION | (Is64BitPointer() ? 0x80 : 0))));
+	WriteValue16(Value16(MAJOR_VERSION | (Is64BitPointer() ? 0x80 : 0)));
 	WriteValue16(Value16(MINOR_VERSION));
 
-	bu16_t listIndex = MapString("List");
-	bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
+	const bu16_t listIndex = MapString("List");
+	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
 
-	WriteStringTable();
+	WriteConstantTable();
 
 	// Cache the start position and skip 4 bytes for the blob size.
 	const int startPos = mWriter.GetPosition();
-	mWriter.AddOffset(4);
+	mWriter.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(static_cast<bu32_t>(/* mDefinitionList.size() + */ mFunctionList.size())));
+	WriteValue32(Value32(/* mDefinitionList.size() + */ mFunctionList.size()));
 
 	WriteFunctionList(functionIndex);
 
 	// Patch up the blob size.
 	const int endPos = mWriter.GetPosition();
 	mWriter.SetPosition(startPos);
-	WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
+	WriteValue32(Value32(endPos - startPos));
 	mWriter.SetPosition(endPos);
 }
 
@@ -351,7 +370,7 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	CompiledFunction &function =
 		*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
 	FunctionStack::Element functionElement(mFunction, &function);
-	//MapString(functionDefinition->GetName()->GetHashedText());
+	MapQualifiedSymbolName(functionDefinition);
 	ParseNodeTraverser::Visit(functionDefinition);
 }
 
@@ -1156,7 +1175,7 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			else if ((value >= BOND_SHORT_MIN) && (value <= BOND_SHORT_MAX))
 			{
 				byteCode.push_back(OPCODE_CONSTS);
-				EmitValue16(Value16(static_cast<bi16_t>(value)));
+				EmitValue16(Value16(value));
 			}
 			else
 			{
@@ -1209,7 +1228,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			else if (value <= BOND_USHORT_MAX)
 			{
 				byteCode.push_back(OPCODE_CONSTUS);
-				EmitValue16(Value16(static_cast<bi16_t>(value)));
+				EmitValue16(Value16(value));
 			}
 			else
 			{
@@ -1743,7 +1762,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 		{
 			EmitCast(offsetDescriptor, &intTypeDescriptor);
 			byteCode.push_back(OPCODE_PTROFF);
-			EmitValue16(Value16(static_cast<bi16_t>(elementSize)));
+			EmitValue16(Value16(elementSize));
 		}
 		else if (Is64BitPointer())
 		{
@@ -1962,7 +1981,7 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
 	CompiledFunction *function = mFunction.GetTop();
 	ByteCode::Type &byteCode = function->mByteCode;
-	const Value32 jumpId(static_cast<bu32_t>(function->mJumpList.size()));
+	const Value32 jumpId(function->mJumpList.size());
 	const size_t opCodePos = byteCode.size();
 	byteCode.push_back(opCode);
 	byteCode.push_back(jumpId.mBytes[0]);
@@ -1980,7 +1999,7 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 	if ((offset >= BOND_SHORT_MIN) && (offset <= BOND_SHORT_MAX))
 	{
 		byteCode.push_back(opCode);
-		EmitValue16(Value16(static_cast<bi16_t>(offset)));
+		EmitValue16(Value16(offset));
 	}
 	else
 	{
@@ -2030,6 +2049,153 @@ void GeneratorCore::EmitValue32(Value32 value, size_t pos)
 }
 
 
+void GeneratorCore::WriteConstantTable()
+{
+	const int startPos = mWriter.GetPosition();
+
+	// Skip the 4 bytes for the table size.
+	mWriter.AddOffset(sizeof(Value32));
+
+	WriteValue16(Value16(mValue64List.size()));
+	WriteValue16(Value16(mValue32List.size()));
+
+	for (Value64List::Type::const_iterator it = mValue64List.begin(); it != mValue64List.end(); ++it)
+	{
+		WriteValue64(*it);
+	}
+
+	for (Value32List::Type::const_iterator it = mValue32List.begin(); it != mValue32List.end(); ++it)
+	{
+		WriteValue32(*it);
+	}
+
+	WriteValue16(Value16(mStringList.size()));
+
+	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
+	{
+		const int length = it->GetLength();
+		const char *str = it->GetString();
+		WriteValue16(Value16(length));
+		for (int i = 0; i < length; ++i)
+		{
+			mWriter.Write(str[i]);
+		}
+	}
+
+	// Patch up the table size.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue32(Value32(endPos - startPos));
+	mWriter.SetPosition(endPos);
+}
+
+
+void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
+{
+	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
+	{
+		// Cache the blob start position and skip 4 bytes for the blob size.
+		const int blobStartPos = mWriter.GetPosition();
+		mWriter.AddOffset(sizeof(Value32));
+
+		WriteValue16(Value16(functionIndex));
+		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
+		WriteQualifiedSymbolName(flit->mDefinition);
+
+		// Cache the code start position and skip 4 bytes for the code size.
+		const int codeSizePos = mWriter.GetPosition();
+		mWriter.AddOffset(sizeof(Value32));
+		const int codeStartPos = mWriter.GetPosition();
+
+		const ByteCode::Type &byteCode = flit->mByteCode;
+		const JumpList::Type &jumpList = flit->mJumpList;
+		const LabelList::Type &labelList = flit->mLabelList;
+
+		size_t byteCodeIndex = 0;
+		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
+		{
+			while (byteCodeIndex <= jlit->mOpCodePos)
+			{
+				mWriter.Write(byteCode[byteCodeIndex++]);
+			}
+			const Value32 offset(labelList[jlit->mToLabel] - jlit->mFromPos);
+			WriteValue32(offset);
+			byteCodeIndex += 4;
+		}
+
+		while (byteCodeIndex < byteCode.size())
+		{
+			mWriter.Write(byteCode[byteCodeIndex++]);
+		}
+
+		// Patch up the code size.
+		const int endPos = mWriter.GetPosition();
+		mWriter.SetPosition(codeSizePos);
+		WriteValue32(Value32(endPos - codeStartPos));
+
+		// Patch up the blob size.
+		mWriter.SetPosition(blobStartPos);
+		WriteValue32(Value32(endPos - blobStartPos));
+		mWriter.SetPosition(endPos);
+	}
+}
+
+
+void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
+{
+	// Cache the position for the number of elements and skip 2 bytes.
+	const int startPos = mWriter.GetPosition();
+	mWriter.AddOffset(sizeof(Value16));
+
+	WriteSymbolNameIndices(symbol);
+
+	// Patch up the number of elements.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue16(Value16((endPos - startPos - 2) / 2));
+	mWriter.SetPosition(endPos);
+}
+
+
+void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
+{
+	if (symbol != NULL)
+	{
+		WriteSymbolNameIndices(symbol->GetParentSymbol());
+		const Token *name = symbol->GetName();
+		if (name != NULL)
+		{
+			const bu16_t nameIndex = MapString(name->GetHashedText());
+			WriteValue16(Value16(nameIndex));
+		}
+	}
+}
+
+
+void GeneratorCore::WriteQualifiedIdentifier(const QualifiedIdentifier *identifier)
+{
+	// Cache the position for the number of elements and skip 2 bytes.
+	const int startPos = mWriter.GetPosition();
+	mWriter.AddOffset(sizeof(Value16));
+
+	const QualifiedIdentifier *id = identifier;
+	int numElements = 0;
+	while (id != NULL)
+	{
+		const bu16_t elementIndex = MapString(identifier->GetName()->GetHashedText());
+		WriteValue16(Value16(elementIndex));
+		id = NextNode(id);
+		++numElements;
+	}
+
+	// Patch up the number of elements.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue16(Value16(numElements));
+	mWriter.SetPosition(endPos);
+}
+
+
 void GeneratorCore::WriteValue16(Value16 value)
 {
 	ConvertBigEndian16(value.mBytes);
@@ -2048,81 +2214,17 @@ void GeneratorCore::WriteValue32(Value32 value)
 }
 
 
-void GeneratorCore::WriteStringTable()
+void GeneratorCore::WriteValue64(Value64 value)
 {
-	const int startPos = mWriter.GetPosition();
-
-	// Skip the 4 bytes for the table size.
-	mWriter.AddOffset(4);
-
-	WriteValue16(Value16(static_cast<bu16_t>(mStringList.size())));
-
-	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
-	{
-		const int length = it->GetLength();
-		const char *str = it->GetString();
-		WriteValue16(Value16(static_cast<bu16_t>(length)));
-		for (int i = 0; i < length; ++i)
-		{
-			mWriter.Write(str[i]);
-		}
-	}
-
-	// Patch up the table size.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
-	WriteValue32(Value32(static_cast<bu32_t>(endPos - startPos)));
-	mWriter.SetPosition(endPos);
-}
-
-
-void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
-{
-	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
-	{
-		// Cache the blob start position and skip 4 bytes for the blob size.
-		const int blobStartPos = mWriter.GetPosition();
-		mWriter.AddOffset(4);
-
-		WriteValue16(Value16(static_cast<bu16_t>(functionIndex)));
-		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
-
-		// Cache the code start position and skip 4 bytes for the code size.
-		const int codeSizePos = mWriter.GetPosition();
-		mWriter.AddOffset(4);
-		const int codeStartPos = mWriter.GetPosition();
-
-		const ByteCode::Type &byteCode = flit->mByteCode;
-		const JumpList::Type &jumpList = flit->mJumpList;
-		const LabelList::Type &labelList = flit->mLabelList;
-
-		size_t byteCodeIndex = 0;
-		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
-		{
-			while (byteCodeIndex <= jlit->mOpCodePos)
-			{
-				mWriter.Write(byteCode[byteCodeIndex++]);
-			}
-			const Value32 offset(static_cast<bu32_t>(labelList[jlit->mToLabel] - jlit->mFromPos));
-			WriteValue32(offset);
-			byteCodeIndex += 4;
-		}
-
-		while (byteCodeIndex < byteCode.size())
-		{
-			mWriter.Write(byteCode[byteCodeIndex++]);
-		}
-
-		// Patch up the code size.
-		const int endPos = mWriter.GetPosition();
-		mWriter.SetPosition(codeSizePos);
-		WriteValue32(Value32(static_cast<bu32_t>(endPos - codeStartPos)));
-
-		// Patch up the blob size.
-		mWriter.SetPosition(blobStartPos);
-		WriteValue32(Value32(static_cast<bu32_t>(endPos - blobStartPos)));
-		mWriter.SetPosition(endPos);
-	}
+	ConvertBigEndian64(value.mBytes);
+	mWriter.Write(value.mBytes[0]);
+	mWriter.Write(value.mBytes[1]);
+	mWriter.Write(value.mBytes[2]);
+	mWriter.Write(value.mBytes[3]);
+	mWriter.Write(value.mBytes[4]);
+	mWriter.Write(value.mBytes[5]);
+	mWriter.Write(value.mBytes[6]);
+	mWriter.Write(value.mBytes[7]);
 }
 
 
@@ -2147,6 +2249,21 @@ void GeneratorCore::SetLabelValue(size_t label, size_t value)
 }
 
 
+void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
+{
+	const Symbol *sym = symbol;
+	while (sym != NULL)
+	{
+		const Token *name = sym->GetName();
+		if (name != NULL)
+		{
+			MapString(name->GetHashedText());
+		}
+		sym = sym->GetParentSymbol();
+	}
+}
+
+
 bu16_t GeneratorCore::MapString(const HashedString &str)
 {
 	// TODO: Verify that the 16 bit index does not overflow.
@@ -2156,6 +2273,32 @@ bu16_t GeneratorCore::MapString(const HashedString &str)
 	if (insertResult.second)
 	{
 		mStringList.push_back(str);
+	}
+	return insertResult.first->second;
+}
+
+
+bu16_t GeneratorCore::MapValue32(const Value32 &value)
+{
+	// TODO: Verify that the 16 bit index does not overflow.
+	const bu16_t index = static_cast<bu16_t>(mValue32List.size());
+	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.insert(Value32IndexMap::KeyValue(value, index));
+	if (insertResult.second)
+	{
+		mValue32List.push_back(value);
+	}
+	return insertResult.first->second;
+}
+
+
+bu16_t GeneratorCore::MapValue64(const Value64 &value)
+{
+	// TODO: Verify that the 16 bit index does not overflow.
+	const bu16_t index = static_cast<bu16_t>(mValue64List.size());
+	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.insert(Value64IndexMap::KeyValue(value, index));
+	if (insertResult.second)
+	{
+		mValue64List.push_back(value);
 	}
 	return insertResult.first->second;
 }
