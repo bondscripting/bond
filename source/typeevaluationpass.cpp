@@ -21,7 +21,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 	const Expression *value = enumerator->GetValue();
 	if (value != NULL)
 	{
-		AssertIntegerExpression(value, ParseError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
+		AssertIntegerExpression(value, CompilerError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
 	}
 }
 
@@ -62,7 +62,7 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 		}
 		else
 		{
-			AssertIntegerExpression(expressionList, ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
+			AssertIntegerExpression(expressionList, CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
 		}
 		expressionList = NextNode(expressionList);
 	}
@@ -93,12 +93,12 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		}
 		else if (typeDescriptor->IsConst())
 		{
-			mErrorBuffer.PushError(ParseError::UNINITIALIZED_CONST, namedInitializer->GetName());
+			mErrorBuffer.PushError(CompilerError::UNINITIALIZED_CONST, namedInitializer->GetName());
 		}
 
 		if ((namedInitializer->GetScope() == SCOPE_GLOBAL) && !typeDescriptor->IsConst())
 		{
-			mErrorBuffer.PushError(ParseError::NON_CONST_DECLARATION, namedInitializer->GetName());
+			mErrorBuffer.PushError(CompilerError::NON_CONST_DECLARATION, namedInitializer->GetName());
 		}
 	}
 }
@@ -108,7 +108,7 @@ void TypeEvaluationPass::Visit(IfStatement *ifStatement)
 {
 	ParseNodeTraverser::Visit(ifStatement);
 	const Expression *condition = ifStatement->GetCondition();
-	AssertBooleanExpression(condition, ParseError::IF_CONDITION_IS_NOT_BOOLEAN);
+	AssertBooleanExpression(condition, CompilerError::IF_CONDITION_IS_NOT_BOOLEAN);
 }
 
 
@@ -116,7 +116,7 @@ void TypeEvaluationPass::Visit(SwitchStatement *switchStatement)
 {
 	ParseNodeTraverser::Visit(switchStatement);
 	const Expression *control = switchStatement->GetControl();
-	AssertIntegerExpression(control, ParseError::SWITCH_CONTROL_IS_NOT_INTEGER);
+	AssertIntegerExpression(control, CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER);
 }
 
 
@@ -127,7 +127,7 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	const Expression *expression = switchLabel->GetExpression();
 	if (expression != NULL)
 	{
-		AssertIntegerExpression(expression, ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
+		AssertIntegerExpression(expression, CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
 	}
 }
 
@@ -136,7 +136,7 @@ void TypeEvaluationPass::Visit(WhileStatement *whileStatement)
 {
 	ParseNodeTraverser::Visit(whileStatement);
 	const Expression *condition = whileStatement->GetCondition();
-	AssertBooleanExpression(condition, ParseError::WHILE_CONDITION_IS_NOT_BOOLEAN);
+	AssertBooleanExpression(condition, CompilerError::WHILE_CONDITION_IS_NOT_BOOLEAN);
 }
 
 
@@ -146,7 +146,7 @@ void TypeEvaluationPass::Visit(ForStatement *forStatement)
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != NULL)
 	{
-		AssertBooleanExpression(condition, ParseError::FOR_CONDITION_IS_NOT_BOOLEAN);
+		AssertBooleanExpression(condition, CompilerError::FOR_CONDITION_IS_NOT_BOOLEAN);
 	}
 }
 
@@ -166,7 +166,7 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 		if (!AreConvertibleTypes(trueDescriptor, falseDescriptor))
 		{
 			mErrorBuffer.PushError(
-				ParseError::TERNARY_OPERAND_TYPE_MISMATCH,
+				CompilerError::TERNARY_OPERAND_TYPE_MISMATCH,
 				conditionalExpression->GetContextToken(),
 				trueDescriptor,
 				falseDescriptor);
@@ -203,7 +203,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 			case Token::ASSIGN:
 				AssertAssignableType(lhDescriptor, op);
-				AssertConvertibleTypes(rhDescriptor, lhDescriptor, op, ParseError::INVALID_TYPE_ASSIGNMENT) &&
+				AssertConvertibleTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT) &&
 				AssertNonConstExpression(op);
 				resultType = *lhDescriptor;
 				break;
@@ -369,7 +369,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					resultType = rhDescriptor->GetDereferencedType();
 					if (resultType.IsVoidType())
 					{
-						mErrorBuffer.PushError(ParseError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
+						mErrorBuffer.PushError(CompilerError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
 					}
 				}
 				isRValue = false;
@@ -439,7 +439,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 		    (structSpecifier->GetDefinition() == NULL) ||
 		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
 		{
-			mErrorBuffer.PushError(ParseError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
+			mErrorBuffer.PushError(CompilerError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
 		}
 		else
 		{
@@ -447,7 +447,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
 			if (member == NULL)
 			{
-				mErrorBuffer.PushError(ParseError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
+				mErrorBuffer.PushError(CompilerError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
 			}
 			else
 			{
@@ -465,7 +465,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 						if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
 						{
 							mErrorBuffer.PushError(
-								ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
+								CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 								memberName,
 								functionDefinition->GetPrototype(),
 								lhDescriptor);
@@ -491,7 +491,7 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 		const TypeDescriptor *indexDescriptor = indexTav.GetTypeDescriptor();
 		if (!indexDescriptor->IsIntegerType())
 		{
-			mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, indexDescriptor);
+			mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, indexDescriptor);
 		}
 	}
 
@@ -526,13 +526,13 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		    (lhSpecifier->GetDefinition() == NULL) ||
 		    (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
 		{
-			mErrorBuffer.PushError(ParseError::EXPRESSION_IS_NOT_CALLABLE, context);
+			mErrorBuffer.PushError(CompilerError::EXPRESSION_IS_NOT_CALLABLE, context);
 		}
 		else
 		{
 			if (mEnforceConstExpressions.GetTop())
 			{
-				mErrorBuffer.PushError(ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, context);
+				mErrorBuffer.PushError(CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, context);
 			}
 
 			const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
@@ -555,7 +555,7 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 							argDescriptor,
 							paramDescriptor,
 							argList->GetContextToken(),
-							ParseError::INVALID_TYPE_CONVERSION);
+							CompilerError::INVALID_TYPE_CONVERSION);
 						paramList = NextNode(paramList);
 						argList = NextNode(argList);
 					}
@@ -563,7 +563,7 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 			}
 			else
 			{
-				mErrorBuffer.PushError(ParseError::INCORRECT_NUMBER_OF_ARGS, context, prototype);
+				mErrorBuffer.PushError(CompilerError::INCORRECT_NUMBER_OF_ARGS, context, prototype);
 			}
 
 			const TypeDescriptor *returnType = prototype->GetReturnType();
@@ -588,7 +588,7 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 			rhDescriptor,
 			lhDescriptor,
 			lhDescriptor->GetContextToken(),
-			ParseError::INVALID_TYPE_CONVERSION);
+			CompilerError::INVALID_TYPE_CONVERSION);
 
 		if (rhDescriptor->IsLValue())
 		{
@@ -651,7 +651,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 	if (symbol == NULL)
 	{
-		mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 	}
 	else
 	{
@@ -660,7 +660,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 		if (symbolTav == NULL)
 		{
-			mErrorBuffer.PushError(ParseError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
+			mErrorBuffer.PushError(CompilerError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
 		}
 		else if (symbolTav->IsTypeDefined())
 		{
@@ -682,7 +682,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 					if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
 					{
 						mErrorBuffer.PushError(
-							ParseError::NON_CONST_MEMBER_FUNCTION_REQUEST,
+							CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 							identifier->GetContextToken(),
 							functionDefinition->GetPrototype(),
 							mStruct.GetTop()->GetConstThisTypeDescriptor());
@@ -704,12 +704,12 @@ void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 	}
 	else
 	{
-		mErrorBuffer.PushError(ParseError::THIS_IN_NON_MEMBER_FUNCTION, thisExpression->GetContextToken());
+		mErrorBuffer.PushError(CompilerError::THIS_IN_NON_MEMBER_FUNCTION, thisExpression->GetContextToken());
 	}
 }
 
 
-bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, ParseError::Type errorType) const
+bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, CompilerError::Type errorType) const
 {
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsTypeDefined())
@@ -727,7 +727,7 @@ bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, P
 
 bool TypeEvaluationPass::AssertIntegerExpression(
 	const Expression *expression,
-	ParseError::Type errorType,
+	CompilerError::Type errorType,
 	const void *arg) const
 {
 	const TypeAndValue &tav = expression->GetTypeAndValue();
@@ -748,7 +748,7 @@ bool TypeEvaluationPass::AssertNonConstExpression(const Token *op)
 {
 	if (mEnforceConstExpressions.GetTop())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
+		mErrorBuffer.PushError(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
 		return false;
 	}
 	return true;
@@ -759,7 +759,7 @@ bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *typeDescript
 {
 	if (!typeDescriptor->IsBooleanType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;		
 	}
 	return true;
@@ -770,7 +770,7 @@ bool TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor *typeDescript
 {
 	if (!typeDescriptor->IsIntegerType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -781,7 +781,7 @@ bool TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor *typeDescript
 {
 	if (!typeDescriptor->IsNumericType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -792,7 +792,7 @@ bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *typeDescript
 {
 	if (!typeDescriptor->IsPointerType())
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -803,7 +803,7 @@ bool TypeEvaluationPass::AssertLValueType(const TypeDescriptor *typeDescriptor, 
 {
 	if (!typeDescriptor->IsLValue())
 	{
-		mErrorBuffer.PushError(ParseError::NON_LVALUE_TYPE, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::NON_LVALUE_TYPE, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -814,12 +814,12 @@ bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *typeDescript
 {
 	if (typeDescriptor->IsRValue())
 	{
-		mErrorBuffer.PushError(ParseError::NON_LVALUE_ASSIGNMENT, op);
+		mErrorBuffer.PushError(CompilerError::NON_LVALUE_ASSIGNMENT, op);
 		return false;
 	}
 	else if (!typeDescriptor->IsAssignable())
 	{
-		mErrorBuffer.PushError(ParseError::UNASSIGNABLE_TYPE, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::UNASSIGNABLE_TYPE, op, typeDescriptor);
 		return false;
 	}
 	return true;
@@ -830,7 +830,7 @@ bool TypeEvaluationPass::AssertConvertibleTypes(
 	const TypeDescriptor *fromType,
 	const TypeDescriptor *toType,
 	const Token *context,
-	ParseError::Type errorType)
+	CompilerError::Type errorType)
 {
 	if (!AreConvertibleTypes(fromType, toType))
 	{
@@ -845,7 +845,7 @@ bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, cons
 {
 	if (!AreComparableTypes(typeA, typeB))
 	{
-		mErrorBuffer.PushError(ParseError::INVALID_COMPARISON, op, typeA, typeB);
+		mErrorBuffer.PushError(CompilerError::INVALID_COMPARISON, op, typeA, typeB);
 		return false;
 	}
 	return true;
@@ -874,7 +874,7 @@ void TypeEvaluationPass::ValidateInitializer(
 		else if (expression != NULL)
 		{
 			mErrorBuffer.PushError(
-				ParseError::MISSING_BRACES_IN_INITIALIZER,
+				CompilerError::MISSING_BRACES_IN_INITIALIZER,
 				initializer->GetContextToken(),
 				typeDescriptor);
 		}
@@ -890,13 +890,13 @@ void TypeEvaluationPass::ValidateInitializer(
 					expression->GetTypeAndValue().GetTypeDescriptor(),
 					typeDescriptor,
 					expression->GetContextToken(),
-					ParseError::INVALID_TYPE_CONVERSION);
+					CompilerError::INVALID_TYPE_CONVERSION);
 			}
 		}
 		else if (initializerList != NULL)
 		{
 			mErrorBuffer.PushError(
-				ParseError::BRACES_AROUND_SCALAR_INITIALIZER,
+				CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
 				initializerList->GetContextToken(),
 				typeDescriptor);
 		}
@@ -917,7 +917,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const StructDeclaration 
 {
 	if (structDeclaration == mTopLevelStruct)
 	{
-		mErrorBuffer.PushError(ParseError::RECURSIVE_STRUCT, structDeclaration->GetName());
+		mErrorBuffer.PushError(CompilerError::RECURSIVE_STRUCT, structDeclaration->GetName());
 	}
 
 	if (!mStruct.Contains(structDeclaration))

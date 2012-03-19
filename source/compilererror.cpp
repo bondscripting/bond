@@ -1,4 +1,4 @@
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/textwriter.h"
 #include "bond/prettyprinter.h"
 #include "bond/token.h"
@@ -6,45 +6,45 @@
 namespace Bond
 {
 
-const char *ParseError::GetFormat() const
+const char *CompilerError::GetFormat() const
 {
 	return GetFormat(mType);
 }
 
 
-const char *ParseError::GetFormat(Type type)
+const char *CompilerError::GetFormat(Type type)
 {
 	static const char *const ERROR_FORMATS[] =
 	{
-#define BOND_PARSE_ERROR(type, format) format,
-		BOND_PARSE_ERROR_LIST
-#undef BOND_PARSE_ERROR
+#define BOND_COMPILER_ERROR(type, format) format,
+		BOND_COMPILER_ERROR_LIST
+#undef BOND_COMPILER_ERROR
 	};
 
 	return ERROR_FORMATS[type];
 }
 
 
-const char *ParseError::GetErrorName() const
+const char *CompilerError::GetErrorName() const
 {
 	return GetErrorName(mType);
 }
 
 
-const char *ParseError::GetErrorName(Type type)
+const char *CompilerError::GetErrorName(Type type)
 {
 	static const char *const ERROR_NAMES[] =
 	{
-#define BOND_PARSE_ERROR(type, format) #type,
-		BOND_PARSE_ERROR_LIST
-#undef BOND_PARSE_ERROR
+#define BOND_COMPILER_ERROR(type, format) #type,
+		BOND_COMPILER_ERROR_LIST
+#undef BOND_COMPILER_ERROR
 	};
 
 	return ERROR_NAMES[type];
 }
 
 
-void ParseError::Print(TextWriter &writer) const
+void CompilerError::Print(TextWriter &writer) const
 {
 	const char *format = GetFormat();
 
@@ -149,33 +149,33 @@ void ParseError::Print(TextWriter &writer) const
 }
 
 
-ParseErrorBuffer::ParseErrorBuffer()
+CompilerErrorBuffer::CompilerErrorBuffer()
 {
 	Reset();
 }
 
 
-void ParseErrorBuffer::Reset()
+void CompilerErrorBuffer::Reset()
 {
 	mNumErrors = 0;
 	for (int i = 0; i < MAX_ERRORS; ++i)
 	{
-		mErrors[i] = ParseError();
+		mErrors[i] = CompilerError();
 	}
 }
 
 
-void ParseErrorBuffer::PushError(ParseError::Type type, const Token *context, const void *arg0, const void *arg1)
+void CompilerErrorBuffer::PushError(CompilerError::Type type, const Token *context, const void *arg0, const void *arg1)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{
-		mErrors[mNumErrors] = ParseError(type, context, arg0, arg1);
+		mErrors[mNumErrors] = CompilerError(type, context, arg0, arg1);
 		++mNumErrors;
 	}
 }
 
 
-void ParseErrorBuffer::CopyFrom(const ParseErrorBuffer &other)
+void CompilerErrorBuffer::CopyFrom(const CompilerErrorBuffer &other)
 {
 	for (int i = 0; i < other.mNumErrors; ++i)
 	{

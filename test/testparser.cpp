@@ -210,11 +210,11 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 
 DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 {
-	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 6},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 11},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 20},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 6},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 11},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 20},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -236,17 +236,17 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 
 DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 {
-	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
-		{Bond::ParseError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 12},
-		{Bond::ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 15},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
-		{Bond::ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 39},
+		{Bond::CompilerError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 12},
+		{Bond::CompilerError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 15},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
+		{Bond::CompilerError::NATIVE_MEMBER_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 39},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -268,33 +268,33 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 
 DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 {
-	const TestFramework::ExpectedParseError EXPECTED_ERRORS[] =
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
-		{Bond::ParseError::DUPLICATE_CONST, Bond::Token::KEY_CONST, 3},
-		{Bond::ParseError::PARSE_ERROR, Bond::Token::OP_DIV, 5},
-		{Bond::ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 10},
-		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 13},
-		{Bond::ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_DEC, 16},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 21},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 22},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 23},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 26},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 27},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 28},
-		{Bond::ParseError::PARSE_ERROR, Bond::Token::CPAREN, 31},
-		{Bond::ParseError::PARSE_ERROR, Bond::Token::CPAREN, 32},
-		{Bond::ParseError::PARSE_ERROR, Bond::Token::SEMICOLON, 33},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 36},
-		{Bond::ParseError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 39},
-		{Bond::ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 44},
-		{Bond::ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 45},
-		{Bond::ParseError::ARRAY_OF_VOID, Bond::Token::OBRACKET, 51},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 54},
-		{Bond::ParseError::EMPTY_SWITCH_STATEMENT, Bond::Token::KEY_SWITCH, 57},
-		{Bond::ParseError::EMPTY_SWITCH_LABEL_LIST, Bond::Token::IDENTIFIER, 62},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 66},
-		{Bond::ParseError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 67},
-		{Bond::ParseError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 71},
+		{Bond::CompilerError::DUPLICATE_CONST, Bond::Token::KEY_CONST, 3},
+		{Bond::CompilerError::PARSE_ERROR, Bond::Token::OP_DIV, 5},
+		{Bond::CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 10},
+		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 13},
+		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_DEC, 16},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 21},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 22},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 23},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 26},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 27},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 28},
+		{Bond::CompilerError::PARSE_ERROR, Bond::Token::CPAREN, 31},
+		{Bond::CompilerError::PARSE_ERROR, Bond::Token::CPAREN, 32},
+		{Bond::CompilerError::PARSE_ERROR, Bond::Token::SEMICOLON, 33},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 36},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::IDENTIFIER, 39},
+		{Bond::CompilerError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 44},
+		{Bond::CompilerError::MULTIDIMENTIONAL_ARRAY_BOUNDS, Bond::Token::OBRACKET, 45},
+		{Bond::CompilerError::ARRAY_OF_VOID, Bond::Token::OBRACKET, 51},
+		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 54},
+		{Bond::CompilerError::EMPTY_SWITCH_STATEMENT, Bond::Token::KEY_SWITCH, 57},
+		{Bond::CompilerError::EMPTY_SWITCH_LABEL_LIST, Bond::Token::IDENTIFIER, 62},
+		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 66},
+		{Bond::CompilerError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 67},
+		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 71},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

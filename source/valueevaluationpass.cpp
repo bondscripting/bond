@@ -1,5 +1,5 @@
 #include "bond/math.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "private/valueevaluationpass.h"
@@ -24,7 +24,7 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 		// the compiler did something wrong.
 		if (mHasUnresolvedItems && !mUnresolvedErrorBuffer.HasErrors())
 		{
-			mErrorBuffer.PushError(ParseError::INTERNAL_ERROR);
+			mErrorBuffer.PushError(CompilerError::INTERNAL_ERROR);
 		}
 
 		mErrorBuffer.CopyFrom(mUnresolvedErrorBuffer);
@@ -147,7 +147,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				if (size <= 0)
 				{
 					hasError = true;
-					mErrorBuffer.PushError(ParseError::INVALID_STRUCT_SIZE, sizeToken);
+					mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_SIZE, sizeToken);
 				}
 				else
 				{
@@ -161,7 +161,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					if ((align <= 1) || !IsPowerOfTwo(align))
 					{
 						hasError = true;
-						mErrorBuffer.PushError(ParseError::INVALID_STRUCT_ALIGNMENT, alignToken);
+						mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_ALIGNMENT, alignToken);
 					}
 					else
 					{
@@ -171,7 +171,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 
 				if (!hasError && ((structDeclaration->GetSize() % structDeclaration->GetAlignment()) != 0))
 				{
-					mErrorBuffer.PushError(ParseError::STRUCT_SIZE_ALIGNMENT_MISMATCH, sizeToken);
+					mErrorBuffer.PushError(CompilerError::STRUCT_SIZE_ALIGNMENT_MISMATCH, sizeToken);
 				}
 			}
 			break;
@@ -231,12 +231,12 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 
 					if (tav.GetUIntValue() == 0)
 					{
-						mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_ZERO, expressionList->GetContextToken());
+						mErrorBuffer.PushError(CompilerError::ARRAY_SIZE_IS_ZERO, expressionList->GetContextToken());
 					}
 				}
 				else
 				{
-					mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expressionList->GetContextToken());
+					mErrorBuffer.PushError(CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, expressionList->GetContextToken());
 					tav.SetUIntValue(1);
 				}
 
@@ -292,7 +292,7 @@ void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
 		const TypeAndValue &tav = expression->GetTypeAndValue();
 		if (tav.IsResolved() && !tav.IsValueDefined())
 		{
-			mErrorBuffer.PushError(ParseError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, expression->GetContextToken());
+			mErrorBuffer.PushError(CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, expression->GetContextToken());
 		}
 		CheckUnresolved(tav);
 	}
@@ -321,7 +321,7 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 
 		if (length == 0)
 		{
-			mErrorBuffer.PushError(ParseError::ARRAY_SIZE_IS_UNSPECIFIED, typeDescriptor->GetContextToken(), typeDescriptor);
+			mErrorBuffer.PushError(CompilerError::ARRAY_SIZE_IS_UNSPECIFIED, typeDescriptor->GetContextToken(), typeDescriptor);
 		}
 		typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().SetUIntValue(length);
 	}
@@ -652,7 +652,7 @@ void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		}
 		else
 		{
-			mUnresolvedErrorBuffer.PushError(ParseError::CANNOT_RESOLVE_SYMBOL_VALUE, identifierExpression->GetContextToken());
+			mUnresolvedErrorBuffer.PushError(CompilerError::CANNOT_RESOLVE_SYMBOL_VALUE, identifierExpression->GetContextToken());
 		}
 		CheckUnresolved(tav);
 	}

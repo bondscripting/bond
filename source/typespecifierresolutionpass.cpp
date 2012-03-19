@@ -1,4 +1,4 @@
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parsenodes.h"
 #include "private/typespecifierresolutionpass.h"
 
@@ -13,11 +13,11 @@ void TypeSpecifierResolutionPass::Visit(TypeSpecifier *typeSpecifier)
 		const Symbol *symbol = GetSymbol(identifier);
 		if (symbol == NULL)
 		{
-			mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 		}
 		else if (!symbol->IsTypeDefinition())
 		{
-			mErrorBuffer.PushError(ParseError::SYMBOL_IS_NOT_A_TYPE, identifier->GetContextToken(), identifier);
+			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_A_TYPE, identifier->GetContextToken(), identifier);
 		}
 		else
 		{

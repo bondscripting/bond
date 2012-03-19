@@ -55,7 +55,7 @@ static bool RunParserTest(
 		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.mData, script.mLength);
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::ParseErrorBuffer errorBuffer;
+		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		parser.Parse(stream);
 		result = validationFunction(logger, errorBuffer, parser);
@@ -132,11 +132,11 @@ bool AssertParseNodeCount(
 }
 
 
-bool AssertNoParseErrors(
+bool AssertNoCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const Bond::ParseErrorBuffer &errorBuffer)
+	const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
@@ -145,7 +145,7 @@ bool AssertNoParseErrors(
 		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
 			logger.Write("\t\t");
-			const Bond::ParseError *error = errorBuffer.GetError(i);
+			const Bond::CompilerError *error = errorBuffer.GetError(i);
 			error->Print(logger);
 			logger.Write("\n");
 		}
@@ -156,25 +156,25 @@ bool AssertNoParseErrors(
 }
 
 
-bool AssertParseErrors(
+bool AssertCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
 	int assertLine,
-	const Bond::ParseErrorBuffer &errorBuffer,
-	const ExpectedParseError *expectedErrors,
+	const Bond::CompilerErrorBuffer &errorBuffer,
+	const ExpectedCompilerError *expectedErrors,
 	int numErrors)
 {
 	const int count = (errorBuffer.GetNumErrors() < numErrors) ? errorBuffer.GetNumErrors() : numErrors;
 
 	for (int i = 0; i < count; ++i)
 	{
-		const ExpectedParseError *expected = expectedErrors + i;
-		const Bond::ParseError *actual = errorBuffer.GetError(i);
+		const ExpectedCompilerError *expected = expectedErrors + i;
+		const Bond::CompilerError *actual = errorBuffer.GetError(i);
 		const Bond::Token *context = actual->GetContext();
 		const Bond::StreamPos &pos = context->GetStartPos();
 		__ASSERT_FORMAT__(expected->errorType == actual->GetType(), logger, assertFile, assertLine,
 			("Expected type of error %d to be %s but was %s.", i,
-			Bond::ParseError::GetErrorName(expected->errorType),
+			Bond::CompilerError::GetErrorName(expected->errorType),
 			actual->GetErrorName()));
 		__ASSERT_FORMAT__(expected->context == context->GetTokenType(), logger, assertFile, assertLine,
 			("Expected context of error %d to be %s but was %s.", i,

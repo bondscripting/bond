@@ -1,7 +1,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/lexer.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/prettyprinter.h"
 #include "bond/semanticanalyzer.h"
@@ -9,13 +9,13 @@
 #include <string.h>
 
 
-void PrintErrors(Bond::TextWriter &writer, const Bond::ParseErrorBuffer &errorBuffer)
+void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
 		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
-			const Bond::ParseError *error = errorBuffer.GetError(i);
+			const Bond::CompilerError *error = errorBuffer.GetError(i);
 			error->Print(writer);
 			writer.Write("\n");
 		}
@@ -35,7 +35,7 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		fileLoader.DisposeFile(script);
 
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::ParseErrorBuffer errorBuffer;
+		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(allocator, errorBuffer);
 		parser.Parse(stream);
 

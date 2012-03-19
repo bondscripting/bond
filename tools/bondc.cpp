@@ -3,20 +3,20 @@
 #include "bond/defaultfileloader.h"
 #include "bond/filebinarywriter.h"
 #include "bond/lexer.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/semanticanalyzer.h"
 #include "bond/stdouttextwriter.h"
 #include "bond/opcodes.h"
 #include <stdio.h>
 
-void PrintErrors(Bond::TextWriter &writer, const Bond::ParseErrorBuffer &errorBuffer)
+void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
 		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
-			const Bond::ParseError *error = errorBuffer.GetError(i);
+			const Bond::CompilerError *error = errorBuffer.GetError(i);
 			error->Print(writer);
 			writer.Write("\n");
 		}
@@ -36,7 +36,7 @@ void Compile(const char *scriptName)
 		fileLoader.DisposeFile(script);
 
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::ParseErrorBuffer errorBuffer;
+		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(allocator, errorBuffer);
 		parser.Parse(stream);
 

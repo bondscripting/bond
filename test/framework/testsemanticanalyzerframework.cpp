@@ -2,7 +2,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/lexer.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/textwriter.h"
 
@@ -57,7 +57,7 @@ static bool RunSemanticAnalyzerTest(
 		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.mData, script.mLength);
 		Bond::TokenStream stream = lexer.GetTokenStream();
-		Bond::ParseErrorBuffer errorBuffer;
+		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		parser.Parse(stream);
 		//__ASSERT_FORMAT__(!parser.HasErrors(), logger, assertFile, assertLine,

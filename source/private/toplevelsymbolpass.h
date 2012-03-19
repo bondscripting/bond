@@ -9,7 +9,7 @@ namespace Bond
 class TopLevelSymbolPass: public SemanticAnalysisPass
 {
 public:
-	TopLevelSymbolPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+	TopLevelSymbolPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable):
 		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 

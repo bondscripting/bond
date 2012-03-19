@@ -1,5 +1,5 @@
 #include "bond/math.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "private/validationpass.h"
@@ -33,7 +33,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
-		mErrorBuffer.PushError(ParseError::NOT_ALL_PATHS_RETURN_A_VALUE, functionDefinition->GetName());
+		mErrorBuffer.PushError(CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, functionDefinition->GetName());
 	}
 }
 
@@ -142,7 +142,7 @@ void ValidationPass::Visit(SwitchSection *switchSection)
 
 	if (!endsWithJumpElement)
 	{
-		mErrorBuffer.PushError(ParseError::UNTERMINATED_SWITCH_SECTION, switchSection->GetLabelList()->GetContextToken());
+		mErrorBuffer.PushError(CompilerError::UNTERMINATED_SWITCH_SECTION, switchSection->GetLabelList()->GetContextToken());
 	}
 }
 
@@ -188,7 +188,7 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	{
 		if (!mIsInLoop.GetTop() && !mIsInSwitch.GetTop())
 		{
-			mErrorBuffer.PushError(ParseError::INVALID_BREAK, jumpStatement->GetContextToken());
+			mErrorBuffer.PushError(CompilerError::INVALID_BREAK, jumpStatement->GetContextToken());
 			endsWithJump = false;
 		}
 	}
@@ -196,7 +196,7 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	{
 		if (!mIsInLoop.GetTop())
 		{
-			mErrorBuffer.PushError(ParseError::INVALID_CONTINUE, jumpStatement->GetContextToken());
+			mErrorBuffer.PushError(CompilerError::INVALID_CONTINUE, jumpStatement->GetContextToken());
 			endsWithJump = false;
 		}
 	}
@@ -207,7 +207,7 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 		if (!AreConvertibleTypes(returnType, mReturnType.GetTop()))
 		{
 			mErrorBuffer.PushError(
-				ParseError::INVALID_RETURN_TYPE_CONVERSION,
+				CompilerError::INVALID_RETURN_TYPE_CONVERSION,
 				jumpStatement->GetContextToken(),
 				returnType,
 				mReturnType.GetTop());
@@ -240,7 +240,7 @@ void ValidationPass::AssertReachableCode(const ParseNode *node)
 {
 	if (mEndsWithJump.GetTop())
 	{
-		mErrorBuffer.PushError(ParseError::UNREACHABLE_CODE, node->GetContextToken());
+		mErrorBuffer.PushError(CompilerError::UNREACHABLE_CODE, node->GetContextToken());
 	}
 }
 

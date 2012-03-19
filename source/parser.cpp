@@ -1,6 +1,6 @@
 #include "bond/autostack.h"
 #include "bond/parser.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/parsenodeutil.h"
 #include "bond/tokenstream.h"
 
@@ -10,7 +10,7 @@ namespace Bond
 class ParserCore
 {
 public:
-	ParserCore(ParseErrorBuffer &errorBuffer, ParseNodeFactory &factory, TokenStream &stream):
+	ParserCore(CompilerErrorBuffer &errorBuffer, ParseNodeFactory &factory, TokenStream &stream):
 		mErrorBuffer(errorBuffer),
 		mFactory(factory),
 		mStream(stream),
@@ -98,12 +98,12 @@ private:
 	const Token *ExpectToken(Token::TokenType expectedType);
 	const Token *ExpectToken(const TokenTypeSet &expectedTypes);
 	void AssertNode(ParseNode *node);
-	void AssertNonConstExpression(ParseError::Type type, const Token *token);
+	void AssertNonConstExpression(CompilerError::Type type, const Token *token);
 	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
-	void PushUnrecoverableError(ParseError::Type errorType, const Token *token, const void *arg = NULL);
-	void PushError(ParseError::Type errorType, const Token *token, const void *arg = NULL);
+	void PushUnrecoverableError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
+	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
 
-	ParseErrorBuffer &mErrorBuffer;
+	CompilerErrorBuffer &mErrorBuffer;
 	ParseNodeFactory &mFactory;
 	TokenStream &mStream;
 
@@ -114,7 +114,7 @@ private:
 };
 
 
-Parser::Parser(Allocator &allocator, ParseErrorBuffer &errorBuffer):
+Parser::Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 	mFactory(allocator),
 	mErrorBuffer(errorBuffer),
 	mTranslationUnitList(NULL)
@@ -439,7 +439,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				}
 				else if (isConst)
 				{
-					PushError(ParseError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
+					PushError(CompilerError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
 					isConst = false;
 				}
 
@@ -453,7 +453,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					body = ParseCompoundStatement();
 					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
 					{
-						PushError(ParseError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
+						PushError(CompilerError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
 					}
 				}
 				else
@@ -461,7 +461,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					ExpectDeclarationTerminator();
 					if ((structDeclaration != NULL) && (!structDeclaration->IsNative()))
 					{
-						PushError(ParseError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
+						PushError(CompilerError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
 					}
 				}
 
@@ -558,7 +558,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 		const bool isConst2 = const2 != NULL;
 		if (isConst1 && isConst2)
 		{
-			PushError(ParseError::DUPLICATE_CONST, const2);
+			PushError(CompilerError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
@@ -601,7 +601,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				{
 					if (descriptor->IsVoidType())
 					{
-						PushError(ParseError::ARRAY_OF_VOID, token);
+						PushError(CompilerError::ARRAY_OF_VOID, token);
 					}
 					descriptor->ConvertToArray(length);
 				}
@@ -609,7 +609,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				{
 					if (lengthAbsent)
 					{
-						PushError(ParseError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
+						PushError(CompilerError::MULTIDIMENTIONAL_ARRAY_BOUNDS, token);
 					}
 					lengthTail->SetNextNode(length);
 				}
@@ -707,7 +707,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 			initializer = ParseInitializer();
 			if (mScope.GetTop() == SCOPE_STRUCT_MEMBER)
 			{
-				PushError(ParseError::INITIALIZER_NOT_ALLOWED, assign);
+				PushError(CompilerError::INITIALIZER_NOT_ALLOWED, assign);
 			}
 			AssertNode(initializer);
 		}
@@ -929,7 +929,7 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 
 		if (sectionList.GetHead() == NULL)
 		{
-			PushError(ParseError::EMPTY_SWITCH_STATEMENT, keyword);
+			PushError(CompilerError::EMPTY_SWITCH_STATEMENT, keyword);
 		}
 
 		switchStatement = mFactory.CreateSwitchStatement(keyword, control, sectionList.GetHead());
@@ -955,7 +955,7 @@ SwitchSection *ParserCore::ParseSwitchSection()
 
 	if (labelList == NULL)
 	{
-		PushError(ParseError::EMPTY_SWITCH_LABEL_LIST, mStream.Peek());
+		PushError(CompilerError::EMPTY_SWITCH_LABEL_LIST, mStream.Peek());
 	}
 
 	ParseNodeList<ListParseNode> statementList;
@@ -1234,7 +1234,7 @@ Expression *ParserCore::ParseAssignmentExpression()
 		const Token *token = mStream.NextIf(ASSIGNMENT_OPERATORS_TYPESET);
 		if (token != NULL)
 		{
-			AssertNonConstExpression(ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
+			AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression();
 			AssertNode(rhs);
 			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
@@ -1564,7 +1564,7 @@ Expression *ParserCore::ParseUnaryExpression()
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				rhs = ParseUnaryExpression();
-				AssertNonConstExpression(ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
+				AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, op);
 				break;
 
 			default:
@@ -1633,7 +1633,7 @@ Expression *ParserCore::ParsePostfixExpression()
 				{
 					Expression *argumentList = ParseArgumentList();
 					expression = mFactory.CreateFunctionCallExpression(token, expression, argumentList);
-					AssertNonConstExpression(ParseError::FUNCTION_CALL_IN_CONST_EXPRESSION, token);
+					AssertNonConstExpression(CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, token);
 					ExpectToken(Token::CPAREN);
 				}
 				break;
@@ -1649,7 +1649,7 @@ Expression *ParserCore::ParsePostfixExpression()
 				default:
 				{
 					expression = mFactory.CreatePostfixExpression(token, expression);
-					AssertNonConstExpression(ParseError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
+					AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 				}
 				break;
 			}
@@ -1799,7 +1799,7 @@ const Token *ParserCore::ExpectToken(Token::TokenType expectedType)
 	const Token *token = mStream.NextIf(expectedType);
 	if (token == NULL)
 	{
-		PushUnrecoverableError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
+		PushUnrecoverableError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
 	}
 	return token;
 }
@@ -1810,7 +1810,7 @@ const Token *ParserCore::ExpectToken(const TokenTypeSet &expectedTypes)
 	const Token *token = mStream.NextIf(expectedTypes);
 	if (token == NULL)
 	{
-		PushUnrecoverableError(ParseError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
+		PushUnrecoverableError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
 	}
 	return token;
 }
@@ -1820,12 +1820,12 @@ void ParserCore::AssertNode(ParseNode *node)
 {
 	if (node == NULL)
 	{
-		PushUnrecoverableError(ParseError::PARSE_ERROR, mStream.Peek());
+		PushUnrecoverableError(CompilerError::PARSE_ERROR, mStream.Peek());
 	}
 }
 
 
-void ParserCore::AssertNonConstExpression(ParseError::Type errorType, const Token *context)
+void ParserCore::AssertNonConstExpression(CompilerError::Type errorType, const Token *context)
 {
 	if (mParseConstExpressions.GetTop())
 	{
@@ -1838,12 +1838,12 @@ void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
 {
 	if ((typeDescriptor != NULL) && typeDescriptor->IsVoidType())
 	{
-		PushError(ParseError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
+		PushError(CompilerError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
 	}
 }
 
 
-void ParserCore::PushUnrecoverableError(ParseError::Type type, const Token *context, const void *arg)
+void ParserCore::PushUnrecoverableError(CompilerError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{
@@ -1853,7 +1853,7 @@ void ParserCore::PushUnrecoverableError(ParseError::Type type, const Token *cont
 }
 
 
-void ParserCore::PushError(ParseError::Type type, const Token *context, const void *arg)
+void ParserCore::PushError(CompilerError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{

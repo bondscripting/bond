@@ -8,7 +8,7 @@
 #define DEFINE_SEMANTICANALYZER_TEST(testName, scriptName)                                       \
   bool __Validate ## testName ## __(                                                             \
     Bond::TextWriter &logger,                                                                    \
-    Bond::ParseErrorBuffer &errorBuffer,                                                         \
+    Bond::CompilerErrorBuffer &errorBuffer,                                                         \
     Bond::Parser &parser,                                                                        \
     Bond::SemanticAnalyzer &analyzer);                                                           \
                                                                                                  \
@@ -20,7 +20,7 @@
                                                                                                  \
   bool __Validate ## testName ## __(                                                             \
     Bond::TextWriter &logger,                                                                    \
-    Bond::ParseErrorBuffer &errorBuffer,                                                         \
+    Bond::CompilerErrorBuffer &errorBuffer,                                                         \
     Bond::Parser &parser,                                                                        \
     Bond::SemanticAnalyzer &analyzer)                                                            \
 
@@ -30,7 +30,7 @@ namespace TestFramework
 
 typedef bool SemanticAnalyzerValidationFunction(
 	Bond::TextWriter &logger,
-	Bond::ParseErrorBuffer &errorBuffer,
+	Bond::CompilerErrorBuffer &errorBuffer,
 	Bond::Parser &parser,
 	Bond::SemanticAnalyzer &analyzer);
 

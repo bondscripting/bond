@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_TYPEEVALUATIONPASS_H
 #define PRIVATE_BOND_TYPEEVALUATIONPASS_H
 
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "private/semanticanalysispass.h"
 
 namespace Bond
@@ -13,7 +13,7 @@ namespace Bond
 class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	TypeEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+	TypeEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable):
 		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
@@ -53,7 +53,7 @@ private:
 	class RecursiveStructAnalyzer: private ParseNodeTraverser
 	{
 	public:
-		RecursiveStructAnalyzer(ParseErrorBuffer &errorBuffer):
+		RecursiveStructAnalyzer(CompilerErrorBuffer &errorBuffer):
 			mErrorBuffer(errorBuffer),
 			mTopLevelStruct(NULL)
 		{}
@@ -70,12 +70,12 @@ private:
 		virtual void Visit(const TypeSpecifier *typeSpecifier);
 
 		StructStack mStruct;
-		ParseErrorBuffer &mErrorBuffer;
+		CompilerErrorBuffer &mErrorBuffer;
 		const StructDeclaration *mTopLevelStruct;
 	};
 
-	bool AssertBooleanExpression(const Expression *expression, ParseError::Type errorType) const;
-	bool AssertIntegerExpression(const Expression *expression, ParseError::Type errorType, const void *arg = NULL) const;
+	bool AssertBooleanExpression(const Expression *expression, CompilerError::Type errorType) const;
+	bool AssertIntegerExpression(const Expression *expression, CompilerError::Type errorType, const void *arg = NULL) const;
 	bool AssertNonConstExpression(const Token *op);
 	bool AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
@@ -88,7 +88,7 @@ private:
 		const TypeDescriptor *fromType,
 		const TypeDescriptor *toType,
 		const Token *context,
-		ParseError::Type errorType);
+		CompilerError::Type errorType);
 
 	bool AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
 

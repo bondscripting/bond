@@ -7,7 +7,7 @@
 namespace Bond
 {
 
-class ParseErrorBuffer;
+class CompilerErrorBuffer;
 class SymbolTable;
 class Token;
 typedef AutoStack<Symbol *> ScopeStack;
@@ -21,7 +21,7 @@ public:
 
 protected:
 	SemanticAnalysisPass(
-			ParseErrorBuffer &errorBuffer,
+			CompilerErrorBuffer &errorBuffer,
 			SymbolTable &symbolTable):
 		mErrorBuffer(errorBuffer),
 		mSymbolTable(symbolTable)
@@ -42,7 +42,7 @@ protected:
 	void InsertSymbol(Symbol *symbol);
 	Symbol *GetOrInsertSymbol(Symbol *symbol);
 
-	ParseErrorBuffer &mErrorBuffer;
+	CompilerErrorBuffer &mErrorBuffer;
 
 private:
 	SemanticAnalysisPass(const SemanticAnalysisPass &other);

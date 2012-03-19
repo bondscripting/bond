@@ -6,13 +6,13 @@
 namespace Bond
 {
 
-class ParseErrorBuffer;
+class CompilerErrorBuffer;
 class SymbolTable;
 
 class SemanticAnalyzer
 {
 public:
-	SemanticAnalyzer(ParseErrorBuffer &errorBuffer, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
+	SemanticAnalyzer(CompilerErrorBuffer &errorBuffer, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
 		mErrorBuffer(errorBuffer),
 		mPointerSize(pointerSize)
 	{}
@@ -24,7 +24,7 @@ public:
 
 private:
 	SymbolTable mSymbolTable;
-	ParseErrorBuffer &mErrorBuffer;
+	CompilerErrorBuffer &mErrorBuffer;
 	bu32_t mPointerSize;
 };
 

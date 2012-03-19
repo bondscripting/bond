@@ -1,5 +1,5 @@
 #include "private/semanticanalysispass.h"
-#include "bond/parseerror.h"
+#include "bond/compilererror.h"
 #include "bond/symboltable.h"
 
 namespace Bond
@@ -87,7 +87,7 @@ void SemanticAnalysisPass::InsertSymbol(Symbol *parent, Symbol *symbol)
 
 	if (prev != NULL)
 	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, symbol->GetName(), prev->GetName());
+		mErrorBuffer.PushError(CompilerError::DUPLICATE_SYMBOL, symbol->GetName(), prev->GetName());
 	}
 
 	parent->InsertSymbol(symbol);
@@ -107,7 +107,7 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 
 	if ((target != NULL) && (target->GetSymbolType() != symbol->GetSymbolType()))
 	{
-		mErrorBuffer.PushError(ParseError::DUPLICATE_SYMBOL, target->GetName(), symbol->GetName());
+		mErrorBuffer.PushError(CompilerError::DUPLICATE_SYMBOL, target->GetName(), symbol->GetName());
 		target = NULL;
 	}
 

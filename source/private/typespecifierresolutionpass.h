@@ -9,7 +9,7 @@ namespace Bond
 class TypeSpecifierResolutionPass: public SemanticAnalysisPass
 {
 public:
-	TypeSpecifierResolutionPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+	TypeSpecifierResolutionPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable):
 		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 

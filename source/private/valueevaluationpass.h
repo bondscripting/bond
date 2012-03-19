@@ -11,7 +11,7 @@ class TypeAndValue;
 class ValueEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	ValueEvaluationPass(ParseErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
+	ValueEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
 		SemanticAnalysisPass(errorBuffer, symbolTable),
 		mPrevEnumerator(NULL),
 		mPointerSize(pointerSize),
@@ -54,7 +54,7 @@ private:
 	void Resolve(TypeAndValue &tav);
 	void CheckUnresolved(const TypeAndValue &tav);
 
-	ParseErrorBuffer mUnresolvedErrorBuffer;
+	CompilerErrorBuffer mUnresolvedErrorBuffer;
 	Enumerator *mPrevEnumerator;
 	bu32_t mPointerSize;
 	bool mHasResolvedItems;

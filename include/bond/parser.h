@@ -7,14 +7,14 @@
 namespace Bond
 {
 
-class ParseErrorBuffer;
+class CompilerErrorBuffer;
 class Token;
 class TokenStream;
 
 class Parser
 {
 public:
-	Parser(Allocator &allocator, ParseErrorBuffer &errorBuffer);
+	Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer);
 	~Parser();
 	void Dispose();
 
@@ -28,7 +28,7 @@ private:
 	Parser &operator=(const Parser &other);
 
 	ParseNodeFactory mFactory;
-	ParseErrorBuffer &mErrorBuffer;
+	CompilerErrorBuffer &mErrorBuffer;
 	TranslationUnit *mTranslationUnitList;
 };
 
