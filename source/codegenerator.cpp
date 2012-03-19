@@ -175,8 +175,8 @@ private:
 	typedef Map<Value32, bu16_t> Value32IndexMap;
 	typedef Map<Value64, bu16_t> Value64IndexMap;
 	typedef List<HashedString> StringList;
-	typedef List<Value32> Value32List;
-	typedef List<Value64> Value64List;
+	typedef Vector<Value32> Value32List;
+	typedef Vector<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
 	typedef AutoStack<const StructDeclaration *> StructStack;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
@@ -249,15 +249,13 @@ private:
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
-	void EmitValue16(Value16 value, size_t pos);
-	void EmitValue32(Value32 value);
-	void EmitValue32(Value32 value, size_t pos);
+	void EmitIndexedValue32(Value32 value);
+	void EmitIndexedValue64(Value64 value);
 
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
 	void WriteSymbolNameIndices(const Symbol *symbol);
-	void WriteQualifiedIdentifier(const QualifiedIdentifier *identifier);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
 	void WriteValue64(Value64 value);
@@ -267,6 +265,7 @@ private:
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	void MapQualifiedSymbolName(const Symbol *symbol);
+	void MapLongJumpOffsets();
 	bu16_t MapString(const HashedString &str);
 	bu16_t MapValue32(const Value32 &value32);
 	bu16_t MapValue64(const Value64 &value32);
@@ -310,6 +309,7 @@ void GeneratorCore::Generate()
 	const bu16_t listIndex = MapString("List");
 	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
 
+	MapLongJumpOffsets();
 	WriteConstantTable();
 
 	// Cache the start position and skip 4 bytes for the blob size.
@@ -423,7 +423,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
 
 	const size_t thenEndLabel = CreateLabel();
-	EmitJump(OPCODE_IFZW, thenEndLabel);
+	EmitJump(OPCODE_IFZ, thenEndLabel);
 
 	Traverse(ifStatement->GetThenStatement());
 	size_t thenEndPos = byteCode.size();
@@ -431,7 +431,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 	if (ifStatement->GetElseStatement() != NULL)
 	{
 		size_t elseEndLabel = CreateLabel();
-		EmitJump(OPCODE_GOTOW, elseEndLabel);
+		EmitJump(OPCODE_GOTO, elseEndLabel);
 		thenEndPos = byteCode.size();
 
 		Traverse(ifStatement->GetElseStatement());
@@ -462,18 +462,18 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-		EmitJump(OPCODE_IFNZW, loopStartLabel);
+		EmitJump(OPCODE_IFNZ, loopStartLabel);
 	}
 	else
 	{
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-		EmitJump(OPCODE_IFZW, loopEndLabel);
+		EmitJump(OPCODE_IFZ, loopEndLabel);
 
 		Traverse(whileStatement->GetBody());
 
-		EmitJump(OPCODE_GOTOW, loopStartLabel);
+		EmitJump(OPCODE_GOTO, loopStartLabel);
 	}
 
 	SetLabelValue(loopEndLabel, byteCode.size());
@@ -499,13 +499,13 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
-		EmitJump(OPCODE_IFZW, loopEndLabel);
+		EmitJump(OPCODE_IFZ, loopEndLabel);
 	}
 
 	Traverse(forStatement->GetBody());
 	Traverse(forStatement->GetCountingExpression());
 
-	EmitJump(OPCODE_GOTOW, loopStartLabel);
+	EmitJump(OPCODE_GOTO, loopStartLabel);
 	SetLabelValue(loopEndLabel, byteCode.size());
 }
 
@@ -514,11 +514,11 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 {
 	if (jumpStatement->IsBreak())
 	{
-		EmitJump(OPCODE_GOTOW, mBreakLabel.GetTop());
+		EmitJump(OPCODE_GOTO, mBreakLabel.GetTop());
 	}
 	else if (jumpStatement->IsContinue())
 	{
-		EmitJump(OPCODE_GOTOW, mContinueLabel.GetTop());
+		EmitJump(OPCODE_GOTO, mContinueLabel.GetTop());
 	}
 	else if (jumpStatement->IsReturn())
 	{
@@ -551,7 +551,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
 
 	const size_t trueEndLabel = CreateLabel();
-	EmitJump(OPCODE_IFZW, trueEndLabel);
+	EmitJump(OPCODE_IFZ, trueEndLabel);
 
 	ResultStack::Element trueResult(mResult);
 	Traverse(trueExpression);
@@ -559,7 +559,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	EmitCast(trueDescriptor, resultDescriptor);
 
 	const size_t falseEndLabel = CreateLabel();
-	EmitJump(OPCODE_GOTOW, falseEndLabel);
+	EmitJump(OPCODE_GOTO, falseEndLabel);
 	SetLabelValue(trueEndLabel, byteCode.size());
 
 	ResultStack::Element falseResult(mResult);
@@ -641,10 +641,10 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				result = EmitCompoundAssignmentOperator(binaryExpression, DIV_OPCODES);
 				break;
 			case Token::OP_AND:
-				EmitLogicalOperator(binaryExpression, OPCODE_BRZW);
+				EmitLogicalOperator(binaryExpression, OPCODE_BRZ);
 				break;
 			case Token::OP_OR:
-				EmitLogicalOperator(binaryExpression, OPCODE_BRNZW);
+				EmitLogicalOperator(binaryExpression, OPCODE_BRNZ);
 				break;
 			case Token::OP_AMP:
 				result = EmitSimpleBinaryOperator(binaryExpression, AND_OPCODES);
@@ -916,9 +916,6 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 			// TODO: Assert that getting here is bad because it does not make sense.
 			break;
 	}
-
-	//result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
-	//result.mOffset = 0;
 }
 
 
@@ -1167,12 +1164,12 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			byteCode.push_back(OPCODE_CONSTI_8);
 			break;
 		default:
-			if ((value >= BOND_CHAR_MIN) && (value <= BOND_CHAR_MAX))
+			if (IsInCharRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTC);
 				byteCode.push_back(static_cast<unsigned char>(value));
 			}
-			else if ((value >= BOND_SHORT_MIN) && (value <= BOND_SHORT_MAX))
+			else if (IsInShortRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTS);
 				EmitValue16(Value16(value));
@@ -1180,7 +1177,7 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			else
 			{
 				byteCode.push_back(OPCODE_CONST32);
-				EmitValue32(Value32(value));
+				EmitIndexedValue32(Value32(value));
 			}
 			break;
 	}
@@ -1220,12 +1217,12 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			byteCode.push_back(OPCODE_CONSTI_8);
 			break;
 		default:
-			if (value <= BOND_UCHAR_MAX)
+			if (IsInUCharRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTUC);
 				byteCode.push_back(static_cast<unsigned char>(value));
 			}
-			else if (value <= BOND_USHORT_MAX)
+			else if (IsInUShortRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
@@ -1233,7 +1230,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			else
 			{
 				byteCode.push_back(OPCODE_CONST32);
-				EmitValue32(Value32(value));
+				EmitIndexedValue32(Value32(value));
 			}
 			break;
 	}
@@ -1274,7 +1271,7 @@ void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 	else
 	{
 		byteCode.push_back(OPCODE_CONST32);
-		EmitValue32(Value32(value));
+		EmitIndexedValue32(Value32(value));
 	}
 }
 
@@ -1758,7 +1755,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 
 		TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
 		ByteCode::Type &byteCode = GetByteCode();
-		if ((elementSize >= BOND_SHORT_MIN) && (elementSize <= BOND_SHORT_MAX))
+		if (IsInShortRange(elementSize))
 		{
 			EmitCast(offsetDescriptor, &intTypeDescriptor);
 			byteCode.push_back(OPCODE_PTROFF);
@@ -1979,15 +1976,13 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 
 void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
+	// TODO: Assert that the number of jumps does not overflow 16 bits.
 	CompiledFunction *function = mFunction.GetTop();
 	ByteCode::Type &byteCode = function->mByteCode;
-	const Value32 jumpId(function->mJumpList.size());
 	const size_t opCodePos = byteCode.size();
 	byteCode.push_back(opCode);
-	byteCode.push_back(jumpId.mBytes[0]);
-	byteCode.push_back(jumpId.mBytes[1]);
-	byteCode.push_back(jumpId.mBytes[2]);
-	byteCode.push_back(jumpId.mBytes[3]);
+	byteCode.push_back(0);
+	byteCode.push_back(0);
 	const size_t fromPos = byteCode.size();
 	function->mJumpList.push_back(JumpEntry(opCodePos, fromPos, toLabel));
 }
@@ -1996,7 +1991,7 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 {
 	ByteCode::Type &byteCode = GetByteCode();
-	if ((offset >= BOND_SHORT_MIN) && (offset <= BOND_SHORT_MAX))
+	if (IsInShortRange(offset))
 	{
 		byteCode.push_back(opCode);
 		EmitValue16(Value16(offset));
@@ -2004,7 +1999,7 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 	else
 	{
 		byteCode.push_back(opCode + 1);
-		EmitValue32(Value32(offset));
+		EmitIndexedValue32(Value32(offset));
 	}
 }
 
@@ -2018,34 +2013,17 @@ void GeneratorCore::EmitValue16(Value16 value)
 }
 
 
-void GeneratorCore::EmitValue16(Value16 value, size_t pos)
+void GeneratorCore::EmitIndexedValue32(Value32 value)
 {
-	ConvertBigEndian16(value.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode[pos] = value.mBytes[0];
-	byteCode[pos + 1] = value.mBytes[1];
+	const bu16_t index = MapValue32(value);
+	EmitValue16(Value16(index));
 }
 
 
-void GeneratorCore::EmitValue32(Value32 value)
+void GeneratorCore::EmitIndexedValue64(Value64 value)
 {
-	ConvertBigEndian32(value.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(value.mBytes[0]);
-	byteCode.push_back(value.mBytes[1]);
-	byteCode.push_back(value.mBytes[2]);
-	byteCode.push_back(value.mBytes[3]);
-}
-
-
-void GeneratorCore::EmitValue32(Value32 value, size_t pos)
-{
-	ConvertBigEndian32(value.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode[pos] = value.mBytes[0];
-	byteCode[pos + 1] = value.mBytes[1];
-	byteCode[pos + 2] = value.mBytes[2];
-	byteCode[pos + 3] = value.mBytes[3];
+	const bu16_t index = MapValue64(value);
+	EmitValue16(Value16(index));
 }
 
 
@@ -2114,13 +2092,24 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		size_t byteCodeIndex = 0;
 		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
 		{
-			while (byteCodeIndex <= jlit->mOpCodePos)
+			while (byteCodeIndex < jlit->mOpCodePos)
 			{
 				mWriter.Write(byteCode[byteCodeIndex++]);
 			}
-			const Value32 offset(labelList[jlit->mToLabel] - jlit->mFromPos);
-			WriteValue32(offset);
-			byteCodeIndex += 4;
+
+			unsigned char opCode = byteCode[byteCodeIndex++];
+			const bi32_t offset = labelList[jlit->mToLabel] - jlit->mFromPos;
+			Value16 arg(offset);
+
+			if (!IsInShortRange(offset))
+			{
+				++opCode;
+				arg.mUShort = MapValue32(Value32(offset));
+			}
+
+			mWriter.Write(opCode);
+			WriteValue16(arg);
+			byteCodeIndex += 2;
 		}
 
 		while (byteCodeIndex < byteCode.size())
@@ -2169,30 +2158,6 @@ void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
 			WriteValue16(Value16(nameIndex));
 		}
 	}
-}
-
-
-void GeneratorCore::WriteQualifiedIdentifier(const QualifiedIdentifier *identifier)
-{
-	// Cache the position for the number of elements and skip 2 bytes.
-	const int startPos = mWriter.GetPosition();
-	mWriter.AddOffset(sizeof(Value16));
-
-	const QualifiedIdentifier *id = identifier;
-	int numElements = 0;
-	while (id != NULL)
-	{
-		const bu16_t elementIndex = MapString(identifier->GetName()->GetHashedText());
-		WriteValue16(Value16(elementIndex));
-		id = NextNode(id);
-		++numElements;
-	}
-
-	// Patch up the number of elements.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
-	WriteValue16(Value16(numElements));
-	mWriter.SetPosition(endPos);
 }
 
 
@@ -2260,6 +2225,25 @@ void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 			MapString(name->GetHashedText());
 		}
 		sym = sym->GetParentSymbol();
+	}
+}
+
+
+void GeneratorCore::MapLongJumpOffsets()
+{
+	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
+	{
+		const JumpList::Type &jumpList = flit->mJumpList;
+		const LabelList::Type &labelList = flit->mLabelList;
+
+		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
+		{
+			const bi32_t offset = labelList[jlit->mToLabel] - jlit->mFromPos;
+			if (!IsInShortRange(offset))
+			{
+				MapValue32(Value32(offset));
+			}
+		}
 	}
 }
 

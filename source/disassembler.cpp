@@ -241,29 +241,38 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(ReadValue16().mShort));
 				break;
 			case OC_PARAM_USHORT:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bi32_t>(ReadValue16().mUShort));
+				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(ReadValue16().mUShort));
 				break;
 			case OC_PARAM_INT:
-				mWriter.Write(BOND_DECIMAL_FORMAT, ReadValue32().mInt);
-				break;
+			{
+				const size_t valueIndex = ReadValue16().mUShort;
+				const bi32_t value = mValue32List[valueIndex].mInt;
+				mWriter.Write(BOND_DECIMAL_FORMAT, value);
+			}
+			break;
 			case OC_PARAM_VAL32:
-				mWriter.Write(BOND_UHEX_FORMAT, ReadValue32().mUInt);
-				break;
+			{
+				const size_t valueIndex = ReadValue16().mUShort;
+				const bu32_t value = mValue32List[valueIndex].mUInt;
+				mWriter.Write(BOND_UHEX_FORMAT, value);
+			}
+			break;
 			case OC_PARAM_VAL64:
 				// TODO.
 				break;
 			case OC_PARAM_OFF16:
 			{
-				const int offset = static_cast<int>(ReadValue16().mShort);
-				const int baseAddress = static_cast<int>(mIndex - codeStart);
-				mWriter.Write("%d (%d)", offset, baseAddress + offset);
+				const bi32_t offset = ReadValue16().mShort;
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
+				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
-				const int offset = static_cast<int>(ReadValue32().mInt);
-				const int baseAddress = static_cast<int>(mIndex - codeStart);
-				mWriter.Write("%d (%d)", offset, baseAddress + offset);
+				const size_t offsetIndex = ReadValue16().mUShort;
+				const bi32_t offset = mValue32List[offsetIndex].mInt;
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
+				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_HASH:
