@@ -1,13 +1,15 @@
 #ifndef BOND_LEXER_H
 #define BOND_LEXER_H
 
-#include "bond/allocator.h"
-#include "bond/charstream.h"
-#include "bond/stringallocator.h"
 #include "bond/tokenstream.h"
 
 namespace Bond
 {
+
+class Allocator;
+class CharStream;
+class CompilerErrorBuffer;
+class StringAllocator;
 
 class Lexer
 {

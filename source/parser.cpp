@@ -1,6 +1,6 @@
 #include "bond/autostack.h"
-#include "bond/parser.h"
 #include "bond/compilererror.h"
+#include "bond/parser.h"
 #include "bond/parsenodeutil.h"
 #include "bond/tokenstream.h"
 

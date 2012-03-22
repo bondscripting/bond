@@ -1,6 +1,7 @@
 #include "bond/autostack.h"
 #include "bond/binarywriter.h"
 #include "bond/codegenerator.h"
+#include "bond/compilererror.h"
 #include "bond/endian.h"
 #include "bond/list.h"
 #include "bond/opcodes.h"
@@ -96,6 +97,7 @@ public:
 	GeneratorCore(
 			Allocator &allocator,
 			BinaryWriter &writer,
+			CompilerErrorBuffer &errorBuffer,
 			const TranslationUnit *translationUnitList,
 			bu32_t pointerSize):
 		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
@@ -107,6 +109,7 @@ public:
 		mFunctionList(FunctionList::Allocator(&allocator)),
 		mAllocator(allocator),
 		mWriter(writer),
+		mErrorBuffer(errorBuffer),
 		mTranslationUnitList(translationUnitList),
 		mPointerSize(pointerSize)
 	{}
@@ -270,6 +273,8 @@ private:
 	bu16_t MapValue32(const Value32 &value32);
 	bu16_t MapValue64(const Value64 &value32);
 
+	void PushError(CompilerError::Type type);
+
 	StringIndexMap::Type mStringIndexMap;
 	StringList::Type mStringList;
 	Value32IndexMap::Type mValue32IndexMap;
@@ -285,6 +290,7 @@ private:
 	BoolStack mEmitOptionalTemporaries;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
+	CompilerErrorBuffer &mErrorBuffer;
 	const TranslationUnit *mTranslationUnitList;
 	bu32_t mPointerSize;
 };
@@ -292,7 +298,7 @@ private:
 
 void CodeGenerator::Generate(const TranslationUnit *translationUnitList, BinaryWriter &writer)
 {
-	GeneratorCore generator(mAllocator, writer, translationUnitList, mPointerSize);
+	GeneratorCore generator(mAllocator, writer, mErrorBuffer, translationUnitList, mPointerSize);
 	generator.Generate();
 }
 
@@ -913,7 +919,7 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 			break;
 
 		case GeneratorResult::CONTEXT_NONE:
-			// TODO: Assert that getting here is bad because it does not make sense.
+			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
 }
@@ -1292,7 +1298,7 @@ void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescr
 		case GeneratorResult::CONTEXT_FP_OFFSET:
 		case GeneratorResult::CONTEXT_STACK_VALUE:
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			// TODO: Assert that getting here is bad because it does not make sense.
+			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
 }
@@ -1932,7 +1938,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfOperator(const UnaryE
 		case GeneratorResult::CONTEXT_FP_OFFSET:
 		case GeneratorResult::CONTEXT_STACK_VALUE:
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			// TODO: Assert that getting here is bad because it does not make sense.
+			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
 
@@ -1966,7 +1972,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 
 		case GeneratorResult::CONTEXT_NONE:
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			// TODO: Assert that getting here is bad because it does not make sense.
+			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
 
@@ -1976,7 +1982,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 
 void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
-	// TODO: Assert that the number of jumps does not overflow 16 bits.
 	CompiledFunction *function = mFunction.GetTop();
 	ByteCode::Type &byteCode = function->mByteCode;
 	const size_t opCodePos = byteCode.size();
@@ -2250,8 +2255,14 @@ void GeneratorCore::MapLongJumpOffsets()
 
 bu16_t GeneratorCore::MapString(const HashedString &str)
 {
-	// TODO: Verify that the 16 bit index does not overflow.
-	// TODO: Verify that the string's length fits in 16 bits.
+	if (!IsInUShortRange(mStringList.size()))
+	{
+		PushError(CompilerError::STRING_TABLE_OVERFLOW);
+	}
+	if (!IsInUShortRange(str.GetLength()))
+	{
+		PushError(CompilerError::STRING_OVERFLOW);
+	}
 	const bu16_t index = static_cast<bu16_t>(mStringList.size());
 	StringIndexMap::InsertResult insertResult = mStringIndexMap.insert(StringIndexMap::KeyValue(str, index));
 	if (insertResult.second)
@@ -2264,7 +2275,10 @@ bu16_t GeneratorCore::MapString(const HashedString &str)
 
 bu16_t GeneratorCore::MapValue32(const Value32 &value)
 {
-	// TODO: Verify that the 16 bit index does not overflow.
+	if (!IsInUShortRange(mValue32List.size()))
+	{
+		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
+	}
 	const bu16_t index = static_cast<bu16_t>(mValue32List.size());
 	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.insert(Value32IndexMap::KeyValue(value, index));
 	if (insertResult.second)
@@ -2277,7 +2291,10 @@ bu16_t GeneratorCore::MapValue32(const Value32 &value)
 
 bu16_t GeneratorCore::MapValue64(const Value64 &value)
 {
-	// TODO: Verify that the 16 bit index does not overflow.
+	if (!IsInUShortRange(mValue64List.size()))
+	{
+		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
+	}
 	const bu16_t index = static_cast<bu16_t>(mValue64List.size());
 	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.insert(Value64IndexMap::KeyValue(value, index));
 	if (insertResult.second)
@@ -2285,6 +2302,15 @@ bu16_t GeneratorCore::MapValue64(const Value64 &value)
 		mValue64List.push_back(value);
 	}
 	return insertResult.first->second;
+}
+
+
+void GeneratorCore::PushError(CompilerError::Type type)
+{
+	if (!mErrorBuffer.HasErrors())
+	{
+		mErrorBuffer.PushError(type);
+	}
 }
 
 }

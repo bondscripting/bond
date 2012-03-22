@@ -1,5 +1,5 @@
-#include "bond/math.h"
 #include "bond/compilererror.h"
+#include "bond/math.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "private/validationpass.h"

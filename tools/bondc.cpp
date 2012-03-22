@@ -1,9 +1,9 @@
 #include "bond/codegenerator.h"
+#include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/filebinarywriter.h"
 #include "bond/lexer.h"
-#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/semanticanalyzer.h"
 #include "bond/stdouttextwriter.h"
@@ -51,7 +51,7 @@ void Compile(const char *scriptName)
 				if (outputFile != NULL)
 				{
 					Bond::FileBinaryWriter cboWriter(outputFile);
-					Bond::CodeGenerator generator(allocator);
+					Bond::CodeGenerator generator(allocator, errorBuffer);
 					generator.Generate(parser.GetTranslationUnitList(), cboWriter);
 					fclose(outputFile);
 				}

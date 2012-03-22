@@ -1,8 +1,8 @@
 #include "framework/testsemanticanalyzerframework.h"
+#include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/lexer.h"
-#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/textwriter.h"
 

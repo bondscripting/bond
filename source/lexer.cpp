@@ -1,4 +1,7 @@
+#include "bond/allocator.h"
+#include "bond/charstream.h"
 #include "bond/lexer.h"
+#include "bond/stringallocator.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>

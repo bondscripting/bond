@@ -1,7 +1,7 @@
+#include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/lexer.h"
-#include "bond/compilererror.h"
 #include "bond/parser.h"
 #include "bond/prettyprinter.h"
 #include "bond/semanticanalyzer.h"

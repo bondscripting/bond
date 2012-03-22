@@ -8,13 +8,15 @@ namespace Bond
 
 class Allocator;
 class BinaryWriter;
+class CompilerErrorBuffer;
 class TranslationUnit;
 
 class CodeGenerator
 {
 public:
-	CodeGenerator(Allocator &allocator, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
+	CodeGenerator(Allocator &allocator, CompilerErrorBuffer &errorBuffer, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
 		mAllocator(allocator),
+		mErrorBuffer(errorBuffer),
 		mPointerSize(pointerSize)
 	{}
 	~CodeGenerator() {}
@@ -23,6 +25,7 @@ public:
 
 private:
 	Allocator &mAllocator;
+	CompilerErrorBuffer &mErrorBuffer;
 	bu32_t mPointerSize;
 };
 

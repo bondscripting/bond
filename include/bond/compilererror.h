@@ -124,6 +124,14 @@
     "Continue statement not within a loop.")                                           \
   BOND_COMPILER_ERROR(UNREACHABLE_CODE,                                                \
     "Unreachable code.")                                                               \
+  BOND_COMPILER_ERROR(VALUE32_TABLE_OVERFLOW,                                          \
+    "32-bit constant table overflow.")                                                 \
+  BOND_COMPILER_ERROR(VALUE64_TABLE_OVERFLOW,                                          \
+    "64-bit constant table overflow.")                                                 \
+  BOND_COMPILER_ERROR(STRING_TABLE_OVERFLOW,                                           \
+    "String table overflow.")                                                          \
+  BOND_COMPILER_ERROR(STRING_OVERFLOW,                                                 \
+    "String overflow.")                                                                \
   BOND_COMPILER_ERROR(INTERNAL_ERROR,                                                  \
     "Internal compiler error.")                                                        \
 
