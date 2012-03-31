@@ -16,6 +16,12 @@
 namespace Bond
 {
 
+enum PointerSize
+{
+	POINTER_32BIT,
+	POINTER_64BIT,
+};
+
 const bu32_t BOND_BOOL_SIZE = 1;
 const bu32_t BOND_CHAR_SIZE = 1;
 const bu32_t BOND_SHORT_SIZE = 2;

@@ -4,7 +4,7 @@ uint magicNumber = 0x57EDFA57;
 ushort majorVersion + flags;
 ushort minorVersion;
 ConstantTable constantTable;
-ListBlob attributes;
+Blob content;
 
 ConstantTable
 -------------
@@ -44,7 +44,7 @@ uint Hash;
 QualifiedId name;
 uint CodeSize;
 char[CodeSize] code;
-ListBlob attributes;
+Blob metaData;
 
 DeclarationBlob
 ---------------

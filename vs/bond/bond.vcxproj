@@ -72,15 +72,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
+    <ClCompile Include="..\..\source\cboparser.cpp" />
     <ClCompile Include="..\..\source\charstream.cpp" />
     <ClCompile Include="..\..\source\codegenerator.cpp" />
+    <ClCompile Include="..\..\source\compilererror.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
     <ClCompile Include="..\..\source\hashedstring.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\linearallocator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
-    <ClCompile Include="..\..\source\parseerror.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />
     <ClCompile Include="..\..\source\parsenodes.cpp" />

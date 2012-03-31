@@ -6,39 +6,69 @@
 namespace Bond
 {
 
+inline void SwapBytes(unsigned char &a, unsigned char &b)
+{
+	const unsigned char temp = a;
+	a = b;
+	b = temp;
+}
+
+
 inline void ReverseByteOrder16(unsigned char value[2])
 {
-	unsigned char temp = value[0];
-	value[0] = value[1];
-	value[1] = temp;
+	SwapBytes(value[0], value[1]);
 }
 
 
 inline void ReverseByteOrder32(unsigned char value[4])
 {
-	unsigned char temp = value[0];
-	value[0] = value[3];
-	value[3] = temp;
-	temp = value[1];
-	value[1] = value[2];
-	value[2] = temp;
+	SwapBytes(value[0], value[3]);
+	SwapBytes(value[1], value[2]);
 }
 
 
 inline void ReverseByteOrder64(unsigned char value[8])
 {
-	unsigned char temp = value[0];
- 	value[0] = value[7];
-	value[7] = temp;
-	temp = value[1];
-	value[1] = value[6];
-	value[6] = temp;
-	temp = value[2];
-	value[2] = value[5];
-	value[5] = temp;
-	temp = value[3];
-	value[3] = value[4];
-	value[4] = temp;
+	SwapBytes(value[0], value[7]);
+	SwapBytes(value[1], value[6]);
+	SwapBytes(value[2], value[5]);
+	SwapBytes(value[3], value[4]);
+}
+
+
+inline void BatchReverseByteOrder16(unsigned char *value, size_t numValues)
+{
+	unsigned char *v = value;
+	const unsigned char *end = v + (numValues * sizeof(Value16));
+	while (v < end)
+	{
+		ReverseByteOrder16(v);
+		v += sizeof(Value16);
+	}
+}
+
+
+inline void BatchReverseByteOrder32(unsigned char *value, size_t numValues)
+{
+	unsigned char *v = value;
+	const unsigned char *end = v + (numValues * sizeof(Value32));
+	while (v < end)
+	{
+		ReverseByteOrder32(v);
+		v += sizeof(Value32);
+	}
+}
+
+
+inline void BatchReverseByteOrder64(unsigned char *value, size_t numValues)
+{
+	unsigned char *v = value;
+	const unsigned char *end = v + (numValues * sizeof(Value64));
+	while (v < end)
+	{
+		ReverseByteOrder64(v);
+		v += sizeof(Value64);
+	}
 }
 
 

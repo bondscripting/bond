@@ -1,3 +1,5 @@
+#include "bond/cbohandler.h"
+#include "bond/cboparser.h"
 #include "bond/disassembler.h"
 #include "bond/endian.h"
 #include "bond/hashedstring.h"
@@ -10,250 +12,165 @@
 namespace Bond
 {
 
-class DisassemblerCore
+class DisassemblerHandler: public CboHandler
 {
 public:
-	DisassemblerCore(Allocator &allocator, TextWriter &writer, const unsigned char *byteCode, size_t length):
-		mStringList(StringList::Allocator(&allocator)),
-		mValue32List(Value32List::Allocator(&allocator)),
-		mValue64List(Value64List::Allocator(&allocator)),
+	DisassemblerHandler(Allocator &allocator, TextWriter &writer):
 		mAllocator(allocator),
 		mWriter(writer),
-		mByteCode(byteCode),
-		mLength(length),
-		mIndex(0)
+		mStringTable(NULL),
+		mStringTableSize(0),
+		mValue32Table(NULL),
+		mValue32TableSize(0),
+		mValue64Table(NULL),
+		mValue64TableSize(0)
 	{}
 
-	void Disassemble();
+	virtual ~DisassemblerHandler();
+
+	virtual void ReceiveVersionInfo(int majorVersion, int minorVersion);
+
+	virtual void ReceivePointerSize(PointerSize size);
+
+	virtual void ReceiveValue32Table(size_t numValues, const Value32 *values);
+	virtual const Value32 &GetValue32(size_t index) const { return mValue32Table[index]; }
+	virtual const size_t &GetValue32TableSize() const { return mValue32TableSize; }
+
+	virtual void ReceiveValue64Table(size_t numValues, const Value64 *values);
+	virtual const Value64 &GetValue64(size_t index) const { return mValue64Table[index]; }
+	virtual const size_t &GetValue64TableSize() const { return mValue64TableSize; }
+
+	virtual void ReceiveStringTableSize(size_t numStrings);
+	virtual void ReceiveString(const HashedString &str, size_t index) { mStringTable[index] = str; }
+	virtual const HashedString &GetString(size_t index) const { return mStringTable[index]; }
+	virtual const size_t &GetStringTableSize() const { return mStringTableSize; }
+
+	virtual void BeginList(size_t numElements) {}
+	virtual void EndList() {}
+
+	virtual void ReceiveFunctionBlob(const QualifiedId &name, bu32_t hash, size_t codeSize, unsigned char *byteCode);
+	virtual void EndFunctionBlob() {}
+
+	virtual void ReceiveBlob(unsigned char *blob, size_t blobSize) {}
+
+	virtual void CboIsCorrupt();
+	virtual void InvalidMagicNumber(bu32_t number);
+	virtual void InvalidByteCode();
 
 private:
-	typedef Vector<HashedString> StringList;
-	typedef Vector<Value32> Value32List;
-	typedef Vector<Value64> Value64List;
-
-	void ReadConstantTable();
-	void ReadBlob();
-	void ReadListBlob(size_t expectedEnd);
-	void ReadFunctionBlob(size_t expectedEnd);
-	void ReadQualifiedIdentifier();
-	Value16 ReadValue16();
-	Value32 ReadValue32();
-	Value64 ReadValue64();
-
+	void WriteQualifiedIdentifier(const QualifiedId &id);
 	void WriteHashedString(const HashedString &str);
+	void FreeStringTable();
 
-	void ReportMalformedCBO();
-
-	StringList::Type mStringList;
-	Value32List::Type mValue32List;
-	Value64List::Type mValue64List;
 	Allocator &mAllocator;
 	TextWriter &mWriter;
-	const unsigned char *mByteCode;
-	size_t mLength;
-	size_t mIndex;
+	HashedString *mStringTable;
+	size_t mStringTableSize;
+	const Value32 *mValue32Table;
+	size_t mValue32TableSize;
+	const Value64 *mValue64Table;
+	size_t mValue64TableSize;
 };
 
 
-void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode, size_t length)
+DisassemblerHandler::~DisassemblerHandler()
 {
-	DisassemblerCore disassembler(mAllocator, writer, byteCode, length);
-	disassembler.Disassemble();
+	FreeStringTable();
 }
 
 
-void DisassemblerCore::Disassemble()
+void Disassembler::Disassemble(TextWriter &writer, unsigned char *byteCode, size_t length)
 {
-	if (mLength < 8)
-	{
-		ReportMalformedCBO();
-		return;
-	}
+	DisassemblerHandler handler(mAllocator, writer);
+	CboParser parser;
+	parser.Parse(handler, byteCode, length);
+}
 
-	const bu32_t magicNumber = ReadValue32().mUInt;
-	if (magicNumber != MAGIC_NUMBER)
-	{
-		mWriter.Write("Magic number 0x%X does not match expected magic number 0x%X\n", magicNumber, MAGIC_NUMBER);
-	}
 
-	const bu32_t majorVersion = ReadValue16().mUShort;
-	const bu32_t minorVersion = ReadValue16().mUShort;
+void DisassemblerHandler::ReceiveVersionInfo(int majorVersion, int minorVersion)
+{
 	mWriter.Write("Version %d.%02d\n", majorVersion, minorVersion);
-
-	ReadConstantTable();
-	ReadBlob();
 }
 
 
-void DisassemblerCore::ReadConstantTable()
+void DisassemblerHandler::ReceivePointerSize(PointerSize size)
 {
-	if ((mIndex < mLength) && ((mIndex + 8) > mLength))
+	mWriter.Write("Pointer size: %d bits\n", (size == POINTER_64BIT) ? 64 : 32);
+}
+
+
+void DisassemblerHandler::ReceiveValue32Table(size_t numValues, const Value32 *values)
+{
+	mValue32TableSize = numValues;
+	mValue32Table = values;
+}
+
+
+void DisassemblerHandler::ReceiveValue64Table(size_t numValues, const Value64 *values)
+{
+	mValue64TableSize = numValues;
+	mValue64Table = values;
+}
+
+
+void DisassemblerHandler::ReceiveStringTableSize(size_t numStrings)
+{
+	FreeStringTable();
+	if (numStrings > 0)
 	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const size_t size = ReadValue32().mUInt;
-	const size_t expectedEnd = mIndex + size - 4;
-	if (expectedEnd > mLength)
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const int numValue64s = ReadValue16().mUShort;
-	const int numValue32s = ReadValue16().mUShort;
-	if (((numValue64s * sizeof(Value64)) + (numValue64s * sizeof(Value64))) > mLength)
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	mValue64List.reserve(numValue64s);
-	for (int i = 0; i < numValue64s; ++i)
-	{
-		mValue64List.push_back(ReadValue64());
-	}
-
-	mValue32List.reserve(numValue32s);
-	for (int i = 0; i < numValue32s; ++i)
-	{
-		mValue32List.push_back(ReadValue32());
-	}
-
-	if ((mIndex + 2) > mLength)
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const int numStrings = ReadValue16().mUShort;
-	mStringList.reserve(numStrings);
-
-	for (int i = 0; i < numStrings; ++i)
-	{
-		if ((mIndex + 2) > mLength)
-		{
-			ReportMalformedCBO();
-			return;
-		}
-
-		const int length = ReadValue16().mUShort;
-		if ((mIndex + length) > mLength)
-		{
-			ReportMalformedCBO();
-			return;
-		}
-
-		mStringList.push_back(HashedString(reinterpret_cast<const char *>(mByteCode + mIndex), length));
-		mIndex += length;
-	}
-
-	if (mIndex != expectedEnd)
-	{
-		ReportMalformedCBO();
+		mStringTable = mAllocator.Alloc<HashedString>(numStrings);
+		mStringTableSize = numStrings;
 	}
 }
 
 
-void DisassemblerCore::ReadBlob()
+void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t hash, size_t codeSize, unsigned char *byteCode)
 {
-	if ((mIndex < mLength) && ((mIndex + 6) > mLength))
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const size_t size = ReadValue32().mUInt;
-	const size_t idIndex = ReadValue16().mUShort;
-	const size_t expectedEnd = mIndex + size - 6;
-	if (expectedEnd > mLength)
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const HashedString &id = mStringList[idIndex];
-	if (id == HashedString("List"))
-	{
-		ReadListBlob(expectedEnd);
-	}
-	else if (id == HashedString("Func"))
-	{
-		ReadFunctionBlob(expectedEnd);
-	}
-}
-
-
-void DisassemblerCore::ReadListBlob(size_t expectedEnd)
-{
-	if ((mIndex < mLength) && ((mIndex + 4) > mLength))
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const size_t numBlobs = ReadValue32().mUInt;
-	mWriter.Write("List num elements: %u\n", numBlobs);
-	for (size_t i = 0; (i < numBlobs) && (mIndex < mLength); ++i)
-	{
-		ReadBlob();
-	}
-}
-
-
-void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
-{
-	if ((mIndex < mLength) && ((mIndex + 8) > mLength))
-	{
-		ReportMalformedCBO();
-		return;
-	}
-
-	const bu32_t hash = ReadValue32().mUInt;
-
 	mWriter.Write("Function: ");
-	ReadQualifiedIdentifier();
+	WriteQualifiedIdentifier(name);
 
-	const size_t codeSize = ReadValue32().mUInt;
 	mWriter.Write("\n  hash: 0x" BOND_UHEX_FORMAT "\n  code size: %u\n", hash, codeSize);
-	const size_t codeStart = mIndex;
-	const size_t codeEnd = mIndex + codeSize;
 
-	while (mIndex < codeEnd)
+	size_t index = 0;
+	while (index < codeSize)
 	{
-		const OpCode opCode = static_cast<OpCode>(mByteCode[mIndex++]);
+		const OpCode opCode = static_cast<OpCode>(byteCode[index]);
 		const OpCodeParam param = GetOpCodeParamType(opCode);
 
-		mWriter.Write("%6d: %-12s", mIndex - 1 - codeStart, GetOpCodeMnemonic(opCode));
+		mWriter.Write("%6d: %-12s", index, GetOpCodeMnemonic(opCode));
+		++index;
 
 		switch (param)
 		{
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(static_cast<char>(mByteCode[mIndex++])));
+				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(static_cast<char>(byteCode[index++])));
 				break;
 			case OC_PARAM_UCHAR:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(mByteCode[mIndex++]));
+				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(byteCode[index++]));
 				break;
 			case OC_PARAM_SHORT:
-				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(ReadValue16().mShort));
+				mWriter.Write(BOND_DECIMAL_FORMAT, Value16(byteCode + index).mShort);
+				index += sizeof(Value16);
 				break;
 			case OC_PARAM_USHORT:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(ReadValue16().mUShort));
+				mWriter.Write(BOND_UDECIMAL_FORMAT, Value16(byteCode + index).mUShort);
+				index += sizeof(Value16);
 				break;
 			case OC_PARAM_INT:
 			{
-				const size_t valueIndex = ReadValue16().mUShort;
-				const bi32_t value = mValue32List[valueIndex].mInt;
+				const size_t valueIndex = Value16(byteCode + index).mUShort;
+				index += sizeof(Value16);
+				const bi32_t value = mValue32Table[valueIndex].mInt;
 				mWriter.Write(BOND_DECIMAL_FORMAT, value);
 			}
 			break;
 			case OC_PARAM_VAL32:
 			{
-				const size_t valueIndex = ReadValue16().mUShort;
-				const bu32_t value = mValue32List[valueIndex].mUInt;
+				const size_t valueIndex = Value16(byteCode + index).mUShort;
+				index += sizeof(Value16);
+				const bu32_t value = mValue32Table[valueIndex].mUInt;
 				mWriter.Write(BOND_UHEX_FORMAT, value);
 			}
 			break;
@@ -262,17 +179,16 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 				break;
 			case OC_PARAM_OFF16:
 			{
-				const bi32_t offset = ReadValue16().mShort;
-				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
-				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, baseAddress + offset);
+				const bi32_t offset = Value16(byteCode + index).mShort;
+				index += sizeof(Value16);
+				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, index + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
-				const size_t offsetIndex = ReadValue16().mUShort;
-				const bi32_t offset = mValue32List[offsetIndex].mInt;
-				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
-				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, baseAddress + offset);
+				const size_t offsetIndex = Value16(byteCode + index).mUShort;
+				const bi32_t offset = mValue32Table[offsetIndex].mInt;
+				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, index + offset);
 			}
 			break;
 			case OC_PARAM_HASH:
@@ -284,25 +200,31 @@ void DisassemblerCore::ReadFunctionBlob(size_t expectedEnd)
 }
 
 
-void DisassemblerCore::ReadQualifiedIdentifier()
+void DisassemblerHandler::CboIsCorrupt()
 {
-	if ((mIndex < mLength) && ((mIndex + 2) > mLength))
-	{
-		ReportMalformedCBO();
-		return;
-	}
+	mWriter.Write("CBO file is incomplete or malformed\n");
+}
 
-	const int numElements = ReadValue16().mUShort;
-	if ((numElements * sizeof(Value16)) > mLength)
-	{
-		ReportMalformedCBO();
-		return;
-	}
 
+void DisassemblerHandler::InvalidMagicNumber(bu32_t number)
+{
+	mWriter.Write("Invalid magic number: " BOND_UHEX_FORMAT "\n", number);
+}
+
+
+void DisassemblerHandler::InvalidByteCode()
+{
+	mWriter.Write("Byte-code failed validation\n");
+}
+
+
+void DisassemblerHandler::WriteQualifiedIdentifier(const QualifiedId &id)
+{
+	const int numElements = id.GetNumElements();
 	for (int i = 0; i < numElements; ++i)
 	{
-		const size_t idIndex = ReadValue16().mUShort;
-		const HashedString &id = mStringList[idIndex];
+		const int elementIndex = id.GetElementIndex(i);
+		const HashedString &id = mStringTable[elementIndex];
 		if (i > 0)
 		{
 			mWriter.Write("::");
@@ -312,34 +234,7 @@ void DisassemblerCore::ReadQualifiedIdentifier()
 }
 
 
-Value16 DisassemblerCore::ReadValue16()
-{
-	Value16 value(mByteCode + mIndex);
-	mIndex += 2;
-	ConvertBigEndian16(value.mBytes);
-	return value;
-}
-
-
-Value32 DisassemblerCore::ReadValue32()
-{
-	Value32 value(mByteCode + mIndex);
-	mIndex += 4;
-	ConvertBigEndian32(value.mBytes);
-	return value;
-}
-
-
-Value64 DisassemblerCore::ReadValue64()
-{
-	Value64 value(mByteCode + mIndex);
-	mIndex += 4;
-	ConvertBigEndian64(value.mBytes);
-	return value;
-}
-
-
-void DisassemblerCore::WriteHashedString(const HashedString &str)
+void DisassemblerHandler::WriteHashedString(const HashedString &str)
 {
 	const int length = str.GetLength();
 	const char *s = str.GetString();
@@ -350,10 +245,11 @@ void DisassemblerCore::WriteHashedString(const HashedString &str)
 }
 
 
-void DisassemblerCore::ReportMalformedCBO()
+void DisassemblerHandler::FreeStringTable()
 {
-	mWriter.Write("CBO file is incomplete or malformed\n");
-	mIndex = mLength;
+	mAllocator.Free(mStringTable);
+	mStringTable = NULL;
+	mStringTableSize = 0;
 }
 
 }

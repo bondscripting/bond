@@ -7,6 +7,7 @@ namespace Bond
 {
 
 const bu32_t MAGIC_NUMBER = 0x57EDFA57;
+const bu32_t BACKWARDS_MAGIC_NUMBER = 0x57FAED57;
 const bu16_t MAJOR_VERSION = 0;
 const bu16_t MINOR_VERSION = 1;
 

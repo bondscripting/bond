@@ -212,10 +212,16 @@
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\cboparser.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\charstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\codegenerator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\compilererror.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\defaultfileloader.cpp">
@@ -234,9 +240,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\opcodes.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\parseerror.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsenodecounter.cpp">
