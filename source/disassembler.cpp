@@ -129,7 +129,7 @@ void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t ha
 	mWriter.Write("Function: ");
 	WriteQualifiedIdentifier(name);
 
-	mWriter.Write("\n  hash: 0x" BOND_UHEX_FORMAT "\n  code size: %u\n", hash, codeSize);
+	mWriter.Write("\n  hash: 0x%" BOND_PRIx32 "\n  code size: %u\n", hash, codeSize);
 
 	size_t index = 0;
 	while (index < codeSize)
@@ -145,17 +145,17 @@ void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t ha
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mWriter.Write(BOND_DECIMAL_FORMAT, static_cast<bi32_t>(static_cast<char>(byteCode[index++])));
+				mWriter.Write("%" BOND_PRId32, static_cast<bi32_t>(static_cast<char>(byteCode[index++])));
 				break;
 			case OC_PARAM_UCHAR:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, static_cast<bu32_t>(byteCode[index++]));
+				mWriter.Write("%" BOND_PRIu32, static_cast<bu32_t>(byteCode[index++]));
 				break;
 			case OC_PARAM_SHORT:
-				mWriter.Write(BOND_DECIMAL_FORMAT, Value16(byteCode + index).mShort);
+				mWriter.Write("%" BOND_PRId32, Value16(byteCode + index).mShort);
 				index += sizeof(Value16);
 				break;
 			case OC_PARAM_USHORT:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, Value16(byteCode + index).mUShort);
+				mWriter.Write("%" BOND_PRIu32, Value16(byteCode + index).mUShort);
 				index += sizeof(Value16);
 				break;
 			case OC_PARAM_INT:
@@ -163,7 +163,7 @@ void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t ha
 				const size_t valueIndex = Value16(byteCode + index).mUShort;
 				index += sizeof(Value16);
 				const bi32_t value = mValue32Table[valueIndex].mInt;
-				mWriter.Write(BOND_DECIMAL_FORMAT, value);
+				mWriter.Write("%" BOND_PRId32, value);
 			}
 			break;
 			case OC_PARAM_VAL32:
@@ -171,7 +171,7 @@ void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t ha
 				const size_t valueIndex = Value16(byteCode + index).mUShort;
 				index += sizeof(Value16);
 				const bu32_t value = mValue32Table[valueIndex].mUInt;
-				mWriter.Write(BOND_UHEX_FORMAT, value);
+				mWriter.Write("0x%" BOND_PRIx32, value);
 			}
 			break;
 			case OC_PARAM_VAL64:
@@ -181,14 +181,14 @@ void DisassemblerHandler::ReceiveFunctionBlob(const QualifiedId &name, bu32_t ha
 			{
 				const bi32_t offset = Value16(byteCode + index).mShort;
 				index += sizeof(Value16);
-				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, index + offset);
+				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRId32 ")", offset, index + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
 				const size_t offsetIndex = Value16(byteCode + index).mUShort;
 				const bi32_t offset = mValue32Table[offsetIndex].mInt;
-				mWriter.Write(BOND_DECIMAL_FORMAT " (" BOND_DECIMAL_FORMAT ")", offset, index + offset);
+				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRId32 ")", offset, index + offset);
 			}
 			break;
 			case OC_PARAM_HASH:
@@ -208,7 +208,7 @@ void DisassemblerHandler::CboIsCorrupt()
 
 void DisassemblerHandler::InvalidMagicNumber(bu32_t number)
 {
-	mWriter.Write("Invalid magic number: " BOND_UHEX_FORMAT "\n", number);
+	mWriter.Write("Invalid magic number: 0x%" BOND_PRIx32 "\n", number);
 }
 
 

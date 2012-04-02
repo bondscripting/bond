@@ -1080,7 +1080,7 @@ void Lexer::EvaluateCharToken(Token &token) const
 void Lexer::EvaluateFloatToken(Token &token) const
 {
 	bf32_t value;
-	sscanf(token.GetText(), BOND_FLOAT_FORMAT, &value);
+	sscanf(token.GetText(), "%" BOND_SCNf32, &value);
 	token.SetFloatValue(value);
 }
 
@@ -1091,15 +1091,15 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 	const char *text = token.GetText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
-		sscanf(text, BOND_UOCTAL_FORMAT, &value);
+		sscanf(text, "%" BOND_SCNo32, &value);
 	}
 	else if (token.HasAnnotation(Token::HEX))
 	{
-		sscanf(text, BOND_UHEX_FORMAT, &value);
+		sscanf(text, "%" BOND_SCNx32, &value);
 	}
 	else
 	{
-		sscanf(text, BOND_UDECIMAL_FORMAT, &value);
+		sscanf(text, "%" BOND_SCNu32, &value);
 	}
 
 	if (token.GetTokenType() == Token::CONST_INT)

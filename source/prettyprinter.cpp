@@ -70,7 +70,7 @@ void PrettyPrinter::Visit(const Enumerator *enumerator)
 	Print(enumerator->GetName());
 	if (mPrintFoldedConstants && enumerator->GetTypeAndValue()->IsValueDefined())
 	{
-		mWriter.Write(" = " BOND_DECIMAL_FORMAT, enumerator->GetTypeAndValue()->GetIntValue());
+		mWriter.Write(" = %" BOND_PRId32, enumerator->GetTypeAndValue()->GetIntValue());
 	}
 	else if (enumerator->GetValue() != NULL)
 	{
@@ -594,13 +594,13 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 				mWriter.Write("%c", static_cast<char>(tav.GetIntValue()));
 				return true;
 			case Token::KEY_FLOAT:
-				mWriter.Write(BOND_FLOAT_FORMAT, tav.GetFloatValue());
+				mWriter.Write("%" BOND_PRIf32, tav.GetFloatValue());
 				return true;
 			case Token::KEY_INT:
-				mWriter.Write(BOND_DECIMAL_FORMAT, tav.GetIntValue());
+				mWriter.Write("%" BOND_PRId32, tav.GetIntValue());
 				return true;
 			case Token::KEY_UINT:
-				mWriter.Write(BOND_UDECIMAL_FORMAT, tav.GetUIntValue());
+				mWriter.Write("%" BOND_PRIu32, tav.GetUIntValue());
 				return true;
 			default:
 				break;

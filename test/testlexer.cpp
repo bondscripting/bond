@@ -123,7 +123,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const bool expected = EXPECTED_BOOLS[i];
 		const bool actual = token->GetBoolValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
+			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
 	}
 
 	const Bond::Token *nullToken = stream.Next();
@@ -139,7 +139,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const Bond::bi32_t expected = EXPECTED_INTS[i];
 		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
+			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_UINTS; ++i)
@@ -151,7 +151,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const Bond::bu32_t expected = EXPECTED_UINTS[i];
 		const Bond::bu32_t actual = token->GetUIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected " BOND_UDECIMAL_FORMAT " but was " BOND_UDECIMAL_FORMAT ".", expected, actual));
+			("Expected %" BOND_PRIu32 " but was %" BOND_PRIu32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_FLOATS; ++i)
@@ -163,7 +163,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
 		const Bond::bf32_t actual = token->GetFloatValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected " BOND_FLOAT_FORMAT " but was " BOND_FLOAT_FORMAT ".", expected, actual));
+			("Expected %" BOND_PRIf32 " but was %" BOND_PRIf32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_CHARS; ++i)
@@ -175,7 +175,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const Bond::bi32_t expected = EXPECTED_CHARS[i];
 		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected " BOND_DECIMAL_FORMAT " but was " BOND_DECIMAL_FORMAT ".", expected, actual));
+			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
