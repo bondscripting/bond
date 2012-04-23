@@ -17,7 +17,7 @@ public:
 	{}
 	~Disassembler() {}
 
-	void Disassemble(TextWriter &writer, unsigned char *byteCode, size_t length);
+	void Disassemble(TextWriter &writer, const unsigned char *byteCode, size_t length);
 
 private:
 	Allocator &mAllocator;

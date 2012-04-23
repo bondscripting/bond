@@ -35,6 +35,7 @@ union Value
 
 union Value16
 {
+	Value16(): mShort(0) {}
 	explicit Value16(bi16_t value): mShort(value) {}
 	explicit Value16(bu16_t value): mUShort(value) {}
 	explicit Value16(bi32_t value): mShort(static_cast<bi16_t>(value)) {}
@@ -54,6 +55,7 @@ union Value16
 
 union Value32
 {
+	Value32(): mInt(0) {}
 	explicit Value32(bi32_t value): mInt(value) {}
 	explicit Value32(bu32_t value): mUInt(value) {}
 	explicit Value32(bf32_t value): mFloat(value) {}
@@ -80,6 +82,7 @@ union Value32
 
 union Value64
 {
+	Value64(): mLong(0) {}
 	explicit Value64(bi64_t value): mLong(value) {}
 	explicit Value64(bu64_t value): mULong(value) {}
 	explicit Value64(bf64_t value): mDouble(value) {}

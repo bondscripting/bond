@@ -33,15 +33,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\bond\private\set.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\stlallocator.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\types.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\source\private\semanticanalysispass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
@@ -60,8 +51,8 @@
     <ClInclude Include="..\..\source\private\valueevaluationpass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\vector.h">
-      <Filter>Header Files\include\bond\private</Filter>
+    <ClInclude Include="..\..\include\bond\algorithm.h">
+      <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\allocator.h">
       <Filter>Header Files\include\bond</Filter>
@@ -75,10 +66,25 @@
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\cboloader.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\cboutil.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\cbovalidator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\charstream.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\codegenerator.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\codesegment.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compilererror.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\conf.h">
@@ -108,9 +114,6 @@
     <ClInclude Include="..\..\include\bond\lexer.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\linearallocator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\list.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -121,9 +124,6 @@
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\opcodes.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parseerror.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\parsenodecounter.h">
@@ -201,10 +201,25 @@
     <ClInclude Include="..\..\include\bond\version.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\algorithm.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\private\list.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\private\map.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\set.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\stlallocator.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\types.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\vector.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
   </ItemGroup>
@@ -212,13 +227,19 @@
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\cboparser.cpp">
+    <ClCompile Include="..\..\source\cboloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\cbovalidator.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\charstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\codegenerator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\codesegment.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\compilererror.cpp">
@@ -234,9 +255,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\lexer.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\linearallocator.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\opcodes.cpp">

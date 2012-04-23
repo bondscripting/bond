@@ -10,7 +10,6 @@
 #include "bond/map.h"
 #include "bond/vector.h"
 #include "bond/version.h"
-#include <stdio.h>
 
 namespace Bond
 {
@@ -1102,6 +1101,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 {
 	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *typeDescriptor = typeAndValue.GetTypeDescriptor();
+	// TODO: Deal with string literals.
 	switch (typeDescriptor->GetPrimitiveType())
 	{
 		case Token::KEY_BOOL:

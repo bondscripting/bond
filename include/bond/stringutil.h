@@ -12,6 +12,12 @@ bu32_t StringHash(const char *str, bu32_t seed = STRING_HASH_SEED);
 bu32_t StringHash(int length, const char *str, bu32_t seed = STRING_HASH_SEED);
 
 bool StringEqual(const char *a, const char *b, int length);
+
+inline bool StringEqual(const char *a, int lengthA, const char *b, int lengthB)
+{
+	return (lengthA == lengthB) && StringEqual(a, b, lengthA);
+}
+
 int StringCompare(const char *str1, const char *str2, int length);
 
 }

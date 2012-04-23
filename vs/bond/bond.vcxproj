@@ -11,12 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\bond\algorithm.h" />
     <ClInclude Include="..\..\include\bond\allocator.h" />
     <ClInclude Include="..\..\include\bond\autostack.h" />
     <ClInclude Include="..\..\include\bond\binarywriter.h" />
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h" />
+    <ClInclude Include="..\..\include\bond\cboloader.h" />
+    <ClInclude Include="..\..\include\bond\cboutil.h" />
+    <ClInclude Include="..\..\include\bond\cbovalidator.h" />
     <ClInclude Include="..\..\include\bond\charstream.h" />
     <ClInclude Include="..\..\include\bond\codegenerator.h" />
+    <ClInclude Include="..\..\include\bond\codesegment.h" />
+    <ClInclude Include="..\..\include\bond\compilererror.h" />
     <ClInclude Include="..\..\include\bond\conf.h" />
     <ClInclude Include="..\..\include\bond\defaultallocator.h" />
     <ClInclude Include="..\..\include\bond\defaultfileloader.h" />
@@ -26,12 +32,10 @@
     <ClInclude Include="..\..\include\bond\fileloader.h" />
     <ClInclude Include="..\..\include\bond\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\lexer.h" />
-    <ClInclude Include="..\..\include\bond\linearallocator.h" />
     <ClInclude Include="..\..\include\bond\list.h" />
     <ClInclude Include="..\..\include\bond\map.h" />
     <ClInclude Include="..\..\include\bond\math.h" />
     <ClInclude Include="..\..\include\bond\opcodes.h" />
-    <ClInclude Include="..\..\include\bond\parseerror.h" />
     <ClInclude Include="..\..\include\bond\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\parsenodefactory.h" />
     <ClInclude Include="..\..\include\bond\parsenodes.h" />
@@ -41,6 +45,7 @@
     <ClInclude Include="..\..\include\bond\parsenodevisitor.h" />
     <ClInclude Include="..\..\include\bond\parser.h" />
     <ClInclude Include="..\..\include\bond\prettyprinter.h" />
+    <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\list.h" />
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\set.h" />
@@ -72,15 +77,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
-    <ClCompile Include="..\..\source\cboparser.cpp" />
+    <ClCompile Include="..\..\source\cboloader.cpp" />
+    <ClCompile Include="..\..\source\cbovalidator.cpp" />
     <ClCompile Include="..\..\source\charstream.cpp" />
     <ClCompile Include="..\..\source\codegenerator.cpp" />
+    <ClCompile Include="..\..\source\codesegment.cpp" />
     <ClCompile Include="..\..\source\compilererror.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
     <ClCompile Include="..\..\source\hashedstring.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
-    <ClCompile Include="..\..\source\linearallocator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />

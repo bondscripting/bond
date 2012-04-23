@@ -35,7 +35,7 @@ inline void ReverseByteOrder64(unsigned char value[8])
 	SwapBytes(value[3], value[4]);
 }
 
-
+/*
 inline void BatchReverseByteOrder16(unsigned char *value, size_t numValues)
 {
 	unsigned char *v = value;
@@ -70,7 +70,7 @@ inline void BatchReverseByteOrder64(unsigned char *value, size_t numValues)
 		v += sizeof(Value64);
 	}
 }
-
+*/
 
 inline Value16 ReverseByteOrder16(Value16 value)
 {
