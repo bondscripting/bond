@@ -29,6 +29,7 @@ public:
 	{
 		MemoryResources(
 				unsigned char *memory,
+				size_t constantTablesStart,
 				size_t value32TableStart,
 				size_t value64TableStart,
 				size_t stringTableStart,
@@ -37,6 +38,7 @@ public:
 				size_t functionLookupStart,
 				size_t functionsStart,
 				size_t codeStart):
+			mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
 			mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
 			mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
 			mStringTable(reinterpret_cast<HashedString *>(memory + stringTableStart)),
@@ -46,6 +48,7 @@ public:
 			mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
 			mCode(reinterpret_cast<unsigned char *>(memory + codeStart))
 		{}
+		ConstantTable *mConstantTables;
 		Value32 *mValue32Table;
 		Value64 *mValue64Table;
 		HashedString *mStringTable;
@@ -62,6 +65,7 @@ public:
 			const unsigned char *byteCode):
 		mValidationResult(validationResult),
 		mResources(resources),
+		mConstantTable(resources.mConstantTables),
 		mStringTable(resources.mStringTable),
 		mByteCode(byteCode),
 		mIndex(0)
@@ -81,6 +85,7 @@ private:
 
 	CboValidator::Result mValidationResult;
 	MemoryResources &mResources;
+	ConstantTable *mConstantTable;
 	HashedString *mStringTable;
 	const unsigned char *mByteCode;
 	size_t mIndex;
@@ -122,7 +127,8 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	}
 
 	const size_t codeSegmentStart = 0;
-	const size_t value64TableStart = TallyMemoryRequirement<CodeSegment>(codeSegmentStart, 1);
+	const size_t constantTablesStart = TallyMemoryRequirement<CodeSegment>(codeSegmentStart, 1);
+	const size_t value64TableStart = TallyMemoryRequirement<ConstantTable>(constantTablesStart, numFiles);
 	const size_t value32TableStart = TallyMemoryRequirement<Value64>(value64TableStart, value64Count);
 	const size_t stringTableStart = TallyMemoryRequirement<Value32>(value32TableStart, value32Count);
 	const size_t stringBytesStart = TallyMemoryRequirement<HashedString>(stringTableStart, stringCount);
@@ -136,6 +142,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	unsigned char *mem = mPermAllocator.Alloc<unsigned char>(totalMemSize);
 	CboLoaderCore::MemoryResources resources(
 		mem,
+		constantTablesStart,
 		value64TableStart,
 		value32TableStart,
 		stringTableStart,
@@ -241,15 +248,13 @@ bool CboLoader::FunctionHashComparator::operator()(const Function &a, const Func
 
 void CboLoaderCore::Load()
 {
-	// Skip some header information.
-	mIndex += 16;
+	mConstantTable->mValue32Table = mResources.mValue32Table;
+	mConstantTable->mValue64Table = mResources.mValue64Table;
+	mConstantTable->mStringTable = mResources.mStringTable;
+	++mResources.mConstantTables;
 
-	Value64 *value64 = mResources.mValue64Table;
-	for (size_t i = 0; i < mValidationResult.mValue64Count; ++i)
-	{
-		*value64++ = ReadValue64();
-	}
-	mResources.mValue64Table = value64;
+	// Skip some header information.
+	mIndex += 20;
 
 	Value32 *value32 = mResources.mValue32Table;
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
@@ -258,7 +263,13 @@ void CboLoaderCore::Load()
 	}
 	mResources.mValue32Table = value32;
 
-	mIndex += 2;
+	Value64 *value64 = mResources.mValue64Table;
+	for (size_t i = 0; i < mValidationResult.mValue64Count; ++i)
+	{
+		*value64++ = ReadValue64();
+	}
+	mResources.mValue64Table = value64;
+
 	HashedString *str = mResources.mStringTable;
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
@@ -310,8 +321,13 @@ void CboLoaderCore::LoadListBlob()
 void CboLoaderCore::LoadFunctionBlob()
 {
 	Function *function = mResources.mFunctions;
-	function->mHash = ReadValue32().mUInt;
 	function->mName = LoadQualifiedIdentifier();
+	function->mConstantTable = mConstantTable;
+	function->mHash = ReadValue32().mUInt;
+	function->mFrameSize = ReadValue32().mUInt;
+	function->mPackedFrameSize = ReadValue32().mUInt;
+	function->mLocalSize = ReadValue32().mUInt;
+	function->mFramePointerAlignment = ReadValue32().mUInt;
 	unsigned char *code = mResources.mCode;
 	const size_t codeSize = ReadValue32().mUInt;
 	function->mCode = code;

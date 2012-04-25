@@ -1,19 +1,20 @@
 CompiledBondFile
 ----------------
 uint magicNumber = 0x57EDFA57;
-ushort majorVersion + flags;
+ushort majorVersion;
 ushort minorVersion;
+ushort flags;
 ConstantTable constantTable;
 Blob content;
 
 ConstantTable
 -------------
 uint size;
-ushort value64Count;
 ushort value32Count;
-64bit[value64Count] value64Table;
-32bit[value32Count] value32Table;
+ushort value64Count;
 ushort stringCount;
+32bit[value32Count] value32Table;
+64bit[value64Count] value64Table;
 String[stringCount] stringTable;
 
 String
@@ -28,7 +29,7 @@ ushort[elementCount] elementIndices;
 
 BlobHeader
 ----------
-uint BlobSize;
+uint blobSize;
 ushort idIndex;
 
 ListBlob
@@ -40,8 +41,12 @@ Blob[blobCount] blobs;
 FunctionBlob
 ------------
 BlobHeader header("Func");
-uint Hash;
 QualifiedId name;
+uint hash;
+uint frameSize;
+uint packedFrameSize;
+uint localSize;
+uint framePointerAlignment;
 uint CodeSize;
 char[CodeSize] code;
 Blob metaData;

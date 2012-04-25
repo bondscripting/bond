@@ -28,22 +28,6 @@ public:
 			mStack.Push(this);
 		}
 
-		Element(AutoStack &stack, const Element &other):
-			mValue(other.mValue),
-			mStack(stack),
-			mNext(NULL)
-		{
-			mStack.Push(this);
-		}
-
-		Element(const Element &other):
-			mValue(other.mValue),
-			mStack(other.mStack),
-			mNext(NULL)
-		{
-			mStack.Push(this);
-		}
-
 		~Element()
 		{
 			mStack.Pop();
@@ -58,6 +42,7 @@ public:
 		void SetValue(const ElementType &value) { mValue = value; }
 
 	private:
+		Element(const Element &other);
 		friend class AutoStack;
 
 		Element *GetNext() { return mNext; }

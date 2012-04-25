@@ -20,8 +20,7 @@ public:
 
 protected:
 	virtual void Visit(FunctionDefinition *functionDefinition);
-	virtual void Visit(FunctionPrototype *functionPrototype);
-	virtual void Visit(Parameter *parameter);
+	virtual void Visit(FunctionPrototype *functionPrototype) {}
 	virtual void Visit(NamedInitializer *namedInitializer);
 	virtual void Visit(CompoundStatement *compoundStatement);
 	virtual void Visit(IfStatement *ifStatement);
@@ -46,6 +45,8 @@ private:
 	BoolStack mIsInLoop;
 	BoolStack mIsInSwitch;
 	IntStack mVariableOffset;
+	IntStack mLocalSize;
+	IntStack mFramePointerAlignment;
 	TypeStack mReturnType;
 	FunctionStack mFunction;
 	bu32_t mPointerSize;

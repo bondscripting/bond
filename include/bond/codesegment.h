@@ -44,6 +44,10 @@ struct Function
 	const ConstantTable *mConstantTable;
 	const unsigned char *mCode;
 	size_t mCodeSize;
+	size_t mFrameSize;
+	size_t mPackedFrameSize;
+	size_t mLocalSize;
+	size_t mFramePointerAlignment;
 	bu32_t mHash;
 };
 

@@ -15,6 +15,8 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element isInLoopElement(mIsInLoop, false);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
+	IntStack::Element localSizeElement(mLocalSize, 0);
+	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, 0);
 	TypeStack::Element returnTypeElement(mReturnType, NULL);
 	FunctionStack::Element functionElement(mFunction, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
@@ -23,13 +25,39 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
-	const TypeDescriptor *returnType = functionDefinition->GetPrototype()->GetReturnType();
+	FunctionPrototype *prototype = functionDefinition->GetPrototype();
+	const TypeDescriptor *returnType = prototype->GetReturnType();
+
+	bi32_t offset = (functionDefinition->GetThisTypeDescriptor() != NULL) ? -static_cast<bi32_t>(mPointerSize) : 0;
+	bi32_t packedOffset = offset;
+	bi32_t framePointerAlignment = Max(MIN_STACK_FRAME_ALIGN, -offset);
+	Parameter *parameterList = prototype->GetParameterList();
+	while (parameterList != NULL)
+	{
+		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
+		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment()), MIN_STACK_FRAME_ALIGN);
+		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+		offset = AlignDown(offset - size, alignment);
+		packedOffset = AlignDown(packedOffset - size, MIN_STACK_FRAME_ALIGN);
+		framePointerAlignment = Max(framePointerAlignment, alignment);
+		parameterList->SetOffset(offset);
+		parameterList->SetPackedOffset(packedOffset);
+		parameterList = NextNode(parameterList);
+	}
+
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 	BoolStack::Element hasReturnElement(mHasReturn, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
+	IntStack::Element localSizeElement(mLocalSize, 0);
+	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, framePointerAlignment);
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
 	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
+
+	functionDefinition->SetFrameSize(static_cast<bu32_t>(-offset));
+	functionDefinition->SetPackedFrameSize(static_cast<bu32_t>(-packedOffset));
+	functionDefinition->SetLocalSize(AlignUp(localSizeElement.GetValue(), MIN_STACK_FRAME_ALIGN));
+	functionDefinition->SetFramePointerAlignment(framePointerAlignmentElement.GetValue());
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
@@ -38,36 +66,19 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 }
 
 
-void ValidationPass::Visit(FunctionPrototype *functionPrototype)
-{
-	const bi32_t variableOffset = (mFunction.GetTop()->GetThisTypeDescriptor() != NULL) ? -static_cast<bi32_t>(mPointerSize) : 0;
-	IntStack::Element variableOffsetElement(mVariableOffset, variableOffset);
-	ParseNodeTraverser::Visit(functionPrototype);
-}
-
-
-void ValidationPass::Visit(Parameter *parameter)
-{
-	const TypeDescriptor *typeDescriptor = parameter->GetTypeDescriptor();
-	const bi32_t variableAlignment = static_cast<bi32_t>(typeDescriptor->GetAlignment());
-	const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-	const bi32_t variableOffset = AlignDown(mVariableOffset.GetTop() - variableSize, variableAlignment);
-	parameter->SetOffset(variableOffset);
-	mVariableOffset.SetTop(variableOffset);
-	ParseNodeTraverser::Visit(parameter);
-}
-
-
 void ValidationPass::Visit(NamedInitializer *namedInitializer)
 {
 	if (namedInitializer->GetScope() == SCOPE_LOCAL)
 	{
 		const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-		const bi32_t variableAlignment = static_cast<bi32_t>(typeDescriptor->GetAlignment());
-		const bi32_t variableSize = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-		const bi32_t variableOffset = AlignUp(mVariableOffset.GetTop(), variableAlignment);
-		namedInitializer->SetOffset(variableOffset);
-		mVariableOffset.SetTop(variableOffset + variableSize);
+		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment()), MIN_STACK_FRAME_ALIGN);
+		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+		const bi32_t offset = AlignUp(mVariableOffset.GetTop(), alignment);
+		const bi32_t nextOffset = offset + size;
+		namedInitializer->SetOffset(offset);
+		mVariableOffset.SetTop(nextOffset);
+		mLocalSize.SetTop(Max(mLocalSize.GetTop(), nextOffset));
+		mFramePointerAlignment.SetTop(Max(mFramePointerAlignment.GetTop(), alignment));
 	}
 	ParseNodeTraverser::Visit(namedInitializer);
 }

@@ -52,7 +52,7 @@ CboValidator::Result CboValidator::Validate(const unsigned char *byteCode, size_
 
 CboValidator::Result CboValidatorCore::Validate()
 {
-	if (!AssertBytesRemaining((2 * sizeof(Value32)) + (4 * sizeof(Value16))))
+	if (!AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16))))
 	{
 		return mResult;
 	}
@@ -61,44 +61,40 @@ CboValidator::Result CboValidatorCore::Validate()
 	if (magicNumber != MAGIC_NUMBER)
 	{
 		mResult.mValidity = CboValidator::CBO_INVALID_MAGIC_NUMBER;
+		return mResult;
 	}
 
-	const bu16_t majorVersionAndFlags = ReadValue16().mUShort;
-	const int majorVersion = DecodeMajorVersion(majorVersionAndFlags);
+	const int majorVersion = ReadValue16().mUShort;
 	const int minorVersion = ReadValue16().mUShort;
+	const bu16_t flags = ReadValue16().mUShort;
 	if ((majorVersion != MAJOR_VERSION) && (minorVersion != MINOR_VERSION))
 	{
 		mResult.mValidity = CboValidator::CBO_INVALID_VERSION;
+		return mResult;
 	}
 
 	mResult.mMajorVersion = majorVersion;
 	mResult.mMinorVersion = minorVersion;
-	mResult.mPointerSize = DecodePointerSize(majorVersionAndFlags);
+	mResult.mPointerSize = DecodePointerSize(flags);
 
 	const size_t tableStart = mIndex;
 	const size_t tableSize = ReadValue32().mUInt;
-	const size_t value64Count = ReadValue16().mUShort;
 	const size_t value32Count = ReadValue16().mUShort;
+	const size_t value64Count = ReadValue16().mUShort;
+	const size_t stringCount = ReadValue16().mUShort;
 	mResult.mValue32Count = value32Count;
 	mResult.mValue64Count = value64Count;
+	mResult.mStringCount = stringCount;
 
-	const size_t valueSize = (value64Count * sizeof(Value64)) + (value32Count * sizeof(Value32));
+	const size_t valueSize = (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
 	if (!AssertBytesRemaining(tableSize - (mIndex - tableStart)) || !AssertBytesRemaining(valueSize))
 	{
 		return mResult;
 	}
 
-	mIndex += value64Count * sizeof(Value64);
 	mValue32Table = reinterpret_cast<const Value32 *>(mByteCode + mIndex);
-	mIndex += value32Count * sizeof(Value32);
+	mIndex += (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
 
-	if (!AssertBytesRemaining(sizeof(Value16)))
-	{
-		return mResult;
-	}
-
-	const size_t stringCount = ReadValue16().mUShort;
-	mResult.mStringCount = stringCount;
 	size_t stringByteCount = 0;
 	for (size_t i = 0; i < stringCount; ++i)
 	{
@@ -201,7 +197,9 @@ void CboValidatorCore::ValidateListBlob()
 void CboValidatorCore::ValidateFunctionBlob()
 {
 	++mResult.mFunctionCount;
-	if (!AssertBytesRemaining(sizeof(Value32)))
+	ValidateQualifiedIdentifier();
+
+	if (!AssertBytesRemaining(6 * sizeof(Value32)))
 	{
 		return;
 	}
@@ -209,10 +207,17 @@ void CboValidatorCore::ValidateFunctionBlob()
 	// Ignore the hash.
 	mIndex += sizeof(Value32);
 
-	ValidateQualifiedIdentifier();
-
-	if (!AssertBytesRemaining(sizeof(Value32)))
+	const bu32_t frameSize = ReadValue32().mUInt;
+	const bu32_t packedFrameSize = ReadValue32().mUInt;
+	const bu32_t localSize = ReadValue32().mUInt;
+	const bu32_t framePointerAlignment = ReadValue32().mUInt;
+	if ((packedFrameSize > frameSize) ||
+	    ((frameSize % MIN_STACK_FRAME_ALIGN) != 0) ||
+	    ((packedFrameSize % MIN_STACK_FRAME_ALIGN) != 0) ||
+	    ((localSize % MIN_STACK_FRAME_ALIGN) != 0) ||
+	    ((framePointerAlignment % MIN_STACK_FRAME_ALIGN) != 0))
 	{
+		mResult.mValidity = CboValidator::CBO_INVALID_FRAME_DESCRIPTION;
 		return;
 	}
 

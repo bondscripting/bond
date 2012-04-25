@@ -35,6 +35,7 @@ const bu32_t BOND_DOUBLE_SIZE = 8;
 const bu32_t BOND_NATIVE_POINTER_SIZE = sizeof(void *);
 const bu32_t BOND_DEFAULT_STRUCT_SIZE = 4;
 const bu32_t BOND_DEFAULT_STRUCT_ALIGN = BOND_DEFAULT_STRUCT_SIZE;
+const bi32_t MIN_STACK_FRAME_ALIGN = BOND_INT_SIZE;
 
 inline bool IsInCharRange(bi32_t value) { return (value >= BOND_CHAR_MIN) && (value <= BOND_CHAR_MAX); }
 inline bool IsInUCharRange(bu32_t value) { return value <= BOND_UCHAR_MAX; }

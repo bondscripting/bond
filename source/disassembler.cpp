@@ -19,9 +19,9 @@ public:
 			Allocator &allocator,
 			TextWriter &writer,
 			const unsigned char *byteCode):
-		mStringTable(validationResult.mStringCount, HashedString(), StringTable::Allocator(&allocator)),
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
+		mStringTable(validationResult.mStringCount, HashedString(), StringTable::Allocator(&allocator)),
 		mValidationResult(validationResult),
 		mAllocator(allocator),
 		mWriter(writer),
@@ -32,9 +32,9 @@ public:
 	void Disassemble();
 
 private:
-	typedef Vector<HashedString> StringTable;
 	typedef Vector<Value32> Value32Table;
 	typedef Vector<Value64> Value64Table;
+	typedef Vector<HashedString> StringTable;
 
 	void DisassembleBlob();
 	void DisassembleListBlob();
@@ -46,9 +46,9 @@ private:
 	Value32 ReadValue32();
 	Value64 ReadValue64();
 
-	StringTable::Type mStringTable;
 	Value32Table::Type mValue32Table;
 	Value64Table::Type mValue64Table;
+	StringTable::Type mStringTable;
 	CboValidator::Result mValidationResult;
 	Allocator &mAllocator;
 	TextWriter &mWriter;
@@ -79,6 +79,10 @@ void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode
 			writer.Write("CBO file's version is unknown\n");
 			break;
 
+		case CboValidator::CBO_INVALID_FRAME_DESCRIPTION:
+			writer.Write("CBO file contains an invalid function stack frame description\n");
+			break;
+
 		case CboValidator::CBO_INVALID_BYTECODE:
 			writer.Write("CBO file contains invalid bytecode\n");
 			break;
@@ -93,22 +97,21 @@ void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode
 void DisassemblerCore::Disassemble()
 {
 	// Skip some header information.
-	mIndex += 16;
+	mIndex += 20;
 
 	mWriter.Write("Version %d.%02d\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
 	mWriter.Write("Pointer size: %d bits\n", (mValidationResult.mPointerSize == POINTER_64BIT) ? 64 : 32);
-
-	for (size_t i = 0; i < mValidationResult.mValue64Count; ++i)
-	{
-		mValue64Table[i] = ReadValue64();
-	}
 
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
 	{
 		mValue32Table[i] = ReadValue32();
 	}
 
-	mIndex += 2;
+	for (size_t i = 0; i < mValidationResult.mValue64Count; ++i)
+	{
+		mValue64Table[i] = ReadValue64();
+	}
+
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
 		const int length = ReadValue16().mUShort;
@@ -154,15 +157,26 @@ void DisassemblerCore::DisassembleListBlob()
 
 void DisassemblerCore::DisassembleFunctionBlob()
 {
-	const bu32_t hash = ReadValue32().mUInt;
-
 	mWriter.Write("Function: ");
 	DisassembleQualifiedIdentifier();
 
+	const bu32_t hash = ReadValue32().mUInt;
+	const bu32_t frameSize = ReadValue32().mUInt;
+	const bu32_t packedFrameSize = ReadValue32().mUInt;
+	const bu32_t localSize = ReadValue32().mUInt;
+	const bu32_t framePointerAlignment = ReadValue32().mUInt;
 	const bu32_t codeSize = ReadValue32().mUInt;
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
-	mWriter.Write("\n  hash: 0x%" BOND_PRIx32 "\n  code size: %" BOND_PRIu32 "\n", hash, codeSize);
+	mWriter.Write(
+		"\n"
+		"\thash: 0x%" BOND_PRIx32 "\n"
+		"\tframe size: %" BOND_PRIu32 "\n"
+		"\tpacked frame size: %" BOND_PRIu32 "\n"
+		"\tlocal size: %" BOND_PRIu32 "\n"
+		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
+		"\tcode size: %" BOND_PRIu32 "\n",
+		hash, frameSize, packedFrameSize, localSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{

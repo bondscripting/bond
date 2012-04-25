@@ -6,14 +6,21 @@
 namespace Bond
 {
 
-inline PointerSize DecodePointerSize(bu16_t majorVersionAndFlags)
+inline PointerSize DecodePointerSize(bu16_t flags)
 {
-	return ((majorVersionAndFlags & 0x8000) != 0) ? POINTER_64BIT : POINTER_32BIT;
+	return ((flags & 1) != 0) ? POINTER_64BIT : POINTER_32BIT;
 }
 
-inline bu16_t DecodeMajorVersion(bu16_t majorVersionAndFlags)
+
+inline bu16_t EncodePointerSize(bu16_t flags, bool is64BitPointer)
 {
-	return majorVersionAndFlags & 0x7fff;
+	return flags | (is64BitPointer ? 1 : 0);
+}
+
+
+inline bu16_t EncodePointerSize(bu16_t flags, PointerSize pointerSize)
+{
+	return EncodePointerSize(flags, pointerSize == POINTER_64BIT);
 }
 
 }

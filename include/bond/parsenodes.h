@@ -574,7 +574,11 @@ public:
 		mPrototype(prototype),
 		mBody(body),
 		mThisTypeDescriptor(thisTypeDescriptor),
-		mScope(scope)
+		mScope(scope),
+		mFrameSize(0),
+		mPackedFrameSize(0),
+		mLocalSize(0),
+		mFramePointerAlignment(0)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -601,6 +605,18 @@ public:
 
 	bool IsNative() const { return mBody == NULL; }
 
+	bu32_t GetFrameSize() const { return mFrameSize; }
+	void SetFrameSize(bu32_t frameSize) { mFrameSize = frameSize; }
+
+	bu32_t GetPackedFrameSize() const { return mPackedFrameSize; }
+	void SetPackedFrameSize(bu32_t packedFrameSize) { mPackedFrameSize = packedFrameSize; }
+
+	bu32_t GetLocalSize() const { return mLocalSize; }
+	void SetLocalSize(bu32_t localSize) { mLocalSize = localSize; }
+
+	bu32_t GetFramePointerAlignment() const { return mFramePointerAlignment; }
+	void SetFramePointerAlignment(bu32_t framePointerAlignment) { mFramePointerAlignment = framePointerAlignment; }
+
 private:
 	QualifiedIdentifier mIdentifier;
 	TypeSpecifier mTypeSpecifier;
@@ -610,6 +626,10 @@ private:
 	CompoundStatement *mBody;
 	TypeDescriptor *mThisTypeDescriptor;
 	Scope mScope;
+	bu32_t mFrameSize;
+	bu32_t mPackedFrameSize;
+	bu32_t mLocalSize;
+	bu32_t mFramePointerAlignment;
 };
 
 
@@ -620,7 +640,8 @@ public:
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mTypeDescriptor(typeDescriptor),
-		mOffset(0)
+		mOffset(0),
+		mPackedOffset(0)
 	{}
 
 	virtual ~Parameter() {}
@@ -640,11 +661,15 @@ public:
 	bi32_t GetOffset() const { return mOffset; }
 	void SetOffset(bi32_t offset) { mOffset = offset; }
 
+	bi32_t GetPackedOffset() const { return mPackedOffset; }
+	void SetPackedOffset(bi32_t offset) { mPackedOffset = offset; }
+
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
 	bi32_t mOffset;
+	bi32_t mPackedOffset;
 };
 
 

@@ -1,5 +1,6 @@
 #include "bond/autostack.h"
 #include "bond/binarywriter.h"
+#include "bond/cboutil.h"
 #include "bond/codegenerator.h"
 #include "bond/compilererror.h"
 #include "bond/endian.h"
@@ -308,8 +309,9 @@ void GeneratorCore::Generate()
 	Traverse(mTranslationUnitList);
 
 	WriteValue32(Value32(MAGIC_NUMBER));
-	WriteValue16(Value16(MAJOR_VERSION | (Is64BitPointer() ? 0x80 : 0)));
+	WriteValue16(Value16(MAJOR_VERSION));
 	WriteValue16(Value16(MINOR_VERSION));
+	WriteValue16(Value16(EncodePointerSize(0, Is64BitPointer())));
 
 	const bu16_t listIndex = MapString("List");
 	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
@@ -393,6 +395,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_LOCAL:
 		{
 			const Initializer *initializer = namedInitializer->GetInitializer();
+			// TODO: Omit code generation and stack allocation for non lvalue foldable constants.
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
 				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
@@ -2039,20 +2042,19 @@ void GeneratorCore::WriteConstantTable()
 	// Skip the 4 bytes for the table size.
 	mWriter.AddOffset(sizeof(Value32));
 
-	WriteValue16(Value16(mValue64List.size()));
 	WriteValue16(Value16(mValue32List.size()));
-
-	for (Value64List::Type::const_iterator it = mValue64List.begin(); it != mValue64List.end(); ++it)
-	{
-		WriteValue64(*it);
-	}
+	WriteValue16(Value16(mValue64List.size()));
+	WriteValue16(Value16(mStringList.size()));
 
 	for (Value32List::Type::const_iterator it = mValue32List.begin(); it != mValue32List.end(); ++it)
 	{
 		WriteValue32(*it);
 	}
 
-	WriteValue16(Value16(mStringList.size()));
+	for (Value64List::Type::const_iterator it = mValue64List.begin(); it != mValue64List.end(); ++it)
+	{
+		WriteValue64(*it);
+	}
 
 	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
 	{
@@ -2082,8 +2084,12 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		mWriter.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
-		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
 		WriteQualifiedSymbolName(flit->mDefinition);
+		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
+		WriteValue32(Value32(flit->mDefinition->GetFrameSize()));
+		WriteValue32(Value32(flit->mDefinition->GetPackedFrameSize()));
+		WriteValue32(Value32(flit->mDefinition->GetLocalSize()));
+		WriteValue32(Value32(flit->mDefinition->GetFramePointerAlignment()));
 
 		// Cache the code start position and skip 4 bytes for the code size.
 		const int codeSizePos = mWriter.GetPosition();
