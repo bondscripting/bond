@@ -26,8 +26,6 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
 	FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	const TypeDescriptor *returnType = prototype->GetReturnType();
-
 	bi32_t offset = (functionDefinition->GetThisTypeDescriptor() != NULL) ? -static_cast<bi32_t>(mPointerSize) : 0;
 	bi32_t packedOffset = offset;
 	bi32_t framePointerAlignment = Max(MIN_STACK_FRAME_ALIGN, -offset);
@@ -44,6 +42,11 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 		parameterList->SetPackedOffset(packedOffset);
 		parameterList = NextNode(parameterList);
 	}
+
+	const TypeDescriptor *returnType = prototype->GetReturnType();
+	const bi32_t returnSize = static_cast<bi32_t>(returnType->GetSize(mPointerSize));
+	offset = AlignDown(offset - returnSize, MIN_STACK_FRAME_ALIGN);
+	packedOffset = AlignDown(packedOffset - returnSize, MIN_STACK_FRAME_ALIGN);
 
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 	BoolStack::Element hasReturnElement(mHasReturn, false);

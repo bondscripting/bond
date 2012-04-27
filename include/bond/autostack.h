@@ -41,6 +41,9 @@ public:
 		const ElementType &GetValue() const  { return mValue; }
 		void SetValue(const ElementType &value) { mValue = value; }
 
+	protected:
+		ElementType mValue;
+
 	private:
 		Element(const Element &other);
 		friend class AutoStack;
@@ -49,7 +52,6 @@ public:
 		const Element *GetNext() const { return mNext; }
 		void SetNext(Element *next) { mNext = next; }
 
-		ElementType mValue;
 		AutoStack &mStack;
 		Element *mNext;
 	};

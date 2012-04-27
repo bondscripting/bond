@@ -22,6 +22,7 @@ enum PointerSize
 	POINTER_64BIT,
 };
 
+const bu32_t BOND_VOID_SIZE = 0;
 const bu32_t BOND_BOOL_SIZE = 1;
 const bu32_t BOND_CHAR_SIZE = 1;
 const bu32_t BOND_SHORT_SIZE = 2;

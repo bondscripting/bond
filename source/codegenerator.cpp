@@ -258,6 +258,8 @@ private:
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
+	void WriteReturnSignature(const TypeDescriptor *type);
+	void WriteParamListSignature(const Parameter *parameterList);
 	void WriteSymbolNameIndices(const Symbol *symbol);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
@@ -2079,17 +2081,21 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 {
 	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
 	{
+		const FunctionDefinition *function = flit->mDefinition;
+
 		// Cache the blob start position and skip 4 bytes for the blob size.
 		const int blobStartPos = mWriter.GetPosition();
 		mWriter.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
-		WriteQualifiedSymbolName(flit->mDefinition);
-		WriteValue32(Value32(flit->mDefinition->GetGlobalHashCode()));
-		WriteValue32(Value32(flit->mDefinition->GetFrameSize()));
-		WriteValue32(Value32(flit->mDefinition->GetPackedFrameSize()));
-		WriteValue32(Value32(flit->mDefinition->GetLocalSize()));
-		WriteValue32(Value32(flit->mDefinition->GetFramePointerAlignment()));
+		WriteReturnSignature(function->GetPrototype()->GetReturnType());
+		WriteQualifiedSymbolName(function);
+		WriteParamListSignature(function->GetPrototype()->GetParameterList());
+		WriteValue32(Value32(function->GetGlobalHashCode()));
+		WriteValue32(Value32(function->GetFrameSize()));
+		WriteValue32(Value32(function->GetPackedFrameSize()));
+		WriteValue32(Value32(function->GetLocalSize()));
+		WriteValue32(Value32(function->GetFramePointerAlignment()));
 
 		// Cache the code start position and skip 4 bytes for the code size.
 		const int codeSizePos = mWriter.GetPosition();
@@ -2152,7 +2158,39 @@ void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 	// Patch up the number of elements.
 	const int endPos = mWriter.GetPosition();
 	mWriter.SetPosition(startPos);
-	WriteValue16(Value16((endPos - startPos - 2) / 2));
+	WriteValue16(Value16((endPos - startPos - sizeof(Value16)) / sizeof(Value16)));
+	mWriter.SetPosition(endPos);
+}
+
+
+void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
+{
+	const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+	WriteValue32(Value32(sizeAndType));
+}
+
+
+void GeneratorCore::WriteParamListSignature(const Parameter *parameterList)
+{
+	// Cache the position for the number of parameters and skip 2 bytes.
+	// TODO: Consider implicit this pointer.
+	const int startPos = mWriter.GetPosition();
+	mWriter.AddOffset(sizeof(Value16));
+
+	while (parameterList != NULL)
+	{
+		const TypeDescriptor *type = parameterList->GetTypeDescriptor();
+		const bi32_t offset = parameterList->GetOffset();
+		const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+		WriteValue32(Value32(offset));
+		WriteValue32(Value32(sizeAndType));
+		parameterList = NextNode(parameterList);
+	}
+
+	// Patch up the number of parameters.
+	const int endPos = mWriter.GetPosition();
+	mWriter.SetPosition(startPos);
+	WriteValue16(Value16((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32))));
 	mWriter.SetPosition(endPos);
 }
 

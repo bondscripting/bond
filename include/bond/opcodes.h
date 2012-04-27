@@ -276,6 +276,24 @@ enum OpCodeParam
 const char *GetOpCodeMnemonic(OpCode opCode);
 OpCodeParam GetOpCodeParamType(OpCode opCode);
 
+enum SignatureType
+{
+	SIG_VOID,
+	SIG_BOOL,
+	SIG_CHAR,
+	SIG_UCHAR,
+	SIG_SHORT,
+	SIG_USHORT,
+	SIG_INT,
+	SIG_UINT,
+	SIG_LONG,
+	SIG_ULONG,
+	SIG_FLOAT,
+	SIG_DOUBLE,
+	SIG_POINTER,
+	SIG_STRUCT
+};
+
 }
 
 #endif

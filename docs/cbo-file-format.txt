@@ -27,6 +27,22 @@ QualifiedId
 ushort elementCount;
 ushort[elementCount] elementIndices;
 
+ParamListSignature
+------------------
+ushort paramCount;
+ParamSignature[paramCount] paramSignatures;
+
+ParamSignature
+--------------
+int framePointerOffset;
+uint size:28;
+uint type:4;
+
+ReturnSignature
+----------------
+uint size:28;
+uint type:4;
+
 BlobHeader
 ----------
 uint blobSize;
@@ -41,7 +57,9 @@ Blob[blobCount] blobs;
 FunctionBlob
 ------------
 BlobHeader header("Func");
+ReturnSignature returnSignature;
 QualifiedId name;
+ParamListSignature paramListSignature;
 uint hash;
 uint frameSize;
 uint packedFrameSize;

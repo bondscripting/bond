@@ -14,7 +14,7 @@ public:
 		CBO_VALID,
 		CBO_INVALID_MAGIC_NUMBER,
 		CBO_INVALID_VERSION,
-		CBO_INVALID_FRAME_DESCRIPTION,
+		CBO_INVALID_FUNCTION_DESCRIPTION,
 		CBO_INVALID_BYTECODE,
 		CBO_INVALID_FORMAT
 	};
@@ -34,6 +34,8 @@ public:
 			mStringByteCount(0),
 			mQualifiedIdCount(0),
 			mQualifiedIdElementCount(0),
+			mParamListSignatureCount(0),
+			mParamSignatureCount(0),
 			mFunctionCount(0),
 			mCodeByteCount(0)
 		{}
@@ -50,6 +52,8 @@ public:
 		size_t mStringByteCount;
 		size_t mQualifiedIdCount;
 		size_t mQualifiedIdElementCount;
+		size_t mParamListSignatureCount;
+		size_t mParamSignatureCount;
 		size_t mFunctionCount;
 		size_t mCodeByteCount;
 	};

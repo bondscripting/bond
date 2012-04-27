@@ -25,6 +25,8 @@ private:
 	void ValidateListBlob();
 	void ValidateFunctionBlob();
 	void ValidateQualifiedIdentifier();
+	void ValidateReturnSignature();
+	void ValidateParamListSignature();
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -32,6 +34,7 @@ private:
 
 	bool HasError() const { return mResult.mValidity != CboValidator::CBO_VALID; }
 	bool AssertBytesRemaining(size_t numBytes);
+	void FunctionIsInvalid();
 	void CodeIsInvalid();
 	void CboIsInvalid();
 
@@ -197,7 +200,9 @@ void CboValidatorCore::ValidateListBlob()
 void CboValidatorCore::ValidateFunctionBlob()
 {
 	++mResult.mFunctionCount;
+	ValidateReturnSignature();
 	ValidateQualifiedIdentifier();
+	ValidateParamListSignature();
 
 	if (!AssertBytesRemaining(6 * sizeof(Value32)))
 	{
@@ -217,7 +222,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 	    ((localSize % MIN_STACK_FRAME_ALIGN) != 0) ||
 	    ((framePointerAlignment % MIN_STACK_FRAME_ALIGN) != 0))
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_FRAME_DESCRIPTION;
+		FunctionIsInvalid();
 		return;
 	}
 
@@ -334,6 +339,57 @@ void CboValidatorCore::ValidateQualifiedIdentifier()
 }
 
 
+void CboValidatorCore::ValidateReturnSignature()
+{
+	if (!AssertBytesRemaining(sizeof(Value32)))
+	{
+		return;
+	}
+
+	const bu32_t returnSizeAndType = ReadValue32().mUInt;
+	bu32_t returnSize;
+	bu32_t returnType;
+	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
+	// TODO: Do a some sanity checks.
+}
+
+
+void CboValidatorCore::ValidateParamListSignature()
+{
+	if (!AssertBytesRemaining(sizeof(Value16)))
+	{
+		return;
+	}
+
+	const size_t numParams = ReadValue16().mUShort;
+	if (!AssertBytesRemaining(numParams * 2 * sizeof(Value32)))
+	{
+		return;
+	}
+
+	++mResult.mParamListSignatureCount;
+	mResult.mParamSignatureCount += numParams;
+
+	bi32_t prevOffset = 0;
+	for (size_t i = 0; i < numParams; ++i)
+	{
+		const bi32_t offset = ReadValue32().mInt;
+		if (offset >= prevOffset)
+		{
+			FunctionIsInvalid();
+			return;
+		}
+		prevOffset = offset;
+
+		const bu32_t paramSizeAndType = ReadValue32().mUInt;
+		bu32_t paramSize;
+		bu32_t paramType;
+		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
+		// TODO: Do a some sanity checks.
+	}
+}
+
+
 Value16 CboValidatorCore::ReadValue16()
 {
 	const Value16 value(mByteCode + mIndex);
@@ -365,6 +421,15 @@ bool CboValidatorCore::AssertBytesRemaining(size_t numBytes)
 		CboIsInvalid();
 	}
 	return !HasError();
+}
+
+
+void CboValidatorCore::FunctionIsInvalid()
+{
+	if (!HasError())
+	{
+		mResult.mValidity = CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION;
+	}
 }
 
 

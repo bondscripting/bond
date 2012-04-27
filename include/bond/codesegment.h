@@ -38,16 +38,56 @@ struct ConstantTable
 };
 
 
+struct ParamSignature
+{
+	ParamSignature(bu32_t framePointerOffset, bu32_t size, bu32_t type):
+		mFramePointerOffset(framePointerOffset),
+		mSize(size),
+		mType(type)
+	{}
+
+	bu32_t mFramePointerOffset;
+	bu32_t mSize:28;
+	bu32_t mType:4;
+};
+
+
+struct ParamListSignature
+{
+	ParamListSignature(const ParamSignature *paramSignatures, bu32_t paramCount):
+		mParamSignatures(paramSignatures),
+		mParamCount(paramCount)
+	{}
+
+	const ParamSignature *mParamSignatures;
+	bu32_t mParamCount;
+};
+
+
+struct ReturnSignature
+{
+	ReturnSignature(bu32_t size, bu32_t type):
+		mSize(size),
+		mType(type)
+	{}
+
+	bu32_t mSize:28;
+	bu32_t mType:4;
+};
+
+
 struct Function
 {
 	QualifiedId mName;
+	ReturnSignature mReturnSignature;
+	ParamListSignature mParamListSignature;
 	const ConstantTable *mConstantTable;
 	const unsigned char *mCode;
-	size_t mCodeSize;
-	size_t mFrameSize;
-	size_t mPackedFrameSize;
-	size_t mLocalSize;
-	size_t mFramePointerAlignment;
+	bu32_t mCodeSize;
+	bu32_t mFrameSize;
+	bu32_t mPackedFrameSize;
+	bu32_t mLocalSize;
+	bu32_t mFramePointerAlignment;
 	bu32_t mHash;
 };
 
@@ -67,7 +107,7 @@ public:
 private:
 	const bu32_t *mFunctionLookup;
 	const Function *mFunctionList;
-	size_t mFunctionCount;
+	bu32_t mFunctionCount;
 };
 
 }

@@ -1,4 +1,5 @@
 #include "bond/math.h"
+#include "bond/opcodes.h"
 #include "bond/parsenodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/stringutil.h"
@@ -313,6 +314,16 @@ bu32_t TypeDescriptor::GetAlignment() const
 }
 
 
+bu32_t TypeDescriptor::GetSignatureType() const
+{
+	if (IsPointerType())
+	{
+		return SIG_POINTER;
+	}
+	return mTypeSpecifier->GetSignatureType();
+}
+
+
 Token::TokenType TypeDescriptor::GetPrimitiveType() const
 {
 	if (IsValueType())
@@ -441,6 +452,8 @@ bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
 {
 	switch (GetPrimitiveType())
 	{
+		case Token::KEY_VOID:
+			return BOND_VOID_SIZE;
 		case Token::KEY_BOOL:
 			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
@@ -473,6 +486,8 @@ bu32_t TypeSpecifier::GetAlignment() const
 {
 	switch (GetPrimitiveType())
 	{
+		case Token::KEY_VOID:
+			return BOND_VOID_SIZE;
 		case Token::KEY_BOOL:
 			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
@@ -498,6 +513,38 @@ bu32_t TypeSpecifier::GetAlignment() const
 		}
 	}
 	return 0;
+}
+
+
+bu32_t TypeSpecifier::GetSignatureType() const
+{
+	switch (GetPrimitiveType())
+	{
+		case Token::KEY_BOOL:
+			return SIG_BOOL;
+		case Token::KEY_CHAR:
+			return SIG_CHAR;
+		case Token::KEY_SHORT:
+			return SIG_SHORT;
+		case Token::KEY_USHORT:
+			return SIG_USHORT;
+		case Token::KEY_INT:
+			return SIG_INT;
+		case Token::KEY_UINT:
+			return SIG_UINT;
+		case Token::KEY_FLOAT:
+			return SIG_FLOAT;
+
+		default:
+		{
+			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
+			if (structDeclaration != NULL)
+			{
+				return SIG_STRUCT;
+			}
+		}
+	}
+	return SIG_VOID;
 }
 
 

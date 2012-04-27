@@ -211,6 +211,7 @@ public:
 	bu32_t GetSize(bu32_t pointerSize) const;
 	bu32_t GetAlignment() const;
 
+	bu32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
@@ -302,6 +303,7 @@ public:
 	bu32_t GetSize(bu32_t pointerSize) const;
 	bu32_t GetAlignment() const;
 
+	bu32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;

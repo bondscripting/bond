@@ -1,6 +1,7 @@
 #include "bond/algorithm.h"
 #include "bond/allocator.h"
 #include "bond/cboloader.h"
+#include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
 #include "bond/codesegment.h"
 #include "bond/endian.h"
@@ -35,6 +36,7 @@ public:
 				size_t stringTableStart,
 				size_t stringBytesStart,
 				size_t qualifiedIdElementStart,
+				size_t paramSignatureStart,
 				size_t functionLookupStart,
 				size_t functionsStart,
 				size_t codeStart):
@@ -44,6 +46,7 @@ public:
 			mStringTable(reinterpret_cast<HashedString *>(memory + stringTableStart)),
 			mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
 			mQualifiedIdElements(reinterpret_cast<const HashedString **>(memory + qualifiedIdElementStart)),
+			mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
 			mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
 			mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
 			mCode(reinterpret_cast<unsigned char *>(memory + codeStart))
@@ -54,6 +57,7 @@ public:
 		HashedString *mStringTable;
 		char *mStringBytes;
 		const HashedString **mQualifiedIdElements;
+		ParamSignature *mParamSignatures;
 		bu32_t *mFunctionLookup;
 		Function *mFunctions;
 		unsigned char *mCode;
@@ -78,6 +82,8 @@ private:
 	void LoadListBlob();
 	void LoadFunctionBlob();
 	QualifiedId LoadQualifiedIdentifier();
+	ReturnSignature LoadReturnSignature();
+	ParamListSignature LoadParamListSignature();
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -102,6 +108,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	size_t stringCount = 0;
 	size_t stringByteCount = 0;
 	size_t qualifiedIdElementCount = 0;
+	size_t paramSignatureCount = 0;
 	size_t functionCount = 0;
 	size_t codeByteCount = 0;
 
@@ -122,18 +129,20 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		stringCount += result.mStringCount;
 		stringByteCount += result.mStringByteCount;
 		qualifiedIdElementCount += result.mQualifiedIdElementCount;
+		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
 		codeByteCount += result.mCodeByteCount;
 	}
 
 	const size_t codeSegmentStart = 0;
 	const size_t constantTablesStart = TallyMemoryRequirement<CodeSegment>(codeSegmentStart, 1);
-	const size_t value64TableStart = TallyMemoryRequirement<ConstantTable>(constantTablesStart, numFiles);
-	const size_t value32TableStart = TallyMemoryRequirement<Value64>(value64TableStart, value64Count);
-	const size_t stringTableStart = TallyMemoryRequirement<Value32>(value32TableStart, value32Count);
+	const size_t value32TableStart = TallyMemoryRequirement<ConstantTable>(constantTablesStart, numFiles);
+	const size_t value64TableStart = TallyMemoryRequirement<Value32>(value32TableStart, value32Count);
+	const size_t stringTableStart = TallyMemoryRequirement<Value64>(value64TableStart, value64Count);
 	const size_t stringBytesStart = TallyMemoryRequirement<HashedString>(stringTableStart, stringCount);
 	const size_t qualifiedIdElementStart = TallyMemoryRequirement<char>(stringBytesStart, stringByteCount);
-	const size_t functionLookupStart = TallyMemoryRequirement<const HashedString *>(qualifiedIdElementStart, qualifiedIdElementCount);
+	const size_t paramSignatureStart = TallyMemoryRequirement<const HashedString *>(qualifiedIdElementStart, qualifiedIdElementCount);
+	const size_t functionLookupStart = TallyMemoryRequirement<ParamSignature>(paramSignatureStart, paramSignatureCount);
 	const size_t functionsStart = TallyMemoryRequirement<bu32_t>(functionLookupStart, functionCount);
 	const size_t codeStart = TallyMemoryRequirement<Function>(functionsStart, functionCount);
 	const size_t totalMemSize = TallyMemoryRequirement<const unsigned char>(codeStart, codeByteCount);
@@ -148,6 +157,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		stringTableStart,
 		stringBytesStart,
 		qualifiedIdElementStart,
+		paramSignatureStart,
 		functionLookupStart,
 		functionsStart,
 		codeStart);
@@ -321,13 +331,16 @@ void CboLoaderCore::LoadListBlob()
 void CboLoaderCore::LoadFunctionBlob()
 {
 	Function *function = mResources.mFunctions;
+	function->mReturnSignature = LoadReturnSignature();
 	function->mName = LoadQualifiedIdentifier();
+	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
 	function->mHash = ReadValue32().mUInt;
 	function->mFrameSize = ReadValue32().mUInt;
 	function->mPackedFrameSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
 	function->mFramePointerAlignment = ReadValue32().mUInt;
+
 	unsigned char *code = mResources.mCode;
 	const size_t codeSize = ReadValue32().mUInt;
 	function->mCode = code;
@@ -350,6 +363,35 @@ QualifiedId CboLoaderCore::LoadQualifiedIdentifier()
 	}
 	mResources.mQualifiedIdElements = element;
 	return QualifiedId(elements, numElements);
+}
+
+
+ReturnSignature CboLoaderCore::LoadReturnSignature()
+{
+	const bu32_t returnSizeAndType = ReadValue32().mUInt;
+	bu32_t returnSize;
+	bu32_t returnType;
+	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
+	return ReturnSignature(returnSize, returnType);
+}
+
+
+ParamListSignature CboLoaderCore::LoadParamListSignature()
+{
+	ParamSignature *params = mResources.mParamSignatures;
+	ParamSignature *param = params;
+	const int numParams = ReadValue16().mUShort;
+	for (int i = 0; i < numParams; ++i)
+	{
+		const bi32_t offset = ReadValue32().mInt;
+		const bu32_t paramSizeAndType = ReadValue32().mUInt;
+		bu32_t paramSize;
+		bu32_t paramType;
+		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
+		*param++ = ParamSignature(offset, paramSize, paramType);
+	}
+	mResources.mParamSignatures = param;
+	return ParamListSignature(params, numParams);
 }
 
 

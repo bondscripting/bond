@@ -1,3 +1,4 @@
+#include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
 #include "bond/disassembler.h"
 #include "bond/endian.h"
@@ -40,6 +41,8 @@ private:
 	void DisassembleListBlob();
 	void DisassembleFunctionBlob();
 	void DisassembleQualifiedIdentifier();
+	void DisassembleParamListSignature();
+	void DisassembleSizeAndType();
 	void WriteHashedString(const HashedString &str);
 
 	Value16 ReadValue16();
@@ -79,8 +82,8 @@ void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode
 			writer.Write("CBO file's version is unknown\n");
 			break;
 
-		case CboValidator::CBO_INVALID_FRAME_DESCRIPTION:
-			writer.Write("CBO file contains an invalid function stack frame description\n");
+		case CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION:
+			writer.Write("CBO file contains an invalid function description\n");
 			break;
 
 		case CboValidator::CBO_INVALID_BYTECODE:
@@ -158,7 +161,12 @@ void DisassemblerCore::DisassembleListBlob()
 void DisassemblerCore::DisassembleFunctionBlob()
 {
 	mWriter.Write("Function: ");
+	DisassembleSizeAndType();
+	mWriter.Write(" ");
 	DisassembleQualifiedIdentifier();
+	mWriter.Write("(");
+	DisassembleParamListSignature();
+	mWriter.Write(")\n");
 
 	const bu32_t hash = ReadValue32().mUInt;
 	const bu32_t frameSize = ReadValue32().mUInt;
@@ -169,7 +177,6 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
 	mWriter.Write(
-		"\n"
 		"\thash: 0x%" BOND_PRIx32 "\n"
 		"\tframe size: %" BOND_PRIu32 "\n"
 		"\tpacked frame size: %" BOND_PRIu32 "\n"
@@ -256,6 +263,52 @@ void DisassemblerCore::DisassembleQualifiedIdentifier()
 		}
 		WriteHashedString(id);
 	}
+}
+
+
+void DisassemblerCore::DisassembleParamListSignature()
+{
+	const size_t numElements = ReadValue16().mUShort;
+	for (size_t i = 0; i < numElements; ++i)
+	{
+		// Skip the frame pointer offset.
+		mIndex += sizeof(Value32);
+		if (i > 0)
+		{
+			mWriter.Write(", ");
+		}
+		DisassembleSizeAndType();
+	}
+}
+
+
+void DisassemblerCore::DisassembleSizeAndType()
+{
+	const bu32_t sizeAndType = ReadValue32().mUInt;
+	bu32_t size;
+	bu32_t type;
+	DecodeSizeAndType(sizeAndType, size, type);
+	const char *str = "";
+
+	switch (type)
+	{
+		case SIG_VOID: str = "void"; break;
+		case SIG_BOOL: str = "bool"; break;
+		case SIG_CHAR: str = "char"; break;
+		case SIG_UCHAR: str = "uchar"; break;
+		case SIG_SHORT: str = "short"; break;
+		case SIG_USHORT: str = "ushort"; break;
+		case SIG_INT: str = "int"; break;
+		case SIG_UINT: str = "uint"; break;
+		case SIG_LONG: str = "long"; break;
+		case SIG_ULONG: str = "ulong"; break;
+		case SIG_FLOAT: str = "float"; break;
+		case SIG_DOUBLE: str = "double"; break;
+		case SIG_POINTER: str = "*"; break;
+		case SIG_STRUCT: str = "struct<%" BOND_PRIu32 ">"; break;
+	}
+
+	mWriter.Write(str, size);
 }
 
 
