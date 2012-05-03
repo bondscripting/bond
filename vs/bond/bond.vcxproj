@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp" />
     <ClCompile Include="..\..\source\validationpass.cpp" />
     <ClCompile Include="..\..\source\valueevaluationpass.cpp" />
+    <ClCompile Include="..\..\source\vm.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}</ProjectGuid>

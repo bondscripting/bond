@@ -42,14 +42,15 @@ public:
 		void SetValue(const ElementType &value) { mValue = value; }
 
 	protected:
+		Element *GetNext() { return mNext; }
+		const Element *GetNext() const { return mNext; }
+
 		ElementType mValue;
 
 	private:
 		Element(const Element &other);
 		friend class AutoStack;
 
-		Element *GetNext() { return mNext; }
-		const Element *GetNext() const { return mNext; }
 		void SetNext(Element *next) { mNext = next; }
 
 		AutoStack &mStack;

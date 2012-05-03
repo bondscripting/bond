@@ -237,7 +237,10 @@ gotow, ushort       ... -> ...
 invoke, hash        ... -> ...
 invokenative, hash  ... -> ...
 
-return
+return32
+return64
+//todo
+return_everything_else
 
 Unaccounted for
 87 (0x57)	 pop

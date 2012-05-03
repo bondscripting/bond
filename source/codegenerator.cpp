@@ -50,9 +50,11 @@ public:
 		switch (type)
 		{
 			case Token::KEY_BOOL:
+			case Token::KEY_SHORT:
 			case Token::KEY_INT:
 				return mOpCodeInt;
 			case Token::KEY_UINT:
+			case Token::KEY_USHORT:
 				return mOpCodeUInt;
 			case Token::KEY_FLOAT:
 				return mOpCodeFloat;
@@ -532,8 +534,53 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 	}
 	else if (jumpStatement->IsReturn())
 	{
+		const TypeDescriptor *returnDescriptor = mFunction.GetTop()->mDefinition->GetPrototype()->GetReturnType();
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(OPCODE_RETURN);
+		OpCode opCode = OPCODE_RETURN;
+
+		if (!returnDescriptor->IsVoidType())
+		{
+			const Expression *rhs = jumpStatement->GetRhs();
+			const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+			ResultStack::Element rhResult(mResult);
+			Traverse(rhs);
+			EmitPushResult(rhResult.GetValue(), rhDescriptor);
+			EmitCast(rhDescriptor, returnDescriptor);
+
+			if (returnDescriptor->IsPointerType())
+			{
+				if (Is64BitPointer())
+				{
+					opCode = OPCODE_RETURN64;
+				}
+				else
+				{
+					opCode = OPCODE_RETURN32;
+				}
+			}
+			else
+			{
+				switch (returnDescriptor->GetPrimitiveType())
+				{
+					case Token::KEY_BOOL:
+					case Token::KEY_CHAR:
+					case Token::KEY_SHORT:
+					case Token::KEY_USHORT:
+					case Token::KEY_INT:
+					case Token::KEY_UINT:
+					case Token::KEY_FLOAT:
+						opCode = OPCODE_RETURN32;
+						break;
+
+					// TODO: Handle long types when they exist.
+
+					default:
+						// TODO
+						break;
+				}
+			}
+		}
+		byteCode.push_back(opCode);
 	}
 }
 

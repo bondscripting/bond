@@ -246,6 +246,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(INVOKENATIVE, invokenative, HASH)   \
 	                                                     \
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE)   \
+	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE)   \
+	BOND_OPCODE_ITEM(RETURN64,     return64,     NONE)   \
 
 
 enum OpCode

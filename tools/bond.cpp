@@ -3,6 +3,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/list.h"
+#include "bond/vm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,9 +87,17 @@ int main(int argc, const char *argv[])
 	{
 		Bond::CboLoader cboLoader(allocator);
 		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
-		const Bond::HashedString funcName("::TheSpace::Blah");
-		const Bond::Function *func = codeSegment->GetFunction(funcName);
-		printf("%u\n", func->mCodeSize);
+		Bond::VM vm(allocator, *codeSegment, stackSize);
+
+		// Test code.
+		Bond::bu32_t returnValue;
+		Bond::VM::CallerStackFrame stackFrame(vm, "::TheSpace::Blah", &returnValue);
+		stackFrame.PushArg(34);
+		stackFrame.PushArg(45);
+		stackFrame.Call();
+		printf("return: %u\n", returnValue);
+		// End test code.
+
 		cboLoader.Dispose(codeSegment);
 	}
 

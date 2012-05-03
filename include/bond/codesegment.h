@@ -7,26 +7,15 @@
 namespace Bond
 {
 
-class QualifiedId
+struct QualifiedId
 {
-public:
-
-	QualifiedId():
-		mElements(NULL),
-		mNumElements(0)
-	{}
-
-	QualifiedId(const HashedString **elements, int numElements):
+	QualifiedId(const HashedString **elements, bu32_t elementCount):
 		mElements(elements),
-		mNumElements(numElements)
+		mElementCount(elementCount)
 	{}
 
-	const HashedString &GetElement(int index) const { return *mElements[index]; }
-	int GetNumElements() const { return mNumElements; }
-
-private:
 	const HashedString **mElements;
-	int mNumElements;
+	bu32_t mElementCount;
 };
 
 

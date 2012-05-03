@@ -355,8 +355,8 @@ QualifiedId CboLoaderCore::LoadQualifiedIdentifier()
 {
 	const HashedString **elements = mResources.mQualifiedIdElements;
 	const HashedString **element = elements;
-	const int numElements = ReadValue16().mUShort;
-	for (int i = 0; i < numElements; ++i)
+	const bu32_t numElements = ReadValue16().mUShort;
+	for (bu32_t i = 0; i < numElements; ++i)
 	{
 		const size_t idIndex = ReadValue16().mUShort;
 		*element++ = mStringTable + idIndex;
@@ -380,8 +380,8 @@ ParamListSignature CboLoaderCore::LoadParamListSignature()
 {
 	ParamSignature *params = mResources.mParamSignatures;
 	ParamSignature *param = params;
-	const int numParams = ReadValue16().mUShort;
-	for (int i = 0; i < numParams; ++i)
+	const bu32_t numParams = ReadValue16().mUShort;
+	for (bu32_t i = 0; i < numParams; ++i)
 	{
 		const bi32_t offset = ReadValue32().mInt;
 		const bu32_t paramSizeAndType = ReadValue32().mUInt;
