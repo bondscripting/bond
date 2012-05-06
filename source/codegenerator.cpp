@@ -603,28 +603,32 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeDescriptor();
 	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeDescriptor();
 
-	ResultStack::Element conditionResult(mResult);
-	Traverse(condition);
-	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+	{
+		ResultStack::Element conditionResult(mResult);
+		Traverse(condition);
+		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
 
-	const size_t trueEndLabel = CreateLabel();
-	EmitJump(OPCODE_IFZ, trueEndLabel);
+		const size_t trueEndLabel = CreateLabel();
+		EmitJump(OPCODE_IFZ, trueEndLabel);
 
-	ResultStack::Element trueResult(mResult);
-	Traverse(trueExpression);
-	EmitPushResult(trueResult.GetValue(), trueDescriptor);
-	EmitCast(trueDescriptor, resultDescriptor);
+		ResultStack::Element trueResult(mResult);
+		Traverse(trueExpression);
+		EmitPushResult(trueResult.GetValue(), trueDescriptor);
+		EmitCast(trueDescriptor, resultDescriptor);
 
-	const size_t falseEndLabel = CreateLabel();
-	EmitJump(OPCODE_GOTO, falseEndLabel);
-	SetLabelValue(trueEndLabel, byteCode.size());
+		const size_t falseEndLabel = CreateLabel();
+		EmitJump(OPCODE_GOTO, falseEndLabel);
+		SetLabelValue(trueEndLabel, byteCode.size());
 
-	ResultStack::Element falseResult(mResult);
-	Traverse(falseExpression);
-	EmitPushResult(falseResult.GetValue(), falseDescriptor);
-	EmitCast(falseDescriptor, resultDescriptor);
+		ResultStack::Element falseResult(mResult);
+		Traverse(falseExpression);
+		EmitPushResult(falseResult.GetValue(), falseDescriptor);
+		EmitCast(falseDescriptor, resultDescriptor);
 
-	SetLabelValue(falseEndLabel, byteCode.size());
+		SetLabelValue(falseEndLabel, byteCode.size());
+	}
+
+	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
 }
 
 

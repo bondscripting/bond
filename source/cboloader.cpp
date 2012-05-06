@@ -152,8 +152,8 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	CboLoaderCore::MemoryResources resources(
 		mem,
 		constantTablesStart,
-		value64TableStart,
 		value32TableStart,
+		value64TableStart,
 		stringTableStart,
 		stringBytesStart,
 		qualifiedIdElementStart,
