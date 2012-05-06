@@ -36,6 +36,27 @@ inline void CopyValue64(const void *source, void *dest)
 }
 
 
+inline void WriteAddress(const void *address, void *dest)
+{
+#if BOND_NATIVE_POINTER_SIZE == 8
+	CopyValue64(&address, dest);
+#else
+	CopyValue32(&address, dest);
+#endif
+}
+
+
+inline void *ReadAddress(const void *source)
+{
+	const bu32_t *s = reinterpret_cast<const bu32_t *>(source);
+#if BOND_NATIVE_POINTER_SIZE == 8
+	return reinterpret_cast<void *>(Value64(s).mULong);
+#else
+	return reinterpret_cast<void *>(Value32(s).mUInt);
+#endif
+}
+
+
 VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
 	StackFrames::Element(vm.mStackFrames),
 	mVm(vm),
@@ -276,6 +297,112 @@ void VM::ExecuteScriptFunction()
 				const Value32 value(static_cast<bf32_t>(2.0f));
 				CopyValue32(value.mBytes, sp);
 				sp += sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CONSTD_N2:
+			{
+				const Value64 value(static_cast<bf64_t>(-2.0));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_N1:
+			{
+				const Value64 value(static_cast<bf64_t>(-1.0));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_NH:
+			{
+				const Value64 value(static_cast<bf64_t>(-0.5));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_0:
+			{
+				const Value64 value(static_cast<bf64_t>(0.0));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_H:
+			{
+				const Value64 value(static_cast<bf64_t>(0.5));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_1:
+			{
+				const Value64 value(static_cast<bf64_t>(1.0));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_CONSTD_2:
+			{
+				const Value64 value(static_cast<bf64_t>(2.0));
+				CopyValue64(value.mBytes, sp);
+				sp += sizeof(Value64);
+			}
+			break;
+
+			case OPCODE_LOADFP:
+			{
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				WriteAddress(fp + offset.mShort, sp);
+				sp += BOND_NATIVE_POINTER_SIZE;
+			}
+			break;
+
+			case OPCODE_LOADFPW:
+			{
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				WriteAddress(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				sp += BOND_NATIVE_POINTER_SIZE;
+			}
+			break;
+
+			case OPCODE_LOAD32:
+			{
+				const void *address = ReadAddress(sp - BOND_NATIVE_POINTER_SIZE);
+				CopyValue32(address, sp - BOND_NATIVE_POINTER_SIZE);
+				sp += sizeof(Value32) - BOND_NATIVE_POINTER_SIZE;
+			}
+			break;
+
+			case OPCODE_LOAD64:
+			{
+				const void *address = ReadAddress(sp - BOND_NATIVE_POINTER_SIZE);
+				CopyValue64(address, sp - BOND_NATIVE_POINTER_SIZE);
+				sp += sizeof(Value64) - BOND_NATIVE_POINTER_SIZE;
+			}
+			break;
+
+			case OPCODE_STORE32:
+			{
+				void *address = ReadAddress(sp - BOND_NATIVE_POINTER_SIZE - sizeof(Value32));
+				CopyValue32(sp - sizeof(Value32), address);
+				sp -= sizeof(Value32) + BOND_NATIVE_POINTER_SIZE;
+			}
+			break;
+
+			case OPCODE_STORE64:
+			{
+				void *address = ReadAddress(sp - BOND_NATIVE_POINTER_SIZE - sizeof(Value64));
+				CopyValue64(sp - sizeof(Value64), address);
+				sp -= sizeof(Value64) + BOND_NATIVE_POINTER_SIZE;
 			}
 			break;
 
@@ -578,8 +705,391 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_ADDI:
 			{
 				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
-				*(ptr -2) = *(ptr - 2) + *(ptr - 1);
+				*(ptr - 2) = *(ptr - 2) + *(ptr - 1);
 				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_ADDF:
+			{
+				bf32_t *ptr = reinterpret_cast<bf32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) + *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_SUBI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) - *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_SUBF:
+			{
+				bf32_t *ptr = reinterpret_cast<bf32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) - *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_MULI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) * *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_MULUI:
+			{
+				bu32_t *ptr = reinterpret_cast<bu32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) * *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_MULF:
+			{
+				bf32_t *ptr = reinterpret_cast<bf32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) * *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_DIVI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) / *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_DIVUI:
+			{
+				bu32_t *ptr = reinterpret_cast<bu32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) / *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_DIVF:
+			{
+				bf32_t *ptr = reinterpret_cast<bf32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) / *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_REMI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) % *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_REMUI:
+			{
+				bu32_t *ptr = reinterpret_cast<bu32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) % *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_LSHI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) << *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_RSHI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) >> *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_RSHUI:
+			{
+				bu32_t *ptr = reinterpret_cast<bu32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) >> *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_ANDI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) & *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_ORI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) | *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_XORI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) ^ *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_NEGI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 1) = -(*(ptr - 1));
+			}
+			break;
+
+			case OPCODE_NEGF:
+			{
+				bf32_t *ptr = reinterpret_cast<bf32_t *>(sp);
+				*(ptr - 1) = -(*(ptr - 1));
+			}
+			break;
+
+			case OPCODE_NOT:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 1) = !(*(ptr - 1));
+			}
+			break;
+
+			case OPCODE_CMPEQI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) == *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPEQF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) == *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPNEQI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) != *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPNEQF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) != *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPLTI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) < *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPLTF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) < *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPLEI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) <= *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPLEF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) <= *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPGTI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) > *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPGTF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) > *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPGEI:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*(ptr - 2) = *(ptr - 2) >= *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_CMPGEF:
+			{
+				bi32_t *ptr = reinterpret_cast<bi32_t *>(sp);
+				*reinterpret_cast<bi32_t *>(ptr - (2 * sizeof(Value32))) = *(ptr - 2) >= *(ptr - 1);
+				sp -= sizeof(Value32);
+			}
+			break;
+
+			case OPCODE_BRZ:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				if (condition == 0)
+				{
+					pc += offset.mShort;
+				}
+				else
+				{
+					sp -= sizeof(Value32);
+				}
+			}
+			break;
+
+			case OPCODE_BRZW:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				if (condition == 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+				else
+				{
+					sp -= sizeof(Value32);
+				}
+			}
+			break;
+
+			case OPCODE_BRNZ:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				if (condition != 0)
+				{
+					pc += offset.mShort;
+				}
+				else
+				{
+					sp -= sizeof(Value32);
+				}
+			}
+			break;
+
+			case OPCODE_BRNZW:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				if (condition != 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+				else
+				{
+					sp -= sizeof(Value32);
+				}
+			}
+			break;
+
+			case OPCODE_IFZ:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= sizeof(Value32);
+				if (condition == 0)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFZW:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= sizeof(Value32);
+				if (condition == 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFNZ:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= sizeof(Value32);
+				if (condition != 0)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFNZW:
+			{
+				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - sizeof(Value32));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= sizeof(Value32);
+				if (condition != 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_GOTO:
+			{
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16) + offset.mShort;
+			}
+			break;
+
+			case OPCODE_GOTOW:
+			{
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16) + value32Table[offsetIndex.mUShort].mInt;
 			}
 			break;
 
