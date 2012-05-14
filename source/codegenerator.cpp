@@ -1027,28 +1027,28 @@ void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
-		case -16:
+		case -4 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_P3);
 			break;
-		case -12:
+		case -3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_P2);
 			break;
-		case -8:
+		case -2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_P1);
 			break;
-		case -4:
+		case -1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_P0);
 			break;
-		case 0:
+		case 0 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_L0);
 			break;
-		case 4:
+		case 1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_L1);
 			break;
-		case 8:
+		case 2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_L2);
 			break;
-		case 12:
+		case 3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH32_L3);
 			break;
 		default:
@@ -1063,28 +1063,28 @@ void GeneratorCore::EmitPushFramePointerIndirectValue64(bi32_t offset)
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
-		case -32:
+		case -4 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_P3);
 			break;
-		case -24:
+		case -3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_P2);
 			break;
-		case -16:
+		case -2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_P1);
 			break;
-		case -8:
+		case -1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_P0);
 			break;
-		case 0:
+		case 0 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_L0);
 			break;
-		case 8:
+		case 1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_L1);
 			break;
-		case 16:
+		case 2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_L2);
 			break;
-		case 24:
+		case 3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_PUSH64_L3);
 			break;
 		default:

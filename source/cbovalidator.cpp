@@ -217,10 +217,10 @@ void CboValidatorCore::ValidateFunctionBlob()
 	const bu32_t localSize = ReadValue32().mUInt;
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
 	if ((packedFrameSize > frameSize) ||
-	    ((frameSize % MIN_STACK_FRAME_ALIGN) != 0) ||
-	    ((packedFrameSize % MIN_STACK_FRAME_ALIGN) != 0) ||
-	    ((localSize % MIN_STACK_FRAME_ALIGN) != 0) ||
-	    ((framePointerAlignment % MIN_STACK_FRAME_ALIGN) != 0))
+	    ((frameSize % BOND_SLOT_SIZE) != 0) ||
+	    ((packedFrameSize % BOND_SLOT_SIZE) != 0) ||
+	    ((localSize % BOND_SLOT_SIZE) != 0) ||
+	    ((framePointerAlignment % BOND_SLOT_SIZE) != 0))
 	{
 		FunctionIsInvalid();
 		return;

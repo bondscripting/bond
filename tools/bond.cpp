@@ -87,7 +87,7 @@ int main(int argc, const char *argv[])
 	{
 		Bond::CboLoader cboLoader(allocator);
 		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
-		Bond::VM vm(allocator, *codeSegment, stackSize);
+		Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
 
 		// Test code.
 		Bond::bu32_t returnValue;
@@ -95,7 +95,7 @@ int main(int argc, const char *argv[])
 		stackFrame.PushArg(34);
 		stackFrame.PushArg(45);
 		stackFrame.Call();
-		printf("return: %u\n", returnValue);
+		printf("return: %d\n", returnValue);
 		// End test code.
 
 		cboLoader.Dispose(codeSegment);
