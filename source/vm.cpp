@@ -19,6 +19,14 @@ inline unsigned char *AddPointerOffset(unsigned char *ptr, bu32_t offset, bu32_t
 }
 
 
+template <typename SourceType, typename DestType>
+inline void CopyValue(const void *source, void *dest)
+{
+	// Assumes that source and dest are appropriately aligned.
+	*reinterpret_cast<DestType *>(dest) = static_cast<DestType>(*reinterpret_cast<const SourceType *>(source));
+}
+
+
 inline void CopyValue32(const void *source, void *dest)
 {
 	// Assumes that source and dest are 32 bit aligned.
@@ -352,6 +360,34 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_LOADC:
+			{
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<char, bi32_t>(address, sp - BOND_SLOT_SIZE);
+			}
+			break;
+
+			case OPCODE_LOADUC:
+			{
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<unsigned char, bu32_t>(address, sp - BOND_SLOT_SIZE);
+			}
+			break;
+
+			case OPCODE_LOADS:
+			{
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<bi16_t, bi32_t>(address, sp - BOND_SLOT_SIZE);
+			}
+			break;
+
+			case OPCODE_LOADUS:
+			{
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<bu16_t, bu32_t>(address, sp - BOND_SLOT_SIZE);
+			}
+			break;
+
 			case OPCODE_LOAD32:
 			{
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
@@ -366,6 +402,20 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_STOREC:
+			{
+				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<bi32_t, char>(sp - BOND_SLOT_SIZE, address);
+			}
+			break;
+
+			case OPCODE_STORES:
+			{
+				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				CopyValue<bi32_t, bi16_t>(sp - BOND_SLOT_SIZE, address);
+			}
+			break;
+
 			case OPCODE_STORE32:
 			{
 				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
@@ -377,6 +427,78 @@ void VM::ExecuteScriptFunction()
 			{
 				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				CopyValue64(sp - BOND_SLOT_SIZE, address);
+			}
+			break;
+
+			case OPCODE_PUSHC:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<char, bi32_t>(fp + offset.mShort, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHCW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<char, bi32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHUC:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<unsigned char, bu32_t>(fp + offset.mShort, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHUCW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<unsigned char, bu32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHS:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<bi16_t, bi32_t>(fp + offset.mShort, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHSW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<bi16_t, bi32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHUS:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<bu16_t, bu32_t>(fp + offset.mShort, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PUSHUSW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<bu16_t, bu32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
@@ -528,6 +650,42 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_POPC:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<bi32_t, char>(sp - BOND_SLOT_SIZE, fp + offset.mShort);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_POPCW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<bi32_t, char>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_POPS:
+			{
+				const Value16 offset(code + pc);
+				CopyValue<bi32_t, bi16_t>(sp - BOND_SLOT_SIZE, fp + offset.mShort);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_POPSW:
+			{
+				const Value16 offsetIndex(code + pc);
+				CopyValue<bi32_t, bi16_t>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
 			case OPCODE_POP32:
 			{
 				const Value16 offset(code + pc);
@@ -673,6 +831,188 @@ void VM::ExecuteScriptFunction()
 			{
 				CopyValue64(sp - BOND_SLOT_SIZE, fp + (3 * BOND_SLOT_SIZE));
 				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_ITOC:
+			{
+				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<char>(*a);
+			}
+			break;
+
+			case OPCODE_ITOS:
+			{
+				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi16_t>(*a);
+			}
+			break;
+
+			case OPCODE_ITOL:
+			{
+				bi64_t *a = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*a = *b;
+			}
+			break;
+
+			case OPCODE_UITOUL:
+			{
+				bu64_t *a = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				*a = *b;
+			}
+			break;
+
+			case OPCODE_ITOF:
+			{
+				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf32_t>(*b);
+			}
+			break;
+
+			case OPCODE_UITOF:
+			{
+				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf32_t>(*b);
+			}
+			break;
+
+			case OPCODE_ITOD:
+			{
+				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf64_t>(*b);
+			}
+			break;
+
+			case OPCODE_UITOD:
+			{
+				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf64_t>(*b);
+			}
+			break;
+
+			case OPCODE_LTOI:
+			{
+				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi32_t>(*b);
+			}
+			break;
+
+			case OPCODE_LTOF:
+			{
+				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf32_t>(*b);
+			}
+			break;
+
+			case OPCODE_ULTOF:
+			{
+				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf32_t>(*b);
+			}
+			break;
+
+			case OPCODE_LTOD:
+			{
+				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf64_t>(*b);
+			}
+			break;
+
+			case OPCODE_ULTOD:
+			{
+				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf64_t>(*b);
+			}
+			break;
+
+			case OPCODE_FTOI:
+			{
+				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi32_t>(*b);
+			}
+			break;
+
+			case OPCODE_FTOUI:
+			{
+				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bu32_t>(*b);
+			}
+			break;
+
+			case OPCODE_FTOL:
+			{
+				bi64_t *a = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi64_t>(*b);
+			}
+			break;
+
+			case OPCODE_FTOUL:
+			{
+				bu64_t *a = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bu64_t>(*b);
+			}
+			break;
+
+			case OPCODE_FTOD:
+			{
+				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf64_t>(*b);
+			}
+			break;
+
+			case OPCODE_DTOI:
+			{
+				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi32_t>(*b);
+			}
+			break;
+
+			case OPCODE_DTOUI:
+			{
+				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bu32_t>(*b);
+			}
+			break;
+
+			case OPCODE_DTOL:
+			{
+				bi64_t *a = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bi64_t>(*b);
+			}
+			break;
+
+			case OPCODE_DTOUL:
+			{
+				bu64_t *a = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bu64_t>(*b);
+			}
+			break;
+
+			case OPCODE_DTOF:
+			{
+				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bf32_t>(*b);
 			}
 			break;
 
@@ -1467,39 +1807,11 @@ void VM::ExecuteScriptFunction()
 			}
 			return;
 
-			default:
-			break;
+			case OPCODE_NOP: break;
+			case OPCODE_MAX: break;
+			default: break;
 		}
 	}
-
-	/*
-	const ParamListSignature &paramListSignature = frame.mFunction->mParamListSignature;
-	const bu32_t numParams = paramListSignature.mParamCount;
-	bu32_t total = 0;
-
-	for (bu32_t i = 0; i < numParams; ++i)
-	{
-		const ParamSignature &param = paramListSignature.mParamSignatures[i];
-		const unsigned char *ptr = frame.mFramePointer + param.mFramePointerOffset;
-		switch (param.mType)
-		{
-			case SIG_INT:
-			{
-				bu32_t val = *reinterpret_cast<const int *>(ptr);
-				printf("%u: %d\n", i, val);
-				total += val;
-			}
-			break;
-			case SIG_FLOAT:
-			{
-				printf("%u: %d\n", i, *reinterpret_cast<const int *>(ptr));
-			}
-			break;
-		}
-	}
-
-	frame.SetReturnValue(total);
-	*/
 }
 
 }
