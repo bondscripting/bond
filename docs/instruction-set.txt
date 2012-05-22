@@ -107,9 +107,8 @@ pop64_l3            ..., value64 -> ...
 movesp, short
 movespw, int
 
-dup32               ..., value32 -> ..., value32, value32
-dup64               ..., value64 -> ..., value64, value64
-dupmod
+dup                 ..., value64 -> ..., value64, value64
+dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
 
 itoc                ..., int -> ..., int
 itos                ..., int -> ..., int
@@ -138,6 +137,8 @@ dtoul               ..., double -> ..., ulong
 dtof                ..., double -> ..., float
 
 ptroff, short       ..., address, int -> ..., address
+
+inci, uchar, char   ... -> ...
 
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long

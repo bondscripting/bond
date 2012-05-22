@@ -115,9 +115,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(MOVESP,       movesp,       SHORT)  \
 	BOND_OPCODE_ITEM(MOVESPW,      movespw,      INT)    \
 	                                                     \
-	BOND_OPCODE_ITEM(DUP32,        dup32,        NONE)   \
-	BOND_OPCODE_ITEM(DUP64,        dup64,        NONE)   \
-	BOND_OPCODE_ITEM(DUPMOD,       dupmod,       NONE)   \
+	BOND_OPCODE_ITEM(DUP,          dup,          NONE)   \
+	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(ITOC,         itoc,         NONE)   \
 	BOND_OPCODE_ITEM(ITOS,         itos,         NONE)   \
@@ -146,6 +145,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(DTOF,         dtof,         NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(PTROFF,       ptroff,       SHORT)  \
+	                                                     \
+	BOND_OPCODE_ITEM(INCI,         inci,         UCHAR_CHAR) \
 	                                                     \
 	BOND_OPCODE_ITEM(ADDI,         addi,         NONE)   \
 	BOND_OPCODE_ITEM(ADDL,         addl,         NONE)   \
@@ -264,6 +265,7 @@ enum OpCodeParam
 	OC_PARAM_NONE,
 	OC_PARAM_CHAR,
 	OC_PARAM_UCHAR,
+	OC_PARAM_UCHAR_CHAR,
 	OC_PARAM_SHORT,
 	OC_PARAM_USHORT,
 	OC_PARAM_INT,

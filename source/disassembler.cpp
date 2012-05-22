@@ -203,6 +203,10 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_UCHAR:
 				mWriter.Write("%" BOND_PRIu32, static_cast<bu32_t>(mByteCode[mIndex++]));
 				break;
+			case OC_PARAM_UCHAR_CHAR:
+				mWriter.Write("%" BOND_PRIu32 ", %" BOND_PRId32, static_cast<bu32_t>(mByteCode[mIndex]), static_cast<bi32_t>(static_cast<char>(mByteCode[mIndex + 1])));
+				mIndex += 2;
+				break;
 			case OC_PARAM_SHORT:
 				mWriter.Write("%" BOND_PRId32, static_cast<bi32_t>(ReadValue16().mShort));
 				break;

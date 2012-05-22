@@ -208,6 +208,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 			case OC_PARAM_NONE:
 			case OC_PARAM_CHAR:
 			case OC_PARAM_UCHAR:
+			case OC_PARAM_UCHAR_CHAR:
 				break;
 			case OC_PARAM_SHORT:
 			case OC_PARAM_USHORT:

@@ -250,6 +250,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 			case OC_PARAM_UCHAR:
 				++mIndex;
 				break;
+			case OC_PARAM_UCHAR_CHAR:
 			case OC_PARAM_SHORT:
 			case OC_PARAM_USHORT:
 				ReadValue16();

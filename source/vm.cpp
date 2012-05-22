@@ -100,7 +100,7 @@ void VM::ExecuteScriptFunction()
 		{
 			case OPCODE_CONSTC:
 			{
-				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(code[pc++]);
+				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(static_cast<char>(code[pc++]));
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -404,29 +404,33 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_STOREC:
 			{
-				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				void *address = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
 				CopyValue<bi32_t, char>(sp - BOND_SLOT_SIZE, address);
+				sp -= 2 * BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_STORES:
 			{
-				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				void *address = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
 				CopyValue<bi32_t, bi16_t>(sp - BOND_SLOT_SIZE, address);
+				sp -= 2 * BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_STORE32:
 			{
-				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				void *address = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
 				CopyValue32(sp - BOND_SLOT_SIZE, address);
+				sp -= 2 * BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_STORE64:
 			{
-				void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				void *address = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
 				CopyValue64(sp - BOND_SLOT_SIZE, address);
+				sp -= 2 * BOND_SLOT_SIZE;
 			}
 			break;
 
@@ -834,6 +838,22 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_DUP:
+			{
+				CopyValue64(sp - BOND_SLOT_SIZE, sp);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_DUPINS:
+			{
+				CopyValue64(sp - BOND_SLOT_SIZE, sp);
+				CopyValue64(sp - (2 * BOND_SLOT_SIZE), sp - BOND_SLOT_SIZE);
+				CopyValue64(sp, sp - (2 * BOND_SLOT_SIZE));
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
 			case OPCODE_ITOC:
 			{
 				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
@@ -1013,6 +1033,15 @@ void VM::ExecuteScriptFunction()
 				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
 				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bf32_t>(*b);
+			}
+			break;
+
+			case OPCODE_INCI:
+			{
+				const bu32_t slotIndex = static_cast<bu32_t>(code[pc]);
+				const bi32_t value = static_cast<bi32_t>(static_cast<char>(code[pc + 1]));
+				pc += 2;
+				*reinterpret_cast<bi32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}
 			break;
 

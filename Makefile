@@ -8,7 +8,7 @@ CC := g++
 ETAGS := etags
 MKDIR := mkdir
 RM := rm
-BASE_CFLAGS = -Wall -O2
+BASE_CFLAGS = -Wall -O3
 
 # Bond library files, folders and configuration.
 INCLUDEDIR := include

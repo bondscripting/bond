@@ -74,6 +74,8 @@ private:
 };
 
 
+static const OpCodeSet CONST1_OPCODES(OPCODE_CONSTI_1, OPCODE_CONSTL_1, OPCODE_CONSTF_1, OPCODE_CONSTD_1);
+static const OpCodeSet CONSTN1_OPCODES(OPCODE_CONSTI_N1, OPCODE_CONSTL_N1, OPCODE_CONSTF_N1, OPCODE_CONSTD_N1);
 static const OpCodeSet ADD_OPCODES(OPCODE_ADDI, OPCODE_ADDL, OPCODE_ADDF, OPCODE_ADDD);
 static const OpCodeSet SUB_OPCODES(OPCODE_SUBI, OPCODE_SUBL, OPCODE_SUBF, OPCODE_SUBD);
 static const OpCodeSet MUL_OPCODES(OPCODE_MULI, OPCODE_MULUI, OPCODE_MULL, OPCODE_MULUL, OPCODE_MULF, OPCODE_MULD);
@@ -119,6 +121,12 @@ public:
 	void Generate();
 
 private:
+	enum Fixedness
+	{
+		PREFIX,
+		POSTFIX
+	};
+
 	struct GeneratorResult
 	{
 		enum Context
@@ -243,8 +251,8 @@ private:
 	GeneratorResult EmitPointerSubtraction(const Expression *pointerExpression, const Expression *offsetExpression);
 	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 
+	GeneratorResult EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign);
 	GeneratorResult EmitSignOperator(const UnaryExpression *unaryExpression);
-	GeneratorResult EmitPreincrementOperator(const UnaryExpression *unaryExpression, int value);
 	GeneratorResult EmitNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitBitwiseNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
@@ -356,7 +364,7 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 	const GeneratorResult::Context context = mResult.GetTop().mContext;
 	if (context == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 	{
-		EmitOpCodeWithOffset(OPCODE_MOVESP, -static_cast<bi32_t>(mPointerSize));
+		EmitOpCodeWithOffset(OPCODE_MOVESP, -BOND_SLOT_SIZE);
 	}
 	else if (context == GeneratorResult::CONTEXT_STACK_VALUE)
 	{
@@ -515,7 +523,9 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	}
 
 	Traverse(forStatement->GetBody());
-	Traverse(forStatement->GetCountingExpression());
+
+	ResultStack::Element countingResult(mResult);
+	TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
 
 	EmitJump(OPCODE_GOTO, loopStartLabel);
 	SetLabelValue(loopEndLabel, byteCode.size());
@@ -796,28 +806,39 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 {
 	if (!ProcessConstantExpression(unaryExpression))
 	{
-		/*
 		const Expression *rhs = unaryExpression->GetRhs();
 		const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		*/
 		const Token *op = unaryExpression->GetOperator();
-
-		GeneratorResult result = GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+		GeneratorResult result;
 
 		switch (op->GetTokenType())
 		{
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
-				EmitSignOperator(unaryExpression);
+				result = EmitSignOperator(unaryExpression);
 				break;
 
 			case Token::OP_INC:
-				EmitPreincrementOperator(unaryExpression, 1);
+				if (rhDescriptor->IsPointerType())
+				{
+					// TODO: Pointer arithmetic.
+				}
+				else
+				{
+					result = EmitIncrementOperator(unaryExpression, unaryExpression->GetRhs(), PREFIX, 1);
+				}
 				break;
 
 			case Token::OP_DEC:
-				EmitPreincrementOperator(unaryExpression, -1);
+				if (rhDescriptor->IsPointerType())
+				{
+					// TODO: Pointer arithmetic.
+				}
+				else
+				{
+					result = EmitIncrementOperator(unaryExpression, unaryExpression->GetRhs(), PREFIX, -1);
+				}
 				break;
 
 			case Token::OP_NOT:
@@ -847,7 +868,40 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 
 void GeneratorCore::Visit(const PostfixExpression *postfixExpression)
 {
-	ParseNodeTraverser::Visit(postfixExpression);
+	const Expression *lhs = postfixExpression->GetLhs();
+	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
+	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const Token *op = postfixExpression->GetOperator();
+	GeneratorResult result;
+
+	switch (op->GetTokenType())
+	{
+		case Token::OP_INC:
+			if (lhDescriptor->IsPointerType())
+			{
+				// TODO: Pointer arithmetic.
+			}
+			else
+			{
+				result = EmitIncrementOperator(postfixExpression, postfixExpression->GetLhs(), POSTFIX, 1);
+			}
+			break;
+
+		case Token::OP_DEC:
+			if (lhDescriptor->IsPointerType())
+			{
+				// TODO: Pointer arithmetic.
+			}
+			else
+			{
+				result = EmitIncrementOperator(postfixExpression, postfixExpression->GetLhs(), POSTFIX, -1);
+			}
+			break;
+
+		default:
+			break;
+	}
+	mResult.SetTop(result);
 }
 
 
@@ -933,7 +987,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 
 void GeneratorCore::Visit(const ThisExpression *thisExpression)
 {
-	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, -static_cast<bi32_t>(mPointerSize)));
+	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, -BOND_SLOT_SIZE));
 }
 
 
@@ -1231,9 +1285,19 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 				byteCode.push_back(OPCODE_CONSTC);
 				byteCode.push_back(static_cast<unsigned char>(value));
 			}
+			else if (IsInUCharRange(value))
+			{
+				byteCode.push_back(OPCODE_CONSTUC);
+				byteCode.push_back(static_cast<unsigned char>(value));
+			}
 			else if (IsInShortRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTS);
+				EmitValue16(Value16(value));
+			}
+			else if (IsInUShortRange(value))
+			{
+				byteCode.push_back(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
 			}
 			else
@@ -1403,28 +1467,28 @@ void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
-		case -16:
+		case -4 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_P3);
 			break;
-		case -12:
+		case -3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_P2);
 			break;
-		case -8:
+		case -2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_P1);
 			break;
-		case -4:
+		case -1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_P0);
 			break;
-		case 0:
+		case 0 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_L0);
 			break;
-		case 4:
+		case 1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_L1);
 			break;
-		case 8:
+		case 2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_L2);
 			break;
-		case 12:
+		case 3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP32_L3);
 			break;
 		default:
@@ -1439,28 +1503,28 @@ void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
-		case -32:
+		case -4 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_P3);
 			break;
-		case -24:
+		case -3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_P2);
 			break;
-		case -16:
+		case -2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_P1);
 			break;
-		case -8:
+		case -1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_P0);
 			break;
-		case 0:
+		case 0 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_L0);
 			break;
-		case 8:
+		case 1 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_L1);
 			break;
-		case 16:
+		case 2 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_L2);
 			break;
-		case 24:
+		case 3 * BOND_SLOT_SIZE:
 			byteCode.push_back(OPCODE_POP64_L3);
 			break;
 		default:
@@ -1544,6 +1608,7 @@ void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
 
 void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
 {
+	// TODO: Handle long types when they are implemented.
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (destType->GetPrimitiveType())
 	{
@@ -1678,7 +1743,13 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
-	lhResult = EmitAccumulateAddressOffset(lhResult);
+
+	OpCode valueDupOpCode = OPCODE_DUP;
+	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+	{
+		lhResult = EmitAccumulateAddressOffset(lhResult);
+		valueDupOpCode = OPCODE_DUPINS;
+	}
 
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
@@ -1688,7 +1759,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 	if (mEmitOptionalTemporaries.GetTop())
 	{
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(OPCODE_DUPMOD);
+		byteCode.push_back(valueDupOpCode);
 		result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
 	}
 
@@ -1709,18 +1780,13 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 
+	OpCode valueDupOpCode = OPCODE_DUP;
 	ByteCode::Type &byteCode = GetByteCode();
 	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 	{
 		lhResult = EmitAccumulateAddressOffset(lhResult);
-		if (Is64BitPointer())
-		{
-			byteCode.push_back(OPCODE_DUP64);
-		}
-		else
-		{
-			byteCode.push_back(OPCODE_DUP32);
-		}
+		byteCode.push_back(OPCODE_DUP);
+		valueDupOpCode = OPCODE_DUPINS;
 	}
 
 	EmitPushResult(lhResult.GetValue(), lhDescriptor);
@@ -1736,7 +1802,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 
 	if (mEmitOptionalTemporaries.GetTop())
 	{
-		byteCode.push_back(OPCODE_DUPMOD);
+		byteCode.push_back(valueDupOpCode);
 		result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
 	}
 
@@ -1847,6 +1913,73 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 }
 
 
+GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = expression->GetTypeDescriptor();
+	const Token::TokenType operandType = operandDescriptor->GetPrimitiveType();
+	const Token::TokenType resultType = resultDescriptor->GetPrimitiveType();
+
+	ResultStack::Element operandResult(mResult);
+	Traverse(operand);
+	const bi32_t slotIndex = operandResult.GetValue().mOffset / BOND_SLOT_SIZE;
+
+	if ((operandResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_INDIRECT) &&
+	    IsInUCharRange(slotIndex) &&
+	    ((resultType == Token::KEY_INT) || (resultType == Token::KEY_UINT)) &&
+			(operandType == resultType))
+	{
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		{
+			EmitPushResult(operandResult.GetValue(), operandDescriptor);
+		}
+
+		byteCode.push_back(OPCODE_INCI);
+		byteCode.push_back(static_cast<unsigned char>(slotIndex));
+		byteCode.push_back(static_cast<unsigned char>(sign));
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		{
+			EmitPushResult(operandResult.GetValue(), operandDescriptor);
+		}
+	}
+	else
+	{
+		const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
+		OpCode valueDupOpCode = OPCODE_DUP;
+		if (operandResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+		{
+			operandResult = EmitAccumulateAddressOffset(operandResult);
+			byteCode.push_back(OPCODE_DUP);
+			valueDupOpCode = OPCODE_DUPINS;
+		}
+
+		EmitPushResult(operandResult.GetValue(), operandDescriptor);
+		EmitCast(operandDescriptor, resultDescriptor);
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		{
+			byteCode.push_back(valueDupOpCode);
+		}
+
+		byteCode.push_back(constOpCodeSet.GetOpCode(resultType));
+		byteCode.push_back(ADD_OPCODES.GetOpCode(resultType));
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		{
+			byteCode.push_back(valueDupOpCode);
+		}
+
+		EmitPopResult(operandResult, operandDescriptor);
+	}
+
+	return GeneratorResult(mEmitOptionalTemporaries.GetTop() ?
+		GeneratorResult::CONTEXT_STACK_VALUE :
+		GeneratorResult::CONTEXT_NONE);
+}
+
+
 GeneratorCore::GeneratorResult GeneratorCore::EmitSignOperator(const UnaryExpression *unaryExpression)
 {
 	const UnaryExpression *unary = unaryExpression;
@@ -1880,13 +2013,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSignOperator(const UnaryExpres
 	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
-}
-
-
-GeneratorCore::GeneratorResult GeneratorCore::EmitPreincrementOperator(const UnaryExpression *unaryExpression, int value)
-{
-	GeneratorResult result;
-	return result;
 }
 
 

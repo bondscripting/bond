@@ -39,9 +39,13 @@ const bu32_t BOND_DEFAULT_STRUCT_ALIGN = BOND_DEFAULT_STRUCT_SIZE;
 const bi32_t BOND_SLOT_SIZE = 8;
 
 inline bool IsInCharRange(bi32_t value) { return (value >= BOND_CHAR_MIN) && (value <= BOND_CHAR_MAX); }
+inline bool IsInCharRange(bu32_t value) { return value <= static_cast<bu32_t>(BOND_CHAR_MAX); }
+inline bool IsInUCharRange(bi32_t value) { return (value >= 0) && (value <= static_cast<bi32_t>(BOND_UCHAR_MAX)); }
 inline bool IsInUCharRange(bu32_t value) { return value <= BOND_UCHAR_MAX; }
 
 inline bool IsInShortRange(bi32_t value) { return (value >= BOND_SHORT_MIN) && (value <= BOND_SHORT_MAX); }
+inline bool IsInShortRange(bu32_t value) { return value <= static_cast<bu32_t>(BOND_SHORT_MAX); }
+inline bool IsInUShortRange(bi32_t value) { return (value >= 0) && (value <= static_cast<bi32_t>(BOND_USHORT_MAX)); }
 inline bool IsInUShortRange(bu32_t value) { return value <= BOND_USHORT_MAX; }
 
 }
