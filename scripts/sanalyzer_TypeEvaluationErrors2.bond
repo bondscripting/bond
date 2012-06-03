@@ -1,6 +1,6 @@
 enum BadEnum
 {
-	BadEnumerator1 = 1.2,
+	BadEnumerator1 = 1.2f,
 	BadEnumerator2 = false,
 };
 
@@ -23,18 +23,18 @@ struct D { D *d; };   // This is valid.
 void DummyFunction()
 {
 	int i1 = 1;
-	float f1 = 1.0;
+	float f1 = 1.0f;
 
 	// Invalid statements.
-	switch (f1 < 2.0)
+	switch (f1 < 2.0f)
 	{
-		case 2.0:
+		case 2.0f:
 			break;
 		case false:
 			break;
 	}
 
-	if (f1 + 1.0) {}
+	if (f1 + 1.0f) {}
 	while (i1 -= 1) {}
 	for (int j = 0; j + i1; ++j) {}
 
@@ -53,7 +53,7 @@ void DummyFunction()
 			break;
 	}
 
-	if (f1 < 2.0) {}
+	if (f1 < 2.0f) {}
 	while ((i1 -= 1) != 0) {}
 	for (int j = 0; j < Two; ++j) {}
 }

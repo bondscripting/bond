@@ -119,7 +119,9 @@ namespace Bond
 	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE)   \
 	                                                     \
 	BOND_OPCODE_ITEM(ITOC,         itoc,         NONE)   \
+	BOND_OPCODE_ITEM(UITOUC,       uitouc,       NONE)   \
 	BOND_OPCODE_ITEM(ITOS,         itos,         NONE)   \
+	BOND_OPCODE_ITEM(UITOUS,       uitous,       NONE)   \
 	BOND_OPCODE_ITEM(ITOL,         itol,         NONE)   \
 	BOND_OPCODE_ITEM(UITOUL,       uitoul,       NONE)   \
 	BOND_OPCODE_ITEM(ITOF,         itof,         NONE)   \

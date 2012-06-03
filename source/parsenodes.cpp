@@ -398,9 +398,27 @@ TypeDescriptor TypeDescriptor::GetUIntType()
 }
 
 
+TypeDescriptor TypeDescriptor::GetLongType()
+{
+	return TypeDescriptor(&LONG_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetULongType()
+{
+	return TypeDescriptor(&ULONG_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
 TypeDescriptor TypeDescriptor::GetFloatType()
 {
 	return TypeDescriptor(&FLOAT_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
+TypeDescriptor TypeDescriptor::GetDoubleType()
+{
+	return TypeDescriptor(&DOUBLE_TYPE_SPECIFIER, FLAG_VALUE);
 }
 
 
@@ -468,6 +486,8 @@ bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
 			return BOND_UINT_SIZE;
 		case Token::KEY_FLOAT:
 			return BOND_FLOAT_SIZE;
+		case Token::KEY_DOUBLE:
+			return BOND_DOUBLE_SIZE;
 
 		default:
 		{
@@ -496,12 +516,14 @@ bu32_t TypeSpecifier::GetAlignment() const
 			return BOND_SHORT_SIZE;
 		case Token::KEY_USHORT:
 			return BOND_USHORT_SIZE;
-		case Token::KEY_FLOAT:
-			return BOND_FLOAT_SIZE;
 		case Token::KEY_INT:
 			return BOND_INT_SIZE;
 		case Token::KEY_UINT:
 			return BOND_UINT_SIZE;
+		case Token::KEY_FLOAT:
+			return BOND_FLOAT_SIZE;
+		case Token::KEY_DOUBLE:
+			return BOND_DOUBLE_SIZE;
 
 		default:
 		{
@@ -534,6 +556,8 @@ bu32_t TypeSpecifier::GetSignatureType() const
 			return SIG_UINT;
 		case Token::KEY_FLOAT:
 			return SIG_FLOAT;
+		case Token::KEY_DOUBLE:
+			return SIG_DOUBLE;
 
 		default:
 		{
@@ -645,6 +669,9 @@ const TypeSpecifier BOOL_TYPE_SPECIFIER(&BOOL_TOKEN);
 const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);
 const TypeSpecifier INT_TYPE_SPECIFIER(&INT_TOKEN);
 const TypeSpecifier UINT_TYPE_SPECIFIER(&UINT_TOKEN);
+const TypeSpecifier LONG_TYPE_SPECIFIER(&LONG_TOKEN);
+const TypeSpecifier ULONG_TYPE_SPECIFIER(&ULONG_TOKEN);
 const TypeSpecifier FLOAT_TYPE_SPECIFIER(&FLOAT_TOKEN);
+const TypeSpecifier DOUBLE_TYPE_SPECIFIER(&DOUBLE_TOKEN);
 
 }

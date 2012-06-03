@@ -57,6 +57,10 @@ private:
 		STATE_PERIOD,            // '.'
 		STATE_EXPONENT,          // 'e' or 'E' known to be inside a number.
 		STATE_EXPONENT_SIGN,     // '+' or '-' known to be inside a number's exponent.
+		STATE_FLOAT,             // Complete float literal.
+		STATE_UNSIGNED,          // Complete unsigned literal.
+		STATE_LONG,              // Complete long literal.
+		STATE_ULONG,             // Complete unsigned long literal.
 		STATE_BAD_NUMBER,        // Consume the remaining characters of an incorrectly formatted number.
 		STATE_IDENTIFIER,        // Sequence of characters forming an identifier.
 		STATE_CHAR,              // Character literal.
@@ -100,8 +104,10 @@ private:
 	void EvaluateToken(StringAllocator &allocator, Token &token) const;
 	void EvaluateKeywordOrIdentifierToken(Token &token) const;
 	void EvaluateCharToken(Token &token) const;
-	void EvaluateFloatToken(Token &token) const;
 	void EvaluateIntegerToken(Token &token) const;
+	void EvaluateLongToken(Token &token) const;
+	void EvaluateFloatToken(Token &token) const;
+	void EvaluateDoubleToken(Token &token) const;
 	void EvaluateStringToken(StringAllocator &allocator, Token &token) const;
 	CharResult EvaluateChar(const char *text) const;
 
@@ -109,6 +115,9 @@ private:
 	bool IsOctalChar(char c) const;
 	bool IsHexChar(char c) const;
 	bool IsBadNumberChar(char c) const;
+	bool IsExponentChar(char c) const;
+	bool IsFloatSuffixChar(char c) const;
+	bool IsLongSuffixChar(char c) const;
 	bool IsUnsignedSuffixChar(char c) const;
 	bool IsEscapeChar(char c) const;
 

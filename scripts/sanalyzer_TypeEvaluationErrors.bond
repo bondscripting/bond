@@ -29,8 +29,8 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	int *ptr2 = array2;
 	int i1 = 1;
 	int i2 = 2;
-	float f1 = 1.0;
-	float f2 = 2.0;
+	float f1 = 1.0f;
+	float f2 = 2.0f;
 	bool b1 = true;
 	bool b2 = false;
 
@@ -44,7 +44,7 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	1 + FunnyReturnType;
 	i1 /= ptr1;
 	b1 = b2 || ds1;
-	i1 = true & 1.0;
+	i1 = true & 1.0f;
 	b1 = false < f1;
 	i1 = -b1;
 	b1 = !f1;

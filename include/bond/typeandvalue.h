@@ -59,11 +59,20 @@ public:
 	bf32_t GetFloatValue() const { return mValue.mFloat; }
 	void SetFloatValue(bf32_t value) { mValue.mFloat = value; mValueDefined = true; }
 
+	bf64_t GetDoubleValue() const { return mValue.mDouble; }
+	void SetDoubleValue(bf64_t value) { mValue.mDouble = value; mValueDefined = true; }
+
 	bi32_t GetIntValue() const { return mValue.mInt; }
 	void SetIntValue(bi32_t value) { mValue.mInt = value; mValueDefined = true; }
 
 	bu32_t GetUIntValue() const { return mValue.mUInt; }
 	void SetUIntValue(bu32_t value) { mValue.mUInt = value; mValueDefined = true; }
+
+	bi64_t GetLongValue() const { return mValue.mLong; }
+	void SetLongValue(bi64_t value) { mValue.mLong = value; mValueDefined = true; }
+
+	bu64_t GetULongValue() const { return mValue.mULong; }
+	void SetULongValue(bu64_t value) { mValue.mULong = value; mValueDefined = true; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
 	int GetStringLength() const { return mValue.mString.length; }

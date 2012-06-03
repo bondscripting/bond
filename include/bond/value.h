@@ -68,6 +68,7 @@ union Value32
 		mBytes[3] = value[3];
 	}
 
+	// TODO: Attempt to remove this constructor.
 	explicit Value32(const bu32_t value[])
 	{
 		mUInt = value[0];
@@ -93,14 +94,20 @@ union Value64
 		mBytes[1] = value[1];
 		mBytes[2] = value[2];
 		mBytes[3] = value[3];
+		mBytes[4] = value[4];
+		mBytes[5] = value[5];
+		mBytes[6] = value[6];
+		mBytes[7] = value[7];
 	}
 
+	// TODO: Attempt to remove this constructor.
 	explicit Value64(const bu32_t value[])
 	{
 		mWords[0] = value[0];
 		mWords[1] = value[1];
 	}
 
+	// TODO: Attempt to remove this constructor.
 	explicit Value64(const bu64_t value[])
 	{
 		mULong = value[0];

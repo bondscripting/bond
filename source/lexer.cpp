@@ -503,21 +503,30 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_FDIGITS;
 				}
-				else if ((c == 'e') || (c == 'E'))
+				else if (IsExponentChar(c))
 				{
 					state = STATE_EXPONENT;
 				}
+				else if (IsFloatSuffixChar(c))
+				{
+					state = STATE_FLOAT;
+				}
+				else if (IsLongSuffixChar(c))
+				{
+					state = STATE_LONG;
+				}
 				else if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::CONST_UINT);
-					state = STATE_DONE;
+					state = STATE_UNSIGNED;
 				}
 				else if (c == 'x')
 				{
+					token.AddAnnotation(Token::HEX);
 					state = STATE_HEX;
 				}
 				else if (IsOctalChar(c))
 				{
+					token.AddAnnotation(Token::OCTAL);
 					state = STATE_OCTAL;
 				}
 				else if (IsBadNumberChar(c))
@@ -536,11 +545,13 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_OCTAL:
-				if (IsUnsignedSuffixChar(c))
+				if (IsLongSuffixChar(c))
 				{
-					token.SetTokenType(Token::CONST_UINT);
-					token.AddAnnotation(Token::OCTAL);
-					state = STATE_DONE;
+					state = STATE_LONG;
+				}
+				else if (IsUnsignedSuffixChar(c))
+				{
+					state = STATE_UNSIGNED;
 				}
 				else if (IsOctalChar(c))
 				{
@@ -557,17 +568,18 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					stream.Unget();
 					token.SetTokenType(Token::CONST_INT);
-					token.AddAnnotation(Token::OCTAL);
 					state = STATE_DONE;
 				}
 				break;
 
 			case STATE_HEX:
-				if (IsUnsignedSuffixChar(c))
+				if (IsLongSuffixChar(c))
 				{
-					token.SetTokenType(Token::CONST_UINT);
-					token.AddAnnotation(Token::HEX);
-					state = STATE_DONE;
+					state = STATE_LONG;
+				}
+				else if (IsUnsignedSuffixChar(c))
+				{
+					state = STATE_UNSIGNED;
 				}
 				else if (IsHexChar(c))
 				{
@@ -584,7 +596,6 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					stream.Unget();
 					token.SetTokenType(Token::CONST_INT);
-					token.AddAnnotation(Token::HEX);
 					state = STATE_DONE;
 				}
 				break;
@@ -594,14 +605,21 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_FDIGITS;
 				}
-				else if ((c == 'e') || (c == 'E'))
+				else if (IsExponentChar(c))
 				{
 					state = STATE_EXPONENT;
 				}
+				else if (IsFloatSuffixChar(c))
+				{
+					state = STATE_FLOAT;
+				}
+				else if (IsLongSuffixChar(c))
+				{
+					state = STATE_LONG;
+				}
 				else if (IsUnsignedSuffixChar(c))
 				{
-					token.SetTokenType(Token::CONST_UINT);
-					state = STATE_DONE;
+					state = STATE_UNSIGNED;
 				}
 				else if (isdigit(c))
 				{
@@ -623,9 +641,13 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_FDIGITS:
-				if ((c == 'e') || (c == 'E'))
+				if (IsExponentChar(c))
 				{
 					state = STATE_EXPONENT;
+				}
+				else if (IsFloatSuffixChar(c))
+				{
+					state = STATE_FLOAT;
 				}
 				else if (isdigit(c))
 				{
@@ -641,7 +663,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::CONST_FLOAT);
+					token.SetTokenType(Token::CONST_DOUBLE);
 					state = STATE_DONE;
 				}
 				break;
@@ -650,6 +672,10 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				if (isdigit(c))
 				{
 					// Remain in this state.
+				}
+				else if (IsFloatSuffixChar(c))
+				{
+					state = STATE_FLOAT;
 				}
 				else if (IsBadNumberChar(c))
 				{
@@ -661,7 +687,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 				else
 				{
 					stream.Unget();
-					token.SetTokenType(Token::CONST_FLOAT);
+					token.SetTokenType(Token::CONST_DOUBLE);
 					state = STATE_DONE;
 				}
 				break;
@@ -708,6 +734,78 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 					token.SetErrorType(Token::INVALID_FLOAT);
 					token.SetErrorPos(pos);
 					state = STATE_BAD_NUMBER;
+				}
+				break;
+
+			case STATE_FLOAT:
+				if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_FLOAT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::CONST_FLOAT);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_UNSIGNED:
+				if (IsLongSuffixChar(c))
+				{
+					state = STATE_ULONG;
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_INT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::CONST_UINT);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_LONG:
+				if (IsUnsignedSuffixChar(c))
+				{
+					state = STATE_ULONG;
+				}
+				else if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_INT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::CONST_LONG);
+					state = STATE_DONE;
+				}
+				break;
+
+			case STATE_ULONG:
+				if (IsBadNumberChar(c))
+				{
+					token.SetTokenType(Token::INVALID);
+					token.SetErrorType(Token::INVALID_INT);
+					token.SetErrorPos(pos);
+					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					token.SetTokenType(Token::CONST_ULONG);
+					state = STATE_DONE;
 				}
 				break;
 
@@ -924,8 +1022,17 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			EvaluateIntegerToken(token);
 			break;
 
+		case Token::CONST_LONG:
+		case Token::CONST_ULONG:
+			EvaluateLongToken(token);
+			break;
+
 		case Token::CONST_FLOAT:
 			EvaluateFloatToken(token);
+			break;
+
+		case Token::CONST_DOUBLE:
+			EvaluateDoubleToken(token);
 			break;
 
 		case Token::CONST_STRING:
@@ -977,6 +1084,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_DO);
 	}
+	else if (strcmp(token.GetText(), "double") == 0)
+	{
+		token.SetTokenType(Token::KEY_DOUBLE);
+	}
 	else if (strcmp(token.GetText(), "else") == 0)
 	{
 		token.SetTokenType(Token::KEY_ELSE);
@@ -1000,6 +1111,10 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	else if (strcmp(token.GetText(), "int") == 0)
 	{
 		token.SetTokenType(Token::KEY_INT);
+	}
+	else if (strcmp(token.GetText(), "long") == 0)
+	{
+		token.SetTokenType(Token::KEY_LONG);
 	}
 	else if (strcmp(token.GetText(), "namespace") == 0)
 	{
@@ -1037,9 +1152,17 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 	{
 		token.SetTokenType(Token::KEY_THIS);
 	}
+	else if (strcmp(token.GetText(), "uchar") == 0)
+	{
+		token.SetTokenType(Token::KEY_UCHAR);
+	}
 	else if (strcmp(token.GetText(), "uint") == 0)
 	{
 		token.SetTokenType(Token::KEY_UINT);
+	}
+	else if (strcmp(token.GetText(), "ulong") == 0)
+	{
+		token.SetTokenType(Token::KEY_ULONG);
 	}
 	else if (strcmp(token.GetText(), "ushort") == 0)
 	{
@@ -1110,6 +1233,42 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 	{
 		token.SetUIntValue(value);
 	}
+}
+
+
+void Lexer::EvaluateLongToken(Token &token) const
+{
+	bu64_t value;
+	const char *text = token.GetText();
+	if (token.HasAnnotation(Token::OCTAL))
+	{
+		sscanf(text, "%" BOND_SCNo64, &value);
+	}
+	else if (token.HasAnnotation(Token::HEX))
+	{
+		sscanf(text, "%" BOND_SCNx64, &value);
+	}
+	else
+	{
+		sscanf(text, "%" BOND_SCNu64, &value);
+	}
+
+	if (token.GetTokenType() == Token::CONST_LONG)
+	{
+		token.SetLongValue(static_cast<bi64_t>(value));
+	}
+	else
+	{
+		token.SetULongValue(value);
+	}
+}
+
+
+void Lexer::EvaluateDoubleToken(Token &token) const
+{
+	bf64_t value;
+	sscanf(token.GetText(), "%" BOND_SCNf64, &value);
+	token.SetDoubleValue(value);
 }
 
 
@@ -1192,6 +1351,24 @@ bool Lexer::IsHexChar(char c) const
 bool Lexer::IsBadNumberChar(char c) const
 {
 	return IsIdentifierChar(c) || (c == '.');
+}
+
+
+bool Lexer::IsExponentChar(char c) const
+{
+	return (c == 'e') || (c == 'E');
+}
+
+
+bool Lexer::IsFloatSuffixChar(char c) const
+{
+	return (c == 'f') || (c == 'F');
+}
+
+
+bool Lexer::IsLongSuffixChar(char c) const
+{
+	return (c == 'l') || (c == 'L');
 }
 
 

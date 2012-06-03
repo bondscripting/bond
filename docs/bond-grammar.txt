@@ -72,11 +72,15 @@ primitive_type_specifier
   : VOID
   | BOOL
   | CHAR
+  | UCHAR
   | SHORT
   | USHORT
   | INT
   | UINT
+  | LONG
+  | ULONG
   | FLOAT
+  | DOUBLE
 
 named_initializer_list
   : named_initializer

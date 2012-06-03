@@ -228,8 +228,12 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			}
 			break;
 			case OC_PARAM_VAL64:
-				// TODO.
-				break;
+			{
+				const size_t valueIndex = ReadValue16().mUShort;
+				const bu64_t value = mValue64Table[valueIndex].mULong;
+				mWriter.Write("0x%" BOND_PRIx64, value);
+			}
+			break;
 			case OC_PARAM_OFF16:
 			{
 				const bi32_t offset = ReadValue16().mShort;

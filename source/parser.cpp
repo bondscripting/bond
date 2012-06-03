@@ -301,6 +301,8 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 
 // struct_declaration
 //   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+//   | STRUCT REF IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+//   | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
 StructDeclaration *ParserCore::ParseStructDeclaration()
 {
 	StructDeclaration *declaration = NULL;
@@ -651,11 +653,15 @@ TypeSpecifier *ParserCore::ParseTypeSpecifier()
 //   : VOID
 //   | BOOL
 //   | CHAR
+//   | UCHAR
 //   | SHORT
 //   | USHORT
 //   | INT
 //   | UINT
+//   | LONG
+//   | ULONG
 //   | FLOAT
+//   | DOUBLE
 TypeSpecifier *ParserCore::ParsePrimitiveTypeSpecifier()
 {
 	TypeSpecifier *specifier = NULL;

@@ -50,15 +50,22 @@ public:
 		switch (type)
 		{
 			case Token::KEY_BOOL:
+			case Token::KEY_CHAR:
 			case Token::KEY_SHORT:
 			case Token::KEY_INT:
 				return mOpCodeInt;
-			case Token::KEY_UINT:
+			case Token::KEY_UCHAR:
 			case Token::KEY_USHORT:
+			case Token::KEY_UINT:
 				return mOpCodeUInt;
+			case Token::KEY_LONG:
+				return mOpCodeLong;
+			case Token::KEY_ULONG:
+				return mOpCodeULong;
 			case Token::KEY_FLOAT:
 				return mOpCodeFloat;
-				// TODO Handle long types when they are implemented.
+			case Token::KEY_DOUBLE:
+				return mOpCodeDouble;
 			default:
 				return OPCODE_NOP;
 		}
@@ -231,7 +238,10 @@ private:
 	void EmitPushConstant(const TypeAndValue &typeAndValue);
 	void EmitPushConstantInt(bi32_t value);
 	void EmitPushConstantUInt(bu32_t value);
+	void EmitPushConstantLong(bi64_t value);
+	void EmitPushConstantULong(bu64_t value);
 	void EmitPushConstantFloat(bf32_t value);
+	void EmitPushConstantDouble(bf64_t value);
 
 	void EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
@@ -574,6 +584,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 				{
 					case Token::KEY_BOOL:
 					case Token::KEY_CHAR:
+					case Token::KEY_UCHAR:
 					case Token::KEY_SHORT:
 					case Token::KEY_USHORT:
 					case Token::KEY_INT:
@@ -582,7 +593,11 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 						opCode = OPCODE_RETURN32;
 						break;
 
-					// TODO: Handle long types when they exist.
+					case Token::KEY_LONG:
+					case Token::KEY_ULONG:
+					case Token::KEY_DOUBLE:
+						opCode = OPCODE_RETURN64;
+						break;
 
 					default:
 						// TODO
@@ -1041,6 +1056,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 		switch (typeDescriptor->GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
+			case Token::KEY_UCHAR:
 				EmitOpCodeWithOffset(OPCODE_PUSHUC, offset);
 				break;
 			case Token::KEY_CHAR:
@@ -1056,6 +1072,11 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
 				EmitPushFramePointerIndirectValue32(offset);
+				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
+			case Token::KEY_DOUBLE:
+				EmitPushFramePointerIndirectValue64(offset);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -1172,6 +1193,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 		switch (typeDescriptor->GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
+			case Token::KEY_UCHAR:
 				byteCode.push_back(OPCODE_LOADUC);
 				break;
 			case Token::KEY_CHAR:
@@ -1187,6 +1209,11 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
 				byteCode.push_back(OPCODE_LOAD32);
+				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
+			case Token::KEY_DOUBLE:
+				byteCode.push_back(OPCODE_LOAD64);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -1222,14 +1249,23 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 		case Token::KEY_INT:
 			EmitPushConstantInt(typeAndValue.GetIntValue());
 			break;
+		case Token::KEY_UCHAR:
 		case Token::KEY_USHORT:
 		case Token::KEY_UINT:
 			EmitPushConstantUInt(typeAndValue.GetUIntValue());
 			break;
+		case Token::KEY_LONG:
+			EmitPushConstantLong(typeAndValue.GetLongValue());
+			break;
+		case Token::KEY_ULONG:
+			EmitPushConstantULong(typeAndValue.GetULongValue());
+			break;
 		case Token::KEY_FLOAT:
 			EmitPushConstantFloat(typeAndValue.GetFloatValue());
 			break;
-		// TODO: Deal with long types when they are implemented.
+		case Token::KEY_DOUBLE:
+			EmitPushConstantDouble(typeAndValue.GetDoubleValue());
+			break;
 		default:
 			if (typeDescriptor->IsNullType())
 			{
@@ -1363,6 +1399,51 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 }
 
 
+void GeneratorCore::EmitPushConstantLong(bi64_t value)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	switch (value)
+	{
+		case -1:
+			byteCode.push_back(OPCODE_CONSTL_N1);
+			break;
+		case 0:
+			byteCode.push_back(OPCODE_CONSTL_0);
+			break;
+		case 1:
+			byteCode.push_back(OPCODE_CONSTL_1);
+			break;
+		default:
+		{
+			byteCode.push_back(OPCODE_CONST64);
+			EmitIndexedValue64(Value64(value));
+		}
+		break;
+	}
+}
+
+
+void GeneratorCore::EmitPushConstantULong(bu64_t value)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	switch (value)
+	{
+		case 0:
+			byteCode.push_back(OPCODE_CONSTL_0);
+			break;
+		case 1:
+			byteCode.push_back(OPCODE_CONSTL_1);
+			break;
+		default:
+		{
+			byteCode.push_back(OPCODE_CONST64);
+			EmitIndexedValue64(Value64(value));
+		}
+		break;
+	}
+}
+
+
 void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 {
 	ByteCode::Type &byteCode = GetByteCode();
@@ -1402,6 +1483,45 @@ void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 }
 
 
+void GeneratorCore::EmitPushConstantDouble(bf64_t value)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	if (value == -2.0)
+	{
+		byteCode.push_back(OPCODE_CONSTD_N2);
+	}
+	else if (value == -1.0)
+	{
+		byteCode.push_back(OPCODE_CONSTD_N1);
+	}
+	else if (value == -0.5)
+	{
+		byteCode.push_back(OPCODE_CONSTD_NH);
+	}
+	else if (value == 0.0)
+	{
+		byteCode.push_back(OPCODE_CONSTD_0);
+	}
+	else if (value == 0.5)
+	{
+		byteCode.push_back(OPCODE_CONSTD_H);
+	}
+	else if (value == 1.0)
+	{
+		byteCode.push_back(OPCODE_CONSTD_1);
+	}
+	else if (value == 2.0)
+	{
+		byteCode.push_back(OPCODE_CONSTD_2);
+	}
+	else
+	{
+		byteCode.push_back(OPCODE_CONST64);
+		EmitIndexedValue64(Value64(value));
+	}
+}
+
+
 void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor)
 {
 	switch (result.mContext)
@@ -1432,6 +1552,7 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_CHAR:
+			case Token::KEY_UCHAR:
 				EmitOpCodeWithOffset(OPCODE_POPC, offset);
 				break;
 			case Token::KEY_SHORT:
@@ -1442,6 +1563,11 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
 				EmitPopFramePointerIndirectValue32(offset);
+				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
+			case Token::KEY_DOUBLE:
+				EmitPopFramePointerIndirectValue64(offset);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -1545,6 +1671,7 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_CHAR:
+			case Token::KEY_UCHAR:
 				byteCode.push_back(OPCODE_STOREC);
 				break;
 			case Token::KEY_SHORT:
@@ -1553,8 +1680,13 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 				break;
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
 			case Token::KEY_FLOAT:
 				byteCode.push_back(OPCODE_STORE32);
+				break;
+			case Token::KEY_DOUBLE:
+				byteCode.push_back(OPCODE_STORE64);
 				break;
 			default:
 				// TODO: Deal with non-primitive values.
@@ -1608,11 +1740,9 @@ void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
 
 void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
 {
-	// TODO: Handle long types when they are implemented.
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (destType->GetPrimitiveType())
 	{
-		case Token::KEY_BOOL:
 		case Token::KEY_CHAR:
 			switch (sourceType->GetPrimitiveType())
 			{
@@ -1622,9 +1752,46 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_UINT:
 					byteCode.push_back(OPCODE_ITOC);
 					break;
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					byteCode.push_back(OPCODE_ITOC);
+					break;
 				case Token::KEY_FLOAT:
 					byteCode.push_back(OPCODE_FTOI);
 					byteCode.push_back(OPCODE_ITOC);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOI);
+					byteCode.push_back(OPCODE_ITOC);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_BOOL:
+		case Token::KEY_UCHAR:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_SHORT:
+				case Token::KEY_USHORT:
+				case Token::KEY_INT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_UITOUC);
+					break;
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					byteCode.push_back(OPCODE_UITOUC);
+					break;
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_FTOUI);
+					byteCode.push_back(OPCODE_UITOUC);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOUI);
+					byteCode.push_back(OPCODE_UITOUC);
 					break;
 				default:
 					break;
@@ -1638,8 +1805,17 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_UINT:
 					byteCode.push_back(OPCODE_ITOS);
 					break;
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					byteCode.push_back(OPCODE_ITOS);
+					break;
 				case Token::KEY_FLOAT:
 					byteCode.push_back(OPCODE_FTOI);
+					byteCode.push_back(OPCODE_ITOS);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOI);
 					byteCode.push_back(OPCODE_ITOS);
 					break;
 				default:
@@ -1652,11 +1828,20 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			{
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_ITOS);
+					byteCode.push_back(OPCODE_UITOUS);
+					break;
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					byteCode.push_back(OPCODE_UITOUS);
 					break;
 				case Token::KEY_FLOAT:
 					byteCode.push_back(OPCODE_FTOUI);
-					byteCode.push_back(OPCODE_ITOS);
+					byteCode.push_back(OPCODE_UITOUS);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOUI);
+					byteCode.push_back(OPCODE_UITOUS);
 					break;
 				default:
 					break;
@@ -1666,8 +1851,15 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 		case Token::KEY_INT:
 			switch (sourceType->GetPrimitiveType())
 			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					break;
 				case Token::KEY_FLOAT:
 					byteCode.push_back(OPCODE_FTOI);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOI);
 					break;
 				default:
 					break;
@@ -1677,8 +1869,15 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 		case Token::KEY_UINT:
 			switch (sourceType->GetPrimitiveType())
 			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_LTOI);
+					break;
 				case Token::KEY_FLOAT:
 					byteCode.push_back(OPCODE_FTOUI);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_DTOUI);
 					break;
 				default:
 					break;
@@ -1693,9 +1892,46 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_INT:
 					byteCode.push_back(OPCODE_ITOF);
 					break;
+				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 					byteCode.push_back(OPCODE_UITOF);
+					break;
+				case Token::KEY_LONG:
+					byteCode.push_back(OPCODE_LTOF);
+					break;
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_ULTOF);
+					break;
+				case Token::KEY_DOUBLE:
+					byteCode.push_back(OPCODE_FTOD);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_DOUBLE:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					byteCode.push_back(OPCODE_ITOD);
+					break;
+				case Token::KEY_UCHAR:
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					byteCode.push_back(OPCODE_UITOD);
+					break;
+				case Token::KEY_LONG:
+					byteCode.push_back(OPCODE_LTOD);
+					break;
+				case Token::KEY_ULONG:
+					byteCode.push_back(OPCODE_ULTOD);
+					break;
+				case Token::KEY_FLOAT:
+					byteCode.push_back(OPCODE_DTOF);
 					break;
 				default:
 					break;
@@ -2055,7 +2291,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const Unary
 {
 	const UnaryExpression *unary = unaryExpression;
 	const Expression *rhs = unaryExpression;
-	//const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
 	bool negated = false;
 	while (unary != NULL)
 	{
@@ -2079,14 +2315,13 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const Unary
 
 	if (negated)
 	{
-		// TODO: Handle long type when it is implemented.
-		//if (resultDescriptor->GetPrimitiveType() == Token::KEY_LONG)
-		//{
-		//	ByteCode::Type &byteCode = GetByteCode();
-		//	byteCode.push_back(OPCODE_CONSTL_1);
-		//	byteCode.push_back(OPCODE_XORL);
-		//}
-		//else
+		if (resultDescriptor->GetPrimitiveType() == Token::KEY_LONG)
+		{
+			ByteCode::Type &byteCode = GetByteCode();
+			byteCode.push_back(OPCODE_CONSTL_1);
+			byteCode.push_back(OPCODE_XORL);
+		}
+		else
 		{
 			ByteCode::Type &byteCode = GetByteCode();
 			byteCode.push_back(OPCODE_CONSTI_1);
@@ -2148,7 +2383,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 
 		case GeneratorResult::CONTEXT_FP_INDIRECT:
 		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-			EmitPushResult(rhResult, unaryExpression->GetTypeDescriptor());
+			EmitPushResult(rhResult, rhs->GetTypeDescriptor());
 			result = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
 			break;
 

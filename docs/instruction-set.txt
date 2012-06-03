@@ -111,7 +111,9 @@ dup                 ..., value64 -> ..., value64, value64
 dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
 
 itoc                ..., int -> ..., int
+uitouc              ..., uint -> ..., uint
 itos                ..., int -> ..., int
+uitous              ..., uint -> ..., uint
 itol                ..., int -> ..., long
 uitoul              ..., uint -> ..., ulong
 itof                ..., int -> ..., float

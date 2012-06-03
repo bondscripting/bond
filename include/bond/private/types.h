@@ -21,6 +21,18 @@
 #define BOND_SCNx32 SCNx32
 #define BOND_PRIx32 PRIx32
 
+#define BOND_SCNd64 SCNd64
+#define BOND_PRId64 PRId64
+
+#define BOND_SCNu64 SCNu64
+#define BOND_PRIu64 PRIu64
+
+#define BOND_SCNo64 SCNo64
+#define BOND_PRIo64 PRIo64
+
+#define BOND_SCNx64 SCNx64
+#define BOND_PRIx64 PRIx64
+
 #else
 
 #define BOND_SCNd32 "d"
@@ -35,10 +47,25 @@
 #define BOND_SCNx32 "x"
 #define BOND_PRIx32 "x"
 
+#define BOND_SCNd64 "lld"
+#define BOND_PRId64 "lld"
+
+#define BOND_SCNu64 "llu"
+#define BOND_PRIu64 "llu"
+
+#define BOND_SCNo64 "llo"
+#define BOND_PRIo64 "llo"
+
+#define BOND_SCNx64 "llx"
+#define BOND_PRIx64 "llx"
+
 #endif
 
 #define BOND_SCNf32 "f"
 #define BOND_PRIf32 "f"
+
+#define BOND_SCNf64 "lf"
+#define BOND_PRIf64 "lf"
 
 namespace Bond
 {

@@ -103,20 +103,28 @@ TokenTypeSet::TokenTypeSet(
 
 const Token BOOL_TOKEN("bool", Token::KEY_BOOL);
 const Token CHAR_TOKEN("char", Token::KEY_CHAR);
+const Token UCHAR_TOKEN("uchar", Token::KEY_UCHAR);
 const Token INT_TOKEN("int", Token::KEY_INT);
 const Token UINT_TOKEN("uint", Token::KEY_UINT);
+const Token LONG_TOKEN("long", Token::KEY_LONG);
+const Token ULONG_TOKEN("ulong", Token::KEY_ULONG);
 const Token FLOAT_TOKEN("float", Token::KEY_FLOAT);
+const Token DOUBLE_TOKEN("double", Token::KEY_DOUBLE);
 
 
 const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET(
 	"PRIMITIVE_TYPE_SPECIFIER",
 	Token::KEY_BOOL,
 	Token::KEY_CHAR,
+	Token::KEY_UCHAR,
 	Token::KEY_SHORT,
 	Token::KEY_USHORT,
 	Token::KEY_INT,
 	Token::KEY_UINT,
+	Token::KEY_LONG,
+	Token::KEY_ULONG,
 	Token::KEY_FLOAT,
+	Token::KEY_DOUBLE,
 	Token::KEY_VOID
 );
 
@@ -130,36 +138,46 @@ const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET(
 const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET(
 	"INTEGER_TYPE_SPECIFIER",
 	Token::KEY_CHAR,
+	Token::KEY_UCHAR,
 	Token::KEY_SHORT,
 	Token::KEY_USHORT,
 	Token::KEY_INT,
-	Token::KEY_UINT
+	Token::KEY_UINT,
+	Token::KEY_LONG,
+	Token::KEY_ULONG
 );
 
 
 const TokenTypeSet SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET(
 	"SIGNED_INTEGER_TYPE_SPECIFIER",
 	Token::KEY_CHAR,
+	Token::KEY_SHORT,
 	Token::KEY_INT,
-	Token::KEY_SHORT
+	Token::KEY_LONG
 );
 
 
 const TokenTypeSet UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET(
 	"UNSIGNED_INTEGER_TYPE_SPECIFIER",
+	Token::KEY_UCHAR,
+	Token::KEY_USHORT,
 	Token::KEY_UINT,
-	Token::KEY_USHORT
+	Token::KEY_ULONG
 );
 
 
 const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET(
 	"NUMERIC_TYPE_SPECIFIER",
 	Token::KEY_CHAR,
+	Token::KEY_UCHAR,
 	Token::KEY_SHORT,
 	Token::KEY_USHORT,
 	Token::KEY_INT,
 	Token::KEY_UINT,
-	Token::KEY_FLOAT
+	Token::KEY_LONG,
+	Token::KEY_ULONG,
+	Token::KEY_FLOAT,
+	Token::KEY_DOUBLE
 );
 
 
@@ -290,7 +308,10 @@ const TokenTypeSet CONSTANT_VALUES_TYPESET(
 	Token::CONST_CHAR,
 	Token::CONST_INT,
 	Token::CONST_UINT,
+	Token::CONST_LONG,
+	Token::CONST_ULONG,
 	Token::CONST_FLOAT,
+	Token::CONST_DOUBLE,
 	Token::CONST_STRING,
 	Token::CONST_NULL
 );

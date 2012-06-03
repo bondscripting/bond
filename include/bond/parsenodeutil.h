@@ -121,14 +121,23 @@ Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 
 	switch (type->GetPrimitiveType())
 	{
-		case Token::KEY_FLOAT:
-			resultValue.mFloat = op(l.mFloat, r.mFloat);
-			break;
 		case Token::KEY_INT:
 			resultValue.mInt = op(l.mInt, r.mInt);
 			break;
 		case Token::KEY_UINT:
 			resultValue.mUInt = op(l.mUInt, r.mUInt);
+			break;
+		case Token::KEY_LONG:
+			resultValue.mLong = op(l.mLong, r.mLong);
+			break;
+		case Token::KEY_ULONG:
+			resultValue.mULong = op(l.mULong, r.mULong);
+			break;
+		case Token::KEY_FLOAT:
+			resultValue.mFloat = op(l.mFloat, r.mFloat);
+			break;
+		case Token::KEY_DOUBLE:
+			resultValue.mDouble = op(l.mDouble, r.mDouble);
 			break;
 		default:
 			break;
@@ -153,6 +162,12 @@ Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 		case Token::KEY_UINT:
 			resultValue.mUInt = op(l.mUInt, r.mUInt);
 			break;
+		case Token::KEY_LONG:
+			resultValue.mLong = op(l.mLong, r.mLong);
+			break;
+		case Token::KEY_ULONG:
+			resultValue.mULong = op(l.mULong, r.mULong);
+			break;
 		default:
 			break;
 	}
@@ -174,14 +189,23 @@ Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs,
 		case Token::KEY_BOOL:
 			resultValue.mBool = op(l.mBool, r.mBool);
 			break;
-		case Token::KEY_FLOAT:
-			resultValue.mBool = op(l.mFloat, r.mFloat);
-			break;
 		case Token::KEY_INT:
 			resultValue.mBool = op(l.mInt, r.mInt);
 			break;
 		case Token::KEY_UINT:
 			resultValue.mBool = op(l.mUInt, r.mUInt);
+			break;
+		case Token::KEY_LONG:
+			resultValue.mBool = op(l.mLong, r.mLong);
+			break;
+		case Token::KEY_ULONG:
+			resultValue.mBool = op(l.mULong, r.mULong);
+			break;
+		case Token::KEY_FLOAT:
+			resultValue.mBool = op(l.mFloat, r.mFloat);
+			break;
+		case Token::KEY_DOUBLE:
+			resultValue.mBool = op(l.mDouble, r.mDouble);
 			break;
 		default:
 			break;

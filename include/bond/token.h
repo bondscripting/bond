@@ -16,12 +16,14 @@
 	BOND_TOKEN_ITEM(KEY_CONTINUE)             \
 	BOND_TOKEN_ITEM(KEY_DEFAULT)              \
 	BOND_TOKEN_ITEM(KEY_DO)                   \
+	BOND_TOKEN_ITEM(KEY_DOUBLE)               \
 	BOND_TOKEN_ITEM(KEY_ELSE)                 \
 	BOND_TOKEN_ITEM(KEY_ENUM)                 \
 	BOND_TOKEN_ITEM(KEY_FLOAT)                \
 	BOND_TOKEN_ITEM(KEY_FOR)                  \
 	BOND_TOKEN_ITEM(KEY_IF)                   \
 	BOND_TOKEN_ITEM(KEY_INT)                  \
+	BOND_TOKEN_ITEM(KEY_LONG)                 \
 	BOND_TOKEN_ITEM(KEY_NAMESPACE)            \
 	BOND_TOKEN_ITEM(KEY_NATIVE)               \
 	BOND_TOKEN_ITEM(KEY_REF)                  \
@@ -31,7 +33,9 @@
 	BOND_TOKEN_ITEM(KEY_STRUCT)               \
 	BOND_TOKEN_ITEM(KEY_SWITCH)               \
 	BOND_TOKEN_ITEM(KEY_THIS)                 \
+	BOND_TOKEN_ITEM(KEY_UCHAR)                \
 	BOND_TOKEN_ITEM(KEY_UINT)                 \
+	BOND_TOKEN_ITEM(KEY_ULONG)                \
 	BOND_TOKEN_ITEM(KEY_USHORT)               \
 	BOND_TOKEN_ITEM(KEY_VOID)                 \
 	BOND_TOKEN_ITEM(KEY_WHILE)                \
@@ -96,7 +100,10 @@
 	BOND_TOKEN_ITEM(CONST_CHAR)               \
 	BOND_TOKEN_ITEM(CONST_INT)                \
 	BOND_TOKEN_ITEM(CONST_UINT)               \
+	BOND_TOKEN_ITEM(CONST_LONG)               \
+	BOND_TOKEN_ITEM(CONST_ULONG)              \
 	BOND_TOKEN_ITEM(CONST_FLOAT)              \
+	BOND_TOKEN_ITEM(CONST_DOUBLE)             \
 	BOND_TOKEN_ITEM(CONST_STRING)             \
 	BOND_TOKEN_ITEM(CONST_NULL)               \
 	                                          \
@@ -228,14 +235,23 @@ public:
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; }
 
-	bf32_t GetFloatValue() const { return mValue.mFloat; }
-	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
-
 	bi32_t GetIntValue() const { return mValue.mInt; }
 	void SetIntValue(bi32_t value) { mValue.mInt = value; }
 
 	bu32_t GetUIntValue() const { return mValue.mUInt; }
 	void SetUIntValue(bu32_t value) { mValue.mUInt = value; }
+
+	bi64_t GetLongValue() const { return mValue.mLong; }
+	void SetLongValue(bi64_t value) { mValue.mLong = value; }
+
+	bu64_t GetULongValue() const { return mValue.mULong; }
+	void SetULongValue(bu64_t value) { mValue.mULong = value; }
+
+	bf32_t GetFloatValue() const { return mValue.mFloat; }
+	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
+
+	bf64_t GetDoubleValue() const { return mValue.mDouble; }
+	void SetDoubleValue(bf64_t value) { mValue.mDouble = value; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
 	int GetStringLength() const { return mValue.mString.length; }
@@ -296,9 +312,13 @@ private:
 
 extern const Token BOOL_TOKEN;
 extern const Token CHAR_TOKEN;
+extern const Token UCHAR_TOKEN;
 extern const Token INT_TOKEN;
 extern const Token UINT_TOKEN;
+extern const Token LONG_TOKEN;
+extern const Token ULONG_TOKEN;
 extern const Token FLOAT_TOKEN;
+extern const Token DOUBLE_TOKEN;
 
 extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
 extern const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;

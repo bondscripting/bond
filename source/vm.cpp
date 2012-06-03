@@ -861,10 +861,24 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_UITOUC:
+			{
+				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<unsigned char>(*a);
+			}
+			break;
+
 			case OPCODE_ITOS:
 			{
 				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bi16_t>(*a);
+			}
+			break;
+
+			case OPCODE_UITOUS:
+			{
+				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<bu16_t>(*a);
 			}
 			break;
 

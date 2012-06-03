@@ -227,7 +227,10 @@ public:
 	static TypeDescriptor GetCharType();
 	static TypeDescriptor GetIntType();
 	static TypeDescriptor GetUIntType();
+	static TypeDescriptor GetLongType();
+	static TypeDescriptor GetULongType();
 	static TypeDescriptor GetFloatType();
+	static TypeDescriptor GetDoubleType();
 	static TypeDescriptor GetStringType();
 	static TypeDescriptor GetPointerType(const TypeSpecifier *specifier);
 	static TypeDescriptor GetConstPointerType(const TypeSpecifier *specifier);
@@ -1408,7 +1411,10 @@ extern const TypeSpecifier BOOL_TYPE_SPECIFIER;
 extern const TypeSpecifier CHAR_TYPE_SPECIFIER;
 extern const TypeSpecifier INT_TYPE_SPECIFIER;
 extern const TypeSpecifier UINT_TYPE_SPECIFIER;
+extern const TypeSpecifier LONG_TYPE_SPECIFIER;
+extern const TypeSpecifier ULONG_TYPE_SPECIFIER;
 extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
+extern const TypeSpecifier DOUBLE_TYPE_SPECIFIER;
 
 }
 

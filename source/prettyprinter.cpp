@@ -593,14 +593,26 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 			case Token::KEY_CHAR:
 				mWriter.Write("%c", static_cast<char>(tav.GetIntValue()));
 				return true;
-			case Token::KEY_FLOAT:
-				mWriter.Write("%" BOND_PRIf32, tav.GetFloatValue());
+			case Token::KEY_UCHAR:
+				mWriter.Write("%c", static_cast<unsigned char>(tav.GetUIntValue()));
 				return true;
 			case Token::KEY_INT:
 				mWriter.Write("%" BOND_PRId32, tav.GetIntValue());
 				return true;
 			case Token::KEY_UINT:
 				mWriter.Write("%" BOND_PRIu32, tav.GetUIntValue());
+				return true;
+			case Token::KEY_LONG:
+				mWriter.Write("%" BOND_PRId64, tav.GetLongValue());
+				return true;
+			case Token::KEY_ULONG:
+				mWriter.Write("%" BOND_PRId64, tav.GetULongValue());
+				return true;
+			case Token::KEY_FLOAT:
+				mWriter.Write("%" BOND_PRIf32, tav.GetFloatValue());
+				return true;
+			case Token::KEY_DOUBLE:
+				mWriter.Write("%" BOND_PRIf64, tav.GetDoubleValue());
 				return true;
 			default:
 				break;

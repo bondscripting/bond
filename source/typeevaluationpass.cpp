@@ -626,8 +626,17 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 		case Token::CONST_UINT:
 			typeDescriptor = TypeDescriptor::GetUIntType();
 			break;
+		case Token::CONST_LONG:
+			typeDescriptor = TypeDescriptor::GetLongType();
+			break;
+		case Token::CONST_ULONG:
+			typeDescriptor = TypeDescriptor::GetULongType();
+			break;
 		case Token::CONST_FLOAT:
 			typeDescriptor = TypeDescriptor::GetFloatType();
+			break;
+		case Token::CONST_DOUBLE:
+			typeDescriptor = TypeDescriptor::GetDoubleType();
 			break;
 		case Token::CONST_STRING:
 			typeDescriptor = TypeDescriptor::GetStringType();

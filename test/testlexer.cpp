@@ -13,21 +13,27 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 		Bond::Token::KEY_CONTINUE,
 		Bond::Token::KEY_DEFAULT,
 		Bond::Token::KEY_DO,
+		Bond::Token::KEY_DOUBLE,
 		Bond::Token::KEY_ELSE,
 		Bond::Token::KEY_ENUM,
 		Bond::Token::KEY_FLOAT,
 		Bond::Token::KEY_FOR,
 		Bond::Token::KEY_IF,
 		Bond::Token::KEY_INT,
+		Bond::Token::KEY_LONG,
 		Bond::Token::KEY_NAMESPACE,
 		Bond::Token::KEY_NATIVE,
 		Bond::Token::KEY_REF,
 		Bond::Token::KEY_RETURN,
+		Bond::Token::KEY_SHORT,
 		Bond::Token::KEY_SIZEOF,
 		Bond::Token::KEY_STRUCT,
 		Bond::Token::KEY_SWITCH,
 		Bond::Token::KEY_THIS,
+		Bond::Token::KEY_UCHAR,
 		Bond::Token::KEY_UINT,
+		Bond::Token::KEY_ULONG,
+		Bond::Token::KEY_USHORT,
 		Bond::Token::KEY_VOID,
 		Bond::Token::KEY_WHILE,
 		Bond::Token::OP_PLUS,
@@ -106,8 +112,17 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const Bond::bu32_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
 	const int NUM_UINTS = sizeof(EXPECTED_UINTS) / sizeof(*EXPECTED_UINTS);
 
-	const Bond::bf32_t EXPECTED_FLOATS[] = { 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
+	const Bond::bi64_t EXPECTED_LONGS[] = { 98765, 07777, 0x7fffffff, 0xffffffff, Bond::BOND_LONG_MAX };
+	const int NUM_LONGS = sizeof(EXPECTED_LONGS) / sizeof(*EXPECTED_LONGS);
+
+	const Bond::bu64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX };
+	const int NUM_ULONGS = sizeof(EXPECTED_ULONGS) / sizeof(*EXPECTED_ULONGS);
+
+	const Bond::bf32_t EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
 	const int NUM_FLOATS = sizeof(EXPECTED_FLOATS) / sizeof(*EXPECTED_FLOATS);
+
+	const Bond::bf64_t EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2 };
+	const int NUM_DOUBLES = sizeof(EXPECTED_DOUBLES) / sizeof(*EXPECTED_DOUBLES);
 
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
@@ -154,6 +169,30 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 			("Expected %" BOND_PRIu32 " but was %" BOND_PRIu32 ".", expected, actual));
 	}
 
+	for (int i = 0; i < NUM_LONGS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_LONG == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_LONG), token->GetTokenName()));
+
+		const Bond::bi64_t expected = EXPECTED_LONGS[i];
+		const Bond::bi64_t actual = token->GetLongValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected %" BOND_PRId64 " but was %" BOND_PRId64 ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_ULONGS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_ULONG == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName()));
+
+		const Bond::bu64_t expected = EXPECTED_ULONGS[i];
+		const Bond::bu64_t actual = token->GetULongValue();
+		ASSERT_FORMAT(expected == actual,
+			("Expected %" BOND_PRIu64 " but was %" BOND_PRIu64 ".", expected, actual));
+	}
+
 	for (int i = 0; i < NUM_FLOATS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
@@ -162,8 +201,20 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
 		const Bond::bf32_t actual = token->GetFloatValue();
-		ASSERT_FORMAT(expected == actual,
+		ASSERT_FORMAT((expected >= (actual - 0.0000001f)) && (expected <= (actual + 0.0000001f)),
 			("Expected %" BOND_PRIf32 " but was %" BOND_PRIf32 ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_DOUBLES; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_DOUBLE == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_DOUBLE), token->GetTokenName()));
+
+		const Bond::bf64_t expected = EXPECTED_DOUBLES[i];
+		const Bond::bf64_t actual = token->GetDoubleValue();
+		ASSERT_FORMAT((expected >= (actual - 0.0000001)) && (expected <= (actual + 0.0000001)),
+			("Expected %.16" BOND_PRIf64 " but was %.16" BOND_PRIf64 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_CHARS; ++i)
