@@ -51,6 +51,27 @@ private:
 	int mIndex;
 };
 
+
+class TokenCollection
+{
+public:
+	TokenCollection(const Token *tokens, int numTokens):
+		mNextCollection(NULL),
+		mTokens(tokens),
+		mNumTokens(numTokens)
+	{}
+
+	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
+
+	TokenCollection *GetNextCollection() const { return mNextCollection; }
+	void SetNextCollection(TokenCollection *tokenCollection) { mNextCollection = tokenCollection; }
+
+private:
+	TokenCollection *mNextCollection;
+	const Token *mTokens;
+	int mNumTokens;
+};
+
 }
 
 #endif

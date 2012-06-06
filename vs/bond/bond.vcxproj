@@ -57,7 +57,6 @@
     <ClInclude Include="..\..\include\bond\stdouttextwriter.h" />
     <ClInclude Include="..\..\include\bond\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\streampos.h" />
-    <ClInclude Include="..\..\include\bond\stringallocator.h" />
     <ClInclude Include="..\..\include\bond\stringutil.h" />
     <ClInclude Include="..\..\include\bond\symboltable.h" />
     <ClInclude Include="..\..\include\bond\textwriter.h" />
@@ -68,6 +67,7 @@
     <ClInclude Include="..\..\include\bond\value.h" />
     <ClInclude Include="..\..\include\bond\vector.h" />
     <ClInclude Include="..\..\include\bond\version.h" />
+    <ClInclude Include="..\..\source\private\memory.h" />
     <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
     <ClInclude Include="..\..\source\private\typeevaluationpass.h" />
@@ -98,7 +98,6 @@
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
     <ClCompile Include="..\..\source\stdouttextwriter.cpp" />
-    <ClCompile Include="..\..\source\stringallocator.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />

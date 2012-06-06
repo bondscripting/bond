@@ -7,21 +7,14 @@
 #include "bond/endian.h"
 #include "bond/fileloader.h"
 #include "bond/hashedstring.h"
-#include "bond/math.h"
 #include "bond/opcodes.h"
 #include "bond/value.h"
 #include "bond/vector.h"
+#include "private/memory.h"
 #include <string.h>
 
 namespace Bond
 {
-
-template<typename T>
-inline size_t TallyMemoryRequirement(size_t start, size_t count)
-{
-	return AlignUp(start, sizeof(T)) + (count * sizeof(T));
-}
-
 
 class CboLoaderCore
 {

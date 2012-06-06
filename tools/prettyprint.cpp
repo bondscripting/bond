@@ -34,7 +34,7 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		lexer.Lex(script.mData, script.mLength);
 		fileLoader.DisposeFile(script);
 
-		Bond::TokenStream stream = lexer.GetTokenStream();
+		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(allocator, errorBuffer);
 		parser.Parse(stream);

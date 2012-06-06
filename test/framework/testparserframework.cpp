@@ -54,7 +54,7 @@ static bool RunParserTest(
 	{
 		Bond::Lexer lexer(lexerAllocator);
 		lexer.Lex(script.mData, script.mLength);
-		Bond::TokenStream stream = lexer.GetTokenStream();
+		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		parser.Parse(stream);

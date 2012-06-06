@@ -135,12 +135,13 @@ void Parser::Dispose()
 }
 
 
-void Parser::Parse(TokenStream &stream)
+TranslationUnit *Parser::Parse(TokenStream &stream)
 {
-	ParserCore core(mErrorBuffer, mFactory, stream);
-	TranslationUnit *translationUnit = core.Parse();
+	ParserCore parser(mErrorBuffer, mFactory, stream);
+	TranslationUnit *translationUnit = parser.Parse();
 	translationUnit->SetNextNode(mTranslationUnitList);
 	mTranslationUnitList = translationUnit;
+	return translationUnit;
 }
 
 

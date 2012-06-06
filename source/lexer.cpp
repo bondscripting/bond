@@ -1,7 +1,7 @@
 #include "bond/allocator.h"
 #include "bond/charstream.h"
 #include "bond/lexer.h"
-#include "bond/stringallocator.h"
+#include "private/memory.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +9,125 @@
 
 namespace Bond
 {
+
+class LexerCore
+{
+public:
+	LexerCore(Allocator &allocator, const char *text, int length):
+		mAllocator(allocator),
+		mText(text),
+		mTextLength(length),
+		mTokens(NULL),
+		mStringBuffer(NULL)
+	{}
+
+	TokenCollection *Lex();
+
+private:
+	//integral-digits[.[fractional-digits]][e[sign]exponential-digits]
+	enum LexState
+	{
+		STATE_SPACE,             // Whitespace.
+		STATE_PLUS,              // '+'
+		STATE_MINUS,             // '-'
+		STATE_STAR,              // '*'
+		STATE_SLASH,             // '/'
+		STATE_PERCENT,           // '%'
+		STATE_LT,                // '<'	
+		STATE_GT,                // '>'
+		STATE_LEFT,              // '<<'
+		STATE_RIGHT,             // '>>'
+		STATE_EQUAL,             // '='
+		STATE_NOT,               // '!'
+		STATE_AND,               // '&'
+		STATE_OR,                // '|'
+		STATE_XOR,               // '^'
+		STATE_COLON,             // ':'
+		STATE_ZERO,              // '0'
+		STATE_OCTAL,             // Octal integer.
+		STATE_HEX,               // Hex integer.
+		STATE_IDIGITS,           // Integral digits.
+		STATE_FDIGITS,           // Fractional digits.
+		STATE_EDIGITS,           // Exponential digits.
+		STATE_PERIOD,            // '.'
+		STATE_EXPONENT,          // 'e' or 'E' known to be inside a number.
+		STATE_EXPONENT_SIGN,     // '+' or '-' known to be inside a number's exponent.
+		STATE_FLOAT,             // Complete float literal.
+		STATE_UNSIGNED,          // Complete unsigned literal.
+		STATE_LONG,              // Complete long literal.
+		STATE_ULONG,             // Complete unsigned long literal.
+		STATE_BAD_NUMBER,        // Consume the remaining characters of an incorrectly formatted number.
+		STATE_IDENTIFIER,        // Sequence of characters forming an identifier.
+		STATE_CHAR,              // Character literal.
+		STATE_CHAR_ESCAPE,       // Escape sequence within a character literal.
+		STATE_CHAR_END,          // Expect the end quote of a character literal..
+		STATE_BAD_CHAR,          // Consume the remaining characters of an incorrectly formated character literal.
+		STATE_BAD_CHAR_ESCAPE,   // Consume the remaining characters of an incorrectly formated character literal.
+		STATE_STRING,            // String literal.
+		STATE_STRING_ESCAPE,     // Escape sequence within a string literal.
+		STATE_BAD_STRING,        // Consume the remaining characters of an incorrectly formatted literal.
+		STATE_BAD_STRING_ESCAPE, // Consume the remaining characters of an incorrectly formatted literal.
+		STATE_C_COMMENT,         // C style comment.
+		STATE_C_COMMENT_STAR,    // Star within a C style comment.
+		STATE_LINE_COMMENT,      // Single line C++ style comment.
+		STATE_DONE               // Done parsing the current token.
+	};
+
+	struct Resources
+	{
+		Resources() : numTokens(0), stringBufferLength(0) {}
+
+		int numTokens;
+		int stringBufferLength;
+	};
+
+	struct CharResult
+	{
+		const char *end;
+		char value;
+	};
+
+	// Copying disallowed.
+	LexerCore(const LexerCore &other);
+	LexerCore &operator=(const LexerCore &other);
+
+	Resources CalculateResources(CharStream &stream) const;
+
+	void GenerateTokens(CharStream &stream);
+	void GenerateToken(CharStream &stream, Token &token);
+	void ScanToken(CharStream &stream, Token &token) const;
+	void ExtractToken(CharStream &stream, Token &token);
+
+	void EvaluateToken(Token &token);
+	void EvaluateKeywordOrIdentifierToken(Token &token) const;
+	void EvaluateCharToken(Token &token) const;
+	void EvaluateIntegerToken(Token &token) const;
+	void EvaluateLongToken(Token &token) const;
+	void EvaluateFloatToken(Token &token) const;
+	void EvaluateDoubleToken(Token &token) const;
+	void EvaluateStringToken(Token &token);
+	CharResult EvaluateChar(const char *text) const;
+
+	bool IsIdentifierChar(char c) const;
+	bool IsOctalChar(char c) const;
+	bool IsHexChar(char c) const;
+	bool IsBadNumberChar(char c) const;
+	bool IsExponentChar(char c) const;
+	bool IsFloatSuffixChar(char c) const;
+	bool IsLongSuffixChar(char c) const;
+	bool IsUnsignedSuffixChar(char c) const;
+	bool IsEscapeChar(char c) const;
+
+	char *AllocString(size_t length);
+	char *AllocString(const char *content, size_t length);
+
+	Allocator &mAllocator;
+	const char *mText;
+	int mTextLength;
+	Token *mTokens;
+	char *mStringBuffer;
+};
+
 
 Lexer::~Lexer()
 {
@@ -18,38 +137,52 @@ Lexer::~Lexer()
 
 void Lexer::Dispose()
 {
-	mAllocator.Free(mStringBuffer);
-	mStringBuffer = NULL;
-	mAllocator.Free(mTokens);
-	mTokens = NULL;
-	mNumTokens = 0;
+	TokenCollection *list = mTokenCollectionList;
+	mTokenCollectionList = NULL;
+
+	while (list != NULL)
+	{
+		TokenCollection *next = list->GetNextCollection();
+		mAllocator.Free(list);
+		list = next;
+	}
 }
 
 
-void Lexer::Lex(const char *text, int length)
+TokenCollection *Lexer::Lex(const char *text, int length)
 {
-	Dispose();
+	LexerCore lexer(mAllocator, text, length);
+	TokenCollection *tokenCollection = lexer.Lex();
+	tokenCollection->SetNextCollection(mTokenCollectionList);
+	mTokenCollectionList = tokenCollection;
+	return tokenCollection;
+}
 
-	CharStream stream(text, length);
-	Resources resources;
 
-	CalculateResources(stream, resources);
+TokenCollection *LexerCore::Lex()
+{
+	CharStream stream(mText, mTextLength);
+	Resources resources = CalculateResources(stream);
 
-	mStringBuffer = mAllocator.Alloc<char>(resources.stringBufferLength);
-	StringAllocator allocator(mStringBuffer, resources.stringBufferLength);
+	size_t memSize = 0;
+	const size_t tokenCollectionStart = TallyMemoryRequirements<TokenCollection>(memSize, 1);
+	const size_t tokensStart = TallyMemoryRequirements<Token>(memSize, resources.numTokens);
+	const size_t stringBufferStart = TallyMemoryRequirements<Token>(memSize, resources.stringBufferLength);
 
-	mTokens = mAllocator.Alloc<Token>(resources.numTokens);
-	mNumTokens = resources.numTokens;
+	char *mem = mAllocator.Alloc<char>(memSize);
+	mTokens = reinterpret_cast<Token *>(mem + tokensStart);
+	mStringBuffer = mem + stringBufferStart;
 
 	stream.Reset();
-	GenerateTokens(stream, allocator);
+	GenerateTokens(stream);
+
+	return new (mem + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
 }
 
 
-void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
+LexerCore::Resources LexerCore::CalculateResources(CharStream &stream) const
 {
-	resources.numTokens = 0;
-	resources.stringBufferLength = 0;
+	Resources resources;
 
 	Token token;
 	while (true)
@@ -72,17 +205,19 @@ void Lexer::CalculateResources(CharStream &stream, Resources &resources) const
 			break;
 		}
 	}
+
+	return resources;
 }
 
 
-void Lexer::GenerateTokens(CharStream &stream, StringAllocator &allocator)
+void LexerCore::GenerateTokens(CharStream &stream)
 {
 	int tokenIndex = 0;
 
 	while (true)
 	{
 		Token &token = mTokens[tokenIndex++];
-		GenerateToken(stream, allocator, token);
+		GenerateToken(stream, token);
 
 		if (token.GetTokenType() == Bond::Token::END)
 		{
@@ -92,15 +227,15 @@ void Lexer::GenerateTokens(CharStream &stream, StringAllocator &allocator)
 }
 
 
-void Lexer::GenerateToken(CharStream &stream, StringAllocator &allocator, Token &token) const
+void LexerCore::GenerateToken(CharStream &stream, Token &token)
 {
 	ScanToken(stream, token);
-	ExtractToken(stream, allocator, token);
-	EvaluateToken(allocator, token);
+	ExtractToken(stream, token);
+	EvaluateToken(token);
 }
 
 
-void Lexer::ScanToken(CharStream &stream, Token &token) const
+void LexerCore::ScanToken(CharStream &stream, Token &token) const
 {
 	token = Token();
 	LexState state = STATE_SPACE;
@@ -989,7 +1124,7 @@ void Lexer::ScanToken(CharStream &stream, Token &token) const
 }
 
 
-void Lexer::ExtractToken(CharStream &stream, StringAllocator &allocator, Token &token) const
+void LexerCore::ExtractToken(CharStream &stream, Token &token)
 {
 	if (token.GetTokenType() == Token::END)
 	{
@@ -999,13 +1134,13 @@ void Lexer::ExtractToken(CharStream &stream, StringAllocator &allocator, Token &
 	{
 		const int startIndex = token.GetStartPos().index;
 		const int length = token.GetEndPos().index - startIndex;
-		const char *tokenString = allocator.Alloc(stream.GetBuffer() + startIndex, length);
+		const char *tokenString = AllocString(stream.GetBuffer() + startIndex, length);
 		token.SetText(tokenString, length);
 	}
 }
 
 
-void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
+void LexerCore::EvaluateToken(Token &token)
 {
 	switch (token.GetTokenType())
 	{
@@ -1036,7 +1171,7 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 			break;
 
 		case Token::CONST_STRING:
-			EvaluateStringToken(allocator, token);
+			EvaluateStringToken(token);
 			break;
 
 		default:
@@ -1046,7 +1181,7 @@ void Lexer::EvaluateToken(StringAllocator &allocator, Token &token) const
 }
 
 
-void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
+void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 {
 	if (strcmp(token.GetText(), "bool") == 0)
 	{
@@ -1193,14 +1328,14 @@ void Lexer::EvaluateKeywordOrIdentifierToken(Token &token) const
 }
 
 
-void Lexer::EvaluateCharToken(Token &token) const
+void LexerCore::EvaluateCharToken(Token &token) const
 {
 	const char value = EvaluateChar(token.GetText() + 1).value;
 	token.SetIntValue(value);
 }
 
 
-void Lexer::EvaluateFloatToken(Token &token) const
+void LexerCore::EvaluateFloatToken(Token &token) const
 {
 	bf32_t value;
 	sscanf(token.GetText(), "%" BOND_SCNf32, &value);
@@ -1208,7 +1343,7 @@ void Lexer::EvaluateFloatToken(Token &token) const
 }
 
 
-void Lexer::EvaluateIntegerToken(Token &token) const
+void LexerCore::EvaluateIntegerToken(Token &token) const
 {
 	bu32_t value;
 	const char *text = token.GetText();
@@ -1236,7 +1371,7 @@ void Lexer::EvaluateIntegerToken(Token &token) const
 }
 
 
-void Lexer::EvaluateLongToken(Token &token) const
+void LexerCore::EvaluateLongToken(Token &token) const
 {
 	bu64_t value;
 	const char *text = token.GetText();
@@ -1264,7 +1399,7 @@ void Lexer::EvaluateLongToken(Token &token) const
 }
 
 
-void Lexer::EvaluateDoubleToken(Token &token) const
+void LexerCore::EvaluateDoubleToken(Token &token) const
 {
 	bf64_t value;
 	sscanf(token.GetText(), "%" BOND_SCNf64, &value);
@@ -1272,12 +1407,12 @@ void Lexer::EvaluateDoubleToken(Token &token) const
 }
 
 
-void Lexer::EvaluateStringToken(StringAllocator &allocator, Token &token) const
+void LexerCore::EvaluateStringToken(Token &token)
 {
 	// Allocate enough space for the string with the quotes stripped off. The string
 	// could actually be shorter once escape sequences are expanded.
 	const int allocLength = token.GetEndPos().index - token.GetStartPos().index - 2;
-	char *buffer = allocator.Alloc(allocLength);
+	char *buffer = AllocString(allocLength);
 	char *dest = buffer;
 	const char *source = token.GetText() + 1;
 	const char *end = source + allocLength;
@@ -1297,7 +1432,7 @@ void Lexer::EvaluateStringToken(StringAllocator &allocator, Token &token) const
 }
 
 
-Lexer::CharResult Lexer::EvaluateChar(const char *text) const
+LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 {
 	CharResult result;
 	if (text[0] == '\\')
@@ -1330,58 +1465,75 @@ Lexer::CharResult Lexer::EvaluateChar(const char *text) const
 }
 
 
-bool Lexer::IsIdentifierChar(char c) const
+bool LexerCore::IsIdentifierChar(char c) const
 {
 	return  isalnum(c) || (c == '_');
 }
 
 
-bool Lexer::IsOctalChar(char c) const
+bool LexerCore::IsOctalChar(char c) const
 {
 	return (c >= '0') && (c <= '7');
 }
 
 
-bool Lexer::IsHexChar(char c) const
+bool LexerCore::IsHexChar(char c) const
 {
 	return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
 }
 
 
-bool Lexer::IsBadNumberChar(char c) const
+bool LexerCore::IsBadNumberChar(char c) const
 {
 	return IsIdentifierChar(c) || (c == '.');
 }
 
 
-bool Lexer::IsExponentChar(char c) const
+bool LexerCore::IsExponentChar(char c) const
 {
 	return (c == 'e') || (c == 'E');
 }
 
 
-bool Lexer::IsFloatSuffixChar(char c) const
+bool LexerCore::IsFloatSuffixChar(char c) const
 {
 	return (c == 'f') || (c == 'F');
 }
 
 
-bool Lexer::IsLongSuffixChar(char c) const
+bool LexerCore::IsLongSuffixChar(char c) const
 {
 	return (c == 'l') || (c == 'L');
 }
 
 
-bool Lexer::IsUnsignedSuffixChar(char c) const
+bool LexerCore::IsUnsignedSuffixChar(char c) const
 {
 	return (c == 'u') || (c == 'U');
 }
 
 
-bool Lexer::IsEscapeChar(char c) const
+bool LexerCore::IsEscapeChar(char c) const
 {
 	return (c == '0') || (c == 'a') || (c == 'b') || (c == 'f') || (c == 'n') || (c == 'r') ||
 		(c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\') || (c == '\?');
+}
+
+
+char *LexerCore::AllocString(size_t length)
+{
+	char *buffer = mStringBuffer;
+	mStringBuffer += length + 1;
+	return buffer;
+}
+
+
+char *LexerCore::AllocString(const char *content, size_t length)
+{
+	char *buffer = AllocString(length);
+	memcpy(buffer, content, length);
+	buffer[length] = '\0';
+	return buffer;
 }
 
 }

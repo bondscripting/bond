@@ -168,9 +168,6 @@
     <ClInclude Include="..\..\include\bond\streampos.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\stringallocator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\stringutil.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -221,6 +218,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\bond\private\vector.h">
       <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\memory.h">
+      <Filter>Header Files\source\private</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -288,9 +288,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stdouttextwriter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\stringallocator.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stringutil.cpp">

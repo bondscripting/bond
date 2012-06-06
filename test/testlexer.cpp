@@ -86,7 +86,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 
 	const int NUM_TOKENS = sizeof(EXPECTED_TYPES) / sizeof(*EXPECTED_TYPES);
 
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	for (int i = 0; i < NUM_TOKENS; ++i)
 	{
@@ -127,7 +127,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
 
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	for (int i = 0; i < NUM_BOOLS; ++i)
 	{
@@ -256,7 +256,7 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 
 	const int NUM_TOKENS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	for (int i = 0; i < NUM_TOKENS; ++i)
 	{
@@ -275,7 +275,7 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 
 DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	const Bond::Token *token = stream.Next();
 	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
@@ -291,7 +291,7 @@ DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bo
 
 DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	const Bond::Token *token = stream.Next();
 	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
@@ -307,7 +307,7 @@ DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 
 DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	const Bond::Token *token = stream.Next();
 	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
@@ -323,7 +323,7 @@ DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 
 DEFINE_LEXER_TEST(EndOfStream1, "scripts/lexer_EndOfStream1.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	ASSERT_FORMAT(stream.GetLength() == 2, ("Expected 2 tokens but found %d.", stream.GetLength()));
 
@@ -339,7 +339,7 @@ DEFINE_LEXER_TEST(EndOfStream1, "scripts/lexer_EndOfStream1.bond")
 
 DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenStream();
+	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	ASSERT_FORMAT(stream.GetLength() == 1, ("Expected 1 token but found %d.", stream.GetLength()));
 

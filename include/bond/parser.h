@@ -18,7 +18,7 @@ public:
 	~Parser();
 	void Dispose();
 
-	void Parse(TokenStream &stream);
+	TranslationUnit *Parse(TokenStream &stream);
 
 	TranslationUnit *GetTranslationUnitList() { return mTranslationUnitList; }
 

@@ -70,6 +70,8 @@
 namespace Bond
 {
 
+typedef int8_t bi8_t;
+typedef uint8_t bu8_t;
 typedef int16_t bi16_t;
 typedef uint16_t bu16_t;
 typedef int32_t bi32_t;
