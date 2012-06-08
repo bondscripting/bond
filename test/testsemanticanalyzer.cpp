@@ -1,3 +1,4 @@
+#include "framework/asserts.h"
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
 #include "bond/parsenodeutil.h"
@@ -5,7 +6,7 @@
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -30,7 +31,7 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -57,7 +58,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -80,14 +81,14 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 
 DEFINE_SEMANTICANALYZER_TEST(Initializers, "scripts/parser_Initializers.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 	return true;
 }
 
 
 DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
@@ -110,28 +111,28 @@ DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 
 DEFINE_SEMANTICANALYZER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 	return true;
 }
 
 
 DEFINE_SEMANTICANALYZER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 	return true;
 }
 
 
 DEFINE_SEMANTICANALYZER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 	return true;
 }
 
 
 DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 {
-	ASSERT_NO_PARSE_ERRORS(errorBuffer);
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 	return true;
 }
 
@@ -146,7 +147,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -201,7 +202,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -236,7 +237,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -256,7 +257,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -273,7 +274,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEva
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -298,7 +299,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_PARSE_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }

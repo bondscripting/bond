@@ -15,8 +15,8 @@ void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &erro
 	{
 		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
-			const Bond::CompilerError *error = errorBuffer.GetError(i);
-			error->Print(writer);
+			const Bond::CompilerError &error = errorBuffer.GetError(i);
+			error.Print(writer);
 			writer.Write("\n");
 		}
 	}
@@ -30,14 +30,17 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	Bond::FileData script = fileLoader.LoadFile(scriptName);
 	if (script.mData != NULL)
 	{
-		Bond::Lexer lexer(allocator);
+		Bond::CompilerErrorBuffer errorBuffer;
+		Bond::Lexer lexer(allocator, errorBuffer);
 		lexer.Lex(script.mData, script.mLength);
 		fileLoader.DisposeFile(script);
 
-		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
-		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(allocator, errorBuffer);
-		parser.Parse(stream);
+		if (!errorBuffer.HasErrors())
+		{
+			Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+			parser.Parse(stream);
+		}
 
 		if (!errorBuffer.HasErrors() && (doSemanticAnalysis || foldConstants))
 		{

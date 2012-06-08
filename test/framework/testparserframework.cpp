@@ -2,7 +2,6 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/lexer.h"
-#include "bond/textwriter.h"
 
 namespace TestFramework
 {
@@ -52,12 +51,15 @@ static bool RunParserTest(
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
 	{
-		Bond::Lexer lexer(lexerAllocator);
+		Bond::CompilerErrorBuffer errorBuffer;
+		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		lexer.Lex(script.mData, script.mLength);
 		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
-		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Parser parser(parserAllocator, errorBuffer);
-		parser.Parse(stream);
+		if (!errorBuffer.HasErrors())
+		{
+			parser.Parse(stream);
+		}
 		result = validationFunction(logger, errorBuffer, parser);
 	}
 
@@ -131,7 +133,7 @@ bool AssertParseNodeCount(
 	return true;
 }
 
-
+/*
 bool AssertNoCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
@@ -188,5 +190,5 @@ bool AssertCompilerErrors(
 
 	return true;
 }
-
+*/
 }

@@ -1,7 +1,10 @@
+#include "framework/asserts.h"
 #include "framework/testlexerframework.h"
 
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
 	const Bond::Token::TokenType EXPECTED_TYPES[] =
 	{
 		Bond::Token::KEY_BOOL,
@@ -103,6 +106,8 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 
 DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 {
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
 	const bool EXPECTED_BOOLS[] = { true, false };
 	const int NUM_BOOLS = sizeof(EXPECTED_BOOLS) / sizeof(*EXPECTED_BOOLS);
 
@@ -237,37 +242,26 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 {
-	const Bond::Token::ErrorType EXPECTED_ERRORS[] =
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
-		Bond::Token::INVALID_INT,
-		Bond::Token::INVALID_OCTAL_INT,
-		Bond::Token::INVALID_HEX_INT,
-		Bond::Token::INVALID_FLOAT,
-		Bond::Token::INVALID_FLOAT,
-		Bond::Token::INVALID_FLOAT,
-		Bond::Token::INVALID_FLOAT,
-		Bond::Token::INVALID_FLOAT,
-		Bond::Token::EMPTY_CHARACTER_CONSTANT,
-		Bond::Token::MULTI_CHARACTER_CONSTANT,
-		Bond::Token::INVALID_ESCAPE,
-		Bond::Token::MULTI_CHARACTER_CONSTANT,
-		Bond::Token::INVALID_ESCAPE,
+		{Bond::CompilerError::INVALID_INT, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_OCTAL_INT, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_HEX_INT, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_FLOAT, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::INVALID_FLOAT, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::INVALID_FLOAT, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::INVALID_FLOAT, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::INVALID_FLOAT, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::EMPTY_CHARACTER_CONSTANT, Bond::Token::INVALID, 3},
+		{Bond::CompilerError::MULTI_CHARACTER_CONSTANT, Bond::Token::INVALID, 3},
+		{Bond::CompilerError::INVALID_ESCAPE, Bond::Token::INVALID, 3},
+		{Bond::CompilerError::MULTI_CHARACTER_CONSTANT, Bond::Token::INVALID, 3},
+		{Bond::CompilerError::INVALID_ESCAPE, Bond::Token::INVALID, 3},
 	};
 
-	const int NUM_TOKENS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
-
-	for (int i = 0; i < NUM_TOKENS; ++i)
-	{
-		const Bond::Token *token = stream.Next();
-		ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-		ASSERT_FORMAT(EXPECTED_ERRORS[i] == token->GetErrorType(),
-			("Expected %s but was %s.", Bond::Token::GetErrorName(EXPECTED_ERRORS[i]), token->GetErrorName()));
-	}
-
-	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -275,15 +269,14 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 
 DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNTERMINATED_CHARACTER, Bond::Token::INVALID, 1},
+	};
 
-	const Bond::Token *token = stream.Next();
-	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-	ASSERT_FORMAT(Bond::Token::UNTERMINATED_CHARACTER == token->GetErrorType(),
-		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_CHARACTER), token->GetErrorName()));
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -291,15 +284,14 @@ DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bo
 
 DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNTERMINATED_STRING, Bond::Token::INVALID, 1},
+	};
 
-	const Bond::Token *token = stream.Next();
-	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-	ASSERT_FORMAT(Bond::Token::UNTERMINATED_STRING == token->GetErrorType(),
-		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_STRING), token->GetErrorName()));
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }
@@ -307,15 +299,14 @@ DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 
 DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 {
-	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNTERMINATED_COMMENT, Bond::Token::INVALID, 3},
+	};
 
-	const Bond::Token *token = stream.Next();
-	ASSERT_FORMAT(Bond::Token::INVALID == token->GetTokenType(),
-		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::INVALID), token->GetTokenName()));
-	ASSERT_FORMAT(Bond::Token::UNTERMINATED_COMMENT == token->GetErrorType(),
-		("Expected %s but was %s.", Bond::Token::GetErrorName(Bond::Token::UNTERMINATED_COMMENT), token->GetErrorName()));
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
-	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
 	return true;
 }

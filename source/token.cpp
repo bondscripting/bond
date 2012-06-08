@@ -3,20 +3,6 @@
 namespace Bond
 {
 
-Token &Token::operator=(const Token &other)
-{
-	mStartPos = other.mStartPos;
-	mEndPos = other.mEndPos;
-	mErrorPos = other.mErrorPos;
-	mValue = other.mValue;
-	mText = other.mText;
-	mTokenType = other.mTokenType;
-	mErrorType = other.mErrorType;
-	mAnnotations = other.mAnnotations;
-	return *this;
-}
-
-
 void Token::SetStringValue(const char *buffer, int length)
 {
 	mValue.mString.buffer = buffer;
@@ -40,25 +26,6 @@ const char *Token::GetTokenName(TokenType type)
 	};
 
 	return TOKEN_NAMES[type];
-}
-
-
-const char *Token::GetErrorName() const
-{
-	return GetErrorName(mErrorType);
-}
-
-
-const char *Token::GetErrorName(ErrorType type)
-{
-	static const char *const ERROR_NAMES[] =
-	{
-#define BOND_TOKEN_ERROR_ITEM(item) #item,
-		BOND_TOKEN_ERROR_LIST
-#undef BOND_TOKEN_ERROR_ITEM
-	};
-
-	return ERROR_NAMES[type];
 }
 
 

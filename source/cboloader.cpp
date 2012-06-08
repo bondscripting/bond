@@ -127,21 +127,21 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		codeByteCount += result.mCodeByteCount;
 	}
 
-	const size_t codeSegmentStart = 0;
-	const size_t constantTablesStart = TallyMemoryRequirement<CodeSegment>(codeSegmentStart, 1);
-	const size_t value32TableStart = TallyMemoryRequirement<ConstantTable>(constantTablesStart, numFiles);
-	const size_t value64TableStart = TallyMemoryRequirement<Value32>(value32TableStart, value32Count);
-	const size_t stringTableStart = TallyMemoryRequirement<Value64>(value64TableStart, value64Count);
-	const size_t stringBytesStart = TallyMemoryRequirement<HashedString>(stringTableStart, stringCount);
-	const size_t qualifiedIdElementStart = TallyMemoryRequirement<char>(stringBytesStart, stringByteCount);
-	const size_t paramSignatureStart = TallyMemoryRequirement<const HashedString *>(qualifiedIdElementStart, qualifiedIdElementCount);
-	const size_t functionLookupStart = TallyMemoryRequirement<ParamSignature>(paramSignatureStart, paramSignatureCount);
-	const size_t functionsStart = TallyMemoryRequirement<bu32_t>(functionLookupStart, functionCount);
-	const size_t codeStart = TallyMemoryRequirement<Function>(functionsStart, functionCount);
-	const size_t totalMemSize = TallyMemoryRequirement<const unsigned char>(codeStart, codeByteCount);
+	size_t memSize = 0;
+	const size_t codeSegmentStart = TallyMemoryRequirements<CodeSegment>(memSize, 1);
+	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, numFiles);
+	const size_t value32TableStart = TallyMemoryRequirements<Value32>(memSize, value32Count);
+	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
+	const size_t stringTableStart = TallyMemoryRequirements<HashedString>(memSize, stringCount);
+	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
+	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const HashedString *>(memSize, qualifiedIdElementCount);
+	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
+	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
+	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
+	const size_t codeStart = TallyMemoryRequirements<const unsigned char>(memSize, codeByteCount);
 
 	// TODO: Consider alignment.
-	unsigned char *mem = mPermAllocator.Alloc<unsigned char>(totalMemSize);
+	unsigned char *mem = mPermAllocator.Alloc<unsigned char>(memSize);
 	CboLoaderCore::MemoryResources resources(
 		mem,
 		constantTablesStart,
@@ -157,7 +157,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 
 	bu32_t *functionLookup = resources.mFunctionLookup;
 	Function *functions = resources.mFunctions;
-	CodeSegment *codeSegment = new (mem) CodeSegment(functionLookup, functions, functionCount);
+	CodeSegment *codeSegment = new (mem + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
 
 	for (size_t i = 0; i < numFiles; ++i)
 	{

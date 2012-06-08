@@ -112,20 +112,6 @@
 	BOND_TOKEN_ITEM(END)                      \
 	BOND_TOKEN_ITEM(NUM_TOKEN_TYPES)          \
 
-#define BOND_TOKEN_ERROR_LIST \
-	BOND_TOKEN_ERROR_ITEM(NO_ERROR)                 \
-	BOND_TOKEN_ERROR_ITEM(INVALID_ESCAPE)           \
-	BOND_TOKEN_ERROR_ITEM(INVALID_OCTAL_INT)        \
-	BOND_TOKEN_ERROR_ITEM(INVALID_HEX_INT)          \
-	BOND_TOKEN_ERROR_ITEM(INVALID_INT)              \
-	BOND_TOKEN_ERROR_ITEM(INVALID_FLOAT)            \
-	BOND_TOKEN_ERROR_ITEM(EMPTY_CHARACTER_CONSTANT) \
-	BOND_TOKEN_ERROR_ITEM(MULTI_CHARACTER_CONSTANT) \
-	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_CHARACTER)   \
-	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_STRING)      \
-	BOND_TOKEN_ERROR_ITEM(UNTERMINATED_COMMENT)     \
-
-
 namespace Bond
 {
 
@@ -139,13 +125,6 @@ public:
 #undef BOND_TOKEN_ITEM
 	};
 
-	enum ErrorType
-	{
-#define BOND_TOKEN_ERROR_ITEM(item) item,
-		BOND_TOKEN_ERROR_LIST
-#undef BOND_TOKEN_ERROR_ITEM
-	};
-
 	enum Annotation
 	{
 		OCTAL = 1,
@@ -155,7 +134,6 @@ public:
 	Token():
 		mText(NULL),
 		mTokenType(INVALID),
-		mErrorType(NO_ERROR),
 		mAnnotations(0)
 	{
 	}
@@ -163,11 +141,9 @@ public:
 	Token(const char *text, TokenType tokenType):
 		mStartPos(-1, -1, -1),
 		mEndPos(-1, -1, -1),
-		mErrorPos(-1, -1, -1),
 		mText(text),
 		mValue(),
 		mTokenType(tokenType),
-		mErrorType(NO_ERROR),
 		mAnnotations(0)
 	{
 	}
@@ -175,45 +151,24 @@ public:
 	Token(
 			const StreamPos &startPos,
 			const StreamPos &endPos,
-			const StreamPos &errorPos,
 			const Value &value,
 			const char *text,
 			TokenType tokenType,
-			ErrorType errorType = NO_ERROR,
 			short annotations = 0):
 		mStartPos(startPos),
 		mEndPos(endPos),
-		mErrorPos(errorPos),
 		mText(text),
 		mValue(value),
 		mTokenType(tokenType),
-		mErrorType(errorType),
 		mAnnotations(annotations)
 	{
 	}
-
-	Token(const Token &other):
-		mStartPos(other.mStartPos),
-		mEndPos(other.mEndPos),
-		mErrorPos(other.mErrorPos),
-		mText(other.mText),
-		mValue(other.mValue),
-		mTokenType(other.mTokenType),
-		mErrorType(other.mErrorType),
-		mAnnotations(other.mAnnotations)
-	{
-	}
-
-	Token &operator=(const Token &other);
 
 	const StreamPos &GetStartPos() const { return mStartPos; }
 	void SetStartPos(const StreamPos &pos) { mStartPos = pos; }
 
 	const StreamPos &GetEndPos() const { return mEndPos; }
 	void SetEndPos(const StreamPos &pos) { mEndPos = pos; }
-
-	const StreamPos &GetErrorPos() const { return mErrorPos; }
-	void SetErrorPos(const StreamPos &pos) { mErrorPos = pos; }
 
 	const char *GetText() const { return mText.GetString(); }
 	void SetText(const char *text) { mText = HashedString(text); }
@@ -223,9 +178,6 @@ public:
 
 	TokenType GetTokenType() const { return mTokenType; }
 	void SetTokenType(const TokenType &type) { mTokenType = type; }
-
-	ErrorType GetErrorType() const { return mErrorType; }
-	void SetErrorType(const ErrorType &type) { mErrorType = type; }
 
 	void AddAnnotation(const Annotation &annotation) { mAnnotations |= annotation; }
 	bool HasAnnotation(const Annotation &annotation) const { return (mAnnotations & annotation) == annotation; }
@@ -260,17 +212,12 @@ public:
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);
 
-	const char *GetErrorName() const;
-	static const char *GetErrorName(ErrorType type);
-
 private:
 	StreamPos mStartPos;
 	StreamPos mEndPos;
-	StreamPos mErrorPos;
 	HashedString mText;
 	Value mValue;
 	TokenType mTokenType;
-	ErrorType mErrorType;
 	short mAnnotations;
 };
 

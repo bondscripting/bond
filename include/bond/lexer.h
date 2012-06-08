@@ -14,8 +14,9 @@ class StringAllocator;
 class Lexer
 {
 public:
-	Lexer(Allocator &allocator):
+	Lexer(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 		mAllocator(allocator),
+		mErrorBuffer(errorBuffer),
 		mTokenCollectionList(NULL)
 	{}
 
@@ -28,6 +29,7 @@ public:
 
 private:
 	Allocator &mAllocator;
+	CompilerErrorBuffer &mErrorBuffer;
 	TokenCollection *mTokenCollectionList;
 };
 

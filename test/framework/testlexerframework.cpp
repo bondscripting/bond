@@ -1,7 +1,6 @@
 #include "framework/testlexerframework.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
-#include "bond/textwriter.h"
 
 namespace TestFramework
 {
@@ -50,9 +49,10 @@ static bool RunLexerTest(
 
 	Bond::DefaultAllocator allocator;
 	{
-		Bond::Lexer lexer(allocator);
+		Bond::CompilerErrorBuffer errorBuffer;
+		Bond::Lexer lexer(allocator, errorBuffer);
 		lexer.Lex(script.mData, script.mLength);
-		result = validationFunction(logger, lexer);
+		result = validationFunction(logger, errorBuffer, lexer);
 	}
 
 	__ASSERT_FORMAT__(allocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

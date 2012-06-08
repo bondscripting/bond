@@ -6,6 +6,26 @@
 #define BOND_COMPILER_ERROR_LIST                                                       \
   BOND_COMPILER_ERROR(NO_ERROR,                                                        \
     "")                                                                                \
+	BOND_COMPILER_ERROR(INVALID_ESCAPE,                                                  \
+    "Invalid escape sequence in token %c.")                                            \
+	BOND_COMPILER_ERROR(INVALID_OCTAL_INT,                                               \
+    "Invalid octal integer constant '%c'.")                                            \
+	BOND_COMPILER_ERROR(INVALID_HEX_INT,                                                 \
+    "Invalid hexadecimal integer constant '%c'.")                                      \
+	BOND_COMPILER_ERROR(INVALID_INT,                                                     \
+    "Invalid integer constant '%c'.")                                                  \
+	BOND_COMPILER_ERROR(INVALID_FLOAT,                                                   \
+    "Invalid floating point constant '%c'.")                                           \
+	BOND_COMPILER_ERROR(EMPTY_CHARACTER_CONSTANT,                                        \
+    "Empty character constant.")                                                       \
+	BOND_COMPILER_ERROR(MULTI_CHARACTER_CONSTANT,                                        \
+    "Multi-character constant %c.")                                                    \
+	BOND_COMPILER_ERROR(UNTERMINATED_CHARACTER,                                          \
+    "Unterminated character constant.")                                                \
+	BOND_COMPILER_ERROR(UNTERMINATED_STRING,                                             \
+    "Unterminated string literal.")                                                    \
+	BOND_COMPILER_ERROR(UNTERMINATED_COMMENT,                                            \
+    "Unterminated comment.")                                                           \
   BOND_COMPILER_ERROR(DUPLICATE_CONST,                                                 \
     "Duplicate 'const' keyword.")                                                      \
   BOND_COMPILER_ERROR(PARSE_ERROR,                                                     \
@@ -191,7 +211,7 @@ public:
 	void PushError(CompilerError::Type type, const Token *context = NULL, const void *arg0 = NULL, const void *arg1 = NULL);
 	bool HasErrors() const { return mNumErrors > 0; }
 	int GetNumErrors() const { return mNumErrors; }
-	const CompilerError *GetError(int index) const { return mErrors + index; }
+	const CompilerError &GetError(int index) const { return mErrors[index]; }
 
 	void CopyFrom(const CompilerErrorBuffer &other);
 
