@@ -8,6 +8,12 @@
     "")                                                                                \
 	BOND_COMPILER_ERROR(INVALID_ESCAPE,                                                  \
     "Invalid escape sequence in token %c.")                                            \
+	BOND_COMPILER_ERROR(MISSING_HEX_ESCAPE,                                              \
+    "\\x used with no following hex digits.")                                          \
+	BOND_COMPILER_ERROR(OCTAL_ESCAPE_RANGE,                                              \
+    "Octal escape sequence out of range.")                                             \
+	BOND_COMPILER_ERROR(HEX_ESCAPE_RANGE,                                                \
+    "Hex escape sequence out of range.")                                               \
 	BOND_COMPILER_ERROR(INVALID_OCTAL_INT,                                               \
     "Invalid octal integer constant '%c'.")                                            \
 	BOND_COMPILER_ERROR(INVALID_HEX_INT,                                                 \

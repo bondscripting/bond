@@ -29,50 +29,52 @@ private:
 	//integral-digits[.[fractional-digits]][e[sign]exponential-digits]
 	enum LexState
 	{
-		STATE_SPACE,             // Whitespace.
-		STATE_PLUS,              // '+'
-		STATE_MINUS,             // '-'
-		STATE_STAR,              // '*'
-		STATE_SLASH,             // '/'
-		STATE_PERCENT,           // '%'
-		STATE_LT,                // '<'	
-		STATE_GT,                // '>'
-		STATE_LEFT,              // '<<'
-		STATE_RIGHT,             // '>>'
-		STATE_EQUAL,             // '='
-		STATE_NOT,               // '!'
-		STATE_AND,               // '&'
-		STATE_OR,                // '|'
-		STATE_XOR,               // '^'
-		STATE_COLON,             // ':'
-		STATE_ZERO,              // '0'
-		STATE_OCTAL,             // Octal integer.
-		STATE_HEX,               // Hex integer.
-		STATE_IDIGITS,           // Integral digits.
-		STATE_FDIGITS,           // Fractional digits.
-		STATE_EDIGITS,           // Exponential digits.
-		STATE_PERIOD,            // '.'
-		STATE_EXPONENT,          // 'e' or 'E' known to be inside a number.
-		STATE_EXPONENT_SIGN,     // '+' or '-' known to be inside a number's exponent.
-		STATE_FLOAT,             // Complete float literal.
-		STATE_UNSIGNED,          // Complete unsigned literal.
-		STATE_LONG,              // Complete long literal.
-		STATE_ULONG,             // Complete unsigned long literal.
-		STATE_BAD_NUMBER,        // Consume the remaining characters of an incorrectly formatted number.
-		STATE_IDENTIFIER,        // Sequence of characters forming an identifier.
-		STATE_CHAR,              // Character literal.
-		STATE_CHAR_ESCAPE,       // Escape sequence within a character literal.
-		STATE_CHAR_END,          // Expect the end quote of a character literal..
-		STATE_BAD_CHAR,          // Consume the remaining characters of an incorrectly formated character literal.
-		STATE_BAD_CHAR_ESCAPE,   // Consume the remaining characters of an incorrectly formated character literal.
-		STATE_STRING,            // String literal.
-		STATE_STRING_ESCAPE,     // Escape sequence within a string literal.
-		STATE_BAD_STRING,        // Consume the remaining characters of an incorrectly formatted literal.
-		STATE_BAD_STRING_ESCAPE, // Consume the remaining characters of an incorrectly formatted literal.
-		STATE_C_COMMENT,         // C style comment.
-		STATE_C_COMMENT_STAR,    // Star within a C style comment.
-		STATE_LINE_COMMENT,      // Single line C++ style comment.
-		STATE_DONE               // Done parsing the current token.
+		STATE_SPACE,               // Whitespace.
+		STATE_PLUS,                // '+'
+		STATE_MINUS,               // '-'
+		STATE_STAR,                // '*'
+		STATE_SLASH,               // '/'
+		STATE_PERCENT,             // '%'
+		STATE_LT,                  // '<'
+		STATE_GT,                  // '>'
+		STATE_LEFT,                // '<<'
+		STATE_RIGHT,               // '>>'
+		STATE_EQUAL,               // '='
+		STATE_NOT,                 // '!'
+		STATE_AND,                 // '&'
+		STATE_OR,                  // '|'
+		STATE_XOR,                 // '^'
+		STATE_COLON,               // ':'
+		STATE_ZERO,                // '0'
+		STATE_OCTAL,               // Octal integer.
+		STATE_HEX,                 // Hex integer.
+		STATE_IDIGITS,             // Integral digits.
+		STATE_FDIGITS,             // Fractional digits.
+		STATE_EDIGITS,             // Exponential digits.
+		STATE_PERIOD,              // '.'
+		STATE_EXPONENT,            // 'e' or 'E' known to be inside a number.
+		STATE_EXPONENT_SIGN,       // '+' or '-' known to be inside a number's exponent.
+		STATE_FLOAT,               // Complete float literal.
+		STATE_UNSIGNED,            // Complete unsigned literal.
+		STATE_LONG,                // Complete long literal.
+		STATE_ULONG,               // Complete unsigned long literal.
+		STATE_BAD_NUMBER,          // Consume the remaining characters of an incorrectly formatted number.
+		STATE_IDENTIFIER,          // Sequence of characters forming an identifier.
+		STATE_CHAR,                // Character literal.
+		STATE_CHAR_ESCAPE,         // Escape sequence within a character literal.
+		STATE_CHAR_OCTAL_ESCAPE,   // Octal escape within a character literal.
+		STATE_CHAR_HEX_ESCAPE_X,   // \x at the start of a hex escape within a character literal.
+		STATE_CHAR_HEX_ESCAPE,     // Hex escape within a character literal.
+		STATE_CHAR_END,            // Expect the end quote of a character literal..
+		STATE_STRING,              // String literal.
+		STATE_STRING_ESCAPE,       // Escape sequence within a string literal.
+		STATE_STRING_OCTAL_ESCAPE, // Octal escape within a string literal.
+		STATE_STRING_HEX_ESCAPE_X, // \x at the start of a hex escape within string literal.
+		STATE_STRING_HEX_ESCAPE,   // Hex escape within a string literal.
+		STATE_C_COMMENT,           // C style comment.
+		STATE_C_COMMENT_STAR,      // Star within a C style comment.
+		STATE_LINE_COMMENT,        // Single line C++ style comment.
+		STATE_DONE                 // Done parsing the current token.
 	};
 
 	struct Resources
@@ -85,6 +87,9 @@ private:
 
 	struct CharResult
 	{
+		CharResult(): error(CompilerError::NO_ERROR), end(NULL), value(0) {}
+
+		CompilerError::Type error;
 		const char *end;
 		char value;
 	};
@@ -102,7 +107,7 @@ private:
 
 	void EvaluateToken(Token &token);
 	void EvaluateKeywordOrIdentifierToken(Token &token) const;
-	void EvaluateCharToken(Token &token) const;
+	void EvaluateCharToken(Token &token);
 	void EvaluateIntegerToken(Token &token) const;
 	void EvaluateLongToken(Token &token) const;
 	void EvaluateFloatToken(Token &token) const;
@@ -844,10 +849,16 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_EXPONENT_SIGN;
 				}
-				else
+				else if (IsBadNumberChar(c))
 				{
 					error = CompilerError::INVALID_FLOAT;
 					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					error = CompilerError::INVALID_FLOAT;
+					state = STATE_DONE;
 				}
 				break;
 
@@ -856,10 +867,16 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_EDIGITS;
 				}
-				else
+				else if (IsBadNumberChar(c))
 				{
 					error = CompilerError::INVALID_FLOAT;
 					state = STATE_BAD_NUMBER;
+				}
+				else
+				{
+					stream.Unget();
+					error = CompilerError::INVALID_FLOAT;
+					state = STATE_DONE;
 				}
 				break;
 
@@ -965,10 +982,47 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_CHAR_END;
 				}
+				else if (IsOctalChar(c))
+				{
+					state = STATE_CHAR_OCTAL_ESCAPE;
+				}
+				else if (c == 'x')
+				{
+					state = STATE_CHAR_HEX_ESCAPE_X;
+				}
 				else
 				{
 					error = CompilerError::INVALID_ESCAPE;
-					state = STATE_BAD_CHAR;
+					state = STATE_CHAR_END;
+				}
+				break;
+
+			case STATE_CHAR_OCTAL_ESCAPE:
+				if (!IsOctalChar(c))
+				{
+					stream.Unget();
+					state = STATE_CHAR_END;
+				}
+				break;
+
+			case STATE_CHAR_HEX_ESCAPE_X:
+				if (IsHexChar(c))
+				{
+					state = STATE_CHAR_HEX_ESCAPE;
+				}
+				else
+				{
+					stream.Unget();
+					error = CompilerError::MISSING_HEX_ESCAPE;
+					state = STATE_CHAR_END;
+				}
+				break;
+
+			case STATE_CHAR_HEX_ESCAPE:
+				if (!IsHexChar(c))
+				{
+					stream.Unget();
+					state = STATE_CHAR_END;
 				}
 				break;
 
@@ -978,26 +1032,15 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::CONST_CHAR);
 					state = STATE_DONE;
 				}
+				else if (c == '\\')
+				{
+					error = CompilerError::MULTI_CHARACTER_CONSTANT;
+					state = STATE_CHAR_ESCAPE;
+				}
 				else
 				{
 					error = CompilerError::MULTI_CHARACTER_CONSTANT;
-					state = (c == '\\') ? STATE_BAD_CHAR_ESCAPE : STATE_BAD_CHAR;
 				}
-				break;
-
-			case STATE_BAD_CHAR:
-				if (c == '\\')
-				{
-					state = STATE_BAD_CHAR_ESCAPE;
-				}
-				else if (c == '\'')
-				{
-					state = STATE_DONE;
-				}
-				break;
-
-			case STATE_BAD_CHAR_ESCAPE:
-				state = STATE_BAD_CHAR;
 				break;
 
 			case STATE_STRING:
@@ -1017,26 +1060,48 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_STRING;
 				}
+				else if (IsOctalChar(c))
+				{
+					state = STATE_STRING_OCTAL_ESCAPE;
+				}
+				else if (c == 'x')
+				{
+					state = STATE_STRING_HEX_ESCAPE_X;
+				}
 				else
 				{
 					error = CompilerError::INVALID_ESCAPE;
-					state = STATE_BAD_STRING;
+					state = STATE_STRING;
 				}
 				break;
 
-			case STATE_BAD_STRING:
-				if (c == '\\')
+			case STATE_STRING_OCTAL_ESCAPE:
+				if (!IsOctalChar(c))
 				{
-					state = STATE_BAD_STRING_ESCAPE;
-				}
-				else if (c == '\"')
-				{
-					state = STATE_DONE;
+					stream.Unget();
+					state = STATE_STRING;
 				}
 				break;
 
-			case STATE_BAD_STRING_ESCAPE:
-				state = STATE_BAD_STRING;
+			case STATE_STRING_HEX_ESCAPE_X:
+				if (IsHexChar(c))
+				{
+					state = STATE_STRING_HEX_ESCAPE;
+				}
+				else
+				{
+					stream.Unget();
+					error = CompilerError::MISSING_HEX_ESCAPE;
+					state = STATE_STRING;
+				}
+				break;
+
+			case STATE_STRING_HEX_ESCAPE:
+				if (!IsHexChar(c))
+				{
+					stream.Unget();
+					state = STATE_STRING;
+				}
 				break;
 
 			case STATE_C_COMMENT:
@@ -1076,13 +1141,12 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 		token.SetTokenType(Token::END);
 		token.SetStartPos(token.GetEndPos());
 	}
-	else if ((state == STATE_CHAR) || (state == STATE_CHAR_ESCAPE) || (state == STATE_CHAR_END) ||
-	         (state == STATE_BAD_CHAR) || (state == STATE_BAD_CHAR_ESCAPE))
+	else if ((state == STATE_CHAR) || (state == STATE_CHAR_ESCAPE) || (state == STATE_CHAR_END))
+
 	{
 		error = CompilerError::UNTERMINATED_CHARACTER;
 	}
-	else if ((state == STATE_STRING) || (state == STATE_STRING_ESCAPE) ||
-	         (state == STATE_BAD_STRING) || (state == STATE_BAD_STRING_ESCAPE))
+	else if ((state == STATE_STRING) || (state == STATE_STRING_ESCAPE))
 	{
 		error = CompilerError::UNTERMINATED_STRING;
 	}
@@ -1298,10 +1362,11 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 }
 
 
-void LexerCore::EvaluateCharToken(Token &token) const
+void LexerCore::EvaluateCharToken(Token &token)
 {
-	const char value = EvaluateChar(token.GetText() + 1).value;
-	token.SetIntValue(value);
+	const CharResult result = EvaluateChar(token.GetText() + 1);
+	token.SetIntValue(result.value);
+	PushError(result.error, token);
 }
 
 
@@ -1387,6 +1452,7 @@ void LexerCore::EvaluateStringToken(Token &token)
 	const char *source = token.GetText() + 1;
 	const char *end = source + allocLength;
 	int usedLength = 0;
+	CompilerError::Type error = CompilerError::NO_ERROR;
 
 	while (source < end)
 	{
@@ -1395,10 +1461,12 @@ void LexerCore::EvaluateStringToken(Token &token)
 		*dest = result.value;
 		++dest;
 		++usedLength;
+		error = (error == CompilerError::NO_ERROR) ? result.error : error;
 	}
 
 	*dest = '\0';
 	token.SetStringValue(buffer, usedLength);
+	PushError(error, token);
 }
 
 
@@ -1407,9 +1475,9 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 	CharResult result;
 	if (text[0] == '\\')
 	{
+		result.end = text + 2;
 		switch (text[1])
 		{
-			case '0': result.value = '\0'; break;
 			case 'a': result.value = '\a'; break;
 			case 'b': result.value = '\b'; break;
 			case 'f': result.value = '\f'; break;
@@ -1421,9 +1489,40 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			case '\"': result.value = '\"'; break;
 			case '\\': result.value = '\\'; break;
 			case '\?': result.value = '\?'; break;
-			default: result.value = text[1]; break;
+
+			case 'x':
+			{
+				bu32_t value;
+				int length;
+				sscanf(text + 2, "%" BOND_SCNx32 "%n", &value, &length);
+				result.value = static_cast<char>(value);
+				result.end = text + 2 + length;
+				if (!IsInUCharRange(value))
+				{
+					result.error = CompilerError::HEX_ESCAPE_RANGE;
+				}
+			}
+			break;
+
+			default:
+				if (IsOctalChar(text[1]))
+				{
+					bu32_t value;
+					int length;
+					sscanf(text + 1, "%" BOND_SCNo32 "%n", &value, &length);
+					result.value = static_cast<char>(value);
+					result.end = text + 1 + length;
+					if (!IsInUCharRange(value))
+					{
+						result.error = CompilerError::OCTAL_ESCAPE_RANGE;
+					}
+				}
+				else
+				{
+					result.value = text[1];
+				}
+				break;
 		}
-		result.end = text + 2;
 	}
 	else
 	{
@@ -1485,7 +1584,7 @@ bool LexerCore::IsUnsignedSuffixChar(char c) const
 
 bool LexerCore::IsEscapeChar(char c) const
 {
-	return (c == '0') || (c == 'a') || (c == 'b') || (c == 'f') || (c == 'n') || (c == 'r') ||
+	return (c == 'a') || (c == 'b') || (c == 'f') || (c == 'n') || (c == 'r') ||
 		(c == 't') || (c == 'v') || (c == '\'') || (c == '\"') || (c == '\\') || (c == '\?');
 }
 
