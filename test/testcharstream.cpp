@@ -4,10 +4,10 @@
 DEFINE_TEST(ReadAndReposition)
 {
 	const char TEXT[] = "ab\n\nc\nd";
-	const char LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
+	const size_t LENGTH = sizeof(TEXT) / sizeof(*TEXT) - 1;
 	Bond::CharStream cs(TEXT, sizeof(TEXT) - 1);
 
-	for (int i = 0; i < LENGTH; ++i)
+	for (size_t i = 0; i < LENGTH; ++i)
 	{
 		const Bond::StreamPos pos = cs.GetStreamPos();
 		ASSERT_FORMAT(pos.index == i, ("Expected index to be %d, but was %d.", i, pos.index));

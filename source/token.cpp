@@ -3,7 +3,7 @@
 namespace Bond
 {
 
-void Token::SetStringValue(const char *buffer, int length)
+void Token::SetStringValue(const char *buffer, size_t length)
 {
 	mValue.mString.buffer = buffer;
 	mValue.mString.length = length;

@@ -14,7 +14,7 @@ void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &erro
 {
 	if (errorBuffer.HasErrors())
 	{
-		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
+		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
 			const Bond::CompilerError &error = errorBuffer.GetError(i);
 			error.Print(writer);

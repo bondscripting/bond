@@ -1,33 +1,47 @@
 #ifndef BOND_HASHEDSTRING_H
 #define BOND_HASHEDSTRING_H
 
-#include "bond/stringutil.h"
+#include "bond/simplestring.h"
 
 namespace Bond
 {
 
-class HashedString
+// String that stores its hash code so that it does not need to be recomputed.
+class HashedString: public SimpleString
 {
 public:
-	HashedString():
-		mStr(0),
-		mLength(0),
-		mHashCode(STRING_HASH_SEED)
-	{}
+	HashedString(): mHashCode(STRING_HASH_SEED) {}
 
-	HashedString(const char *str);
-	HashedString(const char *str, int length);
+	HashedString(const char *str):
+		SimpleString(str)
+	{
+		mHashCode = StringHash(GetLength(), str);
+	}
 
-	const char *GetString() const { return mStr; }
-	int GetLength() const { return mLength; }
+	HashedString(const char *str, size_t length):
+		SimpleString(str, length)
+	{
+		mHashCode = StringHash(length, str);
+	}
+
 	bu32_t GetHashCode() const { return mHashCode; }
 
-	bool operator==(const HashedString &other) const;
-	bool operator<(const HashedString &other) const;
+	bool operator==(const HashedString &other) const
+	{
+		return
+			(mHashCode == other.mHashCode) &&
+			SimpleString::operator==(other);
+	}
+
+	bool operator<(const HashedString &other) const
+	{
+		return
+			(mHashCode != other.mHashCode) ?
+			(mHashCode < other.mHashCode) :
+			SimpleString::operator<(other);
+	}
 
 private:
-	const char *mStr;
-	int mLength;
 	bu32_t mHashCode;
 };
 

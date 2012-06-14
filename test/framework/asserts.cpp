@@ -6,14 +6,14 @@ namespace TestFramework
 bool AssertNoCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
-	int assertLine,
+	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
 		logger.Write("line %u in %s:\n", assertLine, assertFile);
 
-		for (int i = 0; i < errorBuffer.GetNumErrors(); ++i)
+		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
 			logger.Write("\t\t");
 			const Bond::CompilerError &error = errorBuffer.GetError(i);
@@ -30,14 +30,14 @@ bool AssertNoCompilerErrors(
 bool AssertCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
-	int assertLine,
+	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer,
 	const ExpectedCompilerError *expectedErrors,
-	int numErrors)
+	size_t numErrors)
 {
-	const int count = (errorBuffer.GetNumErrors() < numErrors) ? errorBuffer.GetNumErrors() : numErrors;
+	const size_t count = (errorBuffer.GetNumErrors() < numErrors) ? errorBuffer.GetNumErrors() : numErrors;
 
-	for (int i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 	{
 		const ExpectedCompilerError *expected = expectedErrors + i;
 		const Bond::CompilerError &actual = errorBuffer.GetError(i);

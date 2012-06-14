@@ -11,34 +11,34 @@ class CharStream
 public:
 	CharStream():
 		mBuffer(0),
-		mLength(-1)
+		mLength(0)
 	{
 	}
 
-	CharStream(const char *buffer, int length):
+	CharStream(const char *buffer, size_t length):
 		mBuffer(buffer),
 		mLength(length)
 	{
 	}
 
-	void SetBuffer(const char *buffer, int length);
+	void SetBuffer(const char *buffer, size_t length);
 	void Reset();
 	bool HasNext() const;
 	char Next();
 	char Peek() const { return Peek(mPos.index); }
 	void Unget() { Unget(1); }
-	void Unget(int numChars);
+	void Unget(size_t numChars);
 
 	const StreamPos &GetStreamPos() const { return mPos; }
 	const char *GetBuffer() const { return mBuffer; }
-	const int GetLength() const { return mLength; }
+	const size_t GetLength() const { return mLength; }
 
 private:
-	char Peek(int index) const;
+	char Peek(size_t index) const;
 
 	StreamPos mPos;
 	const char *mBuffer;
-	int mLength;
+	size_t mLength;
 };
 
 }

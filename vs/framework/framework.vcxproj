@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\test\framework\asserts.cpp" />
     <ClCompile Include="..\..\test\framework\testframework.cpp" />
     <ClCompile Include="..\..\test\framework\testlexerframework.cpp" />
     <ClCompile Include="..\..\test\framework\testparserframework.cpp" />
     <ClCompile Include="..\..\test\framework\testsemanticanalyzerframework.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\test\framework\asserts.h" />
     <ClInclude Include="..\..\test\framework\testframework.h" />
     <ClInclude Include="..\..\test\framework\testlexerframework.h" />
     <ClInclude Include="..\..\test\framework\testparserframework.h" />

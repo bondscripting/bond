@@ -206,8 +206,8 @@ public:
 	void SetDoubleValue(bf64_t value) { mValue.mDouble = value; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
-	int GetStringLength() const { return mValue.mString.length; }
-	void SetStringValue(const char *buffer, int length);
+	size_t GetStringLength() const { return mValue.mString.length; }
+	void SetStringValue(const char *buffer, size_t length);
 
 	const char *GetTokenName() const;
 	static const char *GetTokenName(TokenType type);

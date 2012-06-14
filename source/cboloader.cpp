@@ -6,7 +6,6 @@
 #include "bond/codesegment.h"
 #include "bond/endian.h"
 #include "bond/fileloader.h"
-#include "bond/hashedstring.h"
 #include "bond/opcodes.h"
 #include "bond/value.h"
 #include "bond/vector.h"
@@ -36,9 +35,9 @@ public:
 			mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
 			mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
 			mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
-			mStringTable(reinterpret_cast<HashedString *>(memory + stringTableStart)),
+			mStringTable(reinterpret_cast<SimpleString *>(memory + stringTableStart)),
 			mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
-			mQualifiedIdElements(reinterpret_cast<const HashedString **>(memory + qualifiedIdElementStart)),
+			mQualifiedIdElements(reinterpret_cast<const SimpleString **>(memory + qualifiedIdElementStart)),
 			mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
 			mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
 			mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
@@ -47,9 +46,9 @@ public:
 		ConstantTable *mConstantTables;
 		Value32 *mValue32Table;
 		Value64 *mValue64Table;
-		HashedString *mStringTable;
+		SimpleString *mStringTable;
 		char *mStringBytes;
-		const HashedString **mQualifiedIdElements;
+		const SimpleString **mQualifiedIdElements;
 		ParamSignature *mParamSignatures;
 		bu32_t *mFunctionLookup;
 		Function *mFunctions;
@@ -85,7 +84,7 @@ private:
 	CboValidator::Result mValidationResult;
 	MemoryResources &mResources;
 	ConstantTable *mConstantTable;
-	HashedString *mStringTable;
+	SimpleString *mStringTable;
 	const unsigned char *mByteCode;
 	size_t mIndex;
 };
@@ -132,9 +131,9 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, numFiles);
 	const size_t value32TableStart = TallyMemoryRequirements<Value32>(memSize, value32Count);
 	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
-	const size_t stringTableStart = TallyMemoryRequirements<HashedString>(memSize, stringCount);
+	const size_t stringTableStart = TallyMemoryRequirements<SimpleString>(memSize, stringCount);
 	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
-	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const HashedString *>(memSize, qualifiedIdElementCount);
+	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const SimpleString *>(memSize, qualifiedIdElementCount);
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
@@ -274,7 +273,7 @@ void CboLoaderCore::Load()
 	}
 	mResources.mValue64Table = value64;
 
-	HashedString *str = mResources.mStringTable;
+	SimpleString *str = mResources.mStringTable;
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
 		const size_t length = ReadValue16().mUShort;
@@ -282,7 +281,7 @@ void CboLoaderCore::Load()
 		memcpy(buffer, mByteCode + mIndex, length);
 		mResources.mStringBytes += length;
 		mIndex += length;
-		*str++ = HashedString(buffer, length);
+		*str++ = SimpleString(buffer, length);
 	}
 	mResources.mStringTable = str;
 
@@ -347,8 +346,8 @@ void CboLoaderCore::LoadFunctionBlob()
 
 QualifiedId CboLoaderCore::LoadQualifiedIdentifier()
 {
-	const HashedString **elements = mResources.mQualifiedIdElements;
-	const HashedString **element = elements;
+	const SimpleString **elements = mResources.mQualifiedIdElements;
+	const SimpleString **element = elements;
 	const bu32_t numElements = ReadValue16().mUShort;
 	for (bu32_t i = 0; i < numElements; ++i)
 	{

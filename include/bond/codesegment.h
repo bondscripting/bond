@@ -9,12 +9,12 @@ namespace Bond
 
 struct QualifiedId
 {
-	QualifiedId(const HashedString **elements, bu32_t elementCount):
+	QualifiedId(const SimpleString **elements, bu32_t elementCount):
 		mElements(elements),
 		mElementCount(elementCount)
 	{}
 
-	const HashedString **mElements;
+	const SimpleString **mElements;
 	bu32_t mElementCount;
 };
 
@@ -23,7 +23,7 @@ struct ConstantTable
 {
 	const Value32 *mValue32Table;
 	const Value64 *mValue64Table;
-	const HashedString *mStringTable;
+	const SimpleString *mStringTable;
 };
 
 

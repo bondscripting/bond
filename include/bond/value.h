@@ -2,6 +2,7 @@
 #define BOND_VALUE_H
 
 #include "bond/types.h"
+#include "bond/simplestring.h"
 
 namespace Bond
 {
@@ -28,7 +29,7 @@ union Value
 	struct
 	{
 		const char *buffer;
-		int length;
+		size_t length;
 	} mString;
 };
 
@@ -128,4 +129,3 @@ inline bool operator <(const Value64 &a, const Value64 &b) { return a.mULong < b
 }
 
 #endif
-

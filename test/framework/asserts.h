@@ -26,22 +26,22 @@ struct ExpectedCompilerError
 {
 	Bond::CompilerError::Type errorType;
 	Bond::Token::TokenType context;
-	int line;
+	size_t line;
 };
 
 bool AssertNoCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
-	int assertLine,
+	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer);
 
 bool AssertCompilerErrors(
 	Bond::TextWriter &logger,
 	const char *assertFile,
-	int assertLine,
+	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer,
 	const ExpectedCompilerError *expectedErrors,
-	int numErrors);
+	size_t numErrors);
 
 }
 

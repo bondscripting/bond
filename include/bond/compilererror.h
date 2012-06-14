@@ -216,16 +216,16 @@ public:
 
 	void PushError(CompilerError::Type type, const Token *context = NULL, const void *arg0 = NULL, const void *arg1 = NULL);
 	bool HasErrors() const { return mNumErrors > 0; }
-	int GetNumErrors() const { return mNumErrors; }
-	const CompilerError &GetError(int index) const { return mErrors[index]; }
+	size_t GetNumErrors() const { return mNumErrors; }
+	const CompilerError &GetError(size_t index) const { return mErrors[index]; }
 
 	void CopyFrom(const CompilerErrorBuffer &other);
 
 private:
-	static const int MAX_ERRORS = 64;
+	static const size_t MAX_ERRORS = 64;
 
 	CompilerError mErrors[MAX_ERRORS];
-	int mNumErrors;
+	size_t mNumErrors;
 };
 
 }

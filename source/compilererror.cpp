@@ -158,7 +158,7 @@ CompilerErrorBuffer::CompilerErrorBuffer()
 void CompilerErrorBuffer::Reset()
 {
 	mNumErrors = 0;
-	for (int i = 0; i < MAX_ERRORS; ++i)
+	for (size_t i = 0; i < MAX_ERRORS; ++i)
 	{
 		mErrors[i] = CompilerError();
 	}
@@ -177,7 +177,7 @@ void CompilerErrorBuffer::PushError(CompilerError::Type type, const Token *conte
 
 void CompilerErrorBuffer::CopyFrom(const CompilerErrorBuffer &other)
 {
-	for (int i = 0; i < other.mNumErrors; ++i)
+	for (size_t i = 0; i < other.mNumErrors; ++i)
 	{
 		if (mNumErrors < MAX_ERRORS)
 		{

@@ -1,6 +1,8 @@
 #ifndef BOND_STREAMPOS_H
 #define BOND_STREAMPOS_H
 
+#include "bond/types.h"
+
 namespace Bond
 {
 
@@ -13,7 +15,7 @@ struct StreamPos
 	{
 	}
 
-	StreamPos(int index, int line, int column):
+	StreamPos(size_t index, size_t line, size_t column):
 		index(index),
 		line(line),
 		column(column)
@@ -27,9 +29,9 @@ struct StreamPos
 	{
 	}
 
-	int index;
-	int line;
-	int column;
+	size_t index;
+	size_t line;
+	size_t column;
 };
 
 }

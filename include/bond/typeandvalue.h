@@ -74,9 +74,8 @@ public:
 	bu64_t GetULongValue() const { return mValue.mULong; }
 	void SetULongValue(bu64_t value) { mValue.mULong = value; mValueDefined = true; }
 
-	const char *GetStringValue() const { return mValue.mString.buffer; }
-	int GetStringLength() const { return mValue.mString.length; }
-	//void SetStringValue(const char *buffer, int length);
+	//const char *GetStringValue() const { return mValue.mString.buffer; }
+	//size_t GetStringLength() const { return mValue.mString.length; }
 
 	bool IsResolved() const { return mResolved; }
 	void Resolve() { mResolved = true; }

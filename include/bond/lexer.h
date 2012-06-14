@@ -23,8 +23,8 @@ public:
 	~Lexer();
 	void Dispose();
 
-	TokenCollection *Lex(const char *text, int length);
-	TokenCollection *Lex(const unsigned char *text, int length) { return Lex(reinterpret_cast<const char *>(text), length); }
+	TokenCollection *Lex(const char *text, size_t length);
+	TokenCollection *Lex(const unsigned char *text, size_t length) { return Lex(reinterpret_cast<const char *>(text), length); }
 	const TokenCollection *GetTokenCollectionList() const { return mTokenCollectionList; }
 
 private:

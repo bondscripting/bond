@@ -1,6 +1,5 @@
 #include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
-#include "bond/hashedstring.h"
 #include "bond/endian.h"
 #include "bond/opcodes.h"
 #include "bond/version.h"

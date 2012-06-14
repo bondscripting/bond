@@ -14,7 +14,7 @@ namespace Bond
 class LexerCore
 {
 public:
-	LexerCore(Allocator &allocator, CompilerErrorBuffer &errorBuffer, const char *text, int length):
+	LexerCore(Allocator &allocator, CompilerErrorBuffer &errorBuffer, const char *text, size_t length):
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),
 		mText(text),
@@ -81,8 +81,8 @@ private:
 	{
 		Resources() : numTokens(0), stringBufferLength(0) {}
 
-		int numTokens;
-		int stringBufferLength;
+		size_t numTokens;
+		size_t stringBufferLength;
 	};
 
 	struct CharResult
@@ -133,7 +133,7 @@ private:
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
 	const char *mText;
-	int mTextLength;
+	size_t mTextLength;
 	Token *mTokens;
 	char *mStringBuffer;
 };
@@ -159,7 +159,7 @@ void Lexer::Dispose()
 }
 
 
-TokenCollection *Lexer::Lex(const char *text, int length)
+TokenCollection *Lexer::Lex(const char *text, size_t length)
 {
 	LexerCore lexer(mAllocator, mErrorBuffer, text, length);
 	TokenCollection *tokenCollection = lexer.Lex();
@@ -199,7 +199,7 @@ LexerCore::Resources LexerCore::CalculateResources(CharStream &stream) const
 	{
 		ScanToken(stream, token);
 
-		int length = token.GetEndPos().index - token.GetStartPos().index + 1;
+		size_t length = token.GetEndPos().index - token.GetStartPos().index + 1;
 		if (token.GetTokenType() == Token::CONST_STRING)
 		{
 			// Account for the string value. Subtract 2 because the quotes are stripped.
@@ -222,7 +222,7 @@ LexerCore::Resources LexerCore::CalculateResources(CharStream &stream) const
 
 void LexerCore::GenerateTokens(CharStream &stream)
 {
-	int tokenIndex = 0;
+	size_t tokenIndex = 0;
 
 	while (true)
 	{
@@ -1166,8 +1166,8 @@ void LexerCore::ExtractToken(CharStream &stream, Token &token)
 	}
 	else
 	{
-		const int startIndex = token.GetStartPos().index;
-		const int length = token.GetEndPos().index - startIndex;
+		const size_t startIndex = token.GetStartPos().index;
+		const size_t length = token.GetEndPos().index - startIndex;
 		const char *tokenString = AllocString(stream.GetBuffer() + startIndex, length);
 		token.SetText(tokenString, length);
 	}
@@ -1217,6 +1217,7 @@ void LexerCore::EvaluateToken(Token &token)
 
 void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 {
+	// TODO: Do a binary search for faster lookups.
 	if (strcmp(token.GetText(), "bool") == 0)
 	{
 		token.SetTokenType(Token::KEY_BOOL);
@@ -1446,12 +1447,12 @@ void LexerCore::EvaluateStringToken(Token &token)
 {
 	// Allocate enough space for the string with the quotes stripped off. The string
 	// could actually be shorter once escape sequences are expanded.
-	const int allocLength = token.GetEndPos().index - token.GetStartPos().index - 2;
+	const size_t allocLength = token.GetEndPos().index - token.GetStartPos().index - 2;
 	char *buffer = AllocString(allocLength);
 	char *dest = buffer;
 	const char *source = token.GetText() + 1;
 	const char *end = source + allocLength;
-	int usedLength = 0;
+	size_t usedLength = 0;
 	CompilerError::Type error = CompilerError::NO_ERROR;
 
 	while (source < end)

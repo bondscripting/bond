@@ -3,7 +3,7 @@
 namespace Bond
 {
 
-void CharStream::SetBuffer(const char *buffer, int length)
+void CharStream::SetBuffer(const char *buffer, size_t length)
 {
 	mBuffer = buffer;
 	mLength = length;
@@ -45,7 +45,7 @@ char CharStream::Next()
 }
 
 
-char CharStream::Peek(int index) const
+char CharStream::Peek(size_t index) const
 {
 	// Artificially introduce a space as the last character to ensure that the end
 	// of the last token is properly identified.
@@ -53,16 +53,16 @@ char CharStream::Peek(int index) const
 }
 
 
-void CharStream::Unget(int numChars)
+void CharStream::Unget(size_t numChars)
 {
-	const int delta = (numChars < 0) ? 0 : (numChars > mPos.index) ? mPos.index : numChars;
-	const int oldIndex = mPos.index;
+	const size_t delta = (numChars < 0) ? 0 : (numChars > mPos.index) ? mPos.index : numChars;
+	const size_t oldIndex = mPos.index;
 	mPos.index -= delta;
 	mPos.column -= delta;
 
-	int numNewLines = 0;
+	size_t numNewLines = 0;
 
-	for (int i = mPos.index; i < oldIndex; ++i)
+	for (size_t i = mPos.index; i < oldIndex; ++i)
 	{
 		if (Peek(i) == '\n')
 		{
@@ -74,7 +74,7 @@ void CharStream::Unget(int numChars)
 	{
 		mPos.line -= numNewLines;
 		mPos.column = 1;
-		for (int i = mPos.index - 1; (i >= 0) && (Peek(i) != '\n'); --i)
+		for (size_t i = mPos.index; (i > 0) && (Peek(i - 1) != '\n'); --i)
 		{
 			++mPos.column;
 		}

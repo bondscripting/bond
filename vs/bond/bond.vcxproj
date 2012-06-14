@@ -54,6 +54,7 @@
     <ClInclude Include="..\..\include\bond\private\vector.h" />
     <ClInclude Include="..\..\include\bond\semanticanalyzer.h" />
     <ClInclude Include="..\..\include\bond\set.h" />
+    <ClInclude Include="..\..\include\bond\simplestring.h" />
     <ClInclude Include="..\..\include\bond\stdouttextwriter.h" />
     <ClInclude Include="..\..\include\bond\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\streampos.h" />
@@ -67,6 +68,7 @@
     <ClInclude Include="..\..\include\bond\value.h" />
     <ClInclude Include="..\..\include\bond\vector.h" />
     <ClInclude Include="..\..\include\bond\version.h" />
+    <ClInclude Include="..\..\include\bond\vm.h" />
     <ClInclude Include="..\..\source\private\memory.h" />
     <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
@@ -85,7 +87,6 @@
     <ClCompile Include="..\..\source\compilererror.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
-    <ClCompile Include="..\..\source\hashedstring.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />

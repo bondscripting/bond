@@ -39,8 +39,14 @@
     <ClCompile Include="..\..\test\framework\testsemanticanalyzerframework.cpp">
       <Filter>Source Files\test\framework</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\framework\asserts.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\test\framework\asserts.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\test\framework\testframework.h">
       <Filter>Header Files\test\framework</Filter>
     </ClInclude>
