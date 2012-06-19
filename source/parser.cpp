@@ -413,6 +413,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 	FunctionDefinition **functionDefinition,
 	DeclarativeStatement **declarativeStatement)
 {
+	// TODO: Mark the type descriptor of native struct fields as not addressable somehow.
 	*functionDefinition = NULL;
 	*declarativeStatement = NULL;
 	const int startPos = mStream.GetPosition();

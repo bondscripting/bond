@@ -9,9 +9,9 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 	{
 		Bond::Token::KEY_BOOL,
 		Bond::Token::KEY_BREAK,
-		Bond::Token::KEY_CHAR,
 		Bond::Token::KEY_CASE,
 		Bond::Token::KEY_CAST,
+		Bond::Token::KEY_CHAR,
 		Bond::Token::KEY_CONST,
 		Bond::Token::KEY_CONTINUE,
 		Bond::Token::KEY_DEFAULT,

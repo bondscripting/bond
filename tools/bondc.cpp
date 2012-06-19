@@ -29,11 +29,11 @@ void Compile(const char *scriptName)
 	Bond::DefaultAllocator allocator;
 	Bond::DefaultFileLoader fileLoader(allocator);
 	Bond::FileData script = fileLoader.LoadFile(scriptName);
-	if (script.mData != NULL)
+	if (script.mValid)
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(script.mData, script.mLength);
+		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
 		fileLoader.DisposeFile(script);
 
 		Bond::Parser parser(allocator, errorBuffer);
@@ -63,6 +63,10 @@ void Compile(const char *scriptName)
 
 		Bond::StdOutTextWriter errorWriter;
 		PrintErrors(errorWriter, errorBuffer);
+	}
+	else
+	{
+		fprintf(stderr, "Failed to load '%s'\n", scriptName);
 	}
 }
 

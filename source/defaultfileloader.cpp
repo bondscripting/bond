@@ -8,10 +8,12 @@ FileData DefaultFileLoader::LoadFile(const char *fileName)
 {
 	unsigned char *data = NULL;
 	size_t length = -1;
+	bool valid = false;
 	FILE *file = fopen(fileName, "rb");
 
 	if (file != 0)
 	{
+		valid = true;
 		fseek(file, 0, SEEK_END);
 		length = static_cast<size_t>(ftell(file));
 		fseek(file, 0, SEEK_SET);
@@ -25,14 +27,17 @@ FileData DefaultFileLoader::LoadFile(const char *fileName)
 		fclose(file);
 	}
 
-	return FileData(data, length);
+	return FileData(data, length, valid);
 }
 
 
 void DefaultFileLoader::DisposeFile(FileData &fileData)
 {
-	mAllocator.Free(fileData.mData);
-	fileData = FileData();
+	if (fileData.mValid)
+	{
+		mAllocator.Free(fileData.mData);
+		fileData = FileData();
+	}
 }
 
 }

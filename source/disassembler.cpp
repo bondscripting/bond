@@ -2,7 +2,7 @@
 #include "bond/cbovalidator.h"
 #include "bond/disassembler.h"
 #include "bond/endian.h"
-#include "bond/hashedstring.h"
+#include "bond/simplestring.h"
 #include "bond/opcodes.h"
 #include "bond/textwriter.h"
 #include "bond/value.h"
@@ -19,10 +19,10 @@ public:
 			const CboValidator::Result &validationResult,
 			Allocator &allocator,
 			TextWriter &writer,
-			const unsigned char *byteCode):
+			const bu8_t *byteCode):
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
-		mStringTable(validationResult.mStringCount, HashedString(), StringTable::Allocator(&allocator)),
+		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
 		mValidationResult(validationResult),
 		mAllocator(allocator),
 		mWriter(writer),
@@ -35,7 +35,7 @@ public:
 private:
 	typedef Vector<Value32> Value32Table;
 	typedef Vector<Value64> Value64Table;
-	typedef Vector<HashedString> StringTable;
+	typedef Vector<SimpleString> StringTable;
 
 	void DisassembleBlob();
 	void DisassembleListBlob();
@@ -43,7 +43,7 @@ private:
 	void DisassembleQualifiedIdentifier();
 	void DisassembleParamListSignature();
 	void DisassembleSizeAndType();
-	void WriteHashedString(const HashedString &str);
+	void WriteSimpleString(const SimpleString &str);
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -55,12 +55,12 @@ private:
 	CboValidator::Result mValidationResult;
 	Allocator &mAllocator;
 	TextWriter &mWriter;
-	const unsigned char *mByteCode;
+	const bu8_t *mByteCode;
 	size_t mIndex;
 };
 
 
-void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode, size_t length)
+void Disassembler::Disassemble(TextWriter &writer, const void *byteCode, size_t length)
 {
 	CboValidator validator;
 	CboValidator::Result result = validator.Validate(byteCode, length);
@@ -69,7 +69,7 @@ void Disassembler::Disassemble(TextWriter &writer, const unsigned char *byteCode
 	{
 		case CboValidator::CBO_VALID:
 		{
-			DisassemblerCore disassembler(result, mAllocator, writer, byteCode);
+			DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
 			disassembler.Disassemble();
 		}
 		break;
@@ -118,7 +118,7 @@ void DisassemblerCore::Disassemble()
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
 		const int length = ReadValue16().mUShort;
-		mStringTable[i] = HashedString(reinterpret_cast<const char *>(mByteCode + mIndex), length);
+		mStringTable[i] = SimpleString(reinterpret_cast<const char *>(mByteCode + mIndex), length);
 		mIndex += length;
 	}
 
@@ -264,12 +264,12 @@ void DisassemblerCore::DisassembleQualifiedIdentifier()
 	for (size_t i = 0; i < numElements; ++i)
 	{
 		const size_t idIndex = ReadValue16().mUShort;
-		const HashedString &id = mStringTable[idIndex];
+		const SimpleString &id = mStringTable[idIndex];
 		if (i > 0)
 		{
 			mWriter.Write("::");
 		}
-		WriteHashedString(id);
+		WriteSimpleString(id);
 	}
 }
 
@@ -320,7 +320,7 @@ void DisassemblerCore::DisassembleSizeAndType()
 }
 
 
-void DisassemblerCore::WriteHashedString(const HashedString &str)
+void DisassemblerCore::WriteSimpleString(const SimpleString &str)
 {
 	const int length = str.GetLength();
 	const char *s = str.GetString();

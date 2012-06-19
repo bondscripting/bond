@@ -2,18 +2,23 @@
 #include "bond/defaultfileloader.h"
 #include "bond/disassembler.h"
 #include "bond/stdouttextwriter.h"
+#include <stdio.h>
 
 void Disassemble(const char *cboFileName)
 {
 	Bond::DefaultAllocator allocator;
 	Bond::DefaultFileLoader fileLoader(allocator);
 	Bond::FileData cboFile = fileLoader.LoadFile(cboFileName);
-	if (cboFile.mData != NULL)
+	if (cboFile.mValid)
 	{
 		Bond::StdOutTextWriter writer;
 		Bond::Disassembler disassembler(allocator);
-		disassembler.Disassemble(writer, cboFile.mData, cboFile.mLength);
+		disassembler.Disassemble(writer, static_cast<const Bond::bu8_t *>(cboFile.mData), cboFile.mLength);
 		fileLoader.DisposeFile(cboFile);
+	}
+	else
+	{
+		fprintf(stderr, "Failed to load '%s'\n", cboFileName);
 	}
 }
 

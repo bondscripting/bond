@@ -7,7 +7,7 @@
 namespace Bond
 {
 
-class DefaultFileLoader
+class DefaultFileLoader: public FileLoader
 {
 public:
 	explicit DefaultFileLoader(Allocator &allocator): mAllocator(allocator) {}

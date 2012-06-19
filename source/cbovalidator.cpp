@@ -10,8 +10,8 @@ namespace Bond
 class CboValidatorCore
 {
 public:
-	CboValidatorCore(const unsigned char *byteCode, size_t length):
-		mByteCode(byteCode),
+	CboValidatorCore(const bu8_t *byteCode, size_t length):
+		mByteCode(reinterpret_cast<const bu8_t *>(byteCode)),
 		mLength(length),
 		mIndex(0),
 		mValue32Table(NULL)
@@ -38,16 +38,16 @@ private:
 	void CboIsInvalid();
 
 	CboValidator::Result mResult;
-	const unsigned char *mByteCode;
+	const bu8_t *mByteCode;
 	size_t mLength;
 	size_t mIndex;
 	const Value32 *mValue32Table;
 };
 
 
-CboValidator::Result CboValidator::Validate(const unsigned char *byteCode, size_t length)
+CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 {
-	CboValidatorCore validator(byteCode, length);
+	CboValidatorCore validator(static_cast<const bu8_t *>(byteCode), length);
 	return validator.Validate();
 }
 

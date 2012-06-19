@@ -21,7 +21,7 @@ public:
 	struct MemoryResources
 	{
 		MemoryResources(
-				unsigned char *memory,
+				bu8_t *memory,
 				size_t constantTablesStart,
 				size_t value32TableStart,
 				size_t value64TableStart,
@@ -41,7 +41,7 @@ public:
 			mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
 			mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
 			mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
-			mCode(reinterpret_cast<unsigned char *>(memory + codeStart))
+			mCode(reinterpret_cast<bu8_t *>(memory + codeStart))
 		{}
 		ConstantTable *mConstantTables;
 		Value32 *mValue32Table;
@@ -52,18 +52,18 @@ public:
 		ParamSignature *mParamSignatures;
 		bu32_t *mFunctionLookup;
 		Function *mFunctions;
-		unsigned char *mCode;
+		bu8_t *mCode;
 	};
 
 	CboLoaderCore(
 			const CboValidator::Result &validationResult,
 			MemoryResources &resources,
-			const unsigned char *byteCode):
+			const bu8_t *byteCode):
 		mValidationResult(validationResult),
 		mResources(resources),
 		mConstantTable(resources.mConstantTables),
 		mStringTable(resources.mStringTable),
-		mByteCode(byteCode),
+		mByteCode(static_cast<const bu8_t *>(byteCode)),
 		mIndex(0)
 	{}
 
@@ -85,7 +85,7 @@ private:
 	MemoryResources &mResources;
 	ConstantTable *mConstantTable;
 	SimpleString *mStringTable;
-	const unsigned char *mByteCode;
+	const bu8_t *mByteCode;
 	size_t mIndex;
 };
 
@@ -109,7 +109,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	{
 		const FileData &file = cboFiles[i];
 		CboValidator::Result &result = resultList[i];
-		result = validator.Validate(file.mData, file.mLength);
+		result = validator.Validate(reinterpret_cast<const bu8_t *>(file.mData), file.mLength);
 		if (result.mValidity != CboValidator::CBO_VALID)
 		{
 			// TODO: Report error somehow.
@@ -137,10 +137,10 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
-	const size_t codeStart = TallyMemoryRequirements<const unsigned char>(memSize, codeByteCount);
+	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount);
 
 	// TODO: Consider alignment.
-	unsigned char *mem = mPermAllocator.Alloc<unsigned char>(memSize);
+	bu8_t *mem = mPermAllocator.Alloc<bu8_t>(memSize);
 	CboLoaderCore::MemoryResources resources(
 		mem,
 		constantTablesStart,
@@ -160,7 +160,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 
 	for (size_t i = 0; i < numFiles; ++i)
 	{
-		CboLoaderCore loader(resultList[i], resources, cboFiles[i].mData);
+		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const bu8_t *>(cboFiles[i].mData));
 		loader.Load();
 	}
 
@@ -188,8 +188,8 @@ void CboLoader::Dispose(const CodeSegment *codeSegment)
 
 void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegment) const
 {
-	unsigned char *code = const_cast<unsigned char *>(function.mCode);
-	const unsigned char *codeEnd = code + function.mCodeSize;
+	bu8_t *code = const_cast<bu8_t *>(function.mCode);
+	const bu8_t *codeEnd = code + function.mCodeSize;
 	while (code < codeEnd)
 	{
 		const OpCode opCode = static_cast<OpCode>(*code++);
@@ -334,7 +334,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mLocalSize = ReadValue32().mUInt;
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
-	unsigned char *code = mResources.mCode;
+	bu8_t *code = mResources.mCode;
 	const size_t codeSize = ReadValue32().mUInt;
 	function->mCode = code;
 	function->mCodeSize = codeSize;

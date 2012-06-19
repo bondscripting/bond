@@ -26,7 +26,7 @@ bool RunLexerTest(
 	Bond::DefaultAllocator allocator;
 	Bond::DefaultFileLoader fileLoader(allocator);
 	Bond::FileData script = fileLoader.LoadFile(scriptName);
-	__ASSERT_FORMAT__(script.mLength >= 0, logger, assertFile, assertLine,
+	__ASSERT_FORMAT__(script.mValid, logger, assertFile, assertLine,
 		("Failed to load file '%s'.", scriptName));
 
 	// Delegate to another function so we can still clean up even if something bails during the test.
@@ -51,7 +51,7 @@ static bool RunLexerTest(
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(script.mData, script.mLength);
+		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
 		result = validationFunction(logger, errorBuffer, lexer);
 	}
 

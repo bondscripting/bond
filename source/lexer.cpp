@@ -1,3 +1,4 @@
+#include "bond/algorithm.h"
 #include "bond/allocator.h"
 #include "bond/charstream.h"
 #include "bond/compilererror.h"
@@ -1217,148 +1218,69 @@ void LexerCore::EvaluateToken(Token &token)
 
 void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 {
-	// TODO: Do a binary search for faster lookups.
-	if (strcmp(token.GetText(), "bool") == 0)
+#define KEYWORD_LIST \
+	KEYWORD_ITEM(KEY_BOOL,      "bool")      \
+	KEYWORD_ITEM(KEY_BREAK,     "break")     \
+	KEYWORD_ITEM(KEY_CASE,      "case")      \
+	KEYWORD_ITEM(KEY_CAST,      "cast")      \
+	KEYWORD_ITEM(KEY_CHAR,      "char")      \
+	KEYWORD_ITEM(KEY_CONST,     "const")     \
+	KEYWORD_ITEM(KEY_CONTINUE,  "continue")  \
+	KEYWORD_ITEM(KEY_DEFAULT,   "default")   \
+	KEYWORD_ITEM(KEY_DO,        "do")        \
+	KEYWORD_ITEM(KEY_DOUBLE,    "double")    \
+	KEYWORD_ITEM(KEY_ELSE,      "else")      \
+	KEYWORD_ITEM(KEY_ENUM,      "enum")      \
+	KEYWORD_ITEM(CONST_BOOL,    "false")     \
+	KEYWORD_ITEM(KEY_FLOAT,     "float")     \
+	KEYWORD_ITEM(KEY_FOR,       "for")       \
+	KEYWORD_ITEM(KEY_IF,        "if")        \
+	KEYWORD_ITEM(KEY_INT,       "int")       \
+	KEYWORD_ITEM(KEY_LONG,      "long")      \
+	KEYWORD_ITEM(KEY_NAMESPACE, "namespace") \
+	KEYWORD_ITEM(KEY_NATIVE,    "native")    \
+	KEYWORD_ITEM(CONST_NULL,    "null")      \
+	KEYWORD_ITEM(KEY_REF,       "ref")       \
+	KEYWORD_ITEM(KEY_RETURN,    "return")    \
+	KEYWORD_ITEM(KEY_SHORT,     "short")     \
+	KEYWORD_ITEM(KEY_SIZEOF,    "sizeof")    \
+	KEYWORD_ITEM(KEY_STRUCT,    "struct")    \
+	KEYWORD_ITEM(KEY_SWITCH,    "switch")    \
+	KEYWORD_ITEM(KEY_THIS,      "this")      \
+	KEYWORD_ITEM(CONST_BOOL,    "true")		  \
+	KEYWORD_ITEM(KEY_UCHAR,     "uchar")     \
+	KEYWORD_ITEM(KEY_UINT,      "uint")      \
+	KEYWORD_ITEM(KEY_ULONG,     "ulong")     \
+	KEYWORD_ITEM(KEY_USHORT,    "ushort")    \
+	KEYWORD_ITEM(KEY_VOID,      "void")      \
+	KEYWORD_ITEM(KEY_WHILE,     "while")     \
+
+	static const SimpleString KEYWORD_NAMES[] =
 	{
-		token.SetTokenType(Token::KEY_BOOL);
-	}
-	else if (strcmp(token.GetText(), "break") == 0)
+#define KEYWORD_ITEM(type, name) SimpleString(name),
+		KEYWORD_LIST
+#undef KEYWORD_ITEM
+	};
+
+	static const Token::TokenType KEYWORD_TYPES[] =
 	{
-		token.SetTokenType(Token::KEY_BREAK);
-	}
-	else if (strcmp(token.GetText(), "char") == 0)
+#define KEYWORD_ITEM(type, name) Token::type,
+		KEYWORD_LIST
+#undef KEYWORD_ITEM
+	};
+
+	const int numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
+	const SimpleString *lastKeyword = KEYWORD_NAMES + numKeywords;
+	const SimpleString *keyword = LowerBound(KEYWORD_NAMES, lastKeyword, token.GetHashedText());
+
+	if ((keyword < lastKeyword) && (*keyword == token.GetHashedText()))
 	{
-		token.SetTokenType(Token::KEY_CHAR);
-	}
-	else if (strcmp(token.GetText(), "case") == 0)
-	{
-		token.SetTokenType(Token::KEY_CASE);
-	}
-	else if (strcmp(token.GetText(), "cast") == 0)
-	{
-		token.SetTokenType(Token::KEY_CAST);
-	}
-	else if (strcmp(token.GetText(), "const") == 0)
-	{
-		token.SetTokenType(Token::KEY_CONST);
-	}
-	else if (strcmp(token.GetText(), "continue") == 0)
-	{
-		token.SetTokenType(Token::KEY_CONTINUE);
-	}
-	else if (strcmp(token.GetText(), "default") == 0)
-	{
-		token.SetTokenType(Token::KEY_DEFAULT);
-	}
-	else if (strcmp(token.GetText(), "do") == 0)
-	{
-		token.SetTokenType(Token::KEY_DO);
-	}
-	else if (strcmp(token.GetText(), "double") == 0)
-	{
-		token.SetTokenType(Token::KEY_DOUBLE);
-	}
-	else if (strcmp(token.GetText(), "else") == 0)
-	{
-		token.SetTokenType(Token::KEY_ELSE);
-	}
-	else if (strcmp(token.GetText(), "enum") == 0)
-	{
-		token.SetTokenType(Token::KEY_ENUM);
-	}
-	else if (strcmp(token.GetText(), "float") == 0)
-	{
-		token.SetTokenType(Token::KEY_FLOAT);
-	}
-	else if (strcmp(token.GetText(), "for") == 0)
-	{
-		token.SetTokenType(Token::KEY_FOR);
-	}
-	else if (strcmp(token.GetText(), "if") == 0)
-	{
-		token.SetTokenType(Token::KEY_IF);
-	}
-	else if (strcmp(token.GetText(), "int") == 0)
-	{
-		token.SetTokenType(Token::KEY_INT);
-	}
-	else if (strcmp(token.GetText(), "long") == 0)
-	{
-		token.SetTokenType(Token::KEY_LONG);
-	}
-	else if (strcmp(token.GetText(), "namespace") == 0)
-	{
-		token.SetTokenType(Token::KEY_NAMESPACE);
-	}
-	else if (strcmp(token.GetText(), "native") == 0)
-	{
-		token.SetTokenType(Token::KEY_NATIVE);
-	}
-	else if (strcmp(token.GetText(), "ref") == 0)
-	{
-		token.SetTokenType(Token::KEY_REF);
-	}
-	else if (strcmp(token.GetText(), "return") == 0)
-	{
-		token.SetTokenType(Token::KEY_RETURN);
-	}
-	else if (strcmp(token.GetText(), "sizeof") == 0)
-	{
-		token.SetTokenType(Token::KEY_SIZEOF);
-	}
-	else if (strcmp(token.GetText(), "short") == 0)
-	{
-		token.SetTokenType(Token::KEY_SHORT);
-	}
-	else if (strcmp(token.GetText(), "struct") == 0)
-	{
-		token.SetTokenType(Token::KEY_STRUCT);
-	}
-	else if (strcmp(token.GetText(), "switch") == 0)
-	{
-		token.SetTokenType(Token::KEY_SWITCH);
-	}
-	else if (strcmp(token.GetText(), "this") == 0)
-	{
-		token.SetTokenType(Token::KEY_THIS);
-	}
-	else if (strcmp(token.GetText(), "uchar") == 0)
-	{
-		token.SetTokenType(Token::KEY_UCHAR);
-	}
-	else if (strcmp(token.GetText(), "uint") == 0)
-	{
-		token.SetTokenType(Token::KEY_UINT);
-	}
-	else if (strcmp(token.GetText(), "ulong") == 0)
-	{
-		token.SetTokenType(Token::KEY_ULONG);
-	}
-	else if (strcmp(token.GetText(), "ushort") == 0)
-	{
-		token.SetTokenType(Token::KEY_USHORT);
-	}
-	else if (strcmp(token.GetText(), "void") == 0)
-	{
-		token.SetTokenType(Token::KEY_VOID);
-	}
-	else if (strcmp(token.GetText(), "while") == 0)
-	{
-		token.SetTokenType(Token::KEY_WHILE);
-	}
-	else if (strcmp(token.GetText(), "false") == 0)
-	{
-		token.SetTokenType(Token::CONST_BOOL);
-		token.SetBoolValue(false);
-	}
-	else if (strcmp(token.GetText(), "true") == 0)
-	{
-		token.SetTokenType(Token::CONST_BOOL);
-		token.SetBoolValue(true);
-	}
-	else if (strcmp(token.GetText(), "null") == 0)
-	{
-		token.SetTokenType(Token::CONST_NULL);
+		const Token::TokenType type = KEYWORD_TYPES[keyword - KEYWORD_NAMES];
+		token.SetTokenType(type);
+		if (type == Token::CONST_BOOL)
+		{
+			token.SetBoolValue(token.GetText()[0] == 't');
+		}
 	}
 }
 

@@ -58,7 +58,7 @@ public:
 		size_t mCodeByteCount;
 	};
 
-	Result Validate(const unsigned char *byteCode, size_t length);
+	Result Validate(const void *byteCode, size_t length);
 };
 
 }

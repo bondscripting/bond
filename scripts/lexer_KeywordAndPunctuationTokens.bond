@@ -1,4 +1,4 @@
-bool break char case cast const continue default do double else enum float for if int long namespace native ref return short sizeof struct switch this uchar uint ulong ushort void while
+bool break case cast char const continue default do double else enum float for if int long namespace native ref return short sizeof struct switch this uchar uint ulong ushort void while
 +-*/%++--< <=> >=<<>> ==!=!&&||&|^~?->
 =>>=<<=+=-=*=/=%=&=|=^=
 (){}[].;:::,

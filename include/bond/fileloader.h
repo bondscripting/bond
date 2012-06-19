@@ -8,11 +8,17 @@ namespace Bond
 
 struct FileData
 {
-	FileData(): mData(NULL), mLength(-1) {}
-	FileData(unsigned char *data, size_t length): mData(data), mLength(length) {}
+	FileData(): mData(NULL), mLength(0), mValid(false) {}
 
-	unsigned char *mData;
+	FileData(void *data, size_t length, bool valid):
+		mData(data),
+		mLength(length),
+		mValid(valid)
+	{}
+
+	void *mData;
 	size_t mLength;
+	bool mValid;
 };
 
 
@@ -21,7 +27,7 @@ class FileLoader
 public:
 	virtual ~FileLoader() {}
 
-	virtual FileData ReadFile(const char *fileName) = 0;
+	virtual FileData LoadFile(const char *fileName) = 0;
 	virtual void DisposeFile(FileData &fileData) = 0;
 };
 

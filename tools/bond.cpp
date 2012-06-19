@@ -74,7 +74,7 @@ int main(int argc, const char *argv[])
 	while (it != cboFileNameList.end())
 	{
 		cboFiles[index] = fileLoader.LoadFile(*it);
-		if (cboFiles[index].mData == NULL)
+		if (!cboFiles[index].mValid)
 		{
 			fprintf(stderr, "Failed to load '%s'\n", *it);
 			error = true;
@@ -90,12 +90,14 @@ int main(int argc, const char *argv[])
 		Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
 
 		// Test code.
-		Bond::bu32_t returnValue;
+		/*
+		Bond::bi32_t returnValue;
 		Bond::VM::CallerStackFrame stackFrame(vm, "::TheSpace::Blah", &returnValue);
-		stackFrame.PushArg(34);
+		stackFrame.PushArg(11);
 		stackFrame.PushArg(45);
 		stackFrame.Call();
 		printf("return: %d\n", returnValue);
+		*/
 		// End test code.
 
 		cboLoader.Dispose(codeSegment);
