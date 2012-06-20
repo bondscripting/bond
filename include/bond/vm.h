@@ -33,9 +33,9 @@ public:
 		/*
 		CalleeStackFrame(
 				Function *function,
-				unsigned char *framePointer,
-				unsigned char *stackPointer,
-				unsigned char *returnPointer):
+				bu8_t *framePointer,
+				bu8_t *stackPointer,
+				bu8_t *returnPointer):
 			mFunction(function),
 			mFramePointer(framePointer),
 			mStackPointer(stackPointer),
@@ -43,9 +43,9 @@ public:
 		{}
 		*/
 		const Function *mFunction;
-		unsigned char *mFramePointer;
-		unsigned char *mStackPointer;
-		unsigned char *mReturnPointer;
+		bu8_t *mFramePointer;
+		bu8_t *mStackPointer;
+		bu8_t *mReturnPointer;
 		friend class VM;
 		friend class CallerStackFrame;
 	};
@@ -94,7 +94,7 @@ private:
 	StackFrames::Element mDummyFrame;
 	Allocator &mAllocator;
 	const CodeSegment &mCodeSegment;
-	unsigned char *mStack;
+	bu8_t *mStack;
 	size_t mStackSize;
 };
 

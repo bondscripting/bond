@@ -6,28 +6,28 @@
 namespace Bond
 {
 
-inline void SwapBytes(unsigned char &a, unsigned char &b)
+inline void SwapBytes(bu8_t &a, bu8_t &b)
 {
-	const unsigned char temp = a;
+	const bu8_t temp = a;
 	a = b;
 	b = temp;
 }
 
 
-inline void ReverseByteOrder16(unsigned char value[2])
+inline void ReverseByteOrder16(bu8_t value[2])
 {
 	SwapBytes(value[0], value[1]);
 }
 
 
-inline void ReverseByteOrder32(unsigned char value[4])
+inline void ReverseByteOrder32(bu8_t value[4])
 {
 	SwapBytes(value[0], value[3]);
 	SwapBytes(value[1], value[2]);
 }
 
 
-inline void ReverseByteOrder64(unsigned char value[8])
+inline void ReverseByteOrder64(bu8_t value[8])
 {
 	SwapBytes(value[0], value[7]);
 	SwapBytes(value[1], value[6]);
@@ -36,10 +36,10 @@ inline void ReverseByteOrder64(unsigned char value[8])
 }
 
 /*
-inline void BatchReverseByteOrder16(unsigned char *value, size_t numValues)
+inline void BatchReverseByteOrder16(bu8_t *value, size_t numValues)
 {
-	unsigned char *v = value;
-	const unsigned char *end = v + (numValues * sizeof(Value16));
+	bu8_t *v = value;
+	const bu8_t *end = v + (numValues * sizeof(Value16));
 	while (v < end)
 	{
 		ReverseByteOrder16(v);
@@ -48,10 +48,10 @@ inline void BatchReverseByteOrder16(unsigned char *value, size_t numValues)
 }
 
 
-inline void BatchReverseByteOrder32(unsigned char *value, size_t numValues)
+inline void BatchReverseByteOrder32(bu8_t *value, size_t numValues)
 {
-	unsigned char *v = value;
-	const unsigned char *end = v + (numValues * sizeof(Value32));
+	bu8_t *v = value;
+	const bu8_t *end = v + (numValues * sizeof(Value32));
 	while (v < end)
 	{
 		ReverseByteOrder32(v);
@@ -60,10 +60,10 @@ inline void BatchReverseByteOrder32(unsigned char *value, size_t numValues)
 }
 
 
-inline void BatchReverseByteOrder64(unsigned char *value, size_t numValues)
+inline void BatchReverseByteOrder64(bu8_t *value, size_t numValues)
 {
-	unsigned char *v = value;
-	const unsigned char *end = v + (numValues * sizeof(Value64));
+	bu8_t *v = value;
+	const bu8_t *end = v + (numValues * sizeof(Value64));
 	while (v < end)
 	{
 		ReverseByteOrder64(v);
@@ -113,7 +113,7 @@ inline bf64_t ConvertBigEndianF64(bf64_t value) { return value; }
 
 inline void ConvertBigEndian16(void *value)
 {
-	return ReverseByteOrder16(static_cast<unsigned char *>(value));
+	return ReverseByteOrder16(static_cast<bu8_t *>(value));
 }
 
 
@@ -137,7 +137,7 @@ inline bu16_t ConvertBigEndianU16(bu16_t value)
 
 inline void ConvertBigEndian32(void *value)
 {
-	return ReverseByteOrder32(static_cast<unsigned char *>(value));
+	return ReverseByteOrder32(static_cast<bu8_t *>(value));
 }
 
 
@@ -167,7 +167,7 @@ inline bf32_t ConvertBigEndianF32(bf32_t value)
 
 inline void ConvertBigEndian64(void *value)
 {
-	return ReverseByteOrder64(static_cast<unsigned char *>(value));
+	return ReverseByteOrder64(static_cast<bu8_t *>(value));
 }
 
 

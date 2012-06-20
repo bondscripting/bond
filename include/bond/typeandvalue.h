@@ -26,13 +26,6 @@ public:
 		mResolved(true)
 	{}
 
-	TypeAndValue(const TypeAndValue &other):
-		mValue(other.mValue),
-		mTypeDescriptor(other.mTypeDescriptor),
-		mValueDefined(other.mValueDefined),
-		mResolved(other.mResolved)
-	{}
-
 	const TypeAndValue &operator=(const TypeAndValue &other)
 	{
 		mValue = other.mValue;

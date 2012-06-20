@@ -71,7 +71,7 @@ struct Function
 	ReturnSignature mReturnSignature;
 	ParamListSignature mParamListSignature;
 	const ConstantTable *mConstantTable;
-	const unsigned char *mCode;
+	const bu8_t *mCode;
 	bu32_t mCodeSize;
 	bu32_t mFrameSize;
 	bu32_t mPackedFrameSize;

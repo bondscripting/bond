@@ -149,6 +149,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(PTROFF,       ptroff,       SHORT)  \
 	                                                     \
 	BOND_OPCODE_ITEM(INCI,         inci,         UCHAR_CHAR) \
+	BOND_OPCODE_ITEM(INCL,         incl,         UCHAR_CHAR) \
 	                                                     \
 	BOND_OPCODE_ITEM(ADDI,         addi,         NONE)   \
 	BOND_OPCODE_ITEM(ADDL,         addl,         NONE)   \

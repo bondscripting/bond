@@ -141,6 +141,7 @@ dtof                ..., double -> ..., float
 ptroff, short       ..., address, int -> ..., address
 
 inci, uchar, char   ... -> ...
+incl, uchar, char   ... -> ...
 
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long

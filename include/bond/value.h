@@ -42,7 +42,7 @@ union Value16
 	explicit Value16(bi32_t value): mShort(static_cast<bi16_t>(value)) {}
 	explicit Value16(bu32_t value): mUShort(static_cast<bu16_t>(value)) {}
 
-	explicit Value16(const unsigned char value[])
+	explicit Value16(const bu8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
@@ -61,7 +61,7 @@ union Value32
 	explicit Value32(bu32_t value): mUInt(value) {}
 	explicit Value32(bf32_t value): mFloat(value) {}
 
-	explicit Value32(const unsigned char value[])
+	explicit Value32(const bu8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
@@ -69,16 +69,10 @@ union Value32
 		mBytes[3] = value[3];
 	}
 
-	// TODO: Attempt to remove this constructor.
-	explicit Value32(const bu32_t value[])
-	{
-		mUInt = value[0];
-	}
-
 	bi32_t mInt;
 	bu32_t mUInt;
 	bf32_t mFloat;
-	unsigned char mBytes[4];
+	bu8_t mBytes[4];
 };
 
 
@@ -89,7 +83,7 @@ union Value64
 	explicit Value64(bu64_t value): mULong(value) {}
 	explicit Value64(bf64_t value): mDouble(value) {}
 
-	explicit Value64(const unsigned char value[])
+	explicit Value64(const bu8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
@@ -101,24 +95,10 @@ union Value64
 		mBytes[7] = value[7];
 	}
 
-	// TODO: Attempt to remove this constructor.
-	explicit Value64(const bu32_t value[])
-	{
-		mWords[0] = value[0];
-		mWords[1] = value[1];
-	}
-
-	// TODO: Attempt to remove this constructor.
-	explicit Value64(const bu64_t value[])
-	{
-		mULong = value[0];
-	}
-
 	bi64_t mLong;
 	bu64_t mULong;
 	bf64_t mDouble;
-	unsigned char mBytes[8];
-	bu32_t mWords[2];
+	bu8_t mBytes[8];
 };
 
 

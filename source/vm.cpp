@@ -9,13 +9,13 @@
 namespace Bond
 {
 
-inline unsigned char *AddPointerOffset(unsigned char *ptr, bu32_t offset, bu32_t alignment)
+inline bu8_t *AddPointerOffset(bu8_t *ptr, bu32_t offset, bu32_t alignment)
 {
 	const intptr_t p = reinterpret_cast<intptr_t>(ptr);
 	const intptr_t o = static_cast<intptr_t>(offset);
 	const intptr_t a = static_cast<intptr_t>(alignment);
 	const intptr_t result = AlignUp(p + o, a);
-	return reinterpret_cast<unsigned char *>(result);
+	return reinterpret_cast<bu8_t *>(result);
 }
 
 
@@ -46,17 +46,17 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 	mVm(vm),
 	mNextArg(0)
 {
-	unsigned char *prevSp = GetNext()->GetValue().mStackPointer;
+	bu8_t *prevSp = GetNext()->GetValue().mStackPointer;
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
 	// TODO: report error if function lookup fails.
-	unsigned char *fp = AddPointerOffset(prevSp, function->mFrameSize, function->mFramePointerAlignment);
-	unsigned char *sp = AddPointerOffset(fp, function->mLocalSize, BOND_SLOT_SIZE);
+	bu8_t *fp = AddPointerOffset(prevSp, function->mFrameSize, function->mFramePointerAlignment);
+	bu8_t *sp = AddPointerOffset(fp, function->mLocalSize, BOND_SLOT_SIZE);
 	// TODO: Report error if sp >= mStack + mStackSize.
 	mValue.mFunction = function;
 	mValue.mFramePointer = fp;
 	mValue.mStackPointer = sp;
-	mValue.mReturnPointer = reinterpret_cast<unsigned char *>(returnPointer);
+	mValue.mReturnPointer = reinterpret_cast<bu8_t *>(returnPointer);
 }
 
 
@@ -68,7 +68,7 @@ VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
 	mStack(NULL),
 	mStackSize(stackSize)
 {
-	mStack = mAllocator.Alloc<unsigned char>(stackSize);
+	mStack = mAllocator.Alloc<bu8_t>(stackSize);
 	CalleeStackFrame &top = mDummyFrame.GetValue();
 	top.mStackPointer = mStack;
 	top.mFramePointer = mStack;
@@ -88,9 +88,9 @@ void VM::ExecuteScriptFunction()
 	CalleeStackFrame &frame = GetTopStackFrame();
 	const Value32 *value32Table = frame.mFunction->mConstantTable->mValue32Table;
 	const Value64 *value64Table = frame.mFunction->mConstantTable->mValue64Table;
-	const unsigned char *code = frame.mFunction->mCode;
-	unsigned char *const fp = frame.mFramePointer;
-	unsigned char *sp = frame.mStackPointer;
+	const bu8_t *code = frame.mFunction->mCode;
+	bu8_t *const fp = frame.mFramePointer;
+	bu8_t *sp = frame.mStackPointer;
 	bu32_t pc = 0;
 
 	for (;;)
@@ -131,8 +131,8 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_CONST32:
 			{
 				const Value16 valueIndex(code + pc);
-				pc += sizeof(Value16);
 				CopyValue32(value32Table + valueIndex.mUShort, sp);
+				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -140,8 +140,8 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_CONST64:
 			{
 				const Value16 valueIndex(code + pc);
-				pc += sizeof(Value16);
 				CopyValue64(value64Table + valueIndex.mUShort, sp);
+				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -345,7 +345,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADFP:
 			{
 				const Value16 offset(code + pc);
-				*reinterpret_cast<unsigned char **>(sp) = fp + offset.mShort;
+				*reinterpret_cast<bu8_t **>(sp) = fp + offset.mShort;
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -354,11 +354,15 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADFPW:
 			{
 				const Value16 offsetIndex(code + pc);
-				*reinterpret_cast<unsigned char **>(sp) = fp + value32Table[offsetIndex.mUShort].mInt;
+				*reinterpret_cast<bu8_t **>(sp) = fp + value32Table[offsetIndex.mUShort].mInt;
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
+
+			case OPCODE_LOADEA:
+				// TODO
+				break;
 
 			case OPCODE_LOADC:
 			{
@@ -370,7 +374,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADUC:
 			{
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
-				CopyValue<unsigned char, bu32_t>(address, sp - BOND_SLOT_SIZE);
+				CopyValue<bu8_t, bu32_t>(address, sp - BOND_SLOT_SIZE);
 			}
 			break;
 
@@ -455,7 +459,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_PUSHUC:
 			{
 				const Value16 offset(code + pc);
-				CopyValue<unsigned char, bu32_t>(fp + offset.mShort, sp);
+				CopyValue<bu8_t, bu32_t>(fp + offset.mShort, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -464,7 +468,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_PUSHUCW:
 			{
 				const Value16 offsetIndex(code + pc);
-				CopyValue<unsigned char, bu32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				CopyValue<bu8_t, bu32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -838,6 +842,22 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_MOVESP:
+			{
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp += offset.mShort;
+			}
+			break;
+
+			case OPCODE_MOVESPW:
+			{
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp += value32Table[offsetIndex.mUShort].mInt;;
+			}
+			break;
+
 			case OPCODE_DUP:
 			{
 				CopyValue64(sp - BOND_SLOT_SIZE, sp);
@@ -864,7 +884,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_UITOUC:
 			{
 				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<unsigned char>(*a);
+				*a = static_cast<bu8_t>(*a);
 			}
 			break;
 
@@ -1050,12 +1070,27 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_PTROFF:
+			{
+				// TODO
+			}
+			break;
+
 			case OPCODE_INCI:
 			{
 				const bu32_t slotIndex = static_cast<bu32_t>(code[pc]);
 				const bi32_t value = static_cast<bi32_t>(static_cast<char>(code[pc + 1]));
 				pc += 2;
 				*reinterpret_cast<bi32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
+			}
+			break;
+
+			case OPCODE_INCL:
+			{
+				const bu32_t slotIndex = static_cast<bu32_t>(code[pc]);
+				const bi64_t value = static_cast<bi64_t>(static_cast<char>(code[pc + 1]));
+				pc += 2;
+				*reinterpret_cast<bi64_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}
 			break;
 
@@ -1836,7 +1871,20 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
-			case OPCODE_RETURN: return;
+			case OPCODE_INVOKE:
+			{
+				// TODO
+			}
+			break;
+
+			case OPCODE_INVOKENATIVE:
+			{
+				// TODO
+			}
+			break;
+
+			case OPCODE_RETURN:
+				return;
 
 			case OPCODE_RETURN32:
 			{
@@ -1852,7 +1900,6 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_NOP: break;
 			case OPCODE_MAX: break;
-			default: break;
 		}
 	}
 }
