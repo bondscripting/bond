@@ -207,9 +207,9 @@ public:
 
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
-	bu32_t GetStackSize(bu32_t pointerSize) const;
-	bu32_t GetSize(bu32_t pointerSize) const;
-	bu32_t GetAlignment() const;
+	bu32_t GetStackSize(PointerSize pointerSize) const;
+	bu32_t GetSize(PointerSize pointerSize) const;
+	bu32_t GetAlignment(PointerSize pointerSize) const;
 
 	bu32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
@@ -303,7 +303,7 @@ public:
 
 	bool IsResolved() const;
 
-	bu32_t GetSize(bu32_t pointerSize) const;
+	bu32_t GetSize(PointerSize pointerSize) const;
 	bu32_t GetAlignment() const;
 
 	bu32_t GetSignatureType() const;

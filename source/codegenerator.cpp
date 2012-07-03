@@ -116,7 +116,7 @@ public:
 			BinaryWriter &writer,
 			CompilerErrorBuffer &errorBuffer,
 			const TranslationUnit *translationUnitList,
-			bu32_t pointerSize):
+			PointerSize pointerSize):
 		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
 		mStringList(StringList::Allocator(&allocator)),
 		mValue32IndexMap(Value32IndexMap::Compare(), Value32IndexMap::Allocator(&allocator)),
@@ -179,7 +179,7 @@ private:
 		size_t mToLabel;
 	};
 
-	typedef Vector<unsigned char> ByteCode;
+	typedef Vector<bu8_t> ByteCode;
 	typedef Vector<size_t> LabelList;
 	typedef Vector<JumpEntry> JumpList;
 
@@ -294,7 +294,7 @@ private:
 	void WriteValue32(Value32 value);
 	void WriteValue64(Value64 value);
 
-	bool Is64BitPointer() const { return mPointerSize == 8; }
+	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
 	ByteCode::Type &GetByteCode();
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
@@ -323,7 +323,7 @@ private:
 	BinaryWriter &mWriter;
 	CompilerErrorBuffer &mErrorBuffer;
 	const TranslationUnit *mTranslationUnitList;
-	bu32_t mPointerSize;
+	PointerSize mPointerSize;
 };
 
 
@@ -342,7 +342,7 @@ void GeneratorCore::Generate()
 	WriteValue32(Value32(MAGIC_NUMBER));
 	WriteValue16(Value16(MAJOR_VERSION));
 	WriteValue16(Value16(MINOR_VERSION));
-	WriteValue16(Value16(EncodePointerSize(0, Is64BitPointer())));
+	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
 
 	const bu16_t listIndex = MapString("List");
 	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
@@ -405,11 +405,20 @@ void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
-	CompiledFunction &function =
-		*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
-	FunctionStack::Element functionElement(mFunction, &function);
-	MapQualifiedSymbolName(functionDefinition);
-	ParseNodeTraverser::Visit(functionDefinition);
+	if (!functionDefinition->IsNative())
+	{
+		CompiledFunction &function =
+			*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
+		FunctionStack::Element functionElement(mFunction, &function);
+		MapQualifiedSymbolName(functionDefinition);
+		ParseNodeTraverser::Visit(functionDefinition);
+
+		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
+		{
+			ByteCode::Type &byteCode = GetByteCode();
+			byteCode.push_back(OPCODE_RETURN);
+		}
+	}
 }
 
 
@@ -453,31 +462,46 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
-	// TODO: Do optimizations if condition is a constant.
 	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *condition = ifStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
-	ResultStack::Element conditionResult(mResult);
-	Traverse(condition);
-	EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
+	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
 
-	const size_t thenEndLabel = CreateLabel();
-	EmitJump(OPCODE_IFZ, thenEndLabel);
-
-	Traverse(ifStatement->GetThenStatement());
-	size_t thenEndPos = byteCode.size();
-
-	if (ifStatement->GetElseStatement() != NULL)
+	if (conditionTav.IsValueDefined())
 	{
-		size_t elseEndLabel = CreateLabel();
-		EmitJump(OPCODE_GOTO, elseEndLabel);
-		thenEndPos = byteCode.size();
-
-		Traverse(ifStatement->GetElseStatement());
-		SetLabelValue(elseEndLabel, byteCode.size());
+		if (conditionTav.GetBoolValue())
+		{
+			Traverse(ifStatement->GetThenStatement());
+		}
+		else if (ifStatement->GetElseStatement() != NULL)
+		{
+			Traverse(ifStatement->GetElseStatement());
+		}
 	}
+	else
+	{
+		ResultStack::Element conditionResult(mResult);
+		Traverse(condition);
+		EmitPushResult(conditionResult.GetValue(), conditionDescriptor);
 
-	SetLabelValue(thenEndLabel, thenEndPos);
+		const size_t thenEndLabel = CreateLabel();
+		EmitJump(OPCODE_IFZ, thenEndLabel);
+
+		Traverse(ifStatement->GetThenStatement());
+		size_t thenEndPos = byteCode.size();
+
+		if (ifStatement->GetElseStatement() != NULL)
+		{
+			size_t elseEndLabel = CreateLabel();
+			EmitJump(OPCODE_GOTO, elseEndLabel);
+			thenEndPos = byteCode.size();
+
+			Traverse(ifStatement->GetElseStatement());
+			SetLabelValue(elseEndLabel, byteCode.size());
+		}
+
+		SetLabelValue(thenEndLabel, thenEndPos);
+	}
 }
 
 
@@ -1379,12 +1403,12 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			if (IsInCharRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTC);
-				byteCode.push_back(static_cast<unsigned char>(value));
+				byteCode.push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInUCharRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTUC);
-				byteCode.push_back(static_cast<unsigned char>(value));
+				byteCode.push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInShortRange(value))
 			{
@@ -1442,7 +1466,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			if (IsInUCharRange(value))
 			{
 				byteCode.push_back(OPCODE_CONSTUC);
-				byteCode.push_back(static_cast<unsigned char>(value));
+				byteCode.push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInUShortRange(value))
 			{
@@ -2144,8 +2168,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	{
 		const bi32_t value = rhTav.GetIntValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 		byteCode.push_back(INC_OPCODES.GetOpCode(lhType));
-		byteCode.push_back(static_cast<unsigned char>(slotIndex));
-		byteCode.push_back(static_cast<unsigned char>(value));
+		byteCode.push_back(static_cast<bu8_t>(slotIndex));
+		byteCode.push_back(static_cast<bu8_t>(value));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2297,8 +2321,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 			}
 
 			byteCode.push_back(OPCODE_INCL);
-			byteCode.push_back(static_cast<unsigned char>(slotIndex));
-			byteCode.push_back(static_cast<unsigned char>(pointerOffset));
+			byteCode.push_back(static_cast<bu8_t>(slotIndex));
+			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -2313,8 +2337,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 			}
 
 			byteCode.push_back(OPCODE_INCI);
-			byteCode.push_back(static_cast<unsigned char>(slotIndex));
-			byteCode.push_back(static_cast<unsigned char>(pointerOffset));
+			byteCode.push_back(static_cast<bu8_t>(slotIndex));
+			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -2388,8 +2412,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 		}
 
 		byteCode.push_back(INC_OPCODES.GetOpCode(resultType));
-		byteCode.push_back(static_cast<unsigned char>(slotIndex));
-		byteCode.push_back(static_cast<unsigned char>(sign));
+		byteCode.push_back(static_cast<bu8_t>(slotIndex));
+		byteCode.push_back(static_cast<bu8_t>(sign));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
@@ -2741,7 +2765,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 				mWriter.Write(byteCode[byteCodeIndex++]);
 			}
 
-			unsigned char opCode = byteCode[byteCodeIndex++];
+			bu8_t opCode = byteCode[byteCodeIndex++];
 			const bi32_t offset = labelList[jlit->mToLabel] - jlit->mFromPos;
 			Value16 arg(offset);
 

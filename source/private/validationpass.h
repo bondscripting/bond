@@ -9,7 +9,7 @@ namespace Bond
 class ValidationPass: public SemanticAnalysisPass
 {
 public:
-	ValidationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
+	ValidationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, PointerSize pointerSize):
 		SemanticAnalysisPass(errorBuffer, symbolTable),
 		mPointerSize(pointerSize)
 	{}
@@ -49,7 +49,7 @@ private:
 	IntStack mFramePointerAlignment;
 	TypeStack mReturnType;
 	FunctionStack mFunction;
-	bu32_t mPointerSize;
+	PointerSize mPointerSize;
 };
 
 }

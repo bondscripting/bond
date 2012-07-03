@@ -14,7 +14,7 @@ class TranslationUnit;
 class CodeGenerator
 {
 public:
-	CodeGenerator(Allocator &allocator, CompilerErrorBuffer &errorBuffer, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
+	CodeGenerator(Allocator &allocator, CompilerErrorBuffer &errorBuffer, PointerSize pointerSize = BOND_NATIVE_POINTER_SIZE):
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),
 		mPointerSize(pointerSize)
@@ -26,7 +26,7 @@ public:
 private:
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
-	bu32_t mPointerSize;
+	PointerSize mPointerSize;
 };
 
 }

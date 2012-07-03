@@ -25,15 +25,9 @@ inline PointerSize DecodePointerSize(bu16_t flags)
 }
 
 
-inline bu16_t EncodePointerSize(bu16_t flags, bool is64BitPointer)
-{
-	return flags | (is64BitPointer ? 1 : 0);
-}
-
-
 inline bu16_t EncodePointerSize(bu16_t flags, PointerSize pointerSize)
 {
-	return EncodePointerSize(flags, pointerSize == POINTER_64BIT);
+	return flags | ((pointerSize == POINTER_64BIT) ? 1 : 0);
 }
 
 }

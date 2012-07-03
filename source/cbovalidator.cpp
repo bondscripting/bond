@@ -350,7 +350,7 @@ void CboValidatorCore::ValidateReturnSignature()
 	bu32_t returnSize;
 	bu32_t returnType;
 	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
-	// TODO: Do a some sanity checks.
+	// TODO: Do some sanity checks.
 }
 
 
@@ -385,7 +385,7 @@ void CboValidatorCore::ValidateParamListSignature()
 		bu32_t paramSize;
 		bu32_t paramType;
 		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
-		// TODO: Do a some sanity checks.
+		// TODO: Do some sanity checks.
 	}
 }
 

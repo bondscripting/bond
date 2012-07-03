@@ -234,8 +234,9 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				}
 
 				// TODO: report error if resolvedPointer is NULL.
-				memcpy(code, resolvedPointer, BOND_NATIVE_POINTER_SIZE);
-				code += BOND_NATIVE_POINTER_SIZE;
+				const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
+				memcpy(code, resolvedPointer, pointerSize);
+				code += pointerSize;
 			}
 			break;
 		}

@@ -26,14 +26,14 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
 	FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	bi32_t offset = (functionDefinition->GetThisTypeDescriptor() != NULL) ? -static_cast<bi32_t>(mPointerSize) : 0;
+	bi32_t offset = (functionDefinition->GetThisTypeDescriptor() != NULL) ? -BOND_SLOT_SIZE : 0;
 	bi32_t packedOffset = offset;
 	bi32_t framePointerAlignment = Max(BOND_SLOT_SIZE, -offset);
 	Parameter *parameterList = prototype->GetParameterList();
 	while (parameterList != NULL)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment()), BOND_SLOT_SIZE);
+		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
 		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
 		offset = AlignDown(offset - size, alignment);
 		packedOffset = AlignDown(packedOffset - size, BOND_SLOT_SIZE);
@@ -74,7 +74,7 @@ void ValidationPass::Visit(NamedInitializer *namedInitializer)
 	if (namedInitializer->GetScope() == SCOPE_LOCAL)
 	{
 		const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment()), BOND_SLOT_SIZE);
+		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
 		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
 		const bi32_t offset = AlignUp(mVariableOffset.GetTop(), alignment);
 		const bi32_t nextOffset = offset + size;

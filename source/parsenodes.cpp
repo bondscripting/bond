@@ -260,7 +260,7 @@ bool TypeDescriptor::IsResolved() const
 }
 
 
-bu32_t TypeDescriptor::GetStackSize(bu32_t pointerSize) const
+bu32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
 {
 	if (IsPointerType())
 	{
@@ -273,7 +273,7 @@ bu32_t TypeDescriptor::GetStackSize(bu32_t pointerSize) const
 }
 
 
-bu32_t TypeDescriptor::GetSize(bu32_t pointerSize) const
+bu32_t TypeDescriptor::GetSize(PointerSize pointerSize) const
 {
 	if (IsValueType())
 	{
@@ -281,7 +281,7 @@ bu32_t TypeDescriptor::GetSize(bu32_t pointerSize) const
 	}
 	else if (IsPointerIntrinsicType())
 	{
-		return pointerSize;
+		return GetPointerSize(pointerSize);
 	}
 	else if (IsArrayType())
 	{
@@ -295,7 +295,7 @@ bu32_t TypeDescriptor::GetSize(bu32_t pointerSize) const
 }
 
 
-bu32_t TypeDescriptor::GetAlignment() const
+bu32_t TypeDescriptor::GetAlignment(PointerSize pointerSize) const
 {
 	if (IsValueType())
 	{
@@ -303,12 +303,12 @@ bu32_t TypeDescriptor::GetAlignment() const
 	}
 	else if (IsPointerIntrinsicType())
 	{
-		return BOND_NATIVE_POINTER_SIZE;
+		return GetSize(pointerSize);
 	}
 	else if (IsArrayType())
 	{
 		const TypeDescriptor elementType = GetArrayElementType();
-		return elementType.GetAlignment();
+		return elementType.GetAlignment(pointerSize);
 	}
 	return 0;
 }
@@ -466,7 +466,7 @@ bool TypeSpecifier::IsResolved() const
 }
 
 
-bu32_t TypeSpecifier::GetSize(bu32_t pointerSize) const
+bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 {
 	switch (GetPrimitiveType())
 	{

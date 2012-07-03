@@ -11,7 +11,7 @@ class TypeAndValue;
 class ValueEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	ValueEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, bu32_t pointerSize):
+	ValueEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, PointerSize pointerSize):
 		SemanticAnalysisPass(errorBuffer, symbolTable),
 		mPrevEnumerator(NULL),
 		mPointerSize(pointerSize),
@@ -48,7 +48,9 @@ protected:
 private:
 	struct AlignmentComparator
 	{
+		AlignmentComparator(PointerSize pointerSize): mPointerSize(pointerSize) {}
 		bool operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const;
+		PointerSize mPointerSize;
 	};
 
 	void Resolve(TypeAndValue &tav);
@@ -56,7 +58,7 @@ private:
 
 	CompilerErrorBuffer mUnresolvedErrorBuffer;
 	Enumerator *mPrevEnumerator;
-	bu32_t mPointerSize;
+	PointerSize mPointerSize;
 	bool mHasResolvedItems;
 	bool mHasUnresolvedItems;
 };

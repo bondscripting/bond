@@ -1072,7 +1072,12 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_PTROFF:
 			{
-				// TODO
+				bu8_t **ptr = reinterpret_cast<bu8_t **>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *offset = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 elementSize(code + pc);
+				*ptr += *offset * elementSize.mShort;
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 

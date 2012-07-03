@@ -12,7 +12,7 @@ class SymbolTable;
 class SemanticAnalyzer
 {
 public:
-	SemanticAnalyzer(CompilerErrorBuffer &errorBuffer, bu32_t pointerSize = BOND_NATIVE_POINTER_SIZE):
+	SemanticAnalyzer(CompilerErrorBuffer &errorBuffer, PointerSize pointerSize = BOND_NATIVE_POINTER_SIZE):
 		mErrorBuffer(errorBuffer),
 		mPointerSize(pointerSize)
 	{}
@@ -25,7 +25,7 @@ public:
 private:
 	SymbolTable mSymbolTable;
 	CompilerErrorBuffer &mErrorBuffer;
-	bu32_t mPointerSize;
+	PointerSize mPointerSize;
 };
 
 }

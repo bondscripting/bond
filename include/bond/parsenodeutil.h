@@ -58,9 +58,8 @@ const T *CastNode(const ParseNode *node)
 
 
 template <typename NodeType, typename Comparator>
-NodeType *Insert(NodeType *head, NodeType *node)
+NodeType *Insert(NodeType *head, NodeType *node, Comparator compare)
 {
-	Comparator compare;
 	if (head == NULL)
 	{
 		node->SetNextNode(NULL);
@@ -88,7 +87,7 @@ NodeType *Insert(NodeType *head, NodeType *node)
 
 
 template <typename NodeType, typename Comparator>
-NodeType *Sort(NodeType *list)
+NodeType *Sort(NodeType *list, Comparator compare)
 {
 	NodeType *node = list;
 	NodeType *head = NULL;
@@ -96,7 +95,7 @@ NodeType *Sort(NodeType *list)
 	{
 		NodeType *current = node;
 		node = NextNode(node);
-		head = Insert<NodeType, Comparator>(head, current);
+		head = Insert<NodeType, Comparator>(head, current, compare);
 	}
 	return head;
 }

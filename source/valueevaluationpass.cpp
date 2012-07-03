@@ -106,7 +106,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				if (membersResolved)
 				{
 					memberList = structDeclaration->GetMemberVariableList();
-					memberList = Sort<DeclarativeStatement, AlignmentComparator>(memberList);
+					memberList = Sort<DeclarativeStatement, AlignmentComparator>(memberList, AlignmentComparator(mPointerSize));
 					structDeclaration->SetMemberVariableList(memberList);
 
 					bu32_t structSize = 0;
@@ -115,7 +115,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					{
 						const TypeDescriptor *memberDescriptor = memberList->GetTypeDescriptor();
 						const bu32_t memberSize = memberDescriptor->GetSize(mPointerSize);
-						const bu32_t memberAlign = memberDescriptor->GetAlignment();
+						const bu32_t memberAlign = memberDescriptor->GetAlignment(mPointerSize);
 
 						structSize = AlignUp(structSize, memberAlign);
 						structAlign = Max(structAlign, memberAlign);
@@ -676,8 +676,8 @@ bool ValueEvaluationPass::AlignmentComparator::operator()(const DeclarativeState
 {
 	const TypeDescriptor *aType = a.GetTypeDescriptor();
 	const TypeDescriptor *bType = b.GetTypeDescriptor();
-	const bu32_t aAlign = aType->GetAlignment();
-	const bu32_t bAlign = bType->GetAlignment();
+	const bu32_t aAlign = aType->GetAlignment(mPointerSize);
+	const bu32_t bAlign = bType->GetAlignment(mPointerSize);
 	return aAlign > bAlign;
 }
 

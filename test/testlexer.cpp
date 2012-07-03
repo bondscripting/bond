@@ -1,5 +1,6 @@
 #include "framework/asserts.h"
 #include "framework/testlexerframework.h"
+#include "bond/simplestring.h"
 
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
@@ -95,7 +96,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(EXPECTED_TYPES[i] == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName()));
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
@@ -132,106 +133,127 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
 
+	const Bond::SimpleString EXPECTED_STRINGS[] = {
+		Bond::SimpleString("string"),
+		Bond::SimpleString("\""),
+		Bond::SimpleString("\'"),
+		Bond::SimpleString("\\"),
+		Bond::SimpleString("\x7e \0 \176", 5)
+	};
+	const int NUM_STRINGS = sizeof(EXPECTED_STRINGS) / sizeof(*EXPECTED_STRINGS);
+
 	Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 
 	for (int i = 0; i < NUM_BOOLS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_BOOL == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName()));
 
 		const bool expected = EXPECTED_BOOLS[i];
 		const bool actual = token->GetBoolValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
+			("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expected, actual));
 	}
 
 	const Bond::Token *nullToken = stream.Next();
 	ASSERT_FORMAT(Bond::Token::CONST_NULL == nullToken->GetTokenType(),
-		("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_NULL), nullToken->GetTokenName()));
+		("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_NULL), nullToken->GetTokenName()));
 
 	for (int i = 0; i < NUM_INTS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
 
 		const Bond::bi32_t expected = EXPECTED_INTS[i];
 		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
+			("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_UINTS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
 
 		const Bond::bu32_t expected = EXPECTED_UINTS[i];
 		const Bond::bu32_t actual = token->GetUIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRIu32 " but was %" BOND_PRIu32 ".", expected, actual));
+			("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_LONGS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_LONG == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_LONG), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_LONG), token->GetTokenName()));
 
 		const Bond::bi64_t expected = EXPECTED_LONGS[i];
 		const Bond::bi64_t actual = token->GetLongValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRId64 " but was %" BOND_PRId64 ".", expected, actual));
+			("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_ULONGS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_ULONG == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName()));
 
 		const Bond::bu64_t expected = EXPECTED_ULONGS[i];
 		const Bond::bu64_t actual = token->GetULongValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRIu64 " but was %" BOND_PRIu64 ".", expected, actual));
+			("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_FLOATS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_FLOAT == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
 
 		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
 		const Bond::bf32_t actual = token->GetFloatValue();
 		ASSERT_FORMAT((expected >= (actual - 0.0000001f)) && (expected <= (actual + 0.0000001f)),
-			("Expected %" BOND_PRIf32 " but was %" BOND_PRIf32 ".", expected, actual));
+			("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_DOUBLES; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_DOUBLE == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_DOUBLE), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_DOUBLE), token->GetTokenName()));
 
 		const Bond::bf64_t expected = EXPECTED_DOUBLES[i];
 		const Bond::bf64_t actual = token->GetDoubleValue();
 		ASSERT_FORMAT((expected >= (actual - 0.0000001)) && (expected <= (actual + 0.0000001)),
-			("Expected %.16" BOND_PRIf64 " but was %.16" BOND_PRIf64 ".", expected, actual));
+			("Expected %.16" BOND_PRIf64 ", but was %.16" BOND_PRIf64 ".", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_CHARS; ++i)
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_CHAR == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
 
 		const Bond::bi32_t expected = EXPECTED_CHARS[i];
 		const Bond::bi32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected %" BOND_PRId32 " but was %" BOND_PRId32 ".", expected, actual));
+			("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expected, actual));
+	}
+
+	for (int i = 0; i < NUM_STRINGS; ++i)
+	{
+		const Bond::Token *token = stream.Next();
+		ASSERT_FORMAT(Bond::Token::CONST_STRING == token->GetTokenType(),
+			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_STRING), token->GetTokenName()));
+
+		const Bond::SimpleString &expected = EXPECTED_STRINGS[i];
+		const Bond::SimpleString actual(token->GetStringValue(), token->GetStringLength());
+		ASSERT_FORMAT(expected == actual,
+			("Expected \"%s\", but was \"%s\".", expected.GetString(), actual.GetString()));
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
@@ -342,10 +364,6 @@ DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
 	return true;
 }
 
-
-// TODO: Test identifiers
-// TODO: Test valid string literals
-// TODO: Test valid comments
 
 #define TEST_ITEMS                       \
   TEST_ITEM(KeywordAndPunctuationTokens) \

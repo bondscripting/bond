@@ -476,8 +476,6 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
 				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
-				// TODO: Forgot to handle failure.
-
 				if (initializerList != NULL)
 				{
 					AssertNonVoidType(descriptor);

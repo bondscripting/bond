@@ -59,6 +59,11 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	{
 		fprintf(stderr, "Failed to load '%s'\n", scriptName);
 	}
+
+	if (allocator.GetNumAllocations() != 0)
+	{
+		fprintf(stderr, "Leaked %d chunks of memory.\n", allocator.GetNumAllocations());
+	}
 }
 
 
