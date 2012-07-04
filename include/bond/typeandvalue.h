@@ -63,9 +63,11 @@ public:
 
 	bi64_t GetLongValue() const { return mValue.mLong; }
 	void SetLongValue(bi64_t value) { mValue.mLong = value; mValueDefined = true; }
+	bi64_t AsLongValue() const;
 
 	bu64_t GetULongValue() const { return mValue.mULong; }
 	void SetULongValue(bu64_t value) { mValue.mULong = value; mValueDefined = true; }
+	bu64_t AsULongValue() const;
 
 	//const char *GetStringValue() const { return mValue.mString.buffer; }
 	//size_t GetStringLength() const { return mValue.mString.length; }
