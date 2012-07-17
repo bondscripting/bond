@@ -1187,7 +1187,8 @@ public:
 	MemberExpression(const Token *op, const Token *memberName, Expression *lhs):
 		mOperator(op),
 		mMemberName(memberName),
-		mLhs(lhs)
+		mLhs(lhs),
+		mDefinition(NULL)
 	{}
 
 	virtual ~MemberExpression() {}
@@ -1203,10 +1204,14 @@ public:
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
 
+	const Symbol *GetDefinition() const { return mDefinition; }
+	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
+
 private:
 	const Token *mOperator;
 	const Token *mMemberName;
 	Expression *mLhs;
+	const Symbol *mDefinition;
 };
 
 

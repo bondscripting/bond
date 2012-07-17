@@ -452,6 +452,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			}
 			else
 			{
+				memberExpression->SetDefinition(member);
 				TypeDescriptor memberDescriptor = *member->GetTypeAndValue()->GetTypeDescriptor();
 				if (structDescriptor.IsConst())
 				{
