@@ -7,6 +7,24 @@
 namespace Bond
 {
 
+struct AlignmentComparator
+{
+	AlignmentComparator(PointerSize pointerSize): mPointerSize(pointerSize) {}
+	bool operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const;
+	PointerSize mPointerSize;
+};
+
+
+bool AlignmentComparator::operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const
+{
+	const TypeDescriptor *aType = a.GetTypeDescriptor();
+	const TypeDescriptor *bType = b.GetTypeDescriptor();
+	const bu32_t aAlign = aType->GetAlignment(mPointerSize);
+	const bu32_t bAlign = bType->GetAlignment(mPointerSize);
+	return aAlign > bAlign;
+}
+
+
 void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
@@ -669,16 +687,6 @@ void ValueEvaluationPass::Resolve(TypeAndValue &tav)
 void ValueEvaluationPass::CheckUnresolved(const TypeAndValue &tav)
 {
 	mHasUnresolvedItems = mHasUnresolvedItems || !tav.IsResolved();
-}
-
-
-bool ValueEvaluationPass::AlignmentComparator::operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const
-{
-	const TypeDescriptor *aType = a.GetTypeDescriptor();
-	const TypeDescriptor *bType = b.GetTypeDescriptor();
-	const bu32_t aAlign = aType->GetAlignment(mPointerSize);
-	const bu32_t bAlign = bType->GetAlignment(mPointerSize);
-	return aAlign > bAlign;
 }
 
 }

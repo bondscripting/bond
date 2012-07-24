@@ -1,6 +1,7 @@
 #include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
 #include "bond/endian.h"
+#include "bond/math.h"
 #include "bond/opcodes.h"
 #include "bond/version.h"
 
@@ -247,53 +248,45 @@ void CboValidatorCore::ValidateFunctionBlob()
 				break;
 			case OC_PARAM_CHAR:
 			case OC_PARAM_UCHAR:
+				AssertBytesRemaining(1);
 				++mIndex;
 				break;
 			case OC_PARAM_UCHAR_CHAR:
 			case OC_PARAM_SHORT:
 			case OC_PARAM_USHORT:
+				AssertBytesRemaining(sizeof(Value16));
 				ReadValue16();
 				break;
 			case OC_PARAM_INT:
 			case OC_PARAM_VAL32:
 			{
-				const size_t valueIndex = ReadValue16().mUShort;
-				if (valueIndex >= mResult.mValue32Count)
+				if (AssertBytesRemaining(sizeof(Value16)))
 				{
-					CodeIsInvalid();
+					const size_t valueIndex = ReadValue16().mUShort;
+					if (valueIndex >= mResult.mValue32Count)
+					{
+						CodeIsInvalid();
+					}
 				}
 			}
 			break;
 			case OC_PARAM_VAL64:
 			{
-				const size_t valueIndex = ReadValue16().mUShort;
-				if (valueIndex >= mResult.mValue64Count)
+				if (AssertBytesRemaining(sizeof(Value16)))
 				{
-					CodeIsInvalid();
+					const size_t valueIndex = ReadValue16().mUShort;
+					if (valueIndex >= mResult.mValue64Count)
+					{
+						CodeIsInvalid();
+					}
 				}
 			}
 			break;
 			case OC_PARAM_OFF16:
 			{
-				const bi32_t offset = ReadValue16().mShort;
-				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
-				const bi32_t targetAddress = baseAddress + offset;
-				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+				if (AssertBytesRemaining(sizeof(Value16)))
 				{
-					CodeIsInvalid();
-				}
-			}
-			break;
-			case OC_PARAM_OFF32:
-			{
-				const size_t offsetIndex = ReadValue16().mUShort;
-				if (offsetIndex >= mResult.mValue32Count)
-				{
-					CodeIsInvalid();
-				}
-				else
-				{
-					const bi32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
+					const bi32_t offset = ReadValue16().mShort;
 					const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
 					const bi32_t targetAddress = baseAddress + offset;
 					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
@@ -303,9 +296,116 @@ void CboValidatorCore::ValidateFunctionBlob()
 				}
 			}
 			break;
+			case OC_PARAM_OFF32:
+			{
+				if (AssertBytesRemaining(sizeof(Value16)))
+				{
+					const size_t offsetIndex = ReadValue16().mUShort;
+					if (offsetIndex >= mResult.mValue32Count)
+					{
+						CodeIsInvalid();
+					}
+					else
+					{
+						const bi32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
+						const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
+						const bi32_t targetAddress = baseAddress + offset;
+						if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+						{
+							CodeIsInvalid();
+						}
+					}
+				}
+			}
+			break;
 			case OC_PARAM_HASH:
+			{
 				// TODO
-				break;
+			}
+			break;
+			case OC_PARAM_LOOKUPSWITCH:
+			{
+				mIndex = AlignUp(mIndex, sizeof(Value32));
+				if (!AssertBytesRemaining(2 * sizeof(Value32)))
+				{
+					break;
+				}
+
+				const bi32_t defaultOffset = ReadValue32().mInt;
+				const bu32_t numMatches = ReadValue32().mUInt;
+				const size_t tableSize = numMatches * 2 * sizeof(Value32);
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+
+				if (!AssertBytesRemaining(tableSize))
+				{
+					break;
+				}
+
+				const bi32_t targetAddress = baseAddress + defaultOffset;
+				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+				{
+					CodeIsInvalid();
+				}
+
+				for (bu32_t i = 0; i < numMatches; ++i)
+				{
+					// Skip the match.
+					mIndex += sizeof(Value32);
+					const bi32_t offset = ReadValue32().mInt;
+					const bi32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+					{
+						CodeIsInvalid();
+					}
+				}
+			}
+			break;
+			case OC_PARAM_TABLESWITCH:
+			{
+				mIndex = AlignUp(mIndex, sizeof(Value32));
+				if (!AssertBytesRemaining(3 * sizeof(Value32)))
+				{
+					break;
+				}
+
+				const bi32_t defaultOffset = ReadValue32().mInt;
+				const bi32_t minMatch = ReadValue32().mInt;
+				const bi32_t maxMatch = ReadValue32().mInt;
+
+				if (minMatch > maxMatch)
+				{
+					CodeIsInvalid();
+					break;
+				}
+
+				const bu32_t numMatches = maxMatch - minMatch + 1;
+				const size_t tableSize = numMatches * sizeof(Value32);
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+
+				if (!AssertBytesRemaining(tableSize))
+				{
+					break;
+				}
+
+				const bi32_t targetAddress = baseAddress + defaultOffset;
+				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+				{
+					CodeIsInvalid();
+					break;
+				}
+
+				for (size_t i = 0; i < numMatches; ++i)
+				{
+					const bi32_t offset = ReadValue32().mInt;
+					const bi32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
+					{
+						CodeIsInvalid();
+						break;
+					}
+				}
+			}
+			break;
 		}
 	}
 }

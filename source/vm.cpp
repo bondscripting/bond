@@ -1,3 +1,4 @@
+#include "bond/algorithm.h"
 #include "bond/allocator.h"
 #include "bond/codesegment.h"
 #include "bond/math.h"
@@ -8,6 +9,20 @@
 
 namespace Bond
 {
+
+struct MatchOffsetPair
+{
+	MatchOffsetPair(): match(0), offset(0) {}
+	MatchOffsetPair(bi32_t m): match(m), offset(0) {}
+	bi32_t match;
+	bi32_t offset;
+
+	bool operator<(const MatchOffsetPair &other) const
+	{
+		return match < other.match;
+	}
+};
+
 
 inline bu8_t *AddPointerOffset(bu8_t *ptr, bu32_t offset, bu32_t alignment)
 {
@@ -195,30 +210,16 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
-			case OPCODE_CONSTI_5:
-			{
-				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(5);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_CONSTI_6:
-			{
-				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(6);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_CONSTI_7:
-			{
-				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(7);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_CONSTI_8:
 			{
 				*reinterpret_cast<bi32_t *>(sp) = static_cast<bi32_t>(8);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_CONSTL_N2:
+			{
+				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(-2);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -240,6 +241,34 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_CONSTL_1:
 			{
 				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(1);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_CONSTL_2:
+			{
+				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(2);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_CONSTL_3:
+			{
+				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(3);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_CONSTL_4:
+			{
+				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(4);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_CONSTL_8:
+			{
+				*reinterpret_cast<bi64_t *>(sp) = static_cast<bi64_t>(8);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -1873,6 +1902,38 @@ void VM::ExecuteScriptFunction()
 			{
 				const Value16 offsetIndex(code + pc);
 				pc += sizeof(Value16) + value32Table[offsetIndex.mUShort].mInt;
+			}
+			break;
+
+			case OPCODE_LOOKUPSWITCH:
+			{
+				pc = AlignUp(pc, sizeof(Value32));
+				const bi32_t defaultOffset = *reinterpret_cast<const bi32_t *>(code + pc);
+				const bu32_t numMatches = *reinterpret_cast<const bu32_t *>(code + pc + sizeof(Value32));
+				const MatchOffsetPair *jumpTable =
+					reinterpret_cast<const MatchOffsetPair *>(code + pc + (2 * sizeof(Value32)));
+				const MatchOffsetPair *jumpTableEnd = jumpTable + numMatches;
+				const MatchOffsetPair condition(*reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE));
+				const MatchOffsetPair *pair = LowerBound(jumpTable, jumpTableEnd, condition);
+				const bi32_t offset =
+					((pair < jumpTableEnd) && (pair->match == condition.match)) ? pair->offset : defaultOffset;
+				pc += ((2 + (numMatches * 2)) * sizeof(Value32)) + offset;
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_TABLESWITCH:
+			{
+				pc = AlignUp(pc, sizeof(Value32));
+				const bi32_t defaultOffset = *reinterpret_cast<const bi32_t *>(code + pc);
+				const bi32_t minMatch = *reinterpret_cast<const bu32_t *>(code + pc + sizeof(Value32));
+				const bi32_t maxMatch = *reinterpret_cast<const bu32_t *>(code + pc + (2 * sizeof(Value32)));
+				const bi32_t *jumpTable = reinterpret_cast<const bi32_t *>(code + pc + (3 * sizeof(Value32)));
+				const bi32_t index = *reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				const bi32_t offset =
+					((index >= minMatch) && (index <= maxMatch)) ? jumpTable[index - minMatch] : defaultOffset;
+				pc += ((4 + maxMatch - minMatch) * sizeof(Value32)) + offset;
+				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 

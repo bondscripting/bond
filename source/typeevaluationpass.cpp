@@ -21,7 +21,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 	const Expression *value = enumerator->GetValue();
 	if (value != NULL)
 	{
-		AssertIntegerExpression(value, CompilerError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
+		AssertMost32IntegerExpression(value, CompilerError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
 	}
 }
 
@@ -62,7 +62,7 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 		}
 		else
 		{
-			AssertIntegerExpression(expressionList, CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
+			AssertMost32IntegerExpression(expressionList, CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER);
 		}
 		expressionList = NextNode(expressionList);
 	}
@@ -116,7 +116,7 @@ void TypeEvaluationPass::Visit(SwitchStatement *switchStatement)
 {
 	ParseNodeTraverser::Visit(switchStatement);
 	const Expression *control = switchStatement->GetControl();
-	AssertIntegerExpression(control, CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER);
+	AssertMost32IntegerExpression(control, CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER);
 }
 
 
@@ -127,7 +127,7 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	const Expression *expression = switchLabel->GetExpression();
 	if (expression != NULL)
 	{
-		AssertIntegerExpression(expression, CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
+		AssertMost32IntegerExpression(expression, CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
 	}
 }
 
@@ -736,7 +736,7 @@ bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, C
 }
 
 
-bool TypeEvaluationPass::AssertIntegerExpression(
+bool TypeEvaluationPass::AssertMost32IntegerExpression(
 	const Expression *expression,
 	CompilerError::Type errorType,
 	const void *arg) const
@@ -745,7 +745,7 @@ bool TypeEvaluationPass::AssertIntegerExpression(
 	if (tav.IsTypeDefined())
 	{
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		if (!typeDescriptor->IsIntegerType())
+		if (!typeDescriptor->IsMost32IntegerType())
 		{
 			mErrorBuffer.PushError(errorType, expression->GetContextToken(), arg);
 			return false;

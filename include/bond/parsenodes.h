@@ -215,6 +215,8 @@ public:
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
+	bool IsLeast32IntegerType() const;
+	bool IsMost32IntegerType() const;
 	bool IsNumericType() const;
 	bool IsValueType() const { return (mFlags & FLAG_VALUE) != 0; }
 	bool IsArrayType() const { return (mFlags & FLAG_ARRAY) != 0; }
@@ -310,6 +312,8 @@ public:
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsIntegerType() const;
+	bool IsLeast32IntegerType() const;
+	bool IsMost32IntegerType() const;
 	bool IsNumericType() const;
 	bool IsVoidType() const;
 
@@ -583,7 +587,8 @@ public:
 		mFrameSize(0),
 		mPackedFrameSize(0),
 		mLocalSize(0),
-		mFramePointerAlignment(0)
+		mFramePointerAlignment(0),
+		mNumReservedJumpTargetIds(0)
 	{}
 
 	virtual ~FunctionDefinition() {}
@@ -622,6 +627,9 @@ public:
 	bu32_t GetFramePointerAlignment() const { return mFramePointerAlignment; }
 	void SetFramePointerAlignment(bu32_t framePointerAlignment) { mFramePointerAlignment = framePointerAlignment; }
 
+	bu32_t GetNumReservedJumpTargetIds() const { return mNumReservedJumpTargetIds; }
+	void SetNumReservedJumpTargetIds(bu32_t numIds) { mNumReservedJumpTargetIds = numIds; }
+
 private:
 	QualifiedIdentifier mIdentifier;
 	TypeSpecifier mTypeSpecifier;
@@ -635,6 +643,7 @@ private:
 	bu32_t mPackedFrameSize;
 	bu32_t mLocalSize;
 	bu32_t mFramePointerAlignment;
+	size_t mNumReservedJumpTargetIds;
 };
 
 
@@ -812,7 +821,11 @@ public:
 	SwitchStatement(const Token *keyword, Expression *control, SwitchSection *sectionList):
 		mKeyword(keyword),
 		mControl(control),
-		mSectionList(sectionList)
+		mSectionList(sectionList),
+		mResolvedLabelList(NULL),
+		mNumMatches(0),
+		mMinMatch(0),
+		mMaxMatch(0)
 	{}
 
 	virtual ~SwitchStatement() {}
@@ -830,10 +843,26 @@ public:
 	SwitchSection *GetSectionList() { return mSectionList; }
 	const SwitchSection *GetSectionList() const { return mSectionList; }
 
+	const ResolvedSwitchLabel *GetResolvedLabelList() const { return mResolvedLabelList; }
+	void SetResolvedLabelList(const ResolvedSwitchLabel *labelList) { mResolvedLabelList = labelList; }
+
+	bu32_t GetNumMatches() const { return mNumMatches; }
+	void SetNumMatches(bu32_t numMatches) { mNumMatches = numMatches; }
+
+	bi32_t GetMinMatch() const { return mMinMatch; }
+	void SetMinMatch(bi32_t minMatch) { mMinMatch = minMatch; }
+
+	bi32_t GetMaxMatch() const { return mMaxMatch; }
+	void SetMaxMatch(bi32_t maxMatch) { mMaxMatch = maxMatch; }
+
 private:
 	const Token *mKeyword;
 	Expression *mControl;
 	SwitchSection *mSectionList;
+	const ResolvedSwitchLabel *mResolvedLabelList;
+	bu32_t mNumMatches;
+	bi32_t mMinMatch;
+	bi32_t mMaxMatch;
 };
 
 
@@ -842,7 +871,8 @@ class SwitchSection: public Symbol
 public:
 	SwitchSection(SwitchLabel *labelList, ListParseNode* statementList):
 		mLabelList(labelList),
-		mStatementList(statementList)
+		mStatementList(statementList),
+		mJumpTargetId(0)
 	{}
 
 	virtual ~SwitchSection() {}
@@ -858,9 +888,40 @@ public:
 	ListParseNode *GetStatementList() { return mStatementList; }
 	const ListParseNode *GetStatementList() const { return mStatementList; }
 
+	size_t GetJumpTargetId() const { return mJumpTargetId; }
+	void SetJumpTargetId(size_t id) { mJumpTargetId = id; }
+
 private:
 	SwitchLabel *mLabelList;
 	ListParseNode *mStatementList;
+	size_t mJumpTargetId;
+};
+
+
+class ResolvedSwitchLabel: public ListParseNode
+{
+public:
+	ResolvedSwitchLabel(): mMatch(0), mJumpTargetId(-1), mIsDefault(false) {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) {}
+	virtual void Accept(ParseNodeVisitor &visitor) const {}
+	virtual const Token *GetContextToken() const { return NULL; }
+
+	bi32_t GetMatch() const { return mMatch; }
+	void SetMatch(bi32_t match) { mMatch = match; }
+
+	size_t GetJumpTargetId() const { return mJumpTargetId; }
+	void SetJumpTargetId(size_t targetId) { mJumpTargetId = targetId; }
+
+	bool IsDefault() const { return mIsDefault; }
+	void SetIsDefault(bool isDefault) { mIsDefault = isDefault; }
+
+	bool operator==(const ResolvedSwitchLabel &other) const { return (mIsDefault == other.mIsDefault) && (mMatch == other.mMatch); }
+
+private:
+	bi32_t mMatch;
+	size_t mJumpTargetId;
+	bool mIsDefault;
 };
 
 
@@ -889,7 +950,13 @@ public:
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
 
+	ResolvedSwitchLabel &GetResolvedLabel() { return mResolvedLabel; }
+	const ResolvedSwitchLabel &GetResolvedLabel() const { return mResolvedLabel; }
+
+	bool IsDefaultLabel() const { return mLabel->GetTokenType() == Token::KEY_DEFAULT; }
+
 private:
+	ResolvedSwitchLabel mResolvedLabel;
 	const Token *mLabel;
 	Expression *mExpression;
 };

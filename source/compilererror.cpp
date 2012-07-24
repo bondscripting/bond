@@ -61,7 +61,7 @@ void CompilerError::Print(TextWriter &writer) const
 	};
 	State state = STATE_NORMAL;
 
-	const void *arg = NULL;
+	intptr_t arg = 0;
 
 	while (*format != '\0')
 	{
@@ -100,9 +100,16 @@ void CompilerError::Print(TextWriter &writer) const
 				}
 				break;
 
+				case 'd':
+				{
+					writer.Write("%" BOND_PRId32, static_cast<bi32_t>(arg));
+					state = STATE_NORMAL;
+				}
+				break;
+
 				case 'l':
 				{
-					const Token *token = static_cast<const Token *>(arg);
+					const Token *token = reinterpret_cast<const Token *>(arg);
 					const Bond::StreamPos &argPos = token->GetStartPos();
 					writer.Write("%d", argPos.line);
 					state = STATE_NORMAL;
@@ -111,7 +118,7 @@ void CompilerError::Print(TextWriter &writer) const
 
 				case 'n':
 				{
-					const ParseNode *node = static_cast<const ParseNode *>(arg);
+					const ParseNode *node = reinterpret_cast<const ParseNode *>(arg);
 					PrettyPrinter printer(writer, true);
 					printer.Print(node);
 					state = STATE_NORMAL;
@@ -120,7 +127,7 @@ void CompilerError::Print(TextWriter &writer) const
 
 				case 't':
 				{
-					const Token *token = static_cast<const Token *>(arg);
+					const Token *token = reinterpret_cast<const Token *>(arg);
 					writer.Write("%s", token->GetText());
 					state = STATE_NORMAL;
 				}
@@ -128,7 +135,7 @@ void CompilerError::Print(TextWriter &writer) const
 
 				case 's':
 				{
-					const char *str = static_cast<const char *>(arg);
+					const char *str = reinterpret_cast<const char *>(arg);
 					state = STATE_NORMAL;
 					writer.Write("%s", str);
 					state = STATE_NORMAL;
@@ -166,6 +173,16 @@ void CompilerErrorBuffer::Reset()
 
 
 void CompilerErrorBuffer::PushError(CompilerError::Type type, const Token *context, const void *arg0, const void *arg1)
+{
+	if (mNumErrors < MAX_ERRORS)
+	{
+		mErrors[mNumErrors] = CompilerError(type, context, reinterpret_cast<intptr_t>(arg0), reinterpret_cast<intptr_t>(arg1));
+		++mNumErrors;
+	}
+}
+
+
+void CompilerErrorBuffer::PushErrorInt(CompilerError::Type type, const Token *context, intptr_t arg0, intptr_t arg1)
 {
 	if (mNumErrors < MAX_ERRORS)
 	{

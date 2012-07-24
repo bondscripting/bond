@@ -21,13 +21,15 @@ namespace Bond
 	BOND_OPCODE_ITEM(CONSTI_2,     consti_2,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTI_3,     consti_3,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTI_4,     consti_4,     NONE)   \
-	BOND_OPCODE_ITEM(CONSTI_5,     consti_5,     NONE)   \
-	BOND_OPCODE_ITEM(CONSTI_6,     consti_6,     NONE)   \
-	BOND_OPCODE_ITEM(CONSTI_7,     consti_7,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTI_8,     consti_8,     NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_N2,    consti_n2,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_N1,    constl_n1,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_0,     constl_0,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_1,     constl_1,     NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_2,     constl_2,     NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_3,     constl_3,     NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_4,     constl_4,     NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_8,     constl_8,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTF_N2,    constf_n2,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTF_N1,    constf_n1,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTF_NH,    constf_nh,    NONE)   \
@@ -246,6 +248,9 @@ namespace Bond
 	BOND_OPCODE_ITEM(GOTO,         goto,         OFF16)  \
 	BOND_OPCODE_ITEM(GOTOW,        gotow,        OFF32)  \
 	                                                     \
+	BOND_OPCODE_ITEM(LOOKUPSWITCH, lookupswitch, LOOKUPSWITCH) \
+	BOND_OPCODE_ITEM(TABLESWITCH,  tableswitch,  TABLESWITCH)  \
+	                                                     \
 	BOND_OPCODE_ITEM(INVOKE,       invoke,       HASH)   \
 	BOND_OPCODE_ITEM(INVOKENATIVE, invokenative, HASH)   \
 	                                                     \
@@ -277,6 +282,8 @@ enum OpCodeParam
 	OC_PARAM_OFF16,
 	OC_PARAM_OFF32,
 	OC_PARAM_HASH,
+	OC_PARAM_LOOKUPSWITCH,
+	OC_PARAM_TABLESWITCH,
 };
 
 

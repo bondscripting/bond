@@ -24,6 +24,7 @@ namespace Bond
 	class IfStatement;
 	class SwitchStatement;
 	class SwitchSection;
+	class ResolvedSwitchLabel;
 	class SwitchLabel;
 	class WhileStatement;
 	class ForStatement;

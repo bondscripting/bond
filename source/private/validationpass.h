@@ -36,8 +36,10 @@ protected:
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;
 	typedef AutoStack<const FunctionDefinition *> FunctionStack;
+	typedef AutoStack<ResolvedSwitchLabel *> SwitchLabelStack;
 
 	void AssertReachableCode(const ParseNode *node);
+	size_t GetJumpTargetId();
 
 	BoolStack mHasDefaultLabel;
 	BoolStack mEndsWithJump;
@@ -47,9 +49,12 @@ private:
 	IntStack mVariableOffset;
 	IntStack mLocalSize;
 	IntStack mFramePointerAlignment;
+	SizeStack mNextJumpTargetId;
+	SizeStack mSwitchJumpTargetId;
 	TypeStack mReturnType;
 	FunctionStack mFunction;
 	PointerSize mPointerSize;
+	SwitchLabelStack mSwitchLabelList;
 };
 
 }

@@ -46,13 +46,6 @@ protected:
 	virtual void Visit(IdentifierExpression *identifierExpression);
 
 private:
-	struct AlignmentComparator
-	{
-		AlignmentComparator(PointerSize pointerSize): mPointerSize(pointerSize) {}
-		bool operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const;
-		PointerSize mPointerSize;
-	};
-
 	void Resolve(TypeAndValue &tav);
 	void CheckUnresolved(const TypeAndValue &tav);
 

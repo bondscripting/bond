@@ -1,6 +1,8 @@
 #ifndef BOND_MATH_H
 #define BOND_MATH_H
 
+#include "bond/types.h"
+
 namespace Bond
 {
 
@@ -11,6 +13,16 @@ inline T AlignUp(T value, T align) { return (value + (align - 1)) & ~(align - 1)
 template <typename T>
 inline T AlignDown(T value, T align) { return value & ~(align - 1); }
 
+
+inline void *AlignPointerUp(const void *ptr, size_t align)
+{
+	return reinterpret_cast<void *>(AlignUp(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
+}
+
+inline void *AlignPointerDown(const void *ptr, size_t align)
+{
+	return reinterpret_cast<void *>(AlignDown(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
+}
 
 template <typename T>
 inline T IsPowerOfTwo(T value) { return (value == 1) || ((value & (value - 1)) == 0); }

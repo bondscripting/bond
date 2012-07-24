@@ -7,6 +7,22 @@
 namespace Bond
 {
 
+struct SwitchLabelComparator
+{
+	bool operator()(const ResolvedSwitchLabel &a, const ResolvedSwitchLabel &b) const;
+};
+
+
+bool SwitchLabelComparator::operator()(const ResolvedSwitchLabel &a, const ResolvedSwitchLabel &b) const
+{
+	if (a.IsDefault())
+	{
+		return !b.IsDefault();
+	}
+	return a.GetMatch() < b.GetMatch();
+}
+
+
 void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
@@ -17,8 +33,11 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	IntStack::Element localSizeElement(mLocalSize, 0);
 	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, 0);
+	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
+	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
 	TypeStack::Element returnTypeElement(mReturnType, NULL);
 	FunctionStack::Element functionElement(mFunction, NULL);
+	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -53,6 +72,8 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);
 	IntStack::Element localSizeElement(mLocalSize, 0);
 	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, framePointerAlignment);
+	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
+	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
 	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
@@ -61,6 +82,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	functionDefinition->SetPackedFrameSize(static_cast<bu32_t>(-packedOffset));
 	functionDefinition->SetLocalSize(AlignUp(localSizeElement.GetValue(), BOND_SLOT_SIZE));
 	functionDefinition->SetFramePointerAlignment(framePointerAlignmentElement.GetValue());
+	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement.GetValue());
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
@@ -126,6 +148,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 {
 	AssertReachableCode(switchStatement);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, true);
+	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
 	mEndsWithJump.SetTop(false);
 	Traverse(switchStatement->GetControl());
 
@@ -145,13 +168,60 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 		hasReturn = (hasReturn && hasDefaultLabelElement);
 		mHasReturn.SetTop(mHasReturn.GetTop() || hasReturn);
 	}
+
 	mEndsWithJump.SetTop(hasReturn);
+	switchStatement->SetResolvedLabelList(switchLabelListElement.GetValue());
+
+	const ResolvedSwitchLabel *prevLabel = NULL;
+	const ResolvedSwitchLabel *currLabel = switchLabelListElement.GetValue();
+	bu32_t numMatches = 0;
+	bi32_t minMatch = BOND_INT_MAX;
+	bi32_t maxMatch = BOND_INT_MIN;
+	while (currLabel != NULL)
+	{
+		if (!currLabel->IsDefault())
+		{
+			++numMatches;
+			minMatch = Min(minMatch, currLabel->GetMatch());
+			maxMatch = Max(maxMatch, currLabel->GetMatch());
+		}
+
+		prevLabel = currLabel;
+		currLabel = NextNode(currLabel);
+
+		if ((currLabel != NULL) && (*prevLabel == *currLabel))
+		{
+			if (currLabel->IsDefault())
+			{
+				mErrorBuffer.PushError(CompilerError::DUPLICATE_DEFAULT_IN_SWITCH, switchStatement->GetContextToken());
+			}
+			else
+			{
+				mErrorBuffer.PushErrorInt(CompilerError::DUPLICATE_CASE_IN_SWITCH, switchStatement->GetContextToken(), currLabel->GetMatch());
+			}
+
+			while ((currLabel != NULL) && (*prevLabel == *currLabel))
+			{
+				prevLabel = currLabel;
+				currLabel = NextNode(currLabel);
+			}
+		}
+	}
+
+	switchStatement->SetNumMatches(numMatches);
+	switchStatement->SetMinMatch(minMatch);
+	switchStatement->SetMaxMatch(maxMatch);
 }
 
 
 void ValidationPass::Visit(SwitchSection *switchSection)
 {
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+
+	const size_t jumpTargetId = GetJumpTargetId();
+	switchSection->SetJumpTargetId(jumpTargetId);
+	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, jumpTargetId);
+
 	SemanticAnalysisPass::Visit(switchSection);
 
 	if (!endsWithJumpElement)
@@ -164,10 +234,21 @@ void ValidationPass::Visit(SwitchSection *switchSection)
 void ValidationPass::Visit(SwitchLabel *switchLabel)
 {
 	ParseNodeTraverser::Visit(switchLabel);
-	if (switchLabel->GetLabel()->GetTokenType() == Token::KEY_DEFAULT)
+
+	ResolvedSwitchLabel &resolvedLabel = switchLabel->GetResolvedLabel();
+	resolvedLabel.SetJumpTargetId(mSwitchJumpTargetId.GetTop());
+
+	if (switchLabel->IsDefaultLabel())
 	{
+		resolvedLabel.SetIsDefault(true);
 		mHasDefaultLabel.SetTop(true);
 	}
+	else
+	{
+		resolvedLabel.SetMatch(switchLabel->GetExpression()->GetTypeAndValue().GetIntValue());
+	}
+
+	mSwitchLabelList.SetTop(Insert(mSwitchLabelList.GetTop(), &resolvedLabel, SwitchLabelComparator()));
 }
 
 
@@ -256,6 +337,14 @@ void ValidationPass::AssertReachableCode(const ParseNode *node)
 	{
 		mErrorBuffer.PushError(CompilerError::UNREACHABLE_CODE, node->GetContextToken());
 	}
+}
+
+
+size_t ValidationPass::GetJumpTargetId()
+{
+	const size_t targetId = mNextJumpTargetId.GetTop();
+	mNextJumpTargetId.SetTop(targetId + 1);
+	return targetId;
 }
 
 }

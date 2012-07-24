@@ -108,6 +108,7 @@ private:
 
 typedef AutoStack<bool> BoolStack;
 typedef AutoStack<bi32_t> IntStack;
+typedef AutoStack<size_t> SizeStack;
 
 }
 

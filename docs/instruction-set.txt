@@ -13,13 +13,15 @@ consti_1            ... -> int
 consti_2            ... -> int
 consti_3            ... -> int
 consti_4            ... -> int
-consti_5            ... -> int
-consti_6            ... -> int
-consti_7            ... -> int
 consti_8            ... -> int
+constl_n2           ... -> long
 constl_n1           ... -> long
 constl_0            ... -> long
 constl_1            ... -> long
+constl_2            ... -> long
+constl_3            ... -> long
+constl_4            ... -> long
+constl_8            ... -> long
 constf_n2           ... -> float
 constf_n1           ... -> float
 constf_nh           ... -> float
@@ -238,6 +240,9 @@ ifnzw, ushort       ..., int -> ...
 goto, short         ... -> ...
 gotow, ushort       ... -> ...
 
+lookupswitch
+tableswitch
+
 invoke, hash        ... -> ...
 invokenative, hash  ... -> ...
 
@@ -251,6 +256,3 @@ Unaccounted for
 87 (0x57)	 pop
 88 (0x58)	 pop2
 095 (0x5f)	 swap
-132 (0x84)	 iinc
-170 (0xaa)	 tableswitch
-171 (0xab)	 lookupswitch

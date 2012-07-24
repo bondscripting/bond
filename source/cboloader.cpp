@@ -239,6 +239,44 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				code += pointerSize;
 			}
 			break;
+			case OC_PARAM_LOOKUPSWITCH:
+			{
+				code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
+				ConvertBigEndian32(code);
+				code += sizeof(Value32);
+
+				ConvertBigEndian32(code);
+				const bu32_t numMatches = *reinterpret_cast<bu32_t *>(code);
+				code += sizeof(Value32);
+
+				for (bu32_t i = 0; i < (2 * numMatches); ++i)
+				{
+					ConvertBigEndian32(code);
+					code += sizeof(Value32);
+				}
+			}
+			break;
+			case OC_PARAM_TABLESWITCH:
+			{
+				code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
+				ConvertBigEndian32(code);
+				code += sizeof(Value32);
+
+				ConvertBigEndian32(code);
+				const bu32_t minMatch = *reinterpret_cast<bu32_t *>(code);
+				code += sizeof(Value32);
+
+				ConvertBigEndian32(code);
+				const bu32_t maxMatch = *reinterpret_cast<bu32_t *>(code);
+				code += sizeof(Value32);
+
+				const bu32_t numMatches = maxMatch - minMatch + 1;
+				for (bu32_t i = 0; i < numMatches; ++i)
+				{
+					ConvertBigEndian32(code);
+					code += sizeof(Value32);
+				}
+			}
 		}
 	}
 }

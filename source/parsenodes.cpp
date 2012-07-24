@@ -354,6 +354,26 @@ bool TypeDescriptor::IsIntegerType() const
 }
 
 
+bool TypeDescriptor::IsLeast32IntegerType() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->IsLeast32IntegerType();
+	}
+	return false;
+}
+
+
+bool TypeDescriptor::IsMost32IntegerType() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->IsMost32IntegerType();
+	}
+	return false;
+}
+
+
 bool TypeDescriptor::IsNumericType() const
 {
 	if (IsValueType())
@@ -597,6 +617,26 @@ bool TypeSpecifier::IsIntegerType() const
 	if (mPrimitiveType != NULL)
 	{
 		return INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+	}
+	return false;
+}
+
+
+bool TypeSpecifier::IsLeast32IntegerType() const
+{
+	if (mPrimitiveType != NULL)
+	{
+		return LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+	}
+	return false;
+}
+
+
+bool TypeSpecifier::IsMost32IntegerType() const
+{
+	if (mPrimitiveType != NULL)
+	{
+		return MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return false;
 }

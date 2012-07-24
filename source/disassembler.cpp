@@ -2,8 +2,9 @@
 #include "bond/cbovalidator.h"
 #include "bond/disassembler.h"
 #include "bond/endian.h"
-#include "bond/simplestring.h"
+#include "bond/math.h"
 #include "bond/opcodes.h"
+#include "bond/simplestring.h"
 #include "bond/textwriter.h"
 #include "bond/value.h"
 #include "bond/vector.h"
@@ -252,6 +253,42 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_HASH:
 				// TODO
 				break;
+			case OC_PARAM_LOOKUPSWITCH:
+			{
+				mIndex = AlignUp(mIndex, sizeof(Value32));
+				const bi32_t defaultOffset = ReadValue32().mInt;
+				const bu32_t numMatches = ReadValue32().mUInt;
+				const size_t tableSize = numMatches * 2 * sizeof(Value32);
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
+
+				for (bu32_t i = 0; i < numMatches; ++i)
+				{
+					const bi32_t match = ReadValue32().mInt;
+					const bi32_t offset = ReadValue32().mInt;
+					mWriter.Write("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
+				}
+			}
+			break;
+			case OC_PARAM_TABLESWITCH:
+			{
+				mIndex = AlignUp(mIndex, sizeof(Value32));
+				const bi32_t defaultOffset = ReadValue32().mInt;
+				const bi32_t minMatch = ReadValue32().mInt;
+				const bi32_t maxMatch = ReadValue32().mInt;
+				const bu32_t numMatches = maxMatch - minMatch + 1;
+				const size_t tableSize = numMatches * sizeof(Value32);
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
+
+				for (bu32_t i = 0; i < numMatches; ++i)
+				{
+					const bi32_t match = minMatch + i;
+					const bi32_t offset = ReadValue32().mInt;
+					mWriter.Write("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
+				}
+			}
+			break;
 		}
 		mWriter.Write("\n");
 	}

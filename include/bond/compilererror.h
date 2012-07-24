@@ -1,36 +1,36 @@
 #ifndef BOND_COMPILERERROR_H
 #define BOND_COMPILERERROR_H
 
-#include "bond/conf.h"
+#include "bond/types.h"
 
 #define BOND_COMPILER_ERROR_LIST                                                       \
   BOND_COMPILER_ERROR(NO_ERROR,                                                        \
     "")                                                                                \
-	BOND_COMPILER_ERROR(INVALID_ESCAPE,                                                  \
+  BOND_COMPILER_ERROR(INVALID_ESCAPE,                                                  \
     "Invalid escape sequence in token %c.")                                            \
-	BOND_COMPILER_ERROR(MISSING_HEX_ESCAPE,                                              \
+  BOND_COMPILER_ERROR(MISSING_HEX_ESCAPE,                                              \
     "\\x used with no following hex digits.")                                          \
-	BOND_COMPILER_ERROR(OCTAL_ESCAPE_RANGE,                                              \
+  BOND_COMPILER_ERROR(OCTAL_ESCAPE_RANGE,                                              \
     "Octal escape sequence out of range.")                                             \
-	BOND_COMPILER_ERROR(HEX_ESCAPE_RANGE,                                                \
+  BOND_COMPILER_ERROR(HEX_ESCAPE_RANGE,                                                \
     "Hex escape sequence out of range.")                                               \
-	BOND_COMPILER_ERROR(INVALID_OCTAL_INT,                                               \
+  BOND_COMPILER_ERROR(INVALID_OCTAL_INT,                                               \
     "Invalid octal integer constant '%c'.")                                            \
-	BOND_COMPILER_ERROR(INVALID_HEX_INT,                                                 \
+  BOND_COMPILER_ERROR(INVALID_HEX_INT,                                                 \
     "Invalid hexadecimal integer constant '%c'.")                                      \
-	BOND_COMPILER_ERROR(INVALID_INT,                                                     \
+  BOND_COMPILER_ERROR(INVALID_INT,                                                     \
     "Invalid integer constant '%c'.")                                                  \
-	BOND_COMPILER_ERROR(INVALID_FLOAT,                                                   \
+  BOND_COMPILER_ERROR(INVALID_FLOAT,                                                   \
     "Invalid floating point constant '%c'.")                                           \
-	BOND_COMPILER_ERROR(EMPTY_CHARACTER_CONSTANT,                                        \
+  BOND_COMPILER_ERROR(EMPTY_CHARACTER_CONSTANT,                                        \
     "Empty character constant.")                                                       \
-	BOND_COMPILER_ERROR(MULTI_CHARACTER_CONSTANT,                                        \
+  BOND_COMPILER_ERROR(MULTI_CHARACTER_CONSTANT,                                        \
     "Multi-character constant %c.")                                                    \
-	BOND_COMPILER_ERROR(UNTERMINATED_CHARACTER,                                          \
+  BOND_COMPILER_ERROR(UNTERMINATED_CHARACTER,                                          \
     "Unterminated character constant.")                                                \
-	BOND_COMPILER_ERROR(UNTERMINATED_STRING,                                             \
+  BOND_COMPILER_ERROR(UNTERMINATED_STRING,                                             \
     "Unterminated string literal.")                                                    \
-	BOND_COMPILER_ERROR(UNTERMINATED_COMMENT,                                            \
+  BOND_COMPILER_ERROR(UNTERMINATED_COMMENT,                                            \
     "Unterminated comment.")                                                           \
   BOND_COMPILER_ERROR(DUPLICATE_CONST,                                                 \
     "Duplicate 'const' keyword.")                                                      \
@@ -56,6 +56,10 @@
     "Empty switch label list.")                                                        \
   BOND_COMPILER_ERROR(UNTERMINATED_SWITCH_SECTION,                                     \
     "Switch section does not end with a jump statement.")                              \
+  BOND_COMPILER_ERROR(DUPLICATE_DEFAULT_IN_SWITCH,                                     \
+    "Switch statement contains duplicate default label.")                              \
+  BOND_COMPILER_ERROR(DUPLICATE_CASE_IN_SWITCH,                                        \
+    "Switch statement contains duplicate case '%d'.")                                  \
   BOND_COMPILER_ERROR(INVALID_OPERATOR_IN_CONST_EXPRESSION,                            \
     "Operator '%c' not allowed in constant expression.")                               \
   BOND_COMPILER_ERROR(FUNCTION_CALL_IN_CONST_EXPRESSION,                               \
@@ -95,7 +99,7 @@
   BOND_COMPILER_ERROR(INVALID_TYPE_ASSIGNMENT,                                         \
     "Cannot assign type '%0n' to '%1n'.")                                              \
   BOND_COMPILER_ERROR(ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER,                           \
-    "Enumerator value for '%t' is not an integer constant.")                           \
+    "Enumerator value for '%t' is not a 32 bit integer constant.")                     \
   BOND_COMPILER_ERROR(ARRAY_SIZE_IS_NOT_CONST_INTEGER,                                 \
     "Array size is not an integer constant.")                                          \
   BOND_COMPILER_ERROR(ARRAY_SIZE_IS_ZERO,                                              \
@@ -103,9 +107,9 @@
   BOND_COMPILER_ERROR(ARRAY_SIZE_IS_UNSPECIFIED,                                       \
     "Array size must be specified in type '%n'.")                                      \
   BOND_COMPILER_ERROR(SWITCH_CONTROL_IS_NOT_INTEGER,                                   \
-    "Switch control is not an integer.")                                               \
+    "Switch control is not a 32 bit integer.")                                         \
   BOND_COMPILER_ERROR(SWITCH_LABEL_IS_NOT_CONST_INTEGER,                               \
-    "Case label is not an integer constant.")                                          \
+    "Case label is not a 32 bit integer constant.")                                    \
   BOND_COMPILER_ERROR(IF_CONDITION_IS_NOT_BOOLEAN,                                     \
     "If statement condition is not boolean.")                                          \
   BOND_COMPILER_ERROR(WHILE_CONDITION_IS_NOT_BOOLEAN,                                  \
@@ -179,9 +183,9 @@ public:
 #undef BOND_COMPILER_ERROR
 	};
 
-	CompilerError(): mType(NO_ERROR), mContext(NULL), mArg0(NULL), mArg1(NULL) {}
+	CompilerError(): mType(NO_ERROR), mContext(NULL), mArg0(0), mArg1(0) {}
 
-	CompilerError(Type type, const Token *context, const void *arg0 = NULL, const void *arg1 = NULL):
+	CompilerError(Type type, const Token *context, intptr_t arg0, intptr_t arg1):
 		mType(type),
 		mContext(context),
 		mArg0(arg0),
@@ -202,8 +206,8 @@ public:
 private:
 	Type mType;
 	const Token *mContext;
-	const void *mArg0;
-	const void *mArg1;
+	intptr_t mArg0;
+	intptr_t mArg1;
 };
 
 
@@ -215,6 +219,7 @@ public:
 	void Reset();
 
 	void PushError(CompilerError::Type type, const Token *context = NULL, const void *arg0 = NULL, const void *arg1 = NULL);
+	void PushErrorInt(CompilerError::Type type, const Token *context = NULL, intptr_t arg0 = 0, intptr_t arg1 = 0);
 	bool HasErrors() const { return mNumErrors > 0; }
 	size_t GetNumErrors() const { return mNumErrors; }
 	const CompilerError &GetError(size_t index) const { return mErrors[index]; }

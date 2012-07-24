@@ -5,6 +5,7 @@
 #include "bond/compilererror.h"
 #include "bond/endian.h"
 #include "bond/list.h"
+#include "bond/math.h"
 #include "bond/opcodes.h"
 #include "bond/parsenodeutil.h"
 #include "bond/parsenodetraverser.h"
@@ -207,7 +208,7 @@ private:
 	typedef AutoStack<const StructDeclaration *> StructStack;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
 	typedef AutoStack<GeneratorResult> ResultStack;
-	typedef AutoStack<size_t> LabelStack;
+	typedef SizeStack LabelStack;
 
 	virtual void Traverse(const ParseNode *parseNode);
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
@@ -216,6 +217,8 @@ private:
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const NamedInitializer *namedInitializer);
 	virtual void Visit(const IfStatement *ifStatement);
+	virtual void Visit(const SwitchStatement *switchStatement);
+	virtual void Visit(const SwitchSection *switchSection);
 	virtual void Visit(const WhileStatement *whileStatement);
 	virtual void Visit(const ForStatement *forStatement);
 	virtual void Visit(const JumpStatement *jumpStatement);
@@ -283,6 +286,7 @@ private:
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
 	void EmitValue16(Value16 value);
+	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
 	void EmitIndexedValue64(Value64 value);
 
@@ -411,6 +415,8 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	{
 		CompiledFunction &function =
 			*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
+		function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
+
 		FunctionStack::Element functionElement(mFunction, &function);
 		MapQualifiedSymbolName(functionDefinition);
 		ParseNodeTraverser::Visit(functionDefinition);
@@ -504,6 +510,102 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 
 		SetLabelValue(thenEndLabel, thenEndPos);
 	}
+}
+
+
+void GeneratorCore::Visit(const SwitchStatement *switchStatement)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	const size_t endLabel = CreateLabel();
+	LabelStack::Element breakElement(mBreakLabel, endLabel);
+
+	const Expression *control = switchStatement->GetControl();
+	const TypeDescriptor *controlDescriptor = control->GetTypeDescriptor();
+	ResultStack::Element controlResult(mResult);
+	Traverse(control);
+	EmitPushResult(controlResult, controlDescriptor);
+
+	const bu32_t numMatches = switchStatement->GetNumMatches();
+	const bi64_t minMatch = switchStatement->GetMinMatch();
+	const bi64_t maxMatch = switchStatement->GetMaxMatch();
+	const bu64_t range = maxMatch - minMatch + 1;
+	const bu64_t lookupSwitchSize = (2 + (numMatches * 2)) * sizeof(Value32);
+	const bu64_t tableSwitchSize = (3 + range) * sizeof(Value32);
+	const size_t jumpTableSize = static_cast<size_t>(Min(lookupSwitchSize, tableSwitchSize));
+
+	const bool doLookupSwitch = lookupSwitchSize < tableSwitchSize;
+	byteCode.push_back(doLookupSwitch ? OPCODE_LOOKUPSWITCH : OPCODE_TABLESWITCH);
+
+	const size_t jumpTableStart = AlignUp(byteCode.size(), sizeof(Value32));
+	const size_t jumpTableEnd = jumpTableStart + jumpTableSize;
+
+	// Add space for the jump table and emit the switch sections.
+	byteCode.resize(jumpTableEnd, 0);
+	TraverseList(switchStatement->GetSectionList());
+	const size_t endPos = byteCode.size();
+	SetLabelValue(endLabel, endPos);
+
+	// Now that the switch sections have been generated, the jump table can be resolved.
+	const LabelList::Type &labelList = mFunction.GetTop()->mLabelList;
+	const ResolvedSwitchLabel *resolvedLabels = switchStatement->GetResolvedLabelList();
+
+	bi32_t defaultOffset = 0;
+	if ((resolvedLabels != NULL) && resolvedLabels->IsDefault())
+	{
+		defaultOffset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+		resolvedLabels = NextNode(resolvedLabels);
+	}
+	else
+	{
+		defaultOffset = endPos - jumpTableEnd;
+	}
+
+	EmitValue32At(Value32(defaultOffset), jumpTableStart);
+
+	if (doLookupSwitch)
+	{
+		EmitValue32At(Value32(numMatches), jumpTableStart + sizeof(Value32));
+		size_t pos = jumpTableStart + (2 * sizeof(Value32));
+		while (resolvedLabels != NULL)
+		{
+			const bi32_t offset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+			EmitValue32At(Value32(resolvedLabels->GetMatch()), pos);
+			EmitValue32At(Value32(offset), pos + sizeof(Value32));
+			pos += 2 * sizeof(Value32);
+			resolvedLabels = NextNode(resolvedLabels);
+		}
+	}
+	else
+	{
+		EmitValue32At(Value32(static_cast<bi32_t>(minMatch)), jumpTableStart + sizeof(Value32));
+		EmitValue32At(Value32(static_cast<bi32_t>(maxMatch)), jumpTableStart + (2 * sizeof(Value32)));
+		size_t pos = jumpTableStart + (3 * sizeof(Value32));
+		for (bi64_t i = minMatch; i < maxMatch; ++i)
+		{
+			bi32_t offset = 0;
+			if (i >= resolvedLabels->GetMatch())
+			{
+				offset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+				EmitValue32At(Value32(offset), pos);
+				resolvedLabels = NextNode(resolvedLabels);
+			}
+			else
+			{
+				offset = defaultOffset;
+			}
+			EmitValue32At(Value32(offset), pos);
+			pos += sizeof(Value32);
+		}
+	}
+}
+
+
+void GeneratorCore::Visit(const SwitchSection *switchSection)
+{
+	ByteCode::Type &byteCode = GetByteCode();
+	const size_t sectionStartPos = byteCode.size();
+	SetLabelValue(switchSection->GetJumpTargetId(), sectionStartPos);
+	TraverseList(switchSection->GetStatementList());
 }
 
 
@@ -1476,15 +1578,6 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 		case 4:
 			byteCode.push_back(OPCODE_CONSTI_4);
 			break;
-		case 5:
-			byteCode.push_back(OPCODE_CONSTI_5);
-			break;
-		case 6:
-			byteCode.push_back(OPCODE_CONSTI_6);
-			break;
-		case 7:
-			byteCode.push_back(OPCODE_CONSTI_7);
-			break;
 		case 8:
 			byteCode.push_back(OPCODE_CONSTI_8);
 			break;
@@ -1539,15 +1632,6 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 		case 4:
 			byteCode.push_back(OPCODE_CONSTI_4);
 			break;
-		case 5:
-			byteCode.push_back(OPCODE_CONSTI_5);
-			break;
-		case 6:
-			byteCode.push_back(OPCODE_CONSTI_6);
-			break;
-		case 7:
-			byteCode.push_back(OPCODE_CONSTI_7);
-			break;
 		case 8:
 			byteCode.push_back(OPCODE_CONSTI_8);
 			break;
@@ -1577,6 +1661,9 @@ void GeneratorCore::EmitPushConstantLong(bi64_t value)
 	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
+		case -2:
+			byteCode.push_back(OPCODE_CONSTL_N2);
+			break;
 		case -1:
 			byteCode.push_back(OPCODE_CONSTL_N1);
 			break;
@@ -1585,6 +1672,18 @@ void GeneratorCore::EmitPushConstantLong(bi64_t value)
 			break;
 		case 1:
 			byteCode.push_back(OPCODE_CONSTL_1);
+			break;
+		case 2:
+			byteCode.push_back(OPCODE_CONSTL_2);
+			break;
+		case 3:
+			byteCode.push_back(OPCODE_CONSTL_3);
+			break;
+		case 4:
+			byteCode.push_back(OPCODE_CONSTL_4);
+			break;
+		case 8:
+			byteCode.push_back(OPCODE_CONSTL_8);
 			break;
 		default:
 		{
@@ -1606,6 +1705,18 @@ void GeneratorCore::EmitPushConstantULong(bu64_t value)
 			break;
 		case 1:
 			byteCode.push_back(OPCODE_CONSTL_1);
+			break;
+		case 2:
+			byteCode.push_back(OPCODE_CONSTL_2);
+			break;
+		case 3:
+			byteCode.push_back(OPCODE_CONSTL_3);
+			break;
+		case 4:
+			byteCode.push_back(OPCODE_CONSTL_4);
+			break;
+		case 8:
+			byteCode.push_back(OPCODE_CONSTL_8);
 			break;
 		default:
 		{
@@ -2261,7 +2372,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
-	const Token::TokenType lhType = lhDescriptor->GetPrimitiveType();
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const bi64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 
@@ -2274,11 +2384,11 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	    (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_INDIRECT) &&
 	    IsInUCharRange(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(lhType) &&
+	    lhDescriptor->IsLeast32IntegerType() &&
 	    rhTav.IsValueDefined() &&
 	    IsInCharRange(rhValue))
 	{
-		byteCode.push_back(INC_OPCODES.GetOpCode(lhType));
+		byteCode.push_back(INC_OPCODES.GetOpCode(*lhDescriptor));
 		byteCode.push_back(static_cast<bu8_t>(slotIndex));
 		byteCode.push_back(static_cast<bu8_t>(rhValue));
 
@@ -2586,7 +2696,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 	if ((operandResult.GetValue().mContext == GeneratorResult::CONTEXT_FP_INDIRECT) &&
 	    IsInUCharRange(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(resultType) &&
+	    resultDescriptor->IsLeast32IntegerType() &&
 	    (operandType == resultType))
 	{
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
@@ -2859,6 +2969,16 @@ void GeneratorCore::EmitValue16(Value16 value)
 	byteCode.push_back(value.mBytes[1]);
 }
 
+
+void GeneratorCore::EmitValue32At(Value32 value, size_t pos)
+{
+	ConvertBigEndian32(value.mBytes);
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode[pos + 0] = value.mBytes[0];
+	byteCode[pos + 1] = value.mBytes[1];
+	byteCode[pos + 2] = value.mBytes[2];
+	byteCode[pos + 3] = value.mBytes[3];
+}
 
 void GeneratorCore::EmitIndexedValue32(Value32 value)
 {
