@@ -526,15 +526,22 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	EmitPushResult(controlResult, controlDescriptor);
 
 	const bu32_t numMatches = switchStatement->GetNumMatches();
-	const bi64_t minMatch = switchStatement->GetMinMatch();
-	const bi64_t maxMatch = switchStatement->GetMaxMatch();
-	const bu64_t range = maxMatch - minMatch + 1;
-	const bu64_t lookupSwitchSize = (2 + (numMatches * 2)) * sizeof(Value32);
-	const bu64_t tableSwitchSize = (3 + range) * sizeof(Value32);
-	const size_t jumpTableSize = static_cast<size_t>(Min(lookupSwitchSize, tableSwitchSize));
+	const bi32_t minMatch = switchStatement->GetMinMatch();
+	const bi32_t maxMatch = switchStatement->GetMaxMatch();
+	const bu32_t range = maxMatch - minMatch;
+	const bool doLookupSwitch = (numMatches <= 0) || (((numMatches * 2) - 2) < range);
+	size_t jumpTableSize = 0;
 
-	const bool doLookupSwitch = lookupSwitchSize < tableSwitchSize;
-	byteCode.push_back(doLookupSwitch ? OPCODE_LOOKUPSWITCH : OPCODE_TABLESWITCH);
+	if (doLookupSwitch)
+	{
+		byteCode.push_back(OPCODE_LOOKUPSWITCH);
+		jumpTableSize = (2 + (numMatches * 2)) * sizeof(Value32);
+	}
+	else
+	{
+		byteCode.push_back(OPCODE_TABLESWITCH);
+		jumpTableSize = (4 + range) * sizeof(Value32);
+	}
 
 	const size_t jumpTableStart = AlignUp(byteCode.size(), sizeof(Value32));
 	const size_t jumpTableEnd = jumpTableStart + jumpTableSize;
@@ -577,13 +584,14 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	}
 	else
 	{
-		EmitValue32At(Value32(static_cast<bi32_t>(minMatch)), jumpTableStart + sizeof(Value32));
-		EmitValue32At(Value32(static_cast<bi32_t>(maxMatch)), jumpTableStart + (2 * sizeof(Value32)));
+		EmitValue32At(Value32(minMatch), jumpTableStart + sizeof(Value32));
+		EmitValue32At(Value32(maxMatch), jumpTableStart + (2 * sizeof(Value32)));
 		size_t pos = jumpTableStart + (3 * sizeof(Value32));
-		for (bi64_t i = minMatch; i < maxMatch; ++i)
+		for (bu32_t i = 0; i <= range; ++i)
 		{
+			const bi32_t match = minMatch + i;
 			bi32_t offset = 0;
-			if (i >= resolvedLabels->GetMatch())
+			if (match >= resolvedLabels->GetMatch())
 			{
 				offset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
 				EmitValue32At(Value32(offset), pos);
