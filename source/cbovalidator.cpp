@@ -320,7 +320,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 			break;
 			case OC_PARAM_HASH:
 			{
-				// TODO
+				mIndex += GetPointerSize(mResult.mPointerSize);
 			}
 			break;
 			case OC_PARAM_LOOKUPSWITCH:

@@ -251,8 +251,15 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			}
 			break;
 			case OC_PARAM_HASH:
-				// TODO
-				break;
+			{
+				const bu32_t hash = ReadValue32().mUInt;
+				if (mValidationResult.mPointerSize == POINTER_64BIT)
+				{
+					mIndex += sizeof(Value32);
+				}
+				mWriter.Write("0x%" BOND_PRIx32, hash);
+			}
+			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
 				mIndex = AlignUp(mIndex, sizeof(Value32));

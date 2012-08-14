@@ -282,6 +282,8 @@ private:
 	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitDereferenceOperator(const UnaryExpression *unaryExpression);
 
+	void EmitArgumentList(const Expression *argList, const Parameter *paramList);
+
 	void EmitJump(OpCode opCode, size_t toLabel);
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
@@ -289,6 +291,7 @@ private:
 	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
 	void EmitIndexedValue64(Value64 value);
+	void EmitHashCode(bu32_t hash);
 
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
@@ -1157,8 +1160,27 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 
 void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
-	// TODO
-	ParseNodeTraverser::Visit(functionCallExpression);
+	// TODO: deal with member functions.
+	//ParseNodeTraverser::Visit(functionCallExpression);
+	const Expression *lhs = functionCallExpression->GetLhs();
+	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
+	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
+	const FunctionPrototype *prototype = function->GetPrototype();
+	const Parameter *paramList = prototype->GetParameterList();
+	const Expression *argList = functionCallExpression->GetArgumentList();
+
+	EmitArgumentList(argList, paramList);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
+	EmitHashCode(function->GetGlobalHashCode());
+
+	mResult.SetTop(GeneratorResult(
+		prototype->GetReturnType()->IsVoidType() ?
+		GeneratorResult::CONTEXT_NONE :
+		GeneratorResult::CONTEXT_STACK_VALUE));
 }
 
 
@@ -1319,6 +1341,7 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 
 void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
+	ByteCode::Type &byteCode = GetByteCode();
 	if (typeDescriptor->IsValueType())
 	{
 		switch (typeDescriptor->GetPrimitiveType())
@@ -1347,7 +1370,9 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 				EmitPushFramePointerIndirectValue64(offset);
 				break;
 			default:
-				// TODO: Deal with non-primitive values.
+				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+				byteCode.push_back(OPCODE_LOADMEMW);
+				EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
 				break;
 		}
 	}
@@ -1472,8 +1497,9 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 				byteCode.push_back(OPCODE_LOAD64);
 				break;
 			default:
-				// TODO: Deal with non-primitive values.
-				break;
+				byteCode.push_back(OPCODE_LOADMEMW);
+				EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
+			break;
 		}
 	}
 	else if (typeDescriptor->IsPointerType())
@@ -2940,6 +2966,21 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 }
 
 
+void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter *paramList)
+{
+	if (argList != NULL)
+	{
+		EmitArgumentList(NextNode(argList), NextNode(paramList));
+
+		const TypeDescriptor *argDescriptor = argList->GetTypeDescriptor();
+		const TypeDescriptor *paramDescriptor = paramList->GetTypeDescriptor();
+		ResultStack::Element argResult(mResult);
+		Traverse(argList);
+		EmitPushResultAs(argResult, argDescriptor, paramDescriptor);
+	}
+}
+
+
 void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
 	CompiledFunction *function = mFunction.GetTop();
@@ -2999,6 +3040,25 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 {
 	const bu16_t index = MapValue64(value);
 	EmitValue16(Value16(index));
+}
+
+void GeneratorCore::EmitHashCode(bu32_t hash)
+{
+	Value32 h(hash);
+	ConvertBigEndian32(h.mBytes);
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(h.mBytes[0]);
+	byteCode.push_back(h.mBytes[1]);
+	byteCode.push_back(h.mBytes[2]);
+	byteCode.push_back(h.mBytes[3]);
+
+	if (Is64BitPointer())
+	{
+		byteCode.push_back(0);
+		byteCode.push_back(0);
+		byteCode.push_back(0);
+		byteCode.push_back(0);
+	}
 }
 
 

@@ -30,18 +30,6 @@ public:
 		}
 
 	private:
-		/*
-		CalleeStackFrame(
-				Function *function,
-				bu8_t *framePointer,
-				bu8_t *stackPointer,
-				bu8_t *returnPointer):
-			mFunction(function),
-			mFramePointer(framePointer),
-			mStackPointer(stackPointer),
-			mReturnPointer(returnPointer)
-		{}
-		*/
 		const Function *mFunction;
 		bu8_t *mFramePointer;
 		bu8_t *mStackPointer;
@@ -89,6 +77,7 @@ private:
 	friend class CallerStackFrame;
 
 	void ExecuteScriptFunction();
+	bu8_t *InvokeFunction(const Function *function, bu8_t *stackPointer);
 
 	StackFrames mStackFrames;
 	StackFrames::Element mDummyFrame;

@@ -28,7 +28,13 @@ bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB
 
 bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
 {
-	return AreComparableTypes(fromType, toType);
+	return
+		AreComparableTypes(fromType, toType) ||
+		(fromType->IsValueType() &&
+		 toType->IsValueType() &&
+		 (fromType->GetTypeSpecifier()->GetDefinition() != NULL) &&
+		 (toType->GetTypeSpecifier()->GetDefinition() != NULL) &&
+		 (fromType->GetTypeSpecifier()->GetDefinition() == toType->GetTypeSpecifier()->GetDefinition()));
 }
 
 

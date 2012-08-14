@@ -63,10 +63,6 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	}
 
 	const TypeDescriptor *returnType = prototype->GetReturnType();
-	const bi32_t returnSize = static_cast<bi32_t>(returnType->GetSize(mPointerSize));
-	offset = AlignDown(offset - returnSize, BOND_SLOT_SIZE);
-	packedOffset = AlignDown(packedOffset - returnSize, BOND_SLOT_SIZE);
-
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 	BoolStack::Element hasReturnElement(mHasReturn, false);
 	IntStack::Element variableOffsetElement(mVariableOffset, 0);

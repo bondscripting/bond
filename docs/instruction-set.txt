@@ -46,6 +46,7 @@ loads               ..., address -> ..., int
 loadus              ..., address -> ..., uint
 load32              ..., address -> ..., value32
 load64              ..., address -> ..., value64
+loadmemw, ushort    ..., address -> ..., ???
 
 storec              ..., address, int -> ...
 stores              ..., address, int -> ...

@@ -19,7 +19,7 @@ struct DummyStruct
 	int ConstAddMutator2(int arg) const { this->Mutator(this->GetX() + arg); }
 };
 
-int [2]* FunnyReturnType();
+int [2]* FunnyReturnType(); struct OtherDummyStruct {};
 
 void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 {
@@ -80,6 +80,9 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	ds1.x = 3;
 	ds1.Mutator(3);
 
+	OtherDummyStruct ods;
+	DummyFunction(ods, ds2, ptr);
+
 	// Valid statements.
 	(*FunnyReturnType())[0] = 1;
 	i1 = 1 << 2;
@@ -103,4 +106,5 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	i1 = OuterSpace::InnerSpace::Number;
 	i1 = *(ptr1 + 1);
 	i1 = *(array1 + 1);
+	DummyFunction(ds1, ds2, ptr);
 }

@@ -150,7 +150,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						memberList = NextNode(memberList);
 					}
 
-					structSize = AlignUp(structSize, structAlign);
+					structSize = AlignUp(Max(structSize, BOND_DEFAULT_STRUCT_SIZE), structAlign);
 					structDeclaration->SetSize(structSize);
 					structDeclaration->SetAlignment(structAlign);
 				}

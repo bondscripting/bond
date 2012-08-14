@@ -4,8 +4,7 @@
 #include "bond/math.h"
 #include "bond/opcodes.h"
 #include "bond/vm.h"
-
-#include <stdio.h>
+#include <string.h>
 
 namespace Bond
 {
@@ -22,16 +21,6 @@ struct MatchOffsetPair
 		return match < other.match;
 	}
 };
-
-
-inline bu8_t *AddPointerOffset(bu8_t *ptr, bu32_t offset, bu32_t alignment)
-{
-	const intptr_t p = reinterpret_cast<intptr_t>(ptr);
-	const intptr_t o = static_cast<intptr_t>(offset);
-	const intptr_t a = static_cast<intptr_t>(alignment);
-	const intptr_t result = AlignUp(p + o, a);
-	return reinterpret_cast<bu8_t *>(result);
-}
 
 
 template <typename SourceType, typename DestType>
@@ -56,6 +45,19 @@ inline void CopyValue64(const void *source, void *dest)
 }
 
 
+inline void *LoadUnalignedPointer(const bu8_t *source)
+{
+	if (BOND_NATIVE_POINTER_SIZE == POINTER_64BIT)
+	{
+		return reinterpret_cast<void *>(Value64(source).mULong);
+	}
+	else
+	{
+		return reinterpret_cast<void *>(Value32(source).mUInt);
+	}
+}
+
+
 VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
 	StackFrames::Element(vm.mStackFrames),
 	mVm(vm),
@@ -65,8 +67,8 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
 	// TODO: report error if function lookup fails.
-	bu8_t *fp = AddPointerOffset(prevSp, function->mFrameSize, function->mFramePointerAlignment);
-	bu8_t *sp = AddPointerOffset(fp, function->mLocalSize, BOND_SLOT_SIZE);
+	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(prevSp + function->mFrameSize, function->mFramePointerAlignment));
+	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));
 	// TODO: Report error if sp >= mStack + mStackSize.
 	mValue.mFunction = function;
 	mValue.mFramePointer = fp;
@@ -432,6 +434,17 @@ void VM::ExecuteScriptFunction()
 			{
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				CopyValue64(address, sp - BOND_SLOT_SIZE);
+			}
+			break;
+
+			case OPCODE_LOADMEMW:
+			{
+				const Value16 memSizeIndex(code + pc);
+				const bi32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				memcpy(sp - BOND_SLOT_SIZE, address, memSize);
+				pc += sizeof(Value16);
+				sp = static_cast<bu8_t *>(AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE));
 			}
 			break;
 
@@ -1939,7 +1952,9 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_INVOKE:
 			{
-				// TODO
+				const Function *function = static_cast<const Function *>(LoadUnalignedPointer(code + pc));
+				pc += GetPointerSize(BOND_NATIVE_POINTER_SIZE);
+				sp = InvokeFunction(function, sp);
 			}
 			break;
 
@@ -1968,6 +1983,33 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_MAX: break;
 		}
 	}
+}
+
+
+bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackPointer)
+{
+	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(stackPointer + function->mFrameSize - function->mPackedFrameSize, function->mFramePointerAlignment));
+
+	if (fp != stackPointer)
+	{
+		// TODO: Unpack and align the arguments.
+	}
+
+	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));
+	// TODO: Report error if sp >= mStack + mStackSize.
+
+	StackFrames::Element stackFrameElement(mStackFrames);
+	CalleeStackFrame &stackFrame = stackFrameElement.GetValue();
+	stackFrame.mFunction = function;
+	stackFrame.mFramePointer = fp;
+	stackFrame.mStackPointer = sp;
+
+	// TODO: Deal with structs that aren't returned on the operand stack.
+	stackFrame.mReturnPointer = stackPointer - function->mPackedFrameSize;
+
+	ExecuteScriptFunction();
+
+	return stackFrame.mReturnPointer + BOND_SLOT_SIZE;
 }
 
 }

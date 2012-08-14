@@ -54,6 +54,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(LOADUS,       loadus,       NONE)   \
 	BOND_OPCODE_ITEM(LOAD32,       load32,       NONE)   \
 	BOND_OPCODE_ITEM(LOAD64,       load64,       NONE)   \
+	BOND_OPCODE_ITEM(LOADMEMW,     loadmemw,     INT)    \
 	                                                     \
 	BOND_OPCODE_ITEM(STOREC,       storec,       NONE)   \
 	BOND_OPCODE_ITEM(STORES,       stores,       NONE)   \
