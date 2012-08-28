@@ -47,7 +47,7 @@ TypeDescriptor PromoteType(const TypeDescriptor *type)
 	{
 		result = *type;
 		result.ConvertToPointerIntrinsic();
-		result.SetRValue();
+		result.ClearLValue();
 	}
 	else if (t == Token::KEY_FLOAT)
 	{
@@ -93,13 +93,13 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	{
 		result = *typeA;
 		result.ConvertToPointerIntrinsic();
-		result.SetRValue();
+		result.ClearLValue();
 	}
 	else if (typeB->IsPointerType())
 	{
 		result = *typeB;
 		result.ConvertToPointerIntrinsic();
-		result.SetRValue();
+		result.ClearLValue();
 	}
 	else if ((a == Token::KEY_DOUBLE) || (b == Token::KEY_DOUBLE))
 	{

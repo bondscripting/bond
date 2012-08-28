@@ -164,7 +164,7 @@ const Token *TypeDescriptor::GetContextToken() const
 void TypeDescriptor::ConvertToArray(Expression *expressionList)
 {
 	const bu32_t constFlag = mFlags & FLAG_CONST;
-	mFlags = ((mFlags | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_ARRAY | constFlag;
+	mFlags = ((mFlags | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_ARRAY | constFlag;
 	mLengthExpressionList = expressionList;
 }
 
@@ -444,19 +444,19 @@ TypeDescriptor TypeDescriptor::GetDoubleType()
 
 TypeDescriptor TypeDescriptor::GetStringType()
 {
-	return TypeDescriptor(&CHAR_TYPE_SPECIFIER, ((FLAG_VALUE | FLAG_CONST | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+	return TypeDescriptor(&CHAR_TYPE_SPECIFIER, ((FLAG_VALUE | FLAG_CONST | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_POINTER);
 }
 
 
 TypeDescriptor TypeDescriptor::GetPointerType(const TypeSpecifier *specifier)
 {
-	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_POINTER);
 }
 
 
 TypeDescriptor TypeDescriptor::GetConstPointerType(const TypeSpecifier *specifier)
 {
-	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_CONST | FLAG_LVALUE) << PARENT_SHIFT) | FLAG_POINTER);
+	return TypeDescriptor(specifier, ((FLAG_VALUE | FLAG_CONST | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_POINTER);
 }
 
 

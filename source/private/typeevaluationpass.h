@@ -81,7 +81,7 @@ private:
 	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertNumericOperand(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertPointerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertLValueType(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertAddressableType(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op);
 
 	bool AssertConvertibleTypes(

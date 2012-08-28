@@ -29,13 +29,13 @@ struct ConstantTable
 
 struct ParamSignature
 {
-	ParamSignature(bu32_t framePointerOffset, bu32_t size, bu32_t type):
+	ParamSignature(bi32_t framePointerOffset, bu32_t size, bu32_t type):
 		mFramePointerOffset(framePointerOffset),
 		mSize(size),
 		mType(type)
 	{}
 
-	bu32_t mFramePointerOffset;
+	bi32_t mFramePointerOffset;
 	bu32_t mSize:28;
 	bu32_t mType:4;
 };

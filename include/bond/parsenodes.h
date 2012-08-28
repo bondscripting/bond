@@ -199,11 +199,14 @@ public:
 	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
 	void SetConst() { mFlags |= FLAG_CONST; }
 
-	bool IsLValue() const { return (mFlags & FLAG_LVALUE) != 0; }
-	void SetLValue() { mFlags |= FLAG_LVALUE; }
+	bool IsAddressable() const { return (mFlags & FLAG_ADDRESSABLE) != 0; }
+	void SetAddressable() { mFlags |= FLAG_ADDRESSABLE; }
 
-	bool IsRValue() const { return (mFlags & FLAG_LVALUE) == 0; }
-	void SetRValue() { mFlags &= ~FLAG_LVALUE; }
+	bool IsLimitedLValue() const { return (mFlags & FLAG_LIMITED_LVALUE) != 0; }
+	void SetLimitedLValue() { mFlags |= FLAG_LIMITED_LVALUE; }
+
+	bool IsLValue() const { return (mFlags & FLAG_ANY_LVALUE) != 0; }
+	void ClearLValue() { mFlags &= ~FLAG_ANY_LVALUE; }
 
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
@@ -253,8 +256,10 @@ private:
 	static const bu32_t FLAG_ARRAY = 1 << 2;
 	static const bu32_t FLAG_NULL = 1 << 3;
 	static const bu32_t FLAG_CONST = 1 << 4;
-	static const bu32_t FLAG_LVALUE = 1 << 5;
+	static const bu32_t FLAG_ADDRESSABLE = 1 << 5;
+	static const bu32_t FLAG_LIMITED_LVALUE = 1 << 6;
 	static const bu32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY | FLAG_NULL;
+	static const bu32_t FLAG_ANY_LVALUE = FLAG_ADDRESSABLE | FLAG_LIMITED_LVALUE;
 	static const bu32_t PARENT_SHIFT = 8;
 	static const bu32_t STORAGE_MASK = FLAG_VALUE | FLAG_ANY_POINTER;
 	static const bu32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
@@ -654,8 +659,7 @@ public:
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mTypeDescriptor(typeDescriptor),
-		mOffset(0),
-		mPackedOffset(0)
+		mOffset(0)
 	{}
 
 	virtual ~Parameter() {}
@@ -675,15 +679,11 @@ public:
 	bi32_t GetOffset() const { return mOffset; }
 	void SetOffset(bi32_t offset) { mOffset = offset; }
 
-	bi32_t GetPackedOffset() const { return mPackedOffset; }
-	void SetPackedOffset(bi32_t offset) { mPackedOffset = offset; }
-
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
 	bi32_t mOffset;
-	bi32_t mPackedOffset;
 };
 
 

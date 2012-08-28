@@ -413,7 +413,6 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 	FunctionDefinition **functionDefinition,
 	DeclarativeStatement **declarativeStatement)
 {
-	// TODO: Mark the type descriptor of native struct fields as not addressable somehow.
 	*functionDefinition = NULL;
 	*declarativeStatement = NULL;
 	const int startPos = mStream.GetPosition();
@@ -479,7 +478,14 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				if (initializerList != NULL)
 				{
 					AssertNonVoidType(descriptor);
-					descriptor->SetLValue();
+					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
+					{
+						descriptor->SetLimitedLValue();
+					}
+					else
+					{
+						descriptor->SetAddressable();
+					}
 					*declarativeStatement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 					ExpectDeclarationTerminator();
 				}
@@ -529,7 +535,7 @@ Parameter *ParserCore::ParseParameter()
 			descriptor->ConvertToPointerIntrinsic();
 		}
 		AssertNonVoidType(descriptor);
-		descriptor->SetLValue();
+		descriptor->SetAddressable();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		parameter = mFactory.CreateParameter(name, descriptor);
 	}
@@ -584,7 +590,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			if (token->GetTokenType() == Token::OP_STAR)
 			{
 				const bool isConst = mStream.NextIf(Token::KEY_CONST) != NULL;
-				descriptor->SetLValue();
+				descriptor->SetAddressable();
 				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
 				lengthTail = NULL;
 			}
@@ -1124,7 +1130,7 @@ ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 		if (initializerList != NULL)
 		{
 			AssertNonVoidType(descriptor);
-			descriptor->SetLValue();
+			descriptor->SetAddressable();
 			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
 			ExpectStatementTerminator();
 		}

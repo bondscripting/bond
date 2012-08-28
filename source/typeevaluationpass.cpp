@@ -198,7 +198,6 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::COMMA:
 				AssertNonConstExpression(op);
 				resultType = *rhDescriptor;
-				resultType.SetRValue();
 				break;
 
 			case Token::ASSIGN:
@@ -228,7 +227,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					isResolvable = isResolvable &&
+					isResolvable =
 						AssertNumericOperand(lhDescriptor, op) &&
 						AssertNumericOperand(rhDescriptor, op);
 				}
@@ -309,7 +308,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 		if (isResolvable)
 		{
-			resultType.SetRValue();
+			resultType.ClearLValue();
 			binaryExpression->SetTypeDescriptor(resultType);
 		}
 	}
@@ -326,7 +325,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 	{
 		TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
 		TypeDescriptor resultType = *rhDescriptor;
-		resultType.SetRValue();
+		resultType.ClearLValue();
 		const Token *op = unaryExpression->GetOperator();
 		bool isResolvable = true;
 		bool isRValue = true;
@@ -354,7 +353,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_AMP:
-				AssertLValueType(rhDescriptor, op);
+				AssertAddressableType(rhDescriptor, op);
 				resultType = TypeDescriptor(rhDescriptor, false);
 				break;
 
@@ -384,7 +383,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 		{
 			if (isRValue)
 			{
-				resultType.SetRValue();
+				resultType.ClearLValue();
 			}
 
 			unaryExpression->SetTypeDescriptor(resultType);
@@ -592,9 +591,9 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 			lhDescriptor->GetContextToken(),
 			CompilerError::INVALID_TYPE_CONVERSION);
 
-		if (rhDescriptor->IsLValue())
+		if (rhDescriptor->IsAddressable())
 		{
-			lhDescriptor->SetLValue();
+			lhDescriptor->SetAddressable();
 		}
 
 		castExpression->SetTypeDescriptor(*lhDescriptor);
@@ -810,9 +809,9 @@ bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *typeDescript
 }
 
 
-bool TypeEvaluationPass::AssertLValueType(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertAddressableType(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsLValue())
+	if (!typeDescriptor->IsAddressable())
 	{
 		mErrorBuffer.PushError(CompilerError::NON_LVALUE_TYPE, op, typeDescriptor);
 		return false;
@@ -823,7 +822,7 @@ bool TypeEvaluationPass::AssertLValueType(const TypeDescriptor *typeDescriptor, 
 
 bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op)
 {
-	if (typeDescriptor->IsRValue())
+	if (!typeDescriptor->IsLValue())
 	{
 		mErrorBuffer.PushError(CompilerError::NON_LVALUE_ASSIGNMENT, op);
 		return false;

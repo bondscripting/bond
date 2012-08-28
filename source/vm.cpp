@@ -1992,7 +1992,16 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackPointer)
 
 	if (fp != stackPointer)
 	{
-		// TODO: Unpack and align the arguments.
+		const bu32_t numParams = function->mParamListSignature.mParamCount;
+		const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
+		bu8_t *source = stackPointer;
+		for (bu32_t i = 0; i < numParams; ++i)
+		{
+			const ParamSignature &signature = signatures[i];
+			const size_t size = signature.mSize;
+			source -= size;
+			memmove(fp + signature.mFramePointerOffset, source, size);
+		}
 	}
 
 	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));

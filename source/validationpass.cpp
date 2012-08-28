@@ -53,12 +53,11 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
 		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-		offset = AlignDown(offset - size, alignment);
-		packedOffset = AlignDown(packedOffset - size, BOND_SLOT_SIZE);
+		offset -= typeDescriptor->GetSize(mPointerSize);
+		offset = AlignDown(offset, alignment);
+		packedOffset -= typeDescriptor->GetStackSize(mPointerSize);
 		framePointerAlignment = Max(framePointerAlignment, alignment);
 		parameterList->SetOffset(offset);
-		parameterList->SetPackedOffset(packedOffset);
 		parameterList = NextNode(parameterList);
 	}
 

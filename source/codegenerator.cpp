@@ -1888,7 +1888,6 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 				EmitPopFramePointerIndirectValue64(offset);
 				break;
 			default:
-				// TODO: Deal with non-primitive values.
 				break;
 		}
 	}
@@ -2007,7 +2006,6 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 				byteCode.push_back(OPCODE_STORE64);
 				break;
 			default:
-				// TODO: Deal with non-primitive values.
 				break;
 		}
 	}
@@ -3206,7 +3204,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList)
 	{
 		const TypeDescriptor *type = parameterList->GetTypeDescriptor();
 		const bi32_t offset = parameterList->GetOffset();
-		const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+		const bu32_t sizeAndType = EncodeSizeAndType(type->GetStackSize(mPointerSize), type->GetSignatureType());
 		WriteValue32(Value32(offset));
 		WriteValue32(Value32(sizeAndType));
 		parameterList = NextNode(parameterList);

@@ -390,11 +390,10 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 		if (lhs.IsResolved() && rhs.IsResolved())
 		{
 			Resolve(tav);
+			const Token *op = binaryExpression->GetOperator();
 
-			// TODO: Handle && and || if one side is a constant.
 			if (lhs.IsValueDefined() && rhs.IsValueDefined())
 			{
-				const Token *op = binaryExpression->GetOperator();
 				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
 
 				switch (op->GetTokenType())
@@ -455,6 +454,46 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 						break;
 					case Token::OP_OR:
 						tav.SetBoolValue(lhs.GetBoolValue() || rhs.GetBoolValue());
+						break;
+					default:
+						break;
+				}
+			}
+			else if (lhs.IsValueDefined())
+			{
+				switch (op->GetTokenType())
+				{
+					case Token::OP_AND:
+						if (!lhs.GetBoolValue())
+						{
+							tav.SetBoolValue(false);
+						}
+						break;
+					case Token::OP_OR:
+						if (lhs.GetBoolValue())
+						{
+							tav.SetBoolValue(true);
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			else if (rhs.IsValueDefined())
+			{
+				switch (op->GetTokenType())
+				{
+					case Token::OP_AND:
+						if (!rhs.GetBoolValue())
+						{
+							tav.SetBoolValue(false);
+						}
+						break;
+					case Token::OP_OR:
+						if (rhs.GetBoolValue())
+						{
+							tav.SetBoolValue(true);
+						}
 						break;
 					default:
 						break;
