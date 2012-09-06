@@ -293,11 +293,13 @@ private:
 	void EmitIndexedValue64(Value64 value);
 	void EmitHashCode(bu32_t hash);
 
+	GeneratorResult::Context TransformContext(GeneratorResult::Context targetContext, const TypeDescriptor *typeDescriptor) const;
+
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
 	void WriteReturnSignature(const TypeDescriptor *type);
-	void WriteParamListSignature(const Parameter *parameterList);
+	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
 	void WriteSymbolNameIndices(const Symbol *symbol);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
@@ -1104,6 +1106,8 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 						break;
 				}
 			}
+			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+			result.mContext = TransformContext(result.mContext, typeDescriptor);
 			result.mOffset += namedInitializer->GetOffset();
 		}
 		else
@@ -1223,24 +1227,39 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		const FunctionDefinition *functionDefinition = NULL;
 		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != NULL)
 		{
+			const bi32_t offset = namedInitializer->GetOffset();
+			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 			switch (namedInitializer->GetScope())
 			{
 				case SCOPE_GLOBAL:
+				{
 					// TODO
-					break;
+				}
+				break;
 				case SCOPE_LOCAL:
-					if (namedInitializer->GetTypeAndValue()->GetTypeDescriptor()->IsArrayType())
+				{
+					const GeneratorResult::Context context =
+						TransformContext(GeneratorResult::CONTEXT_FP_INDIRECT, typeDescriptor);
+					mResult.SetTop(GeneratorResult(context, offset));
+				}
+				break;
+				case SCOPE_STRUCT_MEMBER:
+				{
+					// TODO: handle native structs.
+					// Push the this pointer and add the offset.
+					if (Is64BitPointer())
 					{
-						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_OFFSET, namedInitializer->GetOffset()));
+						EmitPushFramePointerIndirectValue64(-BOND_SLOT_SIZE);
 					}
 					else
 					{
-						mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset()));
+						EmitPushFramePointerIndirectValue32(-BOND_SLOT_SIZE);
 					}
-					break;
-				case SCOPE_STRUCT_MEMBER:
-					// TODO
-					break;
+					const GeneratorResult::Context context =
+						TransformContext(GeneratorResult::CONTEXT_ADDRESS_INDIRECT, typeDescriptor);
+					mResult.SetTop(GeneratorResult(context, offset));
+				}
+				break;
 			}
 		}
 		else if ((parameter = CastNode<Parameter>(symbol)) != NULL)
@@ -3060,6 +3079,27 @@ void GeneratorCore::EmitHashCode(bu32_t hash)
 }
 
 
+GeneratorCore::GeneratorResult::Context GeneratorCore::TransformContext(GeneratorResult::Context targetContext, const TypeDescriptor *typeDescriptor) const
+{
+	// Handles special cases for the outcome of the evaluation of an expression.
+	// Normally an identifier in code refers to the value stored at the location represented
+	// by the identifier, with the exception of arrays that evaluate to an address.
+	GeneratorResult::Context context = targetContext;
+	if (typeDescriptor->IsArrayType())
+	{
+		if (targetContext == GeneratorResult::CONTEXT_FP_INDIRECT)
+		{
+			context = GeneratorResult::CONTEXT_FP_OFFSET;
+		}
+		else if (targetContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+		{
+			context = GeneratorResult::CONTEXT_STACK_VALUE;
+		}
+	}
+	return context;
+}
+
+
 void GeneratorCore::WriteConstantTable()
 {
 	const int startPos = mWriter.GetPosition();
@@ -3113,7 +3153,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteValue16(Value16(functionIndex));
 		WriteReturnSignature(function->GetPrototype()->GetReturnType());
 		WriteQualifiedSymbolName(function);
-		WriteParamListSignature(function->GetPrototype()->GetParameterList());
+		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		WriteValue32(Value32(function->GetGlobalHashCode()));
 		WriteValue32(Value32(function->GetFrameSize()));
 		WriteValue32(Value32(function->GetPackedFrameSize()));
@@ -3193,12 +3233,18 @@ void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
 }
 
 
-void GeneratorCore::WriteParamListSignature(const Parameter *parameterList)
+void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool includeThis)
 {
 	// Cache the position for the number of parameters and skip 2 bytes.
-	// TODO: Consider implicit this pointer.
 	const int startPos = mWriter.GetPosition();
 	mWriter.AddOffset(sizeof(Value16));
+
+	if (includeThis)
+	{
+		const bu32_t sizeAndType = EncodeSizeAndType(BOND_SLOT_SIZE, SIG_POINTER);
+		WriteValue32(Value32(-BOND_SLOT_SIZE));
+		WriteValue32(Value32(sizeAndType));
+	}
 
 	while (parameterList != NULL)
 	{

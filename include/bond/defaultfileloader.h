@@ -3,6 +3,7 @@
 
 #include "bond/allocator.h"
 #include "bond/fileloader.h"
+#include <stdio.h>
 
 namespace Bond
 {
@@ -15,6 +16,8 @@ public:
 
 	virtual FileData LoadFile(const char *fileName);
 	virtual void DisposeFile(FileData &fileData);
+
+	FileData LoadFile(FILE *file);
 
 private:
 	Allocator &mAllocator;

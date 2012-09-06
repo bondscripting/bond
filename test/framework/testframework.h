@@ -41,6 +41,19 @@
   }                                                                         \
 
 
+#define ERROR_MESSAGE(message)                                              \
+  __ERROR_FORMAT__(logger, __FILE__, __LINE__, ("%s", message))             \
+
+#define ERROR_FORMAT(format)                                                \
+  __ERROR_FORMAT__(logger, __FILE__, __LINE__, format)                      \
+
+#define __ERROR_FORMAT__(logger, file, line, format)                        \
+  {                                                                         \
+    logger.Write("line %u in %s: ", line, file);                            \
+    logger.Write format;                                                    \
+  }                                                                         \
+
+
 namespace TestFramework
 {
 

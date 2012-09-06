@@ -6,25 +6,32 @@ namespace Bond
 
 FileData DefaultFileLoader::LoadFile(const char *fileName)
 {
+	FILE *file = fopen(fileName, "rb");
+	const FileData fileData = LoadFile(file);
+	fclose(file);
+	return fileData;
+}
+
+
+FileData DefaultFileLoader::LoadFile(FILE *file)
+{
 	unsigned char *data = NULL;
 	size_t length = -1;
 	bool valid = false;
-	FILE *file = fopen(fileName, "rb");
 
 	if (file != 0)
 	{
 		valid = true;
+		const long pos = ftell(file);
 		fseek(file, 0, SEEK_END);
-		length = static_cast<size_t>(ftell(file));
-		fseek(file, 0, SEEK_SET);
+		length = static_cast<size_t>(ftell(file) - pos);
+		fseek(file, pos, SEEK_SET);
 
 		if (length > 0)
 		{
 			data = mAllocator.Alloc<unsigned char>(length);
 			fread(data, sizeof(char), length, file);
 		}
-
-		fclose(file);
 	}
 
 	return FileData(data, length, valid);

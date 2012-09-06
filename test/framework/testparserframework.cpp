@@ -30,7 +30,6 @@ bool RunParserTest(
 	__ASSERT_FORMAT__(script.mValid, logger, assertFile, assertLine,
 		("Failed to load file '%s'.", scriptName));
 
-	// Delegate to another function so we can still clean up even if something bails during the test.
 	const bool result = RunParserTest(logger, assertFile, assertLine, script, validationFunction);
 
 	fileLoader.DisposeFile(script);
@@ -64,7 +63,7 @@ static bool RunParserTest(
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
+		("Lexer leaked %d chunks of memory.\n", lexerAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Parser leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
 

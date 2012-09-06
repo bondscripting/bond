@@ -1,0 +1,9 @@
+int IntAdd(int a, int b)
+{
+	return a + b;
+}
+
+int IntSub(int a, int b)
+{
+	return a - b;
+}

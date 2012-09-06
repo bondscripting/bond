@@ -29,7 +29,6 @@ bool RunLexerTest(
 	__ASSERT_FORMAT__(script.mValid, logger, assertFile, assertLine,
 		("Failed to load file '%s'.", scriptName));
 
-	// Delegate to another function so we can still clean up even if something bails during the test.
 	const bool result = RunLexerTest(logger, assertFile, assertLine, script, validationFunction);
 
 	fileLoader.DisposeFile(script);
