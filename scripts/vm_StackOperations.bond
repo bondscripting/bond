@@ -1,0 +1,82 @@
+char PushcPopc(char a, char b, char c, char d, char e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	char[80000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[72000] = f[8];
+	return f[72000];
+}
+
+
+short PushsPops(short a, short b, short c, short d, short e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	short[40000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[36000] = f[8];
+	return f[36000];
+}
+
+
+int Push32Pop32(int a, int b, int c, int d, int e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	int[20000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[18000] = f[8];
+	return f[18000];
+}
+
+
+long Push64Pop64(long a, long b, long c, long d, long e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	long[10000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[9000] = f[8];
+	return f[9000];
+}

@@ -228,6 +228,9 @@
     <ClInclude Include="..\..\include\bond\vm.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
@@ -321,6 +324,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\vm.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

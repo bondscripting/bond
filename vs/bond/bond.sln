@@ -52,6 +52,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bondvm", "..\bondvm\bondvm.
 		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testvm", "..\testvm\testvm.vcxproj", "{CECB9239-B362-4E11-A5A0-CC88E3F6B53C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
+		{7E525B78-8165-452D-BCA1-6855B3FFD564} = {7E525B78-8165-452D-BCA1-6855B3FFD564}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -98,6 +104,10 @@ Global
 		{445E3D0D-1550-4E45-A8A9-F0B1B89E5FBD}.Debug|Win32.Build.0 = Debug|Win32
 		{445E3D0D-1550-4E45-A8A9-F0B1B89E5FBD}.Release|Win32.ActiveCfg = Release|Win32
 		{445E3D0D-1550-4E45-A8A9-F0B1B89E5FBD}.Release|Win32.Build.0 = Release|Win32
+		{CECB9239-B362-4E11-A5A0-CC88E3F6B53C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CECB9239-B362-4E11-A5A0-CC88E3F6B53C}.Debug|Win32.Build.0 = Debug|Win32
+		{CECB9239-B362-4E11-A5A0-CC88E3F6B53C}.Release|Win32.ActiveCfg = Release|Win32
+		{CECB9239-B362-4E11-A5A0-CC88E3F6B53C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

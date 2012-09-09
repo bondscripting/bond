@@ -504,6 +504,10 @@ bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 			return BOND_INT_SIZE;
 		case Token::KEY_UINT:
 			return BOND_UINT_SIZE;
+		case Token::KEY_LONG:
+			return BOND_LONG_SIZE;
+		case Token::KEY_ULONG:
+			return BOND_ULONG_SIZE;
 		case Token::KEY_FLOAT:
 			return BOND_FLOAT_SIZE;
 		case Token::KEY_DOUBLE:
@@ -540,6 +544,10 @@ bu32_t TypeSpecifier::GetAlignment() const
 			return BOND_INT_SIZE;
 		case Token::KEY_UINT:
 			return BOND_UINT_SIZE;
+		case Token::KEY_LONG:
+			return BOND_LONG_SIZE;
+		case Token::KEY_ULONG:
+			return BOND_ULONG_SIZE;
 		case Token::KEY_FLOAT:
 			return BOND_FLOAT_SIZE;
 		case Token::KEY_DOUBLE:
@@ -574,6 +582,10 @@ bu32_t TypeSpecifier::GetSignatureType() const
 			return SIG_INT;
 		case Token::KEY_UINT:
 			return SIG_UINT;
+		case Token::KEY_LONG:
+			return SIG_LONG;
+		case Token::KEY_ULONG:
+			return SIG_ULONG;
 		case Token::KEY_FLOAT:
 			return SIG_FLOAT;
 		case Token::KEY_DOUBLE:

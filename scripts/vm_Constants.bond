@@ -1,0 +1,180 @@
+int Constc()
+{
+	return -7;
+}
+
+uint Constuc()
+{
+	return 130;
+}
+
+int Consts()
+{
+	return -345;
+}
+
+uint Constus()
+{
+	return 40000;
+}
+
+int Const32()
+{
+	return -34567;
+}
+
+long Const64()
+{
+	return -34567l;
+}
+
+int Consti_n2()
+{
+	return -2;
+}
+
+int Consti_n1()
+{
+	return -1;
+}
+
+int Consti_0()
+{
+	return 0;
+}
+
+int Consti_1()
+{
+	return 1;
+}
+
+int Consti_2()
+{
+	return 2;
+}
+
+int Consti_3()
+{
+	return 3;
+}
+
+int Consti_4()
+{
+	return 4;
+}
+
+int Consti_8()
+{
+	return 8;
+}
+
+long Constl_n2()
+{
+	return -2;
+}
+
+long Constl_n1()
+{
+	return -1l;
+}
+
+long Constl_0()
+{
+	return 0l;
+}
+
+long Constl_1()
+{
+	return 1l;
+}
+
+long Constl_2()
+{
+	return 2l;
+}
+
+long Constl_3()
+{
+	return 3l;
+}
+
+long Constl_4()
+{
+	return 4l;
+}
+
+long Constl_8()
+{
+	return 8l;
+}
+
+float Constf_n2()
+{
+	return -2.0f;
+}
+
+float Constf_n1()
+{
+	return -1.0f;
+}
+
+float Constf_nh()
+{
+	return -0.5f;
+}
+
+float Constf_0()
+{
+	return 0.0f;
+}
+
+float Constf_h()
+{
+	return 0.5f;
+}
+
+float Constf_1()
+{
+	return 1.0f;
+}
+
+float Constf_2()
+{
+	return 2.0f;
+}
+
+double Constd_n2()
+{
+	return -2.0f;
+}
+
+double Constd_n1()
+{
+	return -1.0;
+}
+
+double Constd_nh()
+{
+	return -0.5;
+}
+
+double Constd_0()
+{
+	return 0.0;
+}
+
+double Constd_h()
+{
+	return 0.5;
+}
+
+double Constd_1()
+{
+	return 1.0;
+}
+
+double Constd_2()
+{
+	return 2.0;
+}
+

@@ -1,11 +1,11 @@
 #include "framework/testvmframework.h"
+#include "bond/bufferedbinarywriter.h"
 #include "bond/cboloader.h"
 #include "bond/codegenerator.h"
 #include "bond/codesegment.h"
 #include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
-#include "bond/filebinarywriter.h"
 #include "bond/lexer.h"
 #include "bond/parser.h"
 #include "bond/semanticanalyzer.h"
@@ -54,32 +54,22 @@ bool RunVMTest(
 			analyzer.Analyze(parser.GetTranslationUnitList());
 		}
 
-		FILE *cboFile = tmpfile();
-		if (!errorBuffer.HasErrors() && (cboFile != NULL))
+		if (!errorBuffer.HasErrors())
 		{
-			Bond::FileBinaryWriter cboWriter(cboFile);
+			const int MAX_CBO_SIZE = 8 * 1024;
+			Bond::bu8_t cboBuffer[MAX_CBO_SIZE];
+			Bond::BufferedBinaryWriter cboWriter(cboBuffer, MAX_CBO_SIZE);
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);
 			generator.Generate(parser.GetTranslationUnitList(), cboWriter);
 
 			if (!errorBuffer.HasErrors())
 			{
-				fseek(cboFile, 0, SEEK_SET);
-				Bond::FileData cbo = fileLoader.LoadFile(cboFile);
-				if (cbo.mValid)
-				{
-					Bond::CboLoader cboLoader(cboLoaderAllocator);
-					const Bond::CodeSegment *codeSegment = cboLoader.Load(&cbo, 1);
-					Bond::VM vm(vmAllocator, *codeSegment, 4 * 1024);
-					result = validationFunction(logger, vm);
-					cboLoader.Dispose(codeSegment);
-					fileLoader.DisposeFile(cbo);
-				}
-				else
-				{
-					__ERROR_FORMAT__(logger, assertFile, assertLine, ("Failed to load CBO file."));
-				}
-
-				fclose(cboFile);
+				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()), true);
+				Bond::CboLoader cboLoader(cboLoaderAllocator);
+				const Bond::CodeSegment *codeSegment = cboLoader.Load(&cboFile, 1);
+				Bond::VM vm(vmAllocator, *codeSegment, 96 * 1024);
+				result = validationFunction(logger, vm);
+				cboLoader.Dispose(codeSegment);
 			}
 		}
 

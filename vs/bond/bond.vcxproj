@@ -15,6 +15,7 @@
     <ClInclude Include="..\..\include\bond\allocator.h" />
     <ClInclude Include="..\..\include\bond\autostack.h" />
     <ClInclude Include="..\..\include\bond\binarywriter.h" />
+    <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h" />
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h" />
     <ClInclude Include="..\..\include\bond\cboloader.h" />
     <ClInclude Include="..\..\include\bond\cboutil.h" />
@@ -78,6 +79,7 @@
     <ClInclude Include="..\..\source\private\valueevaluationpass.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp" />
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
     <ClCompile Include="..\..\source\cboloader.cpp" />
     <ClCompile Include="..\..\source\cbovalidator.cpp" />

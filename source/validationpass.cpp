@@ -45,7 +45,7 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
 	FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	bi32_t offset = (functionDefinition->GetScope() != SCOPE_STRUCT_MEMBER) ? -BOND_SLOT_SIZE : 0;
+	bi32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? -BOND_SLOT_SIZE : 0;
 	bi32_t packedOffset = offset;
 	bi32_t framePointerAlignment = Max(BOND_SLOT_SIZE, -offset);
 	Parameter *parameterList = prototype->GetParameterList();

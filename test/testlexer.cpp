@@ -216,7 +216,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
 		const Bond::bf32_t actual = token->GetFloatValue();
-		ASSERT_FORMAT((expected >= (actual - 0.0000001f)) && (expected <= (actual + 0.0000001f)),
+		ASSERT_FORMAT((actual >= (expected - 0.0000001f)) && (actual <= (expected + 0.0000001f)),
 			("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expected, actual));
 	}
 

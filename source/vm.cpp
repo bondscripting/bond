@@ -284,7 +284,7 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CONSTF_N1:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(-2.0f);
+				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(-1.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -333,7 +333,7 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CONSTD_N1:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(-2.0);
+				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(-1.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;

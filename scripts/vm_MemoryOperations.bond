@@ -1,0 +1,4 @@
+int Loadc(const char *a)
+{
+	return *a;
+}

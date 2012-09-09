@@ -22,7 +22,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(CONSTI_3,     consti_3,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTI_4,     consti_4,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTI_8,     consti_8,     NONE)   \
-	BOND_OPCODE_ITEM(CONSTL_N2,    consti_n2,    NONE)   \
+	BOND_OPCODE_ITEM(CONSTL_N2,    constl_n2,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_N1,    constl_n1,    NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_0,     constl_0,     NONE)   \
 	BOND_OPCODE_ITEM(CONSTL_1,     constl_1,     NONE)   \
