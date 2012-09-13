@@ -19,6 +19,27 @@ char PushcPopc(char a, char b, char c, char d, char e)
 }
 
 
+uchar PushucPopc(uchar a, uchar b, uchar c, uchar d, uchar e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	uchar[80000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[72000] = f[8];
+	return f[72000];
+}
+
+
 short PushsPops(short a, short b, short c, short d, short e)
 {
 	d = e;
@@ -26,6 +47,27 @@ short PushsPops(short a, short b, short c, short d, short e)
 	b = c;
 	a = b;
 	short[40000] f;
+	f[0] = a;
+	f[1] = f[0];
+	f[2] = f[1];
+	f[3] = f[2];
+	f[4] = f[3];
+	f[5] = f[4];
+	f[6] = f[5];
+	f[7] = f[6];
+	f[8] = f[7];
+	f[36000] = f[8];
+	return f[36000];
+}
+
+
+ushort PushusPops(ushort a, ushort b, ushort c, ushort d, ushort e)
+{
+	d = e;
+	c = d;
+	b = c;
+	a = b;
+	ushort[40000] f;
 	f[0] = a;
 	f[1] = f[0];
 	f[2] = f[1];

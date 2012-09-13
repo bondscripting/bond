@@ -496,6 +496,8 @@ bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
 			return BOND_CHAR_SIZE;
+		case Token::KEY_UCHAR:
+			return BOND_UCHAR_SIZE;
 		case Token::KEY_SHORT:
 			return BOND_SHORT_SIZE;
 		case Token::KEY_USHORT:
@@ -536,6 +538,8 @@ bu32_t TypeSpecifier::GetAlignment() const
 			return BOND_BOOL_SIZE;
 		case Token::KEY_CHAR:
 			return BOND_CHAR_SIZE;
+		case Token::KEY_UCHAR:
+			return BOND_UCHAR_SIZE;
 		case Token::KEY_SHORT:
 			return BOND_SHORT_SIZE;
 		case Token::KEY_USHORT:
@@ -574,6 +578,8 @@ bu32_t TypeSpecifier::GetSignatureType() const
 			return SIG_BOOL;
 		case Token::KEY_CHAR:
 			return SIG_CHAR;
+		case Token::KEY_UCHAR:
+			return SIG_UCHAR;
 		case Token::KEY_SHORT:
 			return SIG_SHORT;
 		case Token::KEY_USHORT:
