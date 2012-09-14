@@ -366,9 +366,9 @@ void DisassemblerCore::DisassembleSizeAndType()
 
 void DisassemblerCore::WriteSimpleString(const SimpleString &str)
 {
-	const int length = str.GetLength();
+	const size_t length = str.GetLength();
 	const char *s = str.GetString();
-	for (int i = 0; i < length; ++i)
+	for (size_t i = 0; i < length; ++i)
 	{
 		mWriter.Write("%c", s[i]);
 	}

@@ -632,8 +632,8 @@ public:
 	bu32_t GetFramePointerAlignment() const { return mFramePointerAlignment; }
 	void SetFramePointerAlignment(bu32_t framePointerAlignment) { mFramePointerAlignment = framePointerAlignment; }
 
-	bu32_t GetNumReservedJumpTargetIds() const { return mNumReservedJumpTargetIds; }
-	void SetNumReservedJumpTargetIds(bu32_t numIds) { mNumReservedJumpTargetIds = numIds; }
+	size_t GetNumReservedJumpTargetIds() const { return mNumReservedJumpTargetIds; }
+	void SetNumReservedJumpTargetIds(size_t numIds) { mNumReservedJumpTargetIds = numIds; }
 
 private:
 	QualifiedIdentifier mIdentifier;

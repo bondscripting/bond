@@ -96,7 +96,7 @@ public:
 private:
 	const bu32_t *mFunctionLookup;
 	const Function *mFunctionList;
-	bu32_t mFunctionCount;
+	size_t mFunctionCount;
 };
 
 }

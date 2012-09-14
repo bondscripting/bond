@@ -374,7 +374,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
 	bu8_t *code = mResources.mCode;
-	const size_t codeSize = ReadValue32().mUInt;
+	const bu32_t codeSize = ReadValue32().mUInt;
 	function->mCode = code;
 	function->mCodeSize = codeSize;
 	memcpy(code, mByteCode + mIndex, codeSize);

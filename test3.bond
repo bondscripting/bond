@@ -1,0 +1,30 @@
+namespace TheSpace
+{
+	/*
+struct Stuff
+{
+	int a;
+	int b;
+	int[4] c;
+
+	//int Get() { return c[2]; }
+};
+
+void Blah(int a, int b)
+{
+	//Stuff s;
+	//s.c[2] = a;
+	//return s.Get();
+	//int[4] c;
+	//c[2] = a;
+	//return a;
+	Stuff s;
+	s.c[4] = 34;
+}
+	*/
+
+void Bling(int a)
+{
+	int b = a;
+}
+}

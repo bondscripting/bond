@@ -366,7 +366,7 @@ void GeneratorCore::Generate()
 	mWriter.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(/* mDefinitionList.size() + */ mFunctionList.size()));
+	WriteValue32(Value32(/* mDefinitionList.size() + */ bu32_t(mFunctionList.size())));
 
 	WriteFunctionList(functionIndex);
 
@@ -564,12 +564,12 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	bi32_t defaultOffset = 0;
 	if ((resolvedLabels != NULL) && resolvedLabels->IsDefault())
 	{
-		defaultOffset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+		defaultOffset = bu32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 		resolvedLabels = NextNode(resolvedLabels);
 	}
 	else
 	{
-		defaultOffset = endPos - jumpTableEnd;
+		defaultOffset = bu32_t(endPos - jumpTableEnd);
 	}
 
 	EmitValue32At(Value32(defaultOffset), jumpTableStart);
@@ -580,7 +580,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 		size_t pos = jumpTableStart + (2 * sizeof(Value32));
 		while (resolvedLabels != NULL)
 		{
-			const bi32_t offset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+			const bi32_t offset = bi32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 			EmitValue32At(Value32(resolvedLabels->GetMatch()), pos);
 			EmitValue32At(Value32(offset), pos + sizeof(Value32));
 			pos += 2 * sizeof(Value32);
@@ -598,7 +598,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 			bi32_t offset = 0;
 			if (match >= resolvedLabels->GetMatch())
 			{
-				offset = labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd;
+				offset = bi32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 				EmitValue32At(Value32(offset), pos);
 				resolvedLabels = NextNode(resolvedLabels);
 			}
@@ -3107,9 +3107,9 @@ void GeneratorCore::WriteConstantTable()
 	// Skip the 4 bytes for the table size.
 	mWriter.AddOffset(sizeof(Value32));
 
-	WriteValue16(Value16(mValue32List.size()));
-	WriteValue16(Value16(mValue64List.size()));
-	WriteValue16(Value16(mStringList.size()));
+	WriteValue16(Value16(bu16_t(mValue32List.size())));
+	WriteValue16(Value16(bu16_t(mValue64List.size())));
+	WriteValue16(Value16(bu16_t(mStringList.size())));
 
 	for (Value32List::Type::const_iterator it = mValue32List.begin(); it != mValue32List.end(); ++it)
 	{
@@ -3123,10 +3123,10 @@ void GeneratorCore::WriteConstantTable()
 
 	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
 	{
-		const int length = it->GetLength();
+		const size_t length = it->GetLength();
 		const char *str = it->GetString();
-		WriteValue16(Value16(length));
-		for (int i = 0; i < length; ++i)
+		WriteValue16(Value16(bu16_t(length)));
+		for (size_t i = 0; i < length; ++i)
 		{
 			mWriter.Write(str[i]);
 		}
@@ -3178,7 +3178,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 			}
 
 			bu8_t opCode = byteCode[byteCodeIndex++];
-			const bi32_t offset = labelList[jlit->mToLabel] - jlit->mFromPos;
+			const bi32_t offset = bi32_t(labelList[jlit->mToLabel] - jlit->mFromPos);
 			Value16 arg(offset);
 
 			if (!IsInShortRange(offset))
@@ -3221,7 +3221,7 @@ void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 	// Patch up the number of elements.
 	const int endPos = mWriter.GetPosition();
 	mWriter.SetPosition(startPos);
-	WriteValue16(Value16((endPos - startPos - sizeof(Value16)) / sizeof(Value16)));
+	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
 	mWriter.SetPosition(endPos);
 }
 
@@ -3259,7 +3259,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	// Patch up the number of parameters.
 	const int endPos = mWriter.GetPosition();
 	mWriter.SetPosition(startPos);
-	WriteValue16(Value16((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32))));
+	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
 	mWriter.SetPosition(endPos);
 }
 
@@ -3356,7 +3356,7 @@ void GeneratorCore::MapLongJumpOffsets()
 
 		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
 		{
-			const bi32_t offset = labelList[jlit->mToLabel] - jlit->mFromPos;
+			const bi32_t offset = bi32_t(labelList[jlit->mToLabel] - jlit->mFromPos);
 			if (!IsInShortRange(offset))
 			{
 				MapValue32(Value32(offset));

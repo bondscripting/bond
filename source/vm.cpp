@@ -108,7 +108,7 @@ void VM::ExecuteScriptFunction()
 	const bu8_t *code = frame.mFunction->mCode;
 	bu8_t *const fp = frame.mFramePointer;
 	bu8_t *sp = frame.mStackPointer;
-	bu32_t pc = 0;
+	size_t pc = 0;
 
 	for (;;)
 	{
