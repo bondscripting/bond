@@ -26,7 +26,7 @@ public:
 		mResolved(true)
 	{}
 
-	const TypeAndValue &operator=(const TypeAndValue &other)
+	TypeAndValue &operator=(const TypeAndValue &other)
 	{
 		mValue = other.mValue;
 		mTypeDescriptor = other.mTypeDescriptor;

@@ -55,7 +55,7 @@ char CharStream::Peek(size_t index) const
 
 void CharStream::Unget(size_t numChars)
 {
-	const size_t delta = (numChars < 0) ? 0 : (numChars > mPos.index) ? mPos.index : numChars;
+	const size_t delta = (numChars > mPos.index) ? mPos.index : numChars;
 	const size_t oldIndex = mPos.index;
 	mPos.index -= delta;
 	mPos.column -= delta;

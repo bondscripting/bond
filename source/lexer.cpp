@@ -255,7 +255,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 
 	while (stream.HasNext() && (state != STATE_DONE))
 	{
-		const StreamPos pos = stream.GetStreamPos();
+		const StreamPos &pos = stream.GetStreamPos();
 		const char c = stream.Next();
 
 		switch (state)
