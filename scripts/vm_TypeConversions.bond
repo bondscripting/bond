@@ -1,0 +1,124 @@
+char Itoc(int a)
+{
+	return cast<char>(a);
+}
+
+uchar Uitouc(uint a)
+{
+	return cast<uchar>(a);
+}
+
+short Itos(int a)
+{
+	return cast<short>(a);
+}
+
+ushort Uitous(uint a)
+{
+	return cast<ushort>(a);
+}
+
+long Itol(int a)
+{
+	return cast<long>(a);
+}
+
+ulong Uitoul(uint a)
+{
+	return cast<ulong>(a);
+}
+
+float Itof(int a)
+{
+	return cast<float>(a);
+}
+
+float Uitof(uint a)
+{
+	return cast<float>(a);
+}
+
+double Itod(int a)
+{
+	return cast<double>(a);
+}
+
+double Uitod(uint a)
+{
+	return cast<double>(a);
+}
+
+int Ltoi(long a)
+{
+	return cast<int>(a);
+}
+
+float Ltof(long a)
+{
+	return cast<float>(a);
+}
+
+float Ultof(ulong a)
+{
+	return cast<float>(a);
+}
+
+double Ltod(long a)
+{
+	return cast<double>(a);
+}
+
+double Ultod(ulong a)
+{
+	return cast<double>(a);
+}
+
+int Ftoi(float a)
+{
+	return cast<int>(a);
+}
+
+uint Ftoui(float a)
+{
+	return cast<uint>(a);
+}
+
+long Ftol(float a)
+{
+	return cast<long>(a);
+}
+
+ulong Ftoul(float a)
+{
+	return cast<ulong>(a);
+}
+
+double Ftod(float a)
+{
+	return cast<double>(a);
+}
+
+int Dtoi(double a)
+{
+	return cast<int>(a);
+}
+
+uint Dtoui(double a)
+{
+	return cast<uint>(a);
+}
+
+long Dtol(double a)
+{
+	return cast<long>(a);
+}
+
+ulong Dtoul(double a)
+{
+	return cast<ulong>(a);
+}
+
+float Dtof(double a)
+{
+	return cast<double>(a);
+}

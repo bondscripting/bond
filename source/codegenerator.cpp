@@ -2287,7 +2287,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 					byteCode.push_back(OPCODE_ULTOF);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_FTOD);
+					byteCode.push_back(OPCODE_DTOF);
 					break;
 				default:
 					break;
@@ -2314,7 +2314,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 					byteCode.push_back(OPCODE_ULTOD);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_DTOF);
+					byteCode.push_back(OPCODE_FTOD);
 					break;
 				default:
 					break;

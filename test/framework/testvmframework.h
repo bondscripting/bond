@@ -2,6 +2,7 @@
 #define TEST_FRAMEWORK_TESTVMFRAMEWORK_H
 
 #include "framework/testframework.h"
+#include "bond/math.h"
 #include "bond/vm.h"
 
 #define DEFINE_VM_TEST(testName, scriptName)                                                   \
@@ -122,16 +123,22 @@
     ("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", expectedResult, returnValue)); \
 
 
-#define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                         \
-  ASSERT_FORMAT((returnValue >= (expectedResult - 0.0000001f)) &&                           \
-    (returnValue <= (expectedResult + 0.0000001f)),                                         \
-    ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                           \
+  {                                                                                           \
+    const Bond::bf32_t delta = Bond::Max(expectedResult / 1.0e7f, expectedResult / -1.0e7f);  \
+    ASSERT_FORMAT((returnValue >= (expectedResult - delta)) &&                                \
+      (returnValue <= (expectedResult + delta)),                                              \
+      ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expectedResult, returnValue)); \
+  }                                                                                           \
 
 
-#define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                        \
-  ASSERT_FORMAT((returnValue >= (expectedResult - 0.0000001)) &&                            \
-    (returnValue <= (expectedResult + 0.0000001)),                                          \
-    ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                          \
+  {                                                                                           \
+    const Bond::bf64_t delta = Bond::Max(expectedResult / 1.0e7, expectedResult / -1.0e7);    \
+    ASSERT_FORMAT((returnValue >= (expectedResult - delta)) &&                                \
+      (returnValue <= (expectedResult + delta)),                                              \
+      ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", expectedResult, returnValue)); \
+  }                                                                                           \
 
 namespace TestFramework
 {
