@@ -60,16 +60,51 @@ DEFINE_VM_TEST(StackOperations, "scripts/vm_StackOperations.bond")
 
 DEFINE_VM_TEST(MemoryOperations, "scripts/vm_MemoryOperations.bond")
 {
-	/*
 	using namespace Bond;
-	bi8_t charValue = 123;
-	bu8_t ucharValue = 234;
-	bi16_t shortValue = -345;
-	bu16_t ushortValue = 40000;
+	bi8_t chars[] = {0, -123, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(INT, "::LoadcStorec", bi32_t(-123), chars + 1, chars + 3);
+	ASSERT_FORMAT(chars[1] == chars[3],
+		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", chars[1], chars[3]));
+	ASSERT_MESSAGE((chars[0] == 0) && (chars[2] == 0) && (chars[4] == 0),
+		"Memory stomp by LoadcStorec() detected.");
 
-	VALIDATE_FUNCTION_CALL_1(INT, "::Loadc", &charValue, bi32_t(charValue));
+	bu8_t uchars[] = {0, 0xff, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(UINT, "::LoaducStorec", bu32_t(0xff), uchars + 1, uchars + 3);
+	ASSERT_FORMAT(uchars[1] == uchars[3],
+		("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", uchars[1], uchars[3]));
+	ASSERT_MESSAGE((uchars[0] == 0) && (uchars[2] == 0) && (uchars[4] == 0),
+		"Memory stomp by LoaducStorec() detected.");
 
-	*/
+	bi16_t shorts[] = {0, -234, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(INT, "::LoadsStores", bi32_t(-234), shorts + 1, shorts + 3);
+	ASSERT_FORMAT(shorts[1] == shorts[3],
+		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", shorts[1], shorts[3]));
+	ASSERT_MESSAGE((shorts[0] == 0) && (shorts[2] == 0) && (shorts[4] == 0),
+		"Memory stomp by LoadsStores() detected.");
+
+	bu16_t ushorts[] = {0, 0xffff, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(UINT, "::LoadusStores", bi32_t(0xffff), ushorts + 1, ushorts + 3);
+	ASSERT_FORMAT(ushorts[1] == ushorts[3],
+		("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ushorts[1], ushorts[3]));
+	ASSERT_MESSAGE((ushorts[0] == 0) && (ushorts[2] == 0) && (ushorts[4] == 0),
+		"Memory stomp by LoadusStores() detected.");
+
+	bi32_t ints[] = {0, -345, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(INT, "::Load32Store32", bi32_t(-345), ints + 1, ints + 3);
+	ASSERT_FORMAT(ints[1] == ints[3],
+		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ints[1], ints[3]));
+	ASSERT_MESSAGE((ints[0] == 0) && (ints[2] == 0) && (ints[4] == 0),
+		"Memory stomp by Load32Store32() detected.");
+
+	bi64_t longs[] = {0, -456, 0, 0, 0};
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Load64Store64", bi64_t(-456), longs + 1, longs + 3);
+	ASSERT_FORMAT(longs[1] == longs[3],
+		("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", longs[1], longs[3]));
+	ASSERT_MESSAGE((longs[0] == 0) && (longs[2] == 0) && (longs[4] == 0),
+		"Memory stomp by Load64Store64() detected.");
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Loadfp", bi32_t(-567), bi32_t(-567));
+
 	return true;
 }
 
@@ -221,8 +256,28 @@ DEFINE_VM_TEST(TypeConversions, "scripts/vm_TypeConversions.bond")
 DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 {
 	using namespace Bond;
-	VALIDATE_FUNCTION_CALL_2(INT, "::IntAdd", bi32_t(65 + 13), bi32_t(65), bi32_t(13));
-	VALIDATE_FUNCTION_CALL_2(INT, "::IntSub", bi32_t(43 - 12), bi32_t(43), bi32_t(12));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Addi", bi32_t(-65) + bi32_t(13), bi32_t(-65), bi32_t(13));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Addi", bu32_t(65) + bi32_t(13), bu32_t(65), bu32_t(13));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Addl", (bi64_t(-65) << 40) + (bi64_t(13) << 40), (bi64_t(-65) << 40), (bi64_t(13) << 40));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Addl", (bu64_t(65) << 40) + (bu64_t(13) << 40), (bu64_t(65) << 40), (bu64_t(13) << 40));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", bf32_t(-65.0f) + bf32_t(13.0f), bf32_t(-65.0f), bf32_t(13.0f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", bf32_t(1e20f) + bf32_t(0.5e20f), bf32_t(1e20f), bf32_t(0.5e20f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", bf64_t(-65.0) + bf64_t(13.0), bf64_t(-65.0), bf64_t(13.0));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", bf64_t(1e40) + bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Subi", bi32_t(-43) - bi32_t(12), bi32_t(-43), bi32_t(12));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Subi", bu32_t(43) - bi32_t(12), bu32_t(43), bu32_t(12));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Subl", (bi64_t(-43) << 40) - (bi64_t(12) << 40), (bi64_t(-43) << 40), (bi64_t(12) << 40));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Subl", (bu64_t(43) << 40) - (bu64_t(12) << 40), (bu64_t(43) << 40), (bu64_t(12) << 40));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", bf32_t(-43.0f) - bf32_t(12.0f), bf32_t(-43.0f), bf32_t(12.0f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", bf32_t(1e20f) - bf32_t(0.5e20f), bf32_t(1e20f), bf32_t(0.5e20f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(-43.0) - bf64_t(12.0), bf64_t(-43.0), bf64_t(12.0));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(1e40) - bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(17), bi32_t(-58), bi32_t(17));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", bu32_t(58) * bi32_t(17), bu32_t(58), bu32_t(17));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Mull", (bi64_t(-58) << 40) * bi64_t(17), (bi64_t(-58) << 40), bi64_t(17));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Mulul", (bu64_t(58) << 40) * bu64_t(17), (bu64_t(58) << 40), bu64_t(17));
 
 	return true;
 }
@@ -230,6 +285,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
+  TEST_ITEM(MemoryOperations)                   \
   TEST_ITEM(TypeConversions)                    \
   TEST_ITEM(BinaryOperators)                    \
 

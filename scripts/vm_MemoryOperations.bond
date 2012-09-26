@@ -1,4 +1,45 @@
-int Loadc(const char *a)
+char LoadcStorec(const char *a, char *b)
 {
-	return *a;
+	*b = *a;
+	return *b;
+}
+
+uchar LoaducStorec(const uchar *a, uchar *b)
+{
+	*b = *a;
+	return *b;
+}
+
+short LoadsStores(const short *a, short *b)
+{
+	*b = *a;
+	return *b;
+}
+
+ushort LoadusStores(const ushort *a, ushort *b)
+{
+	*b = *a;
+	return *b;
+}
+
+int Load32Store32(const int *a, int *b)
+{
+	*b = *a;
+	return *b;
+}
+
+long Load64Store64(const long *a, long *b)
+{
+	*b = *a;
+	return *b;
+}
+
+int Loadfp(int a)
+{
+	int [20000] ints;
+	int *ptr1 = &ints[3];
+	int *ptr2 = &ints[19000];
+	*ptr1 = a;
+	*ptr2 = *ptr1;
+	return ints[19000];
 }

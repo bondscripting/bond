@@ -1497,7 +1497,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 				byteCode.push_back(OPCODE_LOADUC);
 				break;
 			case Token::KEY_CHAR:
-				byteCode.push_back(OPCODE_LOADUC);
+				byteCode.push_back(OPCODE_LOADC);
 				break;
 			case Token::KEY_SHORT:
 				byteCode.push_back(OPCODE_LOADS);
@@ -2016,11 +2016,11 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 				break;
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
-			case Token::KEY_LONG:
-			case Token::KEY_ULONG:
 			case Token::KEY_FLOAT:
 				byteCode.push_back(OPCODE_STORE32);
 				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
 			case Token::KEY_DOUBLE:
 				byteCode.push_back(OPCODE_STORE64);
 				break;

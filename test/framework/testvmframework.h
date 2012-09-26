@@ -24,7 +24,7 @@
 #define VALIDATE_FUNCTION_CALL_0(returnType, functionName, expectedResult)	                   \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.Call();                                                                         \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
   }                                                                                            \
@@ -33,7 +33,7 @@
 #define VALIDATE_FUNCTION_CALL_1(returnType, functionName, expectedResult, a0)                 \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.PushArg(a0);                                                                    \
     stackFrame.Call();                                                                         \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
@@ -43,7 +43,7 @@
 #define VALIDATE_FUNCTION_CALL_2(returnType, functionName, expectedResult, a0, a1)             \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.PushArg(a0);                                                                    \
     stackFrame.PushArg(a1);                                                                    \
     stackFrame.Call();                                                                         \
@@ -54,7 +54,7 @@
 #define VALIDATE_FUNCTION_CALL_3(returnType, functionName, expectedResult, a0, a1, a2)         \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.PushArg(a0);                                                                    \
     stackFrame.PushArg(a1);                                                                    \
     stackFrame.PushArg(a2);                                                                    \
@@ -66,7 +66,7 @@
 #define VALIDATE_FUNCTION_CALL_4(returnType, functionName, expectedResult, a0, a1, a2, a3)     \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.PushArg(a0);                                                                    \
     stackFrame.PushArg(a1);                                                                    \
     stackFrame.PushArg(a2);                                                                    \
@@ -79,7 +79,7 @@
 #define VALIDATE_FUNCTION_CALL_5(returnType, functionName, expectedResult, a0, a1, a2, a3, a4) \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::VM::CallerStackFrame stackFrame(vm, functionName, &returnValue);                     \
+    Bond::VM::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                   \
     stackFrame.PushArg(a0);                                                                    \
     stackFrame.PushArg(a1);                                                                    \
     stackFrame.PushArg(a2);                                                                    \
@@ -99,46 +99,46 @@
 #define DECLARE_RETURN_VALUE_DOUBLE() Bond::bf64_t returnValue = 0.0;
 
 
-#define VALIDATE_RETURN_VALUE_BOOL(expectedResult)                                          \
-  VALIDATE_RETURN_VALUE_INT(expectedResult)                                                 \
+#define VALIDATE_RETURN_VALUE_BOOL(expectedResult)                                            \
+  VALIDATE_RETURN_VALUE_INT(expectedResult)                                                   \
 
 
-#define VALIDATE_RETURN_VALUE_INT(expectedResult)                                           \
-  ASSERT_FORMAT(returnValue == expectedResult,                                              \
-    ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_INT(expectedResult)                                             \
+  ASSERT_FORMAT(returnValue == (expectedResult),                                              \
+    ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", (expectedResult), returnValue)); \
 
 
-#define VALIDATE_RETURN_VALUE_UINT(expectedResult)                                          \
-  ASSERT_FORMAT(returnValue == expectedResult,                                              \
-    ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_UINT(expectedResult)                                            \
+  ASSERT_FORMAT(returnValue == (expectedResult),                                              \
+    ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", (expectedResult), returnValue)); \
 
 
-#define VALIDATE_RETURN_VALUE_LONG(expectedResult)                                          \
-  ASSERT_FORMAT(returnValue == expectedResult,                                              \
-    ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_LONG(expectedResult)                                            \
+  ASSERT_FORMAT(returnValue == (expectedResult),                                              \
+    ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", (expectedResult), returnValue)); \
 
 
-#define VALIDATE_RETURN_VALUE_ULONG(expectedResult)                                         \
-  ASSERT_FORMAT(returnValue == expectedResult,                                              \
-    ("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", expectedResult, returnValue)); \
+#define VALIDATE_RETURN_VALUE_ULONG(expectedResult)                                           \
+  ASSERT_FORMAT(returnValue == (expectedResult),                                              \
+    ("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", (expectedResult), returnValue)); \
 
 
-#define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                           \
-  {                                                                                           \
-    const Bond::bf32_t delta = Bond::Max(expectedResult / 1.0e7f, expectedResult / -1.0e7f);  \
-    ASSERT_FORMAT((returnValue >= (expectedResult - delta)) &&                                \
-      (returnValue <= (expectedResult + delta)),                                              \
-      ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expectedResult, returnValue)); \
-  }                                                                                           \
+#define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                              \
+  {                                                                                              \
+    const Bond::bf32_t delta = Bond::Max((expectedResult) / 1.0e7f, (expectedResult) / -1.0e7f); \
+    ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                 \
+      (returnValue <= ((expectedResult) + delta)),                                               \
+      ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", (expectedResult), returnValue));  \
+  }                                                                                              \
 
 
-#define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                          \
-  {                                                                                           \
-    const Bond::bf64_t delta = Bond::Max(expectedResult / 1.0e7, expectedResult / -1.0e7);    \
-    ASSERT_FORMAT((returnValue >= (expectedResult - delta)) &&                                \
-      (returnValue <= (expectedResult + delta)),                                              \
-      ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", expectedResult, returnValue)); \
-  }                                                                                           \
+#define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                            \
+  {                                                                                             \
+    const Bond::bf64_t delta = Bond::Max((expectedResult) / 1.0e7, (expectedResult) / -1.0e7);  \
+    ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                \
+      (returnValue <= ((expectedResult) + delta)),                                              \
+      ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", (expectedResult), returnValue)); \
+  }                                                                                             \
 
 namespace TestFramework
 {
