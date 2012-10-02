@@ -118,3 +118,63 @@ ulong Remul(ulong a, ulong b)
 	return a % b;
 }
 
+int Lshi(int a, int b)
+{
+	return a << b;
+}
+
+long Lshl(long a, long b)
+{
+	return a << b;
+}
+
+int Rshi(int a, int b)
+{
+	return a >> b;
+}
+
+uint Rshui(uint a, uint b)
+{
+	return a >> b;
+}
+
+long Rshl(long a, long b)
+{
+	return a >> b;
+}
+
+ulong Rshul(ulong a, ulong b)
+{
+	return a >> b;
+}
+
+int Andi(int a, int b)
+{
+	return a & b;
+}
+
+long Andl(long a, long b)
+{
+	return a & b;
+}
+
+int Ori(int a, int b)
+{
+	return a | b;
+}
+
+long Orl(long a, long b)
+{
+	return a | b;
+}
+
+int Xori(int a, int b)
+{
+	return a ^ b;
+}
+
+long Xorl(long a, long b)
+{
+	return a ^ b;
+}
+

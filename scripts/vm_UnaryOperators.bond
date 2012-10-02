@@ -1,0 +1,24 @@
+int Negi(int a)
+{
+	return -a;
+}
+
+long Negl(long a)
+{
+	return -a;
+}
+
+float Negf(float a)
+{
+	return -a;
+}
+
+double Negd(double a)
+{
+	return -a;
+}
+
+bool Not(bool a)
+{
+	return !a;
+}

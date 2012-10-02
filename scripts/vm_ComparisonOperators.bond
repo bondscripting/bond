@@ -1,0 +1,159 @@
+bool Cmpeqi(int a, int b)
+{
+	return a == b;
+}
+
+bool Cmpeql(long a, long b)
+{
+	return a == b;
+}
+
+bool Cmpeqf(float a, float b)
+{
+	return a == b;
+}
+
+bool Cmpeqd(double a, double b)
+{
+	return a == b;
+}
+
+bool Cmpneqi(int a, int b)
+{
+	return a != b;
+}
+
+bool Cmpneql(long a, long b)
+{
+	return a != b;
+}
+
+bool Cmpneqf(float a, float b)
+{
+	return a != b;
+}
+
+bool Cmpneqd(double a, double b)
+{
+	return a != b;
+}
+
+bool Cmplti(int a, int b)
+{
+	return a < b;
+}
+
+bool Cmpltui(uint a, uint b)
+{
+	return a < b;
+}
+
+bool Cmpltl(long a, long b)
+{
+	return a < b;
+}
+
+bool Cmpltul(ulong a, ulong b)
+{
+	return a < b;
+}
+
+bool Cmpltf(float a, float b)
+{
+	return a < b;
+}
+
+bool Cmpltd(double a, double b)
+{
+	return a < b;
+}
+
+bool Cmplei(int a, int b)
+{
+	return a <= b;
+}
+
+bool Cmpleui(uint a, uint b)
+{
+	return a <= b;
+}
+
+bool Cmplel(long a, long b)
+{
+	return a <= b;
+}
+
+bool Cmpleul(ulong a, ulong b)
+{
+	return a <= b;
+}
+
+bool Cmplef(float a, float b)
+{
+	return a <= b;
+}
+
+bool Cmpled(double a, double b)
+{
+	return a <= b;
+}
+
+bool Cmpgti(int a, int b)
+{
+	return a > b;
+}
+
+bool Cmpgtui(uint a, uint b)
+{
+	return a > b;
+}
+
+bool Cmpgtl(long a, long b)
+{
+	return a > b;
+}
+
+bool Cmpgtul(ulong a, ulong b)
+{
+	return a > b;
+}
+
+bool Cmpgtf(float a, float b)
+{
+	return a > b;
+}
+
+bool Cmpgtd(double a, double b)
+{
+	return a > b;
+}
+
+bool Cmpgei(int a, int b)
+{
+	return a >= b;
+}
+
+bool Cmpgeui(uint a, uint b)
+{
+	return a >= b;
+}
+
+bool Cmpgel(long a, long b)
+{
+	return a >= b;
+}
+
+bool Cmpgeul(ulong a, ulong b)
+{
+	return a >= b;
+}
+
+bool Cmpgef(float a, float b)
+{
+	return a >= b;
+}
+
+bool Cmpged(double a, double b)
+{
+	return a >= b;
+}

@@ -1502,288 +1502,320 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPEQI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a == *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPEQL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a == *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPEQF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a == *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPEQD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a == *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPNEQI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a != *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPNEQL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a != *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPNEQF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a != *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPNEQD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a != *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTUI:
 			{
-				bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTUL:
 			{
-				bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLTD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a < *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLEI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLEUI:
 			{
-				bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLEL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLEUL:
 			{
-				bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLEF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPLED:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a <= *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTUI:
 			{
-				bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTUL:
 			{
-				bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGTD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a > *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGEI:
 			{
-				bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bi32_t *a = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGEUI:
 			{
-				bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bu32_t *a = reinterpret_cast<bu32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGEL:
 			{
-				bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bi64_t *a = reinterpret_cast<bi64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGEUL:
 			{
-				bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bu64_t *a = reinterpret_cast<bu64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGEF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CMPGED:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = *a >= *b;
+				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
 			}
 			break;

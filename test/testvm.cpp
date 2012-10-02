@@ -274,13 +274,314 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(-43.0) - bf64_t(12.0), bf64_t(-43.0), bf64_t(12.0));
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(1e40) - bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
 
+	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(0), bi32_t(-58), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(17), bi32_t(-58), bi32_t(17));
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", bu32_t(58) * bi32_t(17), bu32_t(58), bu32_t(17));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Mull", (bi64_t(-58) << 40) * bi64_t(17), (bi64_t(-58) << 40), bi64_t(17));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Mulul", (bu64_t(58) << 40) * bu64_t(17), (bu64_t(58) << 40), bu64_t(17));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(0.0f) * bf32_t(84.3f), bf32_t(-0.0f), bf32_t(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(-98.1f) * bf32_t(84.3f), bf32_t(-98.1f), bf32_t(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(1e20f) * bf32_t(3.3e10f), bf32_t(1e20f), bf32_t(3.3e10f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(0.0) * bf64_t(84.3), bf64_t(-0.0), bf64_t(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(-98.1) * bf64_t(84.3), bf64_t(-98.1), bf64_t(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(1e40) * bf64_t(3.3e20), bf64_t(1e40), bf64_t(3.3e20));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Divi", bi32_t(0) / bi32_t(3), bi32_t(0), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Divi", bi32_t(-10) / bi32_t(3), bi32_t(-10), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Divui", Bond::BOND_UINT_MAX / bu32_t(5678), BOND_UINT_MAX, bu32_t(5678));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Divl", Bond::BOND_LONG_MIN / bi64_t(5678), BOND_LONG_MIN, bi64_t(5678));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Divul", Bond::BOND_ULONG_MAX / bu64_t(5678), BOND_ULONG_MAX, bu64_t(5678));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(0.0f) / bf32_t(84.3f), bf32_t(-0.0f), bf32_t(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(-98.1f) / bf32_t(84.3f), bf32_t(-98.1f), bf32_t(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(1e20f) / bf32_t(3.3e10f), bf32_t(1e20f), bf32_t(3.3e10f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(0.0) / bf64_t(84.3), bf64_t(-0.0), bf64_t(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(-98.1) / bf64_t(84.3), bf64_t(-98.1), bf64_t(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(1e40) / bf64_t(3.3e20), bf64_t(1e40), bf64_t(3.3e20));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(0) % bi32_t(3), bi32_t(0), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(10) % bi32_t(3), bi32_t(10), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(-10) % bi32_t(3), bi32_t(-10), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(2352) % bi32_t(24), bi32_t(2352), bi32_t(24));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remui", bu32_t(0) % bu32_t(3), bu32_t(0), bu32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remui", bu32_t(10) % bu32_t(3), bu32_t(10), bu32_t(3));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remui", bu32_t(2352) % bu32_t(24), bu32_t(2352), bu32_t(24));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Remui", Bond::BOND_UINT_MAX % bu32_t(5678), BOND_UINT_MAX, bu32_t(5678));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Reml", Bond::BOND_LONG_MIN % bi64_t(5678), BOND_LONG_MIN, bi64_t(5678));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Remul", Bond::BOND_ULONG_MAX % bu64_t(5678), BOND_ULONG_MAX, bu64_t(5678));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(0) << bi32_t(1), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Lshi", bu32_t(1) << bu32_t(1), bu32_t(1), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(1) << bi32_t(31), bi32_t(1), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(2) << bi32_t(31), bi32_t(2), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(3) << bi32_t(31), bi32_t(3), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(-3) << bi32_t(16), bi32_t(-3), bi32_t(16));
+
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(0) << bi64_t(1), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Lshl", bu64_t(1) << bu64_t(1), bu64_t(1), bu64_t(1));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(1) << bi64_t(63), bi64_t(1), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(2) << bi64_t(63), bi64_t(2), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(3) << bi64_t(63), bi64_t(3), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(-3) << bi64_t(16), bi64_t(-3), bi64_t(16));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", bi32_t(0) >> bi32_t(1), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Rshi", bu32_t(2) >> bu32_t(1), bu32_t(2), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", bi32_t(1) >> bi32_t(1), bi32_t(1), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", bi32_t(2) >> bi32_t(1), bi32_t(2), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", bi32_t(3) >> bi32_t(1), bi32_t(3), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", -(bi32_t(1) << 20) >> bi32_t(16), -(bi32_t(1) << 20), bi32_t(16));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Rshui", bu32_t(-(bi32_t(1) << 20)) >> bu32_t(16), bu32_t(-(bi32_t(1) << 20)), bu32_t(16));
+
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", bi64_t(0) >> bi64_t(1), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", bi64_t(1) >> bi64_t(1), bi64_t(1), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", bi64_t(2) >> bi64_t(1), bi64_t(2), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", bi64_t(3) >> bi64_t(1), bi64_t(3), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", -(bi64_t(1) << bi64_t(20)) >> bi64_t(16), -(bi64_t(1) << bi64_t(20)), bi64_t(16));
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Rshul", bu64_t(-(bi64_t(1) << bi64_t(20))) >> bu64_t(16), bu64_t(-(bi64_t(1) << bi64_t(20))), bu64_t(16));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Andi", bi32_t(0xffff) & bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Andl", (bi64_t(0xffff) << 31) & (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Ori", bi32_t(0xffff) | bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Orl", (bi64_t(0xffff) << 31) | (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Xori", bi32_t(0xffff) ^ bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Xorl", (bi64_t(0xffff) << 31) ^ (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
 
 	return true;
 }
+
+
+DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Negi", bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Negi", bi32_t(-1), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Negi", bi32_t(1), bi32_t(-1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Negi", bi32_t(-BOND_INT_MAX), bi32_t(BOND_INT_MAX));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Negi", bi32_t(BOND_INT_MAX), bi32_t(-BOND_INT_MAX));
+
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(-1), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(1), bi64_t(-1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(-BOND_LONG_MAX), bi64_t(BOND_LONG_MAX));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(BOND_LONG_MAX), bi64_t(-BOND_LONG_MAX));
+
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(-1.0f), bf32_t(1.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(1.0f), bf32_t(-1.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(-2.34e21f), bf32_t(2.34e21f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(2.34e21f), bf32_t(-2.34e21f));
+
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(-1.0), bf64_t(1.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(1.0), bf64_t(-1.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(-2.34e21), bf64_t(2.34e21));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(2.34e21), bf64_t(-2.34e21));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(0), bu8_t(23));
+
+	return true;
+}
+
+
+DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqi", bi32_t(1), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqi", bi32_t(1), bi32_t(-1), bi32_t(-1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqi", bi32_t(0), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqi", bi32_t(0), bi32_t(8382), bi32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(1), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(1), bi64_t(-1), bi64_t(-1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(1), bi64_t(8382) << 31, bi64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(0), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(0), bi64_t(8382) << 31, bi64_t(2398) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(-1.0f), bf32_t(-1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), bf32_t(0.0f), bf32_t(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(-1.0), bf64_t(-1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), bf64_t(0.0), bf64_t(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(0), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(0), bi32_t(-1), bi32_t(-1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(1), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(1), bi32_t(8382), bi32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(0), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(0), bi64_t(-1), bi64_t(-1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(0), bi64_t(8382) << 31, bi64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(1), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(1), bi64_t(8382) << 31, bi64_t(2398) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(-1.0f), bf32_t(-1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(-1.0), bf64_t(-1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(0), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(1), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(1), bi32_t(-2), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(0), bi32_t(8382), bi32_t(2398));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(1), bi32_t(2398), bi32_t(8382));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltui", bi32_t(0), bu32_t(0), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltui", bi32_t(1), bu32_t(0), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltui", bi32_t(0), bi32_t(-2), bu32_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltui", bi32_t(0), bu32_t(8382), bu32_t(2398));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltui", bi32_t(1), bu32_t(2398), bu32_t(8382));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltl", bi32_t(0), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltl", bi32_t(1), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltl", bi32_t(1), bi64_t(-2), bi64_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltl", bi32_t(0), bi64_t(8382) << 31, bi64_t(2398) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltl", bi32_t(1), bi64_t(2938) << 31, bi64_t(8382) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(0), bu64_t(0), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(1), bu64_t(0), bu64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(0), bi64_t(-2), bu64_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(0), bu64_t(8382) << 31, bu64_t(2398) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(1), bu64_t(2938) << 31, bu64_t(8382) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(-2.0f), bf32_t(2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), bf32_t(5.68e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(-2.0), bf64_t(2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), bf64_t(5.68e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(0), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(-2), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(0), bi32_t(8382), bi32_t(2398));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(2398), bi32_t(8382));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleui", bi32_t(1), bu32_t(0), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleui", bi32_t(1), bu32_t(0), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleui", bi32_t(0), bi32_t(-2), bu32_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleui", bi32_t(0), bu32_t(8382), bu32_t(2398));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleui", bi32_t(1), bu32_t(2398), bu32_t(8382));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplel", bi32_t(1), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplel", bi32_t(1), bi64_t(0), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplel", bi32_t(1), bi64_t(-2), bi64_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplel", bi32_t(0), bi64_t(8382) << 31, bi64_t(2398) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplel", bi32_t(1), bi64_t(2938) << 31, bi64_t(8382) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(1), bu64_t(0), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(1), bu64_t(0), bu64_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(0), bi64_t(-2), bu64_t(2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(0), bu64_t(8382) << 31, bu64_t(2398) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(1), bu64_t(2938) << 31, bu64_t(8382) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(-2.0f), bf32_t(2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(0), bf32_t(5.68e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(-2.0), bf64_t(2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(0), bf64_t(5.68e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(0), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(1), bi32_t(1), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(1), bi32_t(2), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(0), bi32_t(2398), bi32_t(8382));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(1), bi32_t(8382), bi32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtui", bi32_t(0), bu32_t(0), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtui", bi32_t(1), bu32_t(1), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtui", bi32_t(0), bu32_t(2), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtui", bi32_t(0), bu32_t(2398), bu32_t(8382));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtui", bi32_t(1), bu32_t(8382), bu32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtl", bi32_t(0), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtl", bi32_t(1), bi64_t(1), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtl", bi32_t(1), bi64_t(2), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtl", bi32_t(0), bi64_t(2398) << 31, bi64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtl", bi32_t(1), bi64_t(8382) << 31, bi64_t(2938) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(0), bu64_t(0), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(1), bu64_t(1), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(0), bu64_t(2), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(0), bu64_t(2398) << 31, bu64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(1), bu64_t(8382) << 31, bu64_t(2938) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(1.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(2.0f), bf32_t(-2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(5.68e27f), bf32_t(5.67e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(1.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(2.0), bf64_t(-2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(5.68e27), bf64_t(5.67e27));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(0), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(1), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(2), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(0), bi32_t(2398), bi32_t(8382));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(8382), bi32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeui", bi32_t(1), bu32_t(0), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeui", bi32_t(1), bu32_t(1), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeui", bi32_t(0), bu32_t(2), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeui", bi32_t(0), bu32_t(2398), bu32_t(8382));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeui", bi32_t(1), bu32_t(8382), bu32_t(2398));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgel", bi32_t(1), bi64_t(0), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgel", bi32_t(1), bi64_t(1), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgel", bi32_t(1), bi64_t(2), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgel", bi32_t(0), bi64_t(2398) << 31, bi64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgel", bi32_t(1), bi64_t(8382) << 31, bi64_t(2938) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(1), bu64_t(0), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(1), bu64_t(1), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(0), bu64_t(2), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(0), bu64_t(2398) << 31, bu64_t(8382) << 31);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(1), bu64_t(8382) << 31, bu64_t(2938) << 31);
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(1.0f), bf32_t(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(2.0f), bf32_t(-2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(5.68e27f), bf32_t(5.67e27f));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(1.0), bf64_t(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(2.0), bf64_t(-2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(5.68e27), bf64_t(5.67e27));
+
+	return true;
+}
+
 
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
@@ -288,5 +589,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
   TEST_ITEM(MemoryOperations)                   \
   TEST_ITEM(TypeConversions)                    \
   TEST_ITEM(BinaryOperators)                    \
+  TEST_ITEM(UnaryOperators)                     \
+  TEST_ITEM(ComparisonOperators)                \
 
 RUN_TESTS(VM, TEST_ITEMS)
