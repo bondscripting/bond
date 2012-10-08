@@ -1,0 +1,157 @@
+bool And(bool a, bool b)
+{
+	return a && b;
+}
+
+bool Or(bool a, bool b)
+{
+	return a || b;
+}
+
+int AndShortCircuit(bool a)
+{
+	int b = 4;
+	a = a && ((b = 5) == 5);
+	return b;
+}
+
+int OrShortCircuit(bool a)
+{
+	int b = 4;
+	a = a || ((b = 5) == 5);
+	return b;
+}
+
+int Ternary(bool a)
+{
+	return a ? 4 : 5;
+}
+
+int If(bool a)
+{
+	int b = 5;
+	if (a)
+	{
+		b = 4;
+	}
+	return b;
+}
+
+int IfElse(bool a)
+{
+	int b = 3;
+	if (a)
+	{
+		b = 4;
+	}
+	else
+	{
+		b = 5;
+	}
+	return b;
+}
+
+int ElseIf(bool a, bool b)
+{
+	int c = 3;
+	if (a)
+	{
+		c = 4;
+	}
+	else if (b)
+	{
+		c = 5;
+	}
+	else
+	{
+		c = 6;
+	}
+	return c;
+}
+
+int NestedIf(bool a, bool b)
+{
+	int c = 3;
+	if (a)
+	{
+		if (b)
+		{
+			c = 4;
+		}
+		else
+		{
+			c = 5;
+		}
+	}
+	else
+	{
+		if (b)
+		{
+			c = 6;
+		}
+		else
+		{
+			c = 7;
+		}
+	}
+	return c;
+}
+
+int LookupSwitchDefault(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 1:
+			b = 5;
+			break;
+		case 100:
+			b = 7;
+			break;
+		default:
+			b = 8;
+			break;
+		case 3:
+			b = 6;
+			break;
+	}
+	return b;
+}
+
+int LookupSwitchNoDefault(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 1:
+			b = 5;
+			break;
+		case 100:
+			b = 7;
+			break;
+		case 3:
+			b = 6;
+			break;
+	}
+	return b;
+}
+
+int While(int a)
+{
+	int b = 0;
+	while (b < a)
+	{
+		b = b + 1;
+	}
+	return b;
+}
+
+int For(int a)
+{
+	int b = 0;
+	for (int i = 0; i < a; ++i)
+	{
+		b = b + 1;
+	}
+	return b;
+}

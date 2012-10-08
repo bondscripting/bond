@@ -377,9 +377,46 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(-2.34e21), bf64_t(2.34e21));
 	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(2.34e21), bf64_t(-2.34e21));
 
-	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(1), bu8_t(0));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(0), bu8_t(1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Not", bu32_t(0), bu8_t(23));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Not", bu32_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Not", bu32_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Not", bu32_t(0), bu8_t(23));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc1", bi32_t(6), bi32_t(5));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc2", bi32_t(8), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc3", bi32_t(10), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc4", bi32_t(12), bi32_t(11));
+
+	bi32_t value = 13;
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc5", bi32_t(14), &value);
+	ASSERT_FORMAT(value == bi32_t(14),
+		("Expected 14, but was %" BOND_PRId32 ".", value));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc1", bi32_t(6), bi32_t(5));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc2", bi32_t(8), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc3", bi32_t(10), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc4", bi32_t(12), bi32_t(11));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc5", bi32_t(14), &value);
+	ASSERT_FORMAT(value == bi32_t(15),
+		("Expected 15, but was %" BOND_PRId32 ".", value));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec1", bi32_t(4), bi32_t(5));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec2", bi32_t(6), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec3", bi32_t(8), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec4", bi32_t(10), bi32_t(11));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec5", bi32_t(14), &value);
+	ASSERT_FORMAT(value == bi32_t(14),
+		("Expected 14, but was %" BOND_PRId32 ".", value));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec1", bi32_t(4), bi32_t(5));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec2", bi32_t(6), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec3", bi32_t(8), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec4", bi32_t(10), bi32_t(11));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec5", bi32_t(14), &value);
+	ASSERT_FORMAT(value == bi32_t(13),
+		("Expected 13, but was %" BOND_PRId32 ".", value));
 
 	return true;
 }
@@ -583,6 +620,70 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 }
 
 
+DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_2(UINT, "::And", bu32_t(0), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::And", bu32_t(0), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::And", bu32_t(0), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::And", bu32_t(1), bu8_t(1), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Or", bu32_t(0), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Or", bu32_t(1), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Or", bu32_t(1), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Or", bu32_t(1), bu8_t(1), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::AndShortCircuit", bi32_t(4), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::AndShortCircuit", bi32_t(5), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::OrShortCircuit", bi32_t(5), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::OrShortCircuit", bi32_t(4), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ternary", bi32_t(5), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ternary", bi32_t(4), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::If", bi32_t(5), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::If", bi32_t(4), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(5), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(4), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(5), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(2));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(6), bu8_t(3));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(4));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(99));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(7), bu8_t(100));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(101));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(5), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(2));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(6), bu8_t(3));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(4));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(99));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(7), bu8_t(100));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(101));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(6), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(5), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(4), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(4), bu8_t(1), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(7), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(6), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(5), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(4), bu8_t(1), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::While", bi32_t(5), bi32_t(5));
+	VALIDATE_FUNCTION_CALL_1(INT, "::For", bi32_t(5), bi32_t(5));
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -591,5 +692,6 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
   TEST_ITEM(BinaryOperators)                    \
   TEST_ITEM(UnaryOperators)                     \
   TEST_ITEM(ComparisonOperators)                \
+  TEST_ITEM(Branches)                           \
 
 RUN_TESTS(VM, TEST_ITEMS)

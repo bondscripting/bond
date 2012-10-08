@@ -227,7 +227,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 	}
 
 	const size_t codeSize = ReadValue32().mUInt;
-	mResult.mCodeByteCount += codeSize;
+	mResult.mCodeByteCount += AlignUp(codeSize, sizeof(Value32));
 	if (!AssertBytesRemaining(codeSize))
 	{
 		return;
@@ -325,7 +325,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
-				mIndex = AlignUp(mIndex, sizeof(Value32));
+				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				if (!AssertBytesRemaining(2 * sizeof(Value32)))
 				{
 					break;
@@ -362,7 +362,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 			break;
 			case OC_PARAM_TABLESWITCH:
 			{
-				mIndex = AlignUp(mIndex, sizeof(Value32));
+				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				if (!AssertBytesRemaining(3 * sizeof(Value32)))
 				{
 					break;

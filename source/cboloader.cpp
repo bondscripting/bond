@@ -137,7 +137,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
-	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount);
+	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount, sizeof(Value32));
 
 	// TODO: Consider alignment.
 	bu8_t *mem = mPermAllocator.Alloc<bu8_t>(memSize);
@@ -198,9 +198,13 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 		switch (param)
 		{
 			case OC_PARAM_NONE:
+				break;
 			case OC_PARAM_CHAR:
 			case OC_PARAM_UCHAR:
+				++code;
+				break;
 			case OC_PARAM_UCHAR_CHAR:
+				code += 2;
 				break;
 			case OC_PARAM_SHORT:
 			case OC_PARAM_USHORT:
@@ -379,7 +383,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mCodeSize = codeSize;
 	memcpy(code, mByteCode + mIndex, codeSize);
 	++mResources.mFunctions;
-	mResources.mCode += codeSize;
+	mResources.mCode += AlignUp(codeSize, sizeof(Value32));
 	mIndex += codeSize;
 }
 

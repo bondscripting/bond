@@ -262,7 +262,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
-				mIndex = AlignUp(mIndex, sizeof(Value32));
+				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				const bi32_t defaultOffset = ReadValue32().mInt;
 				const bu32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
@@ -279,7 +279,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			break;
 			case OC_PARAM_TABLESWITCH:
 			{
-				mIndex = AlignUp(mIndex, sizeof(Value32));
+				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				const bi32_t defaultOffset = ReadValue32().mInt;
 				const bi32_t minMatch = ReadValue32().mInt;
 				const bi32_t maxMatch = ReadValue32().mInt;

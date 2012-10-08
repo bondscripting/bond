@@ -22,3 +22,163 @@ bool Not(bool a)
 {
 	return !a;
 }
+
+int Preinc1(int a)
+{
+	// Should push 1, add then pop.
+	++a;
+	return a;
+}
+
+int Preinc2(int a)
+{
+	// Should be optimized to an inci instruction.
+	int b;
+	int c = a;
+	++c;
+	return c;
+}
+
+short Preinc3(short a)
+{
+	// Should push 1, add then pop.
+	short b;
+	short c = a;
+	++c;
+	return c;
+}
+
+int Preinc4(int a)
+{
+	// Should push 1, add then pop.
+	int[2000] b;
+	int c = a;
+	++c;
+	return c;
+}
+
+int Preinc5(int *a)
+{
+	// Does gymnastics to store the new value and leave a temporary on the stack.
+	return ++(*a);
+}
+
+int Postinc1(int a)
+{
+	// Should push 1, add then pop.
+	a++;
+	return a;
+}
+
+int Postinc2(int a)
+{
+	// Should be optimized to an inci instruction.
+	int b;
+	int c = a;
+	c++;
+	return c;
+}
+
+short Postinc3(short a)
+{
+	// Should push 1, add then pop.
+	short b;
+	short c = a;
+	c++;
+	return c;
+}
+
+int Postinc4(int a)
+{
+	// Should push 1, add then pop.
+	int[2000] b;
+	int c = a;
+	c++;
+	return c;
+}
+
+int Postinc5(int *a)
+{
+	// Does gymnastics to store the new value and leave a temporary on the stack.
+	return (*a)++;
+}
+
+int Predec1(int a)
+{
+	// Should push 1, add then pop.
+	--a;
+	return a;
+}
+
+int Predec2(int a)
+{
+	// Should be optimized to an deci instruction.
+	int b;
+	int c = a;
+	--c;
+	return c;
+}
+
+short Predec3(short a)
+{
+	// Should push 1, add then pop.
+	short b;
+	short c = a;
+	--c;
+	return c;
+}
+
+int Predec4(int a)
+{
+	// Should push 1, add then pop.
+	int[2000] b;
+	int c = a;
+	--c;
+	return c;
+}
+
+int Predec5(int *a)
+{
+	// Does gymnastics to store the new value and leave a temporary on the stack.
+	return --(*a);
+}
+
+int Postdec1(int a)
+{
+	// Should push 1, add then pop.
+	a--;
+	return a;
+}
+
+int Postdec2(int a)
+{
+	// Should be optimized to an deci instruction.
+	int b;
+	int c = a;
+	c--;
+	return c;
+}
+
+short Postdec3(short a)
+{
+	// Should push 1, add then pop.
+	short b;
+	short c = a;
+	c--;
+	return c;
+}
+
+int Postdec4(int a)
+{
+	// Should push 1, add then pop.
+	int[2000] b;
+	int c = a;
+	c--;
+	return c;
+}
+
+int Postdec5(int *a)
+{
+	// Does gymnastics to store the new value and leave a temporary on the stack.
+	return (*a)--;
+}

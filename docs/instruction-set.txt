@@ -1,4 +1,4 @@
-nop                 ... -> ...
+!nop                 ... -> ...
 
 constc, char        ... -> int
 constuc, uchar      ... -> uint
@@ -39,14 +39,14 @@ constd_2            ... -> double
 
 loadfp, short       ... -> address
 loadfpw, ushort     ... -> address
-loadea, hash        ... -> address
+!loadea, hash        ... -> address
 loadc               ..., address -> ..., int
 loaduc              ..., address -> ..., uint
 loads               ..., address -> ..., int
 loadus              ..., address -> ..., uint
 load32              ..., address -> ..., value32
 load64              ..., address -> ..., value64
-loadmemw, ushort    ..., address -> ..., ???
+!loadmemw, ushort    ..., address -> ..., ???
 
 storec              ..., address, int -> ...
 stores              ..., address, int -> ...
@@ -107,11 +107,11 @@ pop64_l1            ..., value64 -> ...
 pop64_l2            ..., value64 -> ...
 pop64_l3            ..., value64 -> ...
 
-movesp, short
-movespw, int
+!movesp, short
+!movespw, int
 
-dup                 ..., value64 -> ..., value64, value64
-dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
+!dup                 ..., value64 -> ..., value64, value64
+!dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
 
 itoc                ..., int -> ..., int
 uitouc              ..., uint -> ..., uint
@@ -141,10 +141,10 @@ dtol                ..., double -> ..., long
 dtoul               ..., double -> ..., ulong
 dtof                ..., double -> ..., float
 
-ptroff, short       ..., address, int -> ..., address
+!ptroff, short       ..., address, int -> ..., address
 
-inci, uchar, char   ... -> ...
-incl, uchar, char   ... -> ...
+!inci, uchar, char   ... -> ...
+!incl, uchar, char   ... -> ...
 
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long
@@ -176,11 +176,11 @@ reml                ..., long, long -> ..., long
 remul               ..., ulong, ulong -> ..., ulong
 
 lshi                ..., int, int -> ..., int
-lshl                ..., long, int -> ..., long
+lshl                ..., long, long -> ..., long
 rshi                ..., int, int -> ..., int
 rshui               ..., uint, uint -> ..., uint
-rshl                ..., long, int -> ..., long
-rshul               ..., ulong, uint -> ..., ulong
+rshl                ..., long, long -> ..., long
+rshul               ..., ulong, ulong -> ..., ulong
 
 andi                ..., int, int -> ..., int
 andl                ..., long, long -> ..., long
@@ -230,22 +230,23 @@ cmpgef              ..., float, float -> ..., int
 cmpged              ..., double, double -> ..., int
 
 brz, short          ..., int -> ..., int
-brzw, ushort        ..., int -> ..., int
+!brzw, ushort        ..., int -> ..., int
 brnz, short         ..., int -> ..., int
-brnzw, ushort       ..., int -> ..., int
+!brnzw, ushort       ..., int -> ..., int
+
 ifz, short          ..., int -> ...
-ifzw, ushort        ..., int -> ...
+!ifzw, ushort        ..., int -> ...
 ifnz, short         ..., int -> ...
-ifnzw, ushort       ..., int -> ...
+!ifnzw, ushort       ..., int -> ...
 
 goto, short         ... -> ...
-gotow, ushort       ... -> ...
+!gotow, ushort       ... -> ...
 
-lookupswitch
-tableswitch
+!lookupswitch
+!tableswitch
 
-invoke, hash        ... -> ...
-invokenative, hash  ... -> ...
+!invoke, hash        ... -> ...
+!invokenative, hash  ... -> ...
 
 return
 return32
