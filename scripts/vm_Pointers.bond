@@ -1,0 +1,131 @@
+int SetValueAt_3(int[8] array, int value)
+{
+	array[3] = value;
+	return 0;
+}
+
+int SetValueAt(int[8] array, int index, int value)
+{
+	array[index] = value;
+	return 0;
+}
+
+int GetValueAt_4(int[8] array)
+{
+	return array[4];
+}
+
+int GetValueAt(int[8] array, int index)
+{
+	return array[index];
+}
+
+int SetValue2DAt_4_9(int[7][13] array, int value)
+{
+	array[4][9] = value;
+	return 0;
+}
+
+int SetValue2DAt(int[7][13] array, int index1, int index2, int value)
+{
+	array[index1][index2] = value;
+	return 0;
+}
+
+int GetValue2DAt_1_12(int[7][13] array)
+{
+	return array[1][12];
+}
+
+int GetValue2DAt(int[7][13] array, int index1, int index2)
+{
+	return array[index1][index2];
+}
+
+const int *PointerOffset(const int *a, int b)
+{
+	return a + b;
+}
+
+int LocalPointerDifference()
+{
+	int [8] a;
+	return &a[4] - &a[0];
+}
+
+int PointerDifference(const int *a, const int *b)
+{
+	return a - b;
+}
+
+struct native <32, 32> SmallStruct {};
+const SmallStruct *SmallStructPointerOffset(const SmallStruct *a, int b)
+{
+	return a + b;
+}
+
+int SmallStructPointerDifference(const SmallStruct *a, const SmallStruct *b)
+{
+	return a - b;
+}
+
+struct native <100000> LargeStruct {};
+const LargeStruct *LargeStructPointerOffset(const LargeStruct *a, int b)
+{
+	return a + b;
+}
+
+int LargeStructPointerDifference(const LargeStruct *a, const LargeStruct *b)
+{
+	return a - b;
+}
+
+int LocalAlignment()
+{
+	SmallStruct a;
+	int b;
+	SmallStruct c;
+	return cast<char *>(&c) - cast<char *>(&a);
+}
+
+bool LocalOverlap()
+{
+	int *a1Ptr = null;
+	int *a2Ptr = null;
+	int *b1Ptr = null;
+	int *b2Ptr = null;
+	int *c1Ptr = null;
+	int *c2Ptr = null;
+
+	{
+		int a1;
+		a1Ptr = &a1;
+
+		{
+			int b1;
+			b1Ptr = &b1;
+		}
+
+		{
+			int c1;
+			c1Ptr = &c1;
+		}
+	}
+
+	{
+		int a2;
+		a2Ptr = &a2;
+
+		{
+			int b2;
+			b2Ptr = &b2;
+		}
+
+		{
+			int c2;
+			c2Ptr = &c2;
+		}
+	}
+
+	return (a1Ptr == a2Ptr) && (b1Ptr == b2Ptr) && (c1Ptr == c2Ptr) && (b1Ptr == c2Ptr);
+}

@@ -136,6 +136,51 @@ int LookupSwitchNoDefault(int a)
 	return b;
 }
 
+int TableSwitchDefault(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 8:
+			b = 6;
+			break;
+		case 11:
+			b = 8;
+			break;
+		case 7:
+			b = 5;
+			break;
+		default:
+			b = 9;
+			break;
+		case 10:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
+int TableSwitchNoDefault(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 8:
+			b = 6;
+			break;
+		case 11:
+			b = 8;
+			break;
+		case 7:
+			b = 5;
+			break;
+		case 10:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
 int While(int a)
 {
 	int b = 0;
@@ -154,4 +199,39 @@ int For(int a)
 		b = b + 1;
 	}
 	return b;
+}
+
+int NestedLoopsWithJumps(int a, int b)
+{
+	int c = 0;
+
+	for (int i = 0; ;++i)
+	{
+		if (i == 3)
+		{
+			continue;
+		}
+
+		for (int j = 0; ;++j)
+		{
+			if (j == 6)
+			{
+				continue;
+			}
+
+			c += (i * j);
+
+			if (j == b)
+			{
+				break;
+			}
+		}
+
+		if (i == a)
+		{
+			break;
+		}
+	}
+
+	return c;
 }

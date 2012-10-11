@@ -276,8 +276,6 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				break;
 
 			case Token::OP_PLUS:
-			case Token::OP_MINUS:
-				// TODO: Subtraction of two pointers generates an integer.
 				if (lhDescriptor->IsPointerType())
 				{
 					isResolvable = AssertIntegerOperand(rhDescriptor, op);
@@ -293,6 +291,39 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 						AssertNumericOperand(rhDescriptor, op);
 				}
 				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				break;
+
+			case Token::OP_MINUS:
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					if (mPointerSize == POINTER_64BIT)
+					{
+						resultType = TypeDescriptor::GetLongType();
+					}
+					else
+					{
+						resultType = TypeDescriptor::GetIntType();
+					}
+					isResolvable = true;
+				}
+				else
+				{
+					if (lhDescriptor->IsPointerType())
+					{
+						isResolvable = AssertIntegerOperand(rhDescriptor, op);
+					}
+					else if (rhDescriptor->IsPointerType())
+					{
+						isResolvable = AssertIntegerOperand(lhDescriptor, op);
+					}
+					else
+					{
+						isResolvable =
+							AssertNumericOperand(lhDescriptor, op) &&
+							AssertNumericOperand(rhDescriptor, op);
+					}
+					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				}
 				break;
 
 			case Token::OP_STAR:

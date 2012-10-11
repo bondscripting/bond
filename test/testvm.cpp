@@ -1,4 +1,5 @@
 #include "framework/testvmframework.h"
+#include <string.h>
 
 DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {
@@ -649,24 +650,6 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(5), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(4), bu8_t(1));
 
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(0));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(5), bu8_t(1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(2));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(6), bu8_t(3));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(4));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(99));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(7), bu8_t(100));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bu8_t(101));
-
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(0));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(5), bu8_t(1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(2));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(6), bu8_t(3));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(4));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(99));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(7), bu8_t(100));
-	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bu8_t(101));
-
 	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(6), bu8_t(0), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(5), bu8_t(0), bu8_t(1));
 	VALIDATE_FUNCTION_CALL_2(INT, "::ElseIf", bi32_t(4), bu8_t(1), bu8_t(0));
@@ -677,8 +660,108 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(5), bu8_t(1), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::NestedIf", bi32_t(4), bu8_t(1), bu8_t(1));
 
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(5), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(6), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bi32_t(4));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bi32_t(99));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(7), bi32_t(100));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchDefault", bi32_t(8), bi32_t(101));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(5), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(6), bi32_t(3));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bi32_t(4));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bi32_t(99));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(7), bi32_t(100));
+	VALIDATE_FUNCTION_CALL_1(INT, "::LookupSwitchNoDefault", bi32_t(4), bi32_t(101));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(9), bi32_t(6));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(5), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(6), bi32_t(8));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(9), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(7), bi32_t(10));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(8), bi32_t(11));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchDefault", bi32_t(9), bi32_t(12));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(4), bi32_t(6));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(5), bi32_t(7));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(6), bi32_t(8));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(4), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(7), bi32_t(10));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(8), bi32_t(11));
+	VALIDATE_FUNCTION_CALL_1(INT, "::TableSwitchNoDefault", bi32_t(4), bi32_t(12));
+
 	VALIDATE_FUNCTION_CALL_1(INT, "::While", bi32_t(5), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::For", bi32_t(5), bi32_t(5));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedLoopsWithJumps", bi32_t(360), bu8_t(5), bu8_t(8));
+
+	return true;
+}
+
+
+DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
+{
+	using namespace Bond;
+
+	bi32_t oneD[8];
+	memset(oneD, 0, sizeof(oneD));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::SetValueAt_3", bi32_t(0), &oneD, bi32_t(7));
+	ASSERT_FORMAT(oneD[3] == 7, ("Expected 7, but was %" BOND_PRId32 ".", oneD[3]));
+	ASSERT_MESSAGE((oneD[1] == 0) && (oneD[2] == 0) && (oneD[4] == 0) && (oneD[5] == 0),
+		"Memory stomp by SetValueAt_3() detected.");
+
+	VALIDATE_FUNCTION_CALL_3(INT, "::SetValueAt", bi32_t(0), &oneD, bi32_t(5), bi32_t(864));
+	ASSERT_FORMAT(oneD[5] == 864, ("Expected 864, but was %" BOND_PRId32 ".", oneD[5]));
+	ASSERT_MESSAGE((oneD[3] == 7) && (oneD[4] == 0) && (oneD[6] == 0) && (oneD[7] == 0),
+		"Memory stomp by SetValueAt() detected.");
+
+	oneD[4] = 2468;
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetValueAt_4", oneD[4], &oneD);
+
+	oneD[6] = 753;
+	VALIDATE_FUNCTION_CALL_2(INT, "::GetValueAt", oneD[6], &oneD, bi32_t(6));
+
+	bi32_t twoD[7][13];
+	memset(twoD, 0, sizeof(twoD));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::SetValue2DAt_4_9", bi32_t(0), &twoD, bi32_t(901));
+	ASSERT_FORMAT(twoD[4][9] == 901, ("Expected 901, but was %" BOND_PRId32 ".", twoD[4][9]));
+	ASSERT_MESSAGE((twoD[3][8] == 0) && (twoD[3][9] == 0) && (twoD[3][10] == 0) &&
+		(twoD[4][8] == 0) && (twoD[4][10] == 0) &&
+		(twoD[5][8] == 0) && (twoD[5][9] == 0) && (twoD[5][10] == 0),
+		"Memory stomp by SetValue2DAt_4_9() detected.");
+
+	VALIDATE_FUNCTION_CALL_4(INT, "::SetValue2DAt", bi32_t(0), &twoD, bi32_t(2), bi32_t(4), bi32_t(98973));
+	ASSERT_FORMAT(twoD[2][4] == 98973, ("Expected 98973, but was %" BOND_PRId32 ".", twoD[2][4]));
+	ASSERT_MESSAGE((twoD[1][3] == 0) && (twoD[1][4] == 0) && (twoD[1][5] == 0) &&
+		(twoD[2][3] == 0) && (twoD[2][5] == 0) &&
+		(twoD[3][3] == 0) && (twoD[3][4] == 0) && (twoD[3][5] == 0),
+		"Memory stomp by SetValue2DAt() detected.");
+
+	twoD[1][12] = 1357;
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetValue2DAt_1_12", twoD[1][12], &twoD);
+
+	twoD[6][11] = 9182;
+	VALIDATE_FUNCTION_CALL_3(INT, "::GetValue2DAt", twoD[6][11], &twoD, bi32_t(6), bi32_t(11));
+
+	VALIDATE_FUNCTION_CALL_2(PTR, "::PointerOffset", &twoD[1][2] + 19, &twoD[1][2], bi32_t(19));
+	VALIDATE_FUNCTION_CALL_0(INT, "::LocalPointerDifference", bi32_t(4));
+	VALIDATE_FUNCTION_CALL_2(INT, "::PointerDifference", bi32_t(&twoD[6][9] - &twoD[1][3]), &twoD[6][9], &twoD[1][3]);
+
+	bu8_t c;
+	VALIDATE_FUNCTION_CALL_2(PTR, "::SmallStructPointerOffset", &c + (5 * 32), &c, bi32_t(5));
+	VALIDATE_FUNCTION_CALL_2(INT, "::SmallStructPointerDifference", 9, &c + (9 * 32), &c);
+
+	VALIDATE_FUNCTION_CALL_2(PTR, "::LargeStructPointerOffset", &c + (7 * 100000), &c, bi32_t(7));
+	VALIDATE_FUNCTION_CALL_2(INT, "::LargeStructPointerDifference", 3, &c + (3 * 100000), &c);
+
+	VALIDATE_FUNCTION_CALL_0(INT, "::LocalAlignment", bi32_t(64));
+	VALIDATE_FUNCTION_CALL_0(INT, "::LocalOverlap", bi32_t(1));
 
 	return true;
 }
@@ -693,5 +776,6 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
   TEST_ITEM(UnaryOperators)                     \
   TEST_ITEM(ComparisonOperators)                \
   TEST_ITEM(Branches)                           \
+  TEST_ITEM(Pointers)                           \
 
 RUN_TESTS(VM, TEST_ITEMS)

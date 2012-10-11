@@ -97,6 +97,7 @@
 #define DECLARE_RETURN_VALUE_ULONG() Bond::bu64_t returnValue = 0;
 #define DECLARE_RETURN_VALUE_FLOAT() Bond::bf32_t returnValue = 0.0f;
 #define DECLARE_RETURN_VALUE_DOUBLE() Bond::bf64_t returnValue = 0.0;
+#define DECLARE_RETURN_VALUE_PTR() const void *returnValue = NULL;
 
 
 #define VALIDATE_RETURN_VALUE_BOOL(expectedResult)                                            \
@@ -139,6 +140,11 @@
       (returnValue <= ((expectedResult) + delta)),                                              \
       ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", (expectedResult), returnValue)); \
   }                                                                                             \
+
+
+#define VALIDATE_RETURN_VALUE_PTR(expectedResult)                                             \
+  ASSERT_FORMAT(returnValue == (expectedResult),                                              \
+    ("Expected %p, but was %p.", (expectedResult), returnValue));                             \
 
 namespace TestFramework
 {

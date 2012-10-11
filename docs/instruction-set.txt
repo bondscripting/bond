@@ -110,8 +110,8 @@ pop64_l3            ..., value64 -> ...
 !movesp, short
 !movespw, int
 
-!dup                 ..., value64 -> ..., value64, value64
-!dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
+dup                 ..., value64 -> ..., value64, value64
+dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
 
 itoc                ..., int -> ..., int
 uitouc              ..., uint -> ..., uint
@@ -141,10 +141,11 @@ dtol                ..., double -> ..., long
 dtoul               ..., double -> ..., ulong
 dtof                ..., double -> ..., float
 
-!ptroff, short       ..., address, int -> ..., address
+ptroff, short       ..., address, int -> ..., address
+ptrdiff, short      ..., address, address -> ..., (int|long)
 
-!inci, uchar, char   ... -> ...
-!incl, uchar, char   ... -> ...
+inci, uchar, char   ... -> ...
+incl, uchar, char   ... -> ...
 
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long
@@ -242,8 +243,8 @@ ifnz, short         ..., int -> ...
 goto, short         ... -> ...
 !gotow, ushort       ... -> ...
 
-!lookupswitch
-!tableswitch
+lookupswitch
+tableswitch
 
 !invoke, hash        ... -> ...
 !invokenative, hash  ... -> ...

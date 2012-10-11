@@ -18,7 +18,6 @@ char PushcPopc(char a, char b, char c, char d, char e)
 	return f[72000];
 }
 
-
 uchar PushucPopc(uchar a, uchar b, uchar c, uchar d, uchar e)
 {
 	d = e;
@@ -39,7 +38,6 @@ uchar PushucPopc(uchar a, uchar b, uchar c, uchar d, uchar e)
 	return f[72000];
 }
 
-
 short PushsPops(short a, short b, short c, short d, short e)
 {
 	d = e;
@@ -59,7 +57,6 @@ short PushsPops(short a, short b, short c, short d, short e)
 	f[36000] = f[8];
 	return f[36000];
 }
-
 
 ushort PushusPops(ushort a, ushort b, ushort c, ushort d, ushort e)
 {
@@ -101,7 +98,6 @@ int Push32Pop32(int a, int b, int c, int d, int e)
 	f[18000] = f[8];
 	return f[18000];
 }
-
 
 long Push64Pop64(long a, long b, long c, long d, long e)
 {

@@ -46,6 +46,15 @@ public:
 		mOpCodeDouble(opCodeD)
 	{}
 
+	OpCode GetPointerOpCode(PointerSize size) const
+	{
+		if (size == POINTER_64BIT)
+		{
+			return mOpCodeULong;
+		}
+		return mOpCodeUInt;
+	}
+
 	OpCode GetOpCode(const TypeDescriptor &typeDescriptor) const
 	{
 		return GetOpCode(typeDescriptor.GetPrimitiveType());
@@ -107,6 +116,7 @@ static const OpCodeSet CMPLT_OPCODES(OPCODE_CMPLTI, OPCODE_CMPLTUI, OPCODE_CMPLT
 static const OpCodeSet CMPLE_OPCODES(OPCODE_CMPLEI, OPCODE_CMPLEUI, OPCODE_CMPLEL, OPCODE_CMPLEUL, OPCODE_CMPLEF, OPCODE_CMPLED);
 static const OpCodeSet CMPGT_OPCODES(OPCODE_CMPGTI, OPCODE_CMPGTUI, OPCODE_CMPGTL, OPCODE_CMPGTUL, OPCODE_CMPGTF, OPCODE_CMPGTD);
 static const OpCodeSet CMPGE_OPCODES(OPCODE_CMPGEI, OPCODE_CMPGEUI, OPCODE_CMPGEL, OPCODE_CMPGEUL, OPCODE_CMPGEF, OPCODE_CMPGED);
+static const OpCodeSet RETURN_OPCODES(OPCODE_RETURN32, OPCODE_RETURN64, OPCODE_RETURN32, OPCODE_RETURN64);
 
 
 class GeneratorCore: private ParseNodeTraverser
@@ -272,6 +282,8 @@ private:
 	GeneratorResult EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 	GeneratorResult EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 	GeneratorResult EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
+	GeneratorResult EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet);
+	GeneratorResult EmitPointerDifference(const Expression *lhs, const Expression *rhs);
 	void EmitPointerOffset(const Expression *offsetExpression, bi32_t elementSize);
 
 	GeneratorResult EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign);
@@ -666,10 +678,11 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 
 	ByteCode::Type &byteCode = GetByteCode();
 	const size_t loopStartLabel = CreateLabel();
+	const size_t countingLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, byteCode.size());
 
-	LabelStack::Element continueElement(mContinueLabel, loopStartLabel);
+	LabelStack::Element continueElement(mContinueLabel, countingLabel);
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = forStatement->GetCondition();
@@ -683,6 +696,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	}
 
 	Traverse(forStatement->GetBody());
+	SetLabelValue(countingLabel, byteCode.size());
 
 	ResultStack::Element countingResult(mResult);
 	TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
@@ -718,14 +732,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 
 			if (returnDescriptor->IsPointerType())
 			{
-				if (Is64BitPointer())
-				{
-					opCode = OPCODE_RETURN64;
-				}
-				else
-				{
-					opCode = OPCODE_RETURN32;
-				}
+				opCode = RETURN_OPCODES.GetPointerOpCode(mPointerSize);
 			}
 			else
 			{
@@ -910,10 +917,24 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				result = EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
 				break;
 			case Token::OP_EQUAL:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPEQ_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPEQ_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPEQ_OPCODES);
+				}
 				break;
 			case Token::OP_NOT_EQUAL:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPNEQ_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPNEQ_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPNEQ_OPCODES);
+				}
 				break;
 
 			case Token::OP_PLUS:
@@ -934,7 +955,11 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			break;
 
 			case Token::OP_MINUS:
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerDifference(lhs, rhs);
+				}
+				else if (lhDescriptor->IsPointerType())
 				{
 					result = EmitPointerArithmetic(lhs, rhs, -1);
 				}
@@ -2059,14 +2084,14 @@ void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
 	ByteCode::Type &byteCode = GetByteCode();
 	if (offset != 0)
 	{
-		EmitPushConstantInt(offset);
 		if (Is64BitPointer())
 		{
-			byteCode.push_back(OPCODE_ITOL);
+			EmitPushConstantLong(offset);
 			byteCode.push_back(OPCODE_ADDL);
 		}
 		else
 		{
+			EmitPushConstantInt(offset);
 			byteCode.push_back(OPCODE_ADDI);
 		}
 	}
@@ -2584,6 +2609,61 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 	}
 
 	return result;
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet)
+{
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult, lhDescriptor);
+
+	const TypeDescriptor *rhDescriptor = lhs->GetTypeDescriptor();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	EmitPushResult(rhResult, rhDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	byteCode.push_back(opCodeSet.GetPointerOpCode(mPointerSize));
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitPointerDifference(const Expression *lhs, const Expression *rhs)
+{
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	ResultStack::Element lhResult(mResult);
+	Traverse(lhs);
+	EmitPushResult(lhResult, lhDescriptor);
+
+	const TypeDescriptor *rhDescriptor = lhs->GetTypeDescriptor();
+	ResultStack::Element rhResult(mResult);
+	Traverse(rhs);
+	EmitPushResult(rhResult, rhDescriptor);
+
+	ByteCode::Type &byteCode = GetByteCode();
+	const bu32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
+	if (IsInShortRange(elementSize))
+	{
+		byteCode.push_back(OPCODE_PTRDIFF);
+		EmitValue16(Value16(elementSize));
+	}
+	else if (Is64BitPointer())
+	{
+		byteCode.push_back(OPCODE_SUBL);
+		EmitPushConstantLong(elementSize);
+		byteCode.push_back(OPCODE_DIVL);
+	}
+	else
+	{
+		byteCode.push_back(OPCODE_SUBI);
+		EmitPushConstantInt(elementSize);
+		byteCode.push_back(OPCODE_DIVI);
+	}
+
+	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 }
 
 

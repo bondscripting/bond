@@ -27,7 +27,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 		return;
 	}
 
-	TypeEvaluationPass typeEvaluationPass(mErrorBuffer, mSymbolTable);
+	TypeEvaluationPass typeEvaluationPass(mErrorBuffer, mSymbolTable, mPointerSize);
 	typeEvaluationPass.Analyze(translationUnitList);
 
 	if (mErrorBuffer.HasErrors())

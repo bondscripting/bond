@@ -383,7 +383,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mCodeSize = codeSize;
 	memcpy(code, mByteCode + mIndex, codeSize);
 	++mResources.mFunctions;
-	mResources.mCode += AlignUp(codeSize, sizeof(Value32));
+	mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
 	mIndex += codeSize;
 }
 

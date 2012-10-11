@@ -177,4 +177,3 @@ double Constd_2()
 {
 	return 2.0;
 }
-

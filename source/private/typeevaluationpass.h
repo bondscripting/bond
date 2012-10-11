@@ -13,8 +13,9 @@ namespace Bond
 class TypeEvaluationPass: public SemanticAnalysisPass
 {
 public:
-	TypeEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable):
-		SemanticAnalysisPass(errorBuffer, symbolTable)
+	TypeEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, PointerSize pointerSize):
+		SemanticAnalysisPass(errorBuffer, symbolTable),
+		mPointerSize(pointerSize)
 	{}
 
 	virtual ~TypeEvaluationPass() {}
@@ -100,6 +101,7 @@ private:
 	BoolStack mEnforceConstExpressions;
 	StructStack mStruct;
 	FunctionStack mFunction;
+	PointerSize mPointerSize;
 };
 
 }
