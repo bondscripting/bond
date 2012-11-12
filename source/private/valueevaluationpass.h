@@ -44,6 +44,7 @@ protected:
 	virtual void Visit(SizeofExpression *sizeofExpression);
 	virtual void Visit(ConstantExpression *constantExpression);
 	virtual void Visit(IdentifierExpression *identifierExpression);
+	virtual void Visit(ThisExpression *thisExpression);
 
 private:
 	void Resolve(TypeAndValue &tav);

@@ -4,6 +4,8 @@
 #include "bond/parsenodeutil.h"
 #include "bond/stringutil.h"
 
+// TODO: Test recursion.
+
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);

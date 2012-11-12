@@ -50,6 +50,8 @@
     "Native member function '%c' cannot be defined.")                                  \
   BOND_COMPILER_ERROR(NON_NATIVE_MEMBER_FUNCTION_DECLARATION,                          \
     "Member function '%c' must be defined.")                                           \
+  BOND_COMPILER_ERROR(FUNCTION_RETURNS_ARRAY,                                          \
+    "Function '%c' returns an array.")                                                 \
   BOND_COMPILER_ERROR(EMPTY_SWITCH_STATEMENT,                                          \
     "Empty switch statement.")                                                         \
   BOND_COMPILER_ERROR(EMPTY_SWITCH_LABEL_LIST,                                         \

@@ -100,7 +100,7 @@ private:
 	void AssertNode(ParseNode *node);
 	void AssertNonConstExpression(CompilerError::Type type, const Token *token);
 	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
-	void PushUnrecoverableError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
+	void PushUnrecoveredError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
 	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
 
 	CompilerErrorBuffer &mErrorBuffer;
@@ -444,6 +444,11 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				{
 					PushError(CompilerError::CONST_NON_MEMBER_FUNCTION, keywordConst, name);
 					isConst = false;
+				}
+
+				if (descriptor->IsArrayType())
+				{
+					PushError(CompilerError::FUNCTION_RETURNS_ARRAY, name);
 				}
 
 				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList, isConst);
@@ -1811,7 +1816,7 @@ const Token *ParserCore::ExpectToken(Token::TokenType expectedType)
 	const Token *token = mStream.NextIf(expectedType);
 	if (token == NULL)
 	{
-		PushUnrecoverableError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
+		PushUnrecoveredError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
 	}
 	return token;
 }
@@ -1822,7 +1827,7 @@ const Token *ParserCore::ExpectToken(const TokenTypeSet &expectedTypes)
 	const Token *token = mStream.NextIf(expectedTypes);
 	if (token == NULL)
 	{
-		PushUnrecoverableError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
+		PushUnrecoveredError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
 	}
 	return token;
 }
@@ -1832,7 +1837,7 @@ void ParserCore::AssertNode(ParseNode *node)
 {
 	if (node == NULL)
 	{
-		PushUnrecoverableError(CompilerError::PARSE_ERROR, mStream.Peek());
+		PushUnrecoveredError(CompilerError::PARSE_ERROR, mStream.Peek());
 	}
 }
 
@@ -1855,7 +1860,7 @@ void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
 }
 
 
-void ParserCore::PushUnrecoverableError(CompilerError::Type type, const Token *context, const void *arg)
+void ParserCore::PushUnrecoveredError(CompilerError::Type type, const Token *context, const void *arg)
 {
 	if (!mHasUnrecoveredError)
 	{

@@ -1,6 +1,28 @@
 #include "framework/testvmframework.h"
 #include <string.h>
 
+struct Char3
+{
+	Bond::bi8_t x;
+	Bond::bi8_t y;
+	Bond::bi8_t z;
+	Bond::bi8_t padding;
+};
+
+struct Char3Pair
+{
+	Char3 first;
+	Char3 second;
+};
+
+
+struct Vector3
+{
+	Bond::bi32_t x;
+	Bond::bi32_t y;
+	Bond::bi32_t z;
+};
+
 DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {
 	using namespace Bond;
@@ -767,6 +789,71 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 }
 
 
+DEFINE_VM_TEST(FunctionCalls, "scripts/vm_FunctionCalls.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_1(UINT, "::FibonacciRecursive", bu32_t(6765), bu32_t(20));
+	VALIDATE_FUNCTION_CALL_0(UINT, "::TestSetCharValue", bu32_t(1));
+	VALIDATE_FUNCTION_CALL_4(INT, "::StrangeMath", bi32_t((10 + 40) - (30 + 80)), bi32_t(10), bi32_t(40), bi32_t(30), bi32_t(80));
+
+	return true;
+}
+
+
+DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
+{
+	using namespace Bond;
+
+	Char3 c3;
+	memset(&c3, 0, sizeof(c3));
+	VALIDATE_FUNCTION_CALL_4(INT, "::SetChar3", bi32_t(0), &c3, bi8_t(45), bi8_t(-56), bi8_t(67));
+	ASSERT_FORMAT(c3.x == 45, ("Expected 45, but was %" BOND_PRId32 ".", c3.x));
+	ASSERT_FORMAT(c3.y == -56, ("Expected -56, but was %" BOND_PRId32 ".", c3.y));
+	ASSERT_FORMAT(c3.z == 67, ("Expected 67, but was %" BOND_PRId32 ".", c3.z));
+	ASSERT_FORMAT(c3.padding == 0, ("Expected 0, but was %" BOND_PRId32 ".", c3.padding));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetChar3X", bi32_t(45), c3);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetChar3Y", bi32_t(-56), c3);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetChar3Z", bi32_t(67), c3);
+
+	Char3Pair char3Pair;
+	VALIDATE_FUNCTION_CALL_3(INT, "::SetChar3PairX", bi32_t(0), &char3Pair, bi8_t(23), bi8_t(32));
+	ASSERT_FORMAT(char3Pair.first.x == 23, ("Expected 23, but was %" BOND_PRId32 ".", char3Pair.first.x));
+	ASSERT_FORMAT(char3Pair.second.x == 32, ("Expected 32, but was %" BOND_PRId32 ".", char3Pair.second.x));
+
+	VALIDATE_FUNCTION_CALL_0(UINT, "::InitializeChar3Pair", bu32_t(1));
+
+	Vector3 v3a;
+	Vector3 v3b;
+	memset(&v3a, 0, sizeof(v3a));
+	VALIDATE_FUNCTION_CALL_4(INT, "::SetVector3", bi32_t(0), &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
+	ASSERT_FORMAT(v3a.x == 11, ("Expected 11, but was %" BOND_PRId32 ".", v3a.x));
+	ASSERT_FORMAT(v3a.y == -12, ("Expected -12, but was %" BOND_PRId32 ".", v3a.y));
+	ASSERT_FORMAT(v3a.z == 13, ("Expected 13, but was %" BOND_PRId32 ".", v3a.z));
+
+	v3a.x = 88;
+	v3a.y = 888;
+	v3a.z = 8888;
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3X", v3a.x, v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::GetX", v3a.x, &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Y", v3a.y, v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::GetY", v3a.y, &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Z", v3a.z, v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::GetZ", v3a.z, &v3a);
+
+	v3a.x = 2;
+	v3a.y = 3;
+	v3a.z = 4;
+	v3b.x = 5;
+	v3b.y = -6;
+	v3b.z = 7;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -777,5 +864,7 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
   TEST_ITEM(ComparisonOperators)                \
   TEST_ITEM(Branches)                           \
   TEST_ITEM(Pointers)                           \
+  TEST_ITEM(FunctionCalls)                      \
+  TEST_ITEM(Structs)                            \
 
 RUN_TESTS(VM, TEST_ITEMS)

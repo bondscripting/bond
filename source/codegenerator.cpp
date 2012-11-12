@@ -99,6 +99,8 @@ private:
 static const OpCodeSet CONST1_OPCODES(OPCODE_CONSTI_1, OPCODE_CONSTL_1, OPCODE_CONSTF_1, OPCODE_CONSTD_1);
 static const OpCodeSet CONSTN1_OPCODES(OPCODE_CONSTI_N1, OPCODE_CONSTL_N1, OPCODE_CONSTF_N1, OPCODE_CONSTD_N1);
 static const OpCodeSet INC_OPCODES(OPCODE_INCI, OPCODE_INCL);
+static const OpCodeSet LOAD_OPCODES(OPCODE_LOAD32, OPCODE_LOAD64);
+static const OpCodeSet STORE_OPCODES(OPCODE_STORE32, OPCODE_STORE64);
 static const OpCodeSet ADD_OPCODES(OPCODE_ADDI, OPCODE_ADDL, OPCODE_ADDF, OPCODE_ADDD);
 static const OpCodeSet SUB_OPCODES(OPCODE_SUBI, OPCODE_SUBL, OPCODE_SUBF, OPCODE_SUBD);
 static const OpCodeSet MUL_OPCODES(OPCODE_MULI, OPCODE_MULUI, OPCODE_MULL, OPCODE_MULUL, OPCODE_MULF, OPCODE_MULD);
@@ -225,6 +227,7 @@ private:
 
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
+	virtual void Visit(const TypeDescriptor *typeDescriptor) {}
 	virtual void Visit(const NamedInitializer *namedInitializer);
 	virtual void Visit(const IfStatement *ifStatement);
 	virtual void Visit(const SwitchStatement *switchStatement);
@@ -436,7 +439,7 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 
 		FunctionStack::Element functionElement(mFunction, &function);
 		MapQualifiedSymbolName(functionDefinition);
-		ParseNodeTraverser::Visit(functionDefinition);
+		Traverse(functionDefinition->GetBody());
 
 		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
 		{
@@ -481,7 +484,6 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			// Nothing to do.
 			break;
 	}
-	//ParseNodeTraverser::Visit(namedInitializer);
 }
 
 
@@ -1104,8 +1106,9 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 		result = lhResult;
 
 		const Symbol *member = memberExpression->GetDefinition();
-		const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(member);
-		if (namedInitializer != NULL)
+		const NamedInitializer *namedInitializer = NULL;
+		const FunctionDefinition *functionDefinition = NULL;
+		if ((namedInitializer = CastNode<NamedInitializer>(member)) != NULL)
 		{
 			if (op->GetTokenType() == Token::OP_ARROW)
 			{
@@ -1135,12 +1138,24 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 			result.mContext = TransformContext(result.mContext, typeDescriptor);
 			result.mOffset += namedInitializer->GetOffset();
 		}
-		else
+		else if ((functionDefinition = CastNode<FunctionDefinition>(member)) != NULL)
 		{
-			const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(member);
-			if (functionDefinition != NULL)
+			if (op->GetTokenType() == Token::PERIOD)
 			{
-				// TODO
+				switch (lhResult.GetValue().mContext)
+				{
+					case GeneratorResult::CONTEXT_FP_INDIRECT:
+						result.mContext = GeneratorResult::CONTEXT_FP_OFFSET;
+						break;
+
+					case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+						result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+						break;
+
+					default:
+						PushError(CompilerError::INTERNAL_ERROR);
+						break;
+				}
 			}
 		}
 	}
@@ -1189,8 +1204,7 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 
 void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
-	// TODO: deal with member functions.
-	//ParseNodeTraverser::Visit(functionCallExpression);
+	// TODO: deal with non-primitive return types.
 	const Expression *lhs = functionCallExpression->GetLhs();
 	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
 	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
@@ -1201,6 +1215,18 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
 	EmitArgumentList(argList, paramList);
+
+	{
+		ResultStack::Element lhResult(mResult);
+		Traverse(lhs);
+
+		// Push the 'this' pointer, if needed. Any pointer type will do.
+		if (lhResult.GetValue().mContext != GeneratorResult::CONTEXT_NONE)
+		{
+			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			EmitPushResult(lhResult, &voidStar);
+		}
+	}
 
 	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
@@ -1548,14 +1574,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 	}
 	else if (typeDescriptor->IsPointerType())
 	{
-		if (Is64BitPointer())
-		{
-			byteCode.push_back(OPCODE_LOAD64);
-		}
-		else
-		{
-			byteCode.push_back(OPCODE_LOAD32);
-		}
+		byteCode.push_back(LOAD_OPCODES.GetPointerOpCode(mPointerSize));
 	}
 }
 
@@ -2055,14 +2074,7 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 	}
 	else if (typeDescriptor->IsPointerType())
 	{
-		if (Is64BitPointer())
-		{
-			byteCode.push_back(OPCODE_STORE64);
-		}
-		else
-		{
-			byteCode.push_back(OPCODE_STORE32);
-		}
+		byteCode.push_back(STORE_OPCODES.GetPointerOpCode(mPointerSize));
 	}
 }
 
@@ -2526,14 +2538,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 	    offsetTav.IsValueDefined() &&
 	    IsInCharRange(offset))
 	{
-		if (Is64BitPointer())
-		{
-			byteCode.push_back(OPCODE_INCL);
-		}
-		else
-		{
-			byteCode.push_back(OPCODE_INCI);
-		}
+		byteCode.push_back(INC_OPCODES.GetPointerOpCode(mPointerSize));
 		byteCode.push_back(static_cast<bu8_t>(slotIndex));
 		byteCode.push_back(static_cast<bu8_t>(offset));
 
@@ -3014,10 +3019,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfOperator(const UnaryE
 			result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
 			break;
 
-		case GeneratorResult::CONTEXT_NONE:
-		case GeneratorResult::CONTEXT_FP_OFFSET:
-		case GeneratorResult::CONTEXT_STACK_VALUE:
-		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
+		default:
 			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}

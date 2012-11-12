@@ -716,6 +716,16 @@ void ValueEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 }
 
 
+void ValueEvaluationPass::Visit(ThisExpression *thisExpression)
+{
+	TypeAndValue &tav = thisExpression->GetTypeAndValue();
+	if (!tav.IsResolved())
+	{
+		Resolve(tav);
+	}
+}
+
+
 void ValueEvaluationPass::Resolve(TypeAndValue &tav)
 {
 	tav.Resolve();

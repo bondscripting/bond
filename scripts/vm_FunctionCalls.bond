@@ -1,0 +1,39 @@
+uint FibonacciRecursive(uint n)
+{
+	if (n == 0)
+	{
+		return 0;
+	} 
+	if (n == 1)
+	{
+		return 1;
+	}
+	return FibonacciRecursive(n - 1) + FibonacciRecursive(n - 2);
+}
+
+void SetCharValue(char *a, char b)
+{
+	*a = b;
+}
+
+bool TestSetCharValue()
+{
+	char a = 4;
+	SetCharValue(&a, 17);
+	return a == 17;
+}
+
+int Add(int a, int b)
+{
+	return a + b;
+}
+
+int Sub(int a, int b)
+{
+	return a - b;
+}
+
+int StrangeMath(int a, int b, int c, int d)
+{
+	return Sub(Add(a, b), Add(c, d));
+}

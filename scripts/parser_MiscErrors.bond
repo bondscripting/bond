@@ -65,6 +65,7 @@ void TheFunction(int a)
 
 void BadFunction(void voidParam) {}
 void ConstNonMemberFunction() const {}
+int[4] ReturnsArray();
 
 struct BadStruct
 {

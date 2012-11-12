@@ -295,7 +295,8 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 		{Bond::CompilerError::EMPTY_SWITCH_LABEL_LIST, Bond::Token::IDENTIFIER, 62},
 		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 66},
 		{Bond::CompilerError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 67},
-		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 71},
+		{Bond::CompilerError::FUNCTION_RETURNS_ARRAY, Bond::Token::IDENTIFIER, 68},
+		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 72},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
