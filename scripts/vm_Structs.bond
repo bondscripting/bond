@@ -53,8 +53,8 @@ bool InitializeChar3Pair()
 
 struct Vector3
 {
-	int GetX() const { return mX; }
-	void SetX(int x) { mX = x; }
+	int GetX() const { return this->mX; }
+	void SetX(int x) { this->mX = x; }
 
 	int GetY() const { return mY; }
 	void SetY(int y) { mY = y; }
@@ -62,7 +62,7 @@ struct Vector3
 	int GetZ() const { return mZ; }
 	void SetZ(int z) { mZ = z; }
 
-	int Dot(const Vector3 *other) const { return mX * other->GetX() + mY * other->GetY() + mZ * other->GetZ(); }
+	int Dot(const Vector3 *other) const { return this->GetX() * other->GetX() + GetY() * other->GetY() + mZ * other->GetZ(); }
 
 	int mX;
 	int mY;

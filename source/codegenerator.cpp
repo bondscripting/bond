@@ -1317,9 +1317,10 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		{
 			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, parameter->GetOffset()));
 		}
-		else if ((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL)
+		else if (((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL) &&
+		         (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER))
 		{
-			// TODO
+			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, -BOND_SLOT_SIZE));
 		}
 	}
 }
