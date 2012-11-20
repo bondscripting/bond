@@ -73,8 +73,8 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
-	functionDefinition->SetFrameSize(static_cast<bu32_t>(-offset));
-	functionDefinition->SetPackedFrameSize(static_cast<bu32_t>(-packedOffset));
+	functionDefinition->SetArgSize(static_cast<bu32_t>(-offset));
+	functionDefinition->SetPackedArgSize(static_cast<bu32_t>(-packedOffset));
 	functionDefinition->SetLocalSize(AlignUp(localSizeElement.GetValue(), BOND_SLOT_SIZE));
 	functionDefinition->SetFramePointerAlignment(framePointerAlignmentElement.GetValue());
 	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement.GetValue());
@@ -100,6 +100,7 @@ void ValidationPass::Visit(NamedInitializer *namedInitializer)
 		mLocalSize.SetTop(Max(mLocalSize.GetTop(), nextOffset));
 		mFramePointerAlignment.SetTop(Max(mFramePointerAlignment.GetTop(), alignment));
 	}
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(namedInitializer);
 }
 
@@ -115,6 +116,7 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 {
 	AssertReachableCode(ifStatement);
 	mEndsWithJump.SetTop(false);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	Traverse(ifStatement->GetCondition());
 
 	bool hasReturn = ifStatement->GetElseStatement() != NULL;
@@ -144,6 +146,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	AssertReachableCode(switchStatement);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, true);
 	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	mEndsWithJump.SetTop(false);
 	Traverse(switchStatement->GetControl());
 
@@ -212,6 +215,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 void ValidationPass::Visit(SwitchSection *switchSection)
 {
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 
 	const size_t jumpTargetId = GetJumpTargetId();
 	switchSection->SetJumpTargetId(jumpTargetId);
@@ -253,6 +257,7 @@ void ValidationPass::Visit(WhileStatement *whileStatement)
 	BoolStack::Element isInLoopElement(mIsInLoop, true);
 	mEndsWithJump.SetTop(false);
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(whileStatement);
 }
 
@@ -271,6 +276,7 @@ void ValidationPass::Visit(ForStatement *forStatement)
 void ValidationPass::Visit(JumpStatement *jumpStatement)
 {
 	AssertReachableCode(jumpStatement);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(jumpStatement);
 
 	bool endsWithJump = true;
@@ -322,7 +328,36 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 		AssertReachableCode(expressionStatement);
 	}
 	mEndsWithJump.SetTop(false);
+	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(expressionStatement);
+}
+
+
+void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
+{
+	// A struct returned by a function is returned in a temporary local variable rather than
+	// on top of the operand stack as is the case with primitive types, so accommodations
+	// must be made for it.
+	const Expression *lhs = functionCallExpression->GetLhs();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
+	const FunctionPrototype *prototype = function->GetPrototype();
+	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
+
+	if (returnDescriptor->GetSignatureType() == SIG_STRUCT)
+	{
+		const bi32_t alignment = Max(static_cast<bi32_t>(returnDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
+		const bi32_t size = static_cast<bi32_t>(returnDescriptor->GetSize(mPointerSize));
+		const bi32_t offset = AlignUp(mVariableOffset.GetTop(), alignment);
+		const bi32_t nextOffset = offset + size;
+		functionCallExpression->SetReturnValueOffset(offset);
+		mVariableOffset.SetTop(nextOffset);
+		mLocalSize.SetTop(Max(mLocalSize.GetTop(), nextOffset));
+		mFramePointerAlignment.SetTop(Max(mFramePointerAlignment.GetTop(), alignment));
+	}
+	// No need to descend into the expression.
+	//ParseNodeTraverser::Visit(functionCallExpression);
 }
 
 

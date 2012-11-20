@@ -259,6 +259,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE)   \
 	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE)   \
 	BOND_OPCODE_ITEM(RETURN64,     return64,     NONE)   \
+	BOND_OPCODE_ITEM(RETURNMEMW,   returnmemw,   INT)    \
 
 
 enum OpCode
@@ -291,24 +292,6 @@ enum OpCodeParam
 
 const char *GetOpCodeMnemonic(OpCode opCode);
 OpCodeParam GetOpCodeParamType(OpCode opCode);
-
-enum SignatureType
-{
-	SIG_VOID,
-	SIG_BOOL,
-	SIG_CHAR,
-	SIG_UCHAR,
-	SIG_SHORT,
-	SIG_USHORT,
-	SIG_INT,
-	SIG_UINT,
-	SIG_LONG,
-	SIG_ULONG,
-	SIG_FLOAT,
-	SIG_DOUBLE,
-	SIG_POINTER,
-	SIG_STRUCT
-};
 
 }
 

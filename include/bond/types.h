@@ -23,6 +23,25 @@ enum PointerSize
 };
 
 
+enum SignatureType
+{
+	SIG_VOID,
+	SIG_BOOL,
+	SIG_CHAR,
+	SIG_UCHAR,
+	SIG_SHORT,
+	SIG_USHORT,
+	SIG_INT,
+	SIG_UINT,
+	SIG_LONG,
+	SIG_ULONG,
+	SIG_FLOAT,
+	SIG_DOUBLE,
+	SIG_POINTER,
+	SIG_STRUCT
+};
+
+
 const bu32_t BOND_VOID_SIZE = 0;
 const bu32_t BOND_BOOL_SIZE = 1;
 const bu32_t BOND_CHAR_SIZE = 1;

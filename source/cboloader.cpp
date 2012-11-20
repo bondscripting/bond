@@ -372,8 +372,8 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
 	function->mHash = ReadValue32().mUInt;
-	function->mFrameSize = ReadValue32().mUInt;
-	function->mPackedFrameSize = ReadValue32().mUInt;
+	function->mArgSize = ReadValue32().mUInt;
+	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 

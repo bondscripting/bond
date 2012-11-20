@@ -73,8 +73,8 @@ struct Function
 	const ConstantTable *mConstantTable;
 	const bu8_t *mCode;
 	bu32_t mCodeSize;
-	bu32_t mFrameSize;
-	bu32_t mPackedFrameSize;
+	bu32_t mArgSize;
+	bu32_t mPackedArgSize;
 	bu32_t mLocalSize;
 	bu32_t mFramePointerAlignment;
 	bu32_t mHash;

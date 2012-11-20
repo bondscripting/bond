@@ -170,8 +170,8 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	mWriter.Write(")\n");
 
 	const bu32_t hash = ReadValue32().mUInt;
-	const bu32_t frameSize = ReadValue32().mUInt;
-	const bu32_t packedFrameSize = ReadValue32().mUInt;
+	const bu32_t argSize = ReadValue32().mUInt;
+	const bu32_t packedArgSize = ReadValue32().mUInt;
 	const bu32_t localSize = ReadValue32().mUInt;
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
 	const bu32_t codeSize = ReadValue32().mUInt;
@@ -179,12 +179,12 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	const size_t codeEnd = mIndex + codeSize;
 	mWriter.Write(
 		"\thash: 0x%" BOND_PRIx32 "\n"
-		"\tframe size: %" BOND_PRIu32 "\n"
-		"\tpacked frame size: %" BOND_PRIu32 "\n"
+		"\targ size: %" BOND_PRIu32 "\n"
+		"\tpacked arg size: %" BOND_PRIu32 "\n"
 		"\tlocal size: %" BOND_PRIu32 "\n"
 		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
 		"\tcode size: %" BOND_PRIu32 "\n",
-		hash, frameSize, packedFrameSize, localSize, framePointerAlignment, codeSize);
+		hash, argSize, packedArgSize, localSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{

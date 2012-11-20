@@ -212,13 +212,13 @@ void CboValidatorCore::ValidateFunctionBlob()
 	// Ignore the hash.
 	mIndex += sizeof(Value32);
 
-	const bu32_t frameSize = ReadValue32().mUInt;
-	const bu32_t packedFrameSize = ReadValue32().mUInt;
+	const bu32_t argSize = ReadValue32().mUInt;
+	const bu32_t packedArgSize = ReadValue32().mUInt;
 	const bu32_t localSize = ReadValue32().mUInt;
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
-	if ((packedFrameSize > frameSize) ||
-	    ((frameSize % BOND_SLOT_SIZE) != 0) ||
-	    ((packedFrameSize % BOND_SLOT_SIZE) != 0) ||
+	if ((packedArgSize > argSize) ||
+	    ((argSize % BOND_SLOT_SIZE) != 0) ||
+	    ((packedArgSize % BOND_SLOT_SIZE) != 0) ||
 	    ((localSize % BOND_SLOT_SIZE) != 0) ||
 	    ((framePointerAlignment % BOND_SLOT_SIZE) != 0))
 	{

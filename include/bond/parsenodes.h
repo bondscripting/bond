@@ -589,8 +589,8 @@ public:
 		mBody(body),
 		mThisTypeDescriptor(thisTypeDescriptor),
 		mScope(scope),
-		mFrameSize(0),
-		mPackedFrameSize(0),
+		mArgSize(0),
+		mPackedArgSize(0),
 		mLocalSize(0),
 		mFramePointerAlignment(0),
 		mNumReservedJumpTargetIds(0)
@@ -620,11 +620,11 @@ public:
 
 	bool IsNative() const { return mBody == NULL; }
 
-	bu32_t GetFrameSize() const { return mFrameSize; }
-	void SetFrameSize(bu32_t frameSize) { mFrameSize = frameSize; }
+	bu32_t GetArgSize() const { return mArgSize; }
+	void SetArgSize(bu32_t argSize) { mArgSize = argSize; }
 
-	bu32_t GetPackedFrameSize() const { return mPackedFrameSize; }
-	void SetPackedFrameSize(bu32_t packedFrameSize) { mPackedFrameSize = packedFrameSize; }
+	bu32_t GetPackedArgSize() const { return mPackedArgSize; }
+	void SetPackedArgSize(bu32_t packedArgSize) { mPackedArgSize = packedArgSize; }
 
 	bu32_t GetLocalSize() const { return mLocalSize; }
 	void SetLocalSize(bu32_t localSize) { mLocalSize = localSize; }
@@ -644,8 +644,8 @@ private:
 	CompoundStatement *mBody;
 	TypeDescriptor *mThisTypeDescriptor;
 	Scope mScope;
-	bu32_t mFrameSize;
-	bu32_t mPackedFrameSize;
+	bu32_t mArgSize;
+	bu32_t mPackedArgSize;
 	bu32_t mLocalSize;
 	bu32_t mFramePointerAlignment;
 	size_t mNumReservedJumpTargetIds;
@@ -1319,7 +1319,8 @@ public:
 	FunctionCallExpression(const Token *context, Expression *lhs, Expression *argumentList):
 		mContext(context),
 		mLhs(lhs),
-		mArgumentList(argumentList)
+		mArgumentList(argumentList),
+		mReturnValueOffset(-1)
 	{}
 
 	virtual ~FunctionCallExpression() {}
@@ -1335,10 +1336,14 @@ public:
 	Expression *GetArgumentList() { return mArgumentList; }
 	const Expression *GetArgumentList() const { return mArgumentList; }
 
+	bi32_t GetReturnValueOffset() const { return mReturnValueOffset; }
+	void SetReturnValueOffset(bi32_t offset) { mReturnValueOffset = offset; }
+
 private:
 	const Token *mContext;
 	Expression *mLhs;
 	Expression *mArgumentList;
+	bi32_t mReturnValueOffset;
 };
 
 

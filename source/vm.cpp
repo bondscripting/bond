@@ -67,7 +67,7 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
 	// TODO: report error if function lookup fails.
-	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(prevSp + function->mFrameSize, function->mFramePointerAlignment));
+	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(prevSp + function->mArgSize, function->mFramePointerAlignment));
 	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));
 	// TODO: Report error if sp >= mStack + mStackSize.
 	mValue.mFunction = function;
@@ -2022,6 +2022,17 @@ void VM::ExecuteScriptFunction()
 			}
 			return;
 
+			case OPCODE_RETURNMEMW:
+			{
+				const Value16 memSizeIndex(code + pc);
+				const bi32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
+				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				memcpy(frame.mReturnPointer, address, memSize);
+				//pc += sizeof(Value16);
+				//sp = static_cast<bu8_t *>(AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE));
+			}
+			return;
+
 			case OPCODE_NOP: break;
 			case OPCODE_MAX: break;
 		}
@@ -2031,7 +2042,7 @@ void VM::ExecuteScriptFunction()
 
 bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackPointer)
 {
-	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(stackPointer + function->mFrameSize - function->mPackedFrameSize, function->mFramePointerAlignment));
+	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(stackPointer + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment));
 
 	if (fp != stackPointer)
 	{
@@ -2057,7 +2068,7 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackPointer)
 	stackFrame.mStackPointer = sp;
 
 	// TODO: Deal with structs that aren't returned on the operand stack.
-	stackFrame.mReturnPointer = stackPointer - function->mPackedFrameSize;
+	stackFrame.mReturnPointer = stackPointer - function->mPackedArgSize;
 
 	ExecuteScriptFunction();
 

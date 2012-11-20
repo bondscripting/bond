@@ -295,7 +295,9 @@ private:
 	GeneratorResult EmitNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitBitwiseNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitAddressOfResult(const GeneratorResult &result);
 	GeneratorResult EmitDereferenceOperator(const UnaryExpression *unaryExpression);
+	GeneratorResult EmitDereferenceResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
 
 	void EmitArgumentList(const Expression *argList, const Parameter *paramList);
 
@@ -722,7 +724,6 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 	{
 		const TypeDescriptor *returnDescriptor = mFunction.GetTop()->mDefinition->GetPrototype()->GetReturnType();
 		ByteCode::Type &byteCode = GetByteCode();
-		OpCode opCode = OPCODE_RETURN;
 
 		if (!returnDescriptor->IsVoidType())
 		{
@@ -730,11 +731,11 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 			const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 			ResultStack::Element rhResult(mResult);
 			Traverse(rhs);
-			EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
 
 			if (returnDescriptor->IsPointerType())
 			{
-				opCode = RETURN_OPCODES.GetPointerOpCode(mPointerSize);
+				EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+				byteCode.push_back(RETURN_OPCODES.GetPointerOpCode(mPointerSize));
 			}
 			else
 			{
@@ -748,22 +749,32 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 					case Token::KEY_INT:
 					case Token::KEY_UINT:
 					case Token::KEY_FLOAT:
-						opCode = OPCODE_RETURN32;
+						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+						byteCode.push_back(OPCODE_RETURN32);
 						break;
 
 					case Token::KEY_LONG:
 					case Token::KEY_ULONG:
 					case Token::KEY_DOUBLE:
-						opCode = OPCODE_RETURN64;
+						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+						byteCode.push_back(OPCODE_RETURN64);
 						break;
 
 					default:
-						// TODO
+						GeneratorResult result = EmitAddressOfResult(rhResult);
+						// Any pointer type will do.
+						const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+						EmitPushResult(result, &voidStar);
+						byteCode.push_back(OPCODE_RETURNMEMW);
+						EmitIndexedValue32(Value32(returnDescriptor->GetSize(mPointerSize)));
 						break;
 				}
 			}
 		}
-		byteCode.push_back(opCode);
+		else
+		{
+			byteCode.push_back(OPCODE_RETURN);
+		}
 	}
 }
 
@@ -1112,27 +1123,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 		{
 			if (op->GetTokenType() == Token::OP_ARROW)
 			{
-				switch (lhResult.GetValue().mContext)
-				{
-					case GeneratorResult::CONTEXT_FP_OFFSET:
-						result.mContext = GeneratorResult::CONTEXT_FP_INDIRECT;
-						break;
-
-					case GeneratorResult::CONTEXT_STACK_VALUE:
-						result.mContext = GeneratorResult::CONTEXT_ADDRESS_INDIRECT;
-						break;
-
-					case GeneratorResult::CONTEXT_FP_INDIRECT:
-					case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-						EmitPushResult(lhResult, lhs->GetTypeDescriptor());
-						result = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
-						break;
-
-					case GeneratorResult::CONTEXT_NONE:
-					case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-						PushError(CompilerError::INTERNAL_ERROR);
-						break;
-				}
+				result = EmitDereferenceResult(lhResult, lhs->GetTypeDescriptor());
 			}
 			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 			result.mContext = TransformContext(result.mContext, typeDescriptor);
@@ -1142,20 +1133,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 		{
 			if (op->GetTokenType() == Token::PERIOD)
 			{
-				switch (lhResult.GetValue().mContext)
-				{
-					case GeneratorResult::CONTEXT_FP_INDIRECT:
-						result.mContext = GeneratorResult::CONTEXT_FP_OFFSET;
-						break;
-
-					case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-						result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
-						break;
-
-					default:
-						PushError(CompilerError::INTERNAL_ERROR);
-						break;
-				}
+				result = EmitAddressOfResult(lhResult);
 			}
 		}
 	}
@@ -1171,32 +1149,10 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 		const Expression *lhs = arraySubscriptExpression->GetLhs();
 		const Expression *index = arraySubscriptExpression->GetIndex();
 		GeneratorResult result = EmitPointerArithmetic(lhs, index, 1);
-
 		if (!arraySubscriptExpression->GetTypeDescriptor()->IsArrayType())
 		{
-			switch (result.mContext)
-			{
-				case GeneratorResult::CONTEXT_FP_OFFSET:
-					result.mContext = GeneratorResult::CONTEXT_FP_INDIRECT;
-					break;
-
-				case GeneratorResult::CONTEXT_STACK_VALUE:
-					result.mContext = GeneratorResult::CONTEXT_ADDRESS_INDIRECT;
-					break;
-
-				case GeneratorResult::CONTEXT_FP_INDIRECT:
-				case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-					EmitPushResult(result, lhs->GetTypeDescriptor());
-					result = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
-					break;
-
-				case GeneratorResult::CONTEXT_NONE:
-				case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-					PushError(CompilerError::INTERNAL_ERROR);
-					break;
-			}
+			result = EmitDereferenceResult(result, lhs->GetTypeDescriptor());
 		}
-
 		mResult.SetTop(result);
 	}
 }
@@ -1206,11 +1162,11 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
 	// TODO: deal with non-primitive return types.
 	const Expression *lhs = functionCallExpression->GetLhs();
-	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
-	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
+	const bu32_t returnType = prototype->GetReturnType()->GetSignatureType();
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1228,14 +1184,29 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		}
 	}
 
+	if (returnType == SIG_STRUCT)
+	{
+		EmitOpCodeWithOffset(OPCODE_LOADFP, functionCallExpression->GetReturnValueOffset());
+	}
+
 	ByteCode::Type &byteCode = GetByteCode();
 	byteCode.push_back(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
 	EmitHashCode(function->GetGlobalHashCode());
 
-	mResult.SetTop(GeneratorResult(
-		prototype->GetReturnType()->IsVoidType() ?
-		GeneratorResult::CONTEXT_NONE :
-		GeneratorResult::CONTEXT_STACK_VALUE));
+	if (returnType == SIG_STRUCT)
+	{
+		mResult.SetTop(GeneratorResult(
+			GeneratorResult::CONTEXT_FP_INDIRECT,
+			functionCallExpression->GetReturnValueOffset()));
+	}
+	else if (returnType == SIG_VOID)
+	{
+		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_NONE));
+	}
+	else
+	{
+		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
+	}
 }
 
 
@@ -1916,10 +1887,7 @@ void GeneratorCore::EmitPopResult(const GeneratorResult &result, const TypeDescr
 			EmitPopAddressIndirectValue(typeDescriptor, result.mOffset);
 			break;
 
-		case GeneratorResult::CONTEXT_NONE:
-		case GeneratorResult::CONTEXT_FP_OFFSET:
-		case GeneratorResult::CONTEXT_STACK_VALUE:
-		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
+		default:
 			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
@@ -3008,24 +2976,29 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfOperator(const UnaryE
 	const Expression *rhs = unaryExpression->GetRhs();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
-	GeneratorResult result = rhResult;
+	GeneratorResult result = EmitAddressOfResult(rhResult);
+	return result;
+}
 
-	switch (rhResult.GetValue().mContext)
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfResult(const GeneratorResult &result)
+{
+	GeneratorResult outputResult = result;
+	switch (result.mContext)
 	{
 		case GeneratorResult::CONTEXT_FP_INDIRECT:
-			result.mContext = GeneratorResult::CONTEXT_FP_OFFSET;
+			outputResult.mContext = GeneratorResult::CONTEXT_FP_OFFSET;
 			break;
 
 		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-			result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+			outputResult.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
 			break;
 
 		default:
 			PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
-
-	return result;
+	return outputResult;
 }
 
 
@@ -3036,33 +3009,38 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceOperator(const Unar
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	GeneratorResult result = rhResult;
-
 	if (!unaryExpression->GetTypeDescriptor()->IsArrayType())
 	{
-		switch (rhResult.GetValue().mContext)
-		{
-			case GeneratorResult::CONTEXT_FP_OFFSET:
-				result.mContext = GeneratorResult::CONTEXT_FP_INDIRECT;
-				break;
-
-			case GeneratorResult::CONTEXT_STACK_VALUE:
-				result.mContext = GeneratorResult::CONTEXT_ADDRESS_INDIRECT;
-				break;
-
-			case GeneratorResult::CONTEXT_FP_INDIRECT:
-			case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
-				EmitPushResult(rhResult, rhs->GetTypeDescriptor());
-				result = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
-				break;
-
-			case GeneratorResult::CONTEXT_NONE:
-			case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-				PushError(CompilerError::INTERNAL_ERROR);
-				break;
-		}
+		result = EmitDereferenceResult(rhResult, rhs->GetTypeDescriptor());
 	}
-
 	return result;
+}
+
+
+GeneratorCore::GeneratorResult GeneratorCore::EmitDereferenceResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor)
+{
+	GeneratorResult outputResult = result;
+	switch (result.mContext)
+	{
+		case GeneratorResult::CONTEXT_FP_OFFSET:
+			outputResult.mContext = GeneratorResult::CONTEXT_FP_INDIRECT;
+			break;
+
+		case GeneratorResult::CONTEXT_STACK_VALUE:
+			outputResult.mContext = GeneratorResult::CONTEXT_ADDRESS_INDIRECT;
+			break;
+
+		case GeneratorResult::CONTEXT_FP_INDIRECT:
+		case GeneratorResult::CONTEXT_ADDRESS_INDIRECT:
+			EmitPushResult(result, typeDescriptor);
+			outputResult = GeneratorResult(GeneratorResult::CONTEXT_ADDRESS_INDIRECT);
+			break;
+
+		default:
+			PushError(CompilerError::INTERNAL_ERROR);
+			break;
+	}
+	return outputResult;
 }
 
 
@@ -3238,8 +3216,8 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteQualifiedSymbolName(function);
 		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		WriteValue32(Value32(function->GetGlobalHashCode()));
-		WriteValue32(Value32(function->GetFrameSize()));
-		WriteValue32(Value32(function->GetPackedFrameSize()));
+		WriteValue32(Value32(function->GetArgSize()));
+		WriteValue32(Value32(function->GetPackedArgSize()));
 		WriteValue32(Value32(function->GetLocalSize()));
 		WriteValue32(Value32(function->GetFramePointerAlignment()));
 
