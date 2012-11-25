@@ -227,6 +227,7 @@ public:
 	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER) != 0; }
 	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
 	bool IsVoidType() const;
+	bool IsStructType() const;
 
 	static TypeDescriptor GetBoolType();
 	static TypeDescriptor GetCharType();
@@ -321,6 +322,7 @@ public:
 	bool IsMost32IntegerType() const;
 	bool IsNumericType() const;
 	bool IsVoidType() const;
+	bool IsStructType() const;
 
 private:
 	const Token *mPrimitiveType;

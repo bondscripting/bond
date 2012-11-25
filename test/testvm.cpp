@@ -732,12 +732,12 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	bi32_t oneD[8];
 	memset(oneD, 0, sizeof(oneD));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::SetValueAt_3", bi32_t(0), &oneD, bi32_t(7));
+	DO_FUNCTION_CALL_2("::SetValueAt_3", NULL, &oneD, bi32_t(7));
 	ASSERT_FORMAT(oneD[3] == 7, ("Expected 7, but was %" BOND_PRId32 ".", oneD[3]));
 	ASSERT_MESSAGE((oneD[1] == 0) && (oneD[2] == 0) && (oneD[4] == 0) && (oneD[5] == 0),
 		"Memory stomp by SetValueAt_3() detected.");
 
-	VALIDATE_FUNCTION_CALL_3(INT, "::SetValueAt", bi32_t(0), &oneD, bi32_t(5), bi32_t(864));
+	DO_FUNCTION_CALL_3("::SetValueAt", NULL, &oneD, bi32_t(5), bi32_t(864));
 	ASSERT_FORMAT(oneD[5] == 864, ("Expected 864, but was %" BOND_PRId32 ".", oneD[5]));
 	ASSERT_MESSAGE((oneD[3] == 7) && (oneD[4] == 0) && (oneD[6] == 0) && (oneD[7] == 0),
 		"Memory stomp by SetValueAt() detected.");
@@ -751,14 +751,14 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	bi32_t twoD[7][13];
 	memset(twoD, 0, sizeof(twoD));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::SetValue2DAt_4_9", bi32_t(0), &twoD, bi32_t(901));
+	DO_FUNCTION_CALL_2("::SetValue2DAt_4_9", NULL, &twoD, bi32_t(901));
 	ASSERT_FORMAT(twoD[4][9] == 901, ("Expected 901, but was %" BOND_PRId32 ".", twoD[4][9]));
 	ASSERT_MESSAGE((twoD[3][8] == 0) && (twoD[3][9] == 0) && (twoD[3][10] == 0) &&
 		(twoD[4][8] == 0) && (twoD[4][10] == 0) &&
 		(twoD[5][8] == 0) && (twoD[5][9] == 0) && (twoD[5][10] == 0),
 		"Memory stomp by SetValue2DAt_4_9() detected.");
 
-	VALIDATE_FUNCTION_CALL_4(INT, "::SetValue2DAt", bi32_t(0), &twoD, bi32_t(2), bi32_t(4), bi32_t(98973));
+	DO_FUNCTION_CALL_4("::SetValue2DAt", NULL, &twoD, bi32_t(2), bi32_t(4), bi32_t(98973));
 	ASSERT_FORMAT(twoD[2][4] == 98973, ("Expected 98973, but was %" BOND_PRId32 ".", twoD[2][4]));
 	ASSERT_MESSAGE((twoD[1][3] == 0) && (twoD[1][4] == 0) && (twoD[1][5] == 0) &&
 		(twoD[2][3] == 0) && (twoD[2][5] == 0) &&
@@ -807,7 +807,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 
 	Char3 c3;
 	memset(&c3, 0, sizeof(c3));
-	VALIDATE_FUNCTION_CALL_4(INT, "::SetChar3", bi32_t(0), &c3, bi8_t(45), bi8_t(-56), bi8_t(67));
+	DO_FUNCTION_CALL_4("::SetChar3", NULL, &c3, bi8_t(45), bi8_t(-56), bi8_t(67));
 	ASSERT_FORMAT(c3.x == 45, ("Expected 45, but was %" BOND_PRId32 ".", c3.x));
 	ASSERT_FORMAT(c3.y == -56, ("Expected -56, but was %" BOND_PRId32 ".", c3.y));
 	ASSERT_FORMAT(c3.z == 67, ("Expected 67, but was %" BOND_PRId32 ".", c3.z));
@@ -818,7 +818,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::GetChar3Z", bi32_t(67), c3);
 
 	Char3Pair char3Pair;
-	VALIDATE_FUNCTION_CALL_3(INT, "::SetChar3PairX", bi32_t(0), &char3Pair, bi8_t(23), bi8_t(32));
+	DO_FUNCTION_CALL_3("::SetChar3PairX", NULL, &char3Pair, bi8_t(23), bi8_t(32));
 	ASSERT_FORMAT(char3Pair.first.x == 23, ("Expected 23, but was %" BOND_PRId32 ".", char3Pair.first.x));
 	ASSERT_FORMAT(char3Pair.second.x == 32, ("Expected 32, but was %" BOND_PRId32 ".", char3Pair.second.x));
 
@@ -827,7 +827,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	Vector3 v3a;
 	Vector3 v3b;
 	memset(&v3a, 0, sizeof(v3a));
-	VALIDATE_FUNCTION_CALL_4(INT, "::SetVector3", bi32_t(0), &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
+	DO_FUNCTION_CALL_4("::SetVector3", NULL, &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
 	ASSERT_FORMAT(v3a.x == 11, ("Expected 11, but was %" BOND_PRId32 ".", v3a.x));
 	ASSERT_FORMAT(v3a.y == -12, ("Expected -12, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 13, ("Expected 13, but was %" BOND_PRId32 ".", v3a.z));
@@ -849,6 +849,11 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	v3b.y = -6;
 	v3b.z = 7;
 	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
+
+	DO_FUNCTION_CALL_3("::ConstructVector3", &v3a, bi32_t(99), bi32_t(-100), bi32_t(101));
+	ASSERT_FORMAT(v3a.x == 99, ("Expected 99, but was %" BOND_PRId32 ".", v3a.x));
+	ASSERT_FORMAT(v3a.y == -100, ("Expected -100, but was %" BOND_PRId32 ".", v3a.y));
+	ASSERT_FORMAT(v3a.z == 101, ("Expected 101, but was %" BOND_PRId32 ".", v3a.z));
 
 	return true;
 }

@@ -394,6 +394,16 @@ bool TypeDescriptor::IsVoidType() const
 }
 
 
+bool TypeDescriptor::IsStructType() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->IsStructType();
+	}
+	return false;
+}
+
+
 TypeDescriptor TypeDescriptor::GetBoolType()
 {
 	return TypeDescriptor(&BOOL_TYPE_SPECIFIER, FLAG_VALUE);
@@ -677,6 +687,12 @@ bool TypeSpecifier::IsVoidType() const
 		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return false;
+}
+
+
+bool TypeSpecifier::IsStructType() const
+{
+	return GetSignatureType() == SIG_STRUCT;
 }
 
 

@@ -2040,39 +2040,65 @@ void VM::ExecuteScriptFunction()
 }
 
 
-bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackPointer)
+bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 {
-	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(stackPointer + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment));
+	// Functions return values on top of the stack with the exception of functions that return
+	// structs. Those functions expect an additional argument on the operand stack to indicate
+	// where the value should be returned. So for functions that return a struct, we have to
+	// pay particular attention to locating the top of the arguments, the return address and
+	// where we leave the stack pointer when the function returns, since the return value is
+	// not left on top of the stack.
+	bu8_t *argTop;
+	bu8_t *returnPointer;
+	bu8_t *finalStackPointer;
+	switch (function->mReturnSignature.mType)
+	{
+		case SIG_STRUCT:
+			argTop = stackTop - BOND_SLOT_SIZE;
+			returnPointer = *reinterpret_cast<bu8_t **>(argTop);
+			finalStackPointer = argTop - function->mPackedArgSize;
+			break;
+		case SIG_VOID:
+			argTop = stackTop;
+			returnPointer = NULL;
+			finalStackPointer = argTop - function->mPackedArgSize;
+			break;
+		default:
+			argTop = stackTop;
+			returnPointer = argTop - function->mPackedArgSize;
+			finalStackPointer = returnPointer + BOND_SLOT_SIZE;
+			break;
+	}
 
-	if (fp != stackPointer)
+	bu8_t *framePointer = static_cast<bu8_t *>(AlignPointerUp(argTop + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment));
+
+	if (framePointer != argTop)
 	{
 		const bu32_t numParams = function->mParamListSignature.mParamCount;
 		const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
-		bu8_t *source = stackPointer;
+		bu8_t *source = argTop;
 		for (bu32_t i = 0; i < numParams; ++i)
 		{
 			const ParamSignature &signature = signatures[i];
 			const size_t size = signature.mSize;
 			source -= size;
-			memmove(fp + signature.mFramePointerOffset, source, size);
+			memmove(framePointer + signature.mFramePointerOffset, source, size);
 		}
 	}
 
-	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));
-	// TODO: Report error if sp >= mStack + mStackSize.
+	bu8_t *stackPointer = static_cast<bu8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
+	// TODO: Report error if stackPointer >= mStack + mStackSize.
 
 	StackFrames::Element stackFrameElement(mStackFrames);
 	CalleeStackFrame &stackFrame = stackFrameElement.GetValue();
 	stackFrame.mFunction = function;
-	stackFrame.mFramePointer = fp;
-	stackFrame.mStackPointer = sp;
-
-	// TODO: Deal with structs that aren't returned on the operand stack.
-	stackFrame.mReturnPointer = stackPointer - function->mPackedArgSize;
+	stackFrame.mFramePointer = framePointer;
+	stackFrame.mStackPointer = stackPointer;
+	stackFrame.mReturnPointer = returnPointer;
 
 	ExecuteScriptFunction();
 
-	return stackFrame.mReturnPointer + BOND_SLOT_SIZE;
+	return finalStackPointer;
 }
 
 }

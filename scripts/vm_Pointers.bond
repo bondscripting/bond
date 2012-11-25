@@ -1,13 +1,11 @@
-int SetValueAt_3(int[8] array, int value)
+void SetValueAt_3(int[8] array, int value)
 {
 	array[3] = value;
-	return 0;
 }
 
-int SetValueAt(int[8] array, int index, int value)
+void SetValueAt(int[8] array, int index, int value)
 {
 	array[index] = value;
-	return 0;
 }
 
 int GetValueAt_4(int[8] array)
@@ -20,16 +18,14 @@ int GetValueAt(int[8] array, int index)
 	return array[index];
 }
 
-int SetValue2DAt_4_9(int[7][13] array, int value)
+void SetValue2DAt_4_9(int[7][13] array, int value)
 {
 	array[4][9] = value;
-	return 0;
 }
 
-int SetValue2DAt(int[7][13] array, int index1, int index2, int value)
+void SetValue2DAt(int[7][13] array, int index1, int index2, int value)
 {
 	array[index1][index2] = value;
-	return 0;
 }
 
 int GetValue2DAt_1_12(int[7][13] array)

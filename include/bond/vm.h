@@ -77,7 +77,7 @@ private:
 	friend class CallerStackFrame;
 
 	void ExecuteScriptFunction();
-	bu8_t *InvokeFunction(const Function *function, bu8_t *stackPointer);
+	bu8_t *InvokeFunction(const Function *function, bu8_t *stackTop);
 
 	StackFrames mStackFrames;
 	StackFrames::Element mDummyFrame;

@@ -11,12 +11,11 @@ struct Char3Pair
 	Char3 second;
 };
 
-int SetChar3(Char3 *c3, char x, char y, char z)
+void SetChar3(Char3 *c3, char x, char y, char z)
 {
 	c3->x = x;
 	c3->y = y;
 	c3->z = z;
-	return 0;
 }
 
 int GetChar3X(Char3 c3)
@@ -34,11 +33,10 @@ int GetChar3Z(Char3 c3)
 	return c3.z;
 }
 
-int SetChar3PairX(Char3Pair *c3p, char x1, char x2)
+void SetChar3PairX(Char3Pair *c3p, char x1, char x2)
 {
 	c3p->first.x = x1;
 	c3p->second.x = x2;
-	return 0;
 }
 
 bool InitializeChar3Pair()
@@ -70,12 +68,20 @@ struct Vector3
 };
 
 
-int SetVector3(Vector3 *v3, int x, int y, int z)
+Vector3 ConstructVector3(int x, int y, int z)
+{
+	Vector3 v3;
+	v3.mX = x;
+	v3.mY = y;
+	v3.mZ = z;
+	return v3;
+}
+
+void SetVector3(Vector3 *v3, int x, int y, int z)
 {
 	v3->SetX(x);
 	v3->SetY(y);
 	v3->SetZ(z);
-	return 0;
 }
 
 int GetVector3X(Vector3 v3)

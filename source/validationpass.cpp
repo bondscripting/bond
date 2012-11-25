@@ -345,7 +345,7 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
 
-	if (returnDescriptor->GetSignatureType() == SIG_STRUCT)
+	if (returnDescriptor->IsStructType())
 	{
 		const bi32_t alignment = Max(static_cast<bi32_t>(returnDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
 		const bi32_t size = static_cast<bi32_t>(returnDescriptor->GetSize(mPointerSize));
