@@ -110,6 +110,8 @@ pop64_l3            ..., value64 -> ...
 !movesp, short
 !movespw, int
 
+memcopyw, ushort    ..., address, address -> ...
+
 dup                 ..., value64 -> ..., value64, value64
 dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
 

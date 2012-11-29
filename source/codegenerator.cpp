@@ -469,15 +469,31 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
 				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-				const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 				ResultStack::Element rhResult(mResult);
-				GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset());
 				Traverse(initializer);
-				EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
-				EmitPopResult(lhResult, lhDescriptor);
+
+				if (lhDescriptor->IsStructType())
+				{
+					ByteCode::Type &byteCode = GetByteCode();
+					EmitOpCodeWithOffset(OPCODE_LOADFP, namedInitializer->GetOffset());
+					const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
+					// Any pointer type will do.
+					const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+					EmitPushResult(sourceResult, &voidStar);
+					byteCode.push_back(OPCODE_MEMCOPYW);
+					EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
+				}
+				else
+				{
+					const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
+					GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset());
+					EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
+					EmitPopResult(lhResult, lhDescriptor);
+				}
 			}
 			else
 			{
+				// TODO: Handle struct and array initializers.
 			}
 		}
 		break;
@@ -761,7 +777,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 						break;
 
 					default:
-						GeneratorResult result = EmitAddressOfResult(rhResult);
+						const GeneratorResult result = EmitAddressOfResult(rhResult);
 						// Any pointer type will do.
 						const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
 						EmitPushResult(result, &voidStar);
@@ -2358,6 +2374,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleBinaryOperator(const Bin
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
 {
+	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
@@ -2367,25 +2384,50 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 
-	OpCode valueDupOpCode = OPCODE_DUP;
-	if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+	if (lhDescriptor->IsStructType())
 	{
-		lhResult = EmitAccumulateAddressOffset(lhResult);
-		valueDupOpCode = OPCODE_DUPINS;
+		const GeneratorResult destinationResult = EmitAddressOfResult(lhResult);
+		// Any pointer type will do.
+		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+		EmitPushResult(destinationResult, &voidStar);
+
+		if (mEmitOptionalTemporaries.GetTop())
+		{
+			if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+			{
+				byteCode.push_back(OPCODE_DUP);
+			}
+			result = lhResult;
+		}
+
+		ResultStack::Element rhResult(mResult);
+		Traverse(rhs);
+		const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
+		EmitPushResult(sourceResult, &voidStar);
+		byteCode.push_back(OPCODE_MEMCOPYW);
+		EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
 	}
-
-	ResultStack::Element rhResult(mResult);
-	Traverse(rhs);
-	EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
-
-	if (mEmitOptionalTemporaries.GetTop())
+	else
 	{
-		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(valueDupOpCode);
-		result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
-	}
+		OpCode valueDupOpCode = OPCODE_DUP;
+		if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+		{
+			lhResult = EmitAccumulateAddressOffset(lhResult);
+			valueDupOpCode = OPCODE_DUPINS;
+		}
 
-	EmitPopResult(lhResult, lhDescriptor);
+		ResultStack::Element rhResult(mResult);
+		Traverse(rhs);
+		EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
+
+		if (mEmitOptionalTemporaries.GetTop())
+		{
+			byteCode.push_back(valueDupOpCode);
+			result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
+		}
+
+		EmitPopResult(lhResult, lhDescriptor);
+	}
 	return result;
 }
 

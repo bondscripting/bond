@@ -48,7 +48,6 @@ bool InitializeChar3Pair()
 		(c3p.second.x == 11) && (c3p.second.y == 22) && (c3p.second.z == 33);
 }
 
-
 struct Vector3
 {
 	int GetX() const { return this->mX; }
@@ -67,7 +66,6 @@ struct Vector3
 	int mZ;
 };
 
-
 Vector3 ConstructVector3(int x, int y, int z)
 {
 	Vector3 v3;
@@ -75,6 +73,15 @@ Vector3 ConstructVector3(int x, int y, int z)
 	v3.mY = y;
 	v3.mZ = z;
 	return v3;
+}
+
+Vector3 ConstructVector3Indirect(int x, int y, int z)
+{
+	Vector3 v3a = ConstructVector3(x, y, z);
+	Vector3 v3b;
+	Vector3 v3c;
+	v3c = v3b = v3a;
+	return v3c;
 }
 
 void SetVector3(Vector3 *v3, int x, int y, int z)
@@ -97,4 +104,9 @@ int GetVector3Y(Vector3 v3)
 int GetVector3Z(Vector3 v3)
 {
 	return v3.GetZ();
+}
+
+int ConstructVector3AndGetY(int y)
+{
+	return ConstructVector3(0xbadbad, y, 0xbadbad).mY;
 }

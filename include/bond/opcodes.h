@@ -118,6 +118,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(MOVESP,       movesp,       SHORT)  \
 	BOND_OPCODE_ITEM(MOVESPW,      movespw,      INT)    \
 	                                                     \
+	BOND_OPCODE_ITEM(MEMCOPYW,     memcopyw,     INT)    \
+	                                                     \
 	BOND_OPCODE_ITEM(DUP,          dup,          NONE)   \
 	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE)   \
 	                                                     \

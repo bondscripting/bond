@@ -900,6 +900,18 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_MEMCOPYW:
+			{
+				const Value16 memSizeIndex(code + pc);
+				const bi32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
+				const void *sourceAddress = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
+				void *destAddress = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
+				memcpy(destAddress, sourceAddress, memSize);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+			}
+			break;
+
 			case OPCODE_DUP:
 			{
 				CopyValue64(sp - BOND_SLOT_SIZE, sp);

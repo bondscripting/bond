@@ -855,6 +855,14 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	ASSERT_FORMAT(v3a.y == -100, ("Expected -100, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 101, ("Expected 101, but was %" BOND_PRId32 ".", v3a.z));
 
+	DO_FUNCTION_CALL_3("::ConstructVector3Indirect", &v3a, bi32_t(102), bi32_t(-103), bi32_t(104));
+	ASSERT_FORMAT(v3a.x == 102, ("Expected 102, but was %" BOND_PRId32 ".", v3a.x));
+	ASSERT_FORMAT(v3a.y == -103, ("Expected -103, but was %" BOND_PRId32 ".", v3a.y));
+	ASSERT_FORMAT(v3a.z == 104, ("Expected 104, but was %" BOND_PRId32 ".", v3a.z));
+
+	DO_FUNCTION_CALL_1("::ConstructVector3AndGetY", &v3a, bi32_t(12321));
+	ASSERT_FORMAT(v3a.x == 12321, ("Expected 12321, but was %" BOND_PRId32 ".", v3a.x));
+
 	return true;
 }
 
