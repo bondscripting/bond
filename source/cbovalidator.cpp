@@ -3,6 +3,7 @@
 #include "bond/endian.h"
 #include "bond/math.h"
 #include "bond/opcodes.h"
+#include "bond/textwriter.h"
 #include "bond/version.h"
 
 namespace Bond
@@ -32,7 +33,7 @@ private:
 	Value32 ReadValue32();
 	Value64 ReadValue64();
 
-	bool HasError() const { return mResult.mValidity != CboValidator::CBO_VALID; }
+	bool HasError() const { return mResult.mStatus != CboValidator::CBO_VALID; }
 	bool AssertBytesRemaining(size_t numBytes);
 	void FunctionIsInvalid();
 	void CodeIsInvalid();
@@ -53,6 +54,37 @@ CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 }
 
 
+void CboValidator::WriteStatus(TextWriter& writer, Status status)
+{
+	switch (status)
+	{
+		case CBO_VALID:
+			writer.Write("CBO file valid\n");
+		break;
+
+		case CBO_INVALID_MAGIC_NUMBER:
+			writer.Write("CBO file's magic number is incorrect\n");
+			break;
+
+		case CBO_INVALID_VERSION:
+			writer.Write("CBO file's version is unknown\n");
+			break;
+
+		case CBO_INVALID_FUNCTION_DESCRIPTION:
+			writer.Write("CBO file contains an invalid function description\n");
+			break;
+
+		case CBO_INVALID_BYTECODE:
+			writer.Write("CBO file contains invalid bytecode\n");
+			break;
+
+		case CBO_INVALID_FORMAT:
+			writer.Write("CBO file is incomplete or malformed\n");
+			break;
+	}
+}
+
+
 CboValidator::Result CboValidatorCore::Validate()
 {
 	if (!AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16))))
@@ -63,7 +95,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	const bu32_t magicNumber = ReadValue32().mUInt;
 	if (magicNumber != MAGIC_NUMBER)
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_MAGIC_NUMBER;
+		mResult.mStatus = CboValidator::CBO_INVALID_MAGIC_NUMBER;
 		return mResult;
 	}
 
@@ -72,7 +104,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	const bu16_t flags = ReadValue16().mUShort;
 	if ((majorVersion != MAJOR_VERSION) && (minorVersion != MINOR_VERSION))
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_VERSION;
+		mResult.mStatus = CboValidator::CBO_INVALID_VERSION;
 		return mResult;
 	}
 
@@ -528,7 +560,7 @@ void CboValidatorCore::FunctionIsInvalid()
 {
 	if (!HasError())
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION;
+		mResult.mStatus = CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION;
 	}
 }
 
@@ -537,7 +569,7 @@ void CboValidatorCore::CodeIsInvalid()
 {
 	if (!HasError())
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_BYTECODE;
+		mResult.mStatus = CboValidator::CBO_INVALID_BYTECODE;
 	}
 }
 
@@ -546,7 +578,7 @@ void CboValidatorCore::CboIsInvalid()
 {
 	if (!HasError())
 	{
-		mResult.mValidity = CboValidator::CBO_INVALID_FORMAT;
+		mResult.mStatus = CboValidator::CBO_INVALID_FORMAT;
 	}
 }
 

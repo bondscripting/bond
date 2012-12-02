@@ -66,34 +66,14 @@ void Disassembler::Disassemble(TextWriter &writer, const void *byteCode, size_t 
 	CboValidator validator;
 	CboValidator::Result result = validator.Validate(byteCode, length);
 
-	switch (result.mValidity)
+	if (result.mStatus == CboValidator::CBO_VALID)
 	{
-		case CboValidator::CBO_VALID:
-		{
-			DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
-			disassembler.Disassemble();
-		}
-		break;
-
-		case CboValidator::CBO_INVALID_MAGIC_NUMBER:
-			writer.Write("CBO file's magic number is incorrect\n");
-			break;
-
-		case CboValidator::CBO_INVALID_VERSION:
-			writer.Write("CBO file's version is unknown\n");
-			break;
-
-		case CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION:
-			writer.Write("CBO file contains an invalid function description\n");
-			break;
-
-		case CboValidator::CBO_INVALID_BYTECODE:
-			writer.Write("CBO file contains invalid bytecode\n");
-			break;
-
-		case CboValidator::CBO_INVALID_FORMAT:
-			writer.Write("CBO file is incomplete or malformed\n");
-			break;
+		DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
+		disassembler.Disassemble();
+	}
+	else
+	{
+		CboValidator::WriteStatus(writer, result.mStatus);
 	}
 }
 

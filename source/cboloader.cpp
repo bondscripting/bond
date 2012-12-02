@@ -7,6 +7,7 @@
 #include "bond/endian.h"
 #include "bond/fileloader.h"
 #include "bond/opcodes.h"
+#include "bond/textwriter.h"
 #include "bond/value.h"
 #include "bond/vector.h"
 #include "private/memory.h"
@@ -110,9 +111,9 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		const FileData &file = cboFiles[i];
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(reinterpret_cast<const bu8_t *>(file.mData), file.mLength);
-		if (result.mValidity != CboValidator::CBO_VALID)
+		if (result.mStatus != CboValidator::CBO_VALID)
 		{
-			// TODO: Report error somehow.
+			InvalidCbo(result.mStatus);
 			return NULL;
 		}
 
@@ -164,11 +165,14 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		loader.Load();
 	}
 
-	// TODO: Report error if there is a hash collision.
 	Sort(functions, functions + functionCount, FunctionHashComparator());
 	for (size_t i = 0; i < functionCount; ++i)
 	{
 		functionLookup[i] = functions[i].mHash;
+		if ((i > 0) && (functionLookup[i] == functionLookup[i - 1]))
+		{
+			HashCollision(functionLookup[i]);
+		}
 	}
 
 	for (size_t i = 0; i < functionCount; ++i)
@@ -186,7 +190,7 @@ void CboLoader::Dispose(const CodeSegment *codeSegment)
 }
 
 
-void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegment) const
+void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegment)
 {
 	bu8_t *code = const_cast<bu8_t *>(function.mCode);
 	const bu8_t *codeEnd = code + function.mCodeSize;
@@ -237,10 +241,16 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 						break;
 				}
 
-				// TODO: report error if resolvedPointer is NULL.
-				const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
-				memcpy(code, &resolvedPointer, pointerSize);
-				code += pointerSize;
+				if (resolvedPointer != NULL)
+				{
+					const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
+					memcpy(code, &resolvedPointer, pointerSize);
+					code += pointerSize;
+				}
+				else
+				{
+					UnresolvedHash(hash);
+				}
 			}
 			break;
 			case OC_PARAM_LOOKUPSWITCH:
@@ -282,6 +292,56 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				}
 			}
 		}
+	}
+}
+
+
+void CboLoader::WriteStatus(TextWriter& writer)
+{
+	switch (mStatus)
+	{
+		case LOAD_VALID:
+			writer.Write("Code segment valid\n");
+			break;
+		case LOAD_INVALID_CBO:
+			CboValidator::WriteStatus(writer, static_cast<CboValidator::Status>(mStatusArg));
+			break;
+		case LOAD_UNRESOLVED_HASH:
+			writer.Write("Unresolved hash: 0x%" BOND_PRIx32 "\n", mStatusArg);
+			break;
+		case LOAD_HASH_COLLISION:
+			writer.Write("Hash collision: 0x%" BOND_PRIx32 "\n", mStatusArg);
+			break;
+	}
+}
+
+
+void CboLoader::InvalidCbo(CboValidator::Status status)
+{
+	if (!HasError())
+	{
+		mStatus = LOAD_INVALID_CBO;
+		mStatusArg = static_cast<bu32_t>(status);
+	}
+}
+
+
+void CboLoader::UnresolvedHash(bu32_t hash)
+{
+	if (!HasError())
+	{
+		mStatus = LOAD_UNRESOLVED_HASH;
+		mStatusArg = hash;
+	}
+}
+
+
+void CboLoader::HashCollision(bu32_t hash)
+{
+	if (!HasError())
+	{
+		mStatus = LOAD_HASH_COLLISION;
+		mStatusArg = hash;
 	}
 }
 

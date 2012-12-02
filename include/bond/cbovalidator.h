@@ -6,10 +6,12 @@
 namespace Bond
 {
 
+class TextWriter;
+
 class CboValidator
 {
 public:
-	enum Validity
+	enum Status
 	{
 		CBO_VALID,
 		CBO_INVALID_MAGIC_NUMBER,
@@ -22,7 +24,7 @@ public:
 	struct Result
 	{
 		Result():
-		mValidity(CBO_VALID),
+			mStatus(CBO_VALID),
 			mMajorVersion(0),
 			mMinorVersion(0),
 			mPointerSize(POINTER_32BIT),
@@ -40,7 +42,7 @@ public:
 			mCodeByteCount(0)
 		{}
 
-		Validity mValidity;
+		Status mStatus;
 		int mMajorVersion;
 		int mMinorVersion;
 		PointerSize mPointerSize;
@@ -59,6 +61,8 @@ public:
 	};
 
 	Result Validate(const void *byteCode, size_t length);
+
+	static void WriteStatus(TextWriter& writer, Status status);
 };
 
 }

@@ -3,6 +3,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/list.h"
+#include "bond/stdouttextwriter.h"
 #include "bond/vm.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,20 +88,29 @@ int main(int argc, const char *argv[])
 	{
 		Bond::CboLoader cboLoader(allocator);
 		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
-		Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
 
-		// Test code.
-		/*
-		Bond::bi32_t returnValue;
-		Bond::VM::CallerStackFrame stackFrame(vm, "::TheSpace::Blah", &returnValue);
-		stackFrame.PushArg(11);
-		stackFrame.PushArg(45);
-		stackFrame.Call();
-		printf("return: %d\n", returnValue);
-		*/
-		// End test code.
+		if (!cboLoader.HasError())
+		{
+			Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
 
-		cboLoader.Dispose(codeSegment);
+			// Test code.
+			/*
+			Bond::bi32_t returnValue = -9999;
+			Bond::VM::CallerStackFrame stackFrame(vm, "::TheSpace::Blah", &returnValue);
+			stackFrame.PushArg(65);
+			stackFrame.PushArg(13);
+			stackFrame.Call();
+			printf("return: %d\n", returnValue);
+			*/
+			// End test code.
+
+			cboLoader.Dispose(codeSegment);
+		}
+		else
+		{
+			Bond::StdOutTextWriter writer;
+			cboLoader.WriteStatus(writer);
+		}
 	}
 
 	for (size_t i = 0; i < numCboFiles; ++i)
