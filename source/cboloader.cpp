@@ -140,8 +140,8 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
 	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount, sizeof(Value32));
 
-	// TODO: Consider alignment.
-	bu8_t *mem = mPermAllocator.Alloc<bu8_t>(memSize);
+	const size_t CBO_ALIGNMENT = 256;
+	bu8_t *mem = mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT);
 	CboLoaderCore::MemoryResources resources(
 		mem,
 		constantTablesStart,
@@ -186,7 +186,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 
 void CboLoader::Dispose(const CodeSegment *codeSegment)
 {
-	mPermAllocator.Free(const_cast<void *>(reinterpret_cast<const void *>(codeSegment)));
+	mPermAllocator.FreeAligned(const_cast<void *>(reinterpret_cast<const void *>(codeSegment)));
 }
 
 

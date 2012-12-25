@@ -95,6 +95,7 @@
     <ClCompile Include="..\..\source\codegenerator.cpp" />
     <ClCompile Include="..\..\source\codesegment.cpp" />
     <ClCompile Include="..\..\source\compilererror.cpp" />
+    <ClCompile Include="..\..\source\defaultallocator.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
