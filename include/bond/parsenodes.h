@@ -591,10 +591,6 @@ public:
 		mBody(body),
 		mThisTypeDescriptor(thisTypeDescriptor),
 		mScope(scope),
-		mArgSize(0),
-		mPackedArgSize(0),
-		mLocalSize(0),
-		mFramePointerAlignment(0),
 		mNumReservedJumpTargetIds(0)
 	{}
 
@@ -622,18 +618,6 @@ public:
 
 	bool IsNative() const { return mBody == NULL; }
 
-	bu32_t GetArgSize() const { return mArgSize; }
-	void SetArgSize(bu32_t argSize) { mArgSize = argSize; }
-
-	bu32_t GetPackedArgSize() const { return mPackedArgSize; }
-	void SetPackedArgSize(bu32_t packedArgSize) { mPackedArgSize = packedArgSize; }
-
-	bu32_t GetLocalSize() const { return mLocalSize; }
-	void SetLocalSize(bu32_t localSize) { mLocalSize = localSize; }
-
-	bu32_t GetFramePointerAlignment() const { return mFramePointerAlignment; }
-	void SetFramePointerAlignment(bu32_t framePointerAlignment) { mFramePointerAlignment = framePointerAlignment; }
-
 	size_t GetNumReservedJumpTargetIds() const { return mNumReservedJumpTargetIds; }
 	void SetNumReservedJumpTargetIds(size_t numIds) { mNumReservedJumpTargetIds = numIds; }
 
@@ -646,10 +630,6 @@ private:
 	CompoundStatement *mBody;
 	TypeDescriptor *mThisTypeDescriptor;
 	Scope mScope;
-	bu32_t mArgSize;
-	bu32_t mPackedArgSize;
-	bu32_t mLocalSize;
-	bu32_t mFramePointerAlignment;
 	size_t mNumReservedJumpTargetIds;
 };
 
@@ -679,13 +659,14 @@ public:
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 
 	bi32_t GetOffset() const { return mOffset; }
-	void SetOffset(bi32_t offset) { mOffset = offset; }
+	void SetOffset(bi32_t offset) const { mOffset = offset; }
 
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
-	bi32_t mOffset;
+	// TODO: Ew. Became mutable after population of this field was moved to the code generator.
+	mutable bi32_t mOffset;
 };
 
 
@@ -717,14 +698,15 @@ public:
 	Scope GetScope() const { return mScope; }
 
 	bi32_t GetOffset() const { return mOffset; }
-	void SetOffset(bi32_t offset) { mOffset = offset; }
+	void SetOffset(bi32_t offset) const { mOffset = offset; }
 
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
 	Scope mScope;
-	bi32_t mOffset;
+	// TODO: Ew. Became mutable after population of this field was moved to the code generator.
+	mutable bi32_t mOffset;
 };
 
 
@@ -1321,8 +1303,7 @@ public:
 	FunctionCallExpression(const Token *context, Expression *lhs, Expression *argumentList):
 		mContext(context),
 		mLhs(lhs),
-		mArgumentList(argumentList),
-		mReturnValueOffset(-1)
+		mArgumentList(argumentList)
 	{}
 
 	virtual ~FunctionCallExpression() {}
@@ -1338,14 +1319,10 @@ public:
 	Expression *GetArgumentList() { return mArgumentList; }
 	const Expression *GetArgumentList() const { return mArgumentList; }
 
-	bi32_t GetReturnValueOffset() const { return mReturnValueOffset; }
-	void SetReturnValueOffset(bi32_t offset) { mReturnValueOffset = offset; }
-
 private:
 	const Token *mContext;
 	Expression *mLhs;
 	Expression *mArgumentList;
-	bi32_t mReturnValueOffset;
 };
 
 

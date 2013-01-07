@@ -198,16 +198,29 @@ private:
 
 	struct CompiledFunction
 	{
-		CompiledFunction(const FunctionDefinition *definition, Allocator &allocator):
+		CompiledFunction(
+				const FunctionDefinition *definition,
+				Allocator &allocator,
+				bi32_t argSize,
+				bi32_t packedArgSize,
+				bi32_t framePointerAlignment):
 			mDefinition(definition),
 			mByteCode(ByteCode::Allocator(&allocator)),
 			mLabelList(LabelList::Allocator(&allocator)),
-			mJumpList(JumpList::Allocator(&allocator))
+			mJumpList(JumpList::Allocator(&allocator)),
+			mArgSize(argSize),
+			mPackedArgSize(packedArgSize),
+			mLocalSize(0),
+			mFramePointerAlignment(framePointerAlignment)
 		{}
 		const FunctionDefinition *mDefinition;
 		ByteCode::Type mByteCode;
 		LabelList::Type mLabelList;
 		JumpList::Type mJumpList;
+		bi32_t mArgSize;
+		bi32_t mPackedArgSize;
+		bi32_t mLocalSize;
+		bi32_t mFramePointerAlignment;
 	};
 
 	typedef Map<HashedString, bu16_t> StringIndexMap;
@@ -229,6 +242,7 @@ private:
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const TypeDescriptor *typeDescriptor) {}
 	virtual void Visit(const NamedInitializer *namedInitializer);
+	virtual void Visit(const CompoundStatement *compoundStatement);
 	virtual void Visit(const IfStatement *ifStatement);
 	virtual void Visit(const SwitchStatement *switchStatement);
 	virtual void Visit(const SwitchSection *switchSection);
@@ -324,6 +338,7 @@ private:
 
 	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
 	ByteCode::Type &GetByteCode();
+	bi32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	void MapQualifiedSymbolName(const Symbol *symbol);
@@ -346,6 +361,7 @@ private:
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
 	LabelStack mBreakLabel;
+	IntStack mLocalOffset;
 	BoolStack mEmitOptionalTemporaries;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
@@ -433,14 +449,38 @@ void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
 
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
+	const FunctionPrototype *prototype = functionDefinition->GetPrototype();
+	bi32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? -BOND_SLOT_SIZE : 0;
+	bi32_t packedOffset = offset;
+	bi32_t framePointerAlignment = BOND_SLOT_SIZE;
+	const Parameter *parameterList = prototype->GetParameterList();
+	while (parameterList != NULL)
+	{
+		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
+		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
+		offset -= typeDescriptor->GetSize(mPointerSize);
+		offset = AlignDown(offset, alignment);
+		packedOffset -= typeDescriptor->GetStackSize(mPointerSize);
+		framePointerAlignment = Max(framePointerAlignment, alignment);
+		parameterList->SetOffset(offset);
+		parameterList = NextNode(parameterList);
+	}
+
 	if (!functionDefinition->IsNative())
 	{
-		CompiledFunction &function =
-			*mFunctionList.insert(mFunctionList.end(), CompiledFunction(functionDefinition, mAllocator));
+		CompiledFunction &function = *mFunctionList.insert(
+			mFunctionList.end(),
+			CompiledFunction(
+				functionDefinition,
+				mAllocator,
+				-offset,
+				-packedOffset,
+				framePointerAlignment));
 		function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
+		MapQualifiedSymbolName(functionDefinition);
 
 		FunctionStack::Element functionElement(mFunction, &function);
-		MapQualifiedSymbolName(functionDefinition);
+		IntStack::Element localOffsetElement(mLocalOffset, 0);
 		Traverse(functionDefinition->GetBody());
 
 		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
@@ -464,12 +504,16 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 		case SCOPE_LOCAL:
 		{
-			const Initializer *initializer = namedInitializer->GetInitializer();
 			// TODO: Omit code generation and stack allocation for non lvalue foldable constants.
+			// Allocate stack space for the local variable.
+			const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+			namedInitializer->SetOffset(AllocateLocal(lhDescriptor));
+
+			const Initializer *initializer = namedInitializer->GetInitializer();
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
-				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 				ResultStack::Element rhResult(mResult);
+				IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 				Traverse(initializer);
 
 				if (lhDescriptor->IsStructType())
@@ -505,8 +549,16 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 }
 
 
+void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
+{
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	ParseNodeTraverser::Visit(compoundStatement);
+}
+
+
 void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *condition = ifStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
@@ -555,6 +607,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	ByteCode::Type &byteCode = GetByteCode();
 	const size_t endLabel = CreateLabel();
 	LabelStack::Element breakElement(mBreakLabel, endLabel);
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
 	const Expression *control = switchStatement->GetControl();
 	const TypeDescriptor *controlDescriptor = control->GetTypeDescriptor();
@@ -648,6 +701,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 void GeneratorCore::Visit(const SwitchSection *switchSection)
 {
 	ByteCode::Type &byteCode = GetByteCode();
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const size_t sectionStartPos = byteCode.size();
 	SetLabelValue(switchSection->GetJumpTargetId(), sectionStartPos);
 	TraverseList(switchSection->GetStatementList());
@@ -657,6 +711,7 @@ void GeneratorCore::Visit(const SwitchSection *switchSection)
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
 	ByteCode::Type &byteCode = GetByteCode();
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const size_t loopStartLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, byteCode.size());
@@ -694,9 +749,10 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 
 void GeneratorCore::Visit(const ForStatement *forStatement)
 {
+	ByteCode::Type &byteCode = GetByteCode();
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	Traverse(forStatement->GetInitializer());
 
-	ByteCode::Type &byteCode = GetByteCode();
 	const size_t loopStartLabel = CreateLabel();
 	const size_t countingLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
@@ -728,6 +784,8 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 
 void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 {
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+
 	if (jumpStatement->IsBreak())
 	{
 		EmitJump(OPCODE_GOTO, mBreakLabel.GetTop());
@@ -797,6 +855,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 
 void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 {
+	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ResultStack::Element expressionResult(mResult);
 	TraverseOmitOptionalTemporaries(expressionStatement->GetExpression());
 }
@@ -1176,13 +1235,14 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 
 void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
-	// TODO: deal with non-primitive return types.
 	const Expression *lhs = functionCallExpression->GetLhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
-	const bu32_t returnType = prototype->GetReturnType()->GetSignatureType();
+	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
+	const bu32_t returnType = returnDescriptor->GetSignatureType();
+	const bi32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1202,7 +1262,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 
 	if (returnType == SIG_STRUCT)
 	{
-		EmitOpCodeWithOffset(OPCODE_LOADFP, functionCallExpression->GetReturnValueOffset());
+		EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
 	}
 
 	ByteCode::Type &byteCode = GetByteCode();
@@ -1211,9 +1271,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 
 	if (returnType == SIG_STRUCT)
 	{
-		mResult.SetTop(GeneratorResult(
-			GeneratorResult::CONTEXT_FP_INDIRECT,
-			functionCallExpression->GetReturnValueOffset()));
+		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, returnOffset));
 	}
 	else if (returnType == SIG_VOID)
 	{
@@ -3258,10 +3316,10 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteQualifiedSymbolName(function);
 		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		WriteValue32(Value32(function->GetGlobalHashCode()));
-		WriteValue32(Value32(function->GetArgSize()));
-		WriteValue32(Value32(function->GetPackedArgSize()));
-		WriteValue32(Value32(function->GetLocalSize()));
-		WriteValue32(Value32(function->GetFramePointerAlignment()));
+		WriteValue32(Value32(flit->mArgSize));
+		WriteValue32(Value32(flit->mPackedArgSize));
+		WriteValue32(Value32(flit->mLocalSize));
+		WriteValue32(Value32(flit->mFramePointerAlignment));
 
 		// Cache the code start position and skip 4 bytes for the code size.
 		const int codeSizePos = mWriter.GetPosition();
@@ -3417,6 +3475,20 @@ void GeneratorCore::WriteValue64(Value64 value)
 GeneratorCore::ByteCode::Type &GeneratorCore::GetByteCode()
 {
 	return mFunction.GetTop()->mByteCode;
+}
+
+
+bi32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
+{
+	CompiledFunction *function = mFunction.GetTop();
+	const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
+	const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+	const bi32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
+	const bi32_t nextOffset = AlignUp(offset + size, BOND_SLOT_SIZE);
+	mLocalOffset.SetTop(nextOffset);
+	function->mLocalSize = Max(function->mLocalSize, nextOffset);
+	function->mFramePointerAlignment = Max(function->mFramePointerAlignment, alignment);
+	return offset;
 }
 
 

@@ -30,9 +30,6 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element hasReturnElement(mHasReturn, false);
 	BoolStack::Element isInLoopElement(mIsInLoop, false);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
-	IntStack::Element variableOffsetElement(mVariableOffset, 0);
-	IntStack::Element localSizeElement(mLocalSize, 0);
-	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, 0);
 	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
 	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
 	TypeStack::Element returnTypeElement(mReturnType, NULL);
@@ -44,39 +41,15 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
-	FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	bi32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? -BOND_SLOT_SIZE : 0;
-	bi32_t packedOffset = offset;
-	bi32_t framePointerAlignment = Max(BOND_SLOT_SIZE, -offset);
-	Parameter *parameterList = prototype->GetParameterList();
-	while (parameterList != NULL)
-	{
-		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-		offset -= typeDescriptor->GetSize(mPointerSize);
-		offset = AlignDown(offset, alignment);
-		packedOffset -= typeDescriptor->GetStackSize(mPointerSize);
-		framePointerAlignment = Max(framePointerAlignment, alignment);
-		parameterList->SetOffset(offset);
-		parameterList = NextNode(parameterList);
-	}
-
-	const TypeDescriptor *returnType = prototype->GetReturnType();
+	const TypeDescriptor *returnType = functionDefinition->GetPrototype()->GetReturnType();
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
 	BoolStack::Element hasReturnElement(mHasReturn, false);
-	IntStack::Element variableOffsetElement(mVariableOffset, 0);
-	IntStack::Element localSizeElement(mLocalSize, 0);
-	IntStack::Element framePointerAlignmentElement(mFramePointerAlignment, framePointerAlignment);
 	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
 	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
 	TypeStack::Element returnTypeElement(mReturnType, returnType);
 	FunctionStack::Element functionElement(mFunction, functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
-	functionDefinition->SetArgSize(static_cast<bu32_t>(-offset));
-	functionDefinition->SetPackedArgSize(static_cast<bu32_t>(-packedOffset));
-	functionDefinition->SetLocalSize(AlignUp(localSizeElement.GetValue(), BOND_SLOT_SIZE));
-	functionDefinition->SetFramePointerAlignment(framePointerAlignmentElement.GetValue());
 	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement.GetValue());
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
@@ -86,37 +59,10 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 }
 
 
-void ValidationPass::Visit(NamedInitializer *namedInitializer)
-{
-	if (namedInitializer->GetScope() == SCOPE_LOCAL)
-	{
-		const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-		const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
-		const bi32_t offset = AlignUp(mVariableOffset.GetTop(), alignment);
-		const bi32_t nextOffset = offset + size;
-		namedInitializer->SetOffset(offset);
-		mVariableOffset.SetTop(nextOffset);
-		mLocalSize.SetTop(Max(mLocalSize.GetTop(), nextOffset));
-		mFramePointerAlignment.SetTop(Max(mFramePointerAlignment.GetTop(), alignment));
-	}
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
-	ParseNodeTraverser::Visit(namedInitializer);
-}
-
-
-void ValidationPass::Visit(CompoundStatement *compoundStatement)
-{
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
-	SemanticAnalysisPass::Visit(compoundStatement);
-}
-
-
 void ValidationPass::Visit(IfStatement *ifStatement)
 {
 	AssertReachableCode(ifStatement);
 	mEndsWithJump.SetTop(false);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	Traverse(ifStatement->GetCondition());
 
 	bool hasReturn = ifStatement->GetElseStatement() != NULL;
@@ -146,7 +92,6 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	AssertReachableCode(switchStatement);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, true);
 	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	mEndsWithJump.SetTop(false);
 	Traverse(switchStatement->GetControl());
 
@@ -215,7 +160,6 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 void ValidationPass::Visit(SwitchSection *switchSection)
 {
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 
 	const size_t jumpTargetId = GetJumpTargetId();
 	switchSection->SetJumpTargetId(jumpTargetId);
@@ -257,7 +201,6 @@ void ValidationPass::Visit(WhileStatement *whileStatement)
 	BoolStack::Element isInLoopElement(mIsInLoop, true);
 	mEndsWithJump.SetTop(false);
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(whileStatement);
 }
 
@@ -268,7 +211,6 @@ void ValidationPass::Visit(ForStatement *forStatement)
 	BoolStack::Element isInLoopElement(mIsInLoop, true);
 	mEndsWithJump.SetTop(false);
 	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	SemanticAnalysisPass::Visit(forStatement);
 }
 
@@ -276,7 +218,6 @@ void ValidationPass::Visit(ForStatement *forStatement)
 void ValidationPass::Visit(JumpStatement *jumpStatement)
 {
 	AssertReachableCode(jumpStatement);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(jumpStatement);
 
 	bool endsWithJump = true;
@@ -328,36 +269,7 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 		AssertReachableCode(expressionStatement);
 	}
 	mEndsWithJump.SetTop(false);
-	IntStack::Element variableOffsetElement(mVariableOffset, mVariableOffset.GetTop());
 	ParseNodeTraverser::Visit(expressionStatement);
-}
-
-
-void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
-{
-	// A struct returned by a function is returned in a temporary local variable rather than
-	// on top of the operand stack as is the case with primitive types, so accommodations
-	// must be made for it.
-	const Expression *lhs = functionCallExpression->GetLhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
-	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
-	const FunctionPrototype *prototype = function->GetPrototype();
-	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
-
-	if (returnDescriptor->IsStructType())
-	{
-		const bi32_t alignment = Max(static_cast<bi32_t>(returnDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-		const bi32_t size = static_cast<bi32_t>(returnDescriptor->GetSize(mPointerSize));
-		const bi32_t offset = AlignUp(mVariableOffset.GetTop(), alignment);
-		const bi32_t nextOffset = offset + size;
-		functionCallExpression->SetReturnValueOffset(offset);
-		mVariableOffset.SetTop(nextOffset);
-		mLocalSize.SetTop(Max(mLocalSize.GetTop(), nextOffset));
-		mFramePointerAlignment.SetTop(Max(mFramePointerAlignment.GetTop(), alignment));
-	}
-	// No need to descend into the expression.
-	//ParseNodeTraverser::Visit(functionCallExpression);
 }
 
 

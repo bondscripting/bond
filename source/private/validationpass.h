@@ -21,8 +21,6 @@ public:
 protected:
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(FunctionPrototype *functionPrototype) {}
-	virtual void Visit(NamedInitializer *namedInitializer);
-	virtual void Visit(CompoundStatement *compoundStatement);
 	virtual void Visit(IfStatement *ifStatement);
 	virtual void Visit(SwitchStatement *switchStatement);
 	virtual void Visit(SwitchSection *switchSection);
@@ -32,7 +30,6 @@ protected:
 	virtual void Visit(JumpStatement *jumpStatement);
 	virtual void Visit(DeclarativeStatement *declarativeStatement);
 	virtual void Visit(ExpressionStatement *expressionStatement);
-	virtual void Visit(FunctionCallExpression *functionCallExpression);
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;
@@ -47,9 +44,6 @@ private:
 	BoolStack mHasReturn;
 	BoolStack mIsInLoop;
 	BoolStack mIsInSwitch;
-	IntStack mVariableOffset;
-	IntStack mLocalSize;
-	IntStack mFramePointerAlignment;
 	SizeStack mNextJumpTargetId;
 	SizeStack mSwitchJumpTargetId;
 	TypeStack mReturnType;
