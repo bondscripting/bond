@@ -9,6 +9,7 @@ struct Char3
 	Bond::bi8_t padding;
 };
 
+
 struct Char3Pair
 {
 	Char3 first;
@@ -22,6 +23,7 @@ struct Vector3
 	Bond::bi32_t y;
 	Bond::bi32_t z;
 };
+
 
 DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {

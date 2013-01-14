@@ -247,6 +247,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 	const bu32_t argSize = ReadValue32().mUInt;
 	const bu32_t packedArgSize = ReadValue32().mUInt;
 	const bu32_t localSize = ReadValue32().mUInt;
+	mIndex += sizeof(Value32); // Ignore the stack size.
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
 	if ((packedArgSize > argSize) ||
 	    ((argSize % BOND_SLOT_SIZE) != 0) ||

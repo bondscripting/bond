@@ -153,6 +153,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	const bu32_t argSize = ReadValue32().mUInt;
 	const bu32_t packedArgSize = ReadValue32().mUInt;
 	const bu32_t localSize = ReadValue32().mUInt;
+	const bu32_t stackSize = ReadValue32().mUInt;
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
 	const bu32_t codeSize = ReadValue32().mUInt;
 	const size_t codeStart = mIndex;
@@ -162,9 +163,10 @@ void DisassemblerCore::DisassembleFunctionBlob()
 		"\targ size: %" BOND_PRIu32 "\n"
 		"\tpacked arg size: %" BOND_PRIu32 "\n"
 		"\tlocal size: %" BOND_PRIu32 "\n"
+		"\tstack size: %" BOND_PRIu32 "\n"
 		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
 		"\tcode size: %" BOND_PRIu32 "\n",
-		hash, argSize, packedArgSize, localSize, framePointerAlignment, codeSize);
+		hash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{

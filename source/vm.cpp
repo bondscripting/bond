@@ -700,6 +700,12 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_POP:
+			{
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
 			case OPCODE_POPC:
 			{
 				const Value16 offset(code + pc);
@@ -881,22 +887,6 @@ void VM::ExecuteScriptFunction()
 			{
 				CopyValue64(sp - BOND_SLOT_SIZE, fp + (3 * BOND_SLOT_SIZE));
 				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_MOVESP:
-			{
-				const Value16 offset(code + pc);
-				pc += sizeof(Value16);
-				sp += offset.mShort;
-			}
-			break;
-
-			case OPCODE_MOVESPW:
-			{
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp += value32Table[offsetIndex.mUShort].mInt;;
 			}
 			break;
 

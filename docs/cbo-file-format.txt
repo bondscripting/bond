@@ -64,6 +64,7 @@ uint hash;
 uint frameSize;
 uint packedFrameSize;
 uint localSize;
+uint stackSize;
 uint framePointerAlignment;
 uint CodeSize;
 char[CodeSize] code;

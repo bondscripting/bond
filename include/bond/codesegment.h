@@ -72,10 +72,12 @@ struct Function
 	ParamListSignature mParamListSignature;
 	const ConstantTable *mConstantTable;
 	const bu8_t *mCode;
+	// TODO: There is a sign mismatch between these fields and the code generator.
 	bu32_t mCodeSize;
 	bu32_t mArgSize;
 	bu32_t mPackedArgSize;
 	bu32_t mLocalSize;
+	bu32_t mStackSize;
 	bu32_t mFramePointerAlignment;
 	bu32_t mHash;
 };

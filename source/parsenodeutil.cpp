@@ -131,6 +131,10 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	{
 		result = TypeDescriptor::GetBoolType();
 	}
+	else if (AreConvertibleTypes(typeA, typeB))
+	{
+		result = *typeA;
+	}
 
 	return result;
 }

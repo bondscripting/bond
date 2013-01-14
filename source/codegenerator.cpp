@@ -211,6 +211,7 @@ private:
 			mArgSize(argSize),
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
+			mStackSize(0),
 			mFramePointerAlignment(framePointerAlignment)
 		{}
 		const FunctionDefinition *mDefinition;
@@ -220,6 +221,7 @@ private:
 		bi32_t mArgSize;
 		bi32_t mPackedArgSize;
 		bi32_t mLocalSize;
+		bi32_t mStackSize;
 		bi32_t mFramePointerAlignment;
 	};
 
@@ -318,6 +320,7 @@ private:
 	void EmitJump(OpCode opCode, size_t toLabel);
 
 	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
+	void EmitOpCode(OpCode opCode);
 	void EmitValue16(Value16 value);
 	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
@@ -337,7 +340,9 @@ private:
 	void WriteValue64(Value64 value);
 
 	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
-	ByteCode::Type &GetByteCode();
+	CompiledFunction &GetFunction() { return *mFunction.GetTop(); }
+	ByteCode::Type &GetByteCode() { return GetFunction().mByteCode; }
+	void ApplyStackDelta(bi32_t delta);
 	bi32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
@@ -347,6 +352,7 @@ private:
 	bu16_t MapValue32(const Value32 &value32);
 	bu16_t MapValue64(const Value64 &value32);
 
+	void AssertStackEmpty();
 	void PushError(CompilerError::Type type);
 
 	StringIndexMap::Type mStringIndexMap;
@@ -362,6 +368,7 @@ private:
 	LabelStack mContinueLabel;
 	LabelStack mBreakLabel;
 	IntStack mLocalOffset;
+	IntStack mStackTop;
 	BoolStack mEmitOptionalTemporaries;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
@@ -425,14 +432,10 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 
 	// Remove any temporaries that may have been left on the stack.
 	const GeneratorResult::Context context = mResult.GetTop().mContext;
-	if (context == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
+	if ((context == GeneratorResult::CONTEXT_ADDRESS_INDIRECT) ||
+	    (context == GeneratorResult::CONTEXT_STACK_VALUE))
 	{
-		EmitOpCodeWithOffset(OPCODE_MOVESP, -BOND_SLOT_SIZE);
-	}
-	else if (context == GeneratorResult::CONTEXT_STACK_VALUE)
-	{
-		const bu32_t typeSize = expression->GetTypeDescriptor()->GetStackSize(mPointerSize);
-		EmitOpCodeWithOffset(OPCODE_MOVESP, -static_cast<bi32_t>(typeSize));
+		EmitOpCode(OPCODE_POP);
 	}
 }
 
@@ -481,12 +484,12 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 
 		FunctionStack::Element functionElement(mFunction, &function);
 		IntStack::Element localOffsetElement(mLocalOffset, 0);
+		IntStack::Element stackTopElement(mStackTop, 0);
 		Traverse(functionDefinition->GetBody());
 
 		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
 		{
-			ByteCode::Type &byteCode = GetByteCode();
-			byteCode.push_back(OPCODE_RETURN);
+			EmitOpCode(OPCODE_RETURN);
 		}
 	}
 }
@@ -518,13 +521,12 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 				if (lhDescriptor->IsStructType())
 				{
-					ByteCode::Type &byteCode = GetByteCode();
 					EmitOpCodeWithOffset(OPCODE_LOADFP, namedInitializer->GetOffset());
 					const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
 					// Any pointer type will do.
 					const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
 					EmitPushResult(sourceResult, &voidStar);
-					byteCode.push_back(OPCODE_MEMCOPYW);
+					EmitOpCode(OPCODE_MEMCOPYW);
 					EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
 				}
 				else
@@ -553,13 +555,13 @@ void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
 {
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ParseNodeTraverser::Visit(compoundStatement);
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
-	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *condition = ifStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
@@ -585,26 +587,26 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 		EmitJump(OPCODE_IFZ, thenEndLabel);
 
 		Traverse(ifStatement->GetThenStatement());
-		size_t thenEndPos = byteCode.size();
+		size_t thenEndPos = GetByteCode().size();
 
 		if (ifStatement->GetElseStatement() != NULL)
 		{
 			size_t elseEndLabel = CreateLabel();
 			EmitJump(OPCODE_GOTO, elseEndLabel);
-			thenEndPos = byteCode.size();
+			thenEndPos = GetByteCode().size();
 
 			Traverse(ifStatement->GetElseStatement());
-			SetLabelValue(elseEndLabel, byteCode.size());
+			SetLabelValue(elseEndLabel, GetByteCode().size());
 		}
 
 		SetLabelValue(thenEndLabel, thenEndPos);
 	}
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const size_t endLabel = CreateLabel();
 	LabelStack::Element breakElement(mBreakLabel, endLabel);
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
@@ -624,15 +626,16 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 
 	if (doLookupSwitch)
 	{
-		byteCode.push_back(OPCODE_LOOKUPSWITCH);
+		EmitOpCode(OPCODE_LOOKUPSWITCH);
 		jumpTableSize = (2 + (numMatches * 2)) * sizeof(Value32);
 	}
 	else
 	{
-		byteCode.push_back(OPCODE_TABLESWITCH);
+		EmitOpCode(OPCODE_TABLESWITCH);
 		jumpTableSize = (4 + range) * sizeof(Value32);
 	}
 
+	ByteCode::Type &byteCode = GetByteCode();
 	const size_t jumpTableStart = AlignUp(byteCode.size(), sizeof(Value32));
 	const size_t jumpTableEnd = jumpTableStart + jumpTableSize;
 
@@ -643,7 +646,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	SetLabelValue(endLabel, endPos);
 
 	// Now that the switch sections have been generated, the jump table can be resolved.
-	const LabelList::Type &labelList = mFunction.GetTop()->mLabelList;
+	const LabelList::Type &labelList = GetFunction().mLabelList;
 	const ResolvedSwitchLabel *resolvedLabels = switchStatement->GetResolvedLabelList();
 
 	bi32_t defaultOffset = 0;
@@ -695,26 +698,26 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 			pos += sizeof(Value32);
 		}
 	}
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const SwitchSection *switchSection)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
-	const size_t sectionStartPos = byteCode.size();
+	const size_t sectionStartPos = GetByteCode().size();
 	SetLabelValue(switchSection->GetJumpTargetId(), sectionStartPos);
 	TraverseList(switchSection->GetStatementList());
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const size_t loopStartLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
-	SetLabelValue(loopStartLabel, byteCode.size());
+	SetLabelValue(loopStartLabel, GetByteCode().size());
 
 	LabelStack::Element continueElement(mContinueLabel, loopStartLabel);
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
@@ -743,20 +746,20 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		EmitJump(OPCODE_GOTO, loopStartLabel);
 	}
 
-	SetLabelValue(loopEndLabel, byteCode.size());
+	SetLabelValue(loopEndLabel, GetByteCode().size());
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const ForStatement *forStatement)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	Traverse(forStatement->GetInitializer());
 
 	const size_t loopStartLabel = CreateLabel();
 	const size_t countingLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
-	SetLabelValue(loopStartLabel, byteCode.size());
+	SetLabelValue(loopStartLabel, GetByteCode().size());
 
 	LabelStack::Element continueElement(mContinueLabel, countingLabel);
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
@@ -772,13 +775,14 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	}
 
 	Traverse(forStatement->GetBody());
-	SetLabelValue(countingLabel, byteCode.size());
+	SetLabelValue(countingLabel, GetByteCode().size());
 
 	ResultStack::Element countingResult(mResult);
 	TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
 
 	EmitJump(OPCODE_GOTO, loopStartLabel);
-	SetLabelValue(loopEndLabel, byteCode.size());
+	SetLabelValue(loopEndLabel, GetByteCode().size());
+	AssertStackEmpty();
 }
 
 
@@ -796,9 +800,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 	}
 	else if (jumpStatement->IsReturn())
 	{
-		const TypeDescriptor *returnDescriptor = mFunction.GetTop()->mDefinition->GetPrototype()->GetReturnType();
-		ByteCode::Type &byteCode = GetByteCode();
-
+		const TypeDescriptor *returnDescriptor = GetFunction().mDefinition->GetPrototype()->GetReturnType();
 		if (!returnDescriptor->IsVoidType())
 		{
 			const Expression *rhs = jumpStatement->GetRhs();
@@ -809,7 +811,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 			if (returnDescriptor->IsPointerType())
 			{
 				EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
-				byteCode.push_back(RETURN_OPCODES.GetPointerOpCode(mPointerSize));
+				EmitOpCode(RETURN_OPCODES.GetPointerOpCode(mPointerSize));
 			}
 			else
 			{
@@ -824,14 +826,14 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 					case Token::KEY_UINT:
 					case Token::KEY_FLOAT:
 						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
-						byteCode.push_back(OPCODE_RETURN32);
+						EmitOpCode(OPCODE_RETURN32);
 						break;
 
 					case Token::KEY_LONG:
 					case Token::KEY_ULONG:
 					case Token::KEY_DOUBLE:
 						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
-						byteCode.push_back(OPCODE_RETURN64);
+						EmitOpCode(OPCODE_RETURN64);
 						break;
 
 					default:
@@ -839,7 +841,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 						// Any pointer type will do.
 						const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
 						EmitPushResult(result, &voidStar);
-						byteCode.push_back(OPCODE_RETURNMEMW);
+						EmitOpCode(OPCODE_RETURNMEMW);
 						EmitIndexedValue32(Value32(returnDescriptor->GetSize(mPointerSize)));
 						break;
 				}
@@ -847,9 +849,10 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 		}
 		else
 		{
-			byteCode.push_back(OPCODE_RETURN);
+			EmitOpCode(OPCODE_RETURN);
 		}
 	}
+	AssertStackEmpty();
 }
 
 
@@ -858,12 +861,13 @@ void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ResultStack::Element expressionResult(mResult);
 	TraverseOmitOptionalTemporaries(expressionStatement->GetExpression());
+	AssertStackEmpty();
 }
 
 
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
-	ByteCode::Type &byteCode = GetByteCode();
+	// TODO: Account for structs and verify pointer and array types.
 	const Expression *condition = conditionalExpression->GetCondition();
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
@@ -880,19 +884,22 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 		const size_t trueEndLabel = CreateLabel();
 		EmitJump(OPCODE_IFZ, trueEndLabel);
 
-		ResultStack::Element trueResult(mResult);
-		Traverse(trueExpression);
-		EmitPushResultAs(trueResult, trueDescriptor, resultDescriptor);
+		{
+			IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+			ResultStack::Element trueResult(mResult);
+			Traverse(trueExpression);
+			EmitPushResultAs(trueResult, trueDescriptor, resultDescriptor);
+		}
 
 		const size_t falseEndLabel = CreateLabel();
 		EmitJump(OPCODE_GOTO, falseEndLabel);
-		SetLabelValue(trueEndLabel, byteCode.size());
+		SetLabelValue(trueEndLabel, GetByteCode().size());
 
 		ResultStack::Element falseResult(mResult);
 		Traverse(falseExpression);
 		EmitPushResultAs(falseResult, falseDescriptor, resultDescriptor);
 
-		SetLabelValue(falseEndLabel, byteCode.size());
+		SetLabelValue(falseEndLabel, GetByteCode().size());
 	}
 
 	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
@@ -1246,9 +1253,10 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
-	EmitArgumentList(argList, paramList);
-
 	{
+		IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+		EmitArgumentList(argList, paramList);
+
 		ResultStack::Element lhResult(mResult);
 		Traverse(lhs);
 
@@ -1258,16 +1266,15 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
 			EmitPushResult(lhResult, &voidStar);
 		}
-	}
 
-	if (returnType == SIG_STRUCT)
-	{
-		EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
-	}
+		if (returnType == SIG_STRUCT)
+		{
+			EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
+		}
 
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
-	EmitHashCode(function->GetGlobalHashCode());
+		EmitOpCode(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
+		EmitHashCode(function->GetGlobalHashCode());
+	}
 
 	if (returnType == SIG_STRUCT)
 	{
@@ -1279,6 +1286,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	}
 	else
 	{
+		ApplyStackDelta(BOND_SLOT_SIZE);
 		mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
 	}
 }
@@ -1457,7 +1465,6 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 
 void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	if (typeDescriptor->IsValueType())
 	{
 		switch (typeDescriptor->GetPrimitiveType())
@@ -1487,8 +1494,8 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 				break;
 			default:
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
-				byteCode.push_back(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
+				EmitOpCode(OPCODE_LOADMEMW);
+				EmitIndexedValue32(Value32(typeDescriptor->GetStackSize(mPointerSize)));
 				break;
 		}
 	}
@@ -1508,32 +1515,31 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 
 void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -4 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_P3);
+			EmitOpCode(OPCODE_PUSH32_P3);
 			break;
 		case -3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_P2);
+			EmitOpCode(OPCODE_PUSH32_P2);
 			break;
 		case -2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_P1);
+			EmitOpCode(OPCODE_PUSH32_P1);
 			break;
 		case -1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_P0);
+			EmitOpCode(OPCODE_PUSH32_P0);
 			break;
 		case 0 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_L0);
+			EmitOpCode(OPCODE_PUSH32_L0);
 			break;
 		case 1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_L1);
+			EmitOpCode(OPCODE_PUSH32_L1);
 			break;
 		case 2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_L2);
+			EmitOpCode(OPCODE_PUSH32_L2);
 			break;
 		case 3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH32_L3);
+			EmitOpCode(OPCODE_PUSH32_L3);
 			break;
 		default:
 			EmitOpCodeWithOffset(OPCODE_PUSH32, offset);
@@ -1544,32 +1550,31 @@ void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
 
 void GeneratorCore::EmitPushFramePointerIndirectValue64(bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -4 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_P3);
+			EmitOpCode(OPCODE_PUSH64_P3);
 			break;
 		case -3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_P2);
+			EmitOpCode(OPCODE_PUSH64_P2);
 			break;
 		case -2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_P1);
+			EmitOpCode(OPCODE_PUSH64_P1);
 			break;
 		case -1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_P0);
+			EmitOpCode(OPCODE_PUSH64_P0);
 			break;
 		case 0 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_L0);
+			EmitOpCode(OPCODE_PUSH64_L0);
 			break;
 		case 1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_L1);
+			EmitOpCode(OPCODE_PUSH64_L1);
 			break;
 		case 2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_L2);
+			EmitOpCode(OPCODE_PUSH64_L2);
 			break;
 		case 3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_PUSH64_L3);
+			EmitOpCode(OPCODE_PUSH64_L3);
 			break;
 		default:
 			EmitOpCodeWithOffset(OPCODE_PUSH64, offset);
@@ -1582,7 +1587,6 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
-	ByteCode::Type &byteCode = GetByteCode();
 	EmitAccumulateAddressOffset(offset);
 
 	if (typeDescriptor->IsValueType())
@@ -1591,36 +1595,36 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_UCHAR:
-				byteCode.push_back(OPCODE_LOADUC);
+				EmitOpCode(OPCODE_LOADUC);
 				break;
 			case Token::KEY_CHAR:
-				byteCode.push_back(OPCODE_LOADC);
+				EmitOpCode(OPCODE_LOADC);
 				break;
 			case Token::KEY_SHORT:
-				byteCode.push_back(OPCODE_LOADS);
+				EmitOpCode(OPCODE_LOADS);
 				break;
 			case Token::KEY_USHORT:
-				byteCode.push_back(OPCODE_LOADUS);
+				EmitOpCode(OPCODE_LOADUS);
 				break;
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
-				byteCode.push_back(OPCODE_LOAD32);
+				EmitOpCode(OPCODE_LOAD32);
 				break;
 			case Token::KEY_LONG:
 			case Token::KEY_ULONG:
 			case Token::KEY_DOUBLE:
-				byteCode.push_back(OPCODE_LOAD64);
+				EmitOpCode(OPCODE_LOAD64);
 				break;
 			default:
-				byteCode.push_back(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
+				EmitOpCode(OPCODE_LOADMEMW);
+				EmitIndexedValue32(Value32(typeDescriptor->GetStackSize(mPointerSize)));
 			break;
 		}
 	}
 	else if (typeDescriptor->IsPointerType())
 	{
-		byteCode.push_back(LOAD_OPCODES.GetPointerOpCode(mPointerSize));
+		EmitOpCode(LOAD_OPCODES.GetPointerOpCode(mPointerSize));
 	}
 }
 
@@ -1654,13 +1658,12 @@ void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const T
 
 void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *typeDescriptor = typeAndValue.GetTypeDescriptor();
 	// TODO: Deal with string literals.
 	switch (typeDescriptor->GetPrimitiveType())
 	{
 		case Token::KEY_BOOL:
-			byteCode.push_back(typeAndValue.GetBoolValue() ? OPCODE_CONSTI_1 : OPCODE_CONSTI_0);
+			EmitOpCode(typeAndValue.GetBoolValue() ? OPCODE_CONSTI_1 : OPCODE_CONSTI_0);
 			break;
 		case Token::KEY_CHAR:
 		case Token::KEY_SHORT:
@@ -1687,7 +1690,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 		default:
 			if (typeDescriptor->IsNullType())
 			{
-				byteCode.push_back(Is64BitPointer() ? OPCODE_CONSTL_0 : OPCODE_CONSTI_0);
+				EmitOpCode(Is64BitPointer() ? OPCODE_CONSTL_0 : OPCODE_CONSTI_0);
 			}
 			// TODO: Deal with non-primitive values.
 			break;
@@ -1697,57 +1700,56 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 
 void GeneratorCore::EmitPushConstantInt(bi32_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case -2:
-			byteCode.push_back(OPCODE_CONSTI_N2);
+			EmitOpCode(OPCODE_CONSTI_N2);
 			break;
 		case -1:
-			byteCode.push_back(OPCODE_CONSTI_N1);
+			EmitOpCode(OPCODE_CONSTI_N1);
 			break;
 		case 0:
-			byteCode.push_back(OPCODE_CONSTI_0);
+			EmitOpCode(OPCODE_CONSTI_0);
 			break;
 		case 1:
-			byteCode.push_back(OPCODE_CONSTI_1);
+			EmitOpCode(OPCODE_CONSTI_1);
 			break;
 		case 2:
-			byteCode.push_back(OPCODE_CONSTI_2);
+			EmitOpCode(OPCODE_CONSTI_2);
 			break;
 		case 3:
-			byteCode.push_back(OPCODE_CONSTI_3);
+			EmitOpCode(OPCODE_CONSTI_3);
 			break;
 		case 4:
-			byteCode.push_back(OPCODE_CONSTI_4);
+			EmitOpCode(OPCODE_CONSTI_4);
 			break;
 		case 8:
-			byteCode.push_back(OPCODE_CONSTI_8);
+			EmitOpCode(OPCODE_CONSTI_8);
 			break;
 		default:
 			if (IsInCharRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTC);
-				byteCode.push_back(static_cast<bu8_t>(value));
+				EmitOpCode(OPCODE_CONSTC);
+				GetByteCode().push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInUCharRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTUC);
-				byteCode.push_back(static_cast<bu8_t>(value));
+				EmitOpCode(OPCODE_CONSTUC);
+				GetByteCode().push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInShortRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTS);
+				EmitOpCode(OPCODE_CONSTS);
 				EmitValue16(Value16(value));
 			}
 			else if (IsInUShortRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTUS);
+				EmitOpCode(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
 			}
 			else
 			{
-				byteCode.push_back(OPCODE_CONST32);
+				EmitOpCode(OPCODE_CONST32);
 				EmitIndexedValue32(Value32(value));
 			}
 			break;
@@ -1757,41 +1759,40 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 
 void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case 0:
-			byteCode.push_back(OPCODE_CONSTI_0);
+			EmitOpCode(OPCODE_CONSTI_0);
 			break;
 		case 1:
-			byteCode.push_back(OPCODE_CONSTI_1);
+			EmitOpCode(OPCODE_CONSTI_1);
 			break;
 		case 2:
-			byteCode.push_back(OPCODE_CONSTI_2);
+			EmitOpCode(OPCODE_CONSTI_2);
 			break;
 		case 3:
-			byteCode.push_back(OPCODE_CONSTI_3);
+			EmitOpCode(OPCODE_CONSTI_3);
 			break;
 		case 4:
-			byteCode.push_back(OPCODE_CONSTI_4);
+			EmitOpCode(OPCODE_CONSTI_4);
 			break;
 		case 8:
-			byteCode.push_back(OPCODE_CONSTI_8);
+			EmitOpCode(OPCODE_CONSTI_8);
 			break;
 		default:
 			if (IsInUCharRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTUC);
-				byteCode.push_back(static_cast<bu8_t>(value));
+				EmitOpCode(OPCODE_CONSTUC);
+				GetByteCode().push_back(static_cast<bu8_t>(value));
 			}
 			else if (IsInUShortRange(value))
 			{
-				byteCode.push_back(OPCODE_CONSTUS);
+				EmitOpCode(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
 			}
 			else
 			{
-				byteCode.push_back(OPCODE_CONST32);
+				EmitOpCode(OPCODE_CONST32);
 				EmitIndexedValue32(Value32(value));
 			}
 			break;
@@ -1801,36 +1802,35 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 
 void GeneratorCore::EmitPushConstantLong(bi64_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case -2:
-			byteCode.push_back(OPCODE_CONSTL_N2);
+			EmitOpCode(OPCODE_CONSTL_N2);
 			break;
 		case -1:
-			byteCode.push_back(OPCODE_CONSTL_N1);
+			EmitOpCode(OPCODE_CONSTL_N1);
 			break;
 		case 0:
-			byteCode.push_back(OPCODE_CONSTL_0);
+			EmitOpCode(OPCODE_CONSTL_0);
 			break;
 		case 1:
-			byteCode.push_back(OPCODE_CONSTL_1);
+			EmitOpCode(OPCODE_CONSTL_1);
 			break;
 		case 2:
-			byteCode.push_back(OPCODE_CONSTL_2);
+			EmitOpCode(OPCODE_CONSTL_2);
 			break;
 		case 3:
-			byteCode.push_back(OPCODE_CONSTL_3);
+			EmitOpCode(OPCODE_CONSTL_3);
 			break;
 		case 4:
-			byteCode.push_back(OPCODE_CONSTL_4);
+			EmitOpCode(OPCODE_CONSTL_4);
 			break;
 		case 8:
-			byteCode.push_back(OPCODE_CONSTL_8);
+			EmitOpCode(OPCODE_CONSTL_8);
 			break;
 		default:
 		{
-			byteCode.push_back(OPCODE_CONST64);
+			EmitOpCode(OPCODE_CONST64);
 			EmitIndexedValue64(Value64(value));
 		}
 		break;
@@ -1840,30 +1840,29 @@ void GeneratorCore::EmitPushConstantLong(bi64_t value)
 
 void GeneratorCore::EmitPushConstantULong(bu64_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (value)
 	{
 		case 0:
-			byteCode.push_back(OPCODE_CONSTL_0);
+			EmitOpCode(OPCODE_CONSTL_0);
 			break;
 		case 1:
-			byteCode.push_back(OPCODE_CONSTL_1);
+			EmitOpCode(OPCODE_CONSTL_1);
 			break;
 		case 2:
-			byteCode.push_back(OPCODE_CONSTL_2);
+			EmitOpCode(OPCODE_CONSTL_2);
 			break;
 		case 3:
-			byteCode.push_back(OPCODE_CONSTL_3);
+			EmitOpCode(OPCODE_CONSTL_3);
 			break;
 		case 4:
-			byteCode.push_back(OPCODE_CONSTL_4);
+			EmitOpCode(OPCODE_CONSTL_4);
 			break;
 		case 8:
-			byteCode.push_back(OPCODE_CONSTL_8);
+			EmitOpCode(OPCODE_CONSTL_8);
 			break;
 		default:
 		{
-			byteCode.push_back(OPCODE_CONST64);
+			EmitOpCode(OPCODE_CONST64);
 			EmitIndexedValue64(Value64(value));
 		}
 		break;
@@ -1873,38 +1872,37 @@ void GeneratorCore::EmitPushConstantULong(bu64_t value)
 
 void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	if (value == -2.0f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_N2);
+		EmitOpCode(OPCODE_CONSTF_N2);
 	}
 	else if (value == -1.0f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_N1);
+		EmitOpCode(OPCODE_CONSTF_N1);
 	}
 	else if (value == -0.5f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_NH);
+		EmitOpCode(OPCODE_CONSTF_NH);
 	}
 	else if (value == 0.0f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_0);
+		EmitOpCode(OPCODE_CONSTF_0);
 	}
 	else if (value == 0.5f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_H);
+		EmitOpCode(OPCODE_CONSTF_H);
 	}
 	else if (value == 1.0f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_1);
+		EmitOpCode(OPCODE_CONSTF_1);
 	}
 	else if (value == 2.0f)
 	{
-		byteCode.push_back(OPCODE_CONSTF_2);
+		EmitOpCode(OPCODE_CONSTF_2);
 	}
 	else
 	{
-		byteCode.push_back(OPCODE_CONST32);
+		EmitOpCode(OPCODE_CONST32);
 		EmitIndexedValue32(Value32(value));
 	}
 }
@@ -1912,38 +1910,37 @@ void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 
 void GeneratorCore::EmitPushConstantDouble(bf64_t value)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	if (value == -2.0)
 	{
-		byteCode.push_back(OPCODE_CONSTD_N2);
+		EmitOpCode(OPCODE_CONSTD_N2);
 	}
 	else if (value == -1.0)
 	{
-		byteCode.push_back(OPCODE_CONSTD_N1);
+		EmitOpCode(OPCODE_CONSTD_N1);
 	}
 	else if (value == -0.5)
 	{
-		byteCode.push_back(OPCODE_CONSTD_NH);
+		EmitOpCode(OPCODE_CONSTD_NH);
 	}
 	else if (value == 0.0)
 	{
-		byteCode.push_back(OPCODE_CONSTD_0);
+		EmitOpCode(OPCODE_CONSTD_0);
 	}
 	else if (value == 0.5)
 	{
-		byteCode.push_back(OPCODE_CONSTD_H);
+		EmitOpCode(OPCODE_CONSTD_H);
 	}
 	else if (value == 1.0)
 	{
-		byteCode.push_back(OPCODE_CONSTD_1);
+		EmitOpCode(OPCODE_CONSTD_1);
 	}
 	else if (value == 2.0)
 	{
-		byteCode.push_back(OPCODE_CONSTD_2);
+		EmitOpCode(OPCODE_CONSTD_2);
 	}
 	else
 	{
-		byteCode.push_back(OPCODE_CONST64);
+		EmitOpCode(OPCODE_CONST64);
 		EmitIndexedValue64(Value64(value));
 	}
 }
@@ -2013,32 +2010,31 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 
 void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -4 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_P3);
+			EmitOpCode(OPCODE_POP32_P3);
 			break;
 		case -3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_P2);
+			EmitOpCode(OPCODE_POP32_P2);
 			break;
 		case -2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_P1);
+			EmitOpCode(OPCODE_POP32_P1);
 			break;
 		case -1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_P0);
+			EmitOpCode(OPCODE_POP32_P0);
 			break;
 		case 0 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_L0);
+			EmitOpCode(OPCODE_POP32_L0);
 			break;
 		case 1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_L1);
+			EmitOpCode(OPCODE_POP32_L1);
 			break;
 		case 2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_L2);
+			EmitOpCode(OPCODE_POP32_L2);
 			break;
 		case 3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP32_L3);
+			EmitOpCode(OPCODE_POP32_L3);
 			break;
 		default:
 			EmitOpCodeWithOffset(OPCODE_POP32, offset);
@@ -2049,32 +2045,31 @@ void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
 
 void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (offset)
 	{
 		case -4 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_P3);
+			EmitOpCode(OPCODE_POP64_P3);
 			break;
 		case -3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_P2);
+			EmitOpCode(OPCODE_POP64_P2);
 			break;
 		case -2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_P1);
+			EmitOpCode(OPCODE_POP64_P1);
 			break;
 		case -1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_P0);
+			EmitOpCode(OPCODE_POP64_P0);
 			break;
 		case 0 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_L0);
+			EmitOpCode(OPCODE_POP64_L0);
 			break;
 		case 1 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_L1);
+			EmitOpCode(OPCODE_POP64_L1);
 			break;
 		case 2 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_L2);
+			EmitOpCode(OPCODE_POP64_L2);
 			break;
 		case 3 * BOND_SLOT_SIZE:
-			byteCode.push_back(OPCODE_POP64_L3);
+			EmitOpCode(OPCODE_POP64_L3);
 			break;
 		default:
 			EmitOpCodeWithOffset(OPCODE_POP64, offset);
@@ -2085,7 +2080,6 @@ void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
 
 void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	EmitAccumulateAddressOffset(offset);
 
 	if (typeDescriptor->IsValueType())
@@ -2095,21 +2089,21 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 			case Token::KEY_BOOL:
 			case Token::KEY_CHAR:
 			case Token::KEY_UCHAR:
-				byteCode.push_back(OPCODE_STOREC);
+				EmitOpCode(OPCODE_STOREC);
 				break;
 			case Token::KEY_SHORT:
 			case Token::KEY_USHORT:
-				byteCode.push_back(OPCODE_STORES);
+				EmitOpCode(OPCODE_STORES);
 				break;
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
 			case Token::KEY_FLOAT:
-				byteCode.push_back(OPCODE_STORE32);
+				EmitOpCode(OPCODE_STORE32);
 				break;
 			case Token::KEY_LONG:
 			case Token::KEY_ULONG:
 			case Token::KEY_DOUBLE:
-				byteCode.push_back(OPCODE_STORE64);
+				EmitOpCode(OPCODE_STORE64);
 				break;
 			default:
 				break;
@@ -2117,7 +2111,7 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 	}
 	else if (typeDescriptor->IsPointerType())
 	{
-		byteCode.push_back(STORE_OPCODES.GetPointerOpCode(mPointerSize));
+		EmitOpCode(STORE_OPCODES.GetPointerOpCode(mPointerSize));
 	}
 }
 
@@ -2136,18 +2130,17 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAccumulateAddressOffset(const 
 
 void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	if (offset != 0)
 	{
 		if (Is64BitPointer())
 		{
 			EmitPushConstantLong(offset);
-			byteCode.push_back(OPCODE_ADDL);
+			EmitOpCode(OPCODE_ADDL);
 		}
 		else
 		{
 			EmitPushConstantInt(offset);
-			byteCode.push_back(OPCODE_ADDI);
+			EmitOpCode(OPCODE_ADDI);
 		}
 	}
 }
@@ -2155,7 +2148,6 @@ void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
 
 void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	switch (destType->GetPrimitiveType())
 	{
 		case Token::KEY_CHAR:
@@ -2165,20 +2157,20 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_USHORT:
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_ITOC);
+					EmitOpCode(OPCODE_ITOC);
 					break;
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
-					byteCode.push_back(OPCODE_ITOC);
+					EmitOpCode(OPCODE_LTOI);
+					EmitOpCode(OPCODE_ITOC);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOI);
-					byteCode.push_back(OPCODE_ITOC);
+					EmitOpCode(OPCODE_FTOI);
+					EmitOpCode(OPCODE_ITOC);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOI);
-					byteCode.push_back(OPCODE_ITOC);
+					EmitOpCode(OPCODE_DTOI);
+					EmitOpCode(OPCODE_ITOC);
 					break;
 				default:
 					break;
@@ -2193,20 +2185,20 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_USHORT:
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOUC);
+					EmitOpCode(OPCODE_UITOUC);
 					break;
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
-					byteCode.push_back(OPCODE_UITOUC);
+					EmitOpCode(OPCODE_LTOI);
+					EmitOpCode(OPCODE_UITOUC);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOUI);
-					byteCode.push_back(OPCODE_UITOUC);
+					EmitOpCode(OPCODE_FTOUI);
+					EmitOpCode(OPCODE_UITOUC);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOUI);
-					byteCode.push_back(OPCODE_UITOUC);
+					EmitOpCode(OPCODE_DTOUI);
+					EmitOpCode(OPCODE_UITOUC);
 					break;
 				default:
 					break;
@@ -2218,20 +2210,20 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			{
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_ITOS);
+					EmitOpCode(OPCODE_ITOS);
 					break;
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
-					byteCode.push_back(OPCODE_ITOS);
+					EmitOpCode(OPCODE_LTOI);
+					EmitOpCode(OPCODE_ITOS);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOI);
-					byteCode.push_back(OPCODE_ITOS);
+					EmitOpCode(OPCODE_FTOI);
+					EmitOpCode(OPCODE_ITOS);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOI);
-					byteCode.push_back(OPCODE_ITOS);
+					EmitOpCode(OPCODE_DTOI);
+					EmitOpCode(OPCODE_ITOS);
 					break;
 				default:
 					break;
@@ -2243,20 +2235,20 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			{
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOUS);
+					EmitOpCode(OPCODE_UITOUS);
 					break;
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
-					byteCode.push_back(OPCODE_UITOUS);
+					EmitOpCode(OPCODE_LTOI);
+					EmitOpCode(OPCODE_UITOUS);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOUI);
-					byteCode.push_back(OPCODE_UITOUS);
+					EmitOpCode(OPCODE_FTOUI);
+					EmitOpCode(OPCODE_UITOUS);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOUI);
-					byteCode.push_back(OPCODE_UITOUS);
+					EmitOpCode(OPCODE_DTOUI);
+					EmitOpCode(OPCODE_UITOUS);
 					break;
 				default:
 					break;
@@ -2268,13 +2260,13 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
+					EmitOpCode(OPCODE_LTOI);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOI);
+					EmitOpCode(OPCODE_FTOI);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOI);
+					EmitOpCode(OPCODE_DTOI);
 					break;
 				default:
 					break;
@@ -2286,13 +2278,13 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_LTOI);
+					EmitOpCode(OPCODE_LTOI);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOUI);
+					EmitOpCode(OPCODE_FTOUI);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOUI);
+					EmitOpCode(OPCODE_DTOUI);
 					break;
 				default:
 					break;
@@ -2305,18 +2297,18 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
-					byteCode.push_back(OPCODE_ITOL);
+					EmitOpCode(OPCODE_ITOL);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOUL);
+					EmitOpCode(OPCODE_UITOUL);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOL);
+					EmitOpCode(OPCODE_FTOL);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOL);
+					EmitOpCode(OPCODE_DTOL);
 					break;
 				default:
 					break;
@@ -2329,18 +2321,18 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
-					byteCode.push_back(OPCODE_ITOL);
+					EmitOpCode(OPCODE_ITOL);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOUL);
+					EmitOpCode(OPCODE_UITOUL);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOUL);
+					EmitOpCode(OPCODE_FTOUL);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOUL);
+					EmitOpCode(OPCODE_DTOUL);
 					break;
 				default:
 					break;
@@ -2353,21 +2345,21 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
-					byteCode.push_back(OPCODE_ITOF);
+					EmitOpCode(OPCODE_ITOF);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOF);
+					EmitOpCode(OPCODE_UITOF);
 					break;
 				case Token::KEY_LONG:
-					byteCode.push_back(OPCODE_LTOF);
+					EmitOpCode(OPCODE_LTOF);
 					break;
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_ULTOF);
+					EmitOpCode(OPCODE_ULTOF);
 					break;
 				case Token::KEY_DOUBLE:
-					byteCode.push_back(OPCODE_DTOF);
+					EmitOpCode(OPCODE_DTOF);
 					break;
 				default:
 					break;
@@ -2380,21 +2372,21 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
-					byteCode.push_back(OPCODE_ITOD);
+					EmitOpCode(OPCODE_ITOD);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
-					byteCode.push_back(OPCODE_UITOD);
+					EmitOpCode(OPCODE_UITOD);
 					break;
 				case Token::KEY_LONG:
-					byteCode.push_back(OPCODE_LTOD);
+					EmitOpCode(OPCODE_LTOD);
 					break;
 				case Token::KEY_ULONG:
-					byteCode.push_back(OPCODE_ULTOD);
+					EmitOpCode(OPCODE_ULTOD);
 					break;
 				case Token::KEY_FLOAT:
-					byteCode.push_back(OPCODE_FTOD);
+					EmitOpCode(OPCODE_FTOD);
 					break;
 				default:
 					break;
@@ -2423,8 +2415,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleBinaryOperator(const Bin
 	Traverse(rhs);
 	EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor));
+	EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 }
@@ -2432,7 +2423,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSimpleBinaryOperator(const Bin
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
@@ -2453,7 +2443,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 		{
 			if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 			{
-				byteCode.push_back(OPCODE_DUP);
+				EmitOpCode(OPCODE_DUP);
 			}
 			result = lhResult;
 		}
@@ -2462,7 +2452,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 		Traverse(rhs);
 		const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
 		EmitPushResult(sourceResult, &voidStar);
-		byteCode.push_back(OPCODE_MEMCOPYW);
+		EmitOpCode(OPCODE_MEMCOPYW);
 		EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
 	}
 	else
@@ -2480,7 +2470,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 			result.mContext = GeneratorResult::CONTEXT_STACK_VALUE;
 		}
 
@@ -2509,6 +2499,7 @@ void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
+	const bi32_t stackTop = mStackTop.GetTop();
 
 	const size_t endLabel = CreateLabel();
 	EmitJump(branchOpCode, endLabel);
@@ -2518,12 +2509,16 @@ void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression
 	EmitPushResult(rhResult, rhDescriptor);
 
 	SetLabelValue(endLabel, GetByteCode().size());
+
+	if (stackTop != mStackTop.GetTop())
+	{
+		PushError(CompilerError::INTERNAL_ERROR);
+	}
 }
 
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
@@ -2545,7 +2540,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	    rhTav.IsValueDefined() &&
 	    IsInCharRange(rhValue))
 	{
-		byteCode.push_back(INC_OPCODES.GetOpCode(*lhDescriptor));
+		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
+		ByteCode::Type &byteCode = GetByteCode();
 		byteCode.push_back(static_cast<bu8_t>(slotIndex));
 		byteCode.push_back(static_cast<bu8_t>(rhValue));
 
@@ -2561,7 +2557,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 		if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 		{
 			lhResult = EmitAccumulateAddressOffset(lhResult);
-			byteCode.push_back(OPCODE_DUP);
+			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
@@ -2571,12 +2567,12 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 		Traverse(rhs);
 		EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
 
-		byteCode.push_back(opCodeSet.GetOpCode(resultDescriptor));
+		EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
 		EmitCast(&resultDescriptor, lhDescriptor);
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
 		EmitPopResult(lhResult, lhDescriptor);
@@ -2590,7 +2586,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
 	const bi32_t elementSize = static_cast<bi32_t>(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
@@ -2607,7 +2602,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 	    offsetTav.IsValueDefined() &&
 	    IsInCharRange(offset))
 	{
-		byteCode.push_back(INC_OPCODES.GetPointerOpCode(mPointerSize));
+		EmitOpCode(INC_OPCODES.GetPointerOpCode(mPointerSize));
+		ByteCode::Type &byteCode = GetByteCode();
 		byteCode.push_back(static_cast<bu8_t>(slotIndex));
 		byteCode.push_back(static_cast<bu8_t>(offset));
 
@@ -2629,7 +2625,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 		if (pointerResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 		{
 			pointerResult = EmitAccumulateAddressOffset(pointerResult);
-			byteCode.push_back(OPCODE_DUP);
+			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
@@ -2638,7 +2634,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
 		EmitPopResult(pointerResult, pointerDescriptor);
@@ -2698,8 +2694,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerComparison(const Expres
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(opCodeSet.GetPointerOpCode(mPointerSize));
+	EmitOpCode(opCodeSet.GetPointerOpCode(mPointerSize));
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
 }
@@ -2717,24 +2712,23 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerDifference(const Expres
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	ByteCode::Type &byteCode = GetByteCode();
 	const bu32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
 	if (IsInShortRange(elementSize))
 	{
-		byteCode.push_back(OPCODE_PTRDIFF);
+		EmitOpCode(OPCODE_PTRDIFF);
 		EmitValue16(Value16(elementSize));
 	}
 	else if (Is64BitPointer())
 	{
-		byteCode.push_back(OPCODE_SUBL);
+		EmitOpCode(OPCODE_SUBL);
 		EmitPushConstantLong(elementSize);
-		byteCode.push_back(OPCODE_DIVL);
+		EmitOpCode(OPCODE_DIVL);
 	}
 	else
 	{
-		byteCode.push_back(OPCODE_SUBI);
+		EmitOpCode(OPCODE_SUBI);
 		EmitPushConstantInt(elementSize);
-		byteCode.push_back(OPCODE_DIVI);
+		EmitOpCode(OPCODE_DIVI);
 	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
@@ -2743,22 +2737,20 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerDifference(const Expres
 
 void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t elementSize)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
-
 	if (offsetTav.IsValueDefined())
 	{
 		if (Is64BitPointer())
 		{
 			const bi64_t offset = offsetTav.AsLongValue() * elementSize;
 			EmitPushConstantLong(offset);
-			byteCode.push_back(OPCODE_ADDL);
+			EmitOpCode(OPCODE_ADDL);
 		}
 		else
 		{
 			const bi32_t offset = offsetTav.GetIntValue() * elementSize;
 			EmitPushConstantInt(offset);
-			byteCode.push_back(OPCODE_ADDI);
+			EmitOpCode(OPCODE_ADDI);
 		}
 	}
 	else
@@ -2771,7 +2763,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 		{
 			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &intTypeDescriptor);
-			byteCode.push_back(OPCODE_PTROFF);
+			EmitOpCode(OPCODE_PTROFF);
 			EmitValue16(Value16(elementSize));
 		}
 		else if (Is64BitPointer())
@@ -2779,16 +2771,16 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 			const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &longTypeDescriptor);
 			EmitPushConstantLong(static_cast<bu64_t>(elementSize));
-			byteCode.push_back(OPCODE_MULL);
-			byteCode.push_back(OPCODE_ADDL);
+			EmitOpCode(OPCODE_MULL);
+			EmitOpCode(OPCODE_ADDL);
 		}
 		else
 		{
 			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &intTypeDescriptor);
 			EmitPushConstantInt(elementSize);
-			byteCode.push_back(OPCODE_MULI);
-			byteCode.push_back(OPCODE_ADDI);
+			EmitOpCode(OPCODE_MULI);
+			EmitOpCode(OPCODE_ADDI);
 		}
 	}
 }
@@ -2796,7 +2788,6 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
 	const bi32_t pointerOffset = static_cast<bi32_t>(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
 
@@ -2810,6 +2801,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    IsInCharRange(pointerOffset))
 	{
+		ByteCode::Type &byteCode = GetByteCode();
 		if (Is64BitPointer())
 		{
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
@@ -2817,7 +2809,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 				EmitPushFramePointerIndirectValue64(frameOffset);
 			}
 
-			byteCode.push_back(OPCODE_INCL);
+			EmitOpCode(OPCODE_INCL);
 			byteCode.push_back(static_cast<bu8_t>(slotIndex));
 			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
 
@@ -2833,7 +2825,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 				EmitPushFramePointerIndirectValue32(frameOffset);
 			}
 
-			byteCode.push_back(OPCODE_INCI);
+			EmitOpCode(OPCODE_INCI);
 			byteCode.push_back(static_cast<bu8_t>(slotIndex));
 			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
 
@@ -2849,7 +2841,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 		if (operandResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 		{
 			operandResult = EmitAccumulateAddressOffset(operandResult);
-			byteCode.push_back(OPCODE_DUP);
+			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
@@ -2857,23 +2849,23 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
 		if (Is64BitPointer())
 		{
 			EmitPushConstantLong(static_cast<bi64_t>(pointerOffset));
-			byteCode.push_back(OPCODE_ADDL);
+			EmitOpCode(OPCODE_ADDL);
 		}
 		else
 		{
 			EmitPushConstantInt(pointerOffset);
-			byteCode.push_back(OPCODE_ADDI);
+			EmitOpCode(OPCODE_ADDI);
 		}
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
 		EmitPopResult(operandResult, operandDescriptor);
@@ -2887,7 +2879,6 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 
 GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
 	const TypeDescriptor *resultDescriptor = expression->GetTypeDescriptor();
 	const Token::TokenType operandType = operandDescriptor->GetPrimitiveType();
@@ -2909,9 +2900,9 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 			EmitPushResult(operandResult, operandDescriptor);
 		}
 
-		byteCode.push_back(INC_OPCODES.GetOpCode(resultType));
-		byteCode.push_back(static_cast<bu8_t>(slotIndex));
-		byteCode.push_back(static_cast<bu8_t>(sign));
+		EmitOpCode(INC_OPCODES.GetOpCode(resultType));
+		GetByteCode().push_back(static_cast<bu8_t>(slotIndex));
+		GetByteCode().push_back(static_cast<bu8_t>(sign));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
@@ -2925,7 +2916,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 		if (operandResult.GetValue().mContext == GeneratorResult::CONTEXT_ADDRESS_INDIRECT)
 		{
 			operandResult = EmitAccumulateAddressOffset(operandResult);
-			byteCode.push_back(OPCODE_DUP);
+			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
@@ -2933,15 +2924,15 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
-		byteCode.push_back(constOpCodeSet.GetOpCode(resultType));
-		byteCode.push_back(ADD_OPCODES.GetOpCode(resultType));
+		EmitOpCode(constOpCodeSet.GetOpCode(resultType));
+		EmitOpCode(ADD_OPCODES.GetOpCode(resultType));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
-			byteCode.push_back(valueDupOpCode);
+			EmitOpCode(valueDupOpCode);
 		}
 
 		EmitPopResult(operandResult, operandDescriptor);
@@ -2981,8 +2972,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitSignOperator(const UnaryExpres
 
 	if (negated)
 	{
-		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(NEG_OPCODES.GetOpCode(*resultDescriptor));
+		EmitOpCode(NEG_OPCODES.GetOpCode(*resultDescriptor));
 	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
@@ -3016,8 +3006,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitNotOperator(const UnaryExpress
 
 	if (negated)
 	{
-		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(OPCODE_NOT);
+		EmitOpCode(OPCODE_NOT);
 	}
 
 	return GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE);
@@ -3054,15 +3043,13 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitBitwiseNotOperator(const Unary
 	{
 		if (resultDescriptor->GetPrimitiveType() == Token::KEY_LONG)
 		{
-			ByteCode::Type &byteCode = GetByteCode();
-			byteCode.push_back(OPCODE_CONSTL_1);
-			byteCode.push_back(OPCODE_XORL);
+			EmitOpCode(OPCODE_CONSTL_1);
+			EmitOpCode(OPCODE_XORL);
 		}
 		else
 		{
-			ByteCode::Type &byteCode = GetByteCode();
-			byteCode.push_back(OPCODE_CONSTI_1);
-			byteCode.push_back(OPCODE_XORI);
+			EmitOpCode(OPCODE_CONSTI_1);
+			EmitOpCode(OPCODE_XORI);
 		}
 	}
 
@@ -3161,30 +3148,35 @@ void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter 
 
 void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
-	CompiledFunction *function = mFunction.GetTop();
-	ByteCode::Type &byteCode = function->mByteCode;
+	ByteCode::Type &byteCode = GetByteCode();
 	const size_t opCodePos = byteCode.size();
-	byteCode.push_back(opCode);
+	EmitOpCode(opCode);
 	byteCode.push_back(0);
 	byteCode.push_back(0);
 	const size_t fromPos = byteCode.size();
-	function->mJumpList.push_back(JumpEntry(opCodePos, fromPos, toLabel));
+	GetFunction().mJumpList.push_back(JumpEntry(opCodePos, fromPos, toLabel));
 }
 
 
 void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
 {
-	ByteCode::Type &byteCode = GetByteCode();
 	if (IsInShortRange(offset))
 	{
-		byteCode.push_back(opCode);
+		EmitOpCode(opCode);
 		EmitValue16(Value16(offset));
 	}
 	else
 	{
-		byteCode.push_back(opCode + 1);
+		EmitOpCode(static_cast<OpCode>(opCode + 1));
 		EmitIndexedValue32(Value32(offset));
 	}
+}
+
+
+void GeneratorCore::EmitOpCode(OpCode opCode)
+{
+	GetByteCode().push_back(opCode);
+	ApplyStackDelta(GetStackDelta(opCode));
 }
 
 
@@ -3319,6 +3311,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteValue32(Value32(flit->mArgSize));
 		WriteValue32(Value32(flit->mPackedArgSize));
 		WriteValue32(Value32(flit->mLocalSize));
+		WriteValue32(Value32(flit->mStackSize));
 		WriteValue32(Value32(flit->mFramePointerAlignment));
 
 		// Cache the code start position and skip 4 bytes for the code size.
@@ -3472,29 +3465,32 @@ void GeneratorCore::WriteValue64(Value64 value)
 }
 
 
-GeneratorCore::ByteCode::Type &GeneratorCore::GetByteCode()
+void GeneratorCore::ApplyStackDelta(bi32_t delta)
 {
-	return mFunction.GetTop()->mByteCode;
+	CompiledFunction &function = GetFunction();
+	const bi32_t stackTop = mStackTop.GetTop() + delta;
+	mStackTop.SetTop(stackTop);
+	function.mStackSize = Max(function.mStackSize, stackTop);
 }
 
 
 bi32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
 {
-	CompiledFunction *function = mFunction.GetTop();
+	CompiledFunction &function = GetFunction();
 	const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
 	const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
 	const bi32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
 	const bi32_t nextOffset = AlignUp(offset + size, BOND_SLOT_SIZE);
 	mLocalOffset.SetTop(nextOffset);
-	function->mLocalSize = Max(function->mLocalSize, nextOffset);
-	function->mFramePointerAlignment = Max(function->mFramePointerAlignment, alignment);
+	function.mLocalSize = Max(function.mLocalSize, nextOffset);
+	function.mFramePointerAlignment = Max(function.mFramePointerAlignment, alignment);
 	return offset;
 }
 
 
 size_t GeneratorCore::CreateLabel()
 {
-	LabelList::Type &labelList = mFunction.GetTop()->mLabelList;
+	LabelList::Type &labelList = GetFunction().mLabelList;
 	size_t label = labelList.size();
 	labelList.push_back(0);
 	return label;
@@ -3503,7 +3499,7 @@ size_t GeneratorCore::CreateLabel()
 
 void GeneratorCore::SetLabelValue(size_t label, size_t value)
 {
-	mFunction.GetTop()->mLabelList[label] = value;
+	GetFunction().mLabelList[label] = value;
 }
 
 
@@ -3590,6 +3586,15 @@ bu16_t GeneratorCore::MapValue64(const Value64 &value)
 		mValue64List.push_back(value);
 	}
 	return insertResult.first->second;
+}
+
+
+void GeneratorCore::AssertStackEmpty()
+{
+	if (!mStackTop.GetTop() == 0)
+	{
+		PushError(CompilerError::INTERNAL_ERROR);
+	}
 }
 
 

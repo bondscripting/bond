@@ -435,6 +435,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mArgSize = ReadValue32().mUInt;
 	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
+	function->mStackSize = ReadValue32().mUInt;
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
 	bu8_t *code = mResources.mCode;
