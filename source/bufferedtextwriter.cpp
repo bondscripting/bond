@@ -1,6 +1,6 @@
 #include "bond/bufferedtextwriter.h"
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 namespace Bond
 {
@@ -20,7 +20,7 @@ void BufferedTextWriter::Write(const char *format, ...)
 	char *buffer = mBuffer + mIndex;
 	va_list argList;
 	va_start(argList, format);
-	int n = vsnprintf(buffer, length, format, argList);
+	const int n = vsnprintf(buffer, length, format, argList);
 	va_end(argList);
 
 	if (n > 0)
@@ -29,6 +29,7 @@ void BufferedTextWriter::Write(const char *format, ...)
 		if (mIndex >= mLength)
 		{
 			mIndex = mLength - 1;
+			mBuffer[mLength -1] = '\0';
 		}
 	}
 }

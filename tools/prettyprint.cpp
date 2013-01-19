@@ -1,6 +1,7 @@
 #include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
+#include "bond/exception.h"
 #include "bond/lexer.h"
 #include "bond/parser.h"
 #include "bond/prettyprinter.h"
@@ -28,9 +29,11 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 {
 	Bond::DefaultAllocator allocator;
 	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::FileData script = fileLoader.LoadFile(scriptName);
-	if (script.mValid)
+	Bond::FileData script;
+
+	try
 	{
+		script = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
 		lexer.Lex(static_cast<const char *>(script.mData), script.mLength);
@@ -55,15 +58,12 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 
 		PrintErrors(writer, errorBuffer);
 	}
-	else
+	catch (const Bond::Exception &e)
 	{
-		fprintf(stderr, "Failed to load '%s'\n", scriptName);
+		fprintf(stderr, "%s\n", e.GetMessage());
 	}
 
-	if (allocator.GetNumAllocations() != 0)
-	{
-		fprintf(stderr, "Leaked %d chunks of memory.\n", allocator.GetNumAllocations());
-	}
+	fileLoader.DisposeFile(script);
 }
 
 

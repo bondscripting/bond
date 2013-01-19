@@ -6,6 +6,7 @@
 #include "bond/compilererror.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
+#include "bond/exception.h"
 #include "bond/lexer.h"
 #include "bond/parser.h"
 #include "bond/semanticanalyzer.h"
@@ -31,15 +32,17 @@ bool RunVMTest(
 	Bond::DefaultAllocator cboLoaderAllocator;
 	Bond::DefaultAllocator vmAllocator;
 	Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
-	Bond::FileData script = fileLoader.LoadFile(scriptName);
+	Bond::CboLoader cboLoader(cboLoaderAllocator);
+	Bond::FileData script;
+	const Bond::CodeSegment *codeSegment = NULL;
 	bool result = false;
 
-	if (script.mValid)
+	try
 	{
+		script = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
-		fileLoader.DisposeFile(script);
 
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -65,25 +68,25 @@ bool RunVMTest(
 			if (!errorBuffer.HasErrors())
 			{
 				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()), true);
-				Bond::CboLoader cboLoader(cboLoaderAllocator);
-				const Bond::CodeSegment *codeSegment = cboLoader.Load(&cboFile, 1);
+				codeSegment = cboLoader.Load(&cboFile, 1);
 				Bond::VM vm(vmAllocator, *codeSegment, 96 * 1024);
 				result = validationFunction(logger, vm);
-				cboLoader.Dispose(codeSegment);
 			}
 		}
 
 		if (errorBuffer.HasErrors())
 		{
-			__ERROR_FORMAT__(logger, assertFile, assertLine, ("Failed to compile '%s'.", scriptName));
+			logger.Write("line %u in %s: Failed to compile '%s'.", assertLine, assertFile, scriptName);
+			result = false;
 		}
-
-		fileLoader.DisposeFile(script);
 	}
-	else
+	catch (const Bond::Exception &e)
 	{
-		__ERROR_FORMAT__(logger, assertFile, assertLine, ("Failed to load file '%s'.", scriptName));
+		logger.Write("line %u in %s: %s", assertLine, assertFile, e.GetMessage());
 	}
+
+	cboLoader.Dispose(codeSegment);
+	fileLoader.DisposeFile(script);
 
 	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("File loader leaked %d chunks of memory.\n", fileLoaderAllocator.GetNumAllocations()));

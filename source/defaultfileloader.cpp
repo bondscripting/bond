@@ -1,3 +1,4 @@
+#include "bond/assert.h"
 #include "bond/defaultfileloader.h"
 #include <stdio.h>
 
@@ -7,6 +8,7 @@ namespace Bond
 FileData DefaultFileLoader::LoadFile(const char *fileName)
 {
 	FILE *file = fopen(fileName, "rb");
+	BOND_ASSERT_FORMAT(file != NULL, ("Failed to load file '%s'.", fileName));
 	const FileData fileData = LoadFile(file);
 	fclose(file);
 	return fileData;

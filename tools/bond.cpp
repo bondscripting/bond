@@ -2,6 +2,7 @@
 #include "bond/codesegment.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
+#include "bond/exception.h"
 #include "bond/list.h"
 #include "bond/stdouttextwriter.h"
 #include "bond/vm.h"
@@ -67,26 +68,28 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
+	Bond::DefaultFileLoader fileLoader(allocator);
+	Bond::CboLoader cboLoader(allocator);
 	const size_t numCboFiles = cboFileNameList.size();
 	Bond::FileData *cboFiles = allocator.Alloc<Bond::FileData>(numCboFiles);
-	Bond::DefaultFileLoader fileLoader(allocator);
-	StringList::Type::const_iterator it = cboFileNameList.begin();
-	size_t index = 0;
-	while (it != cboFileNameList.end())
-	{
-		cboFiles[index] = fileLoader.LoadFile(*it);
-		if (!cboFiles[index].mValid)
-		{
-			fprintf(stderr, "Failed to load '%s'\n", *it);
-			error = true;
-		}
-		++index;
-		++it;
-	}
+	const Bond::CodeSegment *codeSegment = NULL;
 
-	if (!error)
+	try
 	{
-		Bond::CboLoader cboLoader(allocator);
+		StringList::Type::const_iterator it = cboFileNameList.begin();
+		size_t index = 0;
+		while (it != cboFileNameList.end())
+		{
+			cboFiles[index] = fileLoader.LoadFile(*it);
+			if (!cboFiles[index].mValid)
+			{
+				fprintf(stderr, "Failed to load '%s'\n", *it);
+				error = true;
+			}
+			++index;
+			++it;
+		}
+
 		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
 
 		if (!cboLoader.HasError())
@@ -103,8 +106,6 @@ int main(int argc, const char *argv[])
 			printf("return: %d\n", returnValue);
 			*/
 			// End test code.
-
-			cboLoader.Dispose(codeSegment);
 		}
 		else
 		{
@@ -112,11 +113,17 @@ int main(int argc, const char *argv[])
 			cboLoader.WriteStatus(writer);
 		}
 	}
+	catch (const Bond::Exception &e)
+	{
+		fprintf(stderr, "%s\n", e.GetMessage());
+	}
 
+	cboLoader.Dispose(codeSegment);
 	for (size_t i = 0; i < numCboFiles; ++i)
 	{
 		fileLoader.DisposeFile(cboFiles[i]);
 	}
+	allocator.Free(cboFiles);
 
 	return error ? 1 : 0;
 }

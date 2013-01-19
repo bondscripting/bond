@@ -6,7 +6,7 @@
 #include "bond/token.h"
 
 #define ASSERT_NO_COMPILER_ERRORS(errorBuffer)                                         \
-	if (!TestFramework::AssertNoCompilerErrors(logger, __FILE__, __LINE__, errorBuffer)) \
+  if (!TestFramework::AssertNoCompilerErrors(logger, __FILE__, __LINE__, errorBuffer)) \
   {                                                                                    \
     return false;                                                                      \
   }                                                                                    \
@@ -15,7 +15,7 @@
   if (!TestFramework::AssertCompilerErrors(logger, __FILE__, __LINE__,                 \
       errorBuffer, expectedErrors, expectedErrorCount))                                \
   {                                                                                    \
-		return false;                                                                      \
+    return false;                                                                      \
   }                                                                                    \
 
 

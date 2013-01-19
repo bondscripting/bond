@@ -1,18 +1,11 @@
 #include "framework/testparserframework.h"
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
+#include "bond/exception.h"
 #include "bond/lexer.h"
 
 namespace TestFramework
 {
-
-static bool RunParserTest(
-	Bond::TextWriter &logger,
-	const char *assertFile,
-	int assertLine,
-	const Bond::FileData &script,
-	ParserValidationFunction *validationFunction);
-
 
 bool RunParserTest(
 	Bond::TextWriter &logger,
@@ -24,32 +17,16 @@ bool RunParserTest(
 	__ASSERT_FORMAT__(scriptName != 0, logger, assertFile, assertLine, ("Script name is NULL."));
 	__ASSERT_FORMAT__(validationFunction != 0, logger, assertFile, assertLine, ("Validation function is NULL."));
 
-	Bond::DefaultAllocator allocator;
-	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::FileData script = fileLoader.LoadFile(scriptName);
-	__ASSERT_FORMAT__(script.mValid, logger, assertFile, assertLine,
-		("Failed to load file '%s'.", scriptName));
-
-	const bool result = RunParserTest(logger, assertFile, assertLine, script, validationFunction);
-
-	fileLoader.DisposeFile(script);
-
-	return result;
-}
-
-
-static bool RunParserTest(
-	Bond::TextWriter &logger,
-	const char *assertFile,
-	int assertLine,
-	const Bond::FileData &script,
-	ParserValidationFunction *validationFunction)
-{
-	bool result = true;
-
+	Bond::DefaultAllocator fileLoaderAllocator;
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
+	Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
+	Bond::FileData script;
+	bool result = false;
+
+	try
 	{
+		script = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
@@ -61,6 +38,12 @@ static bool RunParserTest(
 		}
 		result = validationFunction(logger, errorBuffer, parser);
 	}
+	catch (const Bond::Exception &e)
+	{
+		logger.Write("line %u in %s: %s", assertLine, assertFile, e.GetMessage());
+	}
+
+	fileLoader.DisposeFile(script);
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Lexer leaked %d chunks of memory.\n", lexerAllocator.GetNumAllocations()));

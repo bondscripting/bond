@@ -98,6 +98,7 @@
     <ClCompile Include="..\..\source\defaultallocator.cpp" />
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
+    <ClCompile Include="..\..\source\exception.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />

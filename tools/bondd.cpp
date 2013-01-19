@@ -1,6 +1,7 @@
 #include "bond/defaultallocator.h"
 #include "bond/defaultfileloader.h"
 #include "bond/disassembler.h"
+#include "bond/exception.h"
 #include "bond/stdouttextwriter.h"
 #include <stdio.h>
 
@@ -8,18 +9,21 @@ void Disassemble(const char *cboFileName)
 {
 	Bond::DefaultAllocator allocator;
 	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::FileData cboFile = fileLoader.LoadFile(cboFileName);
-	if (cboFile.mValid)
+	Bond::FileData cboFile;
+
+	try
 	{
+		cboFile = fileLoader.LoadFile(cboFileName);
 		Bond::StdOutTextWriter writer;
 		Bond::Disassembler disassembler(allocator);
 		disassembler.Disassemble(writer, static_cast<const Bond::bu8_t *>(cboFile.mData), cboFile.mLength);
-		fileLoader.DisposeFile(cboFile);
 	}
-	else
+	catch (const Bond::Exception &e)
 	{
-		fprintf(stderr, "Failed to load '%s'\n", cboFileName);
+		fprintf(stderr, "%s\n", e.GetMessage());
 	}
+
+	fileLoader.DisposeFile(cboFile);
 }
 
 
