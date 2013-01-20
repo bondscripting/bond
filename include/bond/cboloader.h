@@ -16,36 +16,19 @@ struct Function;
 class CboLoader
 {
 public:
-	enum Status
-	{
-		LOAD_VALID,
-		LOAD_INVALID_CBO,
-		LOAD_UNRESOLVED_HASH,
-		LOAD_HASH_COLLISION
-	};
 
 	CboLoader(Allocator &allocator):
 		mTempAllocator(allocator),
-		mPermAllocator(allocator),
-		mStatus(LOAD_VALID),
-		mStatusArg(BOND_UINT_MAX)
+		mPermAllocator(allocator)
 	{}
 
 	CboLoader(Allocator &tempAllocator, Allocator &permAllocator):
 		mTempAllocator(tempAllocator),
-		mPermAllocator(permAllocator),
-		mStatus(LOAD_VALID),
-		mStatusArg(BOND_UINT_MAX)
+		mPermAllocator(permAllocator)
 	{}
 
 	const CodeSegment *Load(const FileData *cboFiles, size_t numFiles);
 	void Dispose(const CodeSegment *codeSegment);
-
-	bool HasError() const { return mStatus != LOAD_VALID; }
-	Status GetStatus() const { return mStatus; }
-	bu32_t GetStatusArg() const { return mStatusArg; }
-
-	void WriteStatus(TextWriter& writer);
 
 private:
 	struct FunctionHashComparator
@@ -55,14 +38,11 @@ private:
 
 	void ProcessFunction(Function &function, const CodeSegment &codeSegment);
 
-	void InvalidCbo(CboValidator::Status status);
-	void UnresolvedHash(bu32_t hash);
-	void HashCollision(bu32_t hash);
+	void UnresolvedHash(bu32_t hash) const;
+	void HashCollision(bu32_t hash) const;
 
 	Allocator &mTempAllocator;
 	Allocator &mPermAllocator;
-	Status mStatus;
-	bu32_t mStatusArg;
 };
 
 }

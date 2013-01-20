@@ -11,20 +11,10 @@ class TextWriter;
 class CboValidator
 {
 public:
-	enum Status
-	{
-		CBO_VALID,
-		CBO_INVALID_MAGIC_NUMBER,
-		CBO_INVALID_VERSION,
-		CBO_INVALID_FUNCTION_DESCRIPTION,
-		CBO_INVALID_BYTECODE,
-		CBO_INVALID_FORMAT
-	};
 
 	struct Result
 	{
 		Result():
-			mStatus(CBO_VALID),
 			mMajorVersion(0),
 			mMinorVersion(0),
 			mPointerSize(POINTER_32BIT),
@@ -42,7 +32,6 @@ public:
 			mCodeByteCount(0)
 		{}
 
-		Status mStatus;
 		int mMajorVersion;
 		int mMinorVersion;
 		PointerSize mPointerSize;
@@ -61,8 +50,6 @@ public:
 	};
 
 	Result Validate(const void *byteCode, size_t length);
-
-	static void WriteStatus(TextWriter& writer, Status status);
 };
 
 }

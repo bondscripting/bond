@@ -78,6 +78,7 @@ private:
 
 	void ExecuteScriptFunction();
 	bu8_t *InvokeFunction(const Function *function, bu8_t *stackTop);
+	void ValidateStackPointer(bu8_t *stackPointer) const;
 
 	StackFrames mStackFrames;
 	StackFrames::Element mDummyFrame;

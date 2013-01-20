@@ -65,16 +65,8 @@ void Disassembler::Disassemble(TextWriter &writer, const void *byteCode, size_t 
 {
 	CboValidator validator;
 	CboValidator::Result result = validator.Validate(byteCode, length);
-
-	if (result.mStatus == CboValidator::CBO_VALID)
-	{
-		DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
-		disassembler.Disassemble();
-	}
-	else
-	{
-		CboValidator::WriteStatus(writer, result.mStatus);
-	}
+	DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
+	disassembler.Disassemble();
 }
 
 

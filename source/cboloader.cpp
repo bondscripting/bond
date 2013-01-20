@@ -1,5 +1,6 @@
 #include "bond/algorithm.h"
 #include "bond/allocator.h"
+#include "bond/assert.h"
 #include "bond/cboloader.h"
 #include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
@@ -111,12 +112,6 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		const FileData &file = cboFiles[i];
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(reinterpret_cast<const bu8_t *>(file.mData), file.mLength);
-		if (result.mStatus != CboValidator::CBO_VALID)
-		{
-			InvalidCbo(result.mStatus);
-			return NULL;
-		}
-
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
@@ -179,7 +174,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	{
 		ProcessFunction(functions[i], *codeSegment);
 	}
-
+	// TODO: Deallocate memory if exception is thrown.
 	return codeSegment;
 }
 
@@ -296,53 +291,15 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 }
 
 
-void CboLoader::WriteStatus(TextWriter& writer)
+void CboLoader::UnresolvedHash(bu32_t hash) const
 {
-	switch (mStatus)
-	{
-		case LOAD_VALID:
-			writer.Write("Code segment valid\n");
-			break;
-		case LOAD_INVALID_CBO:
-			CboValidator::WriteStatus(writer, static_cast<CboValidator::Status>(mStatusArg));
-			break;
-		case LOAD_UNRESOLVED_HASH:
-			writer.Write("Unresolved hash: 0x%" BOND_PRIx32 "\n", mStatusArg);
-			break;
-		case LOAD_HASH_COLLISION:
-			writer.Write("Hash collision: 0x%" BOND_PRIx32 "\n", mStatusArg);
-			break;
-	}
+	BOND_FAIL_FORMAT(("Unresolved hash 0x%" BOND_PRIx32 ".", hash));
 }
 
 
-void CboLoader::InvalidCbo(CboValidator::Status status)
+void CboLoader::HashCollision(bu32_t hash) const
 {
-	if (!HasError())
-	{
-		mStatus = LOAD_INVALID_CBO;
-		mStatusArg = static_cast<bu32_t>(status);
-	}
-}
-
-
-void CboLoader::UnresolvedHash(bu32_t hash)
-{
-	if (!HasError())
-	{
-		mStatus = LOAD_UNRESOLVED_HASH;
-		mStatusArg = hash;
-	}
-}
-
-
-void CboLoader::HashCollision(bu32_t hash)
-{
-	if (!HasError())
-	{
-		mStatus = LOAD_HASH_COLLISION;
-		mStatusArg = hash;
-	}
+	BOND_FAIL_FORMAT(("Hash collision 0x%" BOND_PRIx32 ".", hash));
 }
 
 

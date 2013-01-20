@@ -1,5 +1,5 @@
-#ifndef BOND_EXCEPTION
-#define BOND_EXCEPTION
+#ifndef BOND_EXCEPTION_H
+#define BOND_EXCEPTION_H
 
 #include <string.h>
 
@@ -12,7 +12,6 @@ public:
 	static const size_t MESSAGE_BUFFER_LENGTH = 1024;
 
 	Exception() { mMessage[0] = '\0'; }
-	Exception(const char *message);
 	Exception(const char *format, ...);
 
 	const char *GetMessage() const { return mMessage; }

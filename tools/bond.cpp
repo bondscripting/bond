@@ -12,7 +12,7 @@
 
 const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 32;
-const char * const DEFAULT_ENTRY_POINT = "main";
+const char * const DEFAULT_ENTRY_POINT = "::main";
 typedef Bond::List<const char *> StringList;
 
 int main(int argc, const char *argv[])
@@ -91,27 +91,16 @@ int main(int argc, const char *argv[])
 		}
 
 		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
+		Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
 
-		if (!cboLoader.HasError())
-		{
-			Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
-
-			// Test code.
-			/*
-			Bond::bi32_t returnValue = -9999;
-			Bond::VM::CallerStackFrame stackFrame(vm, "::TheSpace::Blah", &returnValue);
-			stackFrame.PushArg(65);
-			stackFrame.PushArg(13);
-			stackFrame.Call();
-			printf("return: %d\n", returnValue);
-			*/
-			// End test code.
-		}
-		else
-		{
-			Bond::StdOutTextWriter writer;
-			cboLoader.WriteStatus(writer);
-		}
+		// Test code.
+		Bond::bi32_t returnValue = -9999;
+		Bond::VM::CallerStackFrame stackFrame(vm, entryPoint, &returnValue);
+		//stackFrame.PushArg(65);
+		//stackFrame.PushArg(13);
+		stackFrame.Call();
+		printf("return: %d\n", returnValue);
+		// End test code.
 	}
 	catch (const Bond::Exception &e)
 	{

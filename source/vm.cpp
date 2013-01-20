@@ -1,4 +1,5 @@
 #include "bond/algorithm.h"
+#include "bond/assert.h"
 #include "bond/allocator.h"
 #include "bond/codesegment.h"
 #include "bond/math.h"
@@ -63,17 +64,17 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 	mVm(vm),
 	mNextArg(0)
 {
-	bu8_t *prevSp = GetNext()->GetValue().mStackPointer;
+	bu8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
-	// TODO: report error if function lookup fails.
-	bu8_t *fp = static_cast<bu8_t *>(AlignPointerUp(prevSp + function->mArgSize, function->mFramePointerAlignment));
-	bu8_t *sp = static_cast<bu8_t *>(AlignPointerUp(fp + function->mLocalSize, BOND_SLOT_SIZE));
-	// TODO: Report error if sp >= mStack + mStackSize.
+	BOND_ASSERT_FORMAT(function != NULL, ("Failed to look up function '%s'.", functionName.GetString()));
+	bu8_t *framePointer = static_cast<bu8_t *>(AlignPointerUp(prevStackPointer + function->mArgSize, function->mFramePointerAlignment));
+	bu8_t *stackPointer = static_cast<bu8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
 	mValue.mFunction = function;
-	mValue.mFramePointer = fp;
-	mValue.mStackPointer = sp;
+	mValue.mFramePointer = framePointer;
+	mValue.mStackPointer = stackPointer;
 	mValue.mReturnPointer = reinterpret_cast<bu8_t *>(returnPointer);
+	vm.ValidateStackPointer(stackPointer);
 }
 
 
@@ -2097,10 +2098,20 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 	stackFrame.mFramePointer = framePointer;
 	stackFrame.mStackPointer = stackPointer;
 	stackFrame.mReturnPointer = returnPointer;
+	ValidateStackPointer(stackPointer);
 
 	ExecuteScriptFunction();
 
 	return finalStackPointer;
+}
+
+
+void VM::ValidateStackPointer(bu8_t *stackPointer) const
+{
+	if (stackPointer >= mStack + mStackSize)
+	{
+		BOND_FAIL_MESSAGE("Stack overflow");
+	}
 }
 
 }

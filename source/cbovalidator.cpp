@@ -1,3 +1,4 @@
+#include "bond/assert.h"
 #include "bond/cboutil.h"
 #include "bond/cbovalidator.h"
 #include "bond/endian.h"
@@ -33,11 +34,10 @@ private:
 	Value32 ReadValue32();
 	Value64 ReadValue64();
 
-	bool HasError() const { return mResult.mStatus != CboValidator::CBO_VALID; }
-	bool AssertBytesRemaining(size_t numBytes);
-	void FunctionIsInvalid();
-	void CodeIsInvalid();
-	void CboIsInvalid();
+	void AssertBytesRemaining(size_t numBytes) const;
+	void FunctionIsInvalid() const;
+	void CodeIsInvalid() const;
+	void CboIsInvalid() const;
 
 	CboValidator::Result mResult;
 	const bu8_t *mByteCode;
@@ -54,78 +54,34 @@ CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 }
 
 
-void CboValidator::WriteStatus(TextWriter& writer, Status status)
-{
-	switch (status)
-	{
-		case CBO_VALID:
-			writer.Write("CBO file valid\n");
-		break;
-
-		case CBO_INVALID_MAGIC_NUMBER:
-			writer.Write("CBO file's magic number is incorrect\n");
-			break;
-
-		case CBO_INVALID_VERSION:
-			writer.Write("CBO file's version is unknown\n");
-			break;
-
-		case CBO_INVALID_FUNCTION_DESCRIPTION:
-			writer.Write("CBO file contains an invalid function description\n");
-			break;
-
-		case CBO_INVALID_BYTECODE:
-			writer.Write("CBO file contains invalid bytecode\n");
-			break;
-
-		case CBO_INVALID_FORMAT:
-			writer.Write("CBO file is incomplete or malformed\n");
-			break;
-	}
-}
-
-
 CboValidator::Result CboValidatorCore::Validate()
 {
-	if (!AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16))))
-	{
-		return mResult;
-	}
+	AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16)));
 
 	const bu32_t magicNumber = ReadValue32().mUInt;
-	if (magicNumber != MAGIC_NUMBER)
-	{
-		mResult.mStatus = CboValidator::CBO_INVALID_MAGIC_NUMBER;
-		return mResult;
-	}
-
-	const int majorVersion = ReadValue16().mUShort;
-	const int minorVersion = ReadValue16().mUShort;
+	const bu32_t majorVersion = ReadValue16().mUShort;
+	const bu32_t minorVersion = ReadValue16().mUShort;
 	const bu16_t flags = ReadValue16().mUShort;
-	if ((majorVersion != MAJOR_VERSION) && (minorVersion != MINOR_VERSION))
-	{
-		mResult.mStatus = CboValidator::CBO_INVALID_VERSION;
-		return mResult;
-	}
-
-	mResult.mMajorVersion = majorVersion;
-	mResult.mMinorVersion = minorVersion;
-	mResult.mPointerSize = DecodePointerSize(flags);
-
 	const size_t tableStart = mIndex;
 	const size_t tableSize = ReadValue32().mUInt;
 	const size_t value32Count = ReadValue16().mUShort;
 	const size_t value64Count = ReadValue16().mUShort;
 	const size_t stringCount = ReadValue16().mUShort;
+
+	BOND_ASSERT_FORMAT(magicNumber == MAGIC_NUMBER, ("CBO file contains invalid magic number: 0x%" BOND_PRIx32 ".", magicNumber));
+	BOND_ASSERT_FORMAT(majorVersion == MAJOR_VERSION, ("Unexpected major version: %" BOND_PRIu32 ".", majorVersion));
+	BOND_ASSERT_FORMAT(minorVersion == MINOR_VERSION, ("Unexpected minor version: %02" BOND_PRIu32 ".", minorVersion));
+
+	mResult.mMajorVersion = majorVersion;
+	mResult.mMinorVersion = minorVersion;
+	mResult.mPointerSize = DecodePointerSize(flags);
 	mResult.mValue32Count = value32Count;
 	mResult.mValue64Count = value64Count;
 	mResult.mStringCount = stringCount;
 
 	const size_t valueSize = (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
-	if (!AssertBytesRemaining(tableSize - (mIndex - tableStart)) || !AssertBytesRemaining(valueSize))
-	{
-		return mResult;
-	}
+	AssertBytesRemaining(tableSize - (mIndex - tableStart));
+	AssertBytesRemaining(valueSize);
 
 	mValue32Table = reinterpret_cast<const Value32 *>(mByteCode + mIndex);
 	mIndex += (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
@@ -133,18 +89,11 @@ CboValidator::Result CboValidatorCore::Validate()
 	size_t stringByteCount = 0;
 	for (size_t i = 0; i < stringCount; ++i)
 	{
-		if (!AssertBytesRemaining(sizeof(Value16)))
-		{
-			return mResult;
-		}
-
+		AssertBytesRemaining(sizeof(Value16));
 		const int stringLength = ReadValue16().mUShort;
 		stringByteCount += stringLength;
-		if (!AssertBytesRemaining(stringLength))
-		{
-			return mResult;
-		}
 
+		AssertBytesRemaining(stringLength);
 		const char *str = reinterpret_cast<const char *>(mByteCode + mIndex);
 		if (StringEqual(str, stringLength, "List", 4))
 		{
@@ -179,20 +128,14 @@ CboValidator::Result CboValidatorCore::Validate()
 
 void CboValidatorCore::ValidateBlob()
 {
-	if (!AssertBytesRemaining(sizeof(Value32) + sizeof(Value16)))
-	{
-		return;
-	}
+	AssertBytesRemaining(sizeof(Value32) + sizeof(Value16));
 
 	const size_t blobStart = mIndex;
 	const size_t blobSize = ReadValue32().mUInt;
 	const size_t blobEnd = blobStart + blobSize;
 	const size_t idIndex = ReadValue16().mUShort;
 
-	if (!AssertBytesRemaining(blobSize - (mIndex - blobStart)))
-	{
-		return;
-	}
+	AssertBytesRemaining(blobSize - (mIndex - blobStart));
 
 	if (idIndex == mResult.mListBlobIdIndex)
 	{
@@ -216,13 +159,10 @@ void CboValidatorCore::ValidateBlob()
 
 void CboValidatorCore::ValidateListBlob()
 {
-	if (!AssertBytesRemaining(sizeof(Value32)))
-	{
-		return;
-	}
+	AssertBytesRemaining(sizeof(Value32));
 
 	const size_t numBlobs = ReadValue32().mUInt;
-	for (size_t i = 0; (i < numBlobs) && !HasError(); ++i)
+	for (size_t i = 0; i < numBlobs; ++i)
 	{
 		ValidateBlob();
 	}
@@ -236,10 +176,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 	ValidateQualifiedIdentifier();
 	ValidateParamListSignature();
 
-	if (!AssertBytesRemaining(6 * sizeof(Value32)))
-	{
-		return;
-	}
+	AssertBytesRemaining(6 * sizeof(Value32));
 
 	// Ignore the hash.
 	mIndex += sizeof(Value32);
@@ -249,6 +186,8 @@ void CboValidatorCore::ValidateFunctionBlob()
 	const bu32_t localSize = ReadValue32().mUInt;
 	mIndex += sizeof(Value32); // Ignore the stack size.
 	const bu32_t framePointerAlignment = ReadValue32().mUInt;
+	const size_t codeSize = ReadValue32().mUInt;
+
 	if ((packedArgSize > argSize) ||
 	    ((argSize % BOND_SLOT_SIZE) != 0) ||
 	    ((packedArgSize % BOND_SLOT_SIZE) != 0) ||
@@ -256,21 +195,15 @@ void CboValidatorCore::ValidateFunctionBlob()
 	    ((framePointerAlignment % BOND_SLOT_SIZE) != 0))
 	{
 		FunctionIsInvalid();
-		return;
 	}
 
-	const size_t codeSize = ReadValue32().mUInt;
 	mResult.mCodeByteCount += AlignUp(codeSize, sizeof(Value32));
-	if (!AssertBytesRemaining(codeSize))
-	{
-		return;
-	}
-
+	AssertBytesRemaining(codeSize);
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
 
 	// Do a validation pass on the byte-code and ensure everything is converted to the correct endianness.
-	while (!HasError() && (mIndex < codeEnd))
+	while (mIndex < codeEnd)
 	{
 		const OpCode opCode = static_cast<OpCode>(mByteCode[mIndex++]);
 		const OpCodeParam param = GetOpCodeParamType(opCode);
@@ -293,60 +226,52 @@ void CboValidatorCore::ValidateFunctionBlob()
 			case OC_PARAM_INT:
 			case OC_PARAM_VAL32:
 			{
-				if (AssertBytesRemaining(sizeof(Value16)))
+				AssertBytesRemaining(sizeof(Value16));
+				const size_t valueIndex = ReadValue16().mUShort;
+				if (valueIndex >= mResult.mValue32Count)
 				{
-					const size_t valueIndex = ReadValue16().mUShort;
-					if (valueIndex >= mResult.mValue32Count)
-					{
-						CodeIsInvalid();
-					}
+					CodeIsInvalid();
 				}
 			}
 			break;
 			case OC_PARAM_VAL64:
 			{
-				if (AssertBytesRemaining(sizeof(Value16)))
+				AssertBytesRemaining(sizeof(Value16));
+				const size_t valueIndex = ReadValue16().mUShort;
+				if (valueIndex >= mResult.mValue64Count)
 				{
-					const size_t valueIndex = ReadValue16().mUShort;
-					if (valueIndex >= mResult.mValue64Count)
-					{
-						CodeIsInvalid();
-					}
+					CodeIsInvalid();
 				}
 			}
 			break;
 			case OC_PARAM_OFF16:
 			{
-				if (AssertBytesRemaining(sizeof(Value16)))
+				AssertBytesRemaining(sizeof(Value16));
+				const bi32_t offset = ReadValue16().mShort;
+				const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
+				const bi32_t targetAddress = baseAddress + offset;
+				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
 				{
-					const bi32_t offset = ReadValue16().mShort;
-					const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
-					const bi32_t targetAddress = baseAddress + offset;
-					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
-					{
-						CodeIsInvalid();
-					}
+					CodeIsInvalid();
 				}
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
-				if (AssertBytesRemaining(sizeof(Value16)))
+				AssertBytesRemaining(sizeof(Value16));
+				const size_t offsetIndex = ReadValue16().mUShort;
+				if (offsetIndex >= mResult.mValue32Count)
 				{
-					const size_t offsetIndex = ReadValue16().mUShort;
-					if (offsetIndex >= mResult.mValue32Count)
+					CodeIsInvalid();
+				}
+				else
+				{
+					const bi32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
+					const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
+					const bi32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
 					{
 						CodeIsInvalid();
-					}
-					else
-					{
-						const bi32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
-						const bi32_t baseAddress = static_cast<bi32_t>(mIndex - codeStart);
-						const bi32_t targetAddress = baseAddress + offset;
-						if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
-						{
-							CodeIsInvalid();
-						}
 					}
 				}
 			}
@@ -359,22 +284,15 @@ void CboValidatorCore::ValidateFunctionBlob()
 			case OC_PARAM_LOOKUPSWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
-				if (!AssertBytesRemaining(2 * sizeof(Value32)))
-				{
-					break;
-				}
+				AssertBytesRemaining(2 * sizeof(Value32));
 
 				const bi32_t defaultOffset = ReadValue32().mInt;
 				const bu32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
 				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
-
-				if (!AssertBytesRemaining(tableSize))
-				{
-					break;
-				}
-
 				const bi32_t targetAddress = baseAddress + defaultOffset;
+
+				AssertBytesRemaining(tableSize);
 				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
 				{
 					CodeIsInvalid();
@@ -396,35 +314,24 @@ void CboValidatorCore::ValidateFunctionBlob()
 			case OC_PARAM_TABLESWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
-				if (!AssertBytesRemaining(3 * sizeof(Value32)))
-				{
-					break;
-				}
+				AssertBytesRemaining(3 * sizeof(Value32));
 
 				const bi32_t defaultOffset = ReadValue32().mInt;
 				const bi32_t minMatch = ReadValue32().mInt;
 				const bi32_t maxMatch = ReadValue32().mInt;
-
-				if (minMatch > maxMatch)
-				{
-					CodeIsInvalid();
-					break;
-				}
-
 				const bu32_t numMatches = maxMatch - minMatch + 1;
 				const size_t tableSize = numMatches * sizeof(Value32);
 				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
-
-				if (!AssertBytesRemaining(tableSize))
-				{
-					break;
-				}
-
 				const bi32_t targetAddress = baseAddress + defaultOffset;
+
+				AssertBytesRemaining(tableSize);
+				if (minMatch > maxMatch)
+				{
+					CodeIsInvalid();
+				}
 				if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
 				{
 					CodeIsInvalid();
-					break;
 				}
 
 				for (size_t i = 0; i < numMatches; ++i)
@@ -434,7 +341,6 @@ void CboValidatorCore::ValidateFunctionBlob()
 					if ((targetAddress < 0) || (static_cast<bu32_t>(targetAddress) > codeSize))
 					{
 						CodeIsInvalid();
-						break;
 					}
 				}
 			}
@@ -446,16 +352,10 @@ void CboValidatorCore::ValidateFunctionBlob()
 
 void CboValidatorCore::ValidateQualifiedIdentifier()
 {
-	if (!AssertBytesRemaining(sizeof(Value16)))
-	{
-		return;
-	}
+	AssertBytesRemaining(sizeof(Value16));
 
 	const size_t numElements = ReadValue16().mUShort;
-	if (!AssertBytesRemaining(numElements * sizeof(Value16)))
-	{
-		return;
-	}
+	AssertBytesRemaining(numElements * sizeof(Value16));
 
 	++mResult.mQualifiedIdCount;
 	mResult.mQualifiedIdElementCount += numElements;
@@ -466,7 +366,6 @@ void CboValidatorCore::ValidateQualifiedIdentifier()
 		if (elementIndex >= mResult.mStringCount)
 		{
 			CboIsInvalid();
-			return;
 		}
 	}
 }
@@ -474,11 +373,7 @@ void CboValidatorCore::ValidateQualifiedIdentifier()
 
 void CboValidatorCore::ValidateReturnSignature()
 {
-	if (!AssertBytesRemaining(sizeof(Value32)))
-	{
-		return;
-	}
-
+	AssertBytesRemaining(sizeof(Value32));
 	const bu32_t returnSizeAndType = ReadValue32().mUInt;
 	bu32_t returnSize;
 	bu32_t returnType;
@@ -489,16 +384,10 @@ void CboValidatorCore::ValidateReturnSignature()
 
 void CboValidatorCore::ValidateParamListSignature()
 {
-	if (!AssertBytesRemaining(sizeof(Value16)))
-	{
-		return;
-	}
+	AssertBytesRemaining(sizeof(Value16));
 
 	const size_t numParams = ReadValue16().mUShort;
-	if (!AssertBytesRemaining(numParams * 2 * sizeof(Value32)))
-	{
-		return;
-	}
+	AssertBytesRemaining(numParams * 2 * sizeof(Value32));
 
 	++mResult.mParamListSignatureCount;
 	mResult.mParamSignatureCount += numParams;
@@ -510,7 +399,6 @@ void CboValidatorCore::ValidateParamListSignature()
 		if (offset >= prevOffset)
 		{
 			FunctionIsInvalid();
-			return;
 		}
 		prevOffset = offset;
 
@@ -547,40 +435,30 @@ Value64 CboValidatorCore::ReadValue64()
 }
 
 
-bool CboValidatorCore::AssertBytesRemaining(size_t numBytes)
+void CboValidatorCore::AssertBytesRemaining(size_t numBytes) const
 {
-	if (!HasError() && ((mIndex + numBytes) > mLength))
+	if ((mIndex + numBytes) > mLength)
 	{
 		CboIsInvalid();
 	}
-	return !HasError();
 }
 
 
-void CboValidatorCore::FunctionIsInvalid()
+void CboValidatorCore::FunctionIsInvalid() const
 {
-	if (!HasError())
-	{
-		mResult.mStatus = CboValidator::CBO_INVALID_FUNCTION_DESCRIPTION;
-	}
+	BOND_FAIL_MESSAGE("CBO file contains an invalid function blob");
 }
 
 
-void CboValidatorCore::CodeIsInvalid()
+void CboValidatorCore::CodeIsInvalid() const
 {
-	if (!HasError())
-	{
-		mResult.mStatus = CboValidator::CBO_INVALID_BYTECODE;
-	}
+	BOND_FAIL_MESSAGE("CBO file contains invalid byte-code");
 }
 
 
-void CboValidatorCore::CboIsInvalid()
+void CboValidatorCore::CboIsInvalid() const
 {
-	if (!HasError())
-	{
-		mResult.mStatus = CboValidator::CBO_INVALID_FORMAT;
-	}
+	BOND_FAIL_MESSAGE("CBO file is incomplete or malformed.");
 }
 
 }
