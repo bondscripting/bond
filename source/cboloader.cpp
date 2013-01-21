@@ -92,7 +92,7 @@ private:
 };
 
 
-const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
+CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 {
 	typedef Vector<CboValidator::Result> ResultList;
 	ResultList::Type resultList(numFiles, CboValidator::Result(), ResultList::Allocator(&mTempAllocator));
@@ -136,9 +136,9 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount, sizeof(Value32));
 
 	const size_t CBO_ALIGNMENT = 256;
-	bu8_t *mem = mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT);
+	Allocator::Handle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
 	CboLoaderCore::MemoryResources resources(
-		mem,
+		memHandle.Get(),
 		constantTablesStart,
 		value32TableStart,
 		value64TableStart,
@@ -152,7 +152,7 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 
 	bu32_t *functionLookup = resources.mFunctionLookup;
 	Function *functions = resources.mFunctions;
-	CodeSegment *codeSegment = new (mem + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
+	CodeSegment *codeSegment = new (memHandle.Get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
 
 	for (size_t i = 0; i < numFiles; ++i)
 	{
@@ -174,8 +174,9 @@ const CodeSegment *CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	{
 		ProcessFunction(functions[i], *codeSegment);
 	}
-	// TODO: Deallocate memory if exception is thrown.
-	return codeSegment;
+
+	memHandle.Release();
+	return Handle(mPermAllocator, codeSegment);
 }
 
 

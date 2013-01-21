@@ -1,13 +1,13 @@
 #ifndef BOND_CBOLOADER_H
 #define BOND_CBOLOADER_H
 
+#include "bond/allocator.h"
 #include "bond/cbovalidator.h"
 #include "bond/types.h"
 
 namespace Bond
 {
 
-class Allocator;
 class CodeSegment;
 class TextWriter;
 struct FileData;
@@ -16,6 +16,7 @@ struct Function;
 class CboLoader
 {
 public:
+	typedef Allocator::AlignedHandle<const CodeSegment> Handle;
 
 	CboLoader(Allocator &allocator):
 		mTempAllocator(allocator),
@@ -27,7 +28,7 @@ public:
 		mPermAllocator(permAllocator)
 	{}
 
-	const CodeSegment *Load(const FileData *cboFiles, size_t numFiles);
+	Handle Load(const FileData *cboFiles, size_t numFiles);
 	void Dispose(const CodeSegment *codeSegment);
 
 private:

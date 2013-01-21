@@ -32,9 +32,7 @@ bool RunVMTest(
 	Bond::DefaultAllocator cboLoaderAllocator;
 	Bond::DefaultAllocator vmAllocator;
 	Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
-	Bond::CboLoader cboLoader(cboLoaderAllocator);
 	Bond::FileData script;
-	const Bond::CodeSegment *codeSegment = NULL;
 	bool result = false;
 
 	try
@@ -68,8 +66,9 @@ bool RunVMTest(
 			if (!errorBuffer.HasErrors())
 			{
 				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()), true);
-				codeSegment = cboLoader.Load(&cboFile, 1);
-				Bond::VM vm(vmAllocator, *codeSegment, 96 * 1024);
+				Bond::CboLoader cboLoader(cboLoaderAllocator);
+				Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(&cboFile, 1);
+				Bond::VM vm(vmAllocator, *codeSegmentHandle.Get(), 96 * 1024);
 				result = validationFunction(logger, vm);
 			}
 		}
@@ -85,7 +84,6 @@ bool RunVMTest(
 		logger.Write("line %u in %s: %s", assertLine, assertFile, e.GetMessage());
 	}
 
-	cboLoader.Dispose(codeSegment);
 	fileLoader.DisposeFile(script);
 
 	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

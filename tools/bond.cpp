@@ -69,10 +69,8 @@ int main(int argc, const char *argv[])
 	}
 
 	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::CboLoader cboLoader(allocator);
 	const size_t numCboFiles = cboFileNameList.size();
 	Bond::FileData *cboFiles = allocator.Alloc<Bond::FileData>(numCboFiles);
-	const Bond::CodeSegment *codeSegment = NULL;
 
 	try
 	{
@@ -90,8 +88,9 @@ int main(int argc, const char *argv[])
 			++it;
 		}
 
-		const Bond::CodeSegment *codeSegment = cboLoader.Load(cboFiles, numCboFiles);
-		Bond::VM vm(allocator, *codeSegment, stackSize * 1024);
+		Bond::CboLoader cboLoader(allocator);
+		Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(cboFiles, numCboFiles);
+		Bond::VM vm(allocator, *codeSegmentHandle.Get(), stackSize * 1024);
 
 		// Test code.
 		Bond::bi32_t returnValue = -9999;
@@ -107,7 +106,6 @@ int main(int argc, const char *argv[])
 		fprintf(stderr, "%s\n", e.GetMessage());
 	}
 
-	cboLoader.Dispose(codeSegment);
 	for (size_t i = 0; i < numCboFiles; ++i)
 	{
 		fileLoader.DisposeFile(cboFiles[i]);

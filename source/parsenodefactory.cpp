@@ -34,7 +34,7 @@ void ParseNodeDeallocator::Traverse(ParseNode *parseNode)
 void ParseNodeDeallocator::Traverse(const ParseNode *parseNode)
 {
 	ParseNodeTraverser::Traverse(parseNode);
-	mAllocator.Free(const_cast<ParseNode *>(parseNode));
+	mAllocator.Free(parseNode);
 }
 
 

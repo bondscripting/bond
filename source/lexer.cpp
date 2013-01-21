@@ -180,14 +180,17 @@ TokenCollection *LexerCore::Lex()
 	const size_t tokensStart = TallyMemoryRequirements<Token>(memSize, resources.numTokens);
 	const size_t stringBufferStart = TallyMemoryRequirements<Token>(memSize, resources.stringBufferLength);
 
-	char *mem = mAllocator.Alloc<char>(memSize);
-	mTokens = reinterpret_cast<Token *>(mem + tokensStart);
-	mStringBuffer = mem + stringBufferStart;
+	Allocator::Handle<char> memHandle(mAllocator, mAllocator.Alloc<char>(memSize));
+	mTokens = reinterpret_cast<Token *>(memHandle.Get() + tokensStart);
+	mStringBuffer = memHandle.Get() + stringBufferStart;
 
 	stream.Reset();
 	GenerateTokens(stream);
 
-	return new (mem + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
+	TokenCollection *tokenCollection = new (memHandle.Get() + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
+	memHandle.Release();
+
+	return tokenCollection;
 }
 
 
