@@ -1,13 +1,16 @@
 #ifndef BOND_VM_H
 #define BOND_VM_H
 
+#include "bond/assert.h"
 #include "bond/autostack.h"
 #include "bond/codesegment.h"
+#include "bond/math.h"
 
 namespace Bond
 {
 
 class Allocator;
+class TextWriter;
 
 class VM
 {
@@ -49,20 +52,29 @@ public:
 		void PushArg(const ArgType &arg)
 		{
 			CalleeStackFrame &frame = GetValue();
-			const ParamSignature &param = frame.mFunction->mParamListSignature.mParamSignatures[mNextArg++];
-			// TODO: Assert that mNextArg < frame.mFunction->mParamListSignature.mParamCount.
-			// TODO: Assert that Min(sizeof(ArgType), MIN_STACK_FRAME_ALIGN) == param.mSize.
+			const ParamListSignature &paramListSignature = frame.mFunction->mParamListSignature;
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+			if (mNextArg >= paramListSignature.mParamCount)
+			{
+				mVm.RaiseError("Attempt to push too many arguments.");
+			}
+
+			if (AlignUp(sizeof(ArgType), size_t(BOND_SLOT_SIZE)) != paramListSignature.mParamSignatures[mNextArg].mSize)
+			{
+				mVm.RaiseError("Argument size mismatch.");
+			}
+#endif
+
+			const ParamSignature &param = paramListSignature.mParamSignatures[mNextArg++];
 			*reinterpret_cast<ArgType *>(frame.mFramePointer + param.mFramePointerOffset) = arg;
 		}
 
-		void Call()
-		{
-			mVm.ExecuteScriptFunction();
-		}
+		void Call();
 
 	private:
 		VM &mVm;
-		int mNextArg;
+		bu32_t mNextArg;
 	};
 
 	VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize);
@@ -72,6 +84,11 @@ public:
 
 	CalleeStackFrame &GetTopStackFrame() { return mStackFrames.GetTop(); }
 	const CalleeStackFrame &GetTopStackFrame() const { return mStackFrames.GetTop(); }
+
+	void DumpCallStack(TextWriter &writer) const;
+	void DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const;
+
+	void RaiseError(const char *message) const;
 
 private:
 	friend class CallerStackFrame;

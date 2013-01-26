@@ -1,7 +1,6 @@
 #include "bond/algorithm.h"
-#include "bond/assert.h"
 #include "bond/allocator.h"
-#include "bond/codesegment.h"
+#include "bond/bufferedtextwriter.h"
 #include "bond/math.h"
 #include "bond/opcodes.h"
 #include "bond/vm.h"
@@ -78,6 +77,14 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 }
 
 
+void VM::CallerStackFrame::Call()
+{
+	BOND_ASSERT_FORMAT(mNextArg >= GetValue().mFunction->mParamListSignature.mParamCount,
+		("Attempt to call function with too few arguments."));
+	mVm.ExecuteScriptFunction();
+}
+
+
 VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
 	mStackFrames(),
 	mDummyFrame(mStackFrames),
@@ -88,6 +95,7 @@ VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
 {
 	mStack = mAllocator.Alloc<bu8_t>(stackSize);
 	CalleeStackFrame &top = mDummyFrame.GetValue();
+	top.mFunction = NULL;
 	top.mStackPointer = mStack;
 	top.mFramePointer = mStack;
 	top.mReturnPointer = NULL;
@@ -2090,7 +2098,6 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 	}
 
 	bu8_t *stackPointer = static_cast<bu8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
-	// TODO: Report error if stackPointer >= mStack + mStackSize.
 
 	StackFrames::Element stackFrameElement(mStackFrames);
 	CalleeStackFrame &stackFrame = stackFrameElement.GetValue();
@@ -2110,8 +2117,112 @@ void VM::ValidateStackPointer(bu8_t *stackPointer) const
 {
 	if (stackPointer >= mStack + mStackSize)
 	{
-		BOND_FAIL_MESSAGE("Stack overflow");
+		RaiseError("Stack overflow");
 	}
+}
+
+
+void VM::DumpCallStack(TextWriter &writer) const
+{
+	StackFrames::ConstIterator it = mStackFrames.Begin();
+	while (it != mStackFrames.End())
+	{
+		DumpStackFrame(writer, *it);
+		++it;
+	}
+}
+
+
+void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
+{
+	const Function *function = frame.mFunction;
+	if (function != NULL)
+	{
+		const SignatureType returnType = static_cast<SignatureType>(function->mReturnSignature.mType);
+		const bu32_t returnSize = function->mReturnSignature.mSize;
+		writer.Write(GetSignatureTypeMnemonic(returnType), returnSize);
+		writer.Write(" ");
+
+		const SimpleString **strings = function->mName.mElements;
+		const bu32_t numStrings = function->mName.mElementCount;
+		for (bu32_t i = 0; i < numStrings; ++i)
+		{
+			if (i > 0)
+			{
+				writer.Write("::");
+			}
+			writer.Write(strings[i]->GetString());
+		}
+
+		writer.Write("(");
+		const ParamSignature *paramSignatures = function->mParamListSignature.mParamSignatures;
+		const bu32_t numParams = function->mParamListSignature.mParamCount;
+		const bu8_t *framePointer = frame.mFramePointer;
+		for (bu32_t i = 0; i < numParams; ++i)
+		{
+			const ParamSignature &signature = paramSignatures[i];
+			const bu8_t *argPointer = framePointer + signature.mFramePointerOffset;
+
+			if (i > 0)
+			{
+				writer.Write(", ");
+			}
+
+			switch (signature.mType)
+			{
+				case SIG_BOOL:
+					writer.Write("%s", (*argPointer != 0) ? "true" : "false");
+					break;
+				case SIG_CHAR:
+					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi8_t *>(argPointer));
+					break;
+				case SIG_UCHAR:
+					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu8_t *>(argPointer));
+					break;
+				case SIG_SHORT:
+					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi16_t *>(argPointer));
+					break;
+				case SIG_USHORT:
+					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu16_t *>(argPointer));
+					break;
+				case SIG_INT:
+					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi32_t *>(argPointer));
+					break;
+				case SIG_UINT:
+					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu32_t *>(argPointer));
+					break;
+				case SIG_LONG:
+					writer.Write("%" BOND_PRId64, *reinterpret_cast<const bi64_t *>(argPointer));
+					break;
+				case SIG_ULONG:
+					writer.Write("%" BOND_PRIu64, *reinterpret_cast<const bu64_t *>(argPointer));
+					break;
+				case SIG_FLOAT:
+					writer.Write("%" BOND_PRIf32, *reinterpret_cast<const bf32_t *>(argPointer));
+					break;
+				case SIG_DOUBLE:
+					writer.Write("%" BOND_PRIf64, *reinterpret_cast<const bf64_t *>(argPointer));
+					break;
+				case SIG_POINTER:
+					writer.Write("%p", reinterpret_cast<const void *>(argPointer));
+					break;
+				case SIG_STRUCT:
+				case SIG_VOID:
+					writer.Write(GetSignatureTypeMnemonic(static_cast<SignatureType>(signature.mType)), signature.mSize);
+					break;
+			}
+		}
+		writer.Write(")\n");
+	}
+}
+
+
+void VM::RaiseError(const char *message) const
+{
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	DumpCallStack(writer);
+	BOND_FAIL_FORMAT(("%s\n%s", message, buffer));
 }
 
 }

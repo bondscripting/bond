@@ -9,7 +9,7 @@ namespace Bond
 class Exception
 {
 public:
-	static const size_t MESSAGE_BUFFER_LENGTH = 1024;
+	static const size_t MESSAGE_BUFFER_LENGTH = 2048;
 
 	Exception() { mMessage[0] = '\0'; }
 	Exception(const char *format, ...);

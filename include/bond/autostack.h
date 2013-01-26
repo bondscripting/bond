@@ -7,6 +7,11 @@ namespace Bond
 {
 
 template<typename ElementType>
+class AutoStackIterator
+{
+};
+
+template<typename ElementType>
 class AutoStack
 {
 public:
@@ -57,13 +62,74 @@ public:
 		Element *mNext;
 	};
 
+	class Iterator
+	{
+	public:
+		Iterator(): mElement(NULL) {}
+		explicit Iterator(Element *element): mElement(element) {}
+
+		bool operator==(const Iterator& other) const { return mElement == other.mElement; }
+		bool operator!=(const Iterator& other) const { return mElement != other.mElement; }
+		ElementType &operator*() const { return mElement->GetValue(); }
+		ElementType *operator->() const { return &mElement->GetValue(); }
+
+		Iterator& operator++()
+		{
+			mElement = mElement->GetNext();
+			return *this;
+		}
+
+		Iterator operator++(int)
+		{
+			Iterator temp = *this;
+			mElement = mElement->GetNext();
+			return temp;
+		}
+
+	private:
+		Element *mElement;
+	};
+
+
+	class ConstIterator
+	{
+	public:
+		ConstIterator(): mElement(NULL) {}
+		explicit ConstIterator(const Element *element): mElement(element) {}
+		ConstIterator(const Iterator &iterator): mElement(iterator.mElement) {}
+
+		bool operator==(const ConstIterator& other) const { return mElement == other.mElement; }
+		bool operator!=(const ConstIterator& other) const { return mElement != other.mElement; }
+		const ElementType &operator*() const { return mElement->GetValue(); }
+		const ElementType *operator->() const { return &mElement->GetValue(); }
+
+		ConstIterator& operator++()
+		{
+			mElement = mElement->GetNext();
+			return *this;
+		}
+
+		ConstIterator operator++(int)
+		{
+			ConstIterator temp = *this;
+			mElement = mElement->GetNext();
+			return temp;
+		}
+
+	private:
+		const Element *mElement;
+	};
+
+
 	AutoStack(): mTop(NULL) {}
+
 
 	void Push(Element *element)
 	{
 		element->SetNext(mTop);
 		mTop = element;
 	}
+
 
 	void Pop()
 	{
@@ -73,8 +139,10 @@ public:
 		}
 	}
 
+
 	ElementType &GetTop() { return mTop->GetValue(); }
 	const ElementType &GetTop() const { return mTop->GetValue(); }
+
 
 	void SetTop(const ElementType &value)
 	{
@@ -84,7 +152,9 @@ public:
 		}
 	}
 
+
 	bool IsEmpty() const { return mTop == NULL; }
+
 
 	bool Contains(const ElementType &value) const
 	{
@@ -100,8 +170,12 @@ public:
 		return false;
 	}
 
-private:
+	Iterator Begin() { return Iterator(mTop); }
+	ConstIterator Begin() const { return ConstIterator(mTop); }
+	Iterator End() { return Iterator(NULL); }
+	ConstIterator End() const { return ConstIterator(NULL); }
 
+private:
 	Element *mTop;
 };
 

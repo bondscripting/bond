@@ -3,6 +3,18 @@
 namespace Bond
 {
 
+const char *GetSignatureTypeMnemonic(SignatureType signatureType)
+{
+	static const char *const SIGNATURE_TYPE_MNEMONICS[] =
+	{
+#define BOND_SIGNATURE_TYPE_ITEM(type, mnemonic) mnemonic,
+		BOND_SIGNATURE_TYPE_LIST
+#undef BOND_SIGNATURE_TYPE_ITEM
+	};
+	return SIGNATURE_TYPE_MNEMONICS[signatureType];
+}
+
+
 const char *GetOpCodeMnemonic(OpCode opCode)
 {
 	static const char *const OPCODE_MNEMONICS[] =

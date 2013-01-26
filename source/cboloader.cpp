@@ -115,7 +115,7 @@ CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
-		stringByteCount += result.mStringByteCount;
+		stringByteCount += result.mStringByteCount + result.mStringCount;
 		qualifiedIdElementCount += result.mQualifiedIdElementCount;
 		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
@@ -340,7 +340,8 @@ void CboLoaderCore::Load()
 		const size_t length = ReadValue16().mUShort;
 		char *buffer = mResources.mStringBytes;
 		memcpy(buffer, mByteCode + mIndex, length);
-		mResources.mStringBytes += length;
+		buffer[length] = '\0';
+		mResources.mStringBytes += length + 1;
 		mIndex += length;
 		*str++ = SimpleString(buffer, length);
 	}

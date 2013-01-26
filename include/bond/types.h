@@ -23,22 +23,28 @@ enum PointerSize
 };
 
 
+#define BOND_SIGNATURE_TYPE_LIST \
+  BOND_SIGNATURE_TYPE_ITEM(VOID,    "void")                     \
+  BOND_SIGNATURE_TYPE_ITEM(BOOL,    "bool")                     \
+  BOND_SIGNATURE_TYPE_ITEM(CHAR,    "char")                     \
+  BOND_SIGNATURE_TYPE_ITEM(UCHAR,   "uchar")                    \
+  BOND_SIGNATURE_TYPE_ITEM(SHORT,   "short")                    \
+  BOND_SIGNATURE_TYPE_ITEM(USHORT,  "ushort")                   \
+  BOND_SIGNATURE_TYPE_ITEM(INT,     "int")                      \
+  BOND_SIGNATURE_TYPE_ITEM(UINT,    "uint")                     \
+  BOND_SIGNATURE_TYPE_ITEM(LONG,    "long")                     \
+  BOND_SIGNATURE_TYPE_ITEM(ULONG,   "ulong")                    \
+  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float")                    \
+  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double")                   \
+  BOND_SIGNATURE_TYPE_ITEM(POINTER, "*")                        \
+  BOND_SIGNATURE_TYPE_ITEM(STRUCT,  "struct<%" BOND_PRIu32 ">") \
+
+
 enum SignatureType
 {
-	SIG_VOID,
-	SIG_BOOL,
-	SIG_CHAR,
-	SIG_UCHAR,
-	SIG_SHORT,
-	SIG_USHORT,
-	SIG_INT,
-	SIG_UINT,
-	SIG_LONG,
-	SIG_ULONG,
-	SIG_FLOAT,
-	SIG_DOUBLE,
-	SIG_POINTER,
-	SIG_STRUCT
+#define BOND_SIGNATURE_TYPE_ITEM(type, mnemonic) SIG_ ## type,
+	BOND_SIGNATURE_TYPE_LIST
+#undef BOND_SIGNATURE_TYPE_ITEM
 };
 
 

@@ -314,26 +314,7 @@ void DisassemblerCore::DisassembleSizeAndType()
 	bu32_t size;
 	bu32_t type;
 	DecodeSizeAndType(sizeAndType, size, type);
-	const char *str = "";
-
-	switch (type)
-	{
-		case SIG_VOID: str = "void"; break;
-		case SIG_BOOL: str = "bool"; break;
-		case SIG_CHAR: str = "char"; break;
-		case SIG_UCHAR: str = "uchar"; break;
-		case SIG_SHORT: str = "short"; break;
-		case SIG_USHORT: str = "ushort"; break;
-		case SIG_INT: str = "int"; break;
-		case SIG_UINT: str = "uint"; break;
-		case SIG_LONG: str = "long"; break;
-		case SIG_ULONG: str = "ulong"; break;
-		case SIG_FLOAT: str = "float"; break;
-		case SIG_DOUBLE: str = "double"; break;
-		case SIG_POINTER: str = "*"; break;
-		case SIG_STRUCT: str = "struct<%" BOND_PRIu32 ">"; break;
-	}
-
+	const char *str = GetSignatureTypeMnemonic(static_cast<SignatureType>(type));
 	mWriter.Write(str, size);
 }
 

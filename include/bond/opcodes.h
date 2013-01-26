@@ -292,6 +292,7 @@ enum OpCodeParam
 };
 
 
+const char *GetSignatureTypeMnemonic(SignatureType signatureType);
 const char *GetOpCodeMnemonic(OpCode opCode);
 OpCodeParam GetOpCodeParamType(OpCode opCode);
 bi32_t GetStackDelta(OpCode opCode);
