@@ -167,29 +167,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = static_cast<char>(value.mInt);
+					resultValue.mInt = bi8_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = static_cast<char>(value.mUInt);
+					resultValue.mInt = bi8_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = static_cast<char>(value.mLong);
+					resultValue.mInt = bi8_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = static_cast<char>(value.mULong);
+					resultValue.mInt = bi8_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = static_cast<char>(value.mFloat);
+					resultValue.mInt = bi8_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = static_cast<char>(value.mDouble);
+					resultValue.mInt = bi8_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -204,29 +204,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = static_cast<unsigned char>(value.mInt);
+					resultValue.mUInt = bu8_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = static_cast<unsigned char>(value.mUInt);
+					resultValue.mUInt = bu8_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = static_cast<unsigned char>(value.mLong);
+					resultValue.mUInt = bu8_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = static_cast<unsigned char>(value.mULong);
+					resultValue.mUInt = bu8_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = static_cast<unsigned char>(value.mFloat);
+					resultValue.mUInt = bu8_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = static_cast<unsigned char>(value.mDouble);
+					resultValue.mUInt = bu8_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -241,29 +241,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = static_cast<bi16_t>(value.mInt);
+					resultValue.mInt = bi16_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = static_cast<bi16_t>(value.mUInt);
+					resultValue.mInt = bi16_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = static_cast<bi16_t>(value.mLong);
+					resultValue.mInt = bi16_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = static_cast<bi16_t>(value.mULong);
+					resultValue.mInt = bi16_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = static_cast<bi16_t>(value.mFloat);
+					resultValue.mInt = bi16_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = static_cast<bi16_t>(value.mDouble);
+					resultValue.mInt = bi16_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -278,29 +278,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = static_cast<bu16_t>(value.mInt);
+					resultValue.mUInt = bu16_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = static_cast<bu16_t>(value.mUInt);
+					resultValue.mUInt = bu16_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = static_cast<bu16_t>(value.mLong);
+					resultValue.mUInt = bu16_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = static_cast<bu16_t>(value.mULong);
+					resultValue.mUInt = bu16_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = static_cast<bu16_t>(value.mFloat);
+					resultValue.mUInt = bu16_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = static_cast<bu16_t>(value.mDouble);
+					resultValue.mUInt = bu16_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -316,29 +316,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = static_cast<bi32_t>(value.mInt);
+					resultValue.mInt = bi32_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = static_cast<bi32_t>(value.mUInt);
+					resultValue.mInt = bi32_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = static_cast<bi32_t>(value.mLong);
+					resultValue.mInt = bi32_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = static_cast<bi32_t>(value.mULong);
+					resultValue.mInt = bi32_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = static_cast<bi32_t>(value.mFloat);
+					resultValue.mInt = bi32_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = static_cast<bi32_t>(value.mDouble);
+					resultValue.mInt = bi32_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -354,29 +354,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = static_cast<bu32_t>(value.mInt);
+					resultValue.mUInt = bu32_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = static_cast<bu32_t>(value.mUInt);
+					resultValue.mUInt = bu32_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = static_cast<bu32_t>(value.mLong);
+					resultValue.mUInt = bu32_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = static_cast<bu32_t>(value.mULong);
+					resultValue.mUInt = bu32_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = static_cast<bu32_t>(value.mFloat);
+					resultValue.mUInt = bu32_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = static_cast<bu32_t>(value.mDouble);
+					resultValue.mUInt = bu32_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -392,29 +392,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mLong = static_cast<bi64_t>(value.mInt);
+					resultValue.mLong = bi64_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mLong = static_cast<bi64_t>(value.mUInt);
+					resultValue.mLong = bi64_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mLong = static_cast<bi64_t>(value.mLong);
+					resultValue.mLong = bi64_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mLong = static_cast<bi64_t>(value.mULong);
+					resultValue.mLong = bi64_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mLong = static_cast<bi64_t>(value.mFloat);
+					resultValue.mLong = bi64_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mLong = static_cast<bi64_t>(value.mDouble);
+					resultValue.mLong = bi64_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -430,29 +430,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mULong = static_cast<bu64_t>(value.mInt);
+					resultValue.mULong = bu64_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mULong = static_cast<bu64_t>(value.mUInt);
+					resultValue.mULong = bu64_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mULong = static_cast<bu64_t>(value.mLong);
+					resultValue.mULong = bu64_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mULong = static_cast<bu64_t>(value.mULong);
+					resultValue.mULong = bu64_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mULong = static_cast<bu64_t>(value.mFloat);
+					resultValue.mULong = bu64_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mULong = static_cast<bu64_t>(value.mDouble);
+					resultValue.mULong = bu64_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -468,29 +468,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mInt);
+					resultValue.mFloat = bf32_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mUInt);
+					resultValue.mFloat = bf32_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mFloat = static_cast<bf32_t>(value.mLong);
+					resultValue.mFloat = bf32_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mFloat = static_cast<bf32_t>(value.mULong);
+					resultValue.mFloat = bf32_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mFloat = static_cast<bf32_t>(value.mFloat);
+					resultValue.mFloat = bf32_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mFloat = static_cast<bf32_t>(value.mDouble);
+					resultValue.mFloat = bf32_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -506,29 +506,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mDouble = static_cast<bf64_t>(value.mInt);
+					resultValue.mDouble = bf64_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mDouble = static_cast<bf64_t>(value.mUInt);
+					resultValue.mDouble = bf64_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mDouble = static_cast<bf64_t>(value.mLong);
+					resultValue.mDouble = bf64_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mDouble = static_cast<bf64_t>(value.mULong);
+					resultValue.mDouble = bf64_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mDouble = static_cast<bf64_t>(value.mFloat);
+					resultValue.mDouble = bf64_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mDouble = static_cast<bf64_t>(value.mDouble);
+					resultValue.mDouble = bf64_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -562,13 +562,13 @@ Value UnaryMinus(const TypeAndValue &value)
 			resultValue.mInt = -value.GetIntValue();
 			break;
 		case Token::KEY_UINT:
-			resultValue.mUInt = -static_cast<bi32_t>(value.GetUIntValue());
+			resultValue.mUInt = bu32_t(-bi32_t(value.GetUIntValue()));
 			break;
 		case Token::KEY_LONG:
 			resultValue.mLong = -value.GetLongValue();
 			break;
 		case Token::KEY_ULONG:
-			resultValue.mULong = -static_cast<bi64_t>(value.GetULongValue());
+			resultValue.mULong = bu64_t(-bi64_t(value.GetULongValue()));
 			break;
 		case Token::KEY_FLOAT:
 			resultValue.mFloat = -value.GetFloatValue();

@@ -41,7 +41,7 @@ int main(int argc, const char *argv[])
 		{
 			if (++i < argc)
 			{
-				stackSize = static_cast<size_t>(atol(argv[i]));
+				stackSize = size_t(atol(argv[i]));
 				if (stackSize < MIN_STACK_SIZE)
 				{
 					fprintf(stderr, "Stack size must be at least %u kB.\n", MIN_STACK_SIZE);
@@ -79,11 +79,6 @@ int main(int argc, const char *argv[])
 		while (it != cboFileNameList.end())
 		{
 			cboFiles[index] = fileLoader.LoadFile(*it);
-			if (!cboFiles[index].mValid)
-			{
-				fprintf(stderr, "Failed to load '%s'\n", *it);
-				error = true;
-			}
 			++index;
 			++it;
 		}

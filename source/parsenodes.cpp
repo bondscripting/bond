@@ -268,7 +268,7 @@ bu32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
 	}
 	else
 	{
-		return AlignUp(GetSize(pointerSize), static_cast<bu32_t>(BOND_SLOT_SIZE));
+		return AlignUp(GetSize(pointerSize), bu32_t(BOND_SLOT_SIZE));
 	}
 }
 

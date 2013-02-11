@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-BufferedTextWriter::BufferedTextWriter(char *buffer, int length):
+BufferedTextWriter::BufferedTextWriter(char *buffer, size_t length):
 	mBuffer(buffer),
 	mLength(length),
 	mIndex(0)
@@ -16,7 +16,7 @@ BufferedTextWriter::BufferedTextWriter(char *buffer, int length):
 
 void BufferedTextWriter::Write(const char *format, ...)
 {
-	int length = mLength - mIndex;
+	size_t length = mLength - mIndex;
 	char *buffer = mBuffer + mIndex;
 	va_list argList;
 	va_start(argList, format);
@@ -25,7 +25,7 @@ void BufferedTextWriter::Write(const char *format, ...)
 
 	if (n > 0)
 	{
-		mIndex += n;
+		mIndex += size_t(n);
 		if (mIndex >= mLength)
 		{
 			mIndex = mLength - 1;

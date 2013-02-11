@@ -449,7 +449,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADMEMW:
 			{
 				const Value16 memSizeIndex(code + pc);
-				const bi32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
+				const size_t memSize = size_t(value32Table[memSizeIndex.mUShort].mInt);
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				memcpy(sp - BOND_SLOT_SIZE, address, memSize);
 				pc += sizeof(Value16);
@@ -902,7 +902,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_MEMCOPYW:
 			{
 				const Value16 memSizeIndex(code + pc);
-				const bi32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
+				const size_t memSize = size_t(value32Table[memSizeIndex.mUShort].mInt);
 				const void *sourceAddress = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				void *destAddress = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
 				memcpy(destAddress, sourceAddress, memSize);

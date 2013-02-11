@@ -26,16 +26,14 @@ void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &erro
 
 void Compile(const char *scriptName)
 {
-	Bond::DefaultAllocator allocator;
-	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::FileData script;
-
 	try
 	{
-		script = fileLoader.LoadFile(scriptName);
+		Bond::DefaultAllocator allocator;
+		Bond::DefaultFileLoader fileLoader(allocator);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
+		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
 		Bond::Parser parser(allocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -69,8 +67,6 @@ void Compile(const char *scriptName)
 	{
 		fprintf(stderr, "%s\n", e.GetMessage());
 	}
-
-	fileLoader.DisposeFile(script);
 }
 
 

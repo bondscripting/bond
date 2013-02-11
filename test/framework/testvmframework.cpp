@@ -31,16 +31,15 @@ bool RunVMTest(
 	Bond::DefaultAllocator codeGeneratorAllocator;
 	Bond::DefaultAllocator cboLoaderAllocator;
 	Bond::DefaultAllocator vmAllocator;
-	Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
-	Bond::FileData script;
 	bool result = false;
 
 	try
 	{
-		script = fileLoader.LoadFile(scriptName);
+		Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
+		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -65,7 +64,7 @@ bool RunVMTest(
 
 			if (!errorBuffer.HasErrors())
 			{
-				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()), true);
+				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()));
 				Bond::CboLoader cboLoader(cboLoaderAllocator);
 				Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(&cboFile, 1);
 				Bond::VM vm(vmAllocator, *codeSegmentHandle.Get(), 96 * 1024);
@@ -81,23 +80,21 @@ bool RunVMTest(
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Write("line %u in %s: %s", assertLine, assertFile, e.GetMessage());
+		logger.Write("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
-	fileLoader.DisposeFile(script);
-
 	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("File loader leaked %d chunks of memory.\n", fileLoaderAllocator.GetNumAllocations()));
+		("File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.\n", lexerAllocator.GetNumAllocations()));
+		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
+		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(codeGeneratorAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Code generator leaked %d chunks of memory.\n", codeGeneratorAllocator.GetNumAllocations()));
+		("Code generator leaked %d chunks of memory.", codeGeneratorAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(cboLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("CBO loader leaked %d chunks of memory.\n", cboLoaderAllocator.GetNumAllocations()));
+		("CBO loader leaked %d chunks of memory.", cboLoaderAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(vmAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("VM leaked %d chunks of memory.\n", vmAllocator.GetNumAllocations()));
+		("VM leaked %d chunks of memory.", vmAllocator.GetNumAllocations()));
 
 	return result;
 }

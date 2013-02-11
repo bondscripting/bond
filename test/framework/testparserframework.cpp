@@ -20,16 +20,15 @@ bool RunParserTest(
 	Bond::DefaultAllocator fileLoaderAllocator;
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
-	Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
-	Bond::FileData script;
 	bool result = false;
 
 	try
 	{
-		script = fileLoader.LoadFile(scriptName);
+		Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		lexer.Lex(reinterpret_cast<const char *>(script.mData), script.mLength);
+		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -40,15 +39,15 @@ bool RunParserTest(
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Write("line %u in %s: %s", assertLine, assertFile, e.GetMessage());
+		logger.Write("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
-	fileLoader.DisposeFile(script);
-
+	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
+		("File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.\n", lexerAllocator.GetNumAllocations()));
+		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.\n", parserAllocator.GetNumAllocations()));
+		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
 
 	return result;
 }

@@ -53,7 +53,7 @@ public:
 
 	void construct(pointer p, const_reference t)
 	{
-		new ((void *) p) T(t);
+		new (static_cast<void *>(p)) T(t);
 	}
 
 	void destroy(pointer p)

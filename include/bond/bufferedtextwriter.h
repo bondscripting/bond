@@ -2,6 +2,7 @@
 #define BOND_BUFFERED_TEXTWRITER_H
 
 #include "bond/textwriter.h"
+#include "bond/types.h"
 
 namespace Bond
 {
@@ -9,7 +10,7 @@ namespace Bond
 class BufferedTextWriter: public TextWriter
 {
 public:
-	BufferedTextWriter(char *buffer, int length);
+	BufferedTextWriter(char *buffer, size_t length);
 	virtual ~BufferedTextWriter() {}
 
 	virtual void Write(const char *format, ...);
@@ -17,8 +18,8 @@ public:
 
 private:
 	char *mBuffer;
-	int mLength;
-	int mIndex;
+	size_t mLength;
+	size_t mIndex;
 };
 
 }

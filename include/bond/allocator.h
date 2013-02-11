@@ -1,7 +1,7 @@
 #ifndef BOND_ALLOCATOR_H
 #define BOND_ALLOCATOR_H
 
-#include "bond/conf.h"
+#include "bond/resourcehandle.h"
 
 namespace Bond
 {
@@ -9,119 +9,145 @@ namespace Bond
 class Allocator
 {
 public:
-	// The following Handle classes implement functionality similar to std::auto_ptr except that
-	// they free memory by returning it to an allocator rather than calling the delete operator.
-	// Note that they only free memory; they do not call destructors. They also come with the
-	// same limitations that caused auto_ptr to become deprecated. At the time these classes
-	// were implemented, C++11 unique_ptr was not universally supported, and the limited
-	// functionality of these classes was sufficient.
 	template<typename T>
-	struct HandleProxy
+	class Deallocator
 	{
-		explicit HandleProxy(Allocator *allocator, T *ptr): mAllocator(allocator), mPtr(ptr) {}
+	public:
+		Deallocator(): mAllocator(NULL) {}
+		Deallocator(Allocator *allocator): mAllocator(allocator) {}
+
+		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->Free(ptr); }
+
+	private:
 		Allocator *mAllocator;
-		T *mPtr;
 	};
 
+	// Stores a pointer to memory.
 	template<typename T>
-	class HandleBase
+	class Handle: public PointerHandle<T, Deallocator<T> >
 	{
 	public:
-		Allocator &GetAllocator() const { return mAllocator; }
-		T *Get() const { return mPtr; }
-		T &operator*() const { return *mPtr; }
-		T *operator->() const { return mPtr; }
-		operator HandleProxy<T>() { return HandleProxy<T>(mAllocator, Release()); }
+		Handle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
+		{}
 
-		T *Release()
-		{
-			T *ptr = mPtr;
-			mPtr = 0;
-			return ptr;
-		}
+		Handle(Handle &other):
+			PointerHandle<T, Deallocator<T> >(other)
+		{}
 
-	protected:
-		HandleBase(Allocator &allocator, T *ptr = NULL): mAllocator(&allocator), mPtr(ptr) {}
-		HandleBase(HandleBase<T>& other): mAllocator(other.mAllocator), mPtr(other.Release()) {}
-		HandleBase(const HandleProxy<T>& proxy): mAllocator(proxy.mAllocator), mPtr(proxy.mPtr) {}
-		~HandleBase() {}
+		Handle(const ResourceHandleProxy<T *, Deallocator<T> > &proxy):
+			PointerHandle<T, Deallocator<T> >(proxy)
+		{}
+	};
 
+
+	template<typename T>
+	class AlignedDeallocator
+	{
+	public:
+		AlignedDeallocator(): mAllocator(NULL) {}
+		AlignedDeallocator(Allocator *allocator): mAllocator(allocator) {}
+
+		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->FreeAligned(ptr); }
+
+	private:
 		Allocator *mAllocator;
-		T *mPtr;
+	};
+
+	// Stores a pointer to aligned memory.
+	template<typename T>
+	class AlignedHandle: public PointerHandle<T, AlignedDeallocator<T> >
+	{
+	public:
+		AlignedHandle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
+		{}
+
+		AlignedHandle(AlignedHandle &other):
+			PointerHandle<T, AlignedDeallocator<T> >(other)
+		{}
+
+		AlignedHandle(const ResourceHandleProxy<T *, AlignedDeallocator<T> > &proxy):
+			PointerHandle<T, AlignedDeallocator<T> >(proxy)
+		{}
 	};
 
 
 	template<typename T>
-	class Handle: public HandleBase<T>
+	class ObjectDeallocator
 	{
 	public:
-		Handle(Allocator &allocator, T *ptr = NULL): HandleBase<T>(allocator, ptr) {}
-		Handle(Handle<T>& other): HandleBase<T>(other) {}
-		Handle(const HandleProxy<T>& proxy): HandleBase<T>(proxy) {}
-		~Handle() { Reset(); }
+		ObjectDeallocator(): mAllocator(NULL) {}
+		ObjectDeallocator(Allocator *allocator): mAllocator(allocator) {}
 
-		Handle &operator=(Handle<T>& other)
+		void operator()(T *ptr)
 		{
-			Reset(other.mAllocator, other.Release());
-			return *this;
-		}
-
-		void Reset(T *ptr = 0)
-		{
-			if (ptr != this->mPtr)
+			if (mAllocator != NULL)
 			{
-				this->mAllocator->Free(this->mPtr);
-				this->mPtr = ptr;
+				ptr->~T();
+				mAllocator->Free(ptr);
 			}
 		}
 
-		private:
-		void Reset(Allocator *allocator, T *ptr = 0)
-		{
-			if (ptr != this->mPtr)
-			{
-				this->mAllocator->Free(this->mPtr);
-				this->mPtr = ptr;
-			}
-			this->mAllocator = allocator;
-		}
+	private:
+		Allocator *mAllocator;
+	};
+
+	// Stores a pointer to an object which is destroyed when deallocated.
+	template<typename T>
+	class ObjectHandle: public PointerHandle<T, ObjectDeallocator<T> >
+	{
+	public:
+		ObjectHandle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(&allocator))
+		{}
+
+		ObjectHandle(ObjectHandle &other):
+			PointerHandle<T, ObjectDeallocator<T> >(other)
+		{}
+
+		ObjectHandle(const ResourceHandleProxy<T *, ObjectDeallocator<T> > &proxy):
+			PointerHandle<T, ObjectDeallocator<T> >(proxy)
+		{}
 	};
 
 
 	template<typename T>
-	class AlignedHandle: public HandleBase<T>
+	class AlignedObjectDeallocator
 	{
 	public:
-		AlignedHandle(Allocator &allocator, T *ptr = NULL): HandleBase<T>(allocator, ptr) {}
-		AlignedHandle(AlignedHandle<T>& other): HandleBase<T>(other) {}
-		AlignedHandle(const HandleProxy<T>& proxy): HandleBase<T>(proxy) {}
-		~AlignedHandle() { Reset(); }
+		AlignedObjectDeallocator(): mAllocator(NULL) {}
+		AlignedObjectDeallocator(Allocator *allocator): mAllocator(allocator) {}
 
-		AlignedHandle &operator=(AlignedHandle<T>& other)
+		void operator()(T *ptr)
 		{
-			Reset(other.mAllocator, other.Release());
-			return *this;
-		}
-
-		void Reset(T *ptr = 0)
-		{
-			if (ptr != this->mPtr)
+			if (mAllocator != NULL)
 			{
-				this->mAllocator->FreeAligned(this->mPtr);
-				this->mPtr = ptr;
+				ptr->~T();
+				mAllocator->FreeAligned(ptr);
 			}
 		}
 
-		private:
-		void Reset(Allocator *allocator, T *ptr = 0)
-		{
-			if (ptr != this->mPtr)
-			{
-				this->mAllocator->FreeAligned(this->mPtr);
-				this->mPtr = ptr;
-			}
-			this->mAllocator = allocator;
-		}
+	private:
+		Allocator *mAllocator;
+	};
+
+	// Stores a pointer to an aligned object which is destroyed when deallocated.
+	template<typename T>
+	class AlignedObjectHandle: public PointerHandle<T, AlignedObjectDeallocator<T> >
+	{
+	public:
+		AlignedObjectHandle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(&allocator))
+		{}
+
+		AlignedObjectHandle(AlignedObjectHandle &other):
+			PointerHandle<T, AlignedObjectDeallocator<T> >(other)
+		{}
+
+		AlignedObjectHandle(const ResourceHandleProxy<T *, AlignedObjectDeallocator<T> > &proxy):
+			PointerHandle<T, AlignedObjectDeallocator<T> >(proxy)
+		{}
 	};
 
 

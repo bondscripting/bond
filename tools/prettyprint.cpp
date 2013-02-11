@@ -27,17 +27,14 @@ void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &erro
 
 void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConstants)
 {
-	Bond::DefaultAllocator allocator;
-	Bond::DefaultFileLoader fileLoader(allocator);
-	Bond::FileData script;
-
 	try
 	{
-		script = fileLoader.LoadFile(scriptName);
+		Bond::DefaultAllocator allocator;
+		Bond::DefaultFileLoader fileLoader(allocator);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(static_cast<const char *>(script.mData), script.mLength);
-		fileLoader.DisposeFile(script);
+		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
 		Bond::Parser parser(allocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -62,8 +59,6 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	{
 		fprintf(stderr, "%s\n", e.GetMessage());
 	}
-
-	fileLoader.DisposeFile(script);
 }
 
 

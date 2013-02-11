@@ -81,10 +81,16 @@
     <ClInclude Include="..\..\include\bond\allocator.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\assert.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\autostack.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\binarywriter.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\bufferedtextwriter.h">
@@ -124,6 +130,9 @@
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\endian.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\exception.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\filebinarywriter.h">
@@ -177,6 +186,9 @@
     <ClInclude Include="..\..\include\bond\prettyprinter.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\resourcehandle.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\semanticanalyzer.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
@@ -228,8 +240,8 @@
     <ClInclude Include="..\..\include\bond\vm.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h">
-      <Filter>Header Files\include\bond</Filter>
+    <ClInclude Include="..\..\include\bond\private\assert.h">
+      <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

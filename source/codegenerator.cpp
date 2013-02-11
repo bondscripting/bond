@@ -460,7 +460,7 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	while (parameterList != NULL)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
+		const bi32_t alignment = Max(bi32_t(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
 		offset -= typeDescriptor->GetSize(mPointerSize);
 		offset = AlignDown(offset, alignment);
 		packedOffset -= typeDescriptor->GetStackSize(mPointerSize);
@@ -1730,12 +1730,12 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			if (IsInCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTC);
-				GetByteCode().push_back(static_cast<bu8_t>(value));
+				GetByteCode().push_back(bu8_t(value));
 			}
 			else if (IsInUCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
-				GetByteCode().push_back(static_cast<bu8_t>(value));
+				GetByteCode().push_back(bu8_t(value));
 			}
 			else if (IsInShortRange(value))
 			{
@@ -1783,7 +1783,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			if (IsInUCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
-				GetByteCode().push_back(static_cast<bu8_t>(value));
+				GetByteCode().push_back(bu8_t(value));
 			}
 			else if (IsInUShortRange(value))
 			{
@@ -2542,8 +2542,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 	{
 		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(static_cast<bu8_t>(slotIndex));
-		byteCode.push_back(static_cast<bu8_t>(rhValue));
+		byteCode.push_back(bu8_t(slotIndex));
+		byteCode.push_back(bu8_t(rhValue));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2587,7 +2587,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitCompoundAssignmentOperator(con
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
 	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const bi32_t elementSize = static_cast<bi32_t>(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const bi32_t elementSize = bi32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const bi64_t offset = offsetTav.AsLongValue() * elementSize;
 
@@ -2604,8 +2604,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 	{
 		EmitOpCode(INC_OPCODES.GetPointerOpCode(mPointerSize));
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(static_cast<bu8_t>(slotIndex));
-		byteCode.push_back(static_cast<bu8_t>(offset));
+		byteCode.push_back(bu8_t(slotIndex));
+		byteCode.push_back(bu8_t(offset));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2649,7 +2649,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerCompoundAssignmentOpera
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
 	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const bi32_t elementSize = static_cast<bi32_t>(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const bi32_t elementSize = bi32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const bi64_t offset = offsetTav.AsLongValue() * elementSize;
 
@@ -2670,7 +2670,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerArithmetic(const Expres
 			result = pointerResult;
 		}
 
-		result.mOffset += static_cast<bi32_t>(offset);
+		result.mOffset += bi32_t(offset);
 	}
 	else
 	{
@@ -2770,7 +2770,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 		{
 			const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &longTypeDescriptor);
-			EmitPushConstantLong(static_cast<bu64_t>(elementSize));
+			EmitPushConstantLong(bu64_t(elementSize));
 			EmitOpCode(OPCODE_MULL);
 			EmitOpCode(OPCODE_ADDL);
 		}
@@ -2789,7 +2789,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const bi32_t pointerOffset = static_cast<bi32_t>(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
+	const bi32_t pointerOffset = bi32_t(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
 
 	ResultStack::Element operandResult(mResult);
 	Traverse(operand);
@@ -2810,8 +2810,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 			}
 
 			EmitOpCode(OPCODE_INCL);
-			byteCode.push_back(static_cast<bu8_t>(slotIndex));
-			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
+			byteCode.push_back(bu8_t(slotIndex));
+			byteCode.push_back(bu8_t(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -2826,8 +2826,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 			}
 
 			EmitOpCode(OPCODE_INCI);
-			byteCode.push_back(static_cast<bu8_t>(slotIndex));
-			byteCode.push_back(static_cast<bu8_t>(pointerOffset));
+			byteCode.push_back(bu8_t(slotIndex));
+			byteCode.push_back(bu8_t(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -2854,7 +2854,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitPointerIncrementOperator(const
 
 		if (Is64BitPointer())
 		{
-			EmitPushConstantLong(static_cast<bi64_t>(pointerOffset));
+			EmitPushConstantLong(bi64_t(pointerOffset));
 			EmitOpCode(OPCODE_ADDL);
 		}
 		else
@@ -2901,8 +2901,8 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitIncrementOperator(const Expres
 		}
 
 		EmitOpCode(INC_OPCODES.GetOpCode(resultType));
-		GetByteCode().push_back(static_cast<bu8_t>(slotIndex));
-		GetByteCode().push_back(static_cast<bu8_t>(sign));
+		GetByteCode().push_back(bu8_t(slotIndex));
+		GetByteCode().push_back(bu8_t(sign));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
@@ -3477,8 +3477,8 @@ void GeneratorCore::ApplyStackDelta(bi32_t delta)
 bi32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
 {
 	CompiledFunction &function = GetFunction();
-	const bi32_t alignment = Max(static_cast<bi32_t>(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-	const bi32_t size = static_cast<bi32_t>(typeDescriptor->GetSize(mPointerSize));
+	const bi32_t alignment = Max(bi32_t(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
+	const bi32_t size = bi32_t(typeDescriptor->GetSize(mPointerSize));
 	const bi32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
 	const bi32_t nextOffset = AlignUp(offset + size, BOND_SLOT_SIZE);
 	mLocalOffset.SetTop(nextOffset);
@@ -3547,7 +3547,7 @@ bu16_t GeneratorCore::MapString(const HashedString &str)
 	{
 		PushError(CompilerError::STRING_OVERFLOW);
 	}
-	const bu16_t index = static_cast<bu16_t>(mStringList.size());
+	const bu16_t index = bu16_t(mStringList.size());
 	StringIndexMap::InsertResult insertResult = mStringIndexMap.insert(StringIndexMap::KeyValue(str, index));
 	if (insertResult.second)
 	{
@@ -3563,7 +3563,7 @@ bu16_t GeneratorCore::MapValue32(const Value32 &value)
 	{
 		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
 	}
-	const bu16_t index = static_cast<bu16_t>(mValue32List.size());
+	const bu16_t index = bu16_t(mValue32List.size());
 	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.insert(Value32IndexMap::KeyValue(value, index));
 	if (insertResult.second)
 	{
@@ -3579,7 +3579,7 @@ bu16_t GeneratorCore::MapValue64(const Value64 &value)
 	{
 		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
 	}
-	const bu16_t index = static_cast<bu16_t>(mValue64List.size());
+	const bu16_t index = bu16_t(mValue64List.size());
 	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.insert(Value64IndexMap::KeyValue(value, index));
 	if (insertResult.second)
 	{

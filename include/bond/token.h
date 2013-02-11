@@ -139,8 +139,8 @@ public:
 	}
 
 	Token(const char *text, TokenType tokenType):
-		mStartPos(-1, -1, -1),
-		mEndPos(-1, -1, -1),
+		mStartPos(0, 0, 0),
+		mEndPos(0, 0, 0),
 		mText(text),
 		mValue(),
 		mTokenType(tokenType),
@@ -172,7 +172,7 @@ public:
 
 	const char *GetText() const { return mText.GetString(); }
 	void SetText(const char *text) { mText = HashedString(text); }
-	void SetText(const char *text, int length) { mText = HashedString(text, length); }
+	void SetText(const char *text, size_t length) { mText = HashedString(text, length); }
 
 	const HashedString &GetHashedText() const { return mText; }
 
@@ -246,9 +246,9 @@ class TokenTypeSet
 
 	const char *GetTypeName() const { return mTypeName; }
 
-	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & (1 << (type % 32))) != 0; }
+	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & bu32_t(1 << (type % 32))) != 0; }
 
-	void Set(Token::TokenType type) { mBitField[type / 32] |= 1 << (type % 32); }
+	void Set(Token::TokenType type) { mBitField[type / 32] |= bu32_t(1 << (type % 32)); }
 
 private:
 	static const int NUM_BIT_FIELD_ELEMENTS = (Token::NUM_TOKEN_TYPES / 32) + 1;

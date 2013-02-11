@@ -15,10 +15,10 @@ struct StreamPos
 	{
 	}
 
-	StreamPos(size_t index, size_t line, size_t column):
-		index(index),
-		line(line),
-		column(column)
+	StreamPos(size_t i, size_t l, size_t c):
+		index(i),
+		line(l),
+		column(c)
 	{
 	}
 

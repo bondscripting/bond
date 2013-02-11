@@ -1,12 +1,13 @@
 #ifndef BOND_DEFAULTFILELOADER_H
 #define BOND_DEFAULTFILELOADER_H
 
-#include "bond/allocator.h"
 #include "bond/fileloader.h"
 #include <stdio.h>
 
 namespace Bond
 {
+
+class Allocator;
 
 class DefaultFileLoader: public FileLoader
 {

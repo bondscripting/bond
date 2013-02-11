@@ -90,7 +90,7 @@ void DisassemblerCore::Disassemble()
 
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
-		const int length = ReadValue16().mUShort;
+		const size_t length = ReadValue16().mUShort;
 		mStringTable[i] = SimpleString(reinterpret_cast<const char *>(mByteCode + mIndex), length);
 		mIndex += length;
 	}
@@ -141,7 +141,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	DisassembleParamListSignature();
 	mWriter.Write(")\n");
 
-	const bu32_t hash = ReadValue32().mUInt;
+	const bu32_t functionHash = ReadValue32().mUInt;
 	const bu32_t argSize = ReadValue32().mUInt;
 	const bu32_t packedArgSize = ReadValue32().mUInt;
 	const bu32_t localSize = ReadValue32().mUInt;
@@ -158,7 +158,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 		"\tstack size: %" BOND_PRIu32 "\n"
 		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
 		"\tcode size: %" BOND_PRIu32 "\n",
-		hash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
+		functionHash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{
@@ -173,20 +173,20 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mWriter.Write("%" BOND_PRId32, static_cast<bi32_t>(static_cast<char>(mByteCode[mIndex++])));
+				mWriter.Write("%" BOND_PRId32, bi32_t(char(mByteCode[mIndex++])));
 				break;
 			case OC_PARAM_UCHAR:
-				mWriter.Write("%" BOND_PRIu32, static_cast<bu32_t>(mByteCode[mIndex++]));
+				mWriter.Write("%" BOND_PRIu32, bu32_t(mByteCode[mIndex++]));
 				break;
 			case OC_PARAM_UCHAR_CHAR:
-				mWriter.Write("%" BOND_PRIu32 ", %" BOND_PRId32, static_cast<bu32_t>(mByteCode[mIndex]), static_cast<bi32_t>(static_cast<char>(mByteCode[mIndex + 1])));
+				mWriter.Write("%" BOND_PRIu32 ", %" BOND_PRId32, bu32_t(mByteCode[mIndex]), bi32_t(char(mByteCode[mIndex + 1])));
 				mIndex += 2;
 				break;
 			case OC_PARAM_SHORT:
-				mWriter.Write("%" BOND_PRId32, static_cast<bi32_t>(ReadValue16().mShort));
+				mWriter.Write("%" BOND_PRId32, bi32_t(ReadValue16().mShort));
 				break;
 			case OC_PARAM_USHORT:
-				mWriter.Write("%" BOND_PRId32, static_cast<bu32_t>(ReadValue16().mUShort));
+				mWriter.Write("%" BOND_PRId32, bu32_t(ReadValue16().mUShort));
 				break;
 			case OC_PARAM_INT:
 			{
@@ -212,7 +212,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_OFF16:
 			{
 				const bi32_t offset = ReadValue16().mShort;
-				const bu32_t baseAddress = static_cast<bu32_t>(mIndex - codeStart);
+				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
 				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
@@ -220,7 +220,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			{
 				const size_t offsetIndex = ReadValue16().mUShort;
 				const bi32_t offset = mValue32Table[offsetIndex].mInt;
-				const bu32_t baseAddress = static_cast<bu32_t>(mIndex - codeStart);
+				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
 				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
@@ -240,7 +240,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const bi32_t defaultOffset = ReadValue32().mInt;
 				const bu32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
-				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
 				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
 				for (bu32_t i = 0; i < numMatches; ++i)
@@ -259,7 +259,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const bi32_t maxMatch = ReadValue32().mInt;
 				const bu32_t numMatches = maxMatch - minMatch + 1;
 				const size_t tableSize = numMatches * sizeof(Value32);
-				const bi32_t baseAddress = static_cast<bi32_t>(mIndex + tableSize - codeStart);
+				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
 				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
 				for (bu32_t i = 0; i < numMatches; ++i)

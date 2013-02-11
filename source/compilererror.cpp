@@ -102,7 +102,7 @@ void CompilerError::Print(TextWriter &writer) const
 
 				case 'd':
 				{
-					writer.Write("%" BOND_PRId32, static_cast<bi32_t>(arg));
+					writer.Write("%" BOND_PRId32, bi32_t(arg));
 					state = STATE_NORMAL;
 				}
 				break;

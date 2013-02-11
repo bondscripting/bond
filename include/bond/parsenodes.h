@@ -885,7 +885,7 @@ private:
 class ResolvedSwitchLabel: public ListParseNode
 {
 public:
-	ResolvedSwitchLabel(): mMatch(0), mJumpTargetId(-1), mIsDefault(false) {}
+	ResolvedSwitchLabel(): mMatch(0), mJumpTargetId(0), mIsDefault(false) {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) {}
 	virtual void Accept(ParseNodeVisitor &visitor) const {}

@@ -1,5 +1,7 @@
+#include "bond/allocator.h"
 #include "bond/assert.h"
 #include "bond/defaultfileloader.h"
+#include "bond/types.h"
 #include <stdio.h>
 
 namespace Bond
@@ -17,36 +19,31 @@ FileData DefaultFileLoader::LoadFile(const char *fileName)
 
 FileData DefaultFileLoader::LoadFile(FILE *file)
 {
-	unsigned char *data = NULL;
-	size_t length = -1;
-	bool valid = false;
+	Allocator::Handle<bu8_t> dataHandle(mAllocator);
+	size_t length = 0;
 
 	if (file != 0)
 	{
-		valid = true;
 		const long pos = ftell(file);
 		fseek(file, 0, SEEK_END);
-		length = static_cast<size_t>(ftell(file) - pos);
+		length = size_t(ftell(file) - pos);
 		fseek(file, pos, SEEK_SET);
 
 		if (length > 0)
 		{
-			data = mAllocator.Alloc<unsigned char>(length);
-			fread(data, sizeof(char), length, file);
+			dataHandle.Reset(mAllocator.Alloc<bu8_t>(length));
+			fread(dataHandle.Get(), sizeof(bu8_t), length, file);
 		}
 	}
 
-	return FileData(data, length, valid);
+	return FileData(dataHandle.Release(), length);
 }
 
 
 void DefaultFileLoader::DisposeFile(FileData &fileData)
 {
-	if (fileData.mValid)
-	{
-		mAllocator.Free(fileData.mData);
-		fileData = FileData();
-	}
+	mAllocator.Free(fileData.mData);
+	fileData = FileData();
 }
 
 }

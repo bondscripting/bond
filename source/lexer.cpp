@@ -1272,11 +1272,11 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 #undef KEYWORD_ITEM
 	};
 
-	const int numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
+	const size_t numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
 	const SimpleString *lastKeyword = KEYWORD_NAMES + numKeywords;
 	const SimpleString *keyword = LowerBound(KEYWORD_NAMES, lastKeyword, token.GetHashedText());
 
-	if ((keyword < lastKeyword) && (*keyword == token.GetHashedText()))
+	if ((keyword != lastKeyword) && (*keyword == token.GetHashedText()))
 	{
 		const Token::TokenType type = KEYWORD_TYPES[keyword - KEYWORD_NAMES];
 		token.SetTokenType(type);
@@ -1323,7 +1323,7 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
-		token.SetIntValue(static_cast<bi32_t>(value));
+		token.SetIntValue(bi32_t(value));
 	}
 	else
 	{
@@ -1351,7 +1351,7 @@ void LexerCore::EvaluateLongToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
-		token.SetLongValue(static_cast<bi64_t>(value));
+		token.SetLongValue(bi64_t(value));
 	}
 	else
 	{
@@ -1421,7 +1421,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 				bu32_t value;
 				int length;
 				sscanf(text + 2, "%" BOND_SCNx32 "%n", &value, &length);
-				result.value = static_cast<char>(value);
+				result.value = char(value);
 				result.end = text + 2 + length;
 				if (!IsInUCharRange(value))
 				{
@@ -1436,7 +1436,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 					bu32_t value;
 					int length;
 					sscanf(text + 1, "%" BOND_SCNo32 "%n", &value, &length);
-					result.value = static_cast<char>(value);
+					result.value = char(value);
 					result.end = text + 1 + length;
 					if (!IsInUCharRange(value))
 					{

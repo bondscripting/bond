@@ -13,7 +13,7 @@ size_t StringLength(const char *str)
 		{
 			++s;
 		}
-		length = s - str;
+		length = size_t(s - str);
 	}
 	return length;
 }
@@ -26,7 +26,7 @@ bu32_t StringHash(const char *str, bu32_t seed)
 
 	while (*s != '\0')
 	{
-		hash = (hash * 0x01000193u) ^ static_cast<bu32_t>(*s++);
+		hash = (hash * 0x01000193u) ^ bu32_t(*s++);
 	}
 
 	return hash;
@@ -41,7 +41,7 @@ bu32_t StringHash(size_t length, const char *str, bu32_t seed)
 
 	while (s < end)
 	{
-		hash = (hash * 0x01000193u) ^ static_cast<bu32_t>(*s++);
+		hash = (hash * 0x01000193u) ^ bu32_t(*s++);
 	}
 
 	return hash;

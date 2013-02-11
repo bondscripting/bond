@@ -591,7 +591,7 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 				mWriter.Write("%s", tav.GetBoolValue() ? "true" : "false");
 				return true;
 			case Token::KEY_CHAR:
-				mWriter.Write("%c", static_cast<char>(tav.GetIntValue()));
+				mWriter.Write("%c", char(tav.GetIntValue()));
 				return true;
 			case Token::KEY_UCHAR:
 				mWriter.Write("%c", static_cast<unsigned char>(tav.GetUIntValue()));

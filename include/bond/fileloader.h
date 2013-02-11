@@ -2,33 +2,72 @@
 #define BOND_FILELOADER_H
 
 #include "bond/conf.h"
+#include "bond/resourcehandle.h"
 
 namespace Bond
 {
 
 struct FileData
 {
-	FileData(): mData(NULL), mLength(0), mValid(false) {}
+	FileData(): mData(NULL), mLength(0) {}
 
-	FileData(void *data, size_t length, bool valid):
+	FileData(void *data, size_t length):
 		mData(data),
-		mLength(length),
-		mValid(valid)
+		mLength(length)
 	{}
+
+	bool operator==(const FileData &other) const
+	{
+		return (mData == other.mData) && (mLength == other.mLength);
+	}
 
 	void *mData;
 	size_t mLength;
-	bool mValid;
 };
 
 
 class FileLoader
 {
 public:
+	class Deallocator
+	{
+	public:
+		Deallocator(): mFileLoader(NULL) {}
+		Deallocator(FileLoader *fileLoader): mFileLoader(fileLoader) {}
+
+		void operator()(FileData &fileData) { if (mFileLoader != NULL) mFileLoader->DisposeFile(fileData); }
+
+	private:
+		FileLoader *mFileLoader;
+	};
+
+
+	class Handle: public ResourceHandle<FileData, Deallocator>
+	{
+	public:
+		Handle(FileLoader &fileLoader, const FileData &fileData = FileData()):
+			ResourceHandle<FileData, Deallocator>(fileData, Deallocator(&fileLoader))
+		{}
+
+		Handle(Handle &other):
+			ResourceHandle<FileData, Deallocator>(other)
+		{}
+
+		Handle(const ResourceHandleProxy<FileData, Deallocator> &proxy):
+			ResourceHandle<FileData, Deallocator>(proxy)
+		{}
+	};
+
+
 	virtual ~FileLoader() {}
 
 	virtual FileData LoadFile(const char *fileName) = 0;
 	virtual void DisposeFile(FileData &fileData) = 0;
+
+	Handle LoadFileDataHandle(const char *fileName)
+	{
+		return Handle(*this, LoadFile(fileName));
+	}
 };
 
 }

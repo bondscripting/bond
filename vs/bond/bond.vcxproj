@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\algorithm.h" />
     <ClInclude Include="..\..\include\bond\allocator.h" />
+    <ClInclude Include="..\..\include\bond\assert.h" />
     <ClInclude Include="..\..\include\bond\autostack.h" />
     <ClInclude Include="..\..\include\bond\binarywriter.h" />
     <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="..\..\include\bond\defaultfileloader.h" />
     <ClInclude Include="..\..\include\bond\disassembler.h" />
     <ClInclude Include="..\..\include\bond\endian.h" />
+    <ClInclude Include="..\..\include\bond\exception.h" />
     <ClInclude Include="..\..\include\bond\filebinarywriter.h" />
     <ClInclude Include="..\..\include\bond\fileloader.h" />
     <ClInclude Include="..\..\include\bond\hashedstring.h" />
@@ -55,12 +57,14 @@
     <ClInclude Include="..\..\include\bond\parser.h" />
     <ClInclude Include="..\..\include\bond\prettyprinter.h" />
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
+    <ClInclude Include="..\..\include\bond\private\assert.h" />
     <ClInclude Include="..\..\include\bond\private\list.h" />
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\set.h" />
     <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\private\types.h" />
     <ClInclude Include="..\..\include\bond\private\vector.h" />
+    <ClInclude Include="..\..\include\bond\resourcehandle.h" />
     <ClInclude Include="..\..\include\bond\semanticanalyzer.h" />
     <ClInclude Include="..\..\include\bond\set.h" />
     <ClInclude Include="..\..\include\bond\simplestring.h" />

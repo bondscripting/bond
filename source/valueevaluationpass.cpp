@@ -142,7 +142,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						while (initializerList != NULL)
 						{
 							// TODO: Ensure that the offset does not overflow.
-							initializerList->SetOffset(static_cast<bi32_t>(structSize));
+							initializerList->SetOffset(bi32_t(structSize));
 							structSize += memberSize;
 							initializerList = NextNode(initializerList);
 						}
@@ -169,7 +169,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				}
 				else
 				{
-					structDeclaration->SetSize(static_cast<bu32_t>(size));
+					structDeclaration->SetSize(bu32_t(size));
 				}
 
 				const Token *alignToken = structDeclaration->GetAlignmentToken();
@@ -183,7 +183,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					}
 					else
 					{
-						structDeclaration->SetAlignment(static_cast<bu32_t>(align));
+						structDeclaration->SetAlignment(bu32_t(align));
 					}
 				}
 
