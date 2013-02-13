@@ -56,6 +56,12 @@ public:
 		Handle(const ResourceHandleProxy<FileData, Deallocator> &proxy):
 			ResourceHandle<FileData, Deallocator>(proxy)
 		{}
+
+		Handle &operator=(const ResourceHandleProxy<FileData, Deallocator> &proxy)
+		{
+			ResourceHandle<FileData, Deallocator>::operator=(proxy);
+			return *this;
+		}
 	};
 
 

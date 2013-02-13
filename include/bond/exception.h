@@ -1,7 +1,7 @@
 #ifndef BOND_EXCEPTION_H
 #define BOND_EXCEPTION_H
 
-#include <string.h>
+#include "bond/conf.h"
 
 namespace Bond
 {

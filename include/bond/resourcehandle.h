@@ -58,6 +58,13 @@ public:
 		return *this;
 	}
 
+	Type &operator=(const ProxyType &proxy)
+	{
+		Reset(proxy.mResource);
+		this->mDeallocator = proxy.mDeallocator;
+		return *this;
+	}
+
 	operator ProxyType()
 	{
 		return ProxyType(Release(), this->mDeallocator);
@@ -109,7 +116,15 @@ public:
 		BaseType(proxy)
 	{}
 
+	PointerHandle &operator=(ProxyType &proxy) { BaseType::operator=(proxy); return *this; }
+
 	PointerType operator->() const { return this->mResource; }
+
+	ResourceType &operator[](int index) { return this->mResource[index]; }
+	const ResourceType &operator[](int index) const { return this->mResource[index]; }
+
+	ResourceType &operator[](size_t index) { return this->mResource[index]; }
+	const ResourceType &operator[](size_t index) const { return this->mResource[index]; }
 };
 
 }

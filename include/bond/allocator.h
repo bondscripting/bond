@@ -10,15 +10,10 @@ class Allocator
 {
 public:
 	template<typename T>
-	class Deallocator
+	struct Deallocator
 	{
-	public:
-		Deallocator(): mAllocator(NULL) {}
-		Deallocator(Allocator *allocator): mAllocator(allocator) {}
-
+		Deallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
 		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->Free(ptr); }
-
-	private:
 		Allocator *mAllocator;
 	};
 
@@ -38,19 +33,20 @@ public:
 		Handle(const ResourceHandleProxy<T *, Deallocator<T> > &proxy):
 			PointerHandle<T, Deallocator<T> >(proxy)
 		{}
+
+		Handle &operator=(const ResourceHandleProxy<T *, Deallocator<T> > &proxy)
+		{
+			PointerHandle<T, Deallocator<T> >::operator=(proxy);
+			return *this;
+		}
 	};
 
 
 	template<typename T>
-	class AlignedDeallocator
+	struct AlignedDeallocator
 	{
-	public:
-		AlignedDeallocator(): mAllocator(NULL) {}
-		AlignedDeallocator(Allocator *allocator): mAllocator(allocator) {}
-
+		AlignedDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
 		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->FreeAligned(ptr); }
-
-	private:
 		Allocator *mAllocator;
 	};
 
@@ -70,15 +66,19 @@ public:
 		AlignedHandle(const ResourceHandleProxy<T *, AlignedDeallocator<T> > &proxy):
 			PointerHandle<T, AlignedDeallocator<T> >(proxy)
 		{}
+
+		AlignedHandle &operator=(const ResourceHandleProxy<T *, AlignedDeallocator<T> > &proxy)
+		{
+			PointerHandle<T, AlignedDeallocator<T> >::operator=(proxy);
+			return *this;
+		}
 	};
 
 
 	template<typename T>
-	class ObjectDeallocator
+	struct ObjectDeallocator
 	{
-	public:
-		ObjectDeallocator(): mAllocator(NULL) {}
-		ObjectDeallocator(Allocator *allocator): mAllocator(allocator) {}
+		ObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{
@@ -89,7 +89,6 @@ public:
 			}
 		}
 
-	private:
 		Allocator *mAllocator;
 	};
 
@@ -109,15 +108,19 @@ public:
 		ObjectHandle(const ResourceHandleProxy<T *, ObjectDeallocator<T> > &proxy):
 			PointerHandle<T, ObjectDeallocator<T> >(proxy)
 		{}
+
+		ObjectHandle &operator=(const ResourceHandleProxy<T *, ObjectDeallocator<T> > &proxy)
+		{
+			PointerHandle<T, ObjectDeallocator<T> >::operator=(proxy);
+			return *this;
+		}
 	};
 
 
 	template<typename T>
-	class AlignedObjectDeallocator
+	struct AlignedObjectDeallocator
 	{
-	public:
-		AlignedObjectDeallocator(): mAllocator(NULL) {}
-		AlignedObjectDeallocator(Allocator *allocator): mAllocator(allocator) {}
+		AlignedObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{
@@ -128,7 +131,6 @@ public:
 			}
 		}
 
-	private:
 		Allocator *mAllocator;
 	};
 
@@ -148,6 +150,118 @@ public:
 		AlignedObjectHandle(const ResourceHandleProxy<T *, AlignedObjectDeallocator<T> > &proxy):
 			PointerHandle<T, AlignedObjectDeallocator<T> >(proxy)
 		{}
+
+		AlignedObjectHandle &operator=(const ResourceHandleProxy<T *, AlignedObjectDeallocator<T> > &proxy)
+		{
+			PointerHandle<T, AlignedObjectDeallocator<T> >::operator=(proxy);
+			return *this;
+		}
+	};
+
+
+	template<typename T>
+	struct ArrayDeallocator
+	{
+		ArrayDeallocator(Allocator *allocator = NULL, size_t numElements = 0):
+			mAllocator(allocator),
+			mNumElements(0)
+		{}
+
+		void operator()(T *ptr)
+		{
+			if (mAllocator != NULL)
+			{
+				for (size_t i = 0; i < mNumElements; ++i)
+				{
+					ptr[i].~T();
+				}
+				mAllocator->Free(ptr);
+			}
+		}
+
+		Allocator *mAllocator;
+		size_t mNumElements;
+	};
+
+	// Stores a pointer to an array of objects which are destroyed when deallocated.
+	template<typename T>
+	class ArrayHandle: public PointerHandle<T, ArrayDeallocator<T> >
+	{
+	public:
+		ArrayHandle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, ArrayDeallocator<T> >(ptr, ArrayDeallocator<T>(&allocator))
+		{}
+
+		ArrayHandle(ArrayHandle &other):
+			PointerHandle<T, ArrayDeallocator<T> >(other)
+		{}
+
+		ArrayHandle(const ResourceHandleProxy<T *, ArrayDeallocator<T> > &proxy):
+			PointerHandle<T, ArrayDeallocator<T> >(proxy)
+		{}
+
+		ArrayHandle &operator=(const ResourceHandleProxy<T *, ArrayDeallocator<T> > &proxy)
+		{
+			PointerHandle<T, ArrayDeallocator<T> >::operator=(proxy);
+			return *this;
+		}
+
+		size_t GetNumElements() const { return this->mDeallocator.mNumElements; }
+		void SetNumElements(size_t numElements) { this->mDeallocator.mNumElements = numElements; }
+	};
+
+
+	template<typename T>
+	class AlignedArrayDeallocator
+	{
+	public:
+		AlignedArrayDeallocator(Allocator *allocator = NULL, size_t numElements = 0):
+			mAllocator(allocator),
+			mNumElements(0)
+		{}
+
+		void operator()(T *ptr)
+		{
+			if (mAllocator != NULL)
+			{
+				for (size_t i = 0; i < mNumElements; +i)
+				{
+					ptr[i].~T();
+				}
+				mAllocator->FreeAligned(ptr);
+			}
+		}
+
+	private:
+		Allocator *mAllocator;
+		size_t mNumElements;
+	};
+
+	// Stores a pointer to an array of objects which are destroyed when deallocated.
+	template<typename T>
+	class AlignedArrayHandle: public PointerHandle<T, AlignedArrayDeallocator<T> >
+	{
+	public:
+		AlignedArrayHandle(Allocator &allocator, T *ptr = NULL):
+			PointerHandle<T, AlignedArrayDeallocator<T> >(ptr, AlignedArrayDeallocator<T>(&allocator))
+		{}
+
+		AlignedArrayHandle(AlignedArrayHandle &other):
+			PointerHandle<T, AlignedArrayDeallocator<T> >(other)
+		{}
+
+		AlignedArrayHandle(const ResourceHandleProxy<T *, AlignedArrayDeallocator<T> > &proxy):
+			PointerHandle<T, AlignedArrayDeallocator<T> >(proxy)
+		{}
+
+		AlignedArrayHandle &operator=(const ResourceHandleProxy<T *, AlignedArrayDeallocator<T> > &proxy)
+		{
+			PointerHandle<T, AlignedArrayDeallocator<T> >::operator=(proxy);
+			return *this;
+		}
+
+		size_t GetNumElements() const { return this->mDeallocator.mNumElements; }
+		void SetNumElements(size_t numElements) { this->mDeallocator.mNumElements = numElements; }
 	};
 
 

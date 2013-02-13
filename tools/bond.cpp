@@ -68,23 +68,31 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	Bond::DefaultFileLoader fileLoader(allocator);
-	const size_t numCboFiles = cboFileNameList.size();
-	Bond::FileData *cboFiles = allocator.Alloc<Bond::FileData>(numCboFiles);
-
 	try
 	{
+		Bond::DefaultFileLoader fileLoader(allocator);
+		const size_t numCboFiles = cboFileNameList.size();
+		Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(numCboFiles));
+		Bond::Allocator::Handle<Bond::FileData> cboFiles(allocator, allocator.Alloc<Bond::FileData>(numCboFiles));
+
 		StringList::Type::const_iterator it = cboFileNameList.begin();
 		size_t index = 0;
 		while (it != cboFileNameList.end())
 		{
-			cboFiles[index] = fileLoader.LoadFile(*it);
+			Bond::FileLoader::Handle &handle = cboFileHandles.Get()[index];
+			handle = fileLoader.LoadFileDataHandle(*it);
+			cboFiles[index] = handle.Get();
 			++index;
 			++it;
+			cboFileHandles.SetNumElements(index);
 		}
 
 		Bond::CboLoader cboLoader(allocator);
-		Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(cboFiles, numCboFiles);
+		Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(cboFiles.Get(), numCboFiles);
+
+		cboFiles.Reset();
+		cboFileHandles.Reset();
+
 		Bond::VM vm(allocator, *codeSegmentHandle.Get(), stackSize * 1024);
 
 		// Test code.
@@ -98,14 +106,9 @@ int main(int argc, const char *argv[])
 	}
 	catch (const Bond::Exception &e)
 	{
+		error = true;
 		fprintf(stderr, "%s\n", e.GetMessage());
 	}
-
-	for (size_t i = 0; i < numCboFiles; ++i)
-	{
-		fileLoader.DisposeFile(cboFiles[i]);
-	}
-	allocator.Free(cboFiles);
 
 	return error ? 1 : 0;
 }
