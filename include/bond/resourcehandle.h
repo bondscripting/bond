@@ -9,7 +9,7 @@ namespace Bond
 // The following Handle classes implement functionality similar to std::unique_ptr, however,
 // since this codebase does not depend on C++11 features, it needs a replacement. Since C++11
 // features are not used, these handle classes suffer from the some of the same limitations
-// that std::auto_ptr does (no move semantics). Like std::unique_ptr, these handles use a
+// that std::auto_ptr does (i.e. no move semantics). Like std::unique_ptr, these handles use a
 // functor to deallocate the resource rather than operator delete, meaning that they can be
 // customized to free memory to custom allocators, deallocate arrays and deallocate resources
 // other than memory. Unlike std::unique_ptr, a ResourceHandle object can wrap any object
@@ -119,12 +119,9 @@ public:
 	PointerHandle &operator=(ProxyType &proxy) { BaseType::operator=(proxy); return *this; }
 
 	PointerType operator->() const { return this->mResource; }
-
-	ResourceType &operator[](int index) { return this->mResource[index]; }
-	const ResourceType &operator[](int index) const { return this->mResource[index]; }
-
-	ResourceType &operator[](size_t index) { return this->mResource[index]; }
-	const ResourceType &operator[](size_t index) const { return this->mResource[index]; }
+	ResourceType &operator*() const { return *this->mResource; }
+	ResourceType &operator[](int index) const { return this->mResource[index]; }
+	ResourceType &operator[](size_t index) const { return this->mResource[index]; }
 };
 
 }
