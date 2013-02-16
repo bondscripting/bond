@@ -7,17 +7,41 @@
 namespace Bond
 {
 
-FileData DefaultFileLoader::LoadFile(const char *fileName)
+FileLoader::Handle DefaultFileLoader::LoadFile(const char *fileName)
 {
-	FILE *file = fopen(fileName, "rb");
-	BOND_ASSERT_FORMAT(file != NULL, ("Failed to load file '%s'.", fileName));
-	const FileData fileData = LoadFile(file);
-	fclose(file);
-	return fileData;
+	Handle handle(*this);
+	FILE *file = NULL;
+	if (mRootPath != NULL)
+	{
+		const size_t MAX_PATH_LENGTH = 512;
+		char fullPath[MAX_PATH_LENGTH];
+		snprintf(fullPath, MAX_PATH_LENGTH, "%s%c%s", mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
+		file = fopen(fullPath, "rb");
+	}
+	else
+	{
+		file = fopen(fileName, "rb");
+	}
+
+	if (file != NULL)
+	{
+		handle = LoadFile(file);
+		fclose(file);
+	}
+	else if (mParentLoader != NULL)
+	{
+		handle = mParentLoader->LoadFile(fileName);
+	}
+	else
+	{
+		BOND_FAIL_FORMAT(("Failed to load file '%s'.", fileName));
+	}
+
+	return handle;
 }
 
 
-FileData DefaultFileLoader::LoadFile(FILE *file)
+FileLoader::Handle DefaultFileLoader::LoadFile(FILE *file)
 {
 	Allocator::Handle<bu8_t> dataHandle(mAllocator);
 	size_t length = 0;
@@ -36,7 +60,7 @@ FileData DefaultFileLoader::LoadFile(FILE *file)
 		}
 	}
 
-	return FileData(dataHandle.Release(), length);
+	return Handle(*this, FileData(dataHandle.Release(), length));
 }
 
 

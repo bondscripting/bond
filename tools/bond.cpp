@@ -80,7 +80,7 @@ int main(int argc, const char *argv[])
 		while (it != cboFileNameList.end())
 		{
 			Bond::FileLoader::Handle &handle = cboFileHandles.Get()[index];
-			handle = fileLoader.LoadFileDataHandle(*it);
+			handle = fileLoader.LoadFile(*it);
 			cboFiles[index] = handle.Get();
 			++index;
 			++it;

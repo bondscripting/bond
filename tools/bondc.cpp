@@ -30,7 +30,7 @@ void Compile(const char *scriptName)
 	{
 		Bond::DefaultAllocator allocator;
 		Bond::DefaultFileLoader fileLoader(allocator);
-		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
 		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);

@@ -27,7 +27,7 @@ bool RunSemanticAnalyzerTest(
 	try
 	{
 		Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
-		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFileDataHandle(scriptName);
+		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
