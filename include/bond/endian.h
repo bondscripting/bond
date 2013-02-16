@@ -35,42 +35,6 @@ inline void ReverseByteOrder64(bu8_t value[8])
 	SwapBytes(value[3], value[4]);
 }
 
-/*
-inline void BatchReverseByteOrder16(bu8_t *value, size_t numValues)
-{
-	bu8_t *v = value;
-	const bu8_t *end = v + (numValues * sizeof(Value16));
-	while (v < end)
-	{
-		ReverseByteOrder16(v);
-		v += sizeof(Value16);
-	}
-}
-
-
-inline void BatchReverseByteOrder32(bu8_t *value, size_t numValues)
-{
-	bu8_t *v = value;
-	const bu8_t *end = v + (numValues * sizeof(Value32));
-	while (v < end)
-	{
-		ReverseByteOrder32(v);
-		v += sizeof(Value32);
-	}
-}
-
-
-inline void BatchReverseByteOrder64(bu8_t *value, size_t numValues)
-{
-	bu8_t *v = value;
-	const bu8_t *end = v + (numValues * sizeof(Value64));
-	while (v < end)
-	{
-		ReverseByteOrder64(v);
-		v += sizeof(Value64);
-	}
-}
-*/
 
 inline Value16 ReverseByteOrder16(Value16 value)
 {

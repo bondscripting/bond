@@ -67,13 +67,8 @@ public:
 
 	virtual ~FileLoader() {}
 
-	virtual FileData LoadFile(const char *fileName) = 0;
+	virtual Handle LoadFile(const char *fileName) = 0;
 	virtual void DisposeFile(FileData &fileData) = 0;
-
-	Handle LoadFileDataHandle(const char *fileName)
-	{
-		return Handle(*this, LoadFile(fileName));
-	}
 };
 
 }

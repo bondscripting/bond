@@ -29,7 +29,7 @@ void BufferedTextWriter::Write(const char *format, ...)
 		if (mIndex >= mLength)
 		{
 			mIndex = mLength - 1;
-			mBuffer[mLength -1] = '\0';
+			mBuffer[mLength - 1] = '\0';
 		}
 	}
 }
