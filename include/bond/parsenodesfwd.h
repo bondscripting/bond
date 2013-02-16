@@ -8,6 +8,7 @@ namespace Bond
 	class ListParseNode;
 	class Symbol;
 	class TranslationUnit;
+	class IncludeDirective;
 	class NamespaceDefinition;
 	class EnumDeclaration;
 	class Enumerator;

@@ -38,9 +38,18 @@ void ParseNodeDeallocator::Traverse(const ParseNode *parseNode)
 }
 
 
-TranslationUnit *ParseNodeFactory::CreateTranslationUnit(ListParseNode *declarationList)
+TranslationUnit *ParseNodeFactory::CreateTranslationUnit(
+	IncludeDirective *includeDirectiveList,
+	ListParseNode *declarationList)
 {
-	return new (mAllocator.Alloc<TranslationUnit>()) TranslationUnit(declarationList);
+	return new (mAllocator.Alloc<TranslationUnit>())
+		TranslationUnit(includeDirectiveList, declarationList);
+}
+
+
+IncludeDirective *ParseNodeFactory::CreateIncludeDirective(const Token *includePath)
+{
+	return new (mAllocator.Alloc<IncludeDirective>()) IncludeDirective(includePath);
 }
 
 

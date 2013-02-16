@@ -10,6 +10,7 @@ struct ParseNodeCount
 {
 	ParseNodeCount(int defaultValue = 0):
 		mTranslationUnit(defaultValue),
+		mIncludeDirective(defaultValue),
 		mNamespaceDefinition(defaultValue),
 		mEnumDeclaration(defaultValue),
 		mEnumerator(defaultValue),
@@ -48,6 +49,7 @@ struct ParseNodeCount
 	{}
 
 	int mTranslationUnit;
+	int mIncludeDirective;
 	int mNamespaceDefinition;
 	int mEnumDeclaration;
 	int mEnumerator;
@@ -98,6 +100,7 @@ public:
 
 private:
 	virtual void Visit(const TranslationUnit *translationUnit);
+	virtual void Visit(const IncludeDirective *includeDirective);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const EnumDeclaration *enumDeclaration);
 	virtual void Visit(const Enumerator *enumerator);

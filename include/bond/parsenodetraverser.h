@@ -20,6 +20,9 @@ public:
 	virtual void Visit(TranslationUnit *translationUnit);
 	virtual void Visit(const TranslationUnit *translationUnit);
 
+	virtual void Visit(IncludeDirective *includeDirective) {}
+	virtual void Visit(const IncludeDirective *includeDirective) {}
+
 	virtual void Visit(NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 

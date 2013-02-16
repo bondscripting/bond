@@ -22,6 +22,7 @@
 	BOND_TOKEN_ITEM(KEY_FLOAT)                \
 	BOND_TOKEN_ITEM(KEY_FOR)                  \
 	BOND_TOKEN_ITEM(KEY_IF)                   \
+	BOND_TOKEN_ITEM(KEY_INCLUDE)              \
 	BOND_TOKEN_ITEM(KEY_INT)                  \
 	BOND_TOKEN_ITEM(KEY_LONG)                 \
 	BOND_TOKEN_ITEM(KEY_NAMESPACE)            \

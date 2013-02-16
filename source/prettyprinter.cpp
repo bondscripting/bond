@@ -28,7 +28,18 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode)
 
 void PrettyPrinter::Visit(const TranslationUnit *translationUnit)
 {
+	PrintList(translationUnit->GetIncludeDirectiveList());
+	mWriter.Write("\n");
 	PrintList(translationUnit->GetExternalDeclarationList());
+}
+
+
+void PrettyPrinter::Visit(const IncludeDirective *includeDirective)
+{
+	Tab();
+	mWriter.Write("include ");
+	Print(includeDirective->GetIncludePath());
+	mWriter.Write(";\n");
 }
 
 

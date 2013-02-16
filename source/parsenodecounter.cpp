@@ -11,6 +11,13 @@ void ParseNodeCounter::Visit(const TranslationUnit *translationUnit)
 }
 
 
+void ParseNodeCounter::Visit(const IncludeDirective *includeDirective)
+{
+	++mCount.mIncludeDirective;
+	ParseNodeTraverser::Visit(includeDirective);
+}
+
+
 void ParseNodeCounter::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	++mCount.mNamespaceDefinition;

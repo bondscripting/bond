@@ -1200,7 +1200,6 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 
 		const Symbol *member = memberExpression->GetDefinition();
 		const NamedInitializer *namedInitializer = NULL;
-		const FunctionDefinition *functionDefinition = NULL;
 		if ((namedInitializer = CastNode<NamedInitializer>(member)) != NULL)
 		{
 			if (op->GetTokenType() == Token::OP_ARROW)
@@ -1211,7 +1210,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 			result.mContext = TransformContext(result.mContext, typeDescriptor);
 			result.mOffset += namedInitializer->GetOffset();
 		}
-		else if ((functionDefinition = CastNode<FunctionDefinition>(member)) != NULL)
+		else if (CastNode<FunctionDefinition>(member) != NULL)
 		{
 			if (op->GetTokenType() == Token::PERIOD)
 			{

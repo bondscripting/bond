@@ -2,7 +2,6 @@
 #define BOND_PARSENODEFACTORY_H
 
 #include "bond/parsenodes.h"
-#include "bond/token.h"
 
 namespace Bond
 {
@@ -16,7 +15,8 @@ public:
 		mAllocator(allocator)
 	{}
 
-	TranslationUnit *CreateTranslationUnit(ListParseNode *declarationList);
+	TranslationUnit *CreateTranslationUnit(IncludeDirective *includeDirectiveList, ListParseNode *declarationList);
+	IncludeDirective *CreateIncludeDirective(const Token *includePath);
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ListParseNode *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name);
 

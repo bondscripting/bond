@@ -14,6 +14,9 @@ public:
 	virtual void Visit(TranslationUnit *translationUnit) = 0;
 	virtual void Visit(const TranslationUnit *translationUnit) = 0;
 
+	virtual void Visit(IncludeDirective *includeDirective) = 0;
+	virtual void Visit(const IncludeDirective *includeDirective) = 0;
+
 	virtual void Visit(NamespaceDefinition *namespaceDefinition) = 0;
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition) = 0;
 
@@ -128,6 +131,9 @@ public:
 
 	virtual void Visit(TranslationUnit *translationUnit) {}
 	virtual void Visit(const TranslationUnit *translationUnit) {}
+
+	virtual void Visit(IncludeDirective *includeDirective) {}
+	virtual void Visit(const IncludeDirective *includeDirective) {}
 
 	virtual void Visit(NamespaceDefinition *namespaceDefinition) {}
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition) {}

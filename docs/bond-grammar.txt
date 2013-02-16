@@ -2,7 +2,10 @@ External Definitions
 --------------------
 
 translation_unit
-  : external_declaration*
+  : include_directives* external_declaration*
+
+include_directive
+  : INCLUDE STRING ';'
 
 external_declaration
   : namespace_definition

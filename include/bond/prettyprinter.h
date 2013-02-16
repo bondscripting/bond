@@ -27,6 +27,7 @@ public:
 
 private:
 	virtual void Visit(const TranslationUnit *translationUnit);
+	virtual void Visit(const IncludeDirective *includeDirective);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const EnumDeclaration *enumDeclaration);
 	virtual void Visit(const Enumerator *enumerator);

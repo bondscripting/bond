@@ -1238,6 +1238,7 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 	KEYWORD_ITEM(KEY_FLOAT,     "float")     \
 	KEYWORD_ITEM(KEY_FOR,       "for")       \
 	KEYWORD_ITEM(KEY_IF,        "if")        \
+	KEYWORD_ITEM(KEY_INCLUDE,   "include")   \
 	KEYWORD_ITEM(KEY_INT,       "int")       \
 	KEYWORD_ITEM(KEY_LONG,      "long")      \
 	KEYWORD_ITEM(KEY_NAMESPACE, "namespace") \

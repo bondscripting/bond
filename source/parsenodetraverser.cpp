@@ -48,12 +48,14 @@ void ParseNodeTraverser::TraverseList(const ListParseNode *listNode)
 
 void ParseNodeTraverser::Visit(TranslationUnit *translationUnit)
 {
+	TraverseList(translationUnit->GetIncludeDirectiveList());
 	TraverseList(translationUnit->GetExternalDeclarationList());
 }
 
 
 void ParseNodeTraverser::Visit(const TranslationUnit *translationUnit)
 {
+	TraverseList(translationUnit->GetIncludeDirectiveList());
 	TraverseList(translationUnit->GetExternalDeclarationList());
 }
 

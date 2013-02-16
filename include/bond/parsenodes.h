@@ -357,7 +357,11 @@ private:
 class TranslationUnit: public ListParseNode
 {
 public:
-	explicit TranslationUnit(ListParseNode *declarationList): mDeclarationList(declarationList) {}
+	TranslationUnit(IncludeDirective *includeDirectiveList, ListParseNode *declarationList):
+		mIncludeDirectiveList(includeDirectiveList),
+		mDeclarationList(declarationList)
+	{}
+
 	virtual ~TranslationUnit() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
@@ -365,11 +369,33 @@ public:
 
 	virtual const Token *GetContextToken() const { return NULL; }
 
+	IncludeDirective *GetIncludeDirectiveList() { return mIncludeDirectiveList; }
+	const IncludeDirective *GetIncludeDirectiveList() const { return mIncludeDirectiveList; }
+
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
 
 private:
+	IncludeDirective *mIncludeDirectiveList;
 	ListParseNode *mDeclarationList;
+};
+
+
+class IncludeDirective: public ListParseNode
+{
+public:
+	explicit IncludeDirective(const Token *includePath): mIncludePath(includePath) {}
+	virtual ~IncludeDirective() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mIncludePath; }
+
+	const Token *GetIncludePath() const { return mIncludePath; }
+
+private:
+	const Token *mIncludePath;
 };
 
 

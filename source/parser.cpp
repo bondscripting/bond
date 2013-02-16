@@ -1,3 +1,4 @@
+
 #include "bond/autostack.h"
 #include "bond/compilererror.h"
 #include "bond/parser.h"
@@ -29,6 +30,8 @@ private:
 	ParserCore &operator=(const ParserCore &other);
 
 	TranslationUnit *ParseTranslationUnit();
+	IncludeDirective *ParseIncludeDirectiveList();
+	IncludeDirective *ParseIncludeDirective();
 	ListParseNode *ParseExternalDeclarationList();
 	ListParseNode *ParseExternalDeclaration();
 	NamespaceDefinition *ParseNamespaceDefinition();
@@ -152,15 +155,58 @@ TranslationUnit *ParserCore::Parse()
 
 
 // translation_unit
-//  : external_declaration*
+//  : include_directives* external_declaration*
 TranslationUnit *ParserCore::ParseTranslationUnit()
 {
 	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
+	IncludeDirective *includeDirectives= ParseIncludeDirectiveList();
 	ListParseNode *declarations = ParseExternalDeclarationList();
-	TranslationUnit *unit = mFactory.CreateTranslationUnit(declarations);
+	TranslationUnit *unit = mFactory.CreateTranslationUnit(includeDirectives, declarations);
 	ExpectToken(Token::END);
 	return unit;
+}
+
+
+IncludeDirective *ParserCore::ParseIncludeDirectiveList()
+{
+	ParseNodeList<IncludeDirective> includeDirectiveList;
+
+	while (true)
+	{
+		if (mStream.PeekIf(Token::KEY_INCLUDE) != NULL)
+		{
+			IncludeDirective *next = ParseIncludeDirective();
+			AssertNode(next);
+			SyncToDeclarationTerminator();
+			includeDirectiveList.Append(next);
+		}
+
+		// Eat up superfluous semicolons.
+		else if (mStream.NextIf(Token::SEMICOLON) == NULL)
+		{
+			break;
+		}
+	}
+
+	return includeDirectiveList.GetHead();
+}
+
+
+// include_directive
+//   : INCLUDE STRING ';'
+IncludeDirective *ParserCore::ParseIncludeDirective()
+{
+	IncludeDirective *includeDirective = NULL;
+
+	if (mStream.NextIf(Token::KEY_INCLUDE) != NULL)
+	{
+		const Token *includePath = ExpectToken(Token::CONST_STRING);
+		ExpectToken(Token::SEMICOLON);
+		includeDirective = mFactory.CreateIncludeDirective(includePath);
+	}
+
+	return includeDirective;
 }
 
 
@@ -357,8 +403,8 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			// Eat up superfluous semicolons.
 			if (mStream.NextIf(Token::SEMICOLON) == NULL)
 			{
-				FunctionDefinition *functionDefinition;
-				DeclarativeStatement *declarativeStatement;
+				FunctionDefinition *functionDefinition = NULL;
+				DeclarativeStatement *declarativeStatement = NULL;
 				ParseFunctionOrDeclarativeStatement(declaration, &functionDefinition, &declarativeStatement);
 				if (functionDefinition != NULL)
 				{
@@ -397,8 +443,8 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration)
 {
-	FunctionDefinition *functionDefinition;
-	DeclarativeStatement *declarativeStatement;
+	FunctionDefinition *functionDefinition = NULL;
+	DeclarativeStatement *declarativeStatement = NULL;
 	ParseFunctionOrDeclarativeStatement(structDeclaration, &functionDefinition, &declarativeStatement);
 	if (functionDefinition != NULL)
 	{
