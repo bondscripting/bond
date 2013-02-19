@@ -55,6 +55,7 @@ int main(int argc, const char *argv[])
 		}
 		else if (argv[i][0] == '-')
 		{
+			fprintf(stderr, "Unknown option '%s'\n", argv[i]);
 			error = true;
 		}
 		else

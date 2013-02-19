@@ -22,6 +22,8 @@ public:
 
 	const SymbolTable &GetSymbolTable() const { return mSymbolTable; }
 
+	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
+
 private:
 	SymbolTable mSymbolTable;
 	CompilerErrorBuffer &mErrorBuffer;

@@ -26,7 +26,13 @@ public:
 	TokenCollection *Lex(const char *text, size_t length);
 	const TokenCollection *GetTokenCollectionList() const { return mTokenCollectionList; }
 
+	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
+
 private:
+	// Copying disallowed.
+	Lexer(const Lexer &other);
+	Lexer &operator=(const Lexer &other);
+
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
 	TokenCollection *mTokenCollectionList;

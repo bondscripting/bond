@@ -4,6 +4,10 @@
 #include "bond/types.h"
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#endif
+
 namespace Bond
 {
 
@@ -28,9 +32,9 @@ FileLoader::Handle DefaultFileLoader::LoadFile(const char *fileName)
 		handle = LoadFile(file);
 		fclose(file);
 	}
-	else if (mParentLoader != NULL)
+	else if (mDelegateLoader != NULL)
 	{
-		handle = mParentLoader->LoadFile(fileName);
+		handle = mDelegateLoader->LoadFile(fileName);
 	}
 	else
 	{

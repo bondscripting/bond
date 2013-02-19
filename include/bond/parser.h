@@ -22,6 +22,8 @@ public:
 
 	TranslationUnit *GetTranslationUnitList() { return mTranslationUnitList; }
 
+	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
+
 private:
 	// Copying disallowed.
 	Parser(const Parser &other);

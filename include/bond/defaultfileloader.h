@@ -12,10 +12,10 @@ class Allocator;
 class DefaultFileLoader: public FileLoader
 {
 public:
-	explicit DefaultFileLoader(Allocator &allocator, const char *rootPath = NULL, FileLoader *parentLoader = NULL):
+	explicit DefaultFileLoader(Allocator &allocator, const char *rootPath = NULL, FileLoader *delegateLoader = NULL):
 		mAllocator(allocator),
 		mRootPath(rootPath),
-		mParentLoader(parentLoader)
+		mDelegateLoader(delegateLoader)
 	{}
 
 	virtual ~DefaultFileLoader() {}
@@ -26,12 +26,12 @@ public:
 	Handle LoadFile(FILE *file);
 
 	void SetRootPath(const char *rootPath) { mRootPath = rootPath; }
-	void SetParentLoader(FileLoader *parentLoader) { mParentLoader = parentLoader; }
+	void SetDelegateLoader(FileLoader *delegateLoader) { mDelegateLoader = delegateLoader; }
 
 private:
 	Allocator &mAllocator;
 	const char *mRootPath;
-	FileLoader *mParentLoader;
+	FileLoader *mDelegateLoader;
 };
 
 }

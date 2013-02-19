@@ -19,6 +19,13 @@ ForwardIterator LowerBound(ForwardIterator first, ForwardIterator last, const Va
 	return std::lower_bound(first, last, value);
 }
 
+
+template <typename InputIterator, typename ValueType>
+InputIterator Find(InputIterator first, InputIterator last, const ValueType &value)
+{
+	return std::find(first, last, value);
+}
+
 }
 
 #endif

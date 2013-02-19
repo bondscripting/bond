@@ -243,6 +243,9 @@
     <ClInclude Include="..\..\include\bond\private\assert.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\frontend.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
@@ -345,6 +348,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\exception.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\frontend.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

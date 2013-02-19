@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\include\bond\exception.h" />
     <ClInclude Include="..\..\include\bond\filebinarywriter.h" />
     <ClInclude Include="..\..\include\bond\fileloader.h" />
+    <ClInclude Include="..\..\include\bond\frontend.h" />
     <ClInclude Include="..\..\include\bond\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\lexer.h" />
     <ClInclude Include="..\..\include\bond\list.h" />
@@ -103,6 +104,7 @@
     <ClCompile Include="..\..\source\defaultfileloader.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
     <ClCompile Include="..\..\source\exception.cpp" />
+    <ClCompile Include="..\..\source\frontend.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />

@@ -388,7 +388,7 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList, BinaryW
 void GeneratorCore::Generate()
 {
 	StructStack::Element structElement(mStruct, NULL);
-	Traverse(mTranslationUnitList);
+	TraverseList(mTranslationUnitList);
 
 	WriteValue32(Value32(MAGIC_NUMBER));
 	WriteValue16(Value16(MAJOR_VERSION));
