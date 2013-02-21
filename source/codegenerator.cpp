@@ -240,6 +240,7 @@ private:
 	virtual void Traverse(const ParseNode *parseNode);
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
 
+	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const TypeDescriptor *typeDescriptor) {}
@@ -436,6 +437,15 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 	    (context == GeneratorResult::CONTEXT_STACK_VALUE))
 	{
 		EmitOpCode(OPCODE_POP);
+	}
+}
+
+
+void GeneratorCore::Visit(const TranslationUnit *translationUnit)
+{
+	if (translationUnit->RequiresCodeGeneration())
+	{
+		ParseNodeTraverser::Visit(translationUnit);
 	}
 }
 

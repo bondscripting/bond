@@ -21,15 +21,21 @@ public:
 			Lexer &lexer,
 			Parser &parser,
 			SemanticAnalyzer &semanticAnalyzer,
-			FileLoader &fileLoader):
+			FileLoader &fileLoader,
+			bool recursiveCompileEnabled = false):
 		mInputFileNameList(StringList::Allocator(&allocator)),
 		mLexer(lexer),
 		mParser(parser),
 		mSemanticAnalyzer(semanticAnalyzer),
-		mFileLoader(fileLoader)
+		mFileLoader(fileLoader),
+		mRecursiveCompileEnabled(recursiveCompileEnabled)
 	{}
 
 	void AddInputFile(const HashedString &inputFileName);
+	bool ContainsInputFile(const HashedString &inputFileName);
+
+	bool GetRecursiveCompileEnabled() const { return mRecursiveCompileEnabled; }
+	void SetRecursiveCompileEnabled(bool enabled) { mRecursiveCompileEnabled = enabled; }
 
 	void Analyze();
 
@@ -43,6 +49,7 @@ private:
 	Parser &mParser;
 	SemanticAnalyzer &mSemanticAnalyzer;
 	FileLoader &mFileLoader;
+	bool mRecursiveCompileEnabled;
 };
 
 }

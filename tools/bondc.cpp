@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef Bond::List<const char *> StringList;
+typedef Bond::List<Bond::DefaultFileLoader> FileLoaderList;
 
 void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
 {
@@ -37,10 +37,9 @@ int main(int argc, const char *argv[])
 		Bond::Lexer lexer(allocator, errorBuffer);
 		Bond::Parser parser(allocator, errorBuffer);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
-		Bond::DefaultFileLoader fileLoader(allocator);
-		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, fileLoader);
-
-		StringList::Type includePathList((StringList::Allocator(&allocator)));
+		FileLoaderList::Type loaderList((FileLoaderList::Allocator(&allocator)));
+		loaderList.push_back(Bond::DefaultFileLoader(allocator));
+		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, loaderList.back());
 		const char *outputFileName = "bond.cbo";
 
 		for (int i = 1; i < argc; ++i)
@@ -49,7 +48,9 @@ int main(int argc, const char *argv[])
 			{
 				if (++i < argc)
 				{
-					includePathList.push_back(argv[i]);
+					Bond::DefaultFileLoader &prev = loaderList.back();
+					loaderList.push_back(Bond::DefaultFileLoader(allocator, argv[i]));
+					prev.SetDelegateLoader(&loaderList.back());
 				}
 				else
 				{
@@ -68,6 +69,10 @@ int main(int argc, const char *argv[])
 					fprintf(stderr, "Missing argument to -o\n");
 					error = true;
 				}
+			}
+			else if (strcmp(argv[i], "-r") == 0)
+			{
+				frontEnd.SetRecursiveCompileEnabled(true);
 			}
 			else if (argv[i][0] == '-')
 			{

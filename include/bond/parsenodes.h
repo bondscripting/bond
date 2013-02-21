@@ -359,7 +359,8 @@ class TranslationUnit: public ListParseNode
 public:
 	TranslationUnit(IncludeDirective *includeDirectiveList, ListParseNode *declarationList):
 		mIncludeDirectiveList(includeDirectiveList),
-		mDeclarationList(declarationList)
+		mDeclarationList(declarationList),
+		mRequiresCodeGeneration(true)
 	{}
 
 	virtual ~TranslationUnit() {}
@@ -375,9 +376,13 @@ public:
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
 
+	bool RequiresCodeGeneration() const { return mRequiresCodeGeneration; }
+	void SetRequiresCodeGeneration(bool required) { mRequiresCodeGeneration = required; }
+
 private:
 	IncludeDirective *mIncludeDirectiveList;
 	ListParseNode *mDeclarationList;
+	bool mRequiresCodeGeneration;
 };
 
 
