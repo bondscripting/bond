@@ -4,7 +4,7 @@
 #include "bond/assert.h"
 #include "bond/autostack.h"
 #include "bond/codesegment.h"
-#include "bond/math.h"
+#include "bond/typeutil.h"
 
 namespace Bond
 {
@@ -53,6 +53,7 @@ public:
 		{
 			CalleeStackFrame &frame = GetValue();
 			const ParamListSignature &paramListSignature = frame.mFunction->mParamListSignature;
+			const ParamSignature &param = paramListSignature.mParamSignatures[mNextArg];
 
 #if BOND_RUNTIME_CHECKS_ENABLED
 			if (mNextArg >= paramListSignature.mParamCount)
@@ -60,13 +61,13 @@ public:
 				mVm.RaiseError("Attempt to push too many arguments.");
 			}
 
-			if (AlignUp(sizeof(ArgType), size_t(BOND_SLOT_SIZE)) != paramListSignature.mParamSignatures[mNextArg].mSize)
+			if (!ValidateArgType<ArgType>(size_t(param.mSize), SignatureType(param.mType)))
 			{
-				mVm.RaiseError("Argument size mismatch.");
+				mVm.RaiseError("Argument type or size mismatch.");
 			}
 #endif
 
-			const ParamSignature &param = paramListSignature.mParamSignatures[mNextArg++];
+			++mNextArg;
 			*reinterpret_cast<ArgType *>(frame.mFramePointer + param.mFramePointerOffset) = arg;
 		}
 

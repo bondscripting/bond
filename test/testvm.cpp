@@ -408,7 +408,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc1", bi32_t(6), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc2", bi32_t(8), bi32_t(7));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc3", bi32_t(10), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc3", bi32_t(10), bi16_t(9));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Preinc4", bi32_t(12), bi32_t(11));
 
 	bi32_t value = 13;
@@ -418,7 +418,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc1", bi32_t(6), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc2", bi32_t(8), bi32_t(7));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc3", bi32_t(10), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc3", bi32_t(10), bi16_t(9));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc4", bi32_t(12), bi32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postinc5", bi32_t(14), &value);
@@ -427,7 +427,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Predec1", bi32_t(4), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Predec2", bi32_t(6), bi32_t(7));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Predec3", bi32_t(8), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Predec3", bi32_t(8), bi16_t(9));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Predec4", bi32_t(10), bi32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Predec5", bi32_t(14), &value);
@@ -436,7 +436,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec1", bi32_t(4), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec2", bi32_t(6), bi32_t(7));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec3", bi32_t(8), bi32_t(9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec3", bi32_t(8), bi16_t(9));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec4", bi32_t(10), bi32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Postdec5", bi32_t(14), &value);
@@ -721,7 +721,7 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::While", bi32_t(5), bi32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "::For", bi32_t(5), bi32_t(5));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::NestedLoopsWithJumps", bi32_t(360), bu8_t(5), bu8_t(8));
+	VALIDATE_FUNCTION_CALL_2(INT, "::NestedLoopsWithJumps", bi32_t(360), bi32_t(5), bi32_t(8));
 
 	return true;
 }

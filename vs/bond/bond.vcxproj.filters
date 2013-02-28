@@ -246,6 +246,9 @@
     <ClInclude Include="..\..\include\bond\frontend.h">
       <Filter>Header Files\include\bond</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\typeutil.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">

@@ -79,6 +79,7 @@
     <ClInclude Include="..\..\include\bond\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\typeandvalue.h" />
     <ClInclude Include="..\..\include\bond\types.h" />
+    <ClInclude Include="..\..\include\bond\typeutil.h" />
     <ClInclude Include="..\..\include\bond\value.h" />
     <ClInclude Include="..\..\include\bond\vector.h" />
     <ClInclude Include="..\..\include\bond\version.h" />
