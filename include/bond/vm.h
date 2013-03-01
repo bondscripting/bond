@@ -20,19 +20,78 @@ public:
 	class CalleeStackFrame
 	{
 	public:
-		template <typename T>
-		const T &GetArg(size_t index) const
+		CalleeStackFrame(VM &vm):
+			mVm(vm),
+			mFunction(NULL),
+			mFramePointer(NULL),
+			mStackPointer(NULL),
+			mReturnPointer(NULL)
+		{}
+
+		CalleeStackFrame(
+				VM &vm,
+				const Function *function,
+				bu8_t *framePointer,
+				bu8_t *stackPointer,
+				bu8_t *returnPointer):
+			mVm(vm),
+			mFunction(function),
+			mFramePointer(framePointer),
+			mStackPointer(stackPointer),
+			mReturnPointer(returnPointer)
+		{}
+
+		template <typename ArgType>
+		const ArgType &GetArg(size_t index) const
 		{
-			return *reinterpret_cast<const T*>(mFramePointer + mFunction->mParamListSignature.mParamSignatures[index].mFramePointerOffset);
+			return GetArgRef<ArgType>(index);
 		}
 
-		template <typename T>
-		void SetReturnValue(const T &returnValue) const
+		template <typename ReturnType>
+		void SetReturnValue(const ReturnType &returnValue) const
 		{
-			*reinterpret_cast<T*>(mReturnPointer) = returnValue;
+			GetArgRef<ReturnType>() = returnValue;
 		}
 
 	private:
+		template <typename ArgType>
+		ArgType &GetArgRef(size_t index) const
+		{
+			const ParamListSignature &paramListSignature = mFunction->mParamListSignature;
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+			if (index >= paramListSignature.mParamCount)
+			{
+				mVm.RaiseError("Attempt to index argument out of range.");
+			}
+#endif
+
+			const ParamSignature &param = paramListSignature.mParamSignatures[index];
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+			if (!ValidateSignatureType<ArgType>(size_t(param.mSize), SignatureType(param.mType)))
+			{
+				mVm.RaiseError("Attempt to access argument using wrong type.");
+			}
+#endif
+
+			return *reinterpret_cast<ArgType *>(mFramePointer + param.mFramePointerOffset);
+		}
+
+		template <typename ReturnType>
+		ReturnType &GetReturnRef() const
+		{
+#if BOND_RUNTIME_CHECKS_ENABLED
+			const ReturnSignature &ret = mFunction->mReturnSignature;
+			if (!ValidateSignatureType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
+			{
+				mVm.RaiseError("Attempt to access return value using wrong type.");
+			}
+#endif
+			return *reinterpret_cast<ReturnType*>(mReturnPointer);
+		}
+
+		VM &mVm;
 		const Function *mFunction;
 		bu8_t *mFramePointer;
 		bu8_t *mStackPointer;
@@ -51,30 +110,19 @@ public:
 		template<typename ArgType>
 		void PushArg(const ArgType &arg)
 		{
-			CalleeStackFrame &frame = GetValue();
-			const ParamListSignature &paramListSignature = frame.mFunction->mParamListSignature;
-			const ParamSignature &param = paramListSignature.mParamSignatures[mNextArg];
-
-#if BOND_RUNTIME_CHECKS_ENABLED
-			if (mNextArg >= paramListSignature.mParamCount)
-			{
-				mVm.RaiseError("Attempt to push too many arguments.");
-			}
-
-			if (!ValidateArgType<ArgType>(size_t(param.mSize), SignatureType(param.mType)))
-			{
-				mVm.RaiseError("Argument type or size mismatch.");
-			}
-#endif
-
+			GetValue().GetArgRef<ArgType>(mNextArg) = arg;
 			++mNextArg;
-			*reinterpret_cast<ArgType *>(frame.mFramePointer + param.mFramePointerOffset) = arg;
+		}
+
+		template <typename ReturnType>
+		const ReturnType &GetReturnValue() const
+		{
+			return GetValue().GetReturnRef<ReturnType>();
 		}
 
 		void Call();
 
 	private:
-		VM &mVm;
 		bu32_t mNextArg;
 	};
 

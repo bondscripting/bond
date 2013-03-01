@@ -7,7 +7,7 @@ namespace Bond
 {
 
 template<typename T>
-bool ValidateArgType(size_t size, SignatureType signatureType)
+bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
 	return
 		(AlignUp(sizeof(T), size_t(BOND_SLOT_SIZE)) == size) &&
@@ -16,7 +16,7 @@ bool ValidateArgType(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bool>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bool>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -26,7 +26,7 @@ inline bool ValidateArgType<bool>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bi8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bi8_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -36,7 +36,7 @@ inline bool ValidateArgType<bi8_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bu8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bu8_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -46,7 +46,7 @@ inline bool ValidateArgType<bu8_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bi16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bi16_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_SHORT) ||
@@ -55,7 +55,7 @@ inline bool ValidateArgType<bi16_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bu16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bu16_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_SHORT) ||
@@ -64,7 +64,7 @@ inline bool ValidateArgType<bu16_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bi32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bi32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_INT) ||
@@ -73,7 +73,7 @@ inline bool ValidateArgType<bi32_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bu32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bu32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_INT) ||
@@ -82,7 +82,7 @@ inline bool ValidateArgType<bu32_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bi64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bi64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -91,7 +91,7 @@ inline bool ValidateArgType<bi64_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bu64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bu64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -100,14 +100,14 @@ inline bool ValidateArgType<bu64_t>(size_t size, SignatureType signatureType)
 
 
 template<>
-inline bool ValidateArgType<bf32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bf32_t>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_FLOAT;
 }
 
 
 template<>
-inline bool ValidateArgType<bf64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<bf64_t>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_DOUBLE;
 }

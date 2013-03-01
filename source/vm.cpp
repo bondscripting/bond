@@ -59,8 +59,7 @@ inline void *LoadUnalignedPointer(const bu8_t *source)
 
 
 VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
-	StackFrames::Element(vm.mStackFrames),
-	mVm(vm),
+	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
 	mNextArg(0)
 {
 	bu8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
@@ -79,15 +78,22 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 
 void VM::CallerStackFrame::Call()
 {
-	BOND_ASSERT_FORMAT(mNextArg >= GetValue().mFunction->mParamListSignature.mParamCount,
-		("Attempt to call function with too few arguments."));
-	mVm.ExecuteScriptFunction();
+	CalleeStackFrame &frame = GetValue();
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (mNextArg < frame.mFunction->mParamListSignature.mParamCount)
+	{
+		frame.mVm.RaiseError("Attempt to call function with too few arguments.");
+	}
+#endif
+
+	frame.mVm.ExecuteScriptFunction();
 }
 
 
 VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
 	mStackFrames(),
-	mDummyFrame(mStackFrames),
+	mDummyFrame(mStackFrames, CalleeStackFrame(*this)),
 	mAllocator(allocator),
 	mCodeSegment(codeSegment),
 	mStack(NULL),
@@ -2099,12 +2105,7 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 
 	bu8_t *stackPointer = static_cast<bu8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
 
-	StackFrames::Element stackFrameElement(mStackFrames);
-	CalleeStackFrame &stackFrame = stackFrameElement.GetValue();
-	stackFrame.mFunction = function;
-	stackFrame.mFramePointer = framePointer;
-	stackFrame.mStackPointer = stackPointer;
-	stackFrame.mReturnPointer = returnPointer;
+	StackFrames::Element stackFrameElement(mStackFrames, CalleeStackFrame(*this, function, framePointer, stackPointer, returnPointer));
 	ValidateStackPointer(stackPointer);
 
 	ExecuteScriptFunction();
