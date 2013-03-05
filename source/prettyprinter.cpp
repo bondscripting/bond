@@ -1,7 +1,7 @@
-#include "bond/parsenodes.h"
-#include "bond/parsenodeutil.h"
-#include "bond/prettyprinter.h"
-#include "bond/textwriter.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/io/textwriter.h"
+#include "bond/tools/prettyprinter.h"
 
 namespace Bond
 {

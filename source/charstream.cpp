@@ -1,4 +1,4 @@
-#include "bond/charstream.h"
+#include "bond/compiler/charstream.h"
 
 namespace Bond
 {

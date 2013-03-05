@@ -1,5 +1,5 @@
-#include "bond/parsenodeutil.h"
-#include "bond/symboltable.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/compiler/symboltable.h"
 
 namespace Bond
 {

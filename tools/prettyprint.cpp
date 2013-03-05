@@ -1,12 +1,12 @@
-#include "bond/compilererror.h"
-#include "bond/defaultallocator.h"
-#include "bond/defaultfileloader.h"
-#include "bond/exception.h"
-#include "bond/lexer.h"
-#include "bond/parser.h"
-#include "bond/prettyprinter.h"
-#include "bond/semanticanalyzer.h"
-#include "bond/stdouttextwriter.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/lexer.h"
+#include "bond/compiler/parser.h"
+#include "bond/compiler/semanticanalyzer.h"
+#include "bond/io/defaultfileloader.h"
+#include "bond/io/stdouttextwriter.h"
+#include "bond/systems/defaultallocator.h"
+#include "bond/systems/exception.h"
+#include "bond/tools/prettyprinter.h"
 #include <stdio.h>
 #include <string.h>
 

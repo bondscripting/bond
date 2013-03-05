@@ -2,9 +2,9 @@
 #define TEST_FRAMEWORK_TESTPARSERFRAMEWORK_H
 
 #include "framework/testframework.h"
-#include "bond/compilererror.h"
-#include "bond/parsenodecounter.h"
-#include "bond/parser.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/parser.h"
+#include "bond/tools/parsenodecounter.h"
 
 #define DEFINE_PARSER_TEST(testName, scriptName)                              \
   bool __Validate ## testName ## __(                                          \

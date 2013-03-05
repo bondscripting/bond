@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_STLALLOCATOR_H
 #define PRIVATE_BOND_STLALLOCATOR_H
 
-#include "bond/allocator.h"
+#include "bond/systems/allocator.h"
 
 namespace Bond
 {

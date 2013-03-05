@@ -1,4 +1,4 @@
-#include "bond/token.h"
+#include "bond/compiler/token.h"
 
 namespace Bond
 {

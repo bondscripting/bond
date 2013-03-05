@@ -1,7 +1,7 @@
 #include "framework/testlexerframework.h"
-#include "bond/defaultallocator.h"
-#include "bond/defaultfileloader.h"
-#include "bond/exception.h"
+#include "bond/io/defaultfileloader.h"
+#include "bond/systems/defaultallocator.h"
+#include "bond/systems/exception.h"
 
 namespace TestFramework
 {

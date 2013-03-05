@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_ASSERT_H
 #define PRIVATE_BOND_ASSERT_H
 
-#include "bond/exception.h"
+#include "bond/systems/exception.h"
 
 #define BOND_ASSERT(condition) \
   if (!(condition))            \

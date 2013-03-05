@@ -1,7 +1,7 @@
-#include "bond/compilererror.h"
-#include "bond/textwriter.h"
-#include "bond/prettyprinter.h"
-#include "bond/token.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/token.h"
+#include "bond/io/textwriter.h"
+#include "bond/tools/prettyprinter.h"
 
 namespace Bond
 {

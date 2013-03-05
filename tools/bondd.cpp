@@ -1,8 +1,8 @@
-#include "bond/defaultallocator.h"
-#include "bond/defaultfileloader.h"
-#include "bond/disassembler.h"
-#include "bond/exception.h"
-#include "bond/stdouttextwriter.h"
+#include "bond/io/defaultfileloader.h"
+#include "bond/io/stdouttextwriter.h"
+#include "bond/systems/defaultallocator.h"
+#include "bond/systems/exception.h"
+#include "bond/tools/disassembler.h"
 #include <stdio.h>
 
 void Disassemble(const char *cboFileName)

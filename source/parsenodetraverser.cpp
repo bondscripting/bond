@@ -1,5 +1,5 @@
-#include "bond/parsenodetraverser.h"
-#include "bond/parsenodes.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/compiler/parsenodetraverser.h"
 
 namespace Bond
 {

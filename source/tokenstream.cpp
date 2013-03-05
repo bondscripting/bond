@@ -1,4 +1,4 @@
-#include "bond/tokenstream.h"
+#include "bond/compiler/tokenstream.h"
 
 namespace Bond
 {

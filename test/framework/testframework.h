@@ -1,7 +1,7 @@
 #ifndef TEST_FRAMEWORK_TESTFRAMEWORK_H
 #define TEST_FRAMEWORK_TESTFRAMEWORK_H
 
-#include "bond/textwriter.h"
+#include "bond/io/textwriter.h"
 
 #define DEFINE_TEST(testName) bool __Test ## testName ## __(Bond::TextWriter &logger)
 

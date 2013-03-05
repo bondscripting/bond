@@ -1,5 +1,5 @@
-#include "bond/bufferedbinarywriter.h"
-#include "bond/math.h"
+#include "bond/io/bufferedbinarywriter.h"
+#include "bond/systems/math.h"
 
 namespace Bond
 {

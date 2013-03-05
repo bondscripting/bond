@@ -1,5 +1,5 @@
-#include "bond/parsenodecounter.h"
-#include "bond/parsenodes.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/tools/parsenodecounter.h"
 
 namespace Bond
 {

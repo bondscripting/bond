@@ -1,4 +1,4 @@
-#include "bond/bufferedtextwriter.h"
+#include "bond/io/bufferedtextwriter.h"
 #include <stdarg.h>
 #include <stdio.h>
 

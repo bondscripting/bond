@@ -1,10 +1,11 @@
-#include "bond/assert.h"
-#include "bond/cboutil.h"
-#include "bond/cbovalidator.h"
-#include "bond/endian.h"
-#include "bond/math.h"
-#include "bond/opcodes.h"
-#include "bond/textwriter.h"
+#include "bond/io/textwriter.h"
+#include "bond/systems/assert.h"
+#include "bond/systems/endian.h"
+#include "bond/systems/math.h"
+#include "bond/tools/cboutil.h"
+#include "bond/tools/cbovalidator.h"
+#include "bond/types/opcodes.h"
+#include "bond/types/stringutil.h"
 #include "bond/version.h"
 
 namespace Bond

@@ -1,10 +1,9 @@
 #include "framework/testsemanticanalyzerframework.h"
-#include "bond/compilererror.h"
-#include "bond/defaultallocator.h"
-#include "bond/defaultfileloader.h"
-#include "bond/exception.h"
-#include "bond/lexer.h"
-#include "bond/parser.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/lexer.h"
+#include "bond/io/defaultfileloader.h"
+#include "bond/systems/defaultallocator.h"
+#include "bond/systems/exception.h"
 
 namespace TestFramework
 {

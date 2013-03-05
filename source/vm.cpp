@@ -1,9 +1,9 @@
-#include "bond/algorithm.h"
-#include "bond/allocator.h"
-#include "bond/bufferedtextwriter.h"
-#include "bond/math.h"
-#include "bond/opcodes.h"
-#include "bond/vm.h"
+#include "bond/io/bufferedtextwriter.h"
+#include "bond/stl/algorithm.h"
+#include "bond/systems/allocator.h"
+#include "bond/systems/math.h"
+#include "bond/types/opcodes.h"
+#include "bond/vm/vm.h"
 #include <string.h>
 
 namespace Bond

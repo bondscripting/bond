@@ -2,8 +2,8 @@
 #define TEST_FRAMEWORK_ASSERTS_H
 
 #include "framework/testframework.h"
-#include "bond/compilererror.h"
-#include "bond/token.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/token.h"
 
 #define ASSERT_NO_COMPILER_ERRORS(errorBuffer)                                         \
   if (!TestFramework::AssertNoCompilerErrors(logger, __FILE__, __LINE__, errorBuffer)) \

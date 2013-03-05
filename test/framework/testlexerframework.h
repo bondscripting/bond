@@ -2,8 +2,8 @@
 #define TEST_FRAMEWORK_TESTLEXERFRAMEWORK_H
 
 #include "framework/testframework.h"
-#include "bond/compilererror.h"
-#include "bond/lexer.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/lexer.h"
 
 #define DEFINE_LEXER_TEST(testName, scriptName)                               \
   bool __Validate ## testName ## __(                                          \

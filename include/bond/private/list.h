@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_LIST_H
 #define PRIVATE_BOND_LIST_H
 
-#include "bond/stlallocator.h"
+#include "bond/stl/stlallocator.h"
 #include <list>
 
 namespace Bond

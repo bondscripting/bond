@@ -1,5 +1,5 @@
 #include "framework/testframework.h"
-#include "bond/charstream.h"
+#include "bond/compiler/charstream.h"
 
 DEFINE_TEST(ReadAndReposition)
 {

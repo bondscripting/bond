@@ -1,11 +1,11 @@
-#include "bond/algorithm.h"
-#include "bond/compilererror.h"
-#include "bond/fileloader.h"
-#include "bond/frontend.h"
-#include "bond/lexer.h"
-#include "bond/parsenodeutil.h"
-#include "bond/parser.h"
-#include "bond/semanticanalyzer.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/frontend.h"
+#include "bond/compiler/lexer.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/compiler/parser.h"
+#include "bond/compiler/semanticanalyzer.h"
+#include "bond/io/fileloader.h"
+#include "bond/stl/algorithm.h"
 
 namespace Bond
 {

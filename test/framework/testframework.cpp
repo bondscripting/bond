@@ -1,5 +1,5 @@
 #include "framework/testframework.h"
-#include "bond/bufferedtextwriter.h"
+#include "bond/io/bufferedtextwriter.h"
 #include <stdio.h>
 
 namespace TestFramework

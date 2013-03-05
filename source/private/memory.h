@@ -1,7 +1,7 @@
 #ifndef BOND_MEMORY_H
 #define BOND_MEMORY_H
 
-#include "bond/math.h"
+#include "bond/systems/math.h"
 
 namespace Bond
 {

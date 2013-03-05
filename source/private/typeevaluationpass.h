@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_TYPEEVALUATIONPASS_H
 #define PRIVATE_BOND_TYPEEVALUATIONPASS_H
 
-#include "bond/compilererror.h"
+#include "bond/compiler/compilererror.h"
 #include "private/semanticanalysispass.h"
 
 namespace Bond

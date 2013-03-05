@@ -1,9 +1,8 @@
-
-#include "bond/autostack.h"
-#include "bond/compilererror.h"
-#include "bond/parser.h"
-#include "bond/parsenodeutil.h"
-#include "bond/tokenstream.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/compiler/parser.h"
+#include "bond/compiler/tokenstream.h"
+#include "bond/stl/autostack.h"
 
 namespace Bond
 {

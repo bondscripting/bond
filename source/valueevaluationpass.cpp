@@ -1,7 +1,7 @@
-#include "bond/compilererror.h"
-#include "bond/math.h"
-#include "bond/parsenodes.h"
-#include "bond/parsenodeutil.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/systems/math.h"
 #include "private/valueevaluationpass.h"
 
 namespace Bond

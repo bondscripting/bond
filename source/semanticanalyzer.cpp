@@ -1,4 +1,4 @@
-#include "bond/semanticanalyzer.h"
+#include "bond/compiler/semanticanalyzer.h"
 #include "private/toplevelsymbolpass.h"
 #include "private/typeevaluationpass.h"
 #include "private/typespecifierresolutionpass.h"

@@ -1,8 +1,8 @@
-#include "bond/algorithm.h"
-#include "bond/allocator.h"
-#include "bond/charstream.h"
-#include "bond/compilererror.h"
-#include "bond/lexer.h"
+#include "bond/compiler/charstream.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/lexer.h"
+#include "bond/stl/algorithm.h"
+#include "bond/systems/allocator.h"
 #include "private/memory.h"
 #include <ctype.h>
 #include <stdio.h>

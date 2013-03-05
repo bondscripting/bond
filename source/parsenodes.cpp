@@ -1,8 +1,8 @@
-#include "bond/math.h"
-#include "bond/opcodes.h"
-#include "bond/parsenodes.h"
-#include "bond/parsenodeutil.h"
-#include "bond/stringutil.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/systems/math.h"
+#include "bond/types/opcodes.h"
+#include "bond/types/stringutil.h"
 
 namespace Bond
 {

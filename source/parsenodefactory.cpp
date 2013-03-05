@@ -1,7 +1,7 @@
-#include "bond/allocator.h"
-#include "bond/parsenodefactory.h"
-#include "bond/parsenodes.h"
-#include "bond/parsenodetraverser.h"
+#include "bond/compiler/parsenodes.h"
+#include "bond/compiler/parsenodefactory.h"
+#include "bond/compiler/parsenodetraverser.h"
+#include "bond/systems/allocator.h"
 
 namespace Bond
 {

@@ -1,5 +1,5 @@
-#include "bond/algorithm.h"
-#include "bond/codesegment.h"
+#include "bond/stl/algorithm.h"
+#include "bond/vm/codesegment.h"
 
 namespace Bond
 {

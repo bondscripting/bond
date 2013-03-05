@@ -1,5 +1,5 @@
-#include "bond/parsenodes.h"
 #include "private/toplevelsymbolpass.h"
+#include "bond/compiler/parsenodes.h"
 
 namespace Bond
 {

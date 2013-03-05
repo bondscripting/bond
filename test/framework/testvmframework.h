@@ -2,8 +2,8 @@
 #define TEST_FRAMEWORK_TESTVMFRAMEWORK_H
 
 #include "framework/testframework.h"
-#include "bond/math.h"
-#include "bond/vm.h"
+#include "bond/systems/math.h"
+#include "bond/vm/vm.h"
 
 #define DEFINE_VM_TEST(testName, scriptName)                                                   \
   bool __Validate ## testName ## __(                                                           \

@@ -1,6 +1,6 @@
 #include "private/semanticanalysispass.h"
-#include "bond/compilererror.h"
-#include "bond/symboltable.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/symboltable.h"
 
 namespace Bond
 {

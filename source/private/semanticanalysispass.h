@@ -1,8 +1,8 @@
 #ifndef PRIVATE_BOND_SEMANTICANALYSISPASS_H
 #define PRIVATE_BOND_SEMANTICANALYSISPASS_H
 
-#include "bond/autostack.h"
-#include "bond/parsenodetraverser.h"
+#include "bond/compiler/parsenodetraverser.h"
+#include "bond/stl/autostack.h"
 
 namespace Bond
 {

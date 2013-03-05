@@ -31,6 +31,27 @@
     <Filter Include="Header Files\source\private">
       <UniqueIdentifier>{3a909947-c56c-427d-87cc-5b57bea1b803}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\bond\compiler">
+      <UniqueIdentifier>{a303e9b8-b660-48ce-85b1-b01b24fdb5a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\io">
+      <UniqueIdentifier>{fcdc336e-af2e-4a89-a379-20705a12ffec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\systems">
+      <UniqueIdentifier>{ec95a743-b55c-45ec-a739-672e3ccb8908}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\stl">
+      <UniqueIdentifier>{61830dee-f1dc-48c8-a30f-c98bd13a7c62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\vm">
+      <UniqueIdentifier>{246e8d13-41aa-4ced-9afe-dc916a37f0b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\types">
+      <UniqueIdentifier>{05fd033f-9441-46b6-9d2e-6af5942965c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\bond\tools">
+      <UniqueIdentifier>{993a4a81-eaf7-463f-8344-d7cfab664e08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\private\semanticanalysispass.h">
@@ -75,179 +96,173 @@
     <ClInclude Include="..\..\source\private\memory.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\algorithm.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\allocator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\assert.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\autostack.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\binarywriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\bufferedbinarywriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\bufferedtextwriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\cboloader.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\cboutil.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\cbovalidator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\charstream.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\codegenerator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\codesegment.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\compilererror.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\conf.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\defaultallocator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\defaultfileloader.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\disassembler.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\endian.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\exception.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\filebinarywriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\fileloader.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\hashedstring.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\lexer.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\list.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\map.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\math.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\opcodes.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodecounter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodefactory.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodes.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodesfwd.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodetraverser.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodeutil.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parsenodevisitor.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\parser.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\prettyprinter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\resourcehandle.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\semanticanalyzer.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\set.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\simplestring.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\stdouttextwriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\stlallocator.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\streampos.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\stringutil.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\symboltable.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\textwriter.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\token.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\tokenstream.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\typeandvalue.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\types.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\value.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\vector.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\version.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\vm.h">
-      <Filter>Header Files\include\bond</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\private\assert.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\frontend.h">
-      <Filter>Header Files\include\bond</Filter>
+    <ClInclude Include="..\..\include\bond\compiler\charstream.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\typeutil.h">
-      <Filter>Header Files\include\bond</Filter>
+    <ClInclude Include="..\..\include\bond\compiler\codegenerator.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\compilererror.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\frontend.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\lexer.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodefactory.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodes.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodesfwd.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodetraverser.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodeutil.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parsenodevisitor.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\parser.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\semanticanalyzer.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\streampos.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\symboltable.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\token.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\tokenstream.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h">
+      <Filter>Header Files\include\bond\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\binarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\defaultfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\filebinarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\fileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdouttextwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\textwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\algorithm.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\autostack.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\list.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\map.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\set.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\stlallocator.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\vector.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\allocator.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\assert.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\defaultallocator.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\endian.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\exception.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\math.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\resourcehandle.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\cboutil.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\cbovalidator.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\disassembler.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\prettyprinter.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\hashedstring.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\opcodes.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\simplestring.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\stringutil.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\types.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\typeutil.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\value.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\vm\cboloader.h">
+      <Filter>Header Files\include\bond\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\vm\codesegment.h">
+      <Filter>Header Files\include\bond\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\vm\vm.h">
+      <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

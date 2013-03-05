@@ -1,4 +1,4 @@
-#include "bond/stringutil.h"
+#include "bond/types/stringutil.h"
 
 namespace Bond
 {

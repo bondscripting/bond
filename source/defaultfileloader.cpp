@@ -1,7 +1,7 @@
-#include "bond/allocator.h"
-#include "bond/assert.h"
-#include "bond/defaultfileloader.h"
-#include "bond/types.h"
+#include "bond/io/defaultfileloader.h"
+#include "bond/systems/allocator.h"
+#include "bond/systems/assert.h"
+#include "bond/types/types.h"
 #include <stdio.h>
 
 #ifdef _MSC_VER

@@ -1,7 +1,7 @@
 #ifndef BOND_VERSION_H
 #define BOND_VERSION_H
 
-#include "bond/types.h"
+#include "bond/types/types.h"
 
 namespace Bond
 {

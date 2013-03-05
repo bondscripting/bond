@@ -1,6 +1,6 @@
-#include "bond/compilererror.h"
-#include "bond/parsenodes.h"
 #include "private/typespecifierresolutionpass.h"
+#include "bond/compiler/compilererror.h"
+#include "bond/compiler/parsenodes.h"
 
 namespace Bond
 {

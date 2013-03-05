@@ -1,7 +1,7 @@
 #ifndef PRIVATE_BOND_SET_H
 #define PRIVATE_BOND_SET_H
 
-#include "bond/stlallocator.h"
+#include "bond/stl/stlallocator.h"
 #include <set>
 
 namespace Bond

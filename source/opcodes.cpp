@@ -1,4 +1,4 @@
-#include "bond/opcodes.h"
+#include "bond/types/opcodes.h"
 
 namespace Bond
 {
