@@ -6,6 +6,7 @@
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
 #include "bond/vm/vm.h"
+#include <new>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,28 +72,23 @@ int main(int argc, const char *argv[])
 
 	try
 	{
-		Bond::DefaultFileLoader fileLoader(allocator);
-		const size_t numCboFiles = cboFileNameList.size();
-		Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(numCboFiles));
-		Bond::Allocator::Handle<Bond::FileData> cboFiles(allocator, allocator.Alloc<Bond::FileData>(numCboFiles));
-
-		StringList::Type::const_iterator it = cboFileNameList.begin();
-		size_t index = 0;
-		while (it != cboFileNameList.end())
+		Bond::CboLoader::Handle codeSegmentHandle;
 		{
-			Bond::FileLoader::Handle &handle = cboFileHandles.Get()[index];
-			handle = fileLoader.LoadFile(*it);
-			cboFiles[index] = handle.Get();
-			++index;
-			++it;
-			cboFileHandles.SetNumElements(index);
+			Bond::DefaultFileLoader fileLoader(allocator);
+			Bond::CboLoader cboLoader(allocator);
+			Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(cboFileNameList.size()));
+
+			StringList::Type::const_iterator it = cboFileNameList.begin();
+			for (size_t i = 0; it != cboFileNameList.end(); ++it, ++i)
+			{
+				Bond::FileLoader::Handle &handle = cboFileHandles.Get()[i];
+				new (&handle) Bond::FileLoader::Handle(fileLoader.LoadFile(*it));
+				cboFileHandles.SetNumElements(i);
+				cboLoader.AddCboFile(handle.Get());
+			}
+
+			codeSegmentHandle = cboLoader.Load();
 		}
-
-		Bond::CboLoader cboLoader(allocator);
-		Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load(cboFiles.Get(), numCboFiles);
-
-		cboFiles.Reset();
-		cboFileHandles.Reset();
 
 		Bond::VM vm(allocator, *codeSegmentHandle.Get(), stackSize * 1024);
 

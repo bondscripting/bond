@@ -22,6 +22,10 @@ public:
 	class Handle: public PointerHandle<T, Deallocator<T> >
 	{
 	public:
+		Handle():
+			PointerHandle<T, Deallocator<T> >(NULL, Deallocator<T>(NULL))
+		{}
+
 		Handle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
 		{}
@@ -55,6 +59,10 @@ public:
 	class AlignedHandle: public PointerHandle<T, AlignedDeallocator<T> >
 	{
 	public:
+		AlignedHandle():
+			PointerHandle<T, AlignedDeallocator<T> >(NULL, AlignedDeallocator<T>(NULL))
+		{}
+
 		AlignedHandle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
 		{}
@@ -97,6 +105,10 @@ public:
 	class ObjectHandle: public PointerHandle<T, ObjectDeallocator<T> >
 	{
 	public:
+		ObjectHandle():
+			PointerHandle<T, ObjectDeallocator<T> >(NULL, ObjectDeallocator<T>(NULL))
+		{}
+
 		ObjectHandle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(&allocator))
 		{}
@@ -139,6 +151,10 @@ public:
 	class AlignedObjectHandle: public PointerHandle<T, AlignedObjectDeallocator<T> >
 	{
 	public:
+		AlignedObjectHandle():
+			PointerHandle<T, AlignedObjectDeallocator<T> >(NULL, AlignedObjectDeallocator<T>(NULL))
+		{}
+
 		AlignedObjectHandle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(&allocator))
 		{}
@@ -188,6 +204,10 @@ public:
 	class ArrayHandle: public PointerHandle<T, ArrayDeallocator<T> >
 	{
 	public:
+		ArrayHandle():
+			PointerHandle<T, ArrayDeallocator<T> >(NULL, ArrayDeallocator<T>(NULL))
+		{}
+
 		ArrayHandle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, ArrayDeallocator<T> >(ptr, ArrayDeallocator<T>(&allocator))
 		{}
@@ -242,6 +262,10 @@ public:
 	class AlignedArrayHandle: public PointerHandle<T, AlignedArrayDeallocator<T> >
 	{
 	public:
+		AlignedArrayHandle():
+			PointerHandle<T, AlignedArrayDeallocator<T> >(NULL, AlignedArrayDeallocator<T>(NULL))
+		{}
+
 		AlignedArrayHandle(Allocator &allocator, T *ptr = NULL):
 			PointerHandle<T, AlignedArrayDeallocator<T> >(ptr, AlignedArrayDeallocator<T>(&allocator))
 		{}

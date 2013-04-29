@@ -1,23 +1,12 @@
 #ifndef BOND_CODESEGMENT_H
 #define BOND_CODESEGMENT_H
 
+#include "bond/api/nativebinding.h"
 #include "bond/types/hashedstring.h"
 #include "bond/types/value.h"
 
 namespace Bond
 {
-
-struct QualifiedId
-{
-	QualifiedId(const SimpleString **elements, bu32_t elementCount):
-		mElements(elements),
-		mElementCount(elementCount)
-	{}
-
-	const SimpleString **mElements;
-	bu32_t mElementCount;
-};
-
 
 struct ConstantTable
 {
@@ -67,11 +56,17 @@ struct ReturnSignature
 
 struct Function
 {
-	QualifiedId mName;
+	const char *const *mName;
 	ReturnSignature mReturnSignature;
 	ParamListSignature mParamListSignature;
 	const ConstantTable *mConstantTable;
-	const bu8_t *mCode;
+
+	union
+	{
+		const bu8_t *mCode;
+		NativeFunction mNativeFunction;
+	};
+
 	// TODO: There is a sign mismatch between these fields and the code generator.
 	bu32_t mCodeSize;
 	bu32_t mArgSize;

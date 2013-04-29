@@ -8,6 +8,7 @@
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
 #include "bond/types/opcodes.h"
+#include "bond/types/stringutil.h"
 #include "bond/types/value.h"
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
@@ -17,49 +18,50 @@
 namespace Bond
 {
 
+struct CboLoaderResources
+{
+	CboLoaderResources(
+			bu8_t *memory,
+			size_t constantTablesStart,
+			size_t value32TableStart,
+			size_t value64TableStart,
+			size_t stringTableStart,
+			size_t stringBytesStart,
+			size_t qualifiedIdElementStart,
+			size_t paramSignatureStart,
+			size_t functionLookupStart,
+			size_t functionsStart,
+			size_t codeStart):
+		mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
+		mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
+		mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
+		mStringTable(reinterpret_cast<SimpleString *>(memory + stringTableStart)),
+		mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
+		mQualifiedIdElements(reinterpret_cast<const char **>(memory + qualifiedIdElementStart)),
+		mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
+		mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
+		mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
+		mCode(reinterpret_cast<bu8_t *>(memory + codeStart))
+	{}
+	ConstantTable *mConstantTables;
+	Value32 *mValue32Table;
+	Value64 *mValue64Table;
+	SimpleString *mStringTable;
+	char *mStringBytes;
+	const char **mQualifiedIdElements;
+	ParamSignature *mParamSignatures;
+	bu32_t *mFunctionLookup;
+	Function *mFunctions;
+	bu8_t *mCode;
+};
+
+
 class CboLoaderCore
 {
 public:
-	struct MemoryResources
-	{
-		MemoryResources(
-				bu8_t *memory,
-				size_t constantTablesStart,
-				size_t value32TableStart,
-				size_t value64TableStart,
-				size_t stringTableStart,
-				size_t stringBytesStart,
-				size_t qualifiedIdElementStart,
-				size_t paramSignatureStart,
-				size_t functionLookupStart,
-				size_t functionsStart,
-				size_t codeStart):
-			mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
-			mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
-			mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
-			mStringTable(reinterpret_cast<SimpleString *>(memory + stringTableStart)),
-			mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
-			mQualifiedIdElements(reinterpret_cast<const SimpleString **>(memory + qualifiedIdElementStart)),
-			mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
-			mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
-			mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
-			mCode(reinterpret_cast<bu8_t *>(memory + codeStart))
-		{}
-		ConstantTable *mConstantTables;
-		Value32 *mValue32Table;
-		Value64 *mValue64Table;
-		SimpleString *mStringTable;
-		char *mStringBytes;
-		const SimpleString **mQualifiedIdElements;
-		ParamSignature *mParamSignatures;
-		bu32_t *mFunctionLookup;
-		Function *mFunctions;
-		bu8_t *mCode;
-	};
-
 	CboLoaderCore(
 			const CboValidator::Result &validationResult,
-			MemoryResources &resources,
+			CboLoaderResources &resources,
 			const bu8_t *byteCode):
 		mValidationResult(validationResult),
 		mResources(resources),
@@ -75,7 +77,7 @@ private:
 	void LoadBlob();
 	void LoadListBlob();
 	void LoadFunctionBlob();
-	QualifiedId LoadQualifiedIdentifier();
+	const char *const *LoadQualifiedIdentifier();
 	ReturnSignature LoadReturnSignature();
 	ParamListSignature LoadParamListSignature();
 
@@ -84,7 +86,7 @@ private:
 	Value64 ReadValue64();
 
 	CboValidator::Result mValidationResult;
-	MemoryResources &mResources;
+	CboLoaderResources &mResources;
 	ConstantTable *mConstantTable;
 	SimpleString *mStringTable;
 	const bu8_t *mByteCode;
@@ -92,10 +94,10 @@ private:
 };
 
 
-CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
+CboLoader::Handle CboLoader::Load()
 {
 	typedef Vector<CboValidator::Result> ResultList;
-	ResultList::Type resultList(numFiles, CboValidator::Result(), ResultList::Allocator(&mTempAllocator));
+	ResultList::Type resultList(mFileDataList.size(), CboValidator::Result(), ResultList::Allocator(&mTempAllocator));
 
 	size_t value32Count = 0;
 	size_t value64Count = 0;
@@ -107,29 +109,42 @@ CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	size_t codeByteCount = 0;
 
 	CboValidator validator;
-	for (size_t i = 0; i < numFiles; ++i)
+	FileDataList::Type::const_iterator fdit = mFileDataList.begin();
+	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
 	{
-		const FileData &file = cboFiles[i];
+		const FileData &file = **fdit;
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(reinterpret_cast<const bu8_t *>(file.mData), file.mLength);
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
 		stringByteCount += result.mStringByteCount + result.mStringCount;
-		qualifiedIdElementCount += result.mQualifiedIdElementCount;
+		qualifiedIdElementCount += result.mQualifiedIdElementCount + result.mFunctionCount;
 		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
 		codeByteCount += result.mCodeByteCount;
 	}
 
+	NativeBindingList::Type::const_iterator nbit = mNativeBindingList.begin();
+	for (size_t i = 0; nbit != mNativeBindingList.end(); ++nbit, ++i)
+	{
+		const NativeBindingCollection &bindingCollection = **nbit;
+		functionCount += bindingCollection.mFunctionBindingCount;
+		for (bu32_t j = 0; j < bindingCollection.mFunctionBindingCount; ++j)
+		{
+			const NativeFunctionBinding &binding = bindingCollection.mFunctionBindings[i];
+			paramSignatureCount += binding.mParamCount;
+		}
+	}
+
 	size_t memSize = 0;
 	const size_t codeSegmentStart = TallyMemoryRequirements<CodeSegment>(memSize, 1);
-	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, numFiles);
+	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, mFileDataList.size());
 	const size_t value32TableStart = TallyMemoryRequirements<Value32>(memSize, value32Count);
 	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
 	const size_t stringTableStart = TallyMemoryRequirements<SimpleString>(memSize, stringCount);
 	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
-	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const SimpleString *>(memSize, qualifiedIdElementCount);
+	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const char *>(memSize, qualifiedIdElementCount);
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
@@ -137,7 +152,7 @@ CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 
 	const size_t CBO_ALIGNMENT = 256;
 	Allocator::Handle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
-	CboLoaderCore::MemoryResources resources(
+	CboLoaderResources resources(
 		memHandle.Get(),
 		constantTablesStart,
 		value32TableStart,
@@ -154,10 +169,21 @@ CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 	Function *functions = resources.mFunctions;
 	CodeSegment *codeSegment = new (memHandle.Get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
 
-	for (size_t i = 0; i < numFiles; ++i)
+	fdit = mFileDataList.begin();
+	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
 	{
-		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const bu8_t *>(cboFiles[i].mData));
+		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const bu8_t *>((*fdit)->mData));
 		loader.Load();
+	}
+
+	nbit = mNativeBindingList.begin();
+	for (size_t i = 0; nbit != mNativeBindingList.end(); ++nbit, ++i)
+	{
+		const NativeBindingCollection &bindingCollection = **nbit;
+		for (bu32_t j = 0; j < bindingCollection.mFunctionBindingCount; ++j)
+		{
+			AddNativeFunction(resources, bindingCollection.mFunctionBindings[j]);
+		}
 	}
 
 	Sort(functions, functions + functionCount, FunctionHashComparator());
@@ -180,9 +206,30 @@ CboLoader::Handle CboLoader::Load(const FileData *cboFiles, size_t numFiles)
 }
 
 
-void CboLoader::Dispose(const CodeSegment *codeSegment)
+void CboLoader::AddNativeFunction(CboLoaderResources &resources, const NativeFunctionBinding &binding)
 {
-	mPermAllocator.FreeAligned(const_cast<void *>(reinterpret_cast<const void *>(codeSegment)));
+	Function *function = resources.mFunctions;
+	function->mName = binding.mName;
+	//function->mReturnSignature = ReturnSignature(binding.mReturnTypeBinding->mSize, binding.mReturnTypeBinding->mSignatureType);
+	//function->mParamListSignature = 
+	//function->mConstantTable = StringHash(StringHash("::"));
+
+/*
+				hash = mParentSymbol->GetGlobalHashCode();
+			hash = StringHash("::", hash);
+			hash = StringHash(name.GetLength(), name.GetString(), hash);
+*/
+
+	//function->mHash = 
+	//function->mArgSize = 
+	//function->mPackedArgSize = 
+	//function->mLocalSize = 
+	//function->mStackSize = 
+	//function->mFramePointerAlignment = 
+
+	function->mNativeFunction = binding.mFunction;
+	function->mCodeSize = 0;
+	++resources.mFunctions;
 }
 
 
@@ -391,10 +438,13 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
 	function->mHash = ReadValue32().mUInt;
+	// TODO: Derive this value, remove from CBO file.
 	function->mArgSize = ReadValue32().mUInt;
+	// TODO: Derive this value, remove from CBO file.
 	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
 	function->mStackSize = ReadValue32().mUInt;
+	// TODO: Derive this value, remove from CBO file.
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
 	bu8_t *code = mResources.mCode;
@@ -408,18 +458,19 @@ void CboLoaderCore::LoadFunctionBlob()
 }
 
 
-QualifiedId CboLoaderCore::LoadQualifiedIdentifier()
+const char *const *CboLoaderCore::LoadQualifiedIdentifier()
 {
-	const SimpleString **elements = mResources.mQualifiedIdElements;
-	const SimpleString **element = elements;
+	const char **elements = mResources.mQualifiedIdElements;
+	const char **element = elements;
 	const bu32_t numElements = ReadValue16().mUShort;
 	for (bu32_t i = 0; i < numElements; ++i)
 	{
 		const size_t idIndex = ReadValue16().mUShort;
-		*element++ = mStringTable + idIndex;
+		*element++ = mStringTable[idIndex].GetString();
 	}
+	*element++ = NULL;
 	mResources.mQualifiedIdElements = element;
-	return QualifiedId(elements, numElements);
+	return elements;
 }
 
 

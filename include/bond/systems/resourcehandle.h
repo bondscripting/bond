@@ -116,7 +116,7 @@ public:
 		BaseType(proxy)
 	{}
 
-	PointerHandle &operator=(ProxyType &proxy) { BaseType::operator=(proxy); return *this; }
+	PointerHandle &operator=(const ProxyType &proxy) { BaseType::operator=(proxy); return *this; }
 
 	PointerType operator->() const { return this->mResource; }
 	ResourceType &operator*() const { return *this->mResource; }

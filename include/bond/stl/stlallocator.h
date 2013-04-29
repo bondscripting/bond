@@ -1,7 +1,7 @@
 #ifndef BOND_STLALLOCATOR_H
 #define BOND_STLALLOCATOR_H
 
-#include "bond/conf.h"
+#include "bond/systems/allocator.h"
 
 #ifdef USER_BOND_STLALLOCATOR_HEADER
 

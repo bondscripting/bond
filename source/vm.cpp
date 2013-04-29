@@ -2144,15 +2144,16 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 		writer.Write(GetSignatureTypeMnemonic(returnType), returnSize);
 		writer.Write(" ");
 
-		const SimpleString **strings = function->mName.mElements;
-		const bu32_t numStrings = function->mName.mElementCount;
-		for (bu32_t i = 0; i < numStrings; ++i)
+		const char *const *elements = function->mName;
+		bool isFirstElement = true;
+		while (*elements != NULL)
 		{
-			if (i > 0)
+			if (!isFirstElement)
 			{
 				writer.Write("::");
+				isFirstElement = false;
 			}
-			writer.Write(strings[i]->GetString());
+			writer.Write(*elements++);
 		}
 
 		writer.Write("(");
