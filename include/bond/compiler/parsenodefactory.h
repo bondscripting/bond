@@ -18,6 +18,7 @@ public:
 	TranslationUnit *CreateTranslationUnit(IncludeDirective *includeDirectiveList, ListParseNode *declarationList);
 	IncludeDirective *CreateIncludeDirective(const Token *includePath);
 	NamespaceDefinition *CreateNamespaceDefinition(const Token *name, ListParseNode *declarationList);
+	NativeBlock *CreateNativeBlock(const Token *keyword, ListParseNode *declarationList);
 	EnumDeclaration *CreateEnumDeclaration(const Token *name);
 
 	Enumerator *CreateEnumerator(

@@ -26,6 +26,9 @@ public:
 	virtual void Visit(NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 
+	virtual void Visit(NativeBlock *nativeBlock);
+	virtual void Visit(const NativeBlock *nativeBlock);
+
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(const EnumDeclaration *enumDeclaration);
 

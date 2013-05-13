@@ -62,6 +62,12 @@ NamespaceDefinition *ParseNodeFactory::CreateNamespaceDefinition(
 }
 
 
+NativeBlock *ParseNodeFactory::CreateNativeBlock(const Token *keyword, ListParseNode *declarationList)
+{
+	return new (mAllocator.Alloc<NativeBlock>()) NativeBlock(keyword, declarationList);
+}
+
+
 EnumDeclaration *ParseNodeFactory::CreateEnumDeclaration(const Token *name)
 {
 	return new (mAllocator.Alloc<EnumDeclaration>()) EnumDeclaration(name);

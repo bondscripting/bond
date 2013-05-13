@@ -34,6 +34,7 @@ private:
 	ListParseNode *ParseExternalDeclarationList();
 	ListParseNode *ParseExternalDeclaration();
 	NamespaceDefinition *ParseNamespaceDefinition();
+	NativeBlock *ParseNativeBlock();
 	EnumDeclaration *ParseEnumDeclaration();
 	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
@@ -111,6 +112,7 @@ private:
 
 	ScopeStack mScope;
 	BoolStack mParseConstExpressions;
+	BoolStack mInNativeBlock;
 
 	bool mHasUnrecoveredError;
 };
@@ -159,7 +161,8 @@ TranslationUnit *ParserCore::ParseTranslationUnit()
 {
 	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
-	IncludeDirective *includeDirectives= ParseIncludeDirectiveList();
+	BoolStack::Element inNativeBlockElement(mInNativeBlock, false);
+	IncludeDirective *includeDirectives = ParseIncludeDirectiveList();
 	ListParseNode *declarations = ParseExternalDeclarationList();
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(includeDirectives, declarations);
 	ExpectToken(Token::END);
@@ -229,13 +232,13 @@ ListParseNode *ParserCore::ParseExternalDeclarationList()
 }
 
 
-// external_declaration
-//   : namespace_definition
-//   | enum_declaration
-//   | function_declaration
-//   | function_definition
-//   | struct_declaration
-//   | const_declarative_statement
+//external_declaration
+//  : namespace_definition
+//  | native_block
+//  | enum_declaration
+//  | struct_declaration
+//  | function_definition
+//  | const_declarative_statement
 ListParseNode *ParserCore::ParseExternalDeclaration()
 {
 	ListParseNode *declaration = NULL;
@@ -244,6 +247,10 @@ ListParseNode *ParserCore::ParseExternalDeclaration()
 	{
 		case Token::KEY_NAMESPACE:
 			declaration = ParseNamespaceDefinition();
+			break;
+
+		case Token::KEY_NATIVE:
+			declaration = ParseNativeBlock();
 			break;
 
 		case Token::KEY_ENUM:
@@ -279,6 +286,23 @@ NamespaceDefinition *ParserCore::ParseNamespaceDefinition()
 	}
 
 	return space;
+}
+
+
+NativeBlock *ParserCore::ParseNativeBlock()
+{
+	NativeBlock *block = NULL;
+	const Token *keyword = mStream.NextIf(Token::KEY_NATIVE);
+
+	if (keyword != NULL)
+	{
+		ExpectToken(Token::OBRACE);
+		ListParseNode *declarations = ParseExternalDeclarationList();
+		ExpectToken(Token::CBRACE);
+		block = mFactory.CreateNativeBlock(keyword, declarations);
+	}
+
+	return block;
 }
 
 
@@ -942,7 +966,7 @@ IfStatement *ParserCore::ParseIfStatement()
 	IfStatement *ifStatement = NULL;
 	const Token *keyword = mStream.NextIf(Token::KEY_IF);
 
-	if (keyword)
+	if (keyword != NULL)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -1070,7 +1094,7 @@ WhileStatement *ParserCore::ParseWhileStatement()
 	WhileStatement *whileStatement = NULL;
 	const Token *keyword = mStream.NextIf(Token::KEY_WHILE);
 
-	if (keyword)
+	if (keyword != NULL)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -1092,7 +1116,7 @@ WhileStatement *ParserCore::ParseDoWhileStatement()
 	WhileStatement *whileStatement = NULL;
 	const Token *keyword = mStream.NextIf(Token::KEY_DO);
 
-	if (keyword)
+	if (keyword != NULL)
 	{
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
@@ -1120,7 +1144,7 @@ ForStatement *ParserCore::ParseForStatement()
 	ForStatement *forStatement = NULL;
 	const Token *keyword = mStream.NextIf(Token::KEY_FOR);
 
-	if (keyword)
+	if (keyword != NULL)
 	{
 		ExpectToken(Token::OPAREN);
 		ParseNode *initializer = ParseExpressionOrDeclarativeStatement();

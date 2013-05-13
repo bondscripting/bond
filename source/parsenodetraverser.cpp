@@ -72,6 +72,18 @@ void ParseNodeTraverser::Visit(const NamespaceDefinition *namespaceDefinition)
 }
 
 
+void ParseNodeTraverser::Visit(NativeBlock *nativeBlock)
+{
+	TraverseList(nativeBlock->GetNativeDeclarationList());
+}
+
+
+void ParseNodeTraverser::Visit(const NativeBlock *nativeBlock)
+{
+	TraverseList(nativeBlock->GetNativeDeclarationList());
+}
+
+
 void ParseNodeTraverser::Visit(EnumDeclaration *enumDeclaration)
 {
 	TraverseList(enumDeclaration->GetEnumeratorList());

@@ -429,6 +429,32 @@ private:
 };
 
 
+class NativeBlock: public ListParseNode
+{
+public:
+	NativeBlock(const Token *keyword, ListParseNode *declarationList):
+		mKeyword(keyword),
+		mDeclarationList(declarationList)
+	{}
+
+	virtual ~NativeBlock() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const { return mKeyword; }
+
+	const Token *GetKeyword() const { return mKeyword; }
+
+	ListParseNode *GetNativeDeclarationList() { return mDeclarationList; }
+	const ListParseNode *GetNativeDeclarationList() const { return mDeclarationList; }
+
+private:
+	const Token *mKeyword;
+	ListParseNode *mDeclarationList;
+};
+
+
 class EnumDeclaration: public Symbol
 {
 public:

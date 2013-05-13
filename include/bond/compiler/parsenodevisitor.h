@@ -20,6 +20,9 @@ public:
 	virtual void Visit(NamespaceDefinition *namespaceDefinition) = 0;
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition) = 0;
 
+	virtual void Visit(NativeBlock *nativeBlock) = 0;
+	virtual void Visit(const NativeBlock *nativeBlock) = 0;
+
 	virtual void Visit(EnumDeclaration *enumDeclaration) = 0;
 	virtual void Visit(const EnumDeclaration *enumDeclaration) = 0;
 
@@ -137,6 +140,9 @@ public:
 
 	virtual void Visit(NamespaceDefinition *namespaceDefinition) {}
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition) {}
+
+	virtual void Visit(NativeBlock *nativeBlock) {}
+	virtual void Visit(const NativeBlock *nativeBlock) {}
 
 	virtual void Visit(EnumDeclaration *enumDeclaration) {}
 	virtual void Visit(const EnumDeclaration *enumDeclaration) {}

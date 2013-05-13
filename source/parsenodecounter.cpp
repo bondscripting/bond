@@ -25,6 +25,13 @@ void ParseNodeCounter::Visit(const NamespaceDefinition *namespaceDefinition)
 }
 
 
+void ParseNodeCounter::Visit(const NativeBlock *nativeBlock)
+{
+	++mCount.mNativeBlock;
+	ParseNodeTraverser::Visit(nativeBlock);
+}
+
+
 void ParseNodeCounter::Visit(const EnumDeclaration *enumDeclaration)
 {
 	++mCount.mEnumDeclaration;

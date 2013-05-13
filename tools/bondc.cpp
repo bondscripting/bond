@@ -70,10 +70,6 @@ int main(int argc, const char *argv[])
 					error = true;
 				}
 			}
-			else if (strcmp(argv[i], "-r") == 0)
-			{
-				frontEnd.SetRecursiveCompileEnabled(true);
-			}
 			else if (argv[i][0] == '-')
 			{
 				fprintf(stderr, "Unknown option '%s'\n", argv[i]);

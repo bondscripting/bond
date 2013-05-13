@@ -10,6 +10,7 @@ namespace Bond
 	class TranslationUnit;
 	class IncludeDirective;
 	class NamespaceDefinition;
+	class NativeBlock;
 	class EnumDeclaration;
 	class Enumerator;
 	class StructDeclaration;

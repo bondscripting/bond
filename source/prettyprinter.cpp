@@ -59,6 +59,20 @@ void PrettyPrinter::Visit(const NamespaceDefinition *namespaceDefinition)
 }
 
 
+void PrettyPrinter::Visit(const NativeBlock *nativeBlock)
+{
+	Tab();
+	mWriter.Write("native\n");
+	Tab();
+	mWriter.Write("{\n");
+	IncrementTab();
+	PrintList(nativeBlock->GetNativeDeclarationList());
+	DecrementTab();
+	Tab();
+	mWriter.Write("}\n");
+}
+
+
 void PrettyPrinter::Visit(const EnumDeclaration *enumDeclaration)
 {
 	Tab();

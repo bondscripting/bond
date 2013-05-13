@@ -42,7 +42,7 @@ void FrontEnd::Analyze()
 			TranslationUnit *translationUnit = mParser.Parse(stream);
 			if (!HasErrors())
 			{
-				translationUnit->SetRequiresCodeGeneration(mRecursiveCompileEnabled || (i < numFilesToCompile));
+				translationUnit->SetRequiresCodeGeneration(i < numFilesToCompile);
 				const IncludeDirective *includeDirectiveList = translationUnit->GetIncludeDirectiveList();
 				while (includeDirectiveList != NULL)
 				{

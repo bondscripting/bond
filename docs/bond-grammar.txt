@@ -9,10 +9,10 @@ include_directive
 
 external_declaration
   : namespace_definition
+  | native_block
   | enum_declaration
   | struct_declaration
   | function_definition
-  | native_function_declaration
   | const_declarative_statement
 
 namespace_definition
@@ -21,6 +21,13 @@ namespace_definition
 function_definition
   : function_prototype compound_statement
 
+native_block
+  : NATIVE '{' native_declaration* '}'
+
+native_declaration
+  : native_struct_declaration
+  | native_function_declaration
+  | TODO: struct size and alignment
 
 Declarations
 ------------
@@ -50,12 +57,14 @@ enumerator
 
 struct_declaration
   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
-  | STRUCT REF IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-  | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
 
 struct_member_declaration
   : type_descriptor identifier_list ';'
   | function_prototype [ CONST ] compound_statement
+
+native_struct_declaration
+  | STRUCT IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+//  | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
 
 native_struct_member_declaration
   : type_descriptor identifier_list ';'
