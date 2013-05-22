@@ -189,13 +189,6 @@ const TokenTypeSet INTEGER_CONSTANTS_TYPESET(
 );
 
 
-const TokenTypeSet STRUCT_VARIANT_TYPESET(
-	"STRUCT_VARIANT",
-	Token::KEY_NATIVE,
-	Token::KEY_REF
-);
-
-
 const TokenTypeSet JUMP_KEYWORDS_TYPESET(
 	"JUMP_KEYWORDS",
 	Token::KEY_BREAK,

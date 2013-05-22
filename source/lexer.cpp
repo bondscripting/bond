@@ -1244,7 +1244,6 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 	KEYWORD_ITEM(KEY_NAMESPACE, "namespace") \
 	KEYWORD_ITEM(KEY_NATIVE,    "native")    \
 	KEYWORD_ITEM(CONST_NULL,    "null")      \
-	KEYWORD_ITEM(KEY_REF,       "ref")       \
 	KEYWORD_ITEM(KEY_RETURN,    "return")    \
 	KEYWORD_ITEM(KEY_SHORT,     "short")     \
 	KEYWORD_ITEM(KEY_SIZEOF,    "sizeof")    \

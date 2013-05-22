@@ -111,28 +111,35 @@ void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
 	Tab();
 	mWriter.Write("struct ");
 
-	switch (structDeclaration->GetVariant())
+	Print(structDeclaration->GetName());
+	const Token *sizeToken = structDeclaration->GetSizeToken();
+	if (sizeToken != NULL)
 	{
-		case StructDeclaration::VARIANT_NATIVE:
-			mWriter.Write("native ");
-			break;
-		case StructDeclaration::VARIANT_REFERENCE:
-			mWriter.Write("ref ");
-			break;
-		default:
-			break;
+		const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
+		mWriter.Write("<%" BOND_PRId32, size);
+
+		const Token *alignmentToken = structDeclaration->GetAlignmentToken();
+		if (alignmentToken != NULL)
+		{
+			const bi32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
+			mWriter.Write(", %" BOND_PRId32, alignment);
+		}
+		mWriter.Write(">");
 	}
 
-	Print(structDeclaration->GetName());
-	mWriter.Write("\n");
-	Tab();
-	mWriter.Write("{\n");
-	IncrementTab();
-	PrintList(structDeclaration->GetMemberFunctionList());
-	PrintList(structDeclaration->GetMemberVariableList());
-	DecrementTab();
-	Tab();
-	mWriter.Write("};\n");
+	if (structDeclaration->GetVariant() != StructDeclaration::VARIANT_NATIVE_STUB)
+	{
+		mWriter.Write("\n");
+		Tab();
+		mWriter.Write("{\n");
+		IncrementTab();
+		PrintList(structDeclaration->GetMemberFunctionList());
+		PrintList(structDeclaration->GetMemberVariableList());
+		DecrementTab();
+		Tab();
+		mWriter.Write("}");
+	}
+	mWriter.Write(";\n");
 }
 
 

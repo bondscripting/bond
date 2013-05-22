@@ -26,7 +26,10 @@ void TopLevelSymbolPass::Visit(Enumerator *enumerator)
 
 void TopLevelSymbolPass::Visit(StructDeclaration *structDeclaration)
 {
-	InsertSymbol(structDeclaration);
+	if (structDeclaration->GetVariant() != StructDeclaration::VARIANT_NATIVE_STUB)
+	{
+		InsertSymbol(structDeclaration);
+	}
 	SemanticAnalysisPass::Visit(structDeclaration);
 }
 

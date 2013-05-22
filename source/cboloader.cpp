@@ -438,23 +438,23 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
 	function->mHash = ReadValue32().mUInt;
-	// TODO: Derive this value, remove from CBO file.
 	function->mArgSize = ReadValue32().mUInt;
-	// TODO: Derive this value, remove from CBO file.
 	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
 	function->mStackSize = ReadValue32().mUInt;
-	// TODO: Derive this value, remove from CBO file.
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
-	bu8_t *code = mResources.mCode;
 	const bu32_t codeSize = ReadValue32().mUInt;
-	function->mCode = code;
-	function->mCodeSize = codeSize;
-	memcpy(code, mByteCode + mIndex, codeSize);
+	if (codeSize > 0)
+	{
+		bu8_t *code = mResources.mCode;
+		function->mCode = code;
+		function->mCodeSize = codeSize;
+		memcpy(code, mByteCode + mIndex, codeSize);
+		mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
+		mIndex += codeSize;
+	}
 	++mResources.mFunctions;
-	mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
-	mIndex += codeSize;
 }
 
 

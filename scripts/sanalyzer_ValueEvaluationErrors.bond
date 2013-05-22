@@ -1,6 +1,9 @@
-struct native <0x800000001> BadStruct1 {};
-struct native <6, 3> BadStruct2 {};
-struct native <6, 4> BadStruct3 {};
+native
+{
+	struct BadStruct1<0x800000001> {};
+	struct BadStruct2<6, 3> {};
+	struct BadStruct3<6, 4> {};
+}
 
 void DummyFunction()
 {

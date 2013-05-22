@@ -479,19 +479,19 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 		parameterList = NextNode(parameterList);
 	}
 
+	CompiledFunction &function = *mFunctionList.insert(
+		mFunctionList.end(),
+		CompiledFunction(
+			functionDefinition,
+			mAllocator,
+			-offset,
+			-packedOffset,
+			framePointerAlignment));
+	function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
+	MapQualifiedSymbolName(functionDefinition);
+
 	if (!functionDefinition->IsNative())
 	{
-		CompiledFunction &function = *mFunctionList.insert(
-			mFunctionList.end(),
-			CompiledFunction(
-				functionDefinition,
-				mAllocator,
-				-offset,
-				-packedOffset,
-				framePointerAlignment));
-		function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
-		MapQualifiedSymbolName(functionDefinition);
-
 		FunctionStack::Element functionElement(mFunction, &function);
 		IntStack::Element localOffsetElement(mLocalOffset, 0);
 		IntStack::Element stackTopElement(mStackTop, 0);

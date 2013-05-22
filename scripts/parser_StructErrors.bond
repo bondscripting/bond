@@ -34,9 +34,12 @@ struct Struct4
 	int Function(int , ) {}
 };
 
-struct ref ReferenceStruct
+native
 {
-	void Defined() {}
-};
+	struct ReferenceStruct
+	{
+		void Defined() {}
+	};
+}
 
 const int SENTINEL2 = 2;

@@ -23,20 +23,23 @@ struct DataAndFunctions
 	void DoMoreStuff() {}
 };
 
-struct ref ReferenceNativeStruct
+native
 {
-	int x;
-	void DoSomething();
-};
+	struct ReferenceNativeStruct
+	{
+		int x;
+		void DoSomething();
+	};
 
-struct native<16> NativeStructWithNoAlignment
-{
-	int x;
-	int ReturnNumber() const;
-};
+	struct NativeStructWithNoAlignment<16>
+	{
+		int x;
+		int ReturnNumber() const;
+	};
 
-struct native<16, 16> NativeStructWithAlignment
-{
-	int x;
-	void DoSomething();
-};
+	struct NativeStructWithAlignment<16, 16>
+	{
+		int x;
+		void DoSomething();
+	};
+}

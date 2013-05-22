@@ -242,12 +242,12 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 		{Bond::CompilerError::INITIALIZER_NOT_ALLOWED, Bond::Token::ASSIGN, 6},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 9},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OP_DIV, 12},
-		{Bond::CompilerError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 15},
+		{Bond::CompilerError::NON_NATIVE_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 15},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::OBRACE, 19},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
-		{Bond::CompilerError::NATIVE_MEMBER_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 39},
+		{Bond::CompilerError::NATIVE_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 41},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -295,8 +295,10 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 		{Bond::CompilerError::EMPTY_SWITCH_LABEL_LIST, Bond::Token::IDENTIFIER, 62},
 		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 66},
 		{Bond::CompilerError::CONST_NON_MEMBER_FUNCTION, Bond::Token::KEY_CONST, 67},
-		{Bond::CompilerError::FUNCTION_RETURNS_ARRAY, Bond::Token::IDENTIFIER, 68},
-		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 72},
+		{Bond::CompilerError::NON_NATIVE_FUNCTION_DECLARATION, Bond::Token::IDENTIFIER, 68},
+		{Bond::CompilerError::FUNCTION_RETURNS_ARRAY, Bond::Token::IDENTIFIER, 71},
+		{Bond::CompilerError::NATIVE_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 72},
+		{Bond::CompilerError::VOID_NOT_ALLOWED, Bond::Token::KEY_VOID, 77},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

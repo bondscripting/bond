@@ -249,12 +249,12 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEval
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
-		{Bond::CompilerError::INVALID_STRUCT_SIZE, Bond::Token::CONST_INT, 1},
-		{Bond::CompilerError::INVALID_STRUCT_ALIGNMENT, Bond::Token::CONST_INT, 2},
-		{Bond::CompilerError::STRUCT_SIZE_ALIGNMENT_MISMATCH, Bond::Token::CONST_INT, 3},
-		{Bond::CompilerError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 9},
-		{Bond::CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 10},
-		{Bond::CompilerError::ARRAY_SIZE_IS_UNSPECIFIED, Bond::Token::KEY_INT, 11},
+		{Bond::CompilerError::INVALID_STRUCT_SIZE, Bond::Token::CONST_INT, 3},
+		{Bond::CompilerError::INVALID_STRUCT_ALIGNMENT, Bond::Token::CONST_INT, 4},
+		{Bond::CompilerError::STRUCT_SIZE_ALIGNMENT_MISMATCH, Bond::Token::CONST_INT, 5},
+		{Bond::CompilerError::ARRAY_SIZE_IS_ZERO, Bond::Token::IDENTIFIER, 12},
+		{Bond::CompilerError::ARRAY_SIZE_IS_NOT_CONST_INTEGER, Bond::Token::IDENTIFIER, 13},
+		{Bond::CompilerError::ARRAY_SIZE_IS_UNSPECIFIED, Bond::Token::KEY_INT, 14},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

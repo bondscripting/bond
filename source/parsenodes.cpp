@@ -698,7 +698,7 @@ bool TypeSpecifier::IsStructType() const
 
 bool StructDeclaration::IsResolved() const
 {
-	return (mVariant == VARIANT_REFERENCE) || (mSize > 0);
+	return (mSize > 0) || !IsInstantiable();
 }
 
 

@@ -19,7 +19,7 @@ struct DummyStruct
 	int ConstAddMutator2(int arg) const { this->Mutator(this->GetX() + arg); }
 };
 
-int [2]* FunnyReturnType(); struct native<4> OtherDummyStruct { int x; };
+native { int [2]* FunnyReturnType(); struct OtherDummyStruct { int x; }; struct OtherDummyStruct<4>; }
 
 void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 {

@@ -27,7 +27,6 @@ native_block
 native_declaration
   : native_struct_declaration
   | native_function_declaration
-  | TODO: struct size and alignment
 
 Declarations
 ------------
@@ -63,8 +62,8 @@ struct_member_declaration
   | function_prototype [ CONST ] compound_statement
 
 native_struct_declaration
-  | STRUCT IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-//  | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+  | STRUCT IDENTIFIER [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] '{' native_struct_member_declaration+ '}' ';'
+  | STRUCT IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' ';'
 
 native_struct_member_declaration
   : type_descriptor identifier_list ';'

@@ -160,7 +160,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 			case StructDeclaration::VARIANT_NATIVE:
 			{
 				bool hasError = false;
-				const Token *sizeToken = structDeclaration->GetSizeToken();
+				const Token *sizeToken = structDeclaration->GetSizeSpecifier()->GetSizeToken();
 				const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
 				if (size <= 0)
 				{
@@ -172,7 +172,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					structDeclaration->SetSize(bu32_t(size));
 				}
 
-				const Token *alignToken = structDeclaration->GetAlignmentToken();
+				const Token *alignToken = structDeclaration->GetSizeSpecifier()->GetAlignmentToken();
 				if (alignToken != NULL)
 				{
 					const bi32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;

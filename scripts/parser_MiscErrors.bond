@@ -65,7 +65,12 @@ void TheFunction(int a)
 
 void BadFunction(void voidParam) {}
 void ConstNonMemberFunction() const {}
-int[4] ReturnsArray();
+void UndefinedNonNativeFunction();
+native
+{
+	int[4] ReturnsArray();
+	void DefinedNativeFunction() {}
+}
 
 struct BadStruct
 {

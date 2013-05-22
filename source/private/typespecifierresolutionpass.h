@@ -15,6 +15,7 @@ public:
 
 	virtual ~TypeSpecifierResolutionPass() {}
 
+	virtual void Visit(StructDeclaration *structDeclaration);
 	virtual void Visit(TypeSpecifier *typeSpecifier);
 	virtual void Visit(CompoundStatement *compoundStatement);
 	virtual void Visit(SwitchSection *switchSection);

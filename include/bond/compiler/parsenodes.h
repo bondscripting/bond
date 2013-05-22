@@ -523,7 +523,7 @@ public:
 	{
 		VARIANT_BOND,
 		VARIANT_NATIVE,
-		VARIANT_REFERENCE,
+		VARIANT_NATIVE_STUB
 	};
 
 	StructDeclaration(
@@ -541,6 +541,7 @@ public:
 		mAlignmentToken(alignment),
 		mMemberFunctionList(memberFunctionList),
 		mMemberVariableList(memberVariableList),
+		mSizeSpecifier((size != NULL) ? this : NULL),
 		mVariant(variant),
 		mSize(0),
 		mAlignment(BOND_DEFAULT_STRUCT_ALIGN)
@@ -573,6 +574,9 @@ public:
 	const DeclarativeStatement *GetMemberVariableList() const { return mMemberVariableList; }
 	void SetMemberVariableList(DeclarativeStatement *memberVariableList) { mMemberVariableList = memberVariableList; }
 
+	const StructDeclaration *GetSizeSpecifier() const { return mSizeSpecifier; }
+	void SetSizeSpecifier(const StructDeclaration *sizeSpecifier) { mSizeSpecifier = sizeSpecifier; }
+
 	Variant GetVariant() const { return mVariant; }
 	bool IsNative() const { return mVariant != VARIANT_BOND; }
 
@@ -581,6 +585,8 @@ public:
 
 	bu32_t GetAlignment() const { return mAlignment; }
 	void SetAlignment(bu32_t alignment) { mAlignment = alignment; }
+
+	bool IsInstantiable() const { return (mVariant == VARIANT_BOND) || (mSizeSpecifier != NULL); }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -591,6 +597,7 @@ private:
 	const Token *mAlignmentToken;
 	FunctionDefinition *mMemberFunctionList;
 	DeclarativeStatement *mMemberVariableList;
+	const StructDeclaration *mSizeSpecifier;
 	Variant mVariant;
 	bu32_t mSize;
 	bu32_t mAlignment;

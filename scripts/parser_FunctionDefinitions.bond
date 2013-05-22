@@ -1,15 +1,13 @@
-// Declarations
 enum Identifier {};
 
-void VoidNoParameters();
+native
+{
+	void VoidNoParameters();
+	void VoidOneParameter(int arg);
+	void VoidTwoParameters(int arg1, int arg2);
+	const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2);
+}
 
-void VoidOneParameter(int arg);
-
-void VoidTwoParameters(int arg1, int arg2);
-
-const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2);
-
-// Definitions
 void VoidNoParameters2()
 {
 }

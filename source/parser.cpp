@@ -297,6 +297,7 @@ NativeBlock *ParserCore::ParseNativeBlock()
 	if (keyword != NULL)
 	{
 		ExpectToken(Token::OBRACE);
+		BoolStack::Element inNativeBlockElement(mInNativeBlock, true);
 		ListParseNode *declarations = ParseExternalDeclarationList();
 		ExpectToken(Token::CBRACE);
 		block = mFactory.CreateNativeBlock(keyword, declarations);
@@ -370,9 +371,11 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 
 
 // struct_declaration
-//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
-//   | STRUCT REF IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-//   | STRUCT NATIVE '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+//  : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+//
+//native_struct_declaration
+//  : STRUCT [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+//  | STRUCT '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER ';'
 StructDeclaration *ParserCore::ParseStructDeclaration()
 {
 	StructDeclaration *declaration = NULL;
@@ -380,20 +383,23 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 	if (mStream.NextIf(Token::KEY_STRUCT) != NULL)
 	{
 		ScopeStack::Element scopeElement(mScope, SCOPE_STRUCT_MEMBER);
-		const Token *native = mStream.NextIf(STRUCT_VARIANT_TYPESET);
+		const bool isNative = mInNativeBlock.GetTop();
+		const Token *name = ExpectToken(Token::IDENTIFIER);
 		const Token *size = NULL;
 		const Token *alignment = NULL;
-		StructDeclaration::Variant variant = StructDeclaration::VARIANT_BOND;
+		bool isStub = false;
 
-		if (native == NULL)
+		if (mStream.NextIf(Token::OP_LT) != NULL)
 		{
-			variant = StructDeclaration::VARIANT_BOND;
-		}
-		else if (native->GetTokenType() == Token::KEY_NATIVE)
-		{
-			variant = StructDeclaration::VARIANT_NATIVE;
-			ExpectToken(Token::OP_LT);
-			size = ExpectToken(INTEGER_CONSTANTS_TYPESET);
+			size = mStream.PeekIf(INTEGER_CONSTANTS_TYPESET);;
+			if (!isNative && (size != NULL))
+			{
+				PushError(CompilerError::SIZE_AND_ALIGNMENT_NOT_ALLOWED, size);
+			}
+			else
+			{
+				ExpectToken(INTEGER_CONSTANTS_TYPESET);
+			}
 
 			if (mStream.NextIf(Token::COMMA))
 			{
@@ -401,14 +407,8 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			}
 
 			ExpectToken(Token::OP_GT);
+			isStub = mStream.NextIf(Token::SEMICOLON) != NULL;
 		}
-		else
-		{
-			variant = StructDeclaration::VARIANT_REFERENCE;
-		}
-
-		const Token *name = ExpectToken(Token::IDENTIFIER);
-		ExpectToken(Token::OBRACE);
 
 		declaration = mFactory.CreateStructDeclaration(
 			name,
@@ -416,36 +416,43 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			alignment,
 			NULL,
 			NULL,
-			variant);
+			isNative ?
+				(isStub ? StructDeclaration::VARIANT_NATIVE_STUB : StructDeclaration::VARIANT_NATIVE) :
+				StructDeclaration::VARIANT_BOND);
 
-		ParseNodeList<FunctionDefinition> memberFunctionList;
-		ParseNodeList<DeclarativeStatement> memberVariableList;
-
-		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+		if (!isStub)
 		{
-			// Eat up superfluous semicolons.
-			if (mStream.NextIf(Token::SEMICOLON) == NULL)
-			{
-				FunctionDefinition *functionDefinition = NULL;
-				DeclarativeStatement *declarativeStatement = NULL;
-				ParseFunctionOrDeclarativeStatement(declaration, &functionDefinition, &declarativeStatement);
-				if (functionDefinition != NULL)
-				{
-					memberFunctionList.Append(functionDefinition);
-				}
-				else
-				{
-					AssertNode(declarativeStatement);
-					memberVariableList.Append(declarativeStatement);
-				}
-				SyncToStructMemberTerminator();
-			}
-		}
+			ExpectToken(Token::OBRACE);
 
-		declaration->SetMemberFunctionList(memberFunctionList.GetHead());
-		declaration->SetMemberVariableList(memberVariableList.GetHead());
-		ExpectToken(Token::CBRACE);
-		ExpectDeclarationTerminator();
+			ParseNodeList<FunctionDefinition> memberFunctionList;
+			ParseNodeList<DeclarativeStatement> memberVariableList;
+
+			while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+			{
+				// Eat up superfluous semicolons.
+				if (mStream.NextIf(Token::SEMICOLON) == NULL)
+				{
+					FunctionDefinition *functionDefinition = NULL;
+					DeclarativeStatement *declarativeStatement = NULL;
+					ParseFunctionOrDeclarativeStatement(declaration, &functionDefinition, &declarativeStatement);
+					if (functionDefinition != NULL)
+					{
+						memberFunctionList.Append(functionDefinition);
+					}
+					else
+					{
+						AssertNode(declarativeStatement);
+						memberVariableList.Append(declarativeStatement);
+					}
+					SyncToStructMemberTerminator();
+				}
+			}
+
+			declaration->SetMemberFunctionList(memberFunctionList.GetHead());
+			declaration->SetMemberVariableList(memberVariableList.GetHead());
+			ExpectToken(Token::CBRACE);
+			ExpectDeclarationTerminator();
+		}
 	}
 
 	return declaration;
@@ -455,13 +462,13 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 // function_definition
 //   : function_prototype compound_statement
 //
-// function_declaration
+// native_function_declaration
 //   : function_prototype ';'
 //
 // function_prototype
 //   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
 //
-// *const_declarative_statement
+// const_declarative_statement
 //   : declarative_statement 
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration)
@@ -497,6 +504,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 		{
 			if (mStream.NextIf(Token::OPAREN) != NULL)
 			{
+				const bool isNative = mInNativeBlock.GetTop();
 				Parameter *parameterList = ParseParameterList();
 				ExpectToken(Token::CPAREN);
 				const Token *keywordConst = mStream.NextIf(Token::KEY_CONST);
@@ -528,17 +536,17 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				{
 					ScopeStack::Element scopeElement(mScope, SCOPE_LOCAL);
 					body = ParseCompoundStatement();
-					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
+					if (isNative)
 					{
-						PushError(CompilerError::NATIVE_MEMBER_FUNCTION_DEFINITION, name);
+						PushError(CompilerError::NATIVE_FUNCTION_DEFINITION, name);
 					}
 				}
 				else
 				{
 					ExpectDeclarationTerminator();
-					if ((structDeclaration != NULL) && (!structDeclaration->IsNative()))
+					if (!isNative)
 					{
-						PushError(CompilerError::NON_NATIVE_MEMBER_FUNCTION_DECLARATION, name);
+						PushError(CompilerError::NON_NATIVE_FUNCTION_DECLARATION, name);
 					}
 				}
 
@@ -656,7 +664,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			// We need to chain the nodes together as follows in order to get the array dimensions
 			// to be consistent with C.
 			//
-			// 4 -> 5-> 6 -> * -> 1 -> 2 -> 3 -> int
+			// 4 -> 5 -> 6 -> * -> 1 -> 2 -> 3 -> int
 			//
 			// Moreover, all nodes in the chain except for the head need to be designated as l-values.
 			// Whether the head should be an l-value is context sensitive and is dealt with in the

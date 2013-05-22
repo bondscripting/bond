@@ -36,6 +36,8 @@
     "Duplicate 'const' keyword.")                                                      \
   BOND_COMPILER_ERROR(PARSE_ERROR,                                                     \
     "Parse error near '%c'.")                                                          \
+  BOND_COMPILER_ERROR(SIZE_AND_ALIGNMENT_NOT_ALLOWED,                                  \
+    "Size and allignment specification only allowed on native structs.")               \
   BOND_COMPILER_ERROR(VOID_NOT_ALLOWED,                                                \
     "Invalid use of 'void'.")                                                          \
   BOND_COMPILER_ERROR(ARRAY_OF_VOID,                                                   \
@@ -46,10 +48,10 @@
     "Initializer not allowed near '%c'.")                                              \
   BOND_COMPILER_ERROR(CONST_NON_MEMBER_FUNCTION,                                       \
     "Non-member function '%t' cannot be const.")                                       \
-  BOND_COMPILER_ERROR(NATIVE_MEMBER_FUNCTION_DEFINITION,                               \
-    "Native member function '%c' cannot be defined.")                                  \
-  BOND_COMPILER_ERROR(NON_NATIVE_MEMBER_FUNCTION_DECLARATION,                          \
-    "Member function '%c' must be defined.")                                           \
+  BOND_COMPILER_ERROR(NATIVE_FUNCTION_DEFINITION,                                      \
+    "Native function '%c' cannot be defined.")                                         \
+  BOND_COMPILER_ERROR(NON_NATIVE_FUNCTION_DECLARATION,                                 \
+    "Non-native function '%c' must be defined.")                                       \
   BOND_COMPILER_ERROR(FUNCTION_RETURNS_ARRAY,                                          \
     "Function '%c' returns an array.")                                                 \
   BOND_COMPILER_ERROR(EMPTY_SWITCH_STATEMENT,                                          \
@@ -72,6 +74,10 @@
     "Expected '%s' before '%c'.")                                                      \
   BOND_COMPILER_ERROR(SYMBOL_IS_NOT_DEFINED,                                           \
     "Symbol '%n' is not defined.")                                                     \
+  BOND_COMPILER_ERROR(NATIVE_STRUCT_IS_NOT_DEFINED,                                    \
+    "Native struct '%c' is not defined.")                                              \
+  BOND_COMPILER_ERROR(DUPLICATE_NATIVE_STRUCT_STUB,                                    \
+    "Duplicate native struct size specifier '%c' previously defined on line '%l'.")    \
   BOND_COMPILER_ERROR(SYMBOL_IS_NOT_A_TYPE,                                            \
     "Symbol '%n' is not a type.")                                                      \
   BOND_COMPILER_ERROR(INVALID_SYMBOL_IN_EXPRESSION,                                    \
