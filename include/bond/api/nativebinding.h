@@ -8,24 +8,12 @@ namespace Bond
 
 class VM;
 
-struct NativeTypeBinding
-{
-	const char *const *mName;
-	SignatureType mSignatureType;
-	bu32_t mSize;
-	bu32_t mAlignment;
-};
-
-
 typedef void (*NativeFunction)(VM &vm);
 
 
 struct NativeFunctionBinding
 {
-	const char *const *mName;
-	const NativeTypeBinding *mReturnTypeBinding;
-	const NativeTypeBinding *mParamBindings;
-	const bu32_t mParamCount;
+	bu32_t mHash;
 	NativeFunction mFunction;
 };
 
@@ -33,7 +21,7 @@ struct NativeFunctionBinding
 struct NativeBindingCollection
 {
 	const NativeFunctionBinding *mFunctionBindings;
-	const bu32_t mFunctionBindingCount;
+	bu32_t mFunctionBindingCount;
 };
 
 }

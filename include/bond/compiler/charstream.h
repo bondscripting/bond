@@ -21,7 +21,6 @@ public:
 	{
 	}
 
-	void SetBuffer(const char *buffer, size_t length);
 	void Reset();
 	bool HasNext() const;
 	char Next();

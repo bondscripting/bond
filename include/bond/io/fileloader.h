@@ -1,7 +1,7 @@
 #ifndef BOND_FILELOADER_H
 #define BOND_FILELOADER_H
 
-#include "bond/conf.h"
+#include "bond/types/types.h"
 #include "bond/systems/resourcehandle.h"
 
 namespace Bond
@@ -11,7 +11,7 @@ struct FileData
 {
 	FileData(): mData(NULL), mLength(0) {}
 
-	FileData(void *data, size_t length):
+	FileData(const void *data, size_t length):
 		mData(data),
 		mLength(length)
 	{}
@@ -21,7 +21,7 @@ struct FileData
 		return (mData == other.mData) && (mLength == other.mLength);
 	}
 
-	void *mData;
+	const void *mData;
 	size_t mLength;
 };
 

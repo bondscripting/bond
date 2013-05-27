@@ -115,7 +115,6 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	mEndsWithJump.SetTop(hasReturn);
 	switchStatement->SetResolvedLabelList(switchLabelListElement.GetValue());
 
-	const ResolvedSwitchLabel *prevLabel = NULL;
 	const ResolvedSwitchLabel *currLabel = switchLabelListElement.GetValue();
 	bu32_t numMatches = 0;
 	bi32_t minMatch = BOND_INT_MAX;
@@ -129,7 +128,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 			maxMatch = Max(maxMatch, currLabel->GetMatch());
 		}
 
-		prevLabel = currLabel;
+		const ResolvedSwitchLabel *prevLabel = currLabel;
 		currLabel = NextNode(currLabel);
 
 		if ((currLabel != NULL) && (*prevLabel == *currLabel))

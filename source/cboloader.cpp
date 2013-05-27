@@ -125,18 +125,6 @@ CboLoader::Handle CboLoader::Load()
 		codeByteCount += result.mCodeByteCount;
 	}
 
-	NativeBindingList::Type::const_iterator nbit = mNativeBindingList.begin();
-	for (size_t i = 0; nbit != mNativeBindingList.end(); ++nbit, ++i)
-	{
-		const NativeBindingCollection &bindingCollection = **nbit;
-		functionCount += bindingCollection.mFunctionBindingCount;
-		for (bu32_t j = 0; j < bindingCollection.mFunctionBindingCount; ++j)
-		{
-			const NativeFunctionBinding &binding = bindingCollection.mFunctionBindings[i];
-			paramSignatureCount += binding.mParamCount;
-		}
-	}
-
 	size_t memSize = 0;
 	const size_t codeSegmentStart = TallyMemoryRequirements<CodeSegment>(memSize, 1);
 	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, mFileDataList.size());
@@ -176,16 +164,6 @@ CboLoader::Handle CboLoader::Load()
 		loader.Load();
 	}
 
-	nbit = mNativeBindingList.begin();
-	for (size_t i = 0; nbit != mNativeBindingList.end(); ++nbit, ++i)
-	{
-		const NativeBindingCollection &bindingCollection = **nbit;
-		for (bu32_t j = 0; j < bindingCollection.mFunctionBindingCount; ++j)
-		{
-			AddNativeFunction(resources, bindingCollection.mFunctionBindings[j]);
-		}
-	}
-
 	Sort(functions, functions + functionCount, FunctionHashComparator());
 	for (size_t i = 0; i < functionCount; ++i)
 	{
@@ -193,6 +171,15 @@ CboLoader::Handle CboLoader::Load()
 		if ((i > 0) && (functionLookup[i] == functionLookup[i - 1]))
 		{
 			HashCollision(functionLookup[i]);
+		}
+	}
+
+	for (NativeBindingList::Type::const_iterator nbit = mNativeBindingList.begin(); nbit != mNativeBindingList.end(); ++nbit)
+	{
+		const NativeBindingCollection &bindingCollection = **nbit;
+		for (bu32_t i = 0; i < bindingCollection.mFunctionBindingCount; ++i)
+		{
+			//AddNativeFunction(resources, bindingCollection.mFunctionBindings[j]);
 		}
 	}
 
@@ -206,132 +193,108 @@ CboLoader::Handle CboLoader::Load()
 }
 
 
-void CboLoader::AddNativeFunction(CboLoaderResources &resources, const NativeFunctionBinding &binding)
-{
-	Function *function = resources.mFunctions;
-	function->mName = binding.mName;
-	//function->mReturnSignature = ReturnSignature(binding.mReturnTypeBinding->mSize, binding.mReturnTypeBinding->mSignatureType);
-	//function->mParamListSignature = 
-	//function->mConstantTable = StringHash(StringHash("::"));
-
-/*
-				hash = mParentSymbol->GetGlobalHashCode();
-			hash = StringHash("::", hash);
-			hash = StringHash(name.GetLength(), name.GetString(), hash);
-*/
-
-	//function->mHash = 
-	//function->mArgSize = 
-	//function->mPackedArgSize = 
-	//function->mLocalSize = 
-	//function->mStackSize = 
-	//function->mFramePointerAlignment = 
-
-	function->mNativeFunction = binding.mFunction;
-	function->mCodeSize = 0;
-	++resources.mFunctions;
-}
-
-
 void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegment)
 {
-	bu8_t *code = const_cast<bu8_t *>(function.mCode);
-	const bu8_t *codeEnd = code + function.mCodeSize;
-	while (code < codeEnd)
+	if (function.mCodeSize > 0)
 	{
-		const OpCode opCode = static_cast<OpCode>(*code++);
-		const OpCodeParam param = GetOpCodeParamType(opCode);
-
-		switch (param)
+		bu8_t *code = const_cast<bu8_t *>(function.mCode);
+		const bu8_t *codeEnd = code + function.mCodeSize;
+		while (code < codeEnd)
 		{
-			case OC_PARAM_NONE:
-				break;
-			case OC_PARAM_CHAR:
-			case OC_PARAM_UCHAR:
-				++code;
-				break;
-			case OC_PARAM_UCHAR_CHAR:
-				code += 2;
-				break;
-			case OC_PARAM_SHORT:
-			case OC_PARAM_USHORT:
-			case OC_PARAM_INT:
-			case OC_PARAM_VAL32:
-			case OC_PARAM_VAL64:
-			case OC_PARAM_OFF16:
-			case OC_PARAM_OFF32:
-				ConvertBigEndian16(code);
-				code += sizeof(Value16);
-				break;
-			case OC_PARAM_HASH:
-			{
-				ConvertBigEndian32(code);
-				const bu32_t hash = Value32(code).mUInt;
-				const void *resolvedPointer = NULL;
+			const OpCode opCode = static_cast<OpCode>(*code++);
+			const OpCodeParam param = GetOpCodeParamType(opCode);
 
-				switch (opCode)
-				{
-					case OPCODE_LOADEA:
-						break;
-					case OPCODE_INVOKE:
-					{
-						resolvedPointer = codeSegment.GetFunction(hash);
-					}
+			switch (param)
+			{
+				case OC_PARAM_NONE:
 					break;
-					case OPCODE_INVOKENATIVE:
-						break;
-					default:
-						break;
-				}
-
-				if (resolvedPointer != NULL)
-				{
-					const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
-					memcpy(code, &resolvedPointer, pointerSize);
-					code += pointerSize;
-				}
-				else
-				{
-					UnresolvedHash(hash);
-				}
-			}
-			break;
-			case OC_PARAM_LOOKUPSWITCH:
-			{
-				code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
-				ConvertBigEndian32(code);
-				code += sizeof(Value32);
-
-				ConvertBigEndian32(code);
-				const bu32_t numMatches = *reinterpret_cast<bu32_t *>(code);
-				code += sizeof(Value32);
-
-				for (bu32_t i = 0; i < (2 * numMatches); ++i)
+				case OC_PARAM_CHAR:
+				case OC_PARAM_UCHAR:
+					++code;
+					break;
+				case OC_PARAM_UCHAR_CHAR:
+					code += 2;
+					break;
+				case OC_PARAM_SHORT:
+				case OC_PARAM_USHORT:
+				case OC_PARAM_INT:
+				case OC_PARAM_VAL32:
+				case OC_PARAM_VAL64:
+				case OC_PARAM_OFF16:
+				case OC_PARAM_OFF32:
+					ConvertBigEndian16(code);
+					code += sizeof(Value16);
+					break;
+				case OC_PARAM_HASH:
 				{
 					ConvertBigEndian32(code);
-					code += sizeof(Value32);
+					const bu32_t hash = Value32(code).mUInt;
+					const void *resolvedPointer = NULL;
+
+					switch (opCode)
+					{
+						case OPCODE_LOADEA:
+							break;
+						case OPCODE_INVOKE:
+						{
+							resolvedPointer = codeSegment.GetFunction(hash);
+						}
+						break;
+						case OPCODE_INVOKENATIVE:
+							break;
+						default:
+							break;
+					}
+
+					if (resolvedPointer != NULL)
+					{
+						const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
+						memcpy(code, &resolvedPointer, pointerSize);
+						code += pointerSize;
+					}
+					else
+					{
+						UnresolvedHash(hash);
+					}
 				}
-			}
-			break;
-			case OC_PARAM_TABLESWITCH:
-			{
-				code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
-				ConvertBigEndian32(code);
-				code += sizeof(Value32);
-
-				ConvertBigEndian32(code);
-				const bu32_t minMatch = *reinterpret_cast<bu32_t *>(code);
-				code += sizeof(Value32);
-
-				ConvertBigEndian32(code);
-				const bu32_t maxMatch = *reinterpret_cast<bu32_t *>(code);
-				code += sizeof(Value32);
-
-				const bu32_t numMatches = maxMatch - minMatch + 1;
-				for (bu32_t i = 0; i < numMatches; ++i)
+				break;
+				case OC_PARAM_LOOKUPSWITCH:
 				{
+					code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
 					ConvertBigEndian32(code);
 					code += sizeof(Value32);
+
+					ConvertBigEndian32(code);
+					const bu32_t numMatches = *reinterpret_cast<bu32_t *>(code);
+					code += sizeof(Value32);
+
+					for (bu32_t i = 0; i < (2 * numMatches); ++i)
+					{
+						ConvertBigEndian32(code);
+						code += sizeof(Value32);
+					}
+				}
+				break;
+				case OC_PARAM_TABLESWITCH:
+				{
+					code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
+					ConvertBigEndian32(code);
+					code += sizeof(Value32);
+
+					ConvertBigEndian32(code);
+					const bu32_t minMatch = *reinterpret_cast<bu32_t *>(code);
+					code += sizeof(Value32);
+
+					ConvertBigEndian32(code);
+					const bu32_t maxMatch = *reinterpret_cast<bu32_t *>(code);
+					code += sizeof(Value32);
+
+					const bu32_t numMatches = maxMatch - minMatch + 1;
+					for (bu32_t i = 0; i < numMatches; ++i)
+					{
+						ConvertBigEndian32(code);
+						code += sizeof(Value32);
+					}
 				}
 			}
 		}

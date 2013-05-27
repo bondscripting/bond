@@ -3,14 +3,6 @@
 namespace Bond
 {
 
-void CharStream::SetBuffer(const char *buffer, size_t length)
-{
-	mBuffer = buffer;
-	mLength = length;
-	mPos = StreamPos();
-}
-
-
 void CharStream::Reset()
 {
 	mPos = StreamPos();

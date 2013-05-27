@@ -47,8 +47,6 @@ private:
 		bool operator()(const Function &a, const Function &b) const;
 	};
 
-	void AddNativeFunction(CboLoaderResources &resources, const NativeFunctionBinding &binding);
-
 	void ProcessFunction(Function &function, const CodeSegment &codeSegment);
 
 	void UnresolvedHash(bu32_t hash) const;

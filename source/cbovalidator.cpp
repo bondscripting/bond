@@ -33,7 +33,6 @@ private:
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
-	Value64 ReadValue64();
 
 	void AssertBytesRemaining(size_t numBytes) const;
 	void FunctionIsInvalid() const;
@@ -425,14 +424,6 @@ Value32 CboValidatorCore::ReadValue32()
 	const Value32 value(mByteCode + mIndex);
 	mIndex += sizeof(Value32);
 	return ConvertBigEndian32(value);
-}
-
-
-Value64 CboValidatorCore::ReadValue64()
-{
-	const Value64 value(mByteCode + mIndex);
-	mIndex += sizeof(Value64);
-	return ConvertBigEndian64(value);
 }
 
 

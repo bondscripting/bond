@@ -371,5 +371,8 @@
     <ClCompile Include="..\..\source\frontend.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\validateconfiguration.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

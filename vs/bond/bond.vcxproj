@@ -123,6 +123,7 @@
     <ClCompile Include="..\..\source\typeandvalue.cpp" />
     <ClCompile Include="..\..\source\typeevaluationpass.cpp" />
     <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp" />
+    <ClCompile Include="..\..\source\validateconfiguration.cpp" />
     <ClCompile Include="..\..\source\validationpass.cpp" />
     <ClCompile Include="..\..\source\valueevaluationpass.cpp" />
     <ClCompile Include="..\..\source\vm.cpp" />
@@ -212,7 +213,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOND_USE_64BIT_POINTERS;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4355</DisableSpecificWarnings>
     </ClCompile>
@@ -248,7 +249,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOND_USE_64BIT_POINTERS;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4355</DisableSpecificWarnings>
     </ClCompile>
