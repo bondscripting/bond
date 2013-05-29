@@ -1,6 +1,6 @@
 #include "framework/testparserframework.h"
 #include "bond/compiler/lexer.h"
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 
@@ -24,7 +24,7 @@ bool RunParserTest(
 
 	try
 	{
-		Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
+		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
 		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);

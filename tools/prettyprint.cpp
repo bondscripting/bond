@@ -2,7 +2,7 @@
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/io/stdouttextwriter.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -30,7 +30,7 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	try
 	{
 		Bond::DefaultAllocator allocator;
-		Bond::DefaultFileLoader fileLoader(allocator);
+		Bond::DiskFileLoader fileLoader(allocator);
 		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);

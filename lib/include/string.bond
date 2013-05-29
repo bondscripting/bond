@@ -1,0 +1,9 @@
+namespace Bond
+{
+native
+{
+
+uint Strlen(const char *str);
+
+}
+}

@@ -1,7 +1,6 @@
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
-#include "bond/types/types.h"
 #include <stdio.h>
 
 #ifdef _MSC_VER
@@ -11,7 +10,7 @@
 namespace Bond
 {
 
-FileLoader::Handle DefaultFileLoader::LoadFile(const char *fileName)
+FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 {
 	Handle handle(*this);
 	FILE *file = NULL;
@@ -45,7 +44,7 @@ FileLoader::Handle DefaultFileLoader::LoadFile(const char *fileName)
 }
 
 
-FileLoader::Handle DefaultFileLoader::LoadFile(FILE *file)
+FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 {
 	Allocator::Handle<bu8_t> dataHandle(mAllocator);
 	size_t length = 0;
@@ -68,7 +67,7 @@ FileLoader::Handle DefaultFileLoader::LoadFile(FILE *file)
 }
 
 
-void DefaultFileLoader::DisposeFile(FileData &fileData)
+void DiskFileLoader::DisposeFile(FileData &fileData)
 {
 	mAllocator.Free(fileData.mData);
 	fileData = FileData();

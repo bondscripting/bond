@@ -1,4 +1,4 @@
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/io/stdouttextwriter.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -10,7 +10,7 @@ void Disassemble(const char *cboFileName)
 	try
 	{
 		Bond::DefaultAllocator allocator;
-		Bond::DefaultFileLoader fileLoader(allocator);
+		Bond::DiskFileLoader fileLoader(allocator);
 		Bond::FileLoader::Handle cboFileHandle = fileLoader.LoadFile(cboFileName);
 		Bond::StdOutTextWriter writer;
 		Bond::Disassembler disassembler(allocator);

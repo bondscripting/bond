@@ -1,5 +1,5 @@
 #include "framework/testlexerframework.h"
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 
@@ -22,7 +22,7 @@ bool RunLexerTest(
 
 	try
 	{
-		Bond::DefaultFileLoader fileLoader(fileLoaderAllocator);
+		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
 		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);

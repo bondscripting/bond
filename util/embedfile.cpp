@@ -17,7 +17,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 
 	if (hFile != NULL)
 	{
-		fprintf(hFile, "\nextern const Bond::FileData %s;\n", baseName);
+		fprintf(hFile, "extern const Bond::FileData %s;\n", baseName);
 	}
 
 	if (cppFile != NULL)
@@ -27,7 +27,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 		FILE *inputFile = fopen(inputFileName, "rb");
 		if (inputFile != NULL)
 		{
-			fprintf(cppFile, "\nextern const Bond::bu8_t %s_DATA[] =\n{\n", baseName);
+			fprintf(cppFile, "extern const Bond::bu8_t %s_DATA[] =\n{\n", baseName);
 
 			while (!feof(inputFile))
 			{
@@ -43,7 +43,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 				}
 			}
 
-			fprintf(cppFile, "};\n\nextern const Bond::FileData %s(%s_DATA, sizeof(%s_DATA));\n", baseName, baseName, baseName);
+			fprintf(cppFile, "};\n\nextern const Bond::FileData %s(%s_DATA, sizeof(%s_DATA));\n\n\n", baseName, baseName, baseName);
 			fclose(inputFile);
 		}
 	}

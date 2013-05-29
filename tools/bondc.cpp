@@ -1,10 +1,11 @@
+#include "bond/api/libinclude.h"
 #include "bond/compiler/compilererror.h"
 #include "bond/compiler/codegenerator.h"
 #include "bond/compiler/frontend.h"
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/io/filebinarywriter.h"
 #include "bond/io/stdouttextwriter.h"
 #include "bond/stl/list.h"
@@ -13,7 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef Bond::List<Bond::DefaultFileLoader> FileLoaderList;
+typedef Bond::List<Bond::DiskFileLoader> FileLoaderList;
 
 void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
 {
@@ -38,8 +39,9 @@ int main(int argc, const char *argv[])
 		Bond::Parser parser(allocator, errorBuffer);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		FileLoaderList::Type loaderList((FileLoaderList::Allocator(&allocator)));
-		loaderList.push_back(Bond::DefaultFileLoader(allocator));
-		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, loaderList.back());
+		loaderList.push_back(Bond::DiskFileLoader(allocator));
+		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
+		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdLibLoader);
 		const char *outputFileName = "bond.cbo";
 
 		for (int i = 1; i < argc; ++i)
@@ -48,8 +50,8 @@ int main(int argc, const char *argv[])
 			{
 				if (++i < argc)
 				{
-					Bond::DefaultFileLoader &prev = loaderList.back();
-					loaderList.push_back(Bond::DefaultFileLoader(allocator, argv[i]));
+					Bond::DiskFileLoader &prev = loaderList.back();
+					loaderList.push_back(Bond::DiskFileLoader(allocator, argv[i]));
 					prev.SetDelegateLoader(&loaderList.back());
 				}
 				else

@@ -52,6 +52,9 @@
     <Filter Include="Header Files\include\bond\tools">
       <UniqueIdentifier>{993a4a81-eaf7-463f-8344-d7cfab664e08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\bond\api">
+      <UniqueIdentifier>{f4bc076d-9374-4638-bdf3-63c0ea6fb9c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\private\semanticanalysispass.h">
@@ -162,9 +165,6 @@
     <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\defaultfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\filebinarywriter.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -264,6 +264,24 @@
     <ClInclude Include="..\..\include\bond\vm\vm.h">
       <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libinclude.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\nativebinding.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
@@ -285,9 +303,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\compilererror.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\defaultfileloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\disassembler.cpp">
@@ -372,6 +387,15 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\validateconfiguration.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libinclude.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\memoryfileloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\diskfileloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

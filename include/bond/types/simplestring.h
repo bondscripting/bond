@@ -33,7 +33,7 @@ public:
 
 	bool operator==(const SimpleString &other) const
 	{
-		return StringEqual(mStr, other.mStr, mLength);
+		return StringEqual(mStr, mLength, other.mStr, other.mLength);
 	}
 
 	bool operator<(const SimpleString &other) const

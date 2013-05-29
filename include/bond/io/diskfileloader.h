@@ -1,5 +1,5 @@
-#ifndef BOND_DEFAULTFILELOADER_H
-#define BOND_DEFAULTFILELOADER_H
+#ifndef BOND_DISKFILELOADER_H
+#define BOND_DISKFILELOADER_H
 
 #include "bond/io/fileloader.h"
 #include <stdio.h>
@@ -9,16 +9,16 @@ namespace Bond
 
 class Allocator;
 
-class DefaultFileLoader: public FileLoader
+class DiskFileLoader: public FileLoader
 {
 public:
-	explicit DefaultFileLoader(Allocator &allocator, const char *rootPath = NULL, FileLoader *delegateLoader = NULL):
+	explicit DiskFileLoader(Allocator &allocator, const char *rootPath = NULL, FileLoader *delegateLoader = NULL):
 		mAllocator(allocator),
 		mRootPath(rootPath),
 		mDelegateLoader(delegateLoader)
 	{}
 
-	virtual ~DefaultFileLoader() {}
+	virtual ~DiskFileLoader() {}
 
 	virtual Handle LoadFile(const char *fileName);
 	virtual void DisposeFile(FileData &fileData);

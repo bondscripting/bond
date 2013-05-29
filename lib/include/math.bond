@@ -1,0 +1,13 @@
+namespace Bond
+{
+native
+{
+
+double Sin(double x);
+float Sinf(float x);
+
+double Cos(double x);
+double Cosf(float x);
+
+}
+}

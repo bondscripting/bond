@@ -1,4 +1,4 @@
-#include "bond/io/defaultfileloader.h"
+#include "bond/io/diskfileloader.h"
 #include "bond/io/stdouttextwriter.h"
 #include "bond/stl/list.h"
 #include "bond/systems/defaultallocator.h"
@@ -74,7 +74,7 @@ int main(int argc, const char *argv[])
 	{
 		Bond::CboLoader::Handle codeSegmentHandle;
 		{
-			Bond::DefaultFileLoader fileLoader(allocator);
+			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
 			Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(cboFileNameList.size()));
 
