@@ -34,7 +34,7 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
 		Bond::Parser parser(allocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
@@ -50,8 +50,8 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		}
 
 		Bond::StdOutTextWriter writer;
-		Bond::PrettyPrinter printer(writer, foldConstants);
-		printer.PrintList(parser.GetTranslationUnitList());
+		Bond::PrettyPrinter printer;
+		printer.PrintList(parser.GetTranslationUnitList(), writer, foldConstants);
 
 		PrintErrors(writer, errorBuffer);
 	}

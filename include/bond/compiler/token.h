@@ -133,48 +133,54 @@ public:
 
 	Token():
 		mText(NULL),
+		mStartPos(0, 0, 0),
+		mEndIndex(0),
+		mFileName(NULL),
 		mTokenType(INVALID),
 		mAnnotations(0)
-	{
-	}
+	{}
 
 	Token(const char *text, TokenType tokenType):
-		mStartPos(0, 0, 0),
-		mEndPos(0, 0, 0),
 		mText(text),
 		mValue(),
+		mStartPos(0, 0, 0),
+		mEndIndex(0),
+		mFileName(NULL),
 		mTokenType(tokenType),
 		mAnnotations(0)
-	{
-	}
+	{}
 
 	Token(
 			const StreamPos &startPos,
 			const StreamPos &endPos,
 			const Value &value,
 			const char *text,
+			const char *fileName,
 			TokenType tokenType,
 			short annotations = 0):
-		mStartPos(startPos),
-		mEndPos(endPos),
 		mText(text),
 		mValue(value),
+		mStartPos(startPos),
+		mEndIndex(endPos.index),
+		mFileName(fileName),
 		mTokenType(tokenType),
 		mAnnotations(annotations)
-	{
-	}
-
-	const StreamPos &GetStartPos() const { return mStartPos; }
-	void SetStartPos(const StreamPos &pos) { mStartPos = pos; }
-
-	const StreamPos &GetEndPos() const { return mEndPos; }
-	void SetEndPos(const StreamPos &pos) { mEndPos = pos; }
+	{}
 
 	const char *GetText() const { return mText.GetString(); }
 	void SetText(const char *text) { mText = HashedString(text); }
 	void SetText(const char *text, size_t length) { mText = HashedString(text, length); }
 
 	const HashedString &GetHashedText() const { return mText; }
+
+	const char *GetFileName() const { return mFileName; }
+	void SetFileName(const char *fileName) { mFileName = fileName; }
+
+	const StreamPos &GetStartPos() const { return mStartPos; }
+	void SetStartPos(const StreamPos &pos) { mStartPos = pos; }
+
+	size_t GetEndIndex() const { return mEndIndex; }
+	void SetEndIndex(size_t index) { mEndIndex = index; }
 
 	TokenType GetTokenType() const { return mTokenType; }
 	void SetTokenType(const TokenType &type) { mTokenType = type; }
@@ -213,10 +219,11 @@ public:
 	static const char *GetTokenName(TokenType type);
 
 private:
-	StreamPos mStartPos;
-	StreamPos mEndPos;
 	HashedString mText;
 	Value mValue;
+	StreamPos mStartPos;
+	size_t mEndIndex;
+	const char *mFileName;
 	TokenType mTokenType;
 	short mAnnotations;
 };

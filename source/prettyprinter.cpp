@@ -1,12 +1,102 @@
 #include "bond/compiler/parsenodes.h"
 #include "bond/compiler/parsenodeutil.h"
+#include "bond/compiler/parsenodevisitor.h"
 #include "bond/io/textwriter.h"
+#include "bond/stl/autostack.h"
 #include "bond/tools/prettyprinter.h"
 
 namespace Bond
 {
 
-void PrettyPrinter::Print(const ParseNode *parseNode)
+class PrettyPrinterCore: private ParseNodeVisitorAdapter
+{
+public:
+	PrettyPrinterCore(TextWriter &writer, bool printFoldedConstants):
+		mWriter(writer),
+		mTabLevel(0),
+		mPrintFoldedConstants(printFoldedConstants)
+	{}
+
+	virtual ~PrettyPrinterCore() {}
+
+	void Print(const ParseNode *parseNode);
+	void PrintList(const ListParseNode *listNode);
+
+private:
+	virtual void Visit(const TranslationUnit *translationUnit);
+	virtual void Visit(const IncludeDirective *includeDirective);
+	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
+	virtual void Visit(const NativeBlock *nativeBlock);
+	virtual void Visit(const EnumDeclaration *enumDeclaration);
+	virtual void Visit(const Enumerator *enumerator);
+	virtual void Visit(const StructDeclaration *structDeclaration);
+	virtual void Visit(const FunctionDefinition *functionDefinition);
+	virtual void Visit(const FunctionPrototype *functionPrototype);
+	virtual void Visit(const Parameter *parameter);
+	virtual void Visit(const TypeDescriptor *typeDescriptor);
+	virtual void Visit(const TypeSpecifier *typeSpecifier);
+	virtual void Visit(const NamedInitializer *namedInitializer);
+	virtual void Visit(const Initializer *initializer);
+	virtual void Visit(const QualifiedIdentifier *identifier);
+	virtual void Visit(const CompoundStatement *compoundStatement);
+	virtual void Visit(const IfStatement *ifStatement);
+	virtual void Visit(const SwitchStatement *switchStatement);
+	virtual void Visit(const SwitchSection *switchSection);
+	virtual void Visit(const SwitchLabel *switchLabel);
+	virtual void Visit(const WhileStatement *whileStatement);
+	virtual void Visit(const ForStatement *forStatement);
+	virtual void Visit(const JumpStatement *jumpStatement);
+	virtual void Visit(const DeclarativeStatement *declarativeStatement);
+	virtual void Visit(const ExpressionStatement *expressionStatement);
+	virtual void Visit(const ConditionalExpression *conditionalExpression);
+	virtual void Visit(const BinaryExpression *binaryExpression);
+	virtual void Visit(const UnaryExpression *unaryExpression);
+	virtual void Visit(const PostfixExpression *postfixExpression);
+	virtual void Visit(const MemberExpression *memberExpression);
+	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression);
+	virtual void Visit(const FunctionCallExpression *functionCallExpression);
+	virtual void Visit(const CastExpression *castExpression);
+	virtual void Visit(const SizeofExpression *sizeofExpression);
+	virtual void Visit(const ConstantExpression *constantExpression);
+	virtual void Visit(const IdentifierExpression *identifierExpression);
+	virtual void Visit(const ThisExpression *thisExpression);
+
+	void PrintList(const ListParseNode *listNode, const char *separator);
+	void Print(const Token *token);
+	void PrintBlockOrStatement(const ParseNode *parseNode);
+	void PrintExpression(const Expression *expression);
+	void PrintTopLevelExpression(const Expression *expression);
+	bool PrintFoldedConstant(const Expression *expression);
+	void IncrementTab() { ++mTabLevel; }
+	void DecrementTab() { --mTabLevel; }
+	void Tab();
+	void Newline();
+	bool IsTopLevelExpression() const { return mTopLevelExpression.IsEmpty() || mTopLevelExpression.GetTop(); }
+	bool ShouldPrintTabsAndNewlines() { return mShouldPrintTabsAndNewlines.IsEmpty() || mShouldPrintTabsAndNewlines.GetTop(); }
+
+	BoolStack mTopLevelExpression;
+	BoolStack mShouldPrintTabsAndNewlines;
+	TextWriter &mWriter;
+	int mTabLevel;
+	bool mPrintFoldedConstants;
+};
+
+
+void PrettyPrinter::Print(const ParseNode *parseNode, TextWriter &writer, bool printFoldedConstants)
+{
+	PrettyPrinterCore printer(writer, printFoldedConstants);
+	printer.Print(parseNode);
+}
+
+
+void PrettyPrinter::PrintList(const ListParseNode *listNode, TextWriter &writer, bool printFoldedConstants)
+{
+	PrettyPrinterCore printer(writer, printFoldedConstants);
+	printer.PrintList(listNode);
+}
+
+
+void PrettyPrinterCore::Print(const ParseNode *parseNode)
 {
 	if (parseNode != NULL)
 	{
@@ -15,7 +105,7 @@ void PrettyPrinter::Print(const ParseNode *parseNode)
 }
 
 
-void PrettyPrinter::PrintList(const ListParseNode *listNode)
+void PrettyPrinterCore::PrintList(const ListParseNode *listNode)
 {
 	const ListParseNode *current = listNode;
 	while (current != NULL)
@@ -26,7 +116,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode)
 }
 
 
-void PrettyPrinter::Visit(const TranslationUnit *translationUnit)
+void PrettyPrinterCore::Visit(const TranslationUnit *translationUnit)
 {
 	PrintList(translationUnit->GetIncludeDirectiveList());
 	mWriter.Write("\n");
@@ -34,7 +124,7 @@ void PrettyPrinter::Visit(const TranslationUnit *translationUnit)
 }
 
 
-void PrettyPrinter::Visit(const IncludeDirective *includeDirective)
+void PrettyPrinterCore::Visit(const IncludeDirective *includeDirective)
 {
 	Tab();
 	mWriter.Write("include ");
@@ -43,7 +133,7 @@ void PrettyPrinter::Visit(const IncludeDirective *includeDirective)
 }
 
 
-void PrettyPrinter::Visit(const NamespaceDefinition *namespaceDefinition)
+void PrettyPrinterCore::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	Tab();
 	mWriter.Write("namespace ");
@@ -59,7 +149,7 @@ void PrettyPrinter::Visit(const NamespaceDefinition *namespaceDefinition)
 }
 
 
-void PrettyPrinter::Visit(const NativeBlock *nativeBlock)
+void PrettyPrinterCore::Visit(const NativeBlock *nativeBlock)
 {
 	Tab();
 	mWriter.Write("native\n");
@@ -73,7 +163,7 @@ void PrettyPrinter::Visit(const NativeBlock *nativeBlock)
 }
 
 
-void PrettyPrinter::Visit(const EnumDeclaration *enumDeclaration)
+void PrettyPrinterCore::Visit(const EnumDeclaration *enumDeclaration)
 {
 	Tab();
 	mWriter.Write("enum ");
@@ -89,7 +179,7 @@ void PrettyPrinter::Visit(const EnumDeclaration *enumDeclaration)
 }
 
 
-void PrettyPrinter::Visit(const Enumerator *enumerator)
+void PrettyPrinterCore::Visit(const Enumerator *enumerator)
 {
 	Tab();
 	Print(enumerator->GetName());
@@ -106,7 +196,7 @@ void PrettyPrinter::Visit(const Enumerator *enumerator)
 }
 
 
-void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
+void PrettyPrinterCore::Visit(const StructDeclaration *structDeclaration)
 {
 	Tab();
 	mWriter.Write("struct ");
@@ -143,7 +233,7 @@ void PrettyPrinter::Visit(const StructDeclaration *structDeclaration)
 }
 
 
-void PrettyPrinter::Visit(const FunctionDefinition *functionDefinition)
+void PrettyPrinterCore::Visit(const FunctionDefinition *functionDefinition)
 {
 	Tab();
 	Print(functionDefinition->GetPrototype());
@@ -159,7 +249,7 @@ void PrettyPrinter::Visit(const FunctionDefinition *functionDefinition)
 }
 
 
-void PrettyPrinter::Visit(const FunctionPrototype *functionPrototype)
+void PrettyPrinterCore::Visit(const FunctionPrototype *functionPrototype)
 {
 	Print(functionPrototype->GetReturnType());
 	mWriter.Write(" ");
@@ -175,7 +265,7 @@ void PrettyPrinter::Visit(const FunctionPrototype *functionPrototype)
 }
 
 
-void PrettyPrinter::Visit(const Parameter *parameter)
+void PrettyPrinterCore::Visit(const Parameter *parameter)
 {
 	Print(parameter->GetTypeDescriptor());
 	mWriter.Write(" ");
@@ -183,7 +273,7 @@ void PrettyPrinter::Visit(const Parameter *parameter)
 }
 
 
-void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
+void PrettyPrinterCore::Visit(const TypeDescriptor *typeDescriptor)
 {
 	if (typeDescriptor->IsPointerIntrinsicType())
 	{
@@ -218,7 +308,7 @@ void PrettyPrinter::Visit(const TypeDescriptor *typeDescriptor)
 }
 
 
-void PrettyPrinter::Visit(const TypeSpecifier *typeSpecifier)
+void PrettyPrinterCore::Visit(const TypeSpecifier *typeSpecifier)
 {
 	if (typeSpecifier->GetPrimitiveTypeToken() != NULL)
 	{
@@ -231,7 +321,7 @@ void PrettyPrinter::Visit(const TypeSpecifier *typeSpecifier)
 }
 
 
-void PrettyPrinter::Visit(const NamedInitializer *namedInitializer)
+void PrettyPrinterCore::Visit(const NamedInitializer *namedInitializer)
 {
 	Print(namedInitializer->GetName());
 
@@ -243,7 +333,7 @@ void PrettyPrinter::Visit(const NamedInitializer *namedInitializer)
 }
 
 
-void PrettyPrinter::Visit(const Initializer *initializer)
+void PrettyPrinterCore::Visit(const Initializer *initializer)
 {
 	if (initializer->GetExpression() != NULL)
 	{
@@ -258,13 +348,13 @@ void PrettyPrinter::Visit(const Initializer *initializer)
 }
 
 
-void PrettyPrinter::Visit(const QualifiedIdentifier *identifier)
+void PrettyPrinterCore::Visit(const QualifiedIdentifier *identifier)
 {
 	Print(identifier->GetName());
 }
 
 
-void PrettyPrinter::Visit(const CompoundStatement *compoundStatement)
+void PrettyPrinterCore::Visit(const CompoundStatement *compoundStatement)
 {
 	Tab();
 	mWriter.Write("{\n");
@@ -276,7 +366,7 @@ void PrettyPrinter::Visit(const CompoundStatement *compoundStatement)
 }
 
 
-void PrettyPrinter::Visit(const IfStatement *ifStatement)
+void PrettyPrinterCore::Visit(const IfStatement *ifStatement)
 {
 	Tab();
 	mWriter.Write("if (");
@@ -294,7 +384,7 @@ void PrettyPrinter::Visit(const IfStatement *ifStatement)
 }
 
 
-void PrettyPrinter::Visit(const SwitchStatement *switchStatement)
+void PrettyPrinterCore::Visit(const SwitchStatement *switchStatement)
 {
 	Tab();
 	mWriter.Write("switch (");
@@ -311,7 +401,7 @@ void PrettyPrinter::Visit(const SwitchStatement *switchStatement)
 }
 
 
-void PrettyPrinter::Visit(const SwitchSection *switchSection)
+void PrettyPrinterCore::Visit(const SwitchSection *switchSection)
 {
 	PrintList(switchSection->GetLabelList());
 	IncrementTab();
@@ -320,7 +410,7 @@ void PrettyPrinter::Visit(const SwitchSection *switchSection)
 }
 
 
-void PrettyPrinter::Visit(const SwitchLabel *switchLabel)
+void PrettyPrinterCore::Visit(const SwitchLabel *switchLabel)
 {
 	Tab();
 	Print(switchLabel->GetLabel());
@@ -335,7 +425,7 @@ void PrettyPrinter::Visit(const SwitchLabel *switchLabel)
 }
 
 
-void PrettyPrinter::Visit(const WhileStatement *whileStatement)
+void PrettyPrinterCore::Visit(const WhileStatement *whileStatement)
 {
 	Tab();
 	if (whileStatement->IsDoLoop())
@@ -357,13 +447,14 @@ void PrettyPrinter::Visit(const WhileStatement *whileStatement)
 }
 
 
-void PrettyPrinter::Visit(const ForStatement *forStatement)
+void PrettyPrinterCore::Visit(const ForStatement *forStatement)
 {
 	Tab();
 	mWriter.Write("for (");
-	SuppressTabsAndNewlines();
-	Print(forStatement->GetInitializer());
-	PrintTabsAndNewlines();
+	{
+		BoolStack::Element shouldPrintTabsAndNewlinesElement(mShouldPrintTabsAndNewlines, false);
+		Print(forStatement->GetInitializer());
+	}
 	mWriter.Write(" ");
 	Print(forStatement->GetCondition());
 	mWriter.Write("; ");
@@ -373,7 +464,7 @@ void PrettyPrinter::Visit(const ForStatement *forStatement)
 }
 
 
-void PrettyPrinter::Visit(const JumpStatement *jumpStatement)
+void PrettyPrinterCore::Visit(const JumpStatement *jumpStatement)
 {
 	Tab();
 	Print(jumpStatement->GetKeyword());
@@ -390,7 +481,7 @@ void PrettyPrinter::Visit(const JumpStatement *jumpStatement)
 }
 
 
-void PrettyPrinter::Visit(const DeclarativeStatement *declarativeStatement)
+void PrettyPrinterCore::Visit(const DeclarativeStatement *declarativeStatement)
 {
 	Tab();
 	Print(declarativeStatement->GetTypeDescriptor());
@@ -401,7 +492,7 @@ void PrettyPrinter::Visit(const DeclarativeStatement *declarativeStatement)
 }
 
 
-void PrettyPrinter::Visit(const ExpressionStatement *expressionStatement)
+void PrettyPrinterCore::Visit(const ExpressionStatement *expressionStatement)
 {
 	Tab();
 	if (expressionStatement->GetExpression() != NULL)
@@ -413,7 +504,7 @@ void PrettyPrinter::Visit(const ExpressionStatement *expressionStatement)
 }
 
 
-void PrettyPrinter::Visit(const ConditionalExpression *conditionalExpression)
+void PrettyPrinterCore::Visit(const ConditionalExpression *conditionalExpression)
 {
 	if (!PrintFoldedConstant(conditionalExpression))
 	{
@@ -434,7 +525,7 @@ void PrettyPrinter::Visit(const ConditionalExpression *conditionalExpression)
 }
 
 
-void PrettyPrinter::Visit(const BinaryExpression *binaryExpression)
+void PrettyPrinterCore::Visit(const BinaryExpression *binaryExpression)
 {
 	if (!PrintFoldedConstant(binaryExpression))
 	{
@@ -455,7 +546,7 @@ void PrettyPrinter::Visit(const BinaryExpression *binaryExpression)
 }
 
 
-void PrettyPrinter::Visit(const UnaryExpression *unaryExpression)
+void PrettyPrinterCore::Visit(const UnaryExpression *unaryExpression)
 {
 	if (!PrintFoldedConstant(unaryExpression))
 	{
@@ -465,14 +556,14 @@ void PrettyPrinter::Visit(const UnaryExpression *unaryExpression)
 }
 
 
-void PrettyPrinter::Visit(const PostfixExpression *postfixExpression)
+void PrettyPrinterCore::Visit(const PostfixExpression *postfixExpression)
 {
 	PrintExpression(postfixExpression->GetLhs());
 	Print(postfixExpression->GetOperator());
 }
 
 
-void PrettyPrinter::Visit(const MemberExpression *memberExpression)
+void PrettyPrinterCore::Visit(const MemberExpression *memberExpression)
 {
 	PrintExpression(memberExpression->GetLhs());
 	Print(memberExpression->GetOperator());
@@ -480,7 +571,7 @@ void PrettyPrinter::Visit(const MemberExpression *memberExpression)
 }
 
 
-void PrettyPrinter::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
+void PrettyPrinterCore::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	PrintExpression(arraySubscriptExpression->GetLhs());
 	mWriter.Write("[");
@@ -489,7 +580,7 @@ void PrettyPrinter::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 }
 
 
-void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
+void PrettyPrinterCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
 	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
 	Print(functionCallExpression->GetLhs());
@@ -499,7 +590,7 @@ void PrettyPrinter::Visit(const FunctionCallExpression *functionCallExpression)
 }
 
 
-void PrettyPrinter::Visit(const CastExpression *castExpression)
+void PrettyPrinterCore::Visit(const CastExpression *castExpression)
 {
 	if (!PrintFoldedConstant(castExpression))
 	{
@@ -512,7 +603,7 @@ void PrettyPrinter::Visit(const CastExpression *castExpression)
 }
 
 
-void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
+void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
 {
 	if (!PrintFoldedConstant(sizeofExpression))
 	{
@@ -533,19 +624,19 @@ void PrettyPrinter::Visit(const SizeofExpression *sizeofExpression)
 }
 
 
-void PrettyPrinter::Visit(const ConstantExpression *constantExpression)
+void PrettyPrinterCore::Visit(const ConstantExpression *constantExpression)
 {
 	Print(constantExpression->GetValueToken());
 }
 
 
-void PrettyPrinter::Visit(const ThisExpression *thisExpression)
+void PrettyPrinterCore::Visit(const ThisExpression *thisExpression)
 {
 	mWriter.Write("this");
 }
 
 
-void PrettyPrinter::Visit(const IdentifierExpression *identifierExpression)
+void PrettyPrinterCore::Visit(const IdentifierExpression *identifierExpression)
 {
 	if (!PrintFoldedConstant(identifierExpression))
 	{
@@ -554,7 +645,7 @@ void PrettyPrinter::Visit(const IdentifierExpression *identifierExpression)
 }
 
 
-void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separator)
+void PrettyPrinterCore::PrintList(const ListParseNode *listNode, const char *separator)
 {
 	const ListParseNode *current = listNode;
 
@@ -573,7 +664,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, const char *separat
 }
 
 
-void PrettyPrinter::Print(const Token *token)
+void PrettyPrinterCore::Print(const Token *token)
 {
 	if (token != NULL)
 	{
@@ -582,7 +673,7 @@ void PrettyPrinter::Print(const Token *token)
 }
 
 
-void PrettyPrinter::PrintBlockOrStatement(const ParseNode *parseNode)
+void PrettyPrinterCore::PrintBlockOrStatement(const ParseNode *parseNode)
 {
 	if (CastNode<CompoundStatement>(parseNode) != NULL)
 	{
@@ -597,21 +688,21 @@ void PrettyPrinter::PrintBlockOrStatement(const ParseNode *parseNode)
 }
 
 
-void PrettyPrinter::PrintExpression(const Expression *expression)
+void PrettyPrinterCore::PrintExpression(const Expression *expression)
 {
 	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, false);
 	Print(expression);
 }
 
 
-void PrettyPrinter::PrintTopLevelExpression(const Expression *expression)
+void PrettyPrinterCore::PrintTopLevelExpression(const Expression *expression)
 {
 	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
 	Print(expression);
 }
 
 
-bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
+bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 {
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (mPrintFoldedConstants && tav.IsValueDefined())
@@ -654,9 +745,9 @@ bool PrettyPrinter::PrintFoldedConstant(const Expression *expression)
 }
 
 
-void PrettyPrinter::Tab()
+void PrettyPrinterCore::Tab()
 {
-	if (mPrintTabsAndNewlines)
+	if (ShouldPrintTabsAndNewlines())
 	{
 		for (int i = 0; i < mTabLevel; ++i)
 		{
@@ -666,9 +757,9 @@ void PrettyPrinter::Tab()
 }
 
 
-void PrettyPrinter::Newline()
+void PrettyPrinterCore::Newline()
 {
-	if (mPrintTabsAndNewlines)
+	if (ShouldPrintTabsAndNewlines())
 	{
 		mWriter.Write("\n");
 	}

@@ -50,8 +50,9 @@ void CompilerError::Print(TextWriter &writer) const
 
 	if (mContext != NULL)
 	{
+		const char *fileName = mContext->GetFileName();
 		const Bond::StreamPos &pos = mContext->GetStartPos();
-		writer.Write("(%d, %d): ", pos.line, pos.column);
+		writer.Write("%s (%d, %d): ", fileName, pos.line, pos.column);
 	}
 
 	enum State
@@ -107,11 +108,20 @@ void CompilerError::Print(TextWriter &writer) const
 				}
 				break;
 
+				case 'f':
+				{
+					const Token *token = reinterpret_cast<const Token *>(arg);
+					const char *fileName = token->GetFileName();
+					writer.Write("%s", fileName);
+					state = STATE_NORMAL;
+				}
+				break;
+
 				case 'l':
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
 					const Bond::StreamPos &argPos = token->GetStartPos();
-					writer.Write("%d", argPos.line);
+					writer.Write("%" BOND_PRIu32, bu32_t(argPos.line));
 					state = STATE_NORMAL;
 				}
 				break;
@@ -119,8 +129,8 @@ void CompilerError::Print(TextWriter &writer) const
 				case 'n':
 				{
 					const ParseNode *node = reinterpret_cast<const ParseNode *>(arg);
-					PrettyPrinter printer(writer, true);
-					printer.Print(node);
+					PrettyPrinter printer;
+					printer.Print(node, writer, true);
 					state = STATE_NORMAL;
 				}
 				break;

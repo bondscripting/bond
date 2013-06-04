@@ -32,10 +32,11 @@ void FrontEnd::Analyze()
 	StringList::Type::const_iterator it = mInputFileNameList.begin();
 	while ((it != mInputFileNameList.end()) && !HasErrors())
 	{
-		FileLoader::Handle scriptHandle = mFileLoader.LoadFile(it->GetString());
+		const char *fileName = it->GetString();
+		FileLoader::Handle scriptHandle = mFileLoader.LoadFile(fileName);
 		const char *script = reinterpret_cast<const char *>(scriptHandle.Get().mData);
 		const size_t length = scriptHandle.Get().mLength;
-		TokenStream stream = mLexer.Lex(script, length)->GetTokenStream();
+		TokenStream stream = mLexer.Lex(fileName, script, length)->GetTokenStream();
 
 		if (!HasErrors())
 		{

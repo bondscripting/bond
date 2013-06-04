@@ -23,7 +23,7 @@ public:
 	~Lexer();
 	void Dispose();
 
-	TokenCollection *Lex(const char *text, size_t length);
+	TokenCollection *Lex(const char *fileName, const char *text, size_t length);
 	const TokenCollection *GetTokenCollectionList() const { return mTokenCollectionList; }
 
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }

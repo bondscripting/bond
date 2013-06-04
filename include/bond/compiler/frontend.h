@@ -29,6 +29,7 @@ public:
 		mFileLoader(fileLoader)
 	{}
 
+	// Note that a copy of the queued file name is not made.
 	void AddInputFile(const HashedString &inputFileName);
 	bool ContainsInputFile(const HashedString &inputFileName);
 

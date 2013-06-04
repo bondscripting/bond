@@ -122,8 +122,7 @@ Parser::Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 	mFactory(allocator),
 	mErrorBuffer(errorBuffer),
 	mTranslationUnitList(NULL)
-{
-}
+{}
 
 
 Parser::~Parser()
