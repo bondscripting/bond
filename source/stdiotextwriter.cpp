@@ -1,15 +1,15 @@
-#include "bond/io/stdouttextwriter.h"
+#include "bond/io/stdiotextwriter.h"
 #include <stdio.h>
 #include <stdarg.h>
 
 namespace Bond
 {
 
-void StdOutTextWriter::Write(const char *format, ...)
+void StdioTextWriter::Write(const char *format, ...)
 {
 	va_list argList;
 	va_start(argList, format);
-	vprintf(format, argList);
+	vfprintf(mFile, format, argList);
 	va_end(argList);
 }
 

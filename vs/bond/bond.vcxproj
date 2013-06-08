@@ -43,10 +43,10 @@
     <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h" />
     <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h" />
     <ClInclude Include="..\..\include\bond\io\diskfileloader.h" />
-    <ClInclude Include="..\..\include\bond\io\filebinarywriter.h" />
     <ClInclude Include="..\..\include\bond\io\fileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
-    <ClInclude Include="..\..\include\bond\io\stdouttextwriter.h" />
+    <ClInclude Include="..\..\include\bond\io\stdiobinarywriter.h" />
+    <ClInclude Include="..\..\include\bond\io\stdiotextwriter.h" />
     <ClInclude Include="..\..\include\bond\io\textwriter.h" />
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\assert.h" />
@@ -112,6 +112,7 @@
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\libinclude.cpp" />
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
+    <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />
@@ -122,7 +123,7 @@
     <ClCompile Include="..\..\source\prettyprinter.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
-    <ClCompile Include="..\..\source\stdouttextwriter.cpp" />
+    <ClCompile Include="..\..\source\stdiotextwriter.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />

@@ -3,7 +3,7 @@
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 #include "bond/io/diskfileloader.h"
-#include "bond/io/stdouttextwriter.h"
+#include "bond/io/stdiotextwriter.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include "bond/tools/prettyprinter.h"
@@ -49,11 +49,12 @@ void PrettyPrint(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 			analyzer.Analyze(parser.GetTranslationUnitList());
 		}
 
-		Bond::StdOutTextWriter writer;
+		Bond::StdOutTextWriter outputWriter;
 		Bond::PrettyPrinter printer;
-		printer.PrintList(parser.GetTranslationUnitList(), writer, foldConstants);
+		printer.PrintList(parser.GetTranslationUnitList(), outputWriter, foldConstants);
 
-		PrintErrors(writer, errorBuffer);
+		Bond::StdErrTextWriter errorWriter;
+		PrintErrors(errorWriter, errorBuffer);
 	}
 	catch (const Bond::Exception &e)
 	{

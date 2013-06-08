@@ -1,5 +1,4 @@
 #include "bond/io/diskfileloader.h"
-#include "bond/io/stdouttextwriter.h"
 #include "bond/stl/list.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"

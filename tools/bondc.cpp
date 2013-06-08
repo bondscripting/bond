@@ -6,9 +6,10 @@
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 #include "bond/io/diskfileloader.h"
-#include "bond/io/filebinarywriter.h"
-#include "bond/io/stdouttextwriter.h"
+#include "bond/io/stdiobinarywriter.h"
+#include "bond/io/stdiotextwriter.h"
 #include "bond/stl/list.h"
+#include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include <stdio.h>
@@ -42,11 +43,64 @@ int main(int argc, const char *argv[])
 		loaderList.push_back(Bond::DiskFileLoader(allocator));
 		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
 		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdLibLoader);
-		const char *outputFileName = "bond.cbo";
+		const char *cboFileName = NULL;
+		const char *cppFileName = NULL;
+		const char *hFileName = NULL;
+		const char *bindingCollectionName = NULL;
+		const char *includeName = NULL;
+		bool generateBindings = false;
 
 		for (int i = 1; i < argc; ++i)
 		{
-			if (strcmp(argv[i], "-I") == 0)
+			if (strcmp(argv[i], "-b") == 0)
+			{
+				if (++i < argc)
+				{
+					bindingCollectionName = argv[i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -b\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-c") == 0)
+			{
+				if (++i < argc)
+				{
+					cppFileName = argv[i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -c\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-h") == 0)
+			{
+				if (++i < argc)
+				{
+					hFileName = argv[i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -h\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-i") == 0)
+			{
+				if (++i < argc)
+				{
+					includeName = argv[i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -i\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-I") == 0)
 			{
 				if (++i < argc)
 				{
@@ -64,7 +118,7 @@ int main(int argc, const char *argv[])
 			{
 				if (++i < argc)
 				{
-					outputFileName = argv[i];
+					cboFileName = argv[i];
 				}
 				else
 				{
@@ -83,6 +137,25 @@ int main(int argc, const char *argv[])
 			}
 		}
 
+		if ((cppFileName != NULL) || (hFileName != NULL) || (bindingCollectionName != NULL) || (includeName != NULL))
+		{
+			if ((cppFileName == NULL) || (hFileName == NULL) || (bindingCollectionName == NULL) || (includeName == NULL))
+			{
+				fprintf(stderr, "Options -b -c -h and -i must all be specified together.\n");
+				error = true;
+			}
+			else
+			{
+				generateBindings = true;
+			}
+		}
+
+		if (!generateBindings && (cboFileName == NULL))
+		{
+			// If no output file name specified, then compile to bond.cbo.
+			cboFileName = "bond.cbo";
+		}
+
 		if (error)
 		{
 			return 1;
@@ -92,21 +165,49 @@ int main(int argc, const char *argv[])
 
 		if (!errorBuffer.HasErrors())
 		{
-			FILE *outputFile = fopen(outputFileName, "wb");
-			if (outputFile != NULL)
+			if (cboFileName != NULL)
 			{
-				Bond::FileBinaryWriter cboWriter(outputFile);
-				Bond::CodeGenerator generator(allocator, errorBuffer);
-				generator.Generate(parser.GetTranslationUnitList(), cboWriter);
-				fclose(outputFile);
+				FILE *cboFile = fopen(cboFileName, "wb");
+				if (cboFile != NULL)
+				{
+					Bond::StdioBinaryWriter cboWriter(cboFile);
+					Bond::CodeGenerator generator(allocator, errorBuffer);
+					generator.Generate(parser.GetTranslationUnitList(), cboWriter);
+				}
+				else
+				{
+					fprintf(stderr, "Failed to open '%s'.\n", cboFileName);
+					error = true;
+				}
+				fclose(cboFile);
 			}
-			else
+			if (generateBindings)
 			{
-				fprintf(stderr, "Failed to open '%s'.\n", outputFileName);
+				FILE *cppFile = fopen(cppFileName, "w");
+				FILE *hFile = fopen(hFileName, "w");
+				if ((cppFile != NULL) && (hFile != NULL))
+				{
+					Bond::StdioTextWriter cppWriter(cppFile);
+					Bond::StdioTextWriter hWriter(hFile);
+					Bond::NativeBindingGenerator generator;
+					generator.Generate(parser.GetTranslationUnitList(), cppWriter, hWriter, bindingCollectionName, includeName);
+				}
+				if (cppFile == NULL)
+				{
+					fprintf(stderr, "Failed to open '%s'.\n", cppFileName);
+					error = true;
+				}
+				if (hFile == NULL)
+				{
+					fprintf(stderr, "Failed to open '%s'.\n", hFileName);
+					error = true;
+				}
+				fclose(cppFile);
+				fclose(hFile);
 			}
 		}
 
-		Bond::StdOutTextWriter errorWriter;
+		Bond::StdErrTextWriter errorWriter;
 		PrintErrors(errorWriter, errorBuffer);
 		error = error || errorBuffer.HasErrors();
 	}

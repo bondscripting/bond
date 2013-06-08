@@ -15,4 +15,3 @@ Exception::Exception(const char *format, ...)
 }
 
 }
-

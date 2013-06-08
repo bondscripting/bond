@@ -7,8 +7,8 @@ namespace Bond
 {
 
 // Wrapper around an externally allocated C string that handles embeded null characters
-// and non-null terminated strings. Also provides a some comparison operators, making
-// it useful for storing in containers.
+// and non-null terminated strings. Also provides some comparison operators, making it
+// useful for storing in containers.
 class SimpleString
 {
 public:

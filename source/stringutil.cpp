@@ -1,3 +1,5 @@
+#include "bond/io/textwriter.h"
+#include "bond/types/simplestring.h"
 #include "bond/types/stringutil.h"
 
 namespace Bond
@@ -92,6 +94,17 @@ int StringCompare(const char *str1, size_t length1, const char *str2, size_t len
 		result = c1 - c2;
 	}
 	return (result != 0) ? result : ((length1 < length2) ? -1 : (length1 > length2) ? 1 : 0);
+}
+
+
+void WriteString(TextWriter &writer, const SimpleString &str)
+{
+	const size_t length = str.GetLength();
+	const char *s = str.GetString();;
+	for (size_t i = 0; i < length; ++i)
+	{
+		writer.Write("%c", s[i]);
+	}
 }
 
 }

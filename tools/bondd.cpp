@@ -1,5 +1,5 @@
 #include "bond/io/diskfileloader.h"
-#include "bond/io/stdouttextwriter.h"
+#include "bond/io/stdiotextwriter.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include "bond/tools/disassembler.h"

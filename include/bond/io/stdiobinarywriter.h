@@ -1,5 +1,5 @@
-#ifndef BOND_FILEBINARYWRITER_H
-#define BOND_FILEBINARYWRITER_H
+#ifndef BOND_STDIOBINARYWRITER_H
+#define BOND_STDIOBINARYWRITER_H
 
 #include "bond/io/binarywriter.h"
 #include <stdio.h>
@@ -7,11 +7,11 @@
 namespace Bond
 {
 
-class FileBinaryWriter: public BinaryWriter
+class StdioBinaryWriter: public BinaryWriter
 {
 public:
-	FileBinaryWriter(FILE *file): mFile(file) {}
-	virtual ~FileBinaryWriter() {}
+	StdioBinaryWriter(FILE *file): mFile(file) {}
+	virtual ~StdioBinaryWriter() {}
 	virtual void Write(bu8_t c) { fputc(c, mFile); }
 	virtual int GetPosition() const { return ftell(mFile); }
 	virtual void SetPosition(int offset) { fseek(mFile, offset, SEEK_SET); }

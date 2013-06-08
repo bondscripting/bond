@@ -156,27 +156,6 @@
     <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h">
       <Filter>Header Files\include\bond\compiler</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\binarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\filebinarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\fileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\stdouttextwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\textwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\stl\algorithm.h">
       <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
@@ -270,20 +249,44 @@
     <ClInclude Include="..\..\include\bond\api\nativebinding.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
       <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\binarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\fileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdiobinarywriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdiotextwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\textwriter.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -305,10 +308,31 @@
     <ClCompile Include="..\..\source\compilererror.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\defaultallocator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\disassembler.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\diskfileloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\exception.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\frontend.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\lexer.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libinclude.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\memoryfileloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\nativebindinggenerator.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\opcodes.cpp">
@@ -341,7 +365,7 @@
     <ClCompile Include="..\..\source\semanticanalyzer.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\stdouttextwriter.cpp">
+    <ClCompile Include="..\..\source\stdiotextwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stringutil.cpp">
@@ -365,6 +389,9 @@
     <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\validateconfiguration.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\validationpass.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -372,30 +399,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\vm.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\defaultallocator.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\exception.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\frontend.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\validateconfiguration.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libinclude.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\memoryfileloader.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\diskfileloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>
