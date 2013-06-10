@@ -1,5 +1,5 @@
-#ifndef BOND_CBOLOADER_H
-#define BOND_CBOLOADER_H
+#ifndef BOND_VM_CBOLOADER_H
+#define BOND_VM_CBOLOADER_H
 
 #include "bond/api/nativebinding.h"
 #include "bond/stl/list.h"

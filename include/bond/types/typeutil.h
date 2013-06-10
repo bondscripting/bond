@@ -1,5 +1,5 @@
-#ifndef BOND_TYPEUTIL_H
-#define BOND_TYPEUTIL_H
+#ifndef BOND_TYPES_TYPEUTIL_H
+#define BOND_TYPES_TYPEUTIL_H
 
 #include "bond/systems/math.h"
 

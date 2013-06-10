@@ -1,5 +1,5 @@
-#ifndef BOND_OPCODES_H
-#define BOND_OPCODES_H
+#ifndef BOND_TYPES_OPCODES_H
+#define BOND_TYPES_OPCODES_H
 
 #include "bond/types/types.h"
 

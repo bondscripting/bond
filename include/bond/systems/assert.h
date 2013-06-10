@@ -1,5 +1,5 @@
-#ifndef BOND_ASSERT_H
-#define BOND_ASSERT_H
+#ifndef BOND_SYSTEMS_ASSERT_H
+#define BOND_SYSTEMS_ASSERT_H
 
 #include "bond/conf.h"
 

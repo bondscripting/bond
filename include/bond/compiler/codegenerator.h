@@ -1,5 +1,5 @@
-#ifndef BOND_CODEGENERATOR_H
-#define BOND_CODEGENERATOR_H
+#ifndef BOND_COMPILER_CODEGENERATOR_H
+#define BOND_COMPILER_CODEGENERATOR_H
 
 #include "bond/types/types.h"
 

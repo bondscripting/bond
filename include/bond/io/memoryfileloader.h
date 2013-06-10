@@ -1,5 +1,5 @@
-#ifndef BOND_MEMORYFILELOADER_H
-#define BOND_MEMORYFILELOADER_H
+#ifndef BOND_IO_MEMORYFILELOADER_H
+#define BOND_IO_MEMORYFILELOADER_H
 
 #include "bond/io/fileloader.h"
 #include "bond/types/simplestring.h"

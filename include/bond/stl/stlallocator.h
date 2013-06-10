@@ -1,5 +1,5 @@
-#ifndef BOND_STLALLOCATOR_H
-#define BOND_STLALLOCATOR_H
+#ifndef BOND_STL_STLALLOCATOR_H
+#define BOND_STL_STLALLOCATOR_H
 
 #include "bond/systems/allocator.h"
 

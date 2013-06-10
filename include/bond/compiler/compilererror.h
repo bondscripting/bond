@@ -1,5 +1,5 @@
-#ifndef BOND_COMPILERERROR_H
-#define BOND_COMPILERERROR_H
+#ifndef BOND_COMPILER_COMPILERERROR_H
+#define BOND_COMPILER_COMPILERERROR_H
 
 #include "bond/types/types.h"
 

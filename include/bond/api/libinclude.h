@@ -1,5 +1,5 @@
-#ifndef BOND_LIBINCLUDE_H
-#define BOND_LIBINCLUDE_H
+#ifndef BOND_API_LIBINCLUDE_H
+#define BOND_API_LIBINCLUDE_H
 
 #include "bond/io/memoryfileloader.h"
 

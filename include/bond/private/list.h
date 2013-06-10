@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_LIST_H
-#define PRIVATE_BOND_LIST_H
+#ifndef BOND_PRIVATE_LIST_H
+#define BOND_PRIVATE_LIST_H
 
 #include "bond/stl/stlallocator.h"
 #include <list>

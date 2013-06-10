@@ -1,5 +1,5 @@
-#ifndef BOND_TEXTWRITER_H
-#define BOND_TEXTWRITER_H
+#ifndef BOND_IO_TEXTWRITER_H
+#define BOND_IO_TEXTWRITER_H
 
 namespace Bond
 {

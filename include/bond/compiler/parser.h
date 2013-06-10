@@ -1,5 +1,5 @@
-#ifndef BOND_PARSER_H
-#define BOND_PARSER_H
+#ifndef BOND_COMPILER_PARSER_H
+#define BOND_COMPILER_PARSER_H
 
 #include "bond/compiler/parsenodefactory.h"
 #include "bond/compiler/parsenodes.h"

@@ -1,5 +1,5 @@
-#ifndef BOND_PRETTYPRINTER_H
-#define BOND_PRETTYPRINTER_H
+#ifndef BOND_TOOLS_PRETTYPRINTER_H
+#define BOND_TOOLS_PRETTYPRINTER_H
 
 #include "bond/conf.h"
 

@@ -1,5 +1,5 @@
-#ifndef BOND_STRINGUTIL_H
-#define BOND_STRINGUTIL_H
+#ifndef BOND_TYPES_STRINGUTIL_H
+#define BOND_TYPES_STRINGUTIL_H
 
 #include "bond/types/types.h"
 

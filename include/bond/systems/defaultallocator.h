@@ -1,5 +1,5 @@
-#ifndef BOND_DEFAULTALLOCATOR_H
-#define BOND_DEFAULTALLOCATOR_H
+#ifndef BOND_SYSTEMS_DEFAULTALLOCATOR_H
+#define BOND_SYSTEMS_DEFAULTALLOCATOR_H
 
 #include "bond/systems/allocator.h"
 

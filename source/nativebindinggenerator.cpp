@@ -22,7 +22,8 @@ public:
 		mCppWriter(cppWriter),
 		mHWriter(hWriter),
 		mCollectionName(collectionName),
-		mIncludeName(includeName)
+		mIncludeName(includeName),
+		mNumFunctions(0)
 	{}
 
 	virtual ~NativeBindingGeneratorCore() {}
@@ -47,6 +48,7 @@ private:
 	void OpenNamespaces(TextWriter &writer, const SimpleString *identifiers, size_t numIdentifiers);
 	void CloseNamespaces(TextWriter &writer, size_t numIdentifiers);
 	void PrintNamespaceStack(TextWriter &writer, NamespaceStack::Iterator &it);
+	void PrintQualifiedFunctionName(TextWriter &writer, const Symbol *symbol);
 
 	NamespaceStack mNamespaceStack;
 	const TranslationUnit *mTranslationUnitList;
@@ -54,6 +56,7 @@ private:
 	TextWriter &mHWriter;
 	const char *mCollectionName;
 	const char *mIncludeName;
+	bu32_t mNumFunctions;
 };
 
 
@@ -116,7 +119,7 @@ void NativeBindingGeneratorCore::Generate()
 		WriteString(mCppWriter, collectionName);
 		mCppWriter.Write(" =\n{\n\t");
 		WriteString(mCppWriter, collectionName);
-		mCppWriter.Write("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", 0); // TODO
+		mCppWriter.Write("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
 		CloseNamespaces(mCppWriter, numIdentifiers);
 	}
 }
@@ -141,12 +144,20 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 	{
 		NamespaceStack::Iterator it = mNamespaceStack.Begin();
 		PrintNamespaceStack(mHWriter, it);
+
+		// Generate the function prototype.
 		mHWriter.Write("void ");
 		if (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER)
 		{
 			mHWriter.Write("%s__", functionDefinition->GetParentSymbol()->GetName()->GetText());
 		}
 		mHWriter.Write("%s(Bond::VM &vm);\n", functionDefinition->GetName()->GetText());
+
+		// Generate the function binding.
+		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
+		PrintQualifiedFunctionName(mCppWriter, functionDefinition);
+		mCppWriter.Write("},\n");
+		++mNumFunctions;
 	}
 }
 
@@ -223,6 +234,29 @@ void NativeBindingGeneratorCore::PrintNamespaceStack(TextWriter &writer, Namespa
 		PrintNamespaceStack(writer, it);
 		writer.Write("namespace %s\n{\n", item.mName);
 		item.mPrinted = true;
+	}
+}
+
+
+void NativeBindingGeneratorCore::PrintQualifiedFunctionName(TextWriter &writer, const Symbol *symbol)
+{
+	if ((symbol != NULL) && (symbol->GetName() != NULL))
+	{
+		PrintQualifiedFunctionName(writer, symbol->GetParentSymbol());
+		const char *suffix = "";
+		switch (symbol->GetSymbolType())
+		{
+			case Symbol::TYPE_NAMESPACE:
+				suffix = "::";
+				break;
+			case Symbol::TYPE_STRUCT:
+				suffix = "__";
+				break;
+			default:
+				suffix = "";
+				break;
+		}
+		writer.Write("%s%s", symbol->GetName()->GetText(), suffix);
 	}
 }
 

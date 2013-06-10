@@ -1,5 +1,5 @@
-#ifndef BOND_VECTOR_H
-#define BOND_VECTOR_H
+#ifndef BOND_STL_VECTOR_H
+#define BOND_STL_VECTOR_H
 
 #include "bond/conf.h"
 

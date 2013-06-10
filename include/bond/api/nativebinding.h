@@ -1,5 +1,5 @@
-#ifndef BOND_NATIVEBINDING_H
-#define BOND_NATIVEBINDING_H
+#ifndef BOND_API_NATIVEBINDING_H
+#define BOND_API_NATIVEBINDING_H
 
 #include "bond/types/simplestring.h"
 

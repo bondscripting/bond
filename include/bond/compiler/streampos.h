@@ -1,5 +1,5 @@
-#ifndef BOND_STREAMPOS_H
-#define BOND_STREAMPOS_H
+#ifndef BOND_COMPILER_STREAMPOS_H
+#define BOND_COMPILER_STREAMPOS_H
 
 #include "bond/types/types.h"
 

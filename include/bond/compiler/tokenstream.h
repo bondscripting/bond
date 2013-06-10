@@ -1,5 +1,5 @@
-#ifndef BOND_TOKENSTREAM_H
-#define BOND_TOKENSTREAM_H
+#ifndef BOND_COMPILER_TOKENSTREAM_H
+#define BOND_COMPILER_TOKENSTREAM_H
 
 #include "bond/compiler/token.h"
 

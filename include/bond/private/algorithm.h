@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_ALGORITHM_H
-#define PRIVATE_BOND_ALGORITHM_H
+#ifndef BOND_PRIVATE_ALGORITHM_H
+#define BOND_PRIVATE_ALGORITHM_H
 
 #include <algorithm>
 

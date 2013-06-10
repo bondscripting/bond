@@ -1,5 +1,5 @@
-#ifndef BOND_CBOVALIDATOR_H
-#define BOND_CBOVALIDATOR_H
+#ifndef BOND_TOOLS_CBOVALIDATOR_H
+#define BOND_TOOLS_CBOVALIDATOR_H
 
 #include "bond/types/types.h"
 

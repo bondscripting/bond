@@ -1,5 +1,5 @@
-#ifndef BOND_ALLOCATOR_H
-#define BOND_ALLOCATOR_H
+#ifndef BOND_SYSTEMS_ALLOCATOR_H
+#define BOND_SYSTEMS_ALLOCATOR_H
 
 #include "bond/systems/resourcehandle.h"
 

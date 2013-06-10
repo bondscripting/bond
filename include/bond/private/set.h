@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_SET_H
-#define PRIVATE_BOND_SET_H
+#ifndef BOND_PRIVATE_SET_H
+#define BOND_PRIVATE_SET_H
 
 #include "bond/stl/stlallocator.h"
 #include <set>

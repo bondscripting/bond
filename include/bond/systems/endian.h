@@ -1,5 +1,5 @@
-#ifndef BOND_ENDIAN_H
-#define BOND_ENDIAN_H
+#ifndef BOND_SYSTEMS_ENDIAN_H
+#define BOND_SYSTEMS_ENDIAN_H
 
 #include "bond/types/value.h"
 

@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_MAP_H
-#define PRIVATE_BOND_MAP_H
+#ifndef BOND_PRIVATE_MAP_H
+#define BOND_PRIVATE_MAP_H
 
 #include "bond/stl/stlallocator.h"
 #include <map>

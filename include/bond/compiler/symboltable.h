@@ -1,5 +1,5 @@
-#ifndef BOND_SYMBOLTABLE_H
-#define BOND_SYMBOLTABLE_H
+#ifndef BOND_COMPILER_SYMBOLTABLE_H
+#define BOND_COMPILER_SYMBOLTABLE_H
 
 #include "bond/compiler/parsenodes.h"
 

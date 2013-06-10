@@ -1,5 +1,5 @@
-#ifndef BOND_BINARYWRITER_H
-#define BOND_BINARYWRITER_H
+#ifndef BOND_IO_BINARYWRITER_H
+#define BOND_IO_BINARYWRITER_H
 
 #include "bond/types/types.h"
 

@@ -1,5 +1,5 @@
-#ifndef BOND_SEMANTICANALYZER_H
-#define BOND_SEMANTICANALYZER_H
+#ifndef BOND_COMPILER_SEMANTICANALYZER_H
+#define BOND_COMPILER_SEMANTICANALYZER_H
 
 #include "bond/compiler/symboltable.h"
 

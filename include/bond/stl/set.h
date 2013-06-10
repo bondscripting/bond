@@ -1,5 +1,5 @@
-#ifndef BOND_SET_H
-#define BOND_SET_H
+#ifndef BOND_STL_SET_H
+#define BOND_STL_SET_H
 
 #include "bond/conf.h"
 

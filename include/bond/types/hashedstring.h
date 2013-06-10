@@ -1,5 +1,5 @@
-#ifndef BOND_HASHEDSTRING_H
-#define BOND_HASHEDSTRING_H
+#ifndef BOND_TYPES_HASHEDSTRING_H
+#define BOND_TYPES_HASHEDSTRING_H
 
 #include "bond/types/simplestring.h"
 

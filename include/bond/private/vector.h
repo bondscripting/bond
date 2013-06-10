@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_VECTOR_H
-#define PRIVATE_BOND_VECTOR_H
+#ifndef BOND_PRIVATE_VECTOR_H
+#define BOND_PRIVATE_VECTOR_H
 
 #include "bond/stl/stlallocator.h"
 #include <vector>

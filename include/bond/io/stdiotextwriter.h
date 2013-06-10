@@ -1,5 +1,5 @@
-#ifndef BOND_STDIOTEXTWRITER_H
-#define BOND_STDIOTEXTWRITER_H
+#ifndef BOND_IO_STDIOTEXTWRITER_H
+#define BOND_IO_STDIOTEXTWRITER_H
 
 #include "bond/io/textwriter.h"
 #include <stdio.h>

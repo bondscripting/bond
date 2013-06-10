@@ -1,5 +1,5 @@
-#ifndef BOND_SIMPLESTRING_H
-#define BOND_SIMPLESTRING_H
+#ifndef BOND_TYPES_SIMPLESTRING_H
+#define BOND_TYPES_SIMPLESTRING_H
 
 #include "bond/types/stringutil.h"
 

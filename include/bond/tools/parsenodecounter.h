@@ -1,5 +1,5 @@
-#ifndef BOND_PARSENODECOUNTER_H
-#define BOND_PARSENODECOUNTER_H
+#ifndef BOND_TOOLS_PARSENODECOUNTER_H
+#define BOND_TOOLS_PARSENODECOUNTER_H
 
 #include "bond/compiler/parsenodetraverser.h"
 

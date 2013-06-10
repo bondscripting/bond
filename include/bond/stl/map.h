@@ -1,5 +1,5 @@
-#ifndef BOND_MAP_H
-#define BOND_MAP_H
+#ifndef BOND_STL_MAP_H
+#define BOND_STL_MAP_H
 
 #include "bond/conf.h"
 

@@ -1,5 +1,5 @@
-#ifndef BOND_VM_H
-#define BOND_VM_H
+#ifndef BOND_VM_VM_H
+#define BOND_VM_VM_H
 
 #include "bond/stl/autostack.h"
 #include "bond/systems/assert.h"

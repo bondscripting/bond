@@ -1,5 +1,5 @@
-#ifndef BOND_CHARSTREAM_H
-#define BOND_CHARSTREAM_H
+#ifndef BOND_COMPILER_CHARSTREAM_H
+#define BOND_COMPILER_CHARSTREAM_H
 
 #include "bond/compiler/streampos.h"
 

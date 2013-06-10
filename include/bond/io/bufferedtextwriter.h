@@ -1,5 +1,5 @@
-#ifndef BOND_BUFFERED_TEXTWRITER_H
-#define BOND_BUFFERED_TEXTWRITER_H
+#ifndef BOND_IO_BUFFEREDTEXTWRITER_H
+#define BOND_IO_BUFFEREDTEXTWRITER_H
 
 #include "bond/io/textwriter.h"
 #include "bond/types/types.h"

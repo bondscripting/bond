@@ -1,5 +1,5 @@
-#ifndef BOND_TYPEANDVALUE_H
-#define BOND_TYPEANDVALUE_H
+#ifndef BOND_COMPILER_TYPEANDVALUE_H
+#define BOND_COMPILER_TYPEANDVALUE_H
 
 #include "bond/types/value.h"
 

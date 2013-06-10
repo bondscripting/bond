@@ -1,5 +1,5 @@
-#ifndef BOND_FILELOADER_H
-#define BOND_FILELOADER_H
+#ifndef BOND_IO_FILELOADER_H
+#define BOND_IO_FILELOADER_H
 
 #include "bond/types/types.h"
 #include "bond/systems/resourcehandle.h"

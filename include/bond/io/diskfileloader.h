@@ -1,5 +1,5 @@
-#ifndef BOND_DISKFILELOADER_H
-#define BOND_DISKFILELOADER_H
+#ifndef BOND_IO_DISKFILELOADER_H
+#define BOND_IO_DISKFILELOADER_H
 
 #include "bond/io/fileloader.h"
 #include <stdio.h>

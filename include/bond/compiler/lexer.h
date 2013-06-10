@@ -1,5 +1,5 @@
-#ifndef BOND_LEXER_H
-#define BOND_LEXER_H
+#ifndef BOND_COMPILER_LEXER_H
+#define BOND_COMPILER_LEXER_H
 
 #include "bond/compiler/tokenstream.h"
 

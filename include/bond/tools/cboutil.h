@@ -1,5 +1,5 @@
-#ifndef BOND_CBOUTIL_H
-#define BOND_CBOUTIL_H
+#ifndef BOND_TOOLS_CBOUTIL_H
+#define BOND_TOOLS_CBOUTIL_H
 
 #include "bond/types/types.h"
 

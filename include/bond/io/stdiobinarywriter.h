@@ -1,5 +1,5 @@
-#ifndef BOND_STDIOBINARYWRITER_H
-#define BOND_STDIOBINARYWRITER_H
+#ifndef BOND_IO_STDIOBINARYWRITER_H
+#define BOND_IO_STDIOBINARYWRITER_H
 
 #include "bond/io/binarywriter.h"
 #include <stdio.h>

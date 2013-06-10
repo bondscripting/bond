@@ -1,5 +1,5 @@
-#ifndef BOND_AUTOSTACK_H
-#define BOND_AUTOSTACK_H
+#ifndef BOND_STL_AUTOSTACK_H
+#define BOND_STL_AUTOSTACK_H
 
 #include "bond/types/types.h"
 

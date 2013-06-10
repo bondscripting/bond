@@ -1,5 +1,5 @@
-#ifndef BOND_MATH_H
-#define BOND_MATH_H
+#ifndef BOND_SYSTEMS_MATH_H
+#define BOND_SYSTEMS_MATH_H
 
 #include "bond/types/types.h"
 

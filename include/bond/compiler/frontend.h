@@ -1,5 +1,5 @@
-#ifndef BOND_FRONTEND_H
-#define BOND_FRONTEND_H
+#ifndef BOND_COMPILER_FRONTEND_H
+#define BOND_COMPILER_FRONTEND_H
 
 #include "bond/stl/list.h"
 #include "bond/types/hashedstring.h"

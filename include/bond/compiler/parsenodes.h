@@ -1,5 +1,5 @@
-#ifndef BOND_PARSENODES_H
-#define BOND_PARSENODES_H
+#ifndef BOND_COMPILER_PARSENODES_H
+#define BOND_COMPILER_PARSENODES_H
 
 #include "bond/compiler/parsenodesfwd.h"
 #include "bond/compiler/parsenodevisitor.h"

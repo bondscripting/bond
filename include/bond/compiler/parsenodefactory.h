@@ -1,5 +1,5 @@
-#ifndef BOND_PARSENODEFACTORY_H
-#define BOND_PARSENODEFACTORY_H
+#ifndef BOND_COMPILER_PARSENODEFACTORY_H
+#define BOND_COMPILER_PARSENODEFACTORY_H
 
 #include "bond/compiler/parsenodes.h"
 

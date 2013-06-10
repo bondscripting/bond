@@ -1,5 +1,5 @@
-#ifndef BOND_ALGORITHM_H
-#define BOND_ALGORITHM_H
+#ifndef BOND_STL_ALGORITHM_H
+#define BOND_STL_ALGORITHM_H
 
 #include "bond/conf.h"
 

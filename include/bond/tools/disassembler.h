@@ -1,5 +1,5 @@
-#ifndef BOND_DISASSEMBLER_H
-#define BOND_DISASSEMBLER_H
+#ifndef BOND_TOOLS_DISASSEMBLER_H
+#define BOND_TOOLS_DISASSEMBLER_H
 
 #include "bond/types/types.h"
 

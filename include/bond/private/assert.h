@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_ASSERT_H
-#define PRIVATE_BOND_ASSERT_H
+#ifndef BOND_PRIVATE_ASSERT_H
+#define BOND_PRIVATE_ASSERT_H
 
 #include "bond/systems/exception.h"
 

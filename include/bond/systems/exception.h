@@ -1,5 +1,5 @@
-#ifndef BOND_EXCEPTION_H
-#define BOND_EXCEPTION_H
+#ifndef BOND_SYSTEMS_EXCEPTION_H
+#define BOND_SYSTEMS_EXCEPTION_H
 
 #include "bond/conf.h"
 

@@ -1,5 +1,5 @@
-#ifndef BOND_TOKEN_H
-#define BOND_TOKEN_H
+#ifndef BOND_COMPILER_TOKEN_H
+#define BOND_COMPILER_TOKEN_H
 
 #include "bond/compiler/streampos.h"
 #include "bond/types/hashedstring.h"

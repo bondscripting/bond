@@ -1,5 +1,5 @@
-#ifndef BOND_CODESEGMENT_H
-#define BOND_CODESEGMENT_H
+#ifndef BOND_VM_CODESEGMENT_H
+#define BOND_VM_CODESEGMENT_H
 
 #include "bond/api/nativebinding.h"
 #include "bond/types/hashedstring.h"

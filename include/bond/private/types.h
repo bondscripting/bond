@@ -1,5 +1,5 @@
-#ifndef PRIVATE_BOND_TYPES_H
-#define PRIVATE_BOND_TYPES_H
+#ifndef BOND_PRIVATE_TYPES_H
+#define BOND_PRIVATE_TYPES_H
 
 #include <stdint.h>
 
