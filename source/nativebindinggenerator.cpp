@@ -39,6 +39,7 @@ private:
 	};
 	typedef AutoStack<NamespaceItem> NamespaceStack;
 
+	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const EnumDeclaration *enumDeclaration) {}
 	virtual void Visit(const FunctionDefinition *functionDefinition);
@@ -93,7 +94,7 @@ void NativeBindingGeneratorCore::Generate()
 			includeGuard[i++] = isalnum(c) ? toupper(c) : '_';
 		}
 		includeGuard[i] = '\0';
-		mHWriter.Write("#ifndef %s\n#define %s\n\n#include \"bond/nativebinding.h\"\n\n", includeGuard, includeGuard);
+		mHWriter.Write("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
 		OpenNamespaces(mHWriter, identifiers, numIdentifiers);
 		mHWriter.Write("extern const Bond::NativeBindingCollection ");
 		WriteString(mHWriter, collectionName);
@@ -121,6 +122,15 @@ void NativeBindingGeneratorCore::Generate()
 		WriteString(mCppWriter, collectionName);
 		mCppWriter.Write("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
 		CloseNamespaces(mCppWriter, numIdentifiers);
+	}
+}
+
+
+void NativeBindingGeneratorCore::Visit(const TranslationUnit *translationUnit)
+{
+	if (translationUnit->RequiresCodeGeneration())
+	{
+		ParseNodeTraverser::Visit(translationUnit);
 	}
 }
 

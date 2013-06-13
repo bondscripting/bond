@@ -1,30 +1,11 @@
 #ifndef BOND_IO_FILELOADER_H
 #define BOND_IO_FILELOADER_H
 
-#include "bond/types/types.h"
+#include "bond/io/filedata.h"
 #include "bond/systems/resourcehandle.h"
 
 namespace Bond
 {
-
-struct FileData
-{
-	FileData(): mData(NULL), mLength(0) {}
-
-	FileData(const void *data, size_t length):
-		mData(data),
-		mLength(length)
-	{}
-
-	bool operator==(const FileData &other) const
-	{
-		return (mData == other.mData) && (mLength == other.mLength);
-	}
-
-	const void *mData;
-	size_t mLength;
-};
-
 
 class FileLoader
 {

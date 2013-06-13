@@ -47,10 +47,10 @@ public:
 			return GetArgRef<ArgType>(index);
 		}
 
-		template <typename ReturnType>
-		void SetReturnValue(const ReturnType &returnValue) const
+		template <typename ReturnType> const
+		void SetReturnValue(const ReturnType &returnValue)
 		{
-			GetArgRef<ReturnType>() = returnValue;
+			GetReturnRef<ReturnType>() = returnValue;
 		}
 
 	private:

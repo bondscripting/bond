@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\api\libinclude.h" />
+    <ClInclude Include="..\..\include\bond\api\libmath.h" />
+    <ClInclude Include="..\..\include\bond\api\libruntime.h" />
+    <ClInclude Include="..\..\include\bond\api\libstring.h" />
     <ClInclude Include="..\..\include\bond\api\nativebinding.h" />
     <ClInclude Include="..\..\include\bond\compiler\charstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\codegenerator.h" />
@@ -51,6 +54,8 @@
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\assert.h" />
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h" />
+    <ClInclude Include="..\..\include\bond\private\libruntime32_embedded.h" />
+    <ClInclude Include="..\..\include\bond\private\libruntime64_embedded.h" />
     <ClInclude Include="..\..\include\bond\private\list.h" />
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\set.h" />
@@ -87,6 +92,8 @@
     <ClInclude Include="..\..\include\bond\vm\codesegment.h" />
     <ClInclude Include="..\..\include\bond\vm\vm.h" />
     <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_embedded.h" />
     <ClInclude Include="..\..\source\private\memory.h" />
     <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
@@ -111,6 +118,11 @@
     <ClCompile Include="..\..\source\frontend.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\libinclude.cpp" />
+    <ClCompile Include="..\..\source\libmath.cpp" />
+    <ClCompile Include="..\..\source\libmathbindings.cpp" />
+    <ClCompile Include="..\..\source\libruntime.cpp" />
+    <ClCompile Include="..\..\source\libstring.cpp" />
+    <ClCompile Include="..\..\source\libstringbindings.cpp" />
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />

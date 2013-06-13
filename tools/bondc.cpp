@@ -34,6 +34,7 @@ int main(int argc, const char *argv[])
 
 	try
 	{
+		Bond::PointerSize pointerSize = Bond::BOND_NATIVE_POINTER_SIZE;
 		Bond::DefaultAllocator allocator;
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
@@ -126,6 +127,14 @@ int main(int argc, const char *argv[])
 					error = true;
 				}
 			}
+			else if (strcmp(argv[i], "-p32") == 0)
+			{
+				pointerSize = Bond::POINTER_32BIT;
+			}
+			else if (strcmp(argv[i], "-p64") == 0)
+			{
+				pointerSize = Bond::POINTER_64BIT;
+			}
 			else if (argv[i][0] == '-')
 			{
 				fprintf(stderr, "Unknown option '%s'\n", argv[i]);
@@ -171,7 +180,7 @@ int main(int argc, const char *argv[])
 				if (cboFile != NULL)
 				{
 					Bond::StdioBinaryWriter cboWriter(cboFile);
-					Bond::CodeGenerator generator(allocator, errorBuffer);
+					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
 					generator.Generate(parser.GetTranslationUnitList(), cboWriter);
 				}
 				else

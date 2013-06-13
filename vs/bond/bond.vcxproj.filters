@@ -57,51 +57,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\source\private\semanticanalysispass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\toplevelsymbolpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\typeevaluationpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\validationpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\valueevaluationpass.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\algorithm.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\list.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\map.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\set.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\stlallocator.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\types.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\vector.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\memory.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\assert.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\compiler\charstream.h">
       <Filter>Header Files\include\bond\compiler</Filter>
     </ClInclude>
@@ -243,18 +198,6 @@
     <ClInclude Include="..\..\include\bond\vm\vm.h">
       <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\api\libinclude.h">
-      <Filter>Header Files\include\bond\api</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\api\nativebinding.h">
-      <Filter>Header Files\include\bond\api</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\binarywriter.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -281,6 +224,84 @@
     </ClInclude>
     <ClInclude Include="..\..\include\bond\io\textwriter.h">
       <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libinclude.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libmath.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libruntime.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libstring.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\nativebinding.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\algorithm.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\assert.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\libruntime32_embedded.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\libruntime64_embedded.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\list.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\map.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\set.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\stlallocator.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\types.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\vector.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\memory.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\semanticanalysispass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\toplevelsymbolpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\typeevaluationpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\validationpass.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\valueevaluationpass.h">
+      <Filter>Header Files\source\private</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -327,6 +348,21 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libinclude.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmath.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmathbindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libruntime.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libstring.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libstringbindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\memoryfileloader.cpp">
