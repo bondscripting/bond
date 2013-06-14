@@ -1,3 +1,4 @@
+#include "bond/io/bufferedtextwriter.h"
 #include "bond/io/fileloader.h"
 #include "bond/io/textwriter.h"
 #include "bond/stl/algorithm.h"
@@ -179,7 +180,7 @@ CboLoader::Handle CboLoader::Load()
 		const NativeBindingCollection &bindingCollection = **nbit;
 		for (bu32_t i = 0; i < bindingCollection.mFunctionBindingCount; ++i)
 		{
-			//AddNativeFunction(resources, bindingCollection.mFunctionBindings[j]);
+			BindNativeFunction(bindingCollection.mFunctionBindings[i], *codeSegment);
 		}
 	}
 
@@ -193,9 +194,34 @@ CboLoader::Handle CboLoader::Load()
 }
 
 
+void CboLoader::BindNativeFunction(const NativeFunctionBinding &binding, const CodeSegment &codeSegment)
+{
+	Function *function = const_cast<Function *>(codeSegment.GetFunction(binding.mHash));
+	if (function != NULL)
+	{
+		if (function->IsNative())
+		{
+			function->mNativeFunction = binding.mFunction;
+		}
+		else
+		{
+			FunctionIsNotNative(*function);
+		}
+	}
+	else
+	{
+		UnresolvedHash(binding.mHash);
+	}
+}
+
+
 void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegment)
 {
-	if (function.mCodeSize > 0)
+	if (function.IsNative())
+	{
+		// TODO: Assert that the function is bound.
+	}
+	else
 	{
 		bu8_t *code = const_cast<bu8_t *>(function.mCode);
 		const bu8_t *codeEnd = code + function.mCodeSize;
@@ -240,8 +266,6 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 							resolvedPointer = codeSegment.GetFunction(hash);
 						}
 						break;
-						case OPCODE_INVOKENATIVE:
-							break;
 						default:
 							break;
 					}
@@ -299,6 +323,27 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 			}
 		}
 	}
+}
+
+
+void CboLoader::FunctionIsNotNative(const Function &function) const
+{
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	const char *const *elements = function.mName;
+	bool isFirstElement = true;
+
+	while (*elements != NULL)
+	{
+		if (!isFirstElement)
+		{
+			writer.Write("::");
+			isFirstElement = false;
+		}
+		writer.Write(*elements++);
+	}
+
+	BOND_FAIL_FORMAT(("Target function '%s' of native function binding is not native.", buffer));
 }
 
 
@@ -408,11 +453,11 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
 	const bu32_t codeSize = ReadValue32().mUInt;
+	function->mCodeSize = codeSize;
 	if (codeSize > 0)
 	{
 		bu8_t *code = mResources.mCode;
 		function->mCode = code;
-		function->mCodeSize = codeSize;
 		memcpy(code, mByteCode + mIndex, codeSize);
 		mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
 		mIndex += codeSize;

@@ -256,7 +256,6 @@ namespace Bond
 	BOND_OPCODE_ITEM(TABLESWITCH,  tableswitch,  TABLESWITCH,  -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(INVOKE,       invoke,       HASH,         0)  \
-	BOND_OPCODE_ITEM(INVOKENATIVE, invokenative, HASH,         0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE,         0)  \
 	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE,         -1) \

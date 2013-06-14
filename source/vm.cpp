@@ -79,15 +79,23 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 void VM::CallerStackFrame::Call()
 {
 	CalleeStackFrame &frame = GetValue();
+	const Function *function = frame.mFunction;
 
 #if BOND_RUNTIME_CHECKS_ENABLED
-	if (mNextArg < frame.mFunction->mParamListSignature.mParamCount)
+	if (mNextArg < function->mParamListSignature.mParamCount)
 	{
 		frame.mVm.RaiseError("Attempt to call function with too few arguments.");
 	}
 #endif
 
-	frame.mVm.ExecuteScriptFunction();
+	if (function->IsNative())
+	{
+		function->mNativeFunction(frame.mVm);
+	}
+	else
+	{
+		frame.mVm.ExecuteScriptFunction();
+	}
 }
 
 
@@ -2018,12 +2026,6 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
-			case OPCODE_INVOKENATIVE:
-			{
-				// TODO
-			}
-			break;
-
 			case OPCODE_RETURN:
 				return;
 
@@ -2108,7 +2110,14 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 	StackFrames::Element stackFrameElement(mStackFrames, CalleeStackFrame(*this, function, framePointer, stackPointer, returnPointer));
 	ValidateStackPointer(stackPointer);
 
-	ExecuteScriptFunction();
+	if (function->IsNative())
+	{
+		function->mNativeFunction(*this);
+	}
+	else
+	{
+		ExecuteScriptFunction();
+	}
 
 	return finalStackPointer;
 }

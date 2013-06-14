@@ -1,3 +1,4 @@
+#include "bond/api/libruntime.h"
 #include "bond/io/diskfileloader.h"
 #include "bond/stl/list.h"
 #include "bond/systems/defaultallocator.h"
@@ -76,6 +77,8 @@ int main(int argc, const char *argv[])
 			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
 			Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(cboFileNameList.size()));
+
+			Bond::LoadAllLibs(cboLoader);
 
 			StringList::Type::const_iterator it = cboFileNameList.begin();
 			for (size_t i = 0; it != cboFileNameList.end(); ++it, ++i)

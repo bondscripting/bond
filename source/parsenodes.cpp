@@ -105,8 +105,11 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	else if (GetSymbolType() == TYPE_NAMESPACE)
 	{
 		Symbol *nextScope = FindSymbol(identifier->GetName());
-		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+		if (nextScope != NULL)
+		{
+			const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+			symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+		}
 	}
 
 	return symbol;

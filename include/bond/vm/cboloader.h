@@ -47,8 +47,10 @@ private:
 		bool operator()(const Function &a, const Function &b) const;
 	};
 
+	void BindNativeFunction(const NativeFunctionBinding &binding, const CodeSegment &codeSegment);
 	void ProcessFunction(Function &function, const CodeSegment &codeSegment);
 
+	void FunctionIsNotNative(const Function &function) const;
 	void UnresolvedHash(bu32_t hash) const;
 	void HashCollision(bu32_t hash) const;
 

@@ -56,6 +56,8 @@ struct ReturnSignature
 
 struct Function
 {
+	bool IsNative() const { return mCodeSize == 0; }
+
 	const char *const *mName;
 	ReturnSignature mReturnSignature;
 	ParamListSignature mParamListSignature;

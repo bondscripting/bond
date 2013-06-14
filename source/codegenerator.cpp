@@ -1281,7 +1281,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 			EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
 		}
 
-		EmitOpCode(function->IsNative() ? OPCODE_INVOKENATIVE : OPCODE_INVOKE);
+		EmitOpCode(OPCODE_INVOKE);
 		EmitHashCode(function->GetGlobalHashCode());
 	}
 
