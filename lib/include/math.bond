@@ -3,11 +3,83 @@ namespace Bond
 native
 {
 
+const double PI = 3.14159265358979323846;
+const float PI_F = cast<float>(PI);
+
+const double HALF_PI = PI / 2.0;
+const float HALF_PI_F = cast<float>(HALF_PI);
+
+const double TWO_PI = PI * 2.0;
+const float TWO_PI_F = cast<float>(TWO_PI);
+
+const double NAN = 0.0 / 0.0;
+const double NAN_F = 0.0f / 0.0f;
+
 double Sin(double x);
 float Sinf(float x);
 
 double Cos(double x);
 double Cosf(float x);
+
+double Tan(double x);
+float Tanf(float x);
+
+double Asin(double x);
+float Asinf(float x);
+
+double Acos(double x);
+float Acosf(float x);
+
+double Atan(double x);
+float Atanf(float x);
+
+double Atan2(double y, double x);
+float Atan2f(float y, float x);
+
+double Sinh(double x);
+float Sinhf(float x);
+
+double Cosh(double x);
+double Coshf(float x);
+
+double Tanh(double x);
+float Tanhf(float x);
+
+double Exp(double x);
+float Expf(float x);
+
+double Log(double x);
+float Logf(float x);
+
+double Log10(double x);
+float Log10f(float x);
+
+double Pow(double x, double y);
+float Powf(float x, float y);
+
+double Sqrt(double x);
+float Sqrtf(float x);
+
+double Ceil(double x);
+float Ceilf(float x);
+
+double Floor(double x);
+float Floorf(float x);
+
+double Fabs(double x);
+float Fabsf(float x);
+
+double Ldexp(double x, int n);
+float Ldexpf(float x, int n);
+
+double Frexp(double x, int n);
+float Frexpf(float x, int n);
+
+double Modf(double x, double *ip);
+float Modff(float x, float *ip);
+
+double Fmod(double x, double y);
+float Fmodf(float x, float y);
 
 }
 }
