@@ -135,19 +135,18 @@ void CompilerError::Print(TextWriter &writer) const
 				}
 				break;
 
-				case 't':
+				case 's':
 				{
-					const Token *token = reinterpret_cast<const Token *>(arg);
-					writer.Write("%s", token->GetText());
+					const char *str = reinterpret_cast<const char *>(arg);
+					writer.Write("%s", str);
 					state = STATE_NORMAL;
 				}
 				break;
 
-				case 's':
+				case 't':
 				{
-					const char *str = reinterpret_cast<const char *>(arg);
-					state = STATE_NORMAL;
-					writer.Write("%s", str);
+					const Token *token = reinterpret_cast<const Token *>(arg);
+					writer.Write("%s", token->GetText());
 					state = STATE_NORMAL;
 				}
 				break;

@@ -20,7 +20,8 @@ void SemanticAnalysisPass::Visit(TranslationUnit *translationUnit)
 
 void SemanticAnalysisPass::Visit(NamespaceDefinition *namespaceDefinition)
 {
-	ScopeStack::Element stackElement(mScopeStack, namespaceDefinition);
+	Symbol *scope = GetOrInsertSymbol(namespaceDefinition);
+	ScopeStack::Element stackElement(mScopeStack, scope);
 	ParseNodeTraverser::Visit(namespaceDefinition);
 }
 

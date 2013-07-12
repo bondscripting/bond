@@ -588,9 +588,9 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 							paramDescriptor,
 							argList->GetContextToken(),
 							CompilerError::INVALID_TYPE_CONVERSION);
-						paramList = NextNode(paramList);
-						argList = NextNode(argList);
 					}
+					paramList = NextNode(paramList);
+					argList = NextNode(argList);
 				}
 			}
 			else

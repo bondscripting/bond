@@ -15,7 +15,6 @@ public:
 
 	virtual ~TopLevelSymbolPass() {}
 
-	virtual void Visit(NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(StructDeclaration *structDeclaration);

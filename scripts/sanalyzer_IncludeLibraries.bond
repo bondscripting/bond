@@ -1,0 +1,7 @@
+include "math.bond";
+include "string.bond";
+
+void TestForPresenceOfIncludedDeclarations()
+{
+	double value = Bond::Ceil(Bond::PI);
+}

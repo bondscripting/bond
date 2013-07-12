@@ -71,10 +71,12 @@ private:
 	void DecrementTab() { --mTabLevel; }
 	void Tab();
 	void Newline();
-	bool IsTopLevelExpression() const { return mTopLevelExpression.IsEmpty() || mTopLevelExpression.GetTop(); }
-	bool ShouldPrintTabsAndNewlines() { return mShouldPrintTabsAndNewlines.IsEmpty() || mShouldPrintTabsAndNewlines.GetTop(); }
+	bool IsTopLevelExpression() const { return mIsTopLevelExpression.IsEmpty() || mIsTopLevelExpression.GetTop(); }
+	bool IsTopLevelId() const { return mIsTopLevelId.IsEmpty() || mIsTopLevelId.GetTop(); }
+	bool ShouldPrintTabsAndNewlines() const { return mShouldPrintTabsAndNewlines.IsEmpty() || mShouldPrintTabsAndNewlines.GetTop(); }
 
-	BoolStack mTopLevelExpression;
+	BoolStack mIsTopLevelExpression;
+	BoolStack mIsTopLevelId;
 	BoolStack mShouldPrintTabsAndNewlines;
 	TextWriter &mWriter;
 	int mTabLevel;
@@ -316,7 +318,7 @@ void PrettyPrinterCore::Visit(const TypeSpecifier *typeSpecifier)
 	}
 	else
 	{
-		PrintList(typeSpecifier->GetIdentifier(), "::");
+		Print(typeSpecifier->GetIdentifier());
 	}
 }
 
@@ -350,7 +352,15 @@ void PrettyPrinterCore::Visit(const Initializer *initializer)
 
 void PrettyPrinterCore::Visit(const QualifiedIdentifier *identifier)
 {
-	Print(identifier->GetName());
+	if (IsTopLevelId())
+	{
+		BoolStack::Element topLevelIdElement(mIsTopLevelId, false);
+		PrintList(identifier, "::");
+	}
+	else
+	{
+		Print(identifier->GetName());
+	}
 }
 
 
@@ -582,7 +592,7 @@ void PrettyPrinterCore::Visit(const ArraySubscriptExpression *arraySubscriptExpr
 
 void PrettyPrinterCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
-	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
+	BoolStack::Element topLevelExpressionElement(mIsTopLevelExpression, true);
 	Print(functionCallExpression->GetLhs());
 	mWriter.Write("(");
 	PrintList(functionCallExpression->GetArgumentList(), ", ");
@@ -640,7 +650,7 @@ void PrettyPrinterCore::Visit(const IdentifierExpression *identifierExpression)
 {
 	if (!PrintFoldedConstant(identifierExpression))
 	{
-		PrintList(identifierExpression->GetIdentifier(), "::");
+		Print(identifierExpression->GetIdentifier());
 	}
 }
 
@@ -690,14 +700,14 @@ void PrettyPrinterCore::PrintBlockOrStatement(const ParseNode *parseNode)
 
 void PrettyPrinterCore::PrintExpression(const Expression *expression)
 {
-	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, false);
+	BoolStack::Element topLevelExpressionElement(mIsTopLevelExpression, false);
 	Print(expression);
 }
 
 
 void PrettyPrinterCore::PrintTopLevelExpression(const Expression *expression)
 {
-	BoolStack::Element topLevelExpressionElement(mTopLevelExpression, true);
+	BoolStack::Element topLevelExpressionElement(mIsTopLevelExpression, true);
 	Print(expression);
 }
 

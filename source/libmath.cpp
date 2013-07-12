@@ -128,7 +128,7 @@ void Atan2f(Bond::VM &vm)
 	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double y = double(frame.GetArg<bf32_t>(0));
 	const double x = double(frame.GetArg<bf32_t>(1));
-	const double result = atan2f(y, x);
+	const double result = atan2(y, x);
 	frame.SetReturnValue(bf32_t(result));
 }
 

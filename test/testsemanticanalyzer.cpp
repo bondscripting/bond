@@ -307,6 +307,13 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibraries.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -323,5 +330,6 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
   TEST_ITEM(ValueEvaluationErrors)              \
   TEST_ITEM(ValueEvaluationErrors2)             \
   TEST_ITEM(ValidationErrors)                   \
+  TEST_ITEM(IncludeLibraries)                   \
 
 RUN_TESTS(SemanticAnalyzer, TEST_ITEMS)

@@ -4,13 +4,6 @@
 namespace Bond
 {
 
-void TopLevelSymbolPass::Visit(NamespaceDefinition *namespaceDefinition)
-{
-	GetOrInsertSymbol(namespaceDefinition);
-	SemanticAnalysisPass::Visit(namespaceDefinition);
-}
-
-
 void TopLevelSymbolPass::Visit(EnumDeclaration *enumDeclaration)
 {
 	InsertSymbol(enumDeclaration);
