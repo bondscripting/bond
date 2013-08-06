@@ -44,6 +44,10 @@ inline T RoundUpToPowerOfTwo32(T value)
 
 
 template <typename T>
+inline T Abs(T a) { return (a < T(0)) ? -a : a; }
+
+
+template <typename T>
 inline T Min(T a, T b) { return (a < b) ? a : b; }
 
 

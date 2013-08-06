@@ -183,7 +183,7 @@
 
 #define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                              \
   {                                                                                              \
-    const Bond::bf32_t delta = Bond::Max((expectedResult) / 1.0e7f, (expectedResult) / -1.0e7f); \
+    const Bond::bf32_t delta = Bond::Max(Bond::Abs((expectedResult) * bf32_t(1.0e-6)), bf32_t(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                 \
       (returnValue <= ((expectedResult) + delta)),                                               \
       ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", (expectedResult), returnValue));  \
@@ -192,7 +192,7 @@
 
 #define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                            \
   {                                                                                             \
-    const Bond::bf64_t delta = Bond::Max((expectedResult) / 1.0e7, (expectedResult) / -1.0e7);  \
+    const Bond::bf64_t delta = Bond::Max(Bond::Abs((expectedResult) * bf64_t(1.0e-6)), bf64_t(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                \
       (returnValue <= ((expectedResult) + delta)),                                              \
       ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", (expectedResult), returnValue)); \

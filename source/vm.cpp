@@ -2160,9 +2160,9 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 			if (!isFirstElement)
 			{
 				writer.Write("::");
-				isFirstElement = false;
 			}
 			writer.Write(*elements++);
+			isFirstElement = false;
 		}
 
 		writer.Write("(");
