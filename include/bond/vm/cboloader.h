@@ -51,6 +51,7 @@ private:
 	void ProcessFunction(Function &function, const CodeSegment &codeSegment);
 
 	void FunctionIsNotNative(const Function &function) const;
+	void FunctionIsNotBound(const Function &function) const;
 	void UnresolvedHash(bu32_t hash) const;
 	void HashCollision(bu32_t hash) const;
 

@@ -140,7 +140,7 @@ CboLoader::Handle CboLoader::Load()
 	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount, sizeof(Value32));
 
 	const size_t CBO_ALIGNMENT = 256;
-	Allocator::Handle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
+	Allocator::AlignedHandle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
 	CboLoaderResources resources(
 		memHandle.Get(),
 		constantTablesStart,
@@ -219,7 +219,10 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 {
 	if (function.IsNative())
 	{
-		// TODO: Assert that the function is bound.
+		if (function.mNativeFunction == NULL)
+		{
+			FunctionIsNotBound(function);
+		}
 	}
 	else
 	{
@@ -347,6 +350,27 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 }
 
 
+void CboLoader::FunctionIsNotBound(const Function &function) const
+{
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	const char *const *elements = function.mName;
+	bool isFirstElement = true;
+
+	while (*elements != NULL)
+	{
+		if (!isFirstElement)
+		{
+			writer.Write("::");
+			isFirstElement = false;
+		}
+		writer.Write(*elements++);
+	}
+
+	BOND_FAIL_FORMAT(("Native function '%s' is not bound.", buffer));
+}
+
+
 void CboLoader::UnresolvedHash(bu32_t hash) const
 {
 	BOND_FAIL_FORMAT(("Unresolved hash 0x%" BOND_PRIx32 ".", hash));
@@ -461,6 +485,10 @@ void CboLoaderCore::LoadFunctionBlob()
 		memcpy(code, mByteCode + mIndex, codeSize);
 		mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
 		mIndex += codeSize;
+	}
+	else
+	{
+		function->mNativeFunction = NULL;
 	}
 	++mResources.mFunctions;
 }

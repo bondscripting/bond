@@ -88,7 +88,6 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	const Token::TokenType b = typeB->GetPrimitiveType();
 	TypeDescriptor result = TypeDescriptor::GetIntType();
 
-	// TODO: Revise this function using implicit conversion rules.
 	if (typeA->IsPointerType())
 	{
 		result = *typeA;
@@ -109,23 +108,31 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	{
 		result = TypeDescriptor::GetFloatType();
 	}
-	else if ((a == Token::KEY_LONG) || (b == Token::KEY_LONG))
-	{
-		result = TypeDescriptor::GetLongType();
-	}
-	else if ((a == Token::KEY_ULONG) || (b == Token::KEY_ULONG))
-	{
-		result = TypeDescriptor::GetULongType();
-	}
 	else if (SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
 	         SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
 	{
-		result = TypeDescriptor::GetIntType();
+		if (LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
+	      LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
+		{
+			result = TypeDescriptor::GetLongType();
+		}
+		else
+		{
+			result = TypeDescriptor::GetIntType();
+		}
 	}
 	else if (UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
 	         UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
 	{
-		result = TypeDescriptor::GetUIntType();
+		if (LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
+	      LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
+		{
+			result = TypeDescriptor::GetULongType();
+		}
+		else
+		{
+			result = TypeDescriptor::GetUIntType();
+		}
 	}
 	else if ((a == Token::KEY_BOOL) || (b == Token::KEY_BOOL))
 	{
