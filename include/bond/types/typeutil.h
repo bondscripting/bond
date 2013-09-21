@@ -10,7 +10,7 @@ template<typename T>
 bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
 	return
-		(AlignUp(sizeof(T), size_t(BOND_SLOT_SIZE)) == size) &&
+		(sizeof(T)  == size) &&
 		((signatureType == SIG_POINTER) || (signatureType == SIG_STRUCT));
 }
 

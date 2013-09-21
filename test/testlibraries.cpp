@@ -12,11 +12,11 @@ DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")
 	const bf64_t THIRD_PI = PI / 3.0;
 	const bf64_t SIXTH_PI = PI / 6.0;
 
-	const bf32_t PI_F = 3.14159265358979323846;
-	const bf32_t TWO_PI_F = PI * 2.0;
-	const bf32_t HALF_PI_F = PI / 2.0;
-	const bf32_t THIRD_PI_F = PI / 3.0;
-	const bf32_t SIXTH_PI_F = PI / 6.0;
+	const bf32_t PI_F = bf32_t(3.14159265358979323846);
+	const bf32_t TWO_PI_F = bf32_t(PI * 2.0);
+	const bf32_t HALF_PI_F = bf32_t(PI / 2.0);
+	const bf32_t THIRD_PI_F = bf32_t(PI / 3.0);
+	const bf32_t SIXTH_PI_F = bf32_t(PI / 6.0);
 
 	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(0.0), bf64_t(0.0));
 	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(1.0), HALF_PI);

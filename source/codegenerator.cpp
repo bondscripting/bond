@@ -312,6 +312,7 @@ private:
 	GeneratorResult EmitNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitBitwiseNotOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitAddressOfOperator(const UnaryExpression *unaryExpression);
+	void EmitPushAddressOfResult(const GeneratorResult &result);
 	GeneratorResult EmitAddressOfResult(const GeneratorResult &result);
 	GeneratorResult EmitDereferenceOperator(const UnaryExpression *unaryExpression);
 	GeneratorResult EmitDereferenceResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor);
@@ -525,17 +526,14 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			const Initializer *initializer = namedInitializer->GetInitializer();
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
-				ResultStack::Element rhResult(mResult);
 				IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
-				Traverse(initializer);
 
 				if (lhDescriptor->IsStructType())
 				{
 					EmitOpCodeWithOffset(OPCODE_LOADFP, namedInitializer->GetOffset());
-					const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
-					// Any pointer type will do.
-					const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
-					EmitPushResult(sourceResult, &voidStar);
+					ResultStack::Element rhResult(mResult);
+					Traverse(initializer);
+					EmitPushAddressOfResult(rhResult);
 					EmitOpCode(OPCODE_MEMCOPYW);
 					EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
 				}
@@ -543,6 +541,8 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 				{
 					const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 					GeneratorResult lhResult(GeneratorResult::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset());
+					ResultStack::Element rhResult(mResult);
+					Traverse(initializer);
 					EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 					EmitPopResult(lhResult, lhDescriptor);
 				}
@@ -847,10 +847,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 						break;
 
 					default:
-						const GeneratorResult result = EmitAddressOfResult(rhResult);
-						// Any pointer type will do.
-						const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
-						EmitPushResult(result, &voidStar);
+						EmitPushAddressOfResult(rhResult);
 						EmitOpCode(OPCODE_RETURNMEMW);
 						EmitIndexedValue32(Value32(returnDescriptor->GetSize(mPointerSize)));
 						break;
@@ -877,7 +874,6 @@ void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
-	// TODO: Account for structs and verify pointer and array types.
 	const Expression *condition = conditionalExpression->GetCondition();
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
@@ -885,6 +881,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	const TypeDescriptor *trueDescriptor = trueExpression->GetTypeDescriptor();
 	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeDescriptor();
 	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeDescriptor();
+	const bool isStruct = resultDescriptor->IsStructType();
 
 	{
 		ResultStack::Element conditionResult(mResult);
@@ -898,7 +895,14 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 			IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
 			ResultStack::Element trueResult(mResult);
 			Traverse(trueExpression);
-			EmitPushResultAs(trueResult, trueDescriptor, resultDescriptor);
+			if (isStruct)
+			{
+				EmitPushAddressOfResult(trueResult);
+			}
+			else
+			{
+				EmitPushResultAs(trueResult, trueDescriptor, resultDescriptor);
+			}
 		}
 
 		const size_t falseEndLabel = CreateLabel();
@@ -907,12 +911,21 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 
 		ResultStack::Element falseResult(mResult);
 		Traverse(falseExpression);
-		EmitPushResultAs(falseResult, falseDescriptor, resultDescriptor);
+		if (isStruct)
+		{
+			EmitPushAddressOfResult(falseResult);
+		}
+		else
+		{
+			EmitPushResultAs(falseResult, falseDescriptor, resultDescriptor);
+		}
 
 		SetLabelValue(falseEndLabel, GetByteCode().size());
 	}
 
-	mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_STACK_VALUE));
+	mResult.SetTop(GeneratorResult(isStruct ?
+		GeneratorResult::CONTEXT_ADDRESS_INDIRECT :
+		GeneratorResult::CONTEXT_STACK_VALUE));
 }
 
 
@@ -2443,10 +2456,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 
 	if (lhDescriptor->IsStructType())
 	{
-		const GeneratorResult destinationResult = EmitAddressOfResult(lhResult);
-		// Any pointer type will do.
-		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
-		EmitPushResult(destinationResult, &voidStar);
+		EmitPushAddressOfResult(lhResult);
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2459,8 +2469,7 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAssignmentOperator(const Binar
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		const GeneratorResult sourceResult = EmitAddressOfResult(rhResult);
-		EmitPushResult(sourceResult, &voidStar);
+		EmitPushAddressOfResult(rhResult);
 		EmitOpCode(OPCODE_MEMCOPYW);
 		EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
 	}
@@ -3077,6 +3086,15 @@ GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfOperator(const UnaryE
 }
 
 
+void GeneratorCore::EmitPushAddressOfResult(const GeneratorResult &result)
+{
+	const GeneratorResult destinationResult = EmitAddressOfResult(result);
+	// Any pointer type will do.
+	const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+	EmitPushResult(destinationResult, &voidStar);
+}
+
+
 GeneratorCore::GeneratorResult GeneratorCore::EmitAddressOfResult(const GeneratorResult &result)
 {
 	GeneratorResult outputResult = result;
@@ -3404,7 +3422,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 
 	if (includeThis)
 	{
-		const bu32_t sizeAndType = EncodeSizeAndType(BOND_SLOT_SIZE, SIG_POINTER);
+		const bu32_t sizeAndType = EncodeSizeAndType(GetPointerSize(mPointerSize), SIG_POINTER);
 		WriteValue32(Value32(-BOND_SLOT_SIZE));
 		WriteValue32(Value32(sizeAndType));
 	}
@@ -3413,7 +3431,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	{
 		const TypeDescriptor *type = parameterList->GetTypeDescriptor();
 		const bi32_t offset = parameterList->GetOffset();
-		const bu32_t sizeAndType = EncodeSizeAndType(type->GetStackSize(mPointerSize), type->GetSignatureType());
+		const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
 		WriteValue32(Value32(offset));
 		WriteValue32(Value32(sizeAndType));
 		parameterList = NextNode(parameterList);

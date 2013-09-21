@@ -2096,6 +2096,7 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 		const bu32_t numParams = function->mParamListSignature.mParamCount;
 		const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
 		bu8_t *source = argTop;
+		// TODO: Downcast arguments from int/uint to bool/char/uchar/short/ushort if needed.
 		for (bu32_t i = 0; i < numParams; ++i)
 		{
 			const ParamSignature &signature = signatures[i];

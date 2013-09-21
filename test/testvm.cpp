@@ -828,6 +828,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 
 	Vector3 v3a;
 	Vector3 v3b;
+	Vector3 v3c;
 	memset(&v3a, 0, sizeof(v3a));
 	DO_FUNCTION_CALL_4("::SetVector3", NULL, &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
 	ASSERT_FORMAT(v3a.x == 11, ("Expected 11, but was %" BOND_PRId32 ".", v3a.x));
@@ -864,6 +865,26 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 
 	DO_FUNCTION_CALL_1("::ConstructVector3AndGetY", &v3a, bi32_t(12321));
 	ASSERT_FORMAT(v3a.x == 12321, ("Expected 12321, but was %" BOND_PRId32 ".", v3a.x));
+
+	v3a.x = 31;
+	v3a.y = 32;
+	v3a.z = 33;
+	v3b.x = 41;
+	v3b.y = 42;
+	v3b.z = 43;
+	v3c.x = 51;
+	v3c.y = 52;
+	v3c.z = 53;
+
+	DO_FUNCTION_CALL_3("::SelectVector3", &v3c, bu8_t(1), v3a, v3b);
+	ASSERT_FORMAT(v3c.x == 31, ("Expected 31, but was %" BOND_PRId32 ".", v3c.x));
+	ASSERT_FORMAT(v3c.y == 32, ("Expected 32, but was %" BOND_PRId32 ".", v3c.y));
+	ASSERT_FORMAT(v3c.z == 33, ("Expected 33, but was %" BOND_PRId32 ".", v3c.z));
+
+	DO_FUNCTION_CALL_3("::SelectVector3", &v3c, bu8_t(0), v3a, v3b);
+	ASSERT_FORMAT(v3c.x == 41, ("Expected 41, but was %" BOND_PRId32 ".", v3c.x));
+	ASSERT_FORMAT(v3c.y == 42, ("Expected 42, but was %" BOND_PRId32 ".", v3c.y));
+	ASSERT_FORMAT(v3c.z == 43, ("Expected 43, but was %" BOND_PRId32 ".", v3c.z));
 
 	return true;
 }

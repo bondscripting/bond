@@ -110,3 +110,9 @@ int ConstructVector3AndGetY(int y)
 {
 	return ConstructVector3(0xbadbad, y, 0xbadbad).mY;
 }
+
+Vector3 SelectVector3(bool condition, Vector3 a, Vector3 b)
+{
+	Vector3 c = condition ? a : b;
+	return c;
+}
