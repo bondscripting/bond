@@ -3,7 +3,6 @@
 
 #include "bond/stl/autostack.h"
 #include "bond/systems/assert.h"
-#include "bond/types/typeutil.h"
 #include "bond/vm/codesegment.h"
 
 namespace Bond
@@ -42,54 +41,17 @@ public:
 		{}
 
 		template <typename ArgType>
-		const ArgType &GetArg(size_t index) const
-		{
-			return GetArgRef<ArgType>(index);
-		}
+		const ArgType &GetArg(size_t index) const;
 
-		template <typename ReturnType> const
-		void SetReturnValue(const ReturnType &returnValue)
-		{
-			GetReturnRef<ReturnType>() = returnValue;
-		}
+		template <typename ReturnType>
+		void SetReturnValue(const ReturnType &returnValue);
 
 	private:
 		template <typename ArgType>
-		ArgType &GetArgRef(size_t index) const
-		{
-			const ParamListSignature &paramListSignature = mFunction->mParamListSignature;
-
-#if BOND_RUNTIME_CHECKS_ENABLED
-			if (index >= paramListSignature.mParamCount)
-			{
-				mVm.RaiseError("Attempt to index argument out of range.");
-			}
-#endif
-
-			const ParamSignature &param = paramListSignature.mParamSignatures[index];
-
-#if BOND_RUNTIME_CHECKS_ENABLED
-			if (!ValidateSignatureType<ArgType>(size_t(param.mSize), SignatureType(param.mType)))
-			{
-				mVm.RaiseError("Attempt to access argument using wrong type.");
-			}
-#endif
-
-			return *reinterpret_cast<ArgType *>(mFramePointer + param.mFramePointerOffset);
-		}
+		ArgType &GetArgRef(size_t index) const;
 
 		template <typename ReturnType>
-		ReturnType &GetReturnRef() const
-		{
-#if BOND_RUNTIME_CHECKS_ENABLED
-			const ReturnSignature &ret = mFunction->mReturnSignature;
-			if (!ValidateSignatureType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
-			{
-				mVm.RaiseError("Attempt to access return value using wrong type.");
-			}
-#endif
-			return *reinterpret_cast<ReturnType*>(mReturnPointer);
-		}
+		void AssertValidReturnAssignmentType() const;
 
 		VM &mVm;
 		const Function *mFunction;
@@ -108,17 +70,7 @@ public:
 		CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer = NULL);
 
 		template<typename ArgType>
-		void PushArg(const ArgType &arg)
-		{
-			GetValue().GetArgRef<ArgType>(mNextArg) = arg;
-			++mNextArg;
-		}
-
-		template <typename ReturnType>
-		const ReturnType &GetReturnValue() const
-		{
-			return GetValue().GetReturnRef<ReturnType>();
-		}
+		void PushArg(const ArgType &arg);
 
 		void Call();
 
@@ -155,5 +107,7 @@ private:
 };
 
 }
+
+#include "bond/private/vm.h"
 
 #endif

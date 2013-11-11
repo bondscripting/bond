@@ -111,7 +111,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const bool EXPECTED_BOOLS[] = { true, false };
 	const int NUM_BOOLS = sizeof(EXPECTED_BOOLS) / sizeof(*EXPECTED_BOOLS);
 
-	const Bond::bi32_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, 0xffffffff };
+	const Bond::bi32_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, Bond::bi32_t(0xffffffff) };
 	const int NUM_INTS = sizeof(EXPECTED_INTS) / sizeof(*EXPECTED_INTS);
 
 	const Bond::bu32_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
