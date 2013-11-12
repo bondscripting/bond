@@ -5,9 +5,8 @@
 namespace Bond
 {
 
-void Strlen(Bond::VM &vm)
+void Strlen(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const char *str = frame.GetArg<const char *>(0);
 	const bu32_t length = bu32_t(strlen(str));
 	frame.SetReturnValue(length);

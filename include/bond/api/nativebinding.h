@@ -6,9 +6,9 @@
 namespace Bond
 {
 
-class VM;
+class CalleeStackFrame;
 
-typedef void (*NativeFunction)(VM &vm);
+typedef void (*NativeFunction)(CalleeStackFrame &frame);
 
 
 struct NativeFunctionBinding

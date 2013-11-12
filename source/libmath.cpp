@@ -5,117 +5,104 @@
 namespace Bond
 {
 
-void Sin(Bond::VM &vm)
+void Sin(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = sin(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Sinf(Bond::VM &vm)
+void Sinf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = sin(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Cos(Bond::VM &vm)
+void Cos(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = cos(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Cosf(Bond::VM &vm)
+void Cosf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = cos(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Tan(Bond::VM &vm)
+void Tan(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = tan(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Tanf(Bond::VM &vm)
+void Tanf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = tan(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Asin(Bond::VM &vm)
+void Asin(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = asin(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Asinf(Bond::VM &vm)
+void Asinf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = asin(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Acos(Bond::VM &vm)
+void Acos(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = acos(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Acosf(Bond::VM &vm)
+void Acosf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = acos(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Atan(Bond::VM &vm)
+void Atan(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = atan(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Atanf(Bond::VM &vm)
+void Atanf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = atan(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Atan2(Bond::VM &vm)
+void Atan2(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double y = double(frame.GetArg<bf64_t>(0));
 	const double x = double(frame.GetArg<bf64_t>(1));
 	const double result = atan2(y, x);
@@ -123,9 +110,8 @@ void Atan2(Bond::VM &vm)
 }
 
 
-void Atan2f(Bond::VM &vm)
+void Atan2f(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double y = double(frame.GetArg<bf32_t>(0));
 	const double x = double(frame.GetArg<bf32_t>(1));
 	const double result = atan2(y, x);
@@ -133,117 +119,104 @@ void Atan2f(Bond::VM &vm)
 }
 
 
-void Sinh(Bond::VM &vm)
+void Sinh(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = sinh(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Sinhf(Bond::VM &vm)
+void Sinhf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = sinh(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Cosh(Bond::VM &vm)
+void Cosh(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = cosh(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Coshf(Bond::VM &vm)
+void Coshf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = cosh(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Tanh(Bond::VM &vm)
+void Tanh(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = tanh(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Tanhf(Bond::VM &vm)
+void Tanhf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = tanh(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Exp(Bond::VM &vm)
+void Exp(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = exp(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Expf(Bond::VM &vm)
+void Expf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = exp(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Log(Bond::VM &vm)
+void Log(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = log(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Logf(Bond::VM &vm)
+void Logf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = log(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Log10(Bond::VM &vm)
+void Log10(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = log10(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Log10f(Bond::VM &vm)
+void Log10f(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = log10(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Pow(Bond::VM &vm)
+void Pow(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = double(frame.GetArg<bf64_t>(1));
 	const double result = pow(x, y);
@@ -251,9 +224,8 @@ void Pow(Bond::VM &vm)
 }
 
 
-void Powf(Bond::VM &vm)
+void Powf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = double(frame.GetArg<bf32_t>(1));
 	const double result = pow(x, y);
@@ -261,81 +233,72 @@ void Powf(Bond::VM &vm)
 }
 
 
-void Sqrt(Bond::VM &vm)
+void Sqrt(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = sqrt(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Sqrtf(Bond::VM &vm)
+void Sqrtf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = sqrt(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Ceil(Bond::VM &vm)
+void Ceil(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = ceil(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Ceilf(Bond::VM &vm)
+void Ceilf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = ceil(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Floor(Bond::VM &vm)
+void Floor(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = floor(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Floorf(Bond::VM &vm)
+void Floorf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = floor(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Fabs(Bond::VM &vm)
+void Fabs(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = fabs(x);
 	frame.SetReturnValue(bf64_t(y));
 }
 
 
-void Fabsf(Bond::VM &vm)
+void Fabsf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = fabs(x);
 	frame.SetReturnValue(bf32_t(y));
 }
 
 
-void Ldexp(Bond::VM &vm)
+void Ldexp(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const int n = int(frame.GetArg<bi32_t>(1));
 	const double result = ldexp(x, n);
@@ -343,9 +306,8 @@ void Ldexp(Bond::VM &vm)
 }
 
 
-void Ldexpf(Bond::VM &vm)
+void Ldexpf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const int n = int(frame.GetArg<bi32_t>(1));
 	const double result = ldexp(x, n);
@@ -353,9 +315,8 @@ void Ldexpf(Bond::VM &vm)
 }
 
 
-void Frexp(Bond::VM &vm)
+void Frexp(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	int exp;
 	const double result = frexp(x, &exp);
@@ -364,9 +325,8 @@ void Frexp(Bond::VM &vm)
 }
 
 
-void Frexpf(Bond::VM &vm)
+void Frexpf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	int exp;
 	const double result = frexp(x, &exp);
@@ -375,9 +335,8 @@ void Frexpf(Bond::VM &vm)
 }
 
 
-void Modf(Bond::VM &vm)
+void Modf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	double ip;
 	const double fp = modf(x, &ip);
@@ -386,9 +345,8 @@ void Modf(Bond::VM &vm)
 }
 
 
-void Modff(Bond::VM &vm)
+void Modff(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	double ip;
 	const double fp = modf(x, &ip);
@@ -397,9 +355,8 @@ void Modff(Bond::VM &vm)
 }
 
 
-void Fmod(Bond::VM &vm)
+void Fmod(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf64_t>(0));
 	const double y = double(frame.GetArg<bf64_t>(1));
 	const double result = fmod(x, y);
@@ -407,9 +364,8 @@ void Fmod(Bond::VM &vm)
 }
 
 
-void Fmodf(Bond::VM &vm)
+void Fmodf(Bond::CalleeStackFrame &frame)
 {
-	VM::CalleeStackFrame &frame = vm.GetTopStackFrame();
 	const double x = double(frame.GetArg<bf32_t>(0));
 	const double y = double(frame.GetArg<bf32_t>(1));
 	const double result = fmod(x, y);

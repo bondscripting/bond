@@ -58,7 +58,7 @@ inline void *LoadUnalignedPointer(const bu8_t *source)
 }
 
 
-VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
+CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
 	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
 	mNextArg(0)
 {
@@ -76,7 +76,7 @@ VM::CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName,
 }
 
 
-void VM::CallerStackFrame::Call()
+void CallerStackFrame::Call()
 {
 	CalleeStackFrame &frame = GetValue();
 	const Function *function = frame.mFunction;
@@ -90,7 +90,7 @@ void VM::CallerStackFrame::Call()
 
 	if (function->IsNative())
 	{
-		function->mNativeFunction(frame.mVm);
+		function->mNativeFunction(frame);
 	}
 	else
 	{
@@ -2113,7 +2113,7 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 
 	if (function->IsNative())
 	{
-		function->mNativeFunction(*this);
+		function->mNativeFunction(stackFrameElement.GetValue());
 	}
 	else
 	{

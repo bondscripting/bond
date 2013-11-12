@@ -10,7 +10,7 @@ extern const Bond::NativeBindingCollection STRING_BINDING_COLLECTION;
 
 namespace Bond
 {
-void Strlen(Bond::VM &vm);
+void Strlen(Bond::CalleeStackFrame &frame);
 }
 
 #endif

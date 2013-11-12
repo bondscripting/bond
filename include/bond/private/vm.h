@@ -114,14 +114,14 @@ inline bool ValidateSignatureType<bf64_t>(size_t size, SignatureType signatureTy
 
 
 template <typename ArgType>
-inline const ArgType &VM::CalleeStackFrame::GetArg(size_t index) const
+inline const ArgType &CalleeStackFrame::GetArg(size_t index) const
 {
 	return GetArgRef<ArgType>(index);
 }
 
 
 template <typename ReturnType>
-inline void VM::CalleeStackFrame::SetReturnValue(const ReturnType &returnValue)
+inline void CalleeStackFrame::SetReturnValue(const ReturnType &returnValue)
 {
 	AssertValidReturnAssignmentType<ReturnType>();
 	*reinterpret_cast<ReturnType*>(mReturnPointer) = returnValue;
@@ -129,7 +129,7 @@ inline void VM::CalleeStackFrame::SetReturnValue(const ReturnType &returnValue)
 
 
 template <>
-inline void VM::CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
+inline void CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
 {
 	AssertValidReturnAssignmentType<bool>();
 	*reinterpret_cast<bi32_t*>(mReturnPointer) = returnValue ? bi32_t(1) : bi32_t(0);
@@ -137,7 +137,7 @@ inline void VM::CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
 
 
 template <>
-inline void VM::CalleeStackFrame::SetReturnValue<bi8_t>(const bi8_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<bi8_t>(const bi8_t &returnValue)
 {
 	AssertValidReturnAssignmentType<bi8_t>();
 	*reinterpret_cast<bi32_t*>(mReturnPointer) = bi32_t(returnValue);
@@ -145,7 +145,7 @@ inline void VM::CalleeStackFrame::SetReturnValue<bi8_t>(const bi8_t &returnValue
 
 
 template <>
-inline void VM::CalleeStackFrame::SetReturnValue<bu8_t>(const bu8_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<bu8_t>(const bu8_t &returnValue)
 {
 	AssertValidReturnAssignmentType<bu8_t>();
 	*reinterpret_cast<bu32_t*>(mReturnPointer) = bi32_t(returnValue);
@@ -153,7 +153,7 @@ inline void VM::CalleeStackFrame::SetReturnValue<bu8_t>(const bu8_t &returnValue
 
 
 template <>
-inline void VM::CalleeStackFrame::SetReturnValue<bi16_t>(const bi16_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<bi16_t>(const bi16_t &returnValue)
 {
 	AssertValidReturnAssignmentType<bi16_t>();
 	*reinterpret_cast<bi32_t*>(mReturnPointer) = bi32_t(returnValue);
@@ -161,7 +161,7 @@ inline void VM::CalleeStackFrame::SetReturnValue<bi16_t>(const bi16_t &returnVal
 
 
 template <>
-inline void VM::CalleeStackFrame::SetReturnValue<bu16_t>(const bu16_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<bu16_t>(const bu16_t &returnValue)
 {
 	AssertValidReturnAssignmentType<bu16_t>();
 	*reinterpret_cast<bu32_t*>(mReturnPointer) = bi32_t(returnValue);
@@ -169,7 +169,7 @@ inline void VM::CalleeStackFrame::SetReturnValue<bu16_t>(const bu16_t &returnVal
 
 
 template <typename ArgType>
-inline ArgType &VM::CalleeStackFrame::GetArgRef(size_t index) const
+inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 {
 	const ParamListSignature &paramListSignature = mFunction->mParamListSignature;
 
@@ -194,7 +194,7 @@ inline ArgType &VM::CalleeStackFrame::GetArgRef(size_t index) const
 
 
 template <typename ReturnType>
-inline void VM::CalleeStackFrame::AssertValidReturnAssignmentType() const
+inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 {
 #if BOND_RUNTIME_CHECKS_ENABLED
 	const ReturnSignature &ret = mFunction->mReturnSignature;
@@ -207,7 +207,7 @@ inline void VM::CalleeStackFrame::AssertValidReturnAssignmentType() const
 
 
 template<typename ArgType>
-void VM::CallerStackFrame::PushArg(const ArgType &arg)
+void CallerStackFrame::PushArg(const ArgType &arg)
 {
 	GetValue().GetArgRef<ArgType>(mNextArg) = arg;
 	++mNextArg;

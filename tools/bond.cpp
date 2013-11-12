@@ -96,7 +96,7 @@ int main(int argc, const char *argv[])
 
 		// Test code.
 		Bond::bi32_t returnValue = -9999;
-		Bond::VM::CallerStackFrame stackFrame(vm, entryPoint, &returnValue);
+		Bond::CallerStackFrame stackFrame(vm, entryPoint, &returnValue);
 		//stackFrame.PushArg(65);
 		//stackFrame.PushArg(13);
 		stackFrame.Call();

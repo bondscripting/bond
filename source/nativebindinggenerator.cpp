@@ -161,7 +161,7 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 		{
 			mHWriter.Write("%s__", functionDefinition->GetParentSymbol()->GetName()->GetText());
 		}
-		mHWriter.Write("%s(Bond::VM &vm);\n", functionDefinition->GetName()->GetText());
+		mHWriter.Write("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetText());
 
 		// Generate the function binding.
 		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
