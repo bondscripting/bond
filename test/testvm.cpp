@@ -734,12 +734,12 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	bi32_t oneD[8];
 	memset(oneD, 0, sizeof(oneD));
 
-	DO_FUNCTION_CALL_2("::SetValueAt_3", NULL, &oneD, bi32_t(7));
+	vm.CallVoidFunction("::SetValueAt_3", &oneD, bi32_t(7));
 	ASSERT_FORMAT(oneD[3] == 7, ("Expected 7, but was %" BOND_PRId32 ".", oneD[3]));
 	ASSERT_MESSAGE((oneD[1] == 0) && (oneD[2] == 0) && (oneD[4] == 0) && (oneD[5] == 0),
 		"Memory stomp by SetValueAt_3() detected.");
 
-	DO_FUNCTION_CALL_3("::SetValueAt", NULL, &oneD, bi32_t(5), bi32_t(864));
+	vm.CallVoidFunction("::SetValueAt", &oneD, bi32_t(5), bi32_t(864));
 	ASSERT_FORMAT(oneD[5] == 864, ("Expected 864, but was %" BOND_PRId32 ".", oneD[5]));
 	ASSERT_MESSAGE((oneD[3] == 7) && (oneD[4] == 0) && (oneD[6] == 0) && (oneD[7] == 0),
 		"Memory stomp by SetValueAt() detected.");
@@ -753,14 +753,14 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	bi32_t twoD[7][13];
 	memset(twoD, 0, sizeof(twoD));
 
-	DO_FUNCTION_CALL_2("::SetValue2DAt_4_9", NULL, &twoD, bi32_t(901));
+	vm.CallVoidFunction("::SetValue2DAt_4_9", &twoD, bi32_t(901));
 	ASSERT_FORMAT(twoD[4][9] == 901, ("Expected 901, but was %" BOND_PRId32 ".", twoD[4][9]));
 	ASSERT_MESSAGE((twoD[3][8] == 0) && (twoD[3][9] == 0) && (twoD[3][10] == 0) &&
 		(twoD[4][8] == 0) && (twoD[4][10] == 0) &&
 		(twoD[5][8] == 0) && (twoD[5][9] == 0) && (twoD[5][10] == 0),
 		"Memory stomp by SetValue2DAt_4_9() detected.");
 
-	DO_FUNCTION_CALL_4("::SetValue2DAt", NULL, &twoD, bi32_t(2), bi32_t(4), bi32_t(98973));
+	vm.CallVoidFunction("::SetValue2DAt", &twoD, bi32_t(2), bi32_t(4), bi32_t(98973));
 	ASSERT_FORMAT(twoD[2][4] == 98973, ("Expected 98973, but was %" BOND_PRId32 ".", twoD[2][4]));
 	ASSERT_MESSAGE((twoD[1][3] == 0) && (twoD[1][4] == 0) && (twoD[1][5] == 0) &&
 		(twoD[2][3] == 0) && (twoD[2][5] == 0) &&
@@ -809,7 +809,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 
 	Char3 c3;
 	memset(&c3, 0, sizeof(c3));
-	DO_FUNCTION_CALL_4("::SetChar3", NULL, &c3, bi8_t(45), bi8_t(-56), bi8_t(67));
+	vm.CallVoidFunction("::SetChar3", &c3, bi8_t(45), bi8_t(-56), bi8_t(67));
 	ASSERT_FORMAT(c3.x == 45, ("Expected 45, but was %" BOND_PRId32 ".", c3.x));
 	ASSERT_FORMAT(c3.y == -56, ("Expected -56, but was %" BOND_PRId32 ".", c3.y));
 	ASSERT_FORMAT(c3.z == 67, ("Expected 67, but was %" BOND_PRId32 ".", c3.z));
@@ -820,7 +820,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::GetChar3Z", bi32_t(67), c3);
 
 	Char3Pair char3Pair;
-	DO_FUNCTION_CALL_3("::SetChar3PairX", NULL, &char3Pair, bi8_t(23), bi8_t(32));
+	vm.CallVoidFunction("::SetChar3PairX", &char3Pair, bi8_t(23), bi8_t(32));
 	ASSERT_FORMAT(char3Pair.first.x == 23, ("Expected 23, but was %" BOND_PRId32 ".", char3Pair.first.x));
 	ASSERT_FORMAT(char3Pair.second.x == 32, ("Expected 32, but was %" BOND_PRId32 ".", char3Pair.second.x));
 
@@ -830,7 +830,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	Vector3 v3b;
 	Vector3 v3c;
 	memset(&v3a, 0, sizeof(v3a));
-	DO_FUNCTION_CALL_4("::SetVector3", NULL, &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
+	vm.CallVoidFunction("::SetVector3", &v3a, bi32_t(11), bi32_t(-12), bi32_t(13));
 	ASSERT_FORMAT(v3a.x == 11, ("Expected 11, but was %" BOND_PRId32 ".", v3a.x));
 	ASSERT_FORMAT(v3a.y == -12, ("Expected -12, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 13, ("Expected 13, but was %" BOND_PRId32 ".", v3a.z));
@@ -853,17 +853,17 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	v3b.z = 7;
 	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
 
-	DO_FUNCTION_CALL_3("::ConstructVector3", &v3a, bi32_t(99), bi32_t(-100), bi32_t(101));
+	vm.CallFunction("::ConstructVector3", &v3a, bi32_t(99), bi32_t(-100), bi32_t(101));
 	ASSERT_FORMAT(v3a.x == 99, ("Expected 99, but was %" BOND_PRId32 ".", v3a.x));
 	ASSERT_FORMAT(v3a.y == -100, ("Expected -100, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 101, ("Expected 101, but was %" BOND_PRId32 ".", v3a.z));
 
-	DO_FUNCTION_CALL_3("::ConstructVector3Indirect", &v3a, bi32_t(102), bi32_t(-103), bi32_t(104));
+	vm.CallFunction("::ConstructVector3Indirect", &v3a, bi32_t(102), bi32_t(-103), bi32_t(104));
 	ASSERT_FORMAT(v3a.x == 102, ("Expected 102, but was %" BOND_PRId32 ".", v3a.x));
 	ASSERT_FORMAT(v3a.y == -103, ("Expected -103, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 104, ("Expected 104, but was %" BOND_PRId32 ".", v3a.z));
 
-	DO_FUNCTION_CALL_1("::ConstructVector3AndGetY", &v3a, bi32_t(12321));
+	vm.CallFunction("::ConstructVector3AndGetY", &v3a, bi32_t(12321));
 	ASSERT_FORMAT(v3a.x == 12321, ("Expected 12321, but was %" BOND_PRId32 ".", v3a.x));
 
 	v3a.x = 31;
@@ -876,12 +876,12 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	v3c.y = 52;
 	v3c.z = 53;
 
-	DO_FUNCTION_CALL_3("::SelectVector3", &v3c, bu8_t(1), v3a, v3b);
+	vm.CallFunction("::SelectVector3", &v3c, bu8_t(1), v3a, v3b);
 	ASSERT_FORMAT(v3c.x == 31, ("Expected 31, but was %" BOND_PRId32 ".", v3c.x));
 	ASSERT_FORMAT(v3c.y == 32, ("Expected 32, but was %" BOND_PRId32 ".", v3c.y));
 	ASSERT_FORMAT(v3c.z == 33, ("Expected 33, but was %" BOND_PRId32 ".", v3c.z));
 
-	DO_FUNCTION_CALL_3("::SelectVector3", &v3c, bu8_t(0), v3a, v3b);
+	vm.CallFunction("::SelectVector3", &v3c, bu8_t(0), v3a, v3b);
 	ASSERT_FORMAT(v3c.x == 41, ("Expected 41, but was %" BOND_PRId32 ".", v3c.x));
 	ASSERT_FORMAT(v3c.y == 42, ("Expected 42, but was %" BOND_PRId32 ".", v3c.y));
 	ASSERT_FORMAT(v3c.z == 43, ("Expected 43, but was %" BOND_PRId32 ".", v3c.z));

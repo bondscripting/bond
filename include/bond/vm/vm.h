@@ -66,7 +66,10 @@ typedef AutoStack<CalleeStackFrame> StackFrames;
 class CallerStackFrame: private StackFrames::Element
 {
 public:
-	CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer = NULL);
+	CallerStackFrame(VM &vm, const HashedString &functionName);
+
+	template <typename ReturnType>
+	CallerStackFrame(VM &vm, const HashedString &functionName, ReturnType *returnPointer);
 
 	template<typename ArgType>
 	void PushArg(const ArgType &arg);
@@ -74,6 +77,8 @@ public:
 	void Call();
 
 private:
+	void Initialize(VM &vm, const HashedString &functionName, void *returnPointer);
+
 	bu32_t mNextArg;
 };
 
@@ -93,6 +98,113 @@ public:
 	void DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const;
 
 	void RaiseError(const char *message) const;
+
+	template<typename ReturnType>
+	void CallFunction(const HashedString &functionName, ReturnType *returnAddress);
+
+	void CallVoidFunction(const HashedString &functionName);
+
+	template<typename ReturnType, typename ArgType0>
+	void CallFunction(const HashedString &functionName, ReturnType *returnAddress, ArgType0 a0);
+
+	template<typename ArgType0>
+	void CallVoidFunction(const HashedString &functionName, ArgType0 a0);
+
+	template<
+		typename ReturnType,
+		typename ArgType0,
+		typename ArgType1>
+	void CallFunction(
+		const HashedString &functionName,
+		ReturnType *returnAddress,
+		ArgType0 a0,
+		ArgType1 a1);
+
+	template<
+		typename ArgType0,
+		typename ArgType1>
+	void CallVoidFunction(
+		const HashedString &functionName,
+		ArgType0 a0,
+		ArgType1 a1);
+
+	template<
+		typename ReturnType,
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2>
+	void CallFunction(
+		const HashedString &functionName,
+		ReturnType *returnAddress,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2);
+
+	template<
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2>
+	void CallVoidFunction(
+		const HashedString &functionName,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2);
+
+	template<
+		typename ReturnType,
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2,
+		typename ArgType3>
+	void CallFunction(
+		const HashedString &functionName,
+		ReturnType *returnAddress,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2,
+		ArgType3 a3);
+
+	template<
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2,
+		typename ArgType3>
+	void CallVoidFunction(
+		const HashedString &functionName,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2,
+		ArgType3 a3);
+
+	template<
+		typename ReturnType,
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2,
+		typename ArgType3,
+		typename ArgType4>
+	void CallFunction(
+		const HashedString &functionName,
+		ReturnType *returnAddress,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2,
+		ArgType3 a3,
+		ArgType4 a4);
+
+	template<
+		typename ArgType0,
+		typename ArgType1,
+		typename ArgType2,
+		typename ArgType3,
+		typename ArgType4>
+	void CallVoidFunction(
+		const HashedString &functionName,
+		ArgType0 a0,
+		ArgType1 a1,
+		ArgType2 a2,
+		ArgType3 a3,
+		ArgType4 a4);
 
 private:
 	friend class CallerStackFrame;

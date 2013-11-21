@@ -58,9 +58,7 @@ inline void *LoadUnalignedPointer(const bu8_t *source)
 }
 
 
-CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, void *returnPointer):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
-	mNextArg(0)
+void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void *returnPointer)
 {
 	bu8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
 	const CodeSegment &codeSegment = vm.GetCodeSegment();

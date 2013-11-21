@@ -24,126 +24,48 @@
 #define VALIDATE_FUNCTION_CALL_0(returnType, functionName, expectedResult)                     \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue);                                             \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_0(functionName, returnAddress)                                        \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 
 #define VALIDATE_FUNCTION_CALL_1(returnType, functionName, expectedResult, a0)                 \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue, a0);                                         \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_1(functionName, returnAddress, a0)                                    \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 
 #define VALIDATE_FUNCTION_CALL_2(returnType, functionName, expectedResult, a0, a1)             \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue, a0, a1);                                     \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_2(functionName, returnAddress, a0, a1)                                \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 
 #define VALIDATE_FUNCTION_CALL_3(returnType, functionName, expectedResult, a0, a1, a2)         \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue, a0, a1, a2);                                 \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_3(functionName, returnAddress, a0, a1, a2)                            \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 
 #define VALIDATE_FUNCTION_CALL_4(returnType, functionName, expectedResult, a0, a1, a2, a3)     \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.PushArg(a3);                                                                    \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue, a0, a1, a2, a3);                             \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_4(functionName, returnAddress, a0, a1, a2, a3)                        \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.PushArg(a3);                                                                    \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 
 #define VALIDATE_FUNCTION_CALL_5(returnType, functionName, expectedResult, a0, a1, a2, a3, a4) \
   {                                                                                            \
     DECLARE_RETURN_VALUE_ ## returnType()                                                      \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), &returnValue);                       \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.PushArg(a3);                                                                    \
-    stackFrame.PushArg(a4);                                                                    \
-    stackFrame.Call();                                                                         \
+    vm.CallFunction((functionName), &returnValue, a0, a1, a2, a3, a4);                         \
     VALIDATE_RETURN_VALUE_ ## returnType(expectedResult)                                       \
-  }                                                                                            \
-
-
-#define DO_FUNCTION_CALL_5(functionName, returnAddress, a0, a1, a2, a3, a4)                    \
-  {                                                                                            \
-    Bond::CallerStackFrame stackFrame(vm, (functionName), returnAddress);                      \
-    stackFrame.PushArg(a0);                                                                    \
-    stackFrame.PushArg(a1);                                                                    \
-    stackFrame.PushArg(a2);                                                                    \
-    stackFrame.PushArg(a3);                                                                    \
-    stackFrame.PushArg(a4);                                                                    \
-    stackFrame.Call();                                                                         \
   }                                                                                            \
 
 

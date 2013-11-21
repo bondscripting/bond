@@ -206,11 +206,225 @@ inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 }
 
 
+inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName):
+	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+	mNextArg(0)
+{
+	Initialize(vm, functionName, NULL);
+}
+
+
+template <typename ReturnType>
+inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, ReturnType *returnPointer):
+	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+	mNextArg(0)
+{
+	Initialize(vm, functionName, returnPointer);
+}
+
+
 template<typename ArgType>
-void CallerStackFrame::PushArg(const ArgType &arg)
+inline void CallerStackFrame::PushArg(const ArgType &arg)
 {
 	GetValue().GetArgRef<ArgType>(mNextArg) = arg;
 	++mNextArg;
+}
+
+
+template<typename ReturnType>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.Call();
+}
+
+
+inline void VM::CallVoidFunction(const HashedString &functionName)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.Call();
+}
+
+
+template<typename ReturnType, typename ArgType0>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress, ArgType0 a0)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArg(a0);
+	stackFrame.Call();
+}
+
+
+template<typename ArgType0>
+inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArg(a0);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ReturnType,
+	typename ArgType0,
+	typename ArgType1>
+inline void VM::CallFunction(
+	const HashedString &functionName,
+	ReturnType *returnAddress,
+	ArgType0 a0,
+	ArgType1 a1)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ArgType0,
+	typename ArgType1>
+inline void VM::CallVoidFunction(
+	const HashedString &functionName,
+	ArgType0 a0,
+	ArgType1 a1)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ReturnType,
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2>
+inline void VM::CallFunction(
+	const HashedString &functionName,
+	ReturnType *returnAddress,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2>
+inline void VM::CallVoidFunction(
+	const HashedString &functionName,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ReturnType,
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2,
+	typename ArgType3>
+inline void VM::CallFunction(
+	const HashedString &functionName,
+	ReturnType *returnAddress,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2,
+	ArgType3 a3)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.PushArg(a3);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2,
+	typename ArgType3>
+inline void VM::CallVoidFunction(
+	const HashedString &functionName,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2,
+	ArgType3 a3)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.PushArg(a3);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ReturnType,
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2,
+	typename ArgType3,
+	typename ArgType4>
+inline void VM::CallFunction(
+	const HashedString &functionName,
+	ReturnType *returnAddress,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2,
+	ArgType3 a3,
+	ArgType4 a4)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.PushArg(a3);
+	stackFrame.PushArg(a4);
+	stackFrame.Call();
+}
+
+
+template<
+	typename ArgType0,
+	typename ArgType1,
+	typename ArgType2,
+	typename ArgType3,
+	typename ArgType4>
+inline void VM::CallVoidFunction(
+	const HashedString &functionName,
+	ArgType0 a0,
+	ArgType1 a1,
+	ArgType2 a2,
+	ArgType3 a3,
+	ArgType4 a4)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArg(a0);
+	stackFrame.PushArg(a1);
+	stackFrame.PushArg(a2);
+	stackFrame.PushArg(a3);
+	stackFrame.PushArg(a4);
+	stackFrame.Call();
 }
 
 }
