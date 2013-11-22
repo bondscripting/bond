@@ -9,7 +9,7 @@ namespace Bond
 class Allocator
 {
 public:
-	template<typename T>
+	template <typename T>
 	struct Deallocator
 	{
 		Deallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
@@ -18,7 +18,7 @@ public:
 	};
 
 	// Stores a pointer to memory.
-	template<typename T>
+	template <typename T>
 	class Handle: public PointerHandle<T, Deallocator<T> >
 	{
 	public:
@@ -46,7 +46,7 @@ public:
 	};
 
 
-	template<typename T>
+	template <typename T>
 	struct AlignedDeallocator
 	{
 		AlignedDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
@@ -55,7 +55,7 @@ public:
 	};
 
 	// Stores a pointer to aligned memory.
-	template<typename T>
+	template <typename T>
 	class AlignedHandle: public PointerHandle<T, AlignedDeallocator<T> >
 	{
 	public:
@@ -83,7 +83,7 @@ public:
 	};
 
 
-	template<typename T>
+	template <typename T>
 	struct ObjectDeallocator
 	{
 		ObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
@@ -101,7 +101,7 @@ public:
 	};
 
 	// Stores a pointer to an object which is destroyed when deallocated.
-	template<typename T>
+	template <typename T>
 	class ObjectHandle: public PointerHandle<T, ObjectDeallocator<T> >
 	{
 	public:
@@ -129,7 +129,7 @@ public:
 	};
 
 
-	template<typename T>
+	template <typename T>
 	struct AlignedObjectDeallocator
 	{
 		AlignedObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
@@ -147,7 +147,7 @@ public:
 	};
 
 	// Stores a pointer to an aligned object which is destroyed when deallocated.
-	template<typename T>
+	template <typename T>
 	class AlignedObjectHandle: public PointerHandle<T, AlignedObjectDeallocator<T> >
 	{
 	public:
@@ -175,7 +175,7 @@ public:
 	};
 
 
-	template<typename T>
+	template <typename T>
 	struct ArrayDeallocator
 	{
 		ArrayDeallocator(Allocator *allocator = NULL, size_t numElements = 0):
@@ -200,7 +200,7 @@ public:
 	};
 
 	// Stores a pointer to an array of objects which are destroyed when deallocated.
-	template<typename T>
+	template <typename T>
 	class ArrayHandle: public PointerHandle<T, ArrayDeallocator<T> >
 	{
 	public:
@@ -231,7 +231,7 @@ public:
 	};
 
 
-	template<typename T>
+	template <typename T>
 	class AlignedArrayDeallocator
 	{
 	public:
@@ -258,7 +258,7 @@ public:
 	};
 
 	// Stores a pointer to an array of objects which are destroyed when deallocated.
-	template<typename T>
+	template <typename T>
 	class AlignedArrayHandle: public PointerHandle<T, AlignedArrayDeallocator<T> >
 	{
 	public:

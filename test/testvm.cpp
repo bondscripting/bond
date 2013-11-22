@@ -863,8 +863,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	ASSERT_FORMAT(v3a.y == -103, ("Expected -103, but was %" BOND_PRId32 ".", v3a.y));
 	ASSERT_FORMAT(v3a.z == 104, ("Expected 104, but was %" BOND_PRId32 ".", v3a.z));
 
-	vm.CallFunction("::ConstructVector3AndGetY", &v3a, bi32_t(12321));
-	ASSERT_FORMAT(v3a.x == 12321, ("Expected 12321, but was %" BOND_PRId32 ".", v3a.x));
+	VALIDATE_FUNCTION_CALL_1(INT, "::ConstructVector3AndGetY", bi32_t(12321), bi32_t(12321));
 
 	v3a.x = 31;
 	v3a.y = 32;

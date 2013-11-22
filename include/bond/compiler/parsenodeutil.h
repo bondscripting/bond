@@ -16,7 +16,7 @@ template <typename NodeType>
 NodeType *NextNode(NodeType *list) { return static_cast<NodeType *>(list->GetNextNode()); }
 
 
-template<typename T>
+template <typename T>
 class CastVisitor: public ParseNodeVisitorAdapter
 {
 public:
@@ -31,7 +31,7 @@ private:
 };
 
 
-template<typename T>
+template <typename T>
 T *CastNode(ParseNode *node)
 {
 	if (node != NULL)
@@ -44,7 +44,7 @@ T *CastNode(ParseNode *node)
 }
 
 
-template<typename T>
+template <typename T>
 const T *CastNode(const ParseNode *node)
 {
 	if (node != NULL)
@@ -111,7 +111,7 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 Value CastValue(const TypeAndValue &value, const TypeDescriptor *type);
 
 
-template<typename Operator>
+template <typename Operator>
 Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
 {
 	const Value l = CastValue(lhs, type);
@@ -146,7 +146,7 @@ Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 }
 
 
-template<typename Operator>
+template <typename Operator>
 Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
 {
 	const Value l = CastValue(lhs, type);
@@ -175,7 +175,7 @@ Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 }
 
 
-template<typename Operator>
+template <typename Operator>
 Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, Operator op)
 {
 	TypeDescriptor type = CombineOperandTypes(lhs.GetTypeDescriptor(), rhs.GetTypeDescriptor());
@@ -214,112 +214,112 @@ Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs,
 }
 
 
-struct BinaryAddOperator { template<typename T> T operator()(T a, T b) { return a + b; } };
+struct BinaryAddOperator { template <typename T> T operator()(T a, T b) { return a + b; } };
 inline Value BinaryAdd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryAddOperator());
 }
 
 
-struct BinarySubOperator { template<typename T> T operator()(T a, T b) { return a - b; } };
+struct BinarySubOperator { template <typename T> T operator()(T a, T b) { return a - b; } };
 inline Value BinarySub(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinarySubOperator());
 }
 
 
-struct BinaryMultOperator { template<typename T> T operator()(T a, T b) { return a * b; } };
+struct BinaryMultOperator { template <typename T> T operator()(T a, T b) { return a * b; } };
 inline Value BinaryMult(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryMultOperator());
 }
 
 
-struct BinaryDivOperator { template<typename T> T operator()(T a, T b) { return a / b; } };
+struct BinaryDivOperator { template <typename T> T operator()(T a, T b) { return a / b; } };
 inline Value BinaryDiv(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryDivOperator());
 }
 
 
-struct BinaryModOperator { template<typename T> T operator()(T a, T b) { return a % b; } };
+struct BinaryModOperator { template <typename T> T operator()(T a, T b) { return a % b; } };
 inline Value BinaryMod(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryModOperator());
 }
 
 
-struct BinaryLeftOperator { template<typename T> T operator()(T a, T b) { return a >> b; } };
+struct BinaryLeftOperator { template <typename T> T operator()(T a, T b) { return a >> b; } };
 inline Value BinaryLeft(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryLeftOperator());
 }
 
 
-struct BinaryRightOperator { template<typename T> T operator()(T a, T b) { return a >> b; } };
+struct BinaryRightOperator { template <typename T> T operator()(T a, T b) { return a >> b; } };
 inline Value BinaryRight(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryRightOperator());
 }
 
 
-struct BinaryBitAndOperator { template<typename T> T operator()(T a, T b) { return a & b; } };
+struct BinaryBitAndOperator { template <typename T> T operator()(T a, T b) { return a & b; } };
 inline Value BinaryBitAnd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitAndOperator());
 }
 
 
-struct BinaryBitOrOperator { template<typename T> T operator()(T a, T b) { return a | b; } };
+struct BinaryBitOrOperator { template <typename T> T operator()(T a, T b) { return a | b; } };
 inline Value BinaryBitOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitOrOperator());
 }
 
 
-struct BinaryBitXOrOperator { template<typename T> T operator()(T a, T b) { return a ^ b; } };
+struct BinaryBitXOrOperator { template <typename T> T operator()(T a, T b) { return a ^ b; } };
 inline Value BinaryBitXOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitXOrOperator());
 }
 
 
-struct BinaryLTOperator { template<typename T> bool operator()(T a, T b) { return a < b; } };
+struct BinaryLTOperator { template <typename T> bool operator()(T a, T b) { return a < b; } };
 inline Value BinaryLT(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryLTOperator());
 }
 
 
-struct BinaryLTEOperator { template<typename T> bool operator()(T a, T b) { return a <= b; } };
+struct BinaryLTEOperator { template <typename T> bool operator()(T a, T b) { return a <= b; } };
 inline Value BinaryLTE(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryLTEOperator());
 }
 
 
-struct BinaryGTOperator { template<typename T> bool operator()(T a, T b) { return a > b; } };
+struct BinaryGTOperator { template <typename T> bool operator()(T a, T b) { return a > b; } };
 inline Value BinaryGT(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryGTOperator());
 }
 
 
-struct BinaryGTEOperator { template<typename T> bool operator()(T a, T b) { return a >= b; } };
+struct BinaryGTEOperator { template <typename T> bool operator()(T a, T b) { return a >= b; } };
 inline Value BinaryGTE(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryGTEOperator());
 }
 
 
-struct BinaryEqualOperator { template<typename T> bool operator()(T a, T b) { return a == b; } };
+struct BinaryEqualOperator { template <typename T> bool operator()(T a, T b) { return a == b; } };
 inline Value BinaryEqual(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryEqualOperator());
 }
 
 
-struct BinaryNotEqualOperator { template<typename T> bool operator()(T a, T b) { return a != b; } };
+struct BinaryNotEqualOperator { template <typename T> bool operator()(T a, T b) { return a != b; } };
 inline Value BinaryNotEqual(const TypeAndValue &lhs, const TypeAndValue &rhs)
 {
 	return ComparisonBinaryOperator(lhs, rhs, BinaryNotEqualOperator());

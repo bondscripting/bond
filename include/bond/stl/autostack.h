@@ -6,12 +6,12 @@
 namespace Bond
 {
 
-template<typename ElementType>
+template <typename ElementType>
 class AutoStackIterator
 {
 };
 
-template<typename ElementType>
+template <typename ElementType>
 class AutoStack
 {
 public:

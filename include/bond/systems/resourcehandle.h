@@ -14,7 +14,7 @@ namespace Bond
 // customized to free memory to custom allocators, deallocate arrays and deallocate resources
 // other than memory. Unlike std::unique_ptr, a ResourceHandle object can wrap any object
 // that implements a default constructor, copy constructor and == operator.
-template<typename ResourceType, typename DeallocatorType>
+template <typename ResourceType, typename DeallocatorType>
 struct ResourceHandleProxy
 {
 	ResourceHandleProxy(const ResourceType &resource, const DeallocatorType &deallocator):
@@ -27,7 +27,7 @@ struct ResourceHandleProxy
 };
 
 
-template<typename ResourceType, typename DeallocatorType>
+template <typename ResourceType, typename DeallocatorType>
 class ResourceHandle
 {
 public:
@@ -95,7 +95,7 @@ protected:
 };
 
 
-template<typename ResourceType, typename DeallocatorType>
+template <typename ResourceType, typename DeallocatorType>
 class PointerHandle: public ResourceHandle<ResourceType *, DeallocatorType>
 {
 public:

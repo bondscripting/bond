@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-template<typename T>
+template <typename T>
 inline size_t TallyMemoryRequirements(size_t &size, size_t count, size_t align)
 {
 	const size_t start = AlignUp(size, align);
@@ -15,7 +15,7 @@ inline size_t TallyMemoryRequirements(size_t &size, size_t count, size_t align)
 }
 
 
-template<typename T>
+template <typename T>
 inline size_t TallyMemoryRequirements(size_t &size, size_t count)
 {
 	return TallyMemoryRequirements<T>(size, count, sizeof(T));

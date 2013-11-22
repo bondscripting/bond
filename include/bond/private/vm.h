@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-template<typename T>
+template <typename T>
 bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
 	return
@@ -15,7 +15,7 @@ bool ValidateSignatureType(size_t size, SignatureType signatureType)
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bool>(size_t size, SignatureType signatureType)
 {
 	return
@@ -25,7 +25,7 @@ inline bool ValidateSignatureType<bool>(size_t size, SignatureType signatureType
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bi8_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -35,7 +35,7 @@ inline bool ValidateSignatureType<bi8_t>(size_t size, SignatureType signatureTyp
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bu8_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -45,7 +45,7 @@ inline bool ValidateSignatureType<bu8_t>(size_t size, SignatureType signatureTyp
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bi16_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -54,7 +54,7 @@ inline bool ValidateSignatureType<bi16_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bu16_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -63,7 +63,7 @@ inline bool ValidateSignatureType<bu16_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bi32_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -72,7 +72,7 @@ inline bool ValidateSignatureType<bi32_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bu32_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -81,7 +81,7 @@ inline bool ValidateSignatureType<bu32_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bi64_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -90,7 +90,7 @@ inline bool ValidateSignatureType<bi64_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bu64_t>(size_t size, SignatureType signatureType)
 {
 	return
@@ -99,15 +99,119 @@ inline bool ValidateSignatureType<bu64_t>(size_t size, SignatureType signatureTy
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bf32_t>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_FLOAT;
 }
 
 
-template<>
+template <>
 inline bool ValidateSignatureType<bf64_t>(size_t size, SignatureType signatureType)
+{
+	return signatureType == SIG_DOUBLE;
+}
+
+
+template <typename T>
+bool ValidateReturnType(size_t size, SignatureType signatureType)
+{
+	return
+		(sizeof(T)  == size) &&
+		((signatureType == SIG_POINTER) || (signatureType == SIG_STRUCT));
+}
+
+
+template <>
+inline bool ValidateReturnType<bool>(size_t size, SignatureType signatureType)
+{
+	return false;
+}
+
+
+template <>
+inline bool ValidateReturnType<bi8_t>(size_t size, SignatureType signatureType)
+{
+	return false;
+}
+
+
+template <>
+inline bool ValidateReturnType<bu8_t>(size_t size, SignatureType signatureType)
+{
+	return false;
+}
+
+
+template <>
+inline bool ValidateReturnType<bi16_t>(size_t size, SignatureType signatureType)
+{
+	return false;
+}
+
+
+template <>
+inline bool ValidateReturnType<bu16_t>(size_t size, SignatureType signatureType)
+{
+	return false;
+}
+
+
+template <>
+inline bool ValidateReturnType<bi32_t>(size_t size, SignatureType signatureType)
+{
+	return
+		(signatureType == SIG_BOOL) ||
+		(signatureType == SIG_CHAR) ||
+		(signatureType == SIG_UCHAR) ||
+		(signatureType == SIG_SHORT) ||
+		(signatureType == SIG_USHORT) ||
+		(signatureType == SIG_INT) ||
+		(signatureType == SIG_UINT);
+}
+
+
+template <>
+inline bool ValidateReturnType<bu32_t>(size_t size, SignatureType signatureType)
+{
+	return
+		(signatureType == SIG_BOOL) ||
+		(signatureType == SIG_CHAR) ||
+		(signatureType == SIG_UCHAR) ||
+		(signatureType == SIG_SHORT) ||
+		(signatureType == SIG_USHORT) ||
+		(signatureType == SIG_INT) ||
+		(signatureType == SIG_UINT);
+}
+
+
+template <>
+inline bool ValidateReturnType<bi64_t>(size_t size, SignatureType signatureType)
+{
+	return
+		(signatureType == SIG_LONG) ||
+		(signatureType == SIG_ULONG);
+}
+
+
+template <>
+inline bool ValidateReturnType<bu64_t>(size_t size, SignatureType signatureType)
+{
+	return
+		(signatureType == SIG_LONG) ||
+		(signatureType == SIG_ULONG);
+}
+
+
+template <>
+inline bool ValidateReturnType<bf32_t>(size_t size, SignatureType signatureType)
+{
+	return signatureType == SIG_FLOAT;
+}
+
+
+template <>
+inline bool ValidateReturnType<bf64_t>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_DOUBLE;
 }
@@ -200,7 +304,7 @@ inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 	const ReturnSignature &ret = mFunction->mReturnSignature;
 	if (!ValidateSignatureType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
 	{
-		mVm.RaiseError("Attempt to access return value using wrong type.");
+		mVm.RaiseError("Attempt to return a value of the wrong type.");
 	}
 #endif
 }
@@ -211,6 +315,13 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionNa
 	mNextArg(0)
 {
 	Initialize(vm, functionName, NULL);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
+	if (ret.mType != SIG_VOID)
+	{
+		vm.RaiseError("Attempt to call a non-void function without a return address.");
+	}
+#endif
 }
 
 
@@ -220,10 +331,17 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionNa
 	mNextArg(0)
 {
 	Initialize(vm, functionName, returnPointer);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
+	if (!ValidateReturnType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
+	{
+		vm.RaiseError("Attempt to call a function with incorrect return address type.");
+	}
+#endif
 }
 
 
-template<typename ArgType>
+template <typename ArgType>
 inline void CallerStackFrame::PushArg(const ArgType &arg)
 {
 	GetValue().GetArgRef<ArgType>(mNextArg) = arg;
@@ -231,7 +349,7 @@ inline void CallerStackFrame::PushArg(const ArgType &arg)
 }
 
 
-template<typename ReturnType>
+template <typename ReturnType>
 inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
@@ -246,7 +364,7 @@ inline void VM::CallVoidFunction(const HashedString &functionName)
 }
 
 
-template<typename ReturnType, typename ArgType0>
+template <typename ReturnType, typename ArgType0>
 inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress, ArgType0 a0)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
@@ -255,7 +373,7 @@ inline void VM::CallFunction(const HashedString &functionName, ReturnType *retur
 }
 
 
-template<typename ArgType0>
+template <typename ArgType0>
 inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
@@ -264,15 +382,9 @@ inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0)
 }
 
 
-template<
-	typename ReturnType,
-	typename ArgType0,
-	typename ArgType1>
-inline void VM::CallFunction(
-	const HashedString &functionName,
-	ReturnType *returnAddress,
-	ArgType0 a0,
-	ArgType1 a1)
+template <typename ReturnType, typename ArgType0, typename ArgType1>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress,
+	ArgType0 a0, ArgType1 a1)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArg(a0);
@@ -281,13 +393,8 @@ inline void VM::CallFunction(
 }
 
 
-template<
-	typename ArgType0,
-	typename ArgType1>
-inline void VM::CallVoidFunction(
-	const HashedString &functionName,
-	ArgType0 a0,
-	ArgType1 a1)
+template <typename ArgType0, typename ArgType1>
+inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0, ArgType1 a1)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArg(a0);
@@ -296,17 +403,9 @@ inline void VM::CallVoidFunction(
 }
 
 
-template<
-	typename ReturnType,
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2>
-inline void VM::CallFunction(
-	const HashedString &functionName,
-	ReturnType *returnAddress,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2)
+template <typename ReturnType, typename ArgType0, typename ArgType1, typename ArgType2>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress,
+	ArgType0 a0, ArgType1 a1, ArgType2 a2)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArg(a0);
@@ -316,15 +415,9 @@ inline void VM::CallFunction(
 }
 
 
-template<
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2>
-inline void VM::CallVoidFunction(
-	const HashedString &functionName,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2)
+template <typename ArgType0, typename ArgType1, typename ArgType2>
+inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0,
+	ArgType1 a1, ArgType2 a2)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArg(a0);
@@ -334,19 +427,10 @@ inline void VM::CallVoidFunction(
 }
 
 
-template<
-	typename ReturnType,
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2,
-	typename ArgType3>
-inline void VM::CallFunction(
-	const HashedString &functionName,
-	ReturnType *returnAddress,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2,
-	ArgType3 a3)
+template <typename ReturnType, typename ArgType0, typename ArgType1,
+	typename ArgType2, typename ArgType3>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress,
+	ArgType0 a0, ArgType1 a1, ArgType2 a2, ArgType3 a3)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArg(a0);
@@ -357,17 +441,9 @@ inline void VM::CallFunction(
 }
 
 
-template<
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2,
-	typename ArgType3>
-inline void VM::CallVoidFunction(
-	const HashedString &functionName,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2,
-	ArgType3 a3)
+template <typename ArgType0, typename ArgType1, typename ArgType2, typename ArgType3>
+inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0,
+	ArgType1 a1, ArgType2 a2, ArgType3 a3)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArg(a0);
@@ -378,21 +454,10 @@ inline void VM::CallVoidFunction(
 }
 
 
-template<
-	typename ReturnType,
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2,
-	typename ArgType3,
-	typename ArgType4>
-inline void VM::CallFunction(
-	const HashedString &functionName,
-	ReturnType *returnAddress,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2,
-	ArgType3 a3,
-	ArgType4 a4)
+template <typename ReturnType, typename ArgType0, typename ArgType1,
+	typename ArgType2, typename ArgType3, typename ArgType4>
+inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress,
+	ArgType0 a0, ArgType1 a1, ArgType2 a2, ArgType3 a3, ArgType4 a4)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArg(a0);
@@ -404,19 +469,10 @@ inline void VM::CallFunction(
 }
 
 
-template<
-	typename ArgType0,
-	typename ArgType1,
-	typename ArgType2,
-	typename ArgType3,
-	typename ArgType4>
-inline void VM::CallVoidFunction(
-	const HashedString &functionName,
-	ArgType0 a0,
-	ArgType1 a1,
-	ArgType2 a2,
-	ArgType3 a3,
-	ArgType4 a4)
+template <typename ArgType0, typename ArgType1, typename ArgType2,
+	typename ArgType3, typename ArgType4>
+inline void VM::CallVoidFunction(const HashedString &functionName, ArgType0 a0,
+	ArgType1 a1, ArgType2 a2, ArgType3 a3, ArgType4 a4)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArg(a0);
