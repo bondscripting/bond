@@ -1,5 +1,4 @@
 #include "bond/io/bufferedtextwriter.h"
-#include <stdarg.h>
 #include <stdio.h>
 
 namespace Bond
@@ -14,14 +13,11 @@ BufferedTextWriter::BufferedTextWriter(char *buffer, size_t length):
 }
 
 
-void BufferedTextWriter::Write(const char *format, ...)
+void BufferedTextWriter::VWrite(const char *format, va_list argList)
 {
 	size_t length = mLength - mIndex;
 	char *buffer = mBuffer + mIndex;
-	va_list argList;
-	va_start(argList, format);
 	const int n = vsnprintf(buffer, length, format, argList);
-	va_end(argList);
 
 	if (n > 0)
 	{

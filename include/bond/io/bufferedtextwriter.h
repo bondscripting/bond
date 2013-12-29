@@ -13,7 +13,7 @@ public:
 	BufferedTextWriter(char *buffer, size_t length);
 	virtual ~BufferedTextWriter() {}
 
-	virtual void Write(const char *format, ...);
+	virtual void VWrite(const char *format, va_list argList);
 	const char *GetBuffer() const { return mBuffer; }
 
 private:

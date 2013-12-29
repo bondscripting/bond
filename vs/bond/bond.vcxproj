@@ -137,6 +137,7 @@
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
     <ClCompile Include="..\..\source\stdiotextwriter.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
+    <ClCompile Include="..\..\source\textwriter.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />
     <ClCompile Include="..\..\source\toplevelsymbolpass.cpp" />

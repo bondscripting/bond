@@ -12,7 +12,7 @@ class StdioTextWriter: public TextWriter
 public:
 	StdioTextWriter(FILE *file): mFile(file) {}
 	virtual ~StdioTextWriter() {}
-	virtual void Write(const char *format, ...);
+	virtual void VWrite(const char *format, va_list argList);
 
 private:
 	FILE *mFile;

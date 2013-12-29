@@ -28,7 +28,7 @@
 
 
 #define BOND_FAIL() throw Bond::Exception()
-#define BOND_FAIL_MESSAGE(message) throw Bond::Exception(message)
+#define BOND_FAIL_MESSAGE(message) throw Bond::Exception("%s", (message))
 #define BOND_FAIL_FORMAT(format) throw Bond::Exception format
 
 #endif

@@ -280,7 +280,7 @@ inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 #if BOND_RUNTIME_CHECKS_ENABLED
 	if (index >= paramListSignature.mParamCount)
 	{
-		mVm.RaiseError("Attempt to index argument out of range.");
+		mVm.RaiseError("Attempt to index argument %" BOND_PRIu32 " out of range.", bu32_t(index));
 	}
 #endif
 
@@ -289,7 +289,11 @@ inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 #if BOND_RUNTIME_CHECKS_ENABLED
 	if (!ValidateSignatureType<ArgType>(size_t(param.mSize), SignatureType(param.mType)))
 	{
-		mVm.RaiseError("Attempt to access argument using wrong type.");
+		char buffer[64];
+		mVm.RaiseError(
+			"Attempt to access argument %" BOND_PRIu32 " using wrong type. Expected '%s'.",
+			bu32_t(index),
+			ExpandApiTypeMnemonic(buffer, sizeof(buffer), SignatureType(param.mType), param.mSize));
 	}
 #endif
 
@@ -304,7 +308,9 @@ inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 	const ReturnSignature &ret = mFunction->mReturnSignature;
 	if (!ValidateSignatureType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
 	{
-		mVm.RaiseError("Attempt to return a value of the wrong type.");
+		char buffer[64];
+		mVm.RaiseError("Attempt to return a value of the wrong type. Expected '%s'.",
+			ExpandApiTypeMnemonic(buffer, sizeof(buffer), SignatureType(ret.mType), ret.mSize));
 	}
 #endif
 }
@@ -335,7 +341,9 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionNa
 	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
 	if (!ValidateReturnType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
 	{
-		vm.RaiseError("Attempt to call a function with incorrect return address type.");
+		char buffer[64];
+		vm.RaiseError("Attempt to call a function with incorrect return address type. Expected '%s'.",
+			ExpandApiTypeMnemonic(buffer, sizeof(buffer), SignatureType(ret.mType), ret.mSize));
 	}
 #endif
 }

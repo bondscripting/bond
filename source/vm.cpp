@@ -2149,7 +2149,7 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 	{
 		const SignatureType returnType = static_cast<SignatureType>(function->mReturnSignature.mType);
 		const bu32_t returnSize = function->mReturnSignature.mSize;
-		writer.Write(GetSignatureTypeMnemonic(returnType), returnSize);
+		writer.Write(GetBondTypeMnemonic(returnType), returnSize);
 		writer.Write(" ");
 
 		const char *const *elements = function->mName;
@@ -2218,7 +2218,7 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 					break;
 				case SIG_STRUCT:
 				case SIG_VOID:
-					writer.Write(GetSignatureTypeMnemonic(static_cast<SignatureType>(signature.mType)), signature.mSize);
+					writer.Write(GetBondTypeMnemonic(SignatureType(signature.mType)), signature.mSize);
 					break;
 			}
 		}
@@ -2227,12 +2227,20 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 }
 
 
-void VM::RaiseError(const char *message) const
+void VM::RaiseError(const char *format, ...) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+
+	va_list argList;
+	va_start(argList, format);
+	writer.VWrite(format, argList);
+	va_end(argList);
+
+	writer.Write("\n");
 	DumpCallStack(writer);
-	BOND_FAIL_FORMAT(("%s\n%s", message, buffer));
+
+	BOND_FAIL_MESSAGE(buffer);
 }
 
 }

@@ -97,7 +97,7 @@ public:
 	void DumpCallStack(TextWriter &writer) const;
 	void DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const;
 
-	void RaiseError(const char *message) const;
+	void RaiseError(const char *format, ...) const;
 
 	template <typename ReturnType>
 	void CallFunction(const HashedString &functionName, ReturnType *returnAddress);

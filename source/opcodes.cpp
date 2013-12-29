@@ -1,17 +1,46 @@
+#include "bond/io/bufferedtextwriter.h"
 #include "bond/types/opcodes.h"
 
 namespace Bond
 {
 
-const char *GetSignatureTypeMnemonic(SignatureType signatureType)
+const char *GetBondTypeMnemonic(SignatureType signatureType)
 {
-	static const char *const SIGNATURE_TYPE_MNEMONICS[] =
+	static const char *const BOND_TYPE_MNEMONICS[] =
 	{
-#define BOND_SIGNATURE_TYPE_ITEM(type, mnemonic) mnemonic,
+#define BOND_SIGNATURE_TYPE_ITEM(type, bondType, apiType) bondType,
 		BOND_SIGNATURE_TYPE_LIST
 #undef BOND_SIGNATURE_TYPE_ITEM
 	};
-	return SIGNATURE_TYPE_MNEMONICS[signatureType];
+	return BOND_TYPE_MNEMONICS[signatureType];
+}
+
+
+char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
+{
+	BufferedTextWriter writer(buffer, length);
+	writer.Write(GetBondTypeMnemonic(SignatureType(signatureType)), size);
+	return buffer;
+}
+
+
+const char *GetApiTypeMnemonic(SignatureType signatureType)
+{
+	static const char *const API_TYPE_MNEMONICS[] =
+	{
+#define BOND_SIGNATURE_TYPE_ITEM(type, bondType, apiType) apiType,
+		BOND_SIGNATURE_TYPE_LIST
+#undef BOND_SIGNATURE_TYPE_ITEM
+	};
+	return API_TYPE_MNEMONICS[signatureType];
+}
+
+
+char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
+{
+	BufferedTextWriter writer(buffer, length);
+	writer.Write(GetApiTypeMnemonic(SignatureType(signatureType)), size);
+	return buffer;
 }
 
 

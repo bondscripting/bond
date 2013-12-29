@@ -24,25 +24,25 @@ enum PointerSize
 
 
 #define BOND_SIGNATURE_TYPE_LIST \
-  BOND_SIGNATURE_TYPE_ITEM(VOID,    "void")                     \
-  BOND_SIGNATURE_TYPE_ITEM(BOOL,    "bool")                     \
-  BOND_SIGNATURE_TYPE_ITEM(CHAR,    "char")                     \
-  BOND_SIGNATURE_TYPE_ITEM(UCHAR,   "uchar")                    \
-  BOND_SIGNATURE_TYPE_ITEM(SHORT,   "short")                    \
-  BOND_SIGNATURE_TYPE_ITEM(USHORT,  "ushort")                   \
-  BOND_SIGNATURE_TYPE_ITEM(INT,     "int")                      \
-  BOND_SIGNATURE_TYPE_ITEM(UINT,    "uint")                     \
-  BOND_SIGNATURE_TYPE_ITEM(LONG,    "long")                     \
-  BOND_SIGNATURE_TYPE_ITEM(ULONG,   "ulong")                    \
-  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float")                    \
-  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double")                   \
-  BOND_SIGNATURE_TYPE_ITEM(POINTER, "*")                        \
-  BOND_SIGNATURE_TYPE_ITEM(STRUCT,  "struct<%" BOND_PRIu32 ">") \
+  BOND_SIGNATURE_TYPE_ITEM(VOID,    "void",                     "void")                     \
+  BOND_SIGNATURE_TYPE_ITEM(BOOL,    "bool",                     "bool")                     \
+  BOND_SIGNATURE_TYPE_ITEM(CHAR,    "char",                     "bi8_t")                    \
+  BOND_SIGNATURE_TYPE_ITEM(UCHAR,   "uchar",                    "bu8_t")                    \
+  BOND_SIGNATURE_TYPE_ITEM(SHORT,   "short",                    "bi16_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(USHORT,  "ushort",                   "bu16_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(INT,     "int",                      "bi32_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(UINT,    "uint",                     "bu32_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(LONG,    "long",                     "bi64_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(ULONG,   "ulong",                    "bu64_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float",                    "bf32_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double",                   "bf64_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(POINTER, "*",                        "pointer")                  \
+  BOND_SIGNATURE_TYPE_ITEM(STRUCT,  "struct<%" BOND_PRIu32 ">", "struct<%" BOND_PRIu32 ">") \
 
 
 enum SignatureType
 {
-#define BOND_SIGNATURE_TYPE_ITEM(type, mnemonic) SIG_ ## type,
+#define BOND_SIGNATURE_TYPE_ITEM(type, bondType, apiType) SIG_ ## type,
 	BOND_SIGNATURE_TYPE_LIST
 #undef BOND_SIGNATURE_TYPE_ITEM
 };
@@ -99,6 +99,12 @@ inline bool IsInIntRange(bu64_t value) { return value <= static_cast<bu64_t>(BON
 
 inline bool IsInUIntRange(bi64_t value) { return (value >= 0) && (value <= static_cast<bi64_t>(BOND_UINT_MAX)); }
 inline bool IsInUIntRange(bu64_t value) { return value <= BOND_UINT_MAX; }
+
+const char *GetBondTypeMnemonic(SignatureType signatureType);
+char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size);
+
+const char *GetApiTypeMnemonic(SignatureType signatureType);
+char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size);
 
 }
 

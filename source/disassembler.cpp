@@ -314,7 +314,7 @@ void DisassemblerCore::DisassembleSizeAndType()
 	bu32_t size;
 	bu32_t type;
 	DecodeSizeAndType(sizeAndType, size, type);
-	const char *str = GetSignatureTypeMnemonic(static_cast<SignatureType>(type));
+	const char *str = GetBondTypeMnemonic(SignatureType(type));
 	mWriter.Write(str, size);
 }
 
