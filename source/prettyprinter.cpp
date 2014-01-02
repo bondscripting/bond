@@ -202,8 +202,8 @@ void PrettyPrinterCore::Visit(const StructDeclaration *structDeclaration)
 {
 	Tab();
 	mWriter.Write("struct ");
-
 	Print(structDeclaration->GetName());
+
 	const Token *sizeToken = structDeclaration->GetSizeToken();
 	if (sizeToken != NULL)
 	{
