@@ -21,7 +21,7 @@ void FrontEnd::AddInputFile(const HashedString &inputFileName)
 
 bool FrontEnd::ContainsInputFile(const HashedString &inputFileName)
 {
-	return Find(mInputFileNameList.begin(), mInputFileNameList.end(), inputFileName) != mInputFileNameList.end();
+	return find(mInputFileNameList.begin(), mInputFileNameList.end(), inputFileName) != mInputFileNameList.end();
 }
 
 

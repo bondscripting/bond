@@ -1371,7 +1371,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 				break;
 				case SCOPE_STRUCT_MEMBER:
 				{
-					// TODO: handle native structs.
+					// TODO: handle native structs. Is there anything else to do for native structs?
 					// Push the this pointer and add the offset.
 					if (Is64BitPointer())
 					{

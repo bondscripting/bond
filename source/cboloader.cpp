@@ -165,7 +165,7 @@ CboLoader::Handle CboLoader::Load()
 		loader.Load();
 	}
 
-	Sort(functions, functions + functionCount, FunctionHashComparator());
+	sort(functions, functions + functionCount, FunctionHashComparator());
 	for (size_t i = 0; i < functionCount; ++i)
 	{
 		functionLookup[i] = functions[i].mHash;

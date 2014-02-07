@@ -124,7 +124,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				if (membersResolved)
 				{
 					memberList = structDeclaration->GetMemberVariableList();
-					memberList = Sort<DeclarativeStatement, AlignmentComparator>(memberList, AlignmentComparator(mPointerSize));
+					memberList = SortNodes<DeclarativeStatement, AlignmentComparator>(memberList, AlignmentComparator(mPointerSize));
 					structDeclaration->SetMemberVariableList(memberList);
 
 					bu32_t structSize = 0;

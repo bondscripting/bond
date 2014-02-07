@@ -190,7 +190,7 @@ void ValidationPass::Visit(SwitchLabel *switchLabel)
 		resolvedLabel.SetMatch(switchLabel->GetExpression()->GetTypeAndValue().GetIntValue());
 	}
 
-	mSwitchLabelList.SetTop(Insert(mSwitchLabelList.GetTop(), &resolvedLabel, SwitchLabelComparator()));
+	mSwitchLabelList.SetTop(InsertNode(mSwitchLabelList.GetTop(), &resolvedLabel, SwitchLabelComparator()));
 }
 
 

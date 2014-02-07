@@ -11,7 +11,7 @@ FileLoader::Handle MemoryFileLoader::LoadFile(const char *fileName)
 	const SimpleString name(fileName);
 	const SimpleString *firstFileName = mIndex.mFileNames;
 	const SimpleString *lastFileName = firstFileName + mIndex.mNumFiles;
-	const SimpleString *result = LowerBound(firstFileName, lastFileName, name);
+	const SimpleString *result = lower_bound(firstFileName, lastFileName, name);
 
 	if ((result != lastFileName) && (*result == name))
 	{

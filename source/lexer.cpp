@@ -1282,7 +1282,7 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 
 	const size_t numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
 	const SimpleString *lastKeyword = KEYWORD_NAMES + numKeywords;
-	const SimpleString *keyword = LowerBound(KEYWORD_NAMES, lastKeyword, token.GetHashedText());
+	const SimpleString *keyword = lower_bound(KEYWORD_NAMES, lastKeyword, token.GetHashedText());
 
 	if ((keyword != lastKeyword) && (*keyword == token.GetHashedText()))
 	{

@@ -1993,7 +1993,7 @@ void VM::ExecuteScriptFunction()
 					reinterpret_cast<const MatchOffsetPair *>(code + pc + (2 * sizeof(Value32)));
 				const MatchOffsetPair *jumpTableEnd = jumpTable + numMatches;
 				const MatchOffsetPair condition(*reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE));
-				const MatchOffsetPair *pair = LowerBound(jumpTable, jumpTableEnd, condition);
+				const MatchOffsetPair *pair = lower_bound(jumpTable, jumpTableEnd, condition);
 				const bi32_t offset =
 					((pair < jumpTableEnd) && (pair->match == condition.match)) ? pair->offset : defaultOffset;
 				pc += ((2 + (numMatches * 2)) * sizeof(Value32)) + offset;
