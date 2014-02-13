@@ -132,6 +132,7 @@
     <ClCompile Include="..\..\source\parsenodetraverser.cpp" />
     <ClCompile Include="..\..\source\parsenodeutil.cpp" />
     <ClCompile Include="..\..\source\parser.cpp" />
+    <ClCompile Include="..\..\source\parsetreeprinter.cpp" />
     <ClCompile Include="..\..\source\prettyprinter.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />

@@ -6,7 +6,9 @@
 namespace Bond
 {
 
-using namespace std;
+using std::find;
+using std::lower_bound;
+using std::sort;
 
 }
 

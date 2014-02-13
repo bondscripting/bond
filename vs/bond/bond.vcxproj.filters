@@ -440,5 +440,8 @@
     <ClCompile Include="..\..\source\textwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\parsetreeprinter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
