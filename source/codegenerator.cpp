@@ -163,20 +163,50 @@ private:
 			CONTEXT_STACK_VALUE,
 			CONTEXT_ADDRESS_INDIRECT,
 			CONTEXT_CONSTANT_VALUE,
+			CONTEXT_MEMBER_FUNCTION,
+			CONTEXT_NATIVE_MEMBER,
 		};
 
-		GeneratorResult(): mContext(CONTEXT_NONE), mTypeAndValue(NULL), mOffset(0) {}
-		GeneratorResult(Context context): mContext(context), mTypeAndValue(NULL), mOffset(0) {}
-		GeneratorResult(Context context, bi32_t offset): mContext(context), mTypeAndValue(NULL), mOffset(offset) {}
-
-		GeneratorResult(const TypeAndValue *typeAndValue):
-			mContext(CONTEXT_CONSTANT_VALUE),
-			mTypeAndValue(typeAndValue),
+		GeneratorResult():
+			mContext(CONTEXT_NONE),
+			mThisPointerContext(CONTEXT_NONE),
+			mConstantValue(NULL),
 			mOffset(0)
 		{}
 
+		GeneratorResult(Context context):
+			mContext(context),
+			mThisPointerContext(CONTEXT_NONE),
+			mConstantValue(NULL),
+			mOffset(0)
+		{}
+
+		GeneratorResult(Context context, bi32_t offset):
+			mContext(context),
+			mThisPointerContext(CONTEXT_NONE),
+			mConstantValue(NULL),
+			mOffset(offset)
+		{}
+
+		GeneratorResult(Context context, const GeneratorResult &thisPointerResult):
+			mContext(context),
+			mThisPointerContext(thisPointerResult.mContext),
+			mConstantValue(NULL),
+			mOffset(thisPointerResult.mOffset)
+		{}
+
+		GeneratorResult(const TypeAndValue *constantValue):
+			mContext(CONTEXT_CONSTANT_VALUE),
+			mThisPointerContext(CONTEXT_NONE),
+			mConstantValue(constantValue),
+			mOffset(0)
+		{}
+
+		Context GetValueContext() const { return (mThisPointerContext != CONTEXT_NONE) ? mThisPointerContext : mContext; }
+
 		Context mContext;
-		const TypeAndValue *mTypeAndValue;
+		Context mThisPointerContext;
+		const TypeAndValue *mConstantValue;
 		bi32_t mOffset;
 	};
 
@@ -1239,6 +1269,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 			{
 				result = EmitAddressOfResult(lhResult);
 			}
+			result = GeneratorResult(GeneratorResult::CONTEXT_MEMBER_FUNCTION, result);
 		}
 	}
 
@@ -1283,7 +1314,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		Traverse(lhs);
 
 		// Push the 'this' pointer, if needed. Any pointer type will do.
-		if (lhResult.GetValue().mContext != GeneratorResult::CONTEXT_NONE)
+		if (lhResult.GetValue().mContext == GeneratorResult::CONTEXT_MEMBER_FUNCTION)
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
 			EmitPushResult(lhResult, &voidStar);
@@ -1395,7 +1426,8 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		else if (((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL) &&
 		         (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER))
 		{
-			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_FP_INDIRECT, -BOND_SLOT_SIZE));
+			GeneratorResult thisPointerResult(GeneratorResult::CONTEXT_FP_INDIRECT, -BOND_SLOT_SIZE);
+			mResult.SetTop(GeneratorResult(GeneratorResult::CONTEXT_MEMBER_FUNCTION, thisPointerResult));
 		}
 	}
 }
@@ -1421,7 +1453,7 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 
 void GeneratorCore::EmitPushResultAs(const GeneratorResult &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType)
 {
-	switch (result.mContext)
+	switch (result.GetValueContext())
 	{
 		case GeneratorResult::CONTEXT_FP_INDIRECT:
 			EmitPushFramePointerIndirectValue(sourceType, result.mOffset);
@@ -1439,7 +1471,7 @@ void GeneratorCore::EmitPushResultAs(const GeneratorResult &result, const TypeDe
 			break;
 
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			EmitPushConstantAs(*result.mTypeAndValue, destType);
+			EmitPushConstantAs(*result.mConstantValue, destType);
 			break;
 
 		case GeneratorResult::CONTEXT_STACK_VALUE:
@@ -1447,6 +1479,8 @@ void GeneratorCore::EmitPushResultAs(const GeneratorResult &result, const TypeDe
 			EmitCast(sourceType, destType);
 			break;
 
+		case GeneratorResult::CONTEXT_MEMBER_FUNCTION:
+		case GeneratorResult::CONTEXT_NATIVE_MEMBER:
 		case GeneratorResult::CONTEXT_NONE:
 			PushError(CompilerError::INTERNAL_ERROR);
 			break;
@@ -1456,7 +1490,7 @@ void GeneratorCore::EmitPushResultAs(const GeneratorResult &result, const TypeDe
 
 void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDescriptor *typeDescriptor)
 {
-	switch (result.mContext)
+	switch (result.GetValueContext())
 	{
 		case GeneratorResult::CONTEXT_FP_INDIRECT:
 			EmitPushFramePointerIndirectValue(typeDescriptor, result.mOffset);
@@ -1471,13 +1505,15 @@ void GeneratorCore::EmitPushResult(const GeneratorResult &result, const TypeDesc
 			break;
 
 		case GeneratorResult::CONTEXT_CONSTANT_VALUE:
-			EmitPushConstant(*result.mTypeAndValue);
+			EmitPushConstant(*result.mConstantValue);
 			break;
 
 		case GeneratorResult::CONTEXT_STACK_VALUE:
 			EmitPushStackValue(typeDescriptor, result.mOffset);
 			break;
 
+		case GeneratorResult::CONTEXT_MEMBER_FUNCTION:
+		case GeneratorResult::CONTEXT_NATIVE_MEMBER:
 		case GeneratorResult::CONTEXT_NONE:
 			PushError(CompilerError::INTERNAL_ERROR);
 			break;
