@@ -17,11 +17,11 @@ bool Symbol::IsTypeDefinition() const
 void Symbol::SetParentSymbol(Symbol *parent)
 {
 	mParentSymbol = parent;
-	mGlobalHashCode = ComputeGlobalHashCode();
+	mGlobalHashCode = ComputeGlobalHashCode("");
 }
 
 
-bu32_t Symbol::ComputeGlobalHashCode() const
+bu32_t Symbol::ComputeGlobalHashCode(const char *prefix) const
 {
 	bu32_t hash = STRING_HASH_SEED;
 	if (!IsAnonymous())
@@ -31,10 +31,12 @@ bu32_t Symbol::ComputeGlobalHashCode() const
 		{
 			hash = mParentSymbol->GetGlobalHashCode();
 			hash = StringHash("::", hash);
+			hash = StringHash(prefix, hash);
 			hash = StringHash(name.GetLength(), name.GetString(), hash);
 		}
 		else
 		{
+			hash = StringHash(prefix);
 			hash = name.GetHashCode();
 		}
 	}
