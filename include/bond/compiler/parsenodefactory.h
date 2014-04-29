@@ -56,7 +56,8 @@ public:
 	 const Token *name,
 	 Initializer *initializer,
 	 TypeDescriptor *typeDescriptor,
-	 Scope scope);
+	 Scope scope,
+	 bool isNative);
 
 	Initializer *CreateInitializer(Expression *expression);
 	Initializer *CreateInitializer(Initializer *initializerList);

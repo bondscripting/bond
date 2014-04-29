@@ -805,7 +805,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 			AssertNode(initializer);
 		}
 
-		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor, mScope.GetTop());
+		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor, mScope.GetTop(), mInNativeBlock.GetTop());
 	}
 
 	return namedInitializer;

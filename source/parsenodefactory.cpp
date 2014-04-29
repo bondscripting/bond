@@ -152,10 +152,11 @@ NamedInitializer *ParseNodeFactory::CreateNamedInitializer(
 	const Token *name,
 	Initializer *initializer,
 	TypeDescriptor *typeDescriptor,
-	Scope scope)
+	Scope scope,
+	bool isNative)
 {
 	return new (mAllocator.Alloc<NamedInitializer>())
-		NamedInitializer(name, initializer, typeDescriptor, scope);
+		NamedInitializer(name, initializer, typeDescriptor, scope, isNative);
 }
 
 

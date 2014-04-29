@@ -730,7 +730,7 @@ private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
-	// TODO: Ew. Became mutable after population of this field was moved to the code generator.
+	// Ew. Became mutable after population of this field was moved to the code generator.
 	mutable bi32_t mOffset;
 };
 
@@ -738,12 +738,12 @@ private:
 class NamedInitializer: public Symbol
 {
 public:
-	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor, Scope scope):
+	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor, Scope scope, bool isNative):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mInitializer(initializer),
 		mScope(scope),
-		mOffset(0)
+		mOffset(isNative ? -1 : 0)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -765,12 +765,14 @@ public:
 	bi32_t GetOffset() const { return mOffset; }
 	void SetOffset(bi32_t offset) const { mOffset = offset; }
 
+	bool IsNativeStructMember() const { return (mScope == SCOPE_STRUCT_MEMBER) && (mOffset < 0); }
+
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	Initializer *mInitializer;
 	Scope mScope;
-	// TODO: Ew. Became mutable after population of this field was moved to the code generator.
+	// Ew. Became mutable after population of this field was moved to the code generator.
 	mutable bi32_t mOffset;
 };
 

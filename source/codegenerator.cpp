@@ -1246,7 +1246,6 @@ void GeneratorCore::Visit(const PostfixExpression *postfixExpression)
 
 void GeneratorCore::Visit(const MemberExpression *memberExpression)
 {
-	// TODO: handle native structs.
 	Result result;
 	{
 		const Expression *lhs = memberExpression->GetLhs();
@@ -1259,9 +1258,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 		const NamedInitializer *namedInitializer = NULL;
 		if ((namedInitializer = CastNode<NamedInitializer>(member)) != NULL)
 		{
-			const Symbol *parent = member->GetParentSymbol();
-			const StructDeclaration *parentStruct = CastNode<StructDeclaration>(parent);
-			if ((parentStruct != NULL) && parentStruct->IsNative())
+			if (namedInitializer->IsNativeStructMember())
 			{
 				if (op->GetTokenType() == Token::PERIOD)
 				{
@@ -1420,7 +1417,6 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 				break;
 				case SCOPE_STRUCT_MEMBER:
 				{
-					// TODO: handle native structs. Is there anything else to do for native structs?
 					// Push the this pointer and add the offset.
 					if (Is64BitPointer())
 					{
@@ -1430,8 +1426,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 					{
 						EmitPushFramePointerIndirectValue32(-BOND_SLOT_SIZE);
 					}
-					const Result::Context context =
-						TransformContext(Result::CONTEXT_ADDRESS_INDIRECT, typeDescriptor);
+					const Result::Context context = TransformContext(Result::CONTEXT_ADDRESS_INDIRECT, typeDescriptor);
 					mResult.SetTop(Result(context, offset));
 				}
 				break;
@@ -1475,24 +1470,21 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	const bu32_t returnType = returnDescriptor->GetSignatureType();
 	const bi32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
 
+	// Push the 'this' pointer. Any pointer type will do.
 	{
-		IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
-
-		// Push the 'this' pointer. Any pointer type will do.
-		{
-			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
-			EmitPushResult(thisPointerResult, &voidStar);
-		}
-
-		if (returnType == SIG_STRUCT)
-		{
-			EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
-		}
-
-		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(member->GetGlobalHashCodeWithPrefix("@get_"));
+		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+		EmitPushResult(thisPointerResult, &voidStar);
 	}
 
+	if (returnType == SIG_STRUCT)
+	{
+		EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
+	}
+
+	EmitOpCode(OPCODE_INVOKE);
+	EmitHashCode(member->GetGlobalHashCodeWithPrefix("@get_"));
+
+	bi32_t stackDelta = -BOND_SLOT_SIZE;
 	Result result;
 	if (returnType == SIG_STRUCT)
 	{
@@ -1500,9 +1492,11 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	}
 	else
 	{
-		ApplyStackDelta(BOND_SLOT_SIZE);
+		stackDelta += BOND_SLOT_SIZE;
 		result = Result(Result::CONTEXT_STACK_VALUE);
 	}
+	ApplyStackDelta(stackDelta);
+
 	return result;
 }
 

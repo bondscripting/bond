@@ -43,13 +43,13 @@ private:
 	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(const EnumDeclaration *enumDeclaration) {}
 	virtual void Visit(const FunctionDefinition *functionDefinition);
-	virtual void Visit(const DeclarativeStatement *declarativeStatement) {}
+	virtual void Visit(const NamedInitializer *namedInitializer);
 
 	size_t SplitIdentifiers(const char *str, SimpleString *identifiers, size_t maxIdentifiers) const;
 	void OpenNamespaces(TextWriter &writer, const SimpleString *identifiers, size_t numIdentifiers);
 	void CloseNamespaces(TextWriter &writer, size_t numIdentifiers);
 	void PrintNamespaceStack(TextWriter &writer, NamespaceStack::Iterator &it);
-	void PrintQualifiedFunctionName(TextWriter &writer, const Symbol *symbol);
+	void PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol, const char *prefix = "");
 
 	NamespaceStack mNamespaceStack;
 	const TranslationUnit *mTranslationUnitList;
@@ -165,9 +165,34 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 
 		// Generate the function binding.
 		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
-		PrintQualifiedFunctionName(mCppWriter, functionDefinition);
+		PrintQualifiedSymbolName(mCppWriter, functionDefinition);
 		mCppWriter.Write("},\n");
 		++mNumFunctions;
+	}
+}
+
+
+void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
+{
+	if (namedInitializer->IsNativeStructMember())
+	{
+		NamespaceStack::Iterator it = mNamespaceStack.Begin();
+		PrintNamespaceStack(mHWriter, it);
+
+		// Generate the getter and setter function prototypes.
+		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetText();
+		const char *memberName = namedInitializer->GetName()->GetText();
+		mHWriter.Write("void %s__get__%s(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHWriter.Write("void %s__set__%s(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+
+		// Generate the function bindings.
+		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithPrefix("@get_"));
+		PrintQualifiedSymbolName(mCppWriter, namedInitializer, "get__");
+		mCppWriter.Write("},\n");
+		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithPrefix("@set_"));
+		PrintQualifiedSymbolName(mCppWriter, namedInitializer, "set__");
+		mCppWriter.Write("},\n");
+		mNumFunctions += 2;
 	}
 }
 
@@ -248,11 +273,11 @@ void NativeBindingGeneratorCore::PrintNamespaceStack(TextWriter &writer, Namespa
 }
 
 
-void NativeBindingGeneratorCore::PrintQualifiedFunctionName(TextWriter &writer, const Symbol *symbol)
+void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol, const char *prefix)
 {
 	if ((symbol != NULL) && (symbol->GetName() != NULL))
 	{
-		PrintQualifiedFunctionName(writer, symbol->GetParentSymbol());
+		PrintQualifiedSymbolName(writer, symbol->GetParentSymbol());
 		const char *suffix = "";
 		switch (symbol->GetSymbolType())
 		{
@@ -266,7 +291,7 @@ void NativeBindingGeneratorCore::PrintQualifiedFunctionName(TextWriter &writer, 
 				suffix = "";
 				break;
 		}
-		writer.Write("%s%s", symbol->GetName()->GetText(), suffix);
+		writer.Write("%s%s%s", prefix, symbol->GetName()->GetText(), suffix);
 	}
 }
 
