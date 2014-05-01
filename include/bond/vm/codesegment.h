@@ -69,7 +69,6 @@ struct Function
 		NativeFunction mNativeFunction;
 	};
 
-	// TODO: There is a sign mismatch between these fields and the code generator.
 	bu32_t mCodeSize;
 	bu32_t mArgSize;
 	bu32_t mPackedArgSize;

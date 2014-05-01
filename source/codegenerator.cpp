@@ -238,9 +238,9 @@ private:
 		CompiledFunction(
 				const FunctionDefinition *definition,
 				Allocator &allocator,
-				bi32_t argSize,
-				bi32_t packedArgSize,
-				bi32_t framePointerAlignment):
+				bu32_t argSize,
+				bu32_t packedArgSize,
+				bu32_t framePointerAlignment):
 			mDefinition(definition),
 			mByteCode(ByteCode::Allocator(&allocator)),
 			mLabelList(LabelList::Allocator(&allocator)),
@@ -255,11 +255,11 @@ private:
 		ByteCode::Type mByteCode;
 		LabelList::Type mLabelList;
 		JumpList::Type mJumpList;
-		bi32_t mArgSize;
-		bi32_t mPackedArgSize;
-		bi32_t mLocalSize;
-		bi32_t mStackSize;
-		bi32_t mFramePointerAlignment;
+		bu32_t mArgSize;
+		bu32_t mPackedArgSize;
+		bu32_t mLocalSize;
+		bu32_t mStackSize;
+		bu32_t mFramePointerAlignment;
 	};
 
 	typedef Map<HashedString, bu16_t> StringIndexMap;
@@ -407,8 +407,8 @@ private:
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
 	LabelStack mBreakLabel;
-	IntStack mLocalOffset;
-	IntStack mStackTop;
+	UIntStack mLocalOffset;
+	UIntStack mStackTop;
 	BoolStack mEmitOptionalTemporaries;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
@@ -491,19 +491,19 @@ void GeneratorCore::Visit(const TranslationUnit *translationUnit)
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
 	const FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	bi32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? -BOND_SLOT_SIZE : 0;
-	bi32_t packedOffset = offset;
-	bi32_t framePointerAlignment = BOND_SLOT_SIZE;
+	bu32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? bu32_t(BOND_SLOT_SIZE) : 0;
+	bu32_t packedOffset = offset;
+	bu32_t framePointerAlignment = bu32_t(BOND_SLOT_SIZE);
 	const Parameter *parameterList = prototype->GetParameterList();
 	while (parameterList != NULL)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const bi32_t alignment = Max(bi32_t(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-		offset -= typeDescriptor->GetSize(mPointerSize);
-		offset = AlignDown(offset, alignment);
-		packedOffset -= typeDescriptor->GetStackSize(mPointerSize);
+		const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
+		offset += typeDescriptor->GetSize(mPointerSize);
+		offset = AlignUp(offset, alignment);
+		packedOffset += typeDescriptor->GetStackSize(mPointerSize);
 		framePointerAlignment = Max(framePointerAlignment, alignment);
-		parameterList->SetOffset(offset);
+		parameterList->SetOffset(-bi32_t(offset));
 		parameterList = NextNode(parameterList);
 	}
 
@@ -512,8 +512,8 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 		CompiledFunction(
 			functionDefinition,
 			mAllocator,
-			-offset,
-			-packedOffset,
+			offset,
+			packedOffset,
 			framePointerAlignment));
 	function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
 	MapQualifiedSymbolName(functionDefinition);
@@ -521,8 +521,8 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	if (!functionDefinition->IsNative())
 	{
 		FunctionStack::Element functionElement(mFunction, &function);
-		IntStack::Element localOffsetElement(mLocalOffset, 0);
-		IntStack::Element stackTopElement(mStackTop, 0);
+		UIntStack::Element localOffsetElement(mLocalOffset, 0);
+		UIntStack::Element stackTopElement(mStackTop, 0);
 		Traverse(functionDefinition->GetBody());
 
 		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
@@ -553,7 +553,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			const Initializer *initializer = namedInitializer->GetInitializer();
 			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
 			{
-				IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+				UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
 				if (lhDescriptor->IsStructType())
 				{
@@ -594,7 +594,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ParseNodeTraverser::Visit(compoundStatement);
 	AssertStackEmpty();
 }
@@ -602,7 +602,7 @@ void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
 
 void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
@@ -650,7 +650,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 {
 	const size_t endLabel = CreateLabel();
 	LabelStack::Element breakElement(mBreakLabel, endLabel);
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
 	const Expression *control = switchStatement->GetControl();
 	const TypeDescriptor *controlDescriptor = control->GetTypeDescriptor();
@@ -745,7 +745,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 
 void GeneratorCore::Visit(const SwitchSection *switchSection)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const size_t sectionStartPos = GetByteCode().size();
 	SetLabelValue(switchSection->GetJumpTargetId(), sectionStartPos);
 	TraverseList(switchSection->GetStatementList());
@@ -755,7 +755,7 @@ void GeneratorCore::Visit(const SwitchSection *switchSection)
 
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const size_t loopStartLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, GetByteCode().size());
@@ -794,7 +794,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 
 void GeneratorCore::Visit(const ForStatement *forStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	Traverse(forStatement->GetInitializer());
 
 	const size_t loopStartLabel = CreateLabel();
@@ -829,7 +829,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 
 void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
 	if (jumpStatement->IsBreak())
 	{
@@ -896,7 +896,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 
 void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 {
-	IntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	ResultStack::Element expressionResult(mResult);
 	TraverseOmitOptionalTemporaries(expressionStatement->GetExpression());
 	AssertStackEmpty();
@@ -923,7 +923,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 		EmitJump(OPCODE_IFZ, trueEndLabel);
 
 		{
-			IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
 			ResultStack::Element trueResult(mResult);
 			Traverse(trueExpression);
 			if (isStruct)
@@ -1319,7 +1319,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
 	{
-		IntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+		UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
 		EmitArgumentList(argList, paramList);
 
 		ResultStack::Element lhResult(mResult);
@@ -2612,7 +2612,7 @@ void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
-	const bi32_t stackTop = mStackTop.GetTop();
+	const bu32_t stackTop = mStackTop.GetTop();
 
 	const size_t endLabel = CreateLabel();
 	EmitJump(branchOpCode, endLabel);
@@ -3590,7 +3590,15 @@ void GeneratorCore::WriteValue64(Value64 value)
 void GeneratorCore::ApplyStackDelta(bi32_t delta)
 {
 	CompiledFunction &function = GetFunction();
-	const bi32_t stackTop = mStackTop.GetTop() + delta;
+	bu32_t top = mStackTop.GetTop();
+
+	// Check for stack underflow.
+	if ((delta < 0) && (bu32_t(-delta) > top))
+	{
+		PushError(CompilerError::INTERNAL_ERROR);
+	}
+
+	const bu32_t stackTop = mStackTop.GetTop() + delta;
 	mStackTop.SetTop(stackTop);
 	function.mStackSize = Max(function.mStackSize, stackTop);
 }
@@ -3599,14 +3607,14 @@ void GeneratorCore::ApplyStackDelta(bi32_t delta)
 bi32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
 {
 	CompiledFunction &function = GetFunction();
-	const bi32_t alignment = Max(bi32_t(typeDescriptor->GetAlignment(mPointerSize)), BOND_SLOT_SIZE);
-	const bi32_t size = bi32_t(typeDescriptor->GetSize(mPointerSize));
-	const bi32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
-	const bi32_t nextOffset = AlignUp(offset + size, BOND_SLOT_SIZE);
+	const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
+	const bu32_t size = typeDescriptor->GetSize(mPointerSize);
+	const bu32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
+	const bu32_t nextOffset = AlignUp(offset + size, bu32_t(BOND_SLOT_SIZE));
 	mLocalOffset.SetTop(nextOffset);
 	function.mLocalSize = Max(function.mLocalSize, nextOffset);
 	function.mFramePointerAlignment = Max(function.mFramePointerAlignment, alignment);
-	return offset;
+	return bi32_t(offset);
 }
 
 
