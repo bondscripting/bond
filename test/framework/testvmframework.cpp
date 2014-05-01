@@ -23,7 +23,8 @@ bool RunVMTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
-	VMValidationFunction *validationFunction)
+	VMValidationFunction *validationFunction,
+	const Bond::NativeBindingCollection *nativeBinding)
 {
 	__ASSERT_FORMAT__(scriptName != 0, logger, assertFile, assertLine, ("Script name is NULL."));
 	__ASSERT_FORMAT__(validationFunction != 0, logger, assertFile, assertLine, ("Validation function is NULL."));
@@ -63,6 +64,10 @@ bool RunVMTest(
 				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()));
 				Bond::CboLoader cboLoader(cboLoaderAllocator);
 				Bond::LoadAllLibs(cboLoader);
+				if (nativeBinding != NULL)
+				{
+					cboLoader.AddNativeBinding(*nativeBinding);
+				}
 				cboLoader.AddCboFile(cboFile);
 				Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load();
 				Bond::VM vm(vmAllocator, *codeSegmentHandle.Get(), 96 * 1024);

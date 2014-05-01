@@ -106,6 +106,9 @@ char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatur
 const char *GetApiTypeMnemonic(SignatureType signatureType);
 char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size);
 
+#define BOND_NATIVE_GETTER_SUFFIX "@get"
+#define BOND_NATIVE_SETTER_SUFFIX "@set"
+
 }
 
 #endif

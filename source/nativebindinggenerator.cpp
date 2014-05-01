@@ -49,7 +49,7 @@ private:
 	void OpenNamespaces(TextWriter &writer, const SimpleString *identifiers, size_t numIdentifiers);
 	void CloseNamespaces(TextWriter &writer, size_t numIdentifiers);
 	void PrintNamespaceStack(TextWriter &writer, NamespaceStack::Iterator &it);
-	void PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol, const char *prefix = "");
+	void PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol);
 
 	NamespaceStack mNamespaceStack;
 	const TranslationUnit *mTranslationUnitList;
@@ -182,16 +182,16 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		// Generate the getter and setter function prototypes.
 		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetText();
 		const char *memberName = namedInitializer->GetName()->GetText();
-		mHWriter.Write("void %s__get__%s(Bond::CalleeStackFrame &frame);\n", structName, memberName);
-		mHWriter.Write("void %s__set__%s(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHWriter.Write("void %s__%s__get(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHWriter.Write("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
 
 		// Generate the function bindings.
-		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithPrefix("@get_"));
-		PrintQualifiedSymbolName(mCppWriter, namedInitializer, "get__");
-		mCppWriter.Write("},\n");
-		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithPrefix("@set_"));
-		PrintQualifiedSymbolName(mCppWriter, namedInitializer, "set__");
-		mCppWriter.Write("},\n");
+		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
+		PrintQualifiedSymbolName(mCppWriter, namedInitializer);
+		mCppWriter.Write("__get},\n");
+		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		PrintQualifiedSymbolName(mCppWriter, namedInitializer);
+		mCppWriter.Write("__set},\n");
 		mNumFunctions += 2;
 	}
 }
@@ -273,7 +273,7 @@ void NativeBindingGeneratorCore::PrintNamespaceStack(TextWriter &writer, Namespa
 }
 
 
-void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol, const char *prefix)
+void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol)
 {
 	if ((symbol != NULL) && (symbol->GetName() != NULL))
 	{
@@ -291,7 +291,7 @@ void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, co
 				suffix = "";
 				break;
 		}
-		writer.Write("%s%s%s", prefix, symbol->GetName()->GetText(), suffix);
+		writer.Write("%s%s", symbol->GetName()->GetText(), suffix);
 	}
 }
 

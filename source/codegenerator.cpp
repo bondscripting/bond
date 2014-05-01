@@ -137,6 +137,7 @@ public:
 		mValue64IndexMap(Value64IndexMap::Compare(), Value64IndexMap::Allocator(&allocator)),
 		mValue64List(Value64List::Allocator(&allocator)),
 		mFunctionList(FunctionList::Allocator(&allocator)),
+		mNativeMemberList(NamedInitializerList::Allocator(&allocator)),
 		mAllocator(allocator),
 		mWriter(writer),
 		mErrorBuffer(errorBuffer),
@@ -268,6 +269,7 @@ private:
 	typedef Vector<Value32> Value32List;
 	typedef Vector<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
+	typedef Vector<const NamedInitializer *> NamedInitializerList;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
 	typedef AutoStack<Result> ResultStack;
 	typedef SizeStack LabelStack;
@@ -276,7 +278,6 @@ private:
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
 
 	virtual void Visit(const TranslationUnit *translationUnit);
-	virtual void Visit(const StructDeclaration *structDeclaration);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
 	virtual void Visit(const TypeDescriptor *typeDescriptor) {}
 	virtual void Visit(const NamedInitializer *namedInitializer);
@@ -401,6 +402,7 @@ private:
 	Value64IndexMap::Type mValue64IndexMap;
 	Value64List::Type mValue64List;
 	FunctionList::Type mFunctionList;
+	NamedInitializerList::Type mNativeMemberList;
 	ResultStack mResult;
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
@@ -482,15 +484,6 @@ void GeneratorCore::Visit(const TranslationUnit *translationUnit)
 	if (translationUnit->RequiresCodeGeneration())
 	{
 		ParseNodeTraverser::Visit(translationUnit);
-	}
-}
-
-
-void GeneratorCore::Visit(const StructDeclaration *structDeclaration)
-{
-	if (structDeclaration->GetVariant() == StructDeclaration::VARIANT_BOND)
-	{
-		ParseNodeTraverser::Visit(structDeclaration);
 	}
 }
 
@@ -589,7 +582,11 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		break;
 
 		case SCOPE_STRUCT_MEMBER:
-			// Nothing to do.
+			if (namedInitializer->IsNativeStructMember())
+			{
+				mNativeMemberList.push_back(namedInitializer);
+				MapQualifiedSymbolName(namedInitializer);
+			}
 			break;
 	}
 }
@@ -1482,7 +1479,7 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	}
 
 	EmitOpCode(OPCODE_INVOKE);
-	EmitHashCode(member->GetGlobalHashCodeWithPrefix("@get_"));
+	EmitHashCode(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
 
 	bi32_t stackDelta = -BOND_SLOT_SIZE;
 	Result result;

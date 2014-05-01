@@ -6,6 +6,9 @@
 #include "bond/vm/vm.h"
 
 #define DEFINE_VM_TEST(testName, scriptName)                                                   \
+  DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, NULL)
+
+#define DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, nativeBinding)                       \
   bool __Validate ## testName ## __(                                                           \
     Bond::TextWriter &logger,                                                                  \
     Bond::VM &vm);                                                                             \
@@ -13,7 +16,7 @@
   bool __Test ## testName ## __(Bond::TextWriter &logger)                                      \
   {                                                                                            \
     return TestFramework::RunVMTest(                                                           \
-      logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __);                  \
+      logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __, nativeBinding);   \
   }                                                                                            \
                                                                                                \
   bool __Validate ## testName ## __(                                                           \
@@ -138,7 +141,8 @@ bool RunVMTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
-	VMValidationFunction *validationFunction);
+	VMValidationFunction *validationFunction,
+	const Bond::NativeBindingCollection *nativeBinding);
 
 }
 

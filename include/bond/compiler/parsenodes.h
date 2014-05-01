@@ -125,7 +125,7 @@ public:
 	bool Matches(const HashedString &name) const;
 
 	bu32_t GetGlobalHashCode() const { return mGlobalHashCode; }
-	bu32_t GetGlobalHashCodeWithPrefix(const char *prefix) const { return ComputeGlobalHashCode(prefix); }
+	bu32_t GetGlobalHashCodeWithSuffix(const char *suffix) const;
 
 protected:
 	Symbol():
@@ -138,7 +138,7 @@ protected:
 private:
 	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
-	bu32_t ComputeGlobalHashCode(const char *prefix) const;
+	bu32_t ComputeGlobalHashCode() const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;
