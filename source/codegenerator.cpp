@@ -371,6 +371,7 @@ private:
 
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
+	void WriteNativeMemberList(bu16_t functionIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
 	void WriteReturnSignature(const TypeDescriptor *type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
@@ -445,9 +446,10 @@ void GeneratorCore::Generate()
 	mWriter.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(/* mDefinitionList.size() + */ bu32_t(mFunctionList.size())));
+	WriteValue32(Value32(/* mDefinitionList.size() + */ bu32_t(mFunctionList.size()) + bu32_t(2 * mNativeMemberList.size())));
 
 	WriteFunctionList(functionIndex);
+	WriteNativeMemberList(functionIndex);
 
 	// Patch up the blob size.
 	const int endPos = mWriter.GetPosition();
@@ -3417,9 +3419,9 @@ void GeneratorCore::WriteConstantTable()
 
 void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 {
-	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
+	for (FunctionList::Type::const_iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
 	{
-		const FunctionDefinition *function = flit->mDefinition;
+		const FunctionDefinition *function = functionIt->mDefinition;
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
 		const int blobStartPos = mWriter.GetPosition();
@@ -3430,31 +3432,31 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteQualifiedSymbolName(function);
 		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		WriteValue32(Value32(function->GetGlobalHashCode()));
-		WriteValue32(Value32(flit->mArgSize));
-		WriteValue32(Value32(flit->mPackedArgSize));
-		WriteValue32(Value32(flit->mLocalSize));
-		WriteValue32(Value32(flit->mStackSize));
-		WriteValue32(Value32(flit->mFramePointerAlignment));
+		WriteValue32(Value32(functionIt->mArgSize));
+		WriteValue32(Value32(functionIt->mPackedArgSize));
+		WriteValue32(Value32(functionIt->mLocalSize));
+		WriteValue32(Value32(functionIt->mStackSize));
+		WriteValue32(Value32(functionIt->mFramePointerAlignment));
 
 		// Cache the code start position and skip 4 bytes for the code size.
 		const int codeSizePos = mWriter.GetPosition();
 		mWriter.AddOffset(sizeof(Value32));
 		const int codeStartPos = mWriter.GetPosition();
 
-		const ByteCode::Type &byteCode = flit->mByteCode;
-		const JumpList::Type &jumpList = flit->mJumpList;
-		const LabelList::Type &labelList = flit->mLabelList;
+		const ByteCode::Type &byteCode = functionIt->mByteCode;
+		const JumpList::Type &jumpList = functionIt->mJumpList;
+		const LabelList::Type &labelList = functionIt->mLabelList;
 
 		size_t byteCodeIndex = 0;
-		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
+		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
 		{
-			while (byteCodeIndex < jlit->mOpCodePos)
+			while (byteCodeIndex < jumpIt->mOpCodePos)
 			{
 				mWriter.Write(byteCode[byteCodeIndex++]);
 			}
 
 			bu8_t opCode = byteCode[byteCodeIndex++];
-			const bi32_t offset = bi32_t(labelList[jlit->mToLabel] - jlit->mFromPos);
+			const bi32_t offset = bi32_t(labelList[jumpIt->mToLabel] - jumpIt->mFromPos);
 			Value16 arg(offset);
 
 			if (!IsInShortRange(offset))
@@ -3482,6 +3484,70 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		mWriter.SetPosition(blobStartPos);
 		WriteValue32(Value32(endPos - blobStartPos));
 		mWriter.SetPosition(endPos);
+	}
+}
+
+
+void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
+{
+	for (NamedInitializerList::Type::const_iterator memberIt = mNativeMemberList.begin(); memberIt != mNativeMemberList.end(); ++memberIt)
+	{
+		const NamedInitializer *member = *memberIt;
+		const TypeDescriptor *typeDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
+
+		// Write the getter function.
+		{
+			// Cache the blob start position and skip 4 bytes for the blob size.
+			const int blobStartPos = mWriter.GetPosition();
+			mWriter.AddOffset(sizeof(Value32));
+			WriteValue16(Value16(functionIndex));
+			WriteReturnSignature(typeDescriptor);
+			WriteQualifiedSymbolName(member);
+			WriteParamListSignature(NULL, true);
+			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
+			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame size
+			WriteValue32(Value32(BOND_SLOT_SIZE)); // Packed frame size
+			WriteValue32(Value32(0));              // Local size
+			WriteValue32(Value32(0));              // Stack size
+			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame pointer alignment
+			WriteValue32(Value32(0));              // Code size
+
+			// Patch up the blob size.
+			const int endPos = mWriter.GetPosition();
+			mWriter.SetPosition(blobStartPos);
+			WriteValue32(Value32(endPos - blobStartPos));
+			mWriter.SetPosition(endPos);
+		}
+
+		// Write the setter function.
+		{
+			const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
+			const bu32_t offset = AlignUp(bu32_t(BOND_SLOT_SIZE) + typeDescriptor->GetSize(mPointerSize), alignment);
+			const bu32_t packedOffset = bu32_t(BOND_SLOT_SIZE) + typeDescriptor->GetStackSize(mPointerSize);
+			const TypeDescriptor voidDescriptor = TypeDescriptor::GetVoidType();
+			const Parameter parameter(typeDescriptor, -bi32_t(offset));
+
+			// Cache the blob start position and skip 4 bytes for the blob size.
+			const int blobStartPos = mWriter.GetPosition();
+			mWriter.AddOffset(sizeof(Value32));
+			WriteValue16(Value16(functionIndex));
+			WriteReturnSignature(&voidDescriptor);
+			WriteQualifiedSymbolName(member);
+			WriteParamListSignature(&parameter, true);
+			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX)));
+			WriteValue32(Value32(offset));         // Frame size
+			WriteValue32(Value32(packedOffset));   // Packed frame size
+			WriteValue32(Value32(0));              // Local size
+			WriteValue32(Value32(0));              // Stack size
+			WriteValue32(Value32(alignment));      // Frame pointer alignment
+			WriteValue32(Value32(0));              // Code size
+
+			// Patch up the blob size.
+			const int endPos = mWriter.GetPosition();
+			mWriter.SetPosition(blobStartPos);
+			WriteValue32(Value32(endPos - blobStartPos));
+			mWriter.SetPosition(endPos);
+		}
 	}
 }
 
@@ -3650,14 +3716,14 @@ void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 
 void GeneratorCore::MapLongJumpOffsets()
 {
-	for (FunctionList::Type::const_iterator flit = mFunctionList.begin(); flit != mFunctionList.end(); ++flit)
+	for (FunctionList::Type::const_iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
 	{
-		const JumpList::Type &jumpList = flit->mJumpList;
-		const LabelList::Type &labelList = flit->mLabelList;
+		const JumpList::Type &jumpList = functionIt->mJumpList;
+		const LabelList::Type &labelList = functionIt->mLabelList;
 
-		for (JumpList::Type::const_iterator jlit = jumpList.begin(); jlit != jumpList.end(); ++jlit)
+		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
 		{
-			const bi32_t offset = bi32_t(labelList[jlit->mToLabel] - jlit->mFromPos);
+			const bi32_t offset = bi32_t(labelList[jumpIt->mToLabel] - jumpIt->mFromPos);
 			if (!IsInShortRange(offset))
 			{
 				MapValue32(Value32(offset));

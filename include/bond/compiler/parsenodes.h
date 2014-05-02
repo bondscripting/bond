@@ -230,6 +230,7 @@ public:
 	bool IsVoidType() const;
 	bool IsStructType() const;
 
+	static TypeDescriptor GetVoidType();
 	static TypeDescriptor GetBoolType();
 	static TypeDescriptor GetCharType();
 	static TypeDescriptor GetIntType();
@@ -707,6 +708,15 @@ public:
 		mName(name),
 		mTypeDescriptor(typeDescriptor),
 		mOffset(0)
+	{}
+
+	// Used by the code generator to create a temporary Parameter object when writing
+	// the signature for native member accessors.
+	Parameter(const TypeDescriptor *typeDescriptor, bi32_t offset):
+		mTypeAndValue(const_cast<TypeDescriptor *>(typeDescriptor)),
+		mName(NULL),
+		mTypeDescriptor(const_cast<TypeDescriptor *>(typeDescriptor)),
+		mOffset(offset)
 	{}
 
 	virtual ~Parameter() {}
@@ -1530,6 +1540,7 @@ public:
 };
 
 
+extern const TypeSpecifier VOID_TYPE_SPECIFIER;
 extern const TypeSpecifier BOOL_TYPE_SPECIFIER;
 extern const TypeSpecifier CHAR_TYPE_SPECIFIER;
 extern const TypeSpecifier INT_TYPE_SPECIFIER;

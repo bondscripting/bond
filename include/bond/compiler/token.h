@@ -264,6 +264,7 @@ private:
 };
 
 
+extern const Token VOID_TOKEN;
 extern const Token BOOL_TOKEN;
 extern const Token CHAR_TOKEN;
 extern const Token UCHAR_TOKEN;

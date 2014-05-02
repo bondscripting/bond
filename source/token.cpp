@@ -68,6 +68,7 @@ TokenTypeSet::TokenTypeSet(
 }
 
 
+const Token VOID_TOKEN("void", Token::KEY_VOID);
 const Token BOOL_TOKEN("bool", Token::KEY_BOOL);
 const Token CHAR_TOKEN("char", Token::KEY_CHAR);
 const Token UCHAR_TOKEN("uchar", Token::KEY_UCHAR);

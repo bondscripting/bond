@@ -413,6 +413,12 @@ bool TypeDescriptor::IsStructType() const
 }
 
 
+TypeDescriptor TypeDescriptor::GetVoidType()
+{
+	return TypeDescriptor(&VOID_TYPE_SPECIFIER, FLAG_VALUE);
+}
+
+
 TypeDescriptor TypeDescriptor::GetBoolType()
 {
 	return TypeDescriptor(&BOOL_TYPE_SPECIFIER, FLAG_VALUE);
@@ -748,6 +754,7 @@ bool Initializer::IsResolved() const
 }
 
 
+const TypeSpecifier VOID_TYPE_SPECIFIER(&VOID_TOKEN);
 const TypeSpecifier BOOL_TYPE_SPECIFIER(&BOOL_TOKEN);
 const TypeSpecifier CHAR_TYPE_SPECIFIER(&CHAR_TOKEN);
 const TypeSpecifier INT_TYPE_SPECIFIER(&INT_TOKEN);
