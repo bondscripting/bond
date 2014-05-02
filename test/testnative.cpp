@@ -83,6 +83,19 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 {
 	using namespace Bond;
 
+	Vector3 v3a(44, 444, 4444);
+	Vector3 v3b;
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3X", bi32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::X" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Y", bi32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Y" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Z", bi32_t(v3a.GetZ()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Z" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetZ()), &v3a);
+
+	v3a = Vector3(2, 3, 4);
+	v3b = Vector3(5, -6, 7);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
+
 	return true;
 }
 

@@ -13,15 +13,13 @@ int GetVector3X(const Vector3 *v3)
 {
 	return v3->X;
 }
-/*
 
-int GetVector3Y(Vector3 v3)
+int GetVector3Y(Vector3 *v3)
 {
-	return v3.Y;
+	return v3->Y;
 }
 
-int GetVector3Z(Vector3 v3)
+int GetVector3Z(Vector3 *v3)
 {
-	return v3.Z;
+	return v3->Z;
 }
-*/
