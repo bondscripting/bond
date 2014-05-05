@@ -94,6 +94,7 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 
 	v3a = Vector3(2, 3, 4);
 	v3b = Vector3(5, -6, 7);
+	VALIDATE_FUNCTION_CALL_2(INT, "::DotVector3", bi32_t(20), &v3a, &v3b);
 	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
 
 	return true;
