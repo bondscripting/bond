@@ -7,7 +7,7 @@ namespace Bond
 {
 
 #define BOND_OPCODE_LIST \
-	/* Opcode,                     mnemonic,     parameter,    stack delta */ \
+	/*               Opcode,       mnemonic,     parameter,    stack delta */ \
 	BOND_OPCODE_ITEM(NOP,          nop,          NONE,         0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(CONSTC,       constc,       CHAR,         1)  \
@@ -122,6 +122,7 @@ namespace Bond
 	                                                               \
 	BOND_OPCODE_ITEM(DUP,          dup,          NONE,         1)  \
 	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE,         1)  \
+	BOND_OPCODE_ITEM(SWAP,         swap,         NONE,         0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(ITOC,         itoc,         NONE,         0)  \
 	BOND_OPCODE_ITEM(UITOUC,       uitouc,       NONE,         0)  \

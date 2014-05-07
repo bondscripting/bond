@@ -9,6 +9,13 @@ native
 	};
 }
 
+void SetVector3(Vector3 *v3, int x, int y, int z)
+{
+	v3->X = x;
+	v3->Y = y;
+	v3->Z = z;
+}
+
 int GetVector3X(const Vector3 *v3)
 {
 	return v3->X;

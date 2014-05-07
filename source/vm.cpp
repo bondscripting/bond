@@ -45,6 +45,15 @@ inline void CopyValue64(const void *source, void *dest)
 }
 
 
+inline void SwapValue64(void *a, void *b)
+{
+	// Assumes that the pointers are 64 bit aligned.
+	const bu64_t temp = *reinterpret_cast<bu64_t *>(a);
+	*reinterpret_cast<bu64_t *>(a) = *reinterpret_cast<const bu64_t *>(b);
+	*reinterpret_cast<bu64_t *>(b) = temp;
+}
+
+
 inline void *LoadUnalignedPointer(const bu8_t *source)
 {
 	if (BOND_NATIVE_POINTER_SIZE == POINTER_64BIT)
@@ -936,6 +945,12 @@ void VM::ExecuteScriptFunction()
 				CopyValue64(sp - (2 * BOND_SLOT_SIZE), sp - BOND_SLOT_SIZE);
 				CopyValue64(sp, sp - (2 * BOND_SLOT_SIZE));
 				sp += BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_SWAP:
+			{
+				SwapValue64(sp - (2 * BOND_SLOT_SIZE), sp - BOND_SLOT_SIZE);
 			}
 			break;
 

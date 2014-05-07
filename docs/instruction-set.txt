@@ -112,6 +112,7 @@ memcopyw, ushort    ..., address, address -> ...
 
 dup                 ..., value64 -> ..., value64, value64
 dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
+swap                ..., value64a, value64b -> ..., value64b, value64a
 
 itoc                ..., int -> ..., int
 uitouc              ..., uint -> ..., uint

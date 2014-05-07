@@ -2546,13 +2546,41 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	bu32_t stackTop = mStackTop.GetTop();
 	Result result;
 
-	ResultStack::Element lhResult(mResult);
-	Traverse(lhs);
-
-	if (lhDescriptor->IsStructType())
+	const MemberExpression *memberExpression = NULL;
+	const NamedInitializer *namedInitializer = NULL;
+	if (((memberExpression = CastNode<MemberExpression>(lhs)) != NULL) &&
+	    ((namedInitializer = CastNode<NamedInitializer>(memberExpression->GetDefinition())) != NULL) &&
+	    namedInitializer->IsNativeStructMember())
 	{
+		ResultStack::Element rhResult(mResult);
+		Traverse(rhs);
+		EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
+
+		if (mEmitOptionalTemporaries.GetTop() && !lhDescriptor->IsStructType())
+		{
+			EmitOpCode(OPCODE_DUP);
+			stackTop += GetStackDelta(OPCODE_DUP);
+			result.mContext = Result::CONTEXT_STACK_VALUE;
+		}
+
+		// Push the 'this' pointer. Any pointer type will do.
+		ResultStack::Element lhResult(mResult);
+		Traverse(lhs);
+		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+		EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+
+		// Call the setter method.
+		EmitOpCode(OPCODE_INVOKE);
+		EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		mStackTop.SetTop(stackTop);
+	}
+	else if (lhDescriptor->IsStructType())
+	{
+		ResultStack::Element lhResult(mResult);
+		Traverse(lhs);
 		EmitPushAddressOfResult(lhResult);
 
 		if (mEmitOptionalTemporaries.GetTop())
@@ -2572,6 +2600,9 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	}
 	else
 	{
+		ResultStack::Element lhResult(mResult);
+		Traverse(lhs);
+
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (lhResult.GetValue().mContext == Result::CONTEXT_ADDRESS_INDIRECT)
 		{
