@@ -61,11 +61,15 @@
 
 #endif
 
+#if !defined(BOND_PRIf32)
 #define BOND_SCNf32 "f"
 #define BOND_PRIf32 "f"
+#endif
 
+#if !defined(BOND_PRIf64)
 #define BOND_SCNf64 "lf"
 #define BOND_PRIf64 "lf"
+#endif
 
 namespace Bond
 {

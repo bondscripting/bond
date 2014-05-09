@@ -2546,7 +2546,6 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	bu32_t stackTop = mStackTop.GetTop();
 	Result result;
 
 	const MemberExpression *memberExpression = NULL;
@@ -2555,27 +2554,31 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	    ((namedInitializer = CastNode<NamedInitializer>(memberExpression->GetDefinition())) != NULL) &&
 	    namedInitializer->IsNativeStructMember())
 	{
-		ResultStack::Element rhResult(mResult);
-		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
-
-		if (mEmitOptionalTemporaries.GetTop() && !lhDescriptor->IsStructType())
+		bi32_t stackDelta = 0;
 		{
-			EmitOpCode(OPCODE_DUP);
-			stackTop += GetStackDelta(OPCODE_DUP);
-			result.mContext = Result::CONTEXT_STACK_VALUE;
+			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+			ResultStack::Element rhResult(mResult);
+			Traverse(rhs);
+			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
+
+			if (mEmitOptionalTemporaries.GetTop() && !lhDescriptor->IsStructType())
+			{
+				EmitOpCode(OPCODE_DUP);
+				stackDelta += GetStackDelta(OPCODE_DUP);
+				result.mContext = Result::CONTEXT_STACK_VALUE;
+			}
+
+			// Push the 'this' pointer. Any pointer type will do.
+			ResultStack::Element lhResult(mResult);
+			Traverse(lhs);
+			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+
+			// Call the setter method.
+			EmitOpCode(OPCODE_INVOKE);
+			EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
 		}
-
-		// Push the 'this' pointer. Any pointer type will do.
-		ResultStack::Element lhResult(mResult);
-		Traverse(lhs);
-		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
-		EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
-
-		// Call the setter method.
-		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
-		mStackTop.SetTop(stackTop);
+		ApplyStackDelta(stackDelta);
 	}
 	else if (lhDescriptor->IsStructType())
 	{
@@ -2672,6 +2675,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const bi64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
+	bu32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
@@ -2696,7 +2700,38 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 			EmitPushResult(lhResult, lhDescriptor);
 		}
 	}
+	else if (lhResult.GetValue().mContext == Result::CONTEXT_NATIVE_MEMBER)
+	{
+		// Push the 'this' pointer and duplicate it. Any pointer type will do.
+		{
+			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitOpCode(OPCODE_DUP);
+		}
 
+		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), lhResult.GetValue().mNativeMember);
+		EmitCast(lhDescriptor, &resultDescriptor);
+
+		ResultStack::Element rhResult(mResult);
+		Traverse(rhs);
+		EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
+
+		EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
+		EmitCast(&resultDescriptor, lhDescriptor);
+
+		if (mEmitOptionalTemporaries.GetTop())
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		EmitOpCode(OPCODE_SWAP);
+
+		// Call the setter method.
+		EmitOpCode(OPCODE_INVOKE);
+		EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		mStackTop.SetTop(stackTop);
+	}
 	else
 	{
 		OpCode valueDupOpCode = OPCODE_DUP;

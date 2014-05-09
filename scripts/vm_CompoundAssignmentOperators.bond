@@ -1,0 +1,179 @@
+int Addi(int *a, int b)
+{
+	return *a += b;
+}
+
+long Addl(long *a, long b)
+{
+	return *a += b;
+}
+
+float Addf(float *a, float b)
+{
+	return *a += b;
+}
+
+double Addd(double *a, double b)
+{
+	return *a += b;
+}
+
+int Subi(int *a, int b)
+{
+	return *a -= b;
+}
+
+long Subl(long *a, long b)
+{
+	return *a -= b;
+}
+
+float Subf(float *a, float b)
+{
+	return *a -= b;
+}
+
+double Subd(double *a, double b)
+{
+	return *a -= b;
+}
+
+int Muli(int *a, int b)
+{
+	return *a *= b;
+}
+
+uint Mului(uint *a, uint b)
+{
+	return *a *= b;
+}
+
+long Mull(long *a, long b)
+{
+	return *a *= b;
+}
+
+ulong Mulul(ulong *a, ulong b)
+{
+	return *a *= b;
+}
+
+float Mulf(float *a, float b)
+{
+	return *a *= b;
+}
+
+double Muld(double *a, double b)
+{
+	return *a *= b;
+}
+
+int Divi(int *a, int b)
+{
+	return *a /= b;
+}
+
+uint Divui(uint *a, uint b)
+{
+	return *a /= b;
+}
+
+long Divl(long *a, long b)
+{
+	return *a /= b;
+}
+
+ulong Divul(ulong *a, ulong b)
+{
+	return *a /= b;
+}
+
+float Divf(float *a, float b)
+{
+	return *a /= b;
+}
+
+double Divd(double *a, double b)
+{
+	return *a /= b;
+}
+
+int Remi(int *a, int b)
+{
+	return *a %= b;
+}
+
+uint Remui(uint *a, uint b)
+{
+	return *a %= b;
+}
+
+long Reml(long *a, long b)
+{
+	return *a %= b;
+}
+
+ulong Remul(ulong *a, ulong b)
+{
+	return *a %= b;
+}
+
+int Lshi(int *a, int b)
+{
+	return *a <<= b;
+}
+
+long Lshl(long *a, long b)
+{
+	return *a <<= b;
+}
+
+int Rshi(int *a, int b)
+{
+	return *a >>= b;
+}
+
+uint Rshui(uint *a, uint b)
+{
+	return *a >>= b;
+}
+
+long Rshl(long *a, long b)
+{
+	return *a >>= b;
+}
+
+ulong Rshul(ulong *a, ulong b)
+{
+	return *a >>= b;
+}
+
+int Andi(int *a, int b)
+{
+	return *a &= b;
+}
+
+long Andl(long *a, long b)
+{
+	return *a &= b;
+}
+
+int Ori(int *a, int b)
+{
+	return *a |= b;
+}
+
+long Orl(long *a, long b)
+{
+	return *a |= b;
+}
+
+int Xori(int *a, int b)
+{
+	return *a ^= b;
+}
+
+long Xorl(long *a, long b)
+{
+	return *a ^= b;
+}

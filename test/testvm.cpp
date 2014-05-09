@@ -282,7 +282,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 {
 	using namespace Bond;
 	VALIDATE_FUNCTION_CALL_2(INT, "::Addi", bi32_t(-65) + bi32_t(13), bi32_t(-65), bi32_t(13));
-	VALIDATE_FUNCTION_CALL_2(UINT, "::Addi", bu32_t(65) + bi32_t(13), bu32_t(65), bu32_t(13));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Addi", bu32_t(65) + bu32_t(13), bu32_t(65), bu32_t(13));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Addl", (bi64_t(-65) << 40) + (bi64_t(13) << 40), (bi64_t(-65) << 40), (bi64_t(13) << 40));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Addl", (bu64_t(65) << 40) + (bu64_t(13) << 40), (bu64_t(65) << 40), (bu64_t(13) << 40));
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", bf32_t(-65.0f) + bf32_t(13.0f), bf32_t(-65.0f), bf32_t(13.0f));
@@ -291,7 +291,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", bf64_t(1e40) + bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Subi", bi32_t(-43) - bi32_t(12), bi32_t(-43), bi32_t(12));
-	VALIDATE_FUNCTION_CALL_2(UINT, "::Subi", bu32_t(43) - bi32_t(12), bu32_t(43), bu32_t(12));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Subi", bu32_t(43) - bu32_t(12), bu32_t(43), bu32_t(12));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Subl", (bi64_t(-43) << 40) - (bi64_t(12) << 40), (bi64_t(-43) << 40), (bi64_t(12) << 40));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Subl", (bu64_t(43) << 40) - (bu64_t(12) << 40), (bu64_t(43) << 40), (bu64_t(12) << 40));
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", bf32_t(-43.0f) - bf32_t(12.0f), bf32_t(-43.0f), bf32_t(12.0f));
@@ -301,7 +301,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(0), bi32_t(-58), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(17), bi32_t(-58), bi32_t(17));
-	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", bu32_t(58) * bi32_t(17), bu32_t(58), bu32_t(17));
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", bu32_t(58) * bu32_t(17), bu32_t(58), bu32_t(17));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Mull", (bi64_t(-58) << 40) * bi64_t(17), (bi64_t(-58) << 40), bi64_t(17));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Mulul", (bu64_t(58) << 40) * bu64_t(17), (bu64_t(58) << 40), bu64_t(17));
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(0.0f) * bf32_t(84.3f), bf32_t(-0.0f), bf32_t(84.3f));
@@ -363,12 +363,12 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", -(bi64_t(1) << bi64_t(20)) >> bi64_t(16), -(bi64_t(1) << bi64_t(20)), bi64_t(16));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Rshul", bu64_t(-(bi64_t(1) << bi64_t(20))) >> bu64_t(16), bu64_t(-(bi64_t(1) << bi64_t(20))), bu64_t(16));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Andi", bi32_t(0xffff) & bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Andl", (bi64_t(0xffff) << 31) & (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Ori", bi32_t(0xffff) | bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Orl", (bi64_t(0xffff) << 31) | (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Xori", bi32_t(0xffff) ^ bi32_t(0xff), bi32_t(0xffff), bi32_t(0xff));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Xorl", (bi64_t(0xffff) << 31) ^ (bi64_t(0xff) << 31), (bi64_t(0xffff) << 31), (bi64_t(0xff) << 31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Andi", bi32_t(0xfff0) & bi32_t(0xff), bi32_t(0xfff0), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Andl", (bi64_t(0xfff0) << 31) & (bi64_t(0xff) << 31), (bi64_t(0xfff0) << 31), (bi64_t(0xff) << 31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Ori", bi32_t(0xfff0) | bi32_t(0xff), bi32_t(0xfff0), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Orl", (bi64_t(0xfff0) << 31) | (bi64_t(0xff) << 31), (bi64_t(0xfff0) << 31), (bi64_t(0xff) << 31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Xori", bi32_t(0xfff0) ^ bi32_t(0xff), bi32_t(0xfff0), bi32_t(0xff));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Xorl", (bi64_t(0xfff0) << 31) ^ (bi64_t(0xff) << 31), (bi64_t(0xfff0) << 31), (bi64_t(0xff) << 31));
 
 	return true;
 }
@@ -791,6 +791,183 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 }
 
 
+DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperators.bond")
+{
+	using namespace Bond;
+
+	bi32_t i = -97; bi32_t oi = 27; bi32_t ri = i + oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Addi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	bu32_t u = 97; bu32_t ou = 27; bu32_t ru = u + ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Addi", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	bi64_t l = bi64_t(-97) << 40; bi64_t ol = bi64_t(27) << 40; bi64_t rl = l + ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Addl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	bu64_t ul = bu64_t(97) << 40; bu64_t oul = bu64_t(27) << 40; bu64_t rul = ul + oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Addl", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+	bf32_t f = -97.0f; bf32_t of = 27.0f; bf32_t rf = f + of;
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", rf, &f, of);
+	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+
+	bf64_t d = -97.0; bf64_t od = 27.0; bf64_t rd = d + od;
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", rd, &d, od);
+	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+
+
+	i = -85; oi = 39; ri = i - oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Subi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	u = 85; ou = 39; ru = u - ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Subi", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	l = bi64_t(-85) << 40; ol = bi64_t(39) << 40; rl = l - ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Subl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	ul = bu64_t(85) << 40; oul = bu64_t(39) << 40; rul = ul - oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Subl", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+	f = -85.0f; of = 39.0f; rf = f - of;
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", rf, &f, of);
+	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+
+	d = -85.0; od = 39.0; rd = d - od;
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", rd, &d, od);
+	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+
+
+	i = -48; oi = 135; ri = i * oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	u = 48; ou = 135; ru = u * ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	l = bi64_t(-48) << 40; ol = bi64_t(135) << 40; rl = l * ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Mull", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	ul = bu64_t(48) << 40; oul = bu64_t(135) << 40; rul = ul * oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Mulul", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+	f = -48.0f; of = 135.0f; rf = f * of;
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", rf, &f, of);
+	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+
+	d = -48.0; od = 135.0; rd = d * od;
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", rd, &d, od);
+	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+
+
+	i = -10; oi = 3; ri = i / oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Divi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	u = 10; ou = 3; ru = u / ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Divui", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	l = bi64_t(-10) << 40; ol = bi64_t(3); rl = l / ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Divl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	ul = bu64_t(10) << 40; oul = bu64_t(3); rul = ul / oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Divul", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+	f = -10.0f; of = 3.0f; rf = f / of;
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", rf, &f, of);
+	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+
+	d = -10.0; od = 3.0; rd = d / od;
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", rd, &d, od);
+	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+
+
+	i = -10; oi = 3; ri = i % oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	u = 10; ou = 3; ru = u % ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Remui", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	l = bi64_t(-10) << 40; ol = bi64_t(34); rl = l % ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Reml", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	ul = bu64_t(10) << 40; oul = bu64_t(34); rul = ul % oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Remul", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+
+	i = 7; oi = 7; ri = i << oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	l = 7; ol = 50; rl = l << ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+
+	i = -(bi32_t(1) << 20); oi = 16; ri = i >> oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	u = bu32_t(-(bi32_t(1) << 20)); ou = 16; ru = u >> ou;
+	VALIDATE_FUNCTION_CALL_2(UINT, "::Rshui", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+
+	l = -(bi64_t(1) << 20); ol = 16; rl = l >> ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Rshl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	ul = bu64_t(-(bi64_t(1) << 20)); oul = 16; rul = ul >> oul;
+	VALIDATE_FUNCTION_CALL_2(ULONG, "::Rshul", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+
+
+	i = 0xfff0; oi = 0xff; ri = i & oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Andi", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	l = bi64_t(0xfff0) << 31; ol = bi64_t(0xff) << 31; rl = l & ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Andl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+
+	i = 0xfff0; oi = 0xff; ri = i | oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Ori", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	l = bi64_t(0xfff0) << 31; ol = bi64_t(0xff) << 31; rl = l | ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Orl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+
+	i = 0xfff0; oi = 0xff; ri = i ^ oi;
+	VALIDATE_FUNCTION_CALL_2(INT, "::Xori", ri, &i, oi);
+	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+
+	l = bi64_t(0xfff0) << 31; ol = bi64_t(0xff) << 31; rl = l ^ ol;
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Xorl", rl, &l, ol);
+	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+
+	return true;
+}
+
+
 DEFINE_VM_TEST(FunctionCalls, "scripts/vm_FunctionCalls.bond")
 {
 	using namespace Bond;
@@ -899,6 +1076,7 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
   TEST_ITEM(ComparisonOperators)                \
   TEST_ITEM(Branches)                           \
   TEST_ITEM(Pointers)                           \
+  TEST_ITEM(CompoundAssignmentOperators)        \
   TEST_ITEM(FunctionCalls)                      \
   TEST_ITEM(Structs)                            \
 

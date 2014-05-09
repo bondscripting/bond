@@ -35,3 +35,8 @@ int DotVector3(const Vector3 *a, const Vector3 *b)
 {
 	return a->Dot(b);
 }
+
+int Vector3AddY(Vector3 *v3, int deltaY)
+{
+	return v3->Y += deltaY;
+}
