@@ -1327,10 +1327,10 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		ResultStack::Element lhResult(mResult);
 		Traverse(lhs);
 
-		// Push the 'this' pointer, if needed. Any pointer type will do.
+		// Push the 'this' pointer, if needed.
 		if (lhResult.GetValue().mContext == Result::CONTEXT_MEMBER_FUNCTION)
 		{
-			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
 		}
 
@@ -1469,9 +1469,8 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	const bu32_t returnType = returnDescriptor->GetSignatureType();
 	const bi32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
 
-	// Push the 'this' pointer. Any pointer type will do.
 	{
-		const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+		const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 		EmitPushResult(thisPointerResult, &voidStar);
 	}
 
@@ -2568,13 +2567,11 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 				result.mContext = Result::CONTEXT_STACK_VALUE;
 			}
 
-			// Push the 'this' pointer. Any pointer type will do.
 			ResultStack::Element lhResult(mResult);
 			Traverse(lhs);
-			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
 
-			// Call the setter method.
 			EmitOpCode(OPCODE_INVOKE);
 			EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
 		}
@@ -2702,9 +2699,8 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	}
 	else if (lhResult.GetValue().mContext == Result::CONTEXT_NATIVE_MEMBER)
 	{
-		// Push the 'this' pointer and duplicate it. Any pointer type will do.
 		{
-			const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
 			EmitOpCode(OPCODE_DUP);
 		}
@@ -2726,8 +2722,6 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		}
 
 		EmitOpCode(OPCODE_SWAP);
-
-		// Call the setter method.
 		EmitOpCode(OPCODE_INVOKE);
 		EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
 		mStackTop.SetTop(stackTop);
@@ -2771,6 +2765,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	const bi32_t elementSize = bi32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const bi64_t offset = offsetTav.AsLongValue() * elementSize;
+	bu32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element pointerResult(mResult);
 	Traverse(pointerExpression);
@@ -2799,6 +2794,28 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 				EmitPushFramePointerIndirectValue32(frameOffset);
 			}
 		}
+	}
+	else if (pointerResult.GetValue().mContext == Result::CONTEXT_NATIVE_MEMBER)
+	{
+		{
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
+			EmitPushResult(pointerResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitOpCode(OPCODE_DUP);
+		}
+
+		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), pointerResult.GetValue().mNativeMember);
+		EmitPointerOffset(offsetExpression, elementSize);
+
+		if (mEmitOptionalTemporaries.GetTop())
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		EmitOpCode(OPCODE_SWAP);
+		EmitOpCode(OPCODE_INVOKE);
+		EmitHashCode(pointerResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		mStackTop.SetTop(stackTop);
 	}
 	else
 	{
@@ -2971,6 +2988,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 {
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
 	const bi32_t pointerOffset = bi32_t(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
+	bu32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element operandResult(mResult);
 	Traverse(operand);
@@ -3015,6 +3033,44 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 				EmitPushFramePointerIndirectValue32(frameOffset);
 			}
 		}
+	}
+	else if (operandResult.GetValue().mContext == Result::CONTEXT_NATIVE_MEMBER)
+	{
+		{
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
+			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitOpCode(OPCODE_DUP);
+		}
+
+		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), operandResult.GetValue().mNativeMember);
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		if (Is64BitPointer())
+		{
+			EmitPushConstantLong(bi64_t(pointerOffset));
+			EmitOpCode(OPCODE_ADDL);
+		}
+		else
+		{
+			EmitPushConstantInt(pointerOffset);
+			EmitOpCode(OPCODE_ADDI);
+		}
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		EmitOpCode(OPCODE_SWAP);
+		EmitOpCode(OPCODE_INVOKE);
+		EmitHashCode(operandResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		mStackTop.SetTop(stackTop);
 	}
 	else
 	{
@@ -3064,6 +3120,8 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	const TypeDescriptor *resultDescriptor = expression->GetTypeDescriptor();
 	const Token::TokenType operandType = operandDescriptor->GetPrimitiveType();
 	const Token::TokenType resultType = resultDescriptor->GetPrimitiveType();
+	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
+	bu32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element operandResult(mResult);
 	Traverse(operand);
@@ -3090,9 +3148,38 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 			EmitPushResult(operandResult, operandDescriptor);
 		}
 	}
+	else if (operandResult.GetValue().mContext == Result::CONTEXT_NATIVE_MEMBER)
+	{
+		{
+			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
+			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitOpCode(OPCODE_DUP);
+		}
+
+		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), operandResult.GetValue().mNativeMember);
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		EmitOpCode(constOpCodeSet.GetOpCode(resultType));
+		EmitOpCode(ADD_OPCODES.GetOpCode(resultType));
+
+		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		{
+			stackTop += GetStackDelta(OPCODE_DUPINS);
+			EmitOpCode(OPCODE_DUPINS);
+		}
+
+		EmitOpCode(OPCODE_SWAP);
+		EmitOpCode(OPCODE_INVOKE);
+		EmitHashCode(operandResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		mStackTop.SetTop(stackTop);
+	}
 	else
 	{
-		const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (operandResult.GetValue().mContext == Result::CONTEXT_ADDRESS_INDIRECT)
 		{
@@ -3252,8 +3339,7 @@ GeneratorCore::Result GeneratorCore::EmitAddressOfOperator(const UnaryExpression
 void GeneratorCore::EmitPushAddressOfResult(const Result &result)
 {
 	const Result destinationResult = EmitAddressOfResult(result);
-	// Any pointer type will do.
-	const TypeDescriptor voidStar = TypeDescriptor::GetStringType();
+	const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 	EmitPushResult(destinationResult, &voidStar);
 }
 

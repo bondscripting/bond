@@ -677,7 +677,8 @@ void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
 			typeDescriptor = TypeDescriptor::GetNullType();
 			break;
 		default:
-			// Ignore the default case because the parser is not supposed to allow it to happen.
+			// The parser is not supposed to allow this to happen.
+			mErrorBuffer.PushError(CompilerError::INTERNAL_ERROR);
 			break;
 	}
 

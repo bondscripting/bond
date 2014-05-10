@@ -40,3 +40,13 @@ int Vector3AddY(Vector3 *v3, int deltaY)
 {
 	return v3->Y += deltaY;
 }
+
+int Vector3PreincrementY(Vector3 *v3)
+{
+	return ++v3->Y;
+}
+
+int Vector3PostincrementY(Vector3 *v3)
+{
+	return v3->Y++;
+}

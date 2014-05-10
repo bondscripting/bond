@@ -240,6 +240,7 @@ public:
 	static TypeDescriptor GetFloatType();
 	static TypeDescriptor GetDoubleType();
 	static TypeDescriptor GetStringType();
+	static TypeDescriptor GetVoidPointerType();
 	static TypeDescriptor GetPointerType(const TypeSpecifier *specifier);
 	static TypeDescriptor GetConstPointerType(const TypeSpecifier *specifier);
 	static TypeDescriptor GetNullType();

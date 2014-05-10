@@ -469,7 +469,13 @@ TypeDescriptor TypeDescriptor::GetDoubleType()
 
 TypeDescriptor TypeDescriptor::GetStringType()
 {
-	return TypeDescriptor(&CHAR_TYPE_SPECIFIER, ((FLAG_VALUE | FLAG_CONST | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_POINTER);
+	return GetConstPointerType(&CHAR_TYPE_SPECIFIER);
+}
+
+
+TypeDescriptor TypeDescriptor::GetVoidPointerType()
+{
+	return GetConstPointerType(&VOID_TYPE_SPECIFIER);
 }
 
 
