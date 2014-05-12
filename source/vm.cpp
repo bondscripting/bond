@@ -54,19 +54,6 @@ inline void SwapValue64(void *a, void *b)
 }
 
 
-inline void *LoadUnalignedPointer(const bu8_t *source)
-{
-	if (BOND_NATIVE_POINTER_SIZE == POINTER_64BIT)
-	{
-		return reinterpret_cast<void *>(Value64(source).mULong);
-	}
-	else
-	{
-		return reinterpret_cast<void *>(Value32(source).mUInt);
-	}
-}
-
-
 void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void *returnPointer)
 {
 	bu8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
@@ -2033,8 +2020,9 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_INVOKE:
 			{
-				const Function *function = static_cast<const Function *>(LoadUnalignedPointer(code + pc));
-				pc += GetPointerSize(BOND_NATIVE_POINTER_SIZE);
+				const Value16 functionIndex(code + pc);
+				const Function *function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
+				pc += sizeof(Value16);
 				sp = InvokeFunction(function, sp);
 			}
 			break;

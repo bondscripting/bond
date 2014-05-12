@@ -91,6 +91,10 @@ public:
 	const Function *GetFunction(const HashedString &functionName) const { return GetFunction(functionName.GetHashCode()); }
 	const Function *GetFunction(bu32_t functionHash) const;
 
+	bi32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
+	bi32_t GetFunctionIndex(bu32_t functionHash) const;
+	const Function *GetFunctionAtIndex(bu32_t functionIndex) const { return mFunctionList + functionIndex; }
+
 private:
 	const bu32_t *mFunctionLookup;
 	const Function *mFunctionList;

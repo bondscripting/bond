@@ -225,6 +225,7 @@ void CboValidatorCore::ValidateFunctionBlob()
 				break;
 			case OC_PARAM_INT:
 			case OC_PARAM_VAL32:
+			case OC_PARAM_HASH:
 			{
 				AssertBytesRemaining(sizeof(Value16));
 				const size_t valueIndex = ReadValue16().mUShort;
@@ -274,11 +275,6 @@ void CboValidatorCore::ValidateFunctionBlob()
 						CodeIsInvalid();
 					}
 				}
-			}
-			break;
-			case OC_PARAM_HASH:
-			{
-				mIndex += GetPointerSize(mResult.mPointerSize);
 			}
 			break;
 			case OC_PARAM_LOOKUPSWITCH:

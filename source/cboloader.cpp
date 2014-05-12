@@ -256,9 +256,9 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					break;
 				case OC_PARAM_HASH:
 				{
-					ConvertBigEndian32(code);
-					const bu32_t hash = Value32(code).mUInt;
-					const void *resolvedPointer = NULL;
+					ConvertBigEndian16(code);
+					const bu32_t hash = function.mConstantTable->mValue32Table[Value16(code).mUShort].mUInt;
+					bi32_t resolvedIndex = -1;
 
 					switch (opCode)
 					{
@@ -266,18 +266,19 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 							break;
 						case OPCODE_INVOKE:
 						{
-							resolvedPointer = codeSegment.GetFunction(hash);
+							resolvedIndex = codeSegment.GetFunctionIndex(hash);
 						}
 						break;
 						default:
 							break;
 					}
 
-					if (resolvedPointer != NULL)
+					if (resolvedIndex >= 0)
 					{
-						const bu32_t pointerSize = GetPointerSize(BOND_NATIVE_POINTER_SIZE);
-						memcpy(code, &resolvedPointer, pointerSize);
-						code += pointerSize;
+						Value16 bytes(resolvedIndex);
+						code[0] = bytes.mBytes[0];
+						code[1] = bytes.mBytes[1];
+						code += sizeof(Value16);
 					}
 					else
 					{

@@ -196,6 +196,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			}
 			break;
 			case OC_PARAM_VAL32:
+			case OC_PARAM_HASH:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
 				const bu32_t value = mValue32Table[valueIndex].mUInt;
@@ -222,16 +223,6 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const bi32_t offset = mValue32Table[offsetIndex].mInt;
 				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
 				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
-			}
-			break;
-			case OC_PARAM_HASH:
-			{
-				const bu32_t hash = ReadValue32().mUInt;
-				if (mValidationResult.mPointerSize == POINTER_64BIT)
-				{
-					mIndex += sizeof(Value32);
-				}
-				mWriter.Write("0x%" BOND_PRIx32, hash);
 			}
 			break;
 			case OC_PARAM_LOOKUPSWITCH:

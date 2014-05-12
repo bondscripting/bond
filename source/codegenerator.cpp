@@ -3488,23 +3488,10 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 	EmitValue16(Value16(index));
 }
 
+
 void GeneratorCore::EmitHashCode(bu32_t hash)
 {
-	Value32 h(hash);
-	ConvertBigEndian32(h.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
-	byteCode.push_back(h.mBytes[0]);
-	byteCode.push_back(h.mBytes[1]);
-	byteCode.push_back(h.mBytes[2]);
-	byteCode.push_back(h.mBytes[3]);
-
-	if (Is64BitPointer())
-	{
-		byteCode.push_back(0);
-		byteCode.push_back(0);
-		byteCode.push_back(0);
-		byteCode.push_back(0);
-	}
+	EmitIndexedValue32(Value32(hash));
 }
 
 
