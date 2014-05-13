@@ -122,6 +122,7 @@ void VM::ExecuteScriptFunction()
 	CalleeStackFrame &frame = GetTopStackFrame();
 	const Value32 *value32Table = frame.mFunction->mConstantTable->mValue32Table;
 	const Value64 *value64Table = frame.mFunction->mConstantTable->mValue64Table;
+	const Function *functionTable = mCodeSegment.GetFunctionAtIndex(0);
 	const bu8_t *code = frame.mFunction->mCode;
 	bu8_t *const fp = frame.mFramePointer;
 	bu8_t *sp = frame.mStackPointer;
@@ -2021,9 +2022,8 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_INVOKE:
 			{
 				const Value16 functionIndex(code + pc);
-				const Function *function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
 				pc += sizeof(Value16);
-				sp = InvokeFunction(function, sp);
+				sp = InvokeFunction(functionTable + functionIndex.mUShort, sp);
 			}
 			break;
 

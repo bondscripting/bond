@@ -1,3 +1,4 @@
+// TODO: Add tests with not operators to test collapsed not operators.
 bool And(bool a, bool b)
 {
 	return a && b;

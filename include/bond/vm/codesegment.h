@@ -82,9 +82,9 @@ struct Function
 class CodeSegment
 {
 public:
-	CodeSegment(const bu32_t *functionLookup, const Function *functionList, size_t functionCount):
+	CodeSegment(const bu32_t *functionLookup, const Function *functionTable, size_t functionCount):
 		mFunctionLookup(functionLookup),
-		mFunctionList(functionList),
+		mFunctionTable(functionTable),
 		mFunctionCount(functionCount)
 	{}
 
@@ -93,11 +93,11 @@ public:
 
 	bi32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
 	bi32_t GetFunctionIndex(bu32_t functionHash) const;
-	const Function *GetFunctionAtIndex(bu32_t functionIndex) const { return mFunctionList + functionIndex; }
+	const Function *GetFunctionAtIndex(bu32_t functionIndex) const { return mFunctionTable + functionIndex; }
 
 private:
 	const bu32_t *mFunctionLookup;
-	const Function *mFunctionList;
+	const Function *mFunctionTable;
 	size_t mFunctionCount;
 };
 

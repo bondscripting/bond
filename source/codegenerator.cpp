@@ -367,6 +367,8 @@ private:
 	void EmitIndexedValue64(Value64 value);
 	void EmitHashCode(bu32_t hash);
 
+	bool CollapseNotOperators(const Expression *&expression) const;
+
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
 	void WriteConstantTable();
@@ -606,9 +608,10 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
+	const bool negated = CollapseNotOperators(condition);
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
-	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
 
+	const TypeAndValue &conditionTav = ifStatement->GetCondition()->GetTypeAndValue();
 	if (conditionTav.IsValueDefined())
 	{
 		if (conditionTav.GetBoolValue())
@@ -627,7 +630,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 		EmitPushResult(conditionResult, conditionDescriptor);
 
 		const size_t thenEndLabel = CreateLabel();
-		EmitJump(OPCODE_IFZ, thenEndLabel);
+		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, thenEndLabel);
 
 		Traverse(ifStatement->GetThenStatement());
 		size_t thenEndPos = GetByteCode().size();
@@ -766,6 +769,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
+	const bool negated = CollapseNotOperators(condition);
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 
 	if (whileStatement->IsDoLoop())
@@ -775,14 +779,14 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
-		EmitJump(OPCODE_IFNZ, loopStartLabel);
+		EmitJump(negated ? OPCODE_IFZ : OPCODE_IFNZ, loopStartLabel);
 	}
 	else
 	{
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
-		EmitJump(OPCODE_IFZ, loopEndLabel);
+		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
 
 		Traverse(whileStatement->GetBody());
 
@@ -810,11 +814,12 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != NULL)
 	{
+		const bool negated = CollapseNotOperators(condition);
 		const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
 		Traverse(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
-		EmitJump(OPCODE_IFZ, loopEndLabel);
+		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
 	}
 
 	Traverse(forStatement->GetBody());
@@ -908,6 +913,7 @@ void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
 	const Expression *condition = conditionalExpression->GetCondition();
+	const bool negated = CollapseNotOperators(condition);
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
@@ -922,7 +928,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 		EmitPushResult(conditionResult, conditionDescriptor);
 
 		const size_t trueEndLabel = CreateLabel();
-		EmitJump(OPCODE_IFZ, trueEndLabel);
+		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, trueEndLabel);
 
 		{
 			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
@@ -2636,7 +2642,6 @@ GeneratorCore::Result GeneratorCore::EmitCommaOperator(const BinaryExpression *b
 
 void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode)
 {
-	// TODO: Collapse ! operators.
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
@@ -3249,24 +3254,8 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 
 GeneratorCore::Result GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
 {
-	const UnaryExpression *unary = unaryExpression;
 	const Expression *rhs = unaryExpression;
-	bool negated = false;
-	while (unary != NULL)
-	{
-		const Token::TokenType op = unary->GetOperator()->GetTokenType();
-		if (op == Token::OP_NOT)
-		{
-			negated = !negated;
-		}
-		else
-		{
-			break;
-		}
-		rhs = unary->GetRhs();
-		unary = CastNode<UnaryExpression>(rhs);
-	}
-
+	const bool negated = CollapseNotOperators(rhs);
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
@@ -3492,6 +3481,28 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 void GeneratorCore::EmitHashCode(bu32_t hash)
 {
 	EmitIndexedValue32(Value32(hash));
+}
+
+
+bool GeneratorCore::CollapseNotOperators(const Expression *&expression) const
+{
+	const UnaryExpression *unary = CastNode<UnaryExpression>(expression);
+	bool negated = false;
+	while (unary != NULL)
+	{
+		const Token::TokenType op = unary->GetOperator()->GetTokenType();
+		if (op == Token::OP_NOT)
+		{
+			negated = !negated;
+		}
+		else
+		{
+			break;
+		}
+		expression = unary->GetRhs();
+		unary = CastNode<UnaryExpression>(expression);
+	}
+	return negated;
 }
 
 
