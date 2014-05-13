@@ -1,4 +1,3 @@
-// TODO: Add tests with not operators to test collapsed not operators.
 bool And(bool a, bool b)
 {
 	return a && b;
@@ -36,6 +35,36 @@ int If(bool a)
 		b = 4;
 	}
 	return b;
+}
+
+int IfNot(bool a)
+{
+	int b = 5;
+	if (!a)
+	{
+		b = 4;
+	}
+	return b;
+}
+
+int IfNotAAndNotB(bool a, bool b)
+{
+	int c = 5;
+	if (!a && !b)
+	{
+		c = 4;
+	}
+	return c;
+}
+
+int IfNotAOrNotB(bool a, bool b)
+{
+	int c = 5;
+	if (!a || !b)
+	{
+		c = 4;
+	}
+	return c;
 }
 
 int IfElse(bool a)

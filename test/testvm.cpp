@@ -671,6 +671,19 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::If", bi32_t(5), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_1(INT, "::If", bi32_t(4), bu8_t(1));
 
+	VALIDATE_FUNCTION_CALL_1(INT, "::IfNot", bi32_t(4), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::IfNot", bi32_t(5), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAAndNotB", bi32_t(4), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAAndNotB", bi32_t(5), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAAndNotB", bi32_t(5), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAAndNotB", bi32_t(5), bu8_t(1), bu8_t(1));
+
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAOrNotB", bi32_t(4), bu8_t(0), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAOrNotB", bi32_t(4), bu8_t(0), bu8_t(1));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAOrNotB", bi32_t(4), bu8_t(1), bu8_t(0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::IfNotAOrNotB", bi32_t(5), bu8_t(1), bu8_t(1));
+
 	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(5), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_1(INT, "::IfElse", bi32_t(4), bu8_t(1));
 
