@@ -276,6 +276,7 @@ private:
 
 	virtual void Traverse(const ParseNode *parseNode);
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
+	bool TraverseCollapseNotOperators(const Expression *expression);
 
 	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
@@ -367,8 +368,6 @@ private:
 	void EmitIndexedValue64(Value64 value);
 	void EmitHashCode(bu32_t hash);
 
-	bool CollapseNotOperators(const Expression *&expression) const;
-
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
 	void WriteConstantTable();
@@ -413,6 +412,8 @@ private:
 	UIntStack mLocalOffset;
 	UIntStack mStackTop;
 	BoolStack mEmitOptionalTemporaries;
+	BoolStack mCollapseNotOperators;
+	BoolStack mExpressionIsNegated;
 	Allocator &mAllocator;
 	BinaryWriter &mWriter;
 	CompilerErrorBuffer &mErrorBuffer;
@@ -464,6 +465,7 @@ void GeneratorCore::Generate()
 void GeneratorCore::Traverse(const ParseNode *parseNode)
 {
 	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, true);
+	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, false);
 	ParseNodeTraverser::Traverse(parseNode);
 }
 
@@ -471,6 +473,7 @@ void GeneratorCore::Traverse(const ParseNode *parseNode)
 void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression)
 {
 	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, false);
+	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, false);
 	ParseNodeTraverser::Traverse(expression);
 
 	// Remove any temporaries that may have been left on the stack.
@@ -480,6 +483,16 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 	{
 		EmitOpCode(OPCODE_POP);
 	}
+}
+
+
+bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
+{
+	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, true);
+	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, true);
+	BoolStack::Element expressionIsNegatedElement(mExpressionIsNegated, false);
+	ParseNodeTraverser::Traverse(expression);
+	return expressionIsNegatedElement.GetValue();
 }
 
 
@@ -608,7 +621,6 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
-	const bool negated = CollapseNotOperators(condition);
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 
 	const TypeAndValue &conditionTav = ifStatement->GetCondition()->GetTypeAndValue();
@@ -626,7 +638,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 	else
 	{
 		ResultStack::Element conditionResult(mResult);
-		Traverse(condition);
+		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 
 		const size_t thenEndLabel = CreateLabel();
@@ -769,7 +781,6 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
-	const bool negated = CollapseNotOperators(condition);
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 
 	if (whileStatement->IsDoLoop())
@@ -777,14 +788,14 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		Traverse(whileStatement->GetBody());
 
 		ResultStack::Element conditionResult(mResult);
-		Traverse(condition);
+		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFZ : OPCODE_IFNZ, loopStartLabel);
 	}
 	else
 	{
 		ResultStack::Element conditionResult(mResult);
-		Traverse(condition);
+		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
 
@@ -814,10 +825,9 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != NULL)
 	{
-		const bool negated = CollapseNotOperators(condition);
 		const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
-		Traverse(condition);
+		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
 	}
@@ -913,7 +923,6 @@ void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 {
 	const Expression *condition = conditionalExpression->GetCondition();
-	const bool negated = CollapseNotOperators(condition);
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
 	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
@@ -924,7 +933,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 
 	{
 		ResultStack::Element conditionResult(mResult);
-		Traverse(condition);
+		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 
 		const size_t trueEndLabel = CreateLabel();
@@ -3254,14 +3263,17 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 
 GeneratorCore::Result GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
 {
-	const Expression *rhs = unaryExpression;
-	const bool negated = CollapseNotOperators(rhs);
+	const Expression *rhs = unaryExpression->GetRhs();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
-	Traverse(rhs);
+	const bool negated = TraverseCollapseNotOperators(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	if (negated)
+	if (mCollapseNotOperators.GetTop())
+	{
+		mExpressionIsNegated.SetTop(!negated);
+	}
+	else if (!negated)
 	{
 		EmitOpCode(OPCODE_NOT);
 	}
@@ -3481,28 +3493,6 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 void GeneratorCore::EmitHashCode(bu32_t hash)
 {
 	EmitIndexedValue32(Value32(hash));
-}
-
-
-bool GeneratorCore::CollapseNotOperators(const Expression *&expression) const
-{
-	const UnaryExpression *unary = CastNode<UnaryExpression>(expression);
-	bool negated = false;
-	while (unary != NULL)
-	{
-		const Token::TokenType op = unary->GetOperator()->GetTokenType();
-		if (op == Token::OP_NOT)
-		{
-			negated = !negated;
-		}
-		else
-		{
-			break;
-		}
-		expression = unary->GetRhs();
-		unary = CastNode<UnaryExpression>(expression);
-	}
-	return negated;
 }
 
 
