@@ -3,6 +3,7 @@
 #include "bond/compiler/parsenodetraverser.h"
 #include "bond/compiler/parsenodeutil.h"
 #include "bond/io/binarywriter.h"
+#include "bond/stl/algorithm.h"
 #include "bond/stl/autostack.h"
 #include "bond/stl/list.h"
 #include "bond/stl/map.h"
@@ -219,14 +220,20 @@ private:
 
 	struct JumpEntry
 	{
-		JumpEntry(size_t opCodePos, size_t fromPos, size_t toLabel):
+		JumpEntry(size_t opCodePos, size_t toLabel):
 			mOpCodePos(opCodePos),
-			mFromPos(fromPos),
-			mToLabel(toLabel)
+			mToLabel(toLabel),
+			mToPos(0)
 		{}
 		size_t mOpCodePos;
-		size_t mFromPos;
 		size_t mToLabel;
+		size_t mToPos;
+		size_t GetFromPos() const { return mOpCodePos + 3; }
+	};
+
+	struct JumpEntryOpCodePosComparator
+	{
+		bool operator()(const JumpEntry &entry, size_t opCodePos) const;
 	};
 
 	typedef Vector<bu8_t> ByteCode;
@@ -370,6 +377,9 @@ private:
 
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
+	void ResolveJumps();
+	const JumpEntry *FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const;
+
 	void WriteConstantTable();
 	void WriteFunctionList(bu16_t functionIndex);
 	void WriteNativeMemberList(bu16_t functionIndex);
@@ -389,7 +399,6 @@ private:
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	void MapQualifiedSymbolName(const Symbol *symbol);
-	void MapLongJumpOffsets();
 	bu16_t MapString(const HashedString &str);
 	bu16_t MapValue32(const Value32 &value32);
 	bu16_t MapValue64(const Value64 &value32);
@@ -441,7 +450,7 @@ void GeneratorCore::Generate()
 	const bu16_t listIndex = MapString("List");
 	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
 
-	MapLongJumpOffsets();
+	ResolveJumps();
 	WriteConstantTable();
 
 	// Cache the start position and skip 4 bytes for the blob size.
@@ -3430,8 +3439,7 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 	EmitOpCode(opCode);
 	byteCode.push_back(0);
 	byteCode.push_back(0);
-	const size_t fromPos = byteCode.size();
-	GetFunction().mJumpList.push_back(JumpEntry(opCodePos, fromPos, toLabel));
+	GetFunction().mJumpList.push_back(JumpEntry(opCodePos, toLabel));
 }
 
 
@@ -3517,6 +3525,103 @@ GeneratorCore::Result::Context GeneratorCore::TransformContext(Result::Context t
 }
 
 
+void GeneratorCore::ResolveJumps()
+{
+	for (FunctionList::Type::iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
+	{
+		ByteCode::Type &byteCode = functionIt->mByteCode;
+		JumpList::Type &jumpList = functionIt->mJumpList;
+		const LabelList::Type &labelList = functionIt->mLabelList;
+
+		// Resolve jump targets.
+		for (JumpList::Type::iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+		{
+			jumpIt->mToPos = labelList[jumpIt->mToLabel];
+		}
+
+		// Optmize jumps if the target is another jump instruction.
+		bool requiresAnotherPass = true;
+		while (requiresAnotherPass)
+		{
+			requiresAnotherPass = false;
+			for (JumpList::Type::iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+			{
+				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpIt->mToPos);
+				if (targetEntry != NULL)
+				{
+					const bu8_t opCode = byteCode[jumpIt->mOpCodePos];
+					const bu8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
+					if (targetOpCode == OPCODE_GOTO)
+					{
+						jumpIt->mToPos = targetEntry->mToPos;
+						requiresAnotherPass = true;
+					}
+					else if (opCode == OPCODE_BRZ)
+					{
+						switch (targetOpCode)
+						{
+							case OPCODE_BRZ:
+								jumpIt->mToPos = targetEntry->mToPos;
+								requiresAnotherPass = true;
+								break;
+							case OPCODE_IFZ:
+								jumpIt->mToPos = targetEntry->mToPos;
+								byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+								requiresAnotherPass = true;
+								break;
+							case OPCODE_BRNZ:
+							case OPCODE_IFNZ:
+								jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+								byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+								requiresAnotherPass = true;
+								break;
+						}
+					}
+					else if (opCode == OPCODE_BRNZ)
+					{
+						switch (targetOpCode)
+						{
+							case OPCODE_BRNZ:
+								jumpIt->mToPos = targetEntry->mToPos;
+								requiresAnotherPass = true;
+								break;
+							case OPCODE_IFNZ:
+								jumpIt->mToPos = targetEntry->mToPos;
+								byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+								requiresAnotherPass = true;
+								break;
+							case OPCODE_BRZ:
+							case OPCODE_IFZ:
+								jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+								byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+								requiresAnotherPass = true;
+								break;
+						}
+					}
+				}
+			}
+		}
+
+		// Add jump offsets to the constant table if necessary.
+		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+		{
+			const bi32_t offset = bi32_t(jumpIt->mToPos - jumpIt->GetFromPos());
+			if (!IsInShortRange(offset))
+			{
+				MapValue32(Value32(offset));
+			}
+		}
+	}
+}
+
+
+const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const
+{
+	JumpList::Type::const_iterator it = lower_bound(jumpList.begin(), jumpList.end(), opCodePos, JumpEntryOpCodePosComparator());
+	return ((it < jumpList.end()) && (it->mOpCodePos == opCodePos)) ? &(*it) : static_cast<const JumpEntry *>(NULL);
+}
+
+
 void GeneratorCore::WriteConstantTable()
 {
 	const int startPos = mWriter.GetPosition();
@@ -3596,7 +3701,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 			}
 
 			bu8_t opCode = byteCode[byteCodeIndex++];
-			const bi32_t offset = bi32_t(labelList[jumpIt->mToLabel] - jumpIt->mFromPos);
+			const bi32_t offset = jumpIt->mToPos - jumpIt->GetFromPos();
 			Value16 arg(offset);
 
 			if (!IsInShortRange(offset))
@@ -3854,25 +3959,6 @@ void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 }
 
 
-void GeneratorCore::MapLongJumpOffsets()
-{
-	for (FunctionList::Type::const_iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
-	{
-		const JumpList::Type &jumpList = functionIt->mJumpList;
-		const LabelList::Type &labelList = functionIt->mLabelList;
-
-		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
-		{
-			const bi32_t offset = bi32_t(labelList[jumpIt->mToLabel] - jumpIt->mFromPos);
-			if (!IsInShortRange(offset))
-			{
-				MapValue32(Value32(offset));
-			}
-		}
-	}
-}
-
-
 bu16_t GeneratorCore::MapString(const HashedString &str)
 {
 	if (!IsInUShortRange(mStringList.size()))
@@ -3940,6 +4026,12 @@ void GeneratorCore::PushError(CompilerError::Type type)
 	{
 		mErrorBuffer.PushError(type);
 	}
+}
+
+
+bool GeneratorCore::JumpEntryOpCodePosComparator::operator()(const GeneratorCore::JumpEntry &entry, size_t opCodePos) const
+{
+	return entry.mOpCodePos < opCodePos;
 }
 
 }
