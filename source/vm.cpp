@@ -1857,6 +1857,13 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_NBRZ:
+			{
+				bi32_t *condition = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*condition = bi32_t(1) - *condition;
+			}
+			// Fall through.
+
 			case OPCODE_BRZ:
 			{
 				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
@@ -1872,6 +1879,13 @@ void VM::ExecuteScriptFunction()
 				}
 			}
 			break;
+
+			case OPCODE_NBRZW:
+			{
+				bi32_t *condition = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*condition = bi32_t(1) - *condition;
+			}
+			// Fall through.
 
 			case OPCODE_BRZW:
 			{
@@ -1889,6 +1903,13 @@ void VM::ExecuteScriptFunction()
 			}
 			break;
 
+			case OPCODE_NBRNZ:
+			{
+				bi32_t *condition = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*condition = bi32_t(1) - *condition;
+			}
+			// Fall through.
+
 			case OPCODE_BRNZ:
 			{
 				const bi32_t condition = *reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
@@ -1904,6 +1925,13 @@ void VM::ExecuteScriptFunction()
 				}
 			}
 			break;
+
+			case OPCODE_NBRNZW:
+			{
+				bi32_t *condition = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
+				*condition = bi32_t(1) - *condition;
+			}
+			// Fall through.
 
 			case OPCODE_BRNZW:
 			{

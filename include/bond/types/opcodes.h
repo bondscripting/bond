@@ -245,6 +245,10 @@ namespace Bond
 	BOND_OPCODE_ITEM(BRZW,         brzw,         OFF32,        -1) \
 	BOND_OPCODE_ITEM(BRNZ,         brnz,         OFF16,        -1) \
 	BOND_OPCODE_ITEM(BRNZW,        brnzw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(NBRZ,         nbrz,         OFF16,        -1) \
+	BOND_OPCODE_ITEM(NBRZW,        nbrzw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(NBRNZ,        nbrnz,        OFF16,        -1) \
+	BOND_OPCODE_ITEM(NBRNZW,       nbrnzw,       OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFZ,          ifz,          OFF16,        -1) \
 	BOND_OPCODE_ITEM(IFZW,         ifzw,         OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFNZ,         ifnz,         OFF16,        -1) \

@@ -343,7 +343,14 @@ private:
 
 	Result EmitCommaOperator(const BinaryExpression *binaryExpression);
 	Result EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
-	void EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode);
+
+	void EmitLogicalOperator(
+		const BinaryExpression *binaryExpression,
+		OpCode branchOpCode,
+		OpCode negatedOpCode,
+		OpCode altBranchOpCode,
+		OpCode negatedAltOpCode);
+
 	Result EmitAssignmentOperator(const BinaryExpression *binaryExpression);
 	Result EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 	Result EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
@@ -1056,10 +1063,10 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				result = EmitCompoundAssignmentOperator(binaryExpression, DIV_OPCODES);
 				break;
 			case Token::OP_AND:
-				EmitLogicalOperator(binaryExpression, OPCODE_BRZ);
+				EmitLogicalOperator(binaryExpression, OPCODE_BRZ, OPCODE_NBRZ, OPCODE_BRNZ, OPCODE_NBRNZ);
 				break;
 			case Token::OP_OR:
-				EmitLogicalOperator(binaryExpression, OPCODE_BRNZ);
+				EmitLogicalOperator(binaryExpression, OPCODE_BRNZ, OPCODE_NBRNZ, OPCODE_BRZ, OPCODE_NBRZ);
 				break;
 			case Token::OP_AMP:
 				result = EmitSimpleBinaryOperator(binaryExpression, AND_OPCODES);
@@ -2658,7 +2665,12 @@ GeneratorCore::Result GeneratorCore::EmitCommaOperator(const BinaryExpression *b
 }
 
 
-void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression, OpCode branchOpCode)
+void GeneratorCore::EmitLogicalOperator(
+	const BinaryExpression *binaryExpression,
+	OpCode branchOpCode,
+	OpCode negatedOpCode,
+	OpCode altBranchOpCode,
+	OpCode negatedAltOpCode)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
@@ -2666,16 +2678,34 @@ void GeneratorCore::EmitLogicalOperator(const BinaryExpression *binaryExpression
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 
 	ResultStack::Element lhResult(mResult);
-	Traverse(lhs);
+	const bool lhsNegated = TraverseCollapseNotOperators(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 	const bu32_t stackTop = mStackTop.GetTop();
 
 	const size_t endLabel = CreateLabel();
-	EmitJump(branchOpCode, endLabel);
+	const size_t opCodePos = GetByteCode().size();
+	EmitJump(lhsNegated ? negatedOpCode : branchOpCode, endLabel);
 
-	ResultStack::Element rhResult(mResult);
-	Traverse(rhs);
-	EmitPushResult(rhResult, rhDescriptor);
+	if (mCollapseNotOperators.GetTop())
+	{
+		ResultStack::Element rhResult(mResult);
+		const bool rhsNegated = TraverseCollapseNotOperators(rhs);
+		EmitPushResult(rhResult, rhDescriptor);
+
+		// Apply De Morgan's laws if we can reduce the number of ! operators.
+		if (rhsNegated)
+		{
+			// Patch up the opcode.
+			GetByteCode()[opCodePos] = lhsNegated ? altBranchOpCode : negatedAltOpCode;
+			mExpressionIsNegated.SetTop(true);
+		}
+	}
+	else
+	{
+		ResultStack::Element rhResult(mResult);
+		Traverse(rhs);
+		EmitPushResult(rhResult, rhDescriptor);
+	}
 
 	SetLabelValue(endLabel, GetByteCode().size());
 
@@ -3556,45 +3586,116 @@ void GeneratorCore::ResolveJumps()
 						jumpIt->mToPos = targetEntry->mToPos;
 						requiresAnotherPass = true;
 					}
-					else if (opCode == OPCODE_BRZ)
+					else
 					{
-						switch (targetOpCode)
+						switch (opCode)
 						{
 							case OPCODE_BRZ:
-								jumpIt->mToPos = targetEntry->mToPos;
-								requiresAnotherPass = true;
+								switch (targetOpCode)
+								{
+									case OPCODE_BRZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_NBRNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_NBRNZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_IFZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_BRNZ:
+									case OPCODE_NBRZ:
+									case OPCODE_IFNZ:
+										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										requiresAnotherPass = true;
+										break;
+								}
 								break;
-							case OPCODE_IFZ:
-								jumpIt->mToPos = targetEntry->mToPos;
-								byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
-								requiresAnotherPass = true;
-								break;
+
 							case OPCODE_BRNZ:
-							case OPCODE_IFNZ:
-								jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-								byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
-								requiresAnotherPass = true;
+								switch (targetOpCode)
+								{
+									case OPCODE_BRNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_NBRZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_NBRZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_IFNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_BRZ:
+									case OPCODE_NBRNZ:
+									case OPCODE_IFZ:
+										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										requiresAnotherPass = true;
+										break;
+								}
 								break;
-						}
-					}
-					else if (opCode == OPCODE_BRNZ)
-					{
-						switch (targetOpCode)
-						{
-							case OPCODE_BRNZ:
-								jumpIt->mToPos = targetEntry->mToPos;
-								requiresAnotherPass = true;
+
+							case OPCODE_NBRZ:
+								switch (targetOpCode)
+								{
+									case OPCODE_BRZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_NBRNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_BRNZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_IFZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_BRNZ:
+									case OPCODE_NBRZ:
+									case OPCODE_IFNZ:
+										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										requiresAnotherPass = true;
+										break;
+								}
 								break;
-							case OPCODE_IFNZ:
-								jumpIt->mToPos = targetEntry->mToPos;
-								byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
-								requiresAnotherPass = true;
-								break;
-							case OPCODE_BRZ:
-							case OPCODE_IFZ:
-								jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-								byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
-								requiresAnotherPass = true;
+
+							case OPCODE_NBRNZ:
+								switch (targetOpCode)
+								{
+									case OPCODE_BRNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_NBRZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_BRZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_IFNZ:
+										jumpIt->mToPos = targetEntry->mToPos;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										requiresAnotherPass = true;
+										break;
+									case OPCODE_BRZ:
+									case OPCODE_NBRNZ:
+									case OPCODE_IFZ:
+										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										requiresAnotherPass = true;
+										break;
+								}
 								break;
 						}
 					}

@@ -236,6 +236,11 @@ brz, short          ..., int -> ..., int
 brnz, short         ..., int -> ..., int
 !brnzw, ushort       ..., int -> ..., int
 
+nbrz, short          ..., int -> ..., int
+!nbrzw, ushort        ..., int -> ..., int
+nbrnz, short         ..., int -> ..., int
+!nbrnzw, ushort       ..., int -> ..., int
+
 ifz, short          ..., int -> ...
 !ifzw, ushort        ..., int -> ...
 ifnz, short         ..., int -> ...
@@ -254,8 +259,3 @@ return
 return32
 return64
 returnmemw, ushort  ..., address -> ...,
-
-Unaccounted for
-87 (0x57)	 pop
-88 (0x58)	 pop2
-095 (0x5f)	 swap
