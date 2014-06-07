@@ -15,6 +15,9 @@ template <typename ElementType>
 class AutoStack
 {
 public:
+	class Iterator;
+	class ConstIterator;
+
 	class Element
 	{
 	public:
@@ -55,6 +58,8 @@ public:
 	private:
 		Element(const Element &other);
 		friend class AutoStack;
+		friend class Iterator;
+		friend class ConstIterator;
 
 		void SetNext(Element *next) { mNext = next; }
 

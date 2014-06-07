@@ -14,17 +14,19 @@ FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 {
 	Handle handle(*this);
 	FILE *file = NULL;
+	const size_t MAX_PATH_LENGTH = 1024;
+	char fullPath[MAX_PATH_LENGTH];
+
 	if (mRootPath != NULL)
 	{
-		const size_t MAX_PATH_LENGTH = 512;
-		char fullPath[MAX_PATH_LENGTH];
-		snprintf(fullPath, MAX_PATH_LENGTH, "%s%c%s", mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
-		file = fopen(fullPath, "rb");
+		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s%c%s", BOND_FILESYSTEM_PREFIX, mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
 	}
 	else
 	{
-		file = fopen(fileName, "rb");
+		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s", BOND_FILESYSTEM_PREFIX, fileName);
 	}
+
+	file = fopen(fullPath, "rb");
 
 	if (file != NULL)
 	{

@@ -7,10 +7,8 @@
 #include <new>
 
 #ifdef USER_BOND_CONFIG_HEADER
-
 #include USER_BOND_CONFIG_HEADER
-
-#endif // USER_BOND_CONFIG_HEADER
+#endif
 
 #ifndef BOND_RUNTIME_CHECKS_ENABLED
 #define BOND_RUNTIME_CHECKS_ENABLED 1
@@ -37,5 +35,9 @@
 
 #endif // _WIN32
 #endif // BOND_PATH_SEPARATOR
+
+#ifndef BOND_FILESYSTEM_PREFIX
+#define BOND_FILESYSTEM_PREFIX ""
+#endif
 
 #endif // BOND_CONF_H

@@ -30,7 +30,7 @@ public:
 
 	const StreamPos &GetStreamPos() const { return mPos; }
 	const char *GetBuffer() const { return mBuffer; }
-	const size_t GetLength() const { return mLength; }
+	size_t GetLength() const { return mLength; }
 
 private:
 	char Peek(size_t index) const;

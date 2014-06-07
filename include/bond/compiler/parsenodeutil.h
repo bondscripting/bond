@@ -22,6 +22,7 @@ class CastVisitor: public ParseNodeVisitorAdapter
 public:
 	CastVisitor(): mNode(NULL) {}
 
+	using ParseNodeVisitor::Visit;
 	virtual void Visit(T *node) { mNode = node; }
 
 	T *GetNode() { return mNode; }
