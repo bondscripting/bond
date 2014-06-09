@@ -26,28 +26,28 @@ struct MatchOffsetPair
 template <typename SourceType, typename DestType>
 inline void CopyValue(const void *source, void *dest)
 {
-	// Assumes that source and dest are appropriately aligned.
+	// Expects the source and dest pointers to be appropriately aligned.
 	*reinterpret_cast<DestType *>(dest) = static_cast<DestType>(*reinterpret_cast<const SourceType *>(source));
 }
 
 
 inline void CopyValue32(const void *source, void *dest)
 {
-	// Assumes that source and dest are 32 bit aligned.
+	// Expects the source and dest pointers to be 32 bit aligned.
 	*reinterpret_cast<bu32_t *>(dest) = *reinterpret_cast<const bu32_t *>(source);
 }
 
 
 inline void CopyValue64(const void *source, void *dest)
 {
-	// Assumes that source and dest are 64 bit aligned.
+	// Expects the source and dest pointers to be 64 bit aligned.
 	*reinterpret_cast<bu64_t *>(dest) = *reinterpret_cast<const bu64_t *>(source);
 }
 
 
 inline void SwapValue64(void *a, void *b)
 {
-	// Assumes that the pointers are 64 bit aligned.
+	// Expects the pointers to be 64 bit aligned.
 	const bu64_t temp = *reinterpret_cast<bu64_t *>(a);
 	*reinterpret_cast<bu64_t *>(a) = *reinterpret_cast<const bu64_t *>(b);
 	*reinterpret_cast<bu64_t *>(b) = temp;
@@ -2120,18 +2120,36 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 
 	bu8_t *framePointer = static_cast<bu8_t *>(AlignPointerUp(argTop + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment));
 
-	if (framePointer != argTop)
+	if (function->mUnpackArguments)
 	{
 		const bu32_t numParams = function->mParamListSignature.mParamCount;
 		const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
 		bu8_t *source = argTop;
-		// TODO: Downcast arguments from int/uint to bool/char/uchar/short/ushort if needed.
 		for (bu32_t i = 0; i < numParams; ++i)
 		{
 			const ParamSignature &signature = signatures[i];
 			const size_t size = signature.mSize;
-			source -= size;
-			memmove(framePointer + signature.mFramePointerOffset, source, size);
+			source -= AlignUp(size, size_t(BOND_SLOT_SIZE));
+
+			switch (signature.mType)
+			{
+				case SIG_CHAR:
+					CopyValue<bi32_t, bi8_t>(source, framePointer + signature.mFramePointerOffset);
+					break;
+				case SIG_BOOL:
+				case SIG_UCHAR:
+					CopyValue<bu32_t, bu8_t>(source, framePointer + signature.mFramePointerOffset);
+					break;
+				case SIG_SHORT:
+					CopyValue<bi32_t, bi16_t>(source, framePointer + signature.mFramePointerOffset);
+					break;
+				case SIG_USHORT:
+					CopyValue<bu32_t, bu16_t>(source, framePointer + signature.mFramePointerOffset);
+					break;
+				default:
+					memmove(framePointer + signature.mFramePointerOffset, source, size);
+					break;
+			}
 		}
 	}
 

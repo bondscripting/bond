@@ -76,6 +76,7 @@ struct Function
 	bu32_t mStackSize;
 	bu32_t mFramePointerAlignment;
 	bu32_t mHash;
+	bool mUnpackArguments;
 };
 
 

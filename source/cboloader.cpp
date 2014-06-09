@@ -491,6 +491,19 @@ void CboLoaderCore::LoadFunctionBlob()
 	{
 		function->mNativeFunction = NULL;
 	}
+
+	bool unpackArguments = function->mFramePointerAlignment > bu32_t(BOND_SLOT_SIZE);
+	const bu32_t numParams = function->mParamListSignature.mParamCount;
+	const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
+	for (bu32_t i = 0; (i < numParams) && !unpackArguments; ++i)
+	{
+		const SignatureType type = SignatureType(signatures[i].mType);
+		if ((type >= SIG_BOOL) && (type <= SIG_USHORT))
+		{
+			unpackArguments = true;
+		}
+	}
+	function->mUnpackArguments = unpackArguments;
 	++mResources.mFunctions;
 }
 
