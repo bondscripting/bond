@@ -14,6 +14,7 @@ void LoadAllLibs(CboLoader &cboLoader)
 {
 	LoadLibMath(cboLoader);
 	LoadLibString(cboLoader);
+	LoadLibType(cboLoader);
 }
 
 
@@ -28,6 +29,13 @@ void LoadLibString(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(STRING_BINDING_COLLECTION);
 	cboLoader.AddCboFile(STRING_CBO);
+}
+
+
+void LoadLibType(CboLoader &cboLoader)
+{
+	cboLoader.AddNativeBinding(TYPE_BINDING_COLLECTION);
+	cboLoader.AddCboFile(TYPE_CBO);
 }
 
 }

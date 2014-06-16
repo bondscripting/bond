@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\include\bond\api\libmath.h" />
     <ClInclude Include="..\..\include\bond\api\libruntime.h" />
     <ClInclude Include="..\..\include\bond\api\libstring.h" />
+    <ClInclude Include="..\..\include\bond\api\libtype.h" />
     <ClInclude Include="..\..\include\bond\api\nativebinding.h" />
     <ClInclude Include="..\..\include\bond\compiler\charstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\codegenerator.h" />
@@ -123,6 +124,8 @@
     <ClCompile Include="..\..\source\libruntime.cpp" />
     <ClCompile Include="..\..\source\libstring.cpp" />
     <ClCompile Include="..\..\source\libstringbindings.cpp" />
+    <ClCompile Include="..\..\source\libtype.cpp" />
+    <ClCompile Include="..\..\source\libtypebindings.cpp" />
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />

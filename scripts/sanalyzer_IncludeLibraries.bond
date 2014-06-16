@@ -1,8 +1,10 @@
 include "math.bond";
 include "string.bond";
+include "type.bond";
 
 void TestForPresenceOfIncludedDeclarations()
 {
 	double value = Bond::Ceil(Bond::PI);
 	uint length = Bond::Strlen(null);
+	bool isalpha = Bond::IsAlpha('c');
 }

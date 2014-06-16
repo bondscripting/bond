@@ -1,0 +1,22 @@
+namespace Bond
+{
+native
+{
+
+bool IsAlnum(int c);
+bool IsAlpha(int c);
+bool IsCntrl(int c);
+bool IsDigit(int c);
+bool IsGraph(int c);
+bool IsLower(int c);
+bool IsPrint(int c);
+bool IsPunct(int c);
+bool IsSpace(int c);
+bool IsUpper(int c);
+bool IsXDigit(int c);
+
+int ToLower(int c);
+int ToUpper(int c);
+
+}
+}

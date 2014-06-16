@@ -303,6 +303,9 @@
     <ClInclude Include="..\..\source\private\valueevaluationpass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libtype.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
@@ -441,6 +444,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsetreeprinter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libtype.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libtypebindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

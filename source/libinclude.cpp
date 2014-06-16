@@ -9,6 +9,7 @@ namespace Bond
 #define INCLUDE_FILE_LIST \
 	INCLUDE_FILE_ITEM("math.bond",   INCLUDE_MATH_BOND)   \
 	INCLUDE_FILE_ITEM("string.bond", INCLUDE_STRING_BOND) \
+	INCLUDE_FILE_ITEM("type.bond",   INCLUDE_TYPE_BOND)   \
 
 
 static const SimpleString INCLUDE_FILE_NAMES[] =

@@ -3,6 +3,7 @@
 
 #include "bond/api/libmath.h"
 #include "bond/api/libstring.h"
+#include "bond/api/libtype.h"
 #include "bond/io/filedata.h"
 
 namespace Bond
@@ -19,6 +20,7 @@ class CboLoader;
 void LoadAllLibs(CboLoader &cboLoader);
 void LoadLibMath(CboLoader &cboLoader);
 void LoadLibString(CboLoader &cboLoader);
+void LoadLibType(CboLoader &cboLoader);
 
 }
 
