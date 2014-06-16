@@ -2,6 +2,7 @@
 #define BOND_API_LIBRUNTIME_H
 
 #include "bond/api/libmath.h"
+#include "bond/api/libmemory.h"
 #include "bond/api/libstring.h"
 #include "bond/api/libtype.h"
 #include "bond/io/filedata.h"
@@ -19,6 +20,7 @@ class CboLoader;
 
 void LoadAllLibs(CboLoader &cboLoader);
 void LoadLibMath(CboLoader &cboLoader);
+void LoadLibMemory(CboLoader &cboLoader);
 void LoadLibString(CboLoader &cboLoader);
 void LoadLibType(CboLoader &cboLoader);
 

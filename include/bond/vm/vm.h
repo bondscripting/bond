@@ -44,7 +44,12 @@ public:
 	template <typename ReturnType>
 	void SetReturnValue(const ReturnType &returnValue);
 
+	VM &GetVM() const { return mVm; }
+
 private:
+	friend class VM;
+	friend class CallerStackFrame;
+
 	template <typename ArgType>
 	ArgType &GetArgRef(size_t index) const;
 
@@ -56,8 +61,6 @@ private:
 	bu8_t *mFramePointer;
 	bu8_t *mStackPointer;
 	bu8_t *mReturnPointer;
-	friend class VM;
-	friend class CallerStackFrame;
 };
 
 typedef AutoStack<CalleeStackFrame> StackFrames;
@@ -88,6 +91,8 @@ class VM
 public:
 	VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize);
 	~VM();
+
+	Allocator &GetAllocator() const { return mAllocator; }
 
 	const CodeSegment &GetCodeSegment() const { return mCodeSegment; }
 

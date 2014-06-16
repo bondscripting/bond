@@ -1,0 +1,13 @@
+namespace Bond
+{
+native
+{
+
+void *Allocate(uint size);
+void *AllocateAligned(uint size, uint alignment);
+
+void Free(void *ptr);
+void FreeAligned(void *ptr);
+
+}
+}

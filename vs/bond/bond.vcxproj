@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\api\libinclude.h" />
     <ClInclude Include="..\..\include\bond\api\libmath.h" />
+    <ClInclude Include="..\..\include\bond\api\libmemory.h" />
     <ClInclude Include="..\..\include\bond\api\libruntime.h" />
     <ClInclude Include="..\..\include\bond\api\libstring.h" />
     <ClInclude Include="..\..\include\bond\api\libtype.h" />
@@ -121,6 +122,8 @@
     <ClCompile Include="..\..\source\libinclude.cpp" />
     <ClCompile Include="..\..\source\libmath.cpp" />
     <ClCompile Include="..\..\source\libmathbindings.cpp" />
+    <ClCompile Include="..\..\source\libmemory.cpp" />
+    <ClCompile Include="..\..\source\libmemorybindings.cpp" />
     <ClCompile Include="..\..\source\libruntime.cpp" />
     <ClCompile Include="..\..\source\libstring.cpp" />
     <ClCompile Include="..\..\source\libstringbindings.cpp" />

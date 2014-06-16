@@ -306,6 +306,9 @@
     <ClInclude Include="..\..\include\bond\api\libtype.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libmemory.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
@@ -450,6 +453,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libtypebindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmemory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmemorybindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

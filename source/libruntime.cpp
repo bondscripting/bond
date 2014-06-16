@@ -13,6 +13,7 @@ namespace Bond
 void LoadAllLibs(CboLoader &cboLoader)
 {
 	LoadLibMath(cboLoader);
+	LoadLibMemory(cboLoader);
 	LoadLibString(cboLoader);
 	LoadLibType(cboLoader);
 }
@@ -22,6 +23,13 @@ void LoadLibMath(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(MATH_BINDING_COLLECTION);
 	cboLoader.AddCboFile(MATH_CBO);
+}
+
+
+void LoadLibMemory(CboLoader &cboLoader)
+{
+	cboLoader.AddNativeBinding(MEMORY_BINDING_COLLECTION);
+	cboLoader.AddCboFile(MEMORY_CBO);
 }
 
 
