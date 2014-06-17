@@ -1,0 +1,19 @@
+namespace Bond
+{
+native
+{
+
+// Since Bond does not yet support variadic functions, this collection of functions
+// fills the gap left by the missing printf-like function.
+void PrintStr(const char *str);
+void PrintB(bool value);
+void PrintC(char value);
+void PrintI(int value);
+void PrintUI(uint value);
+void PrintL(long value);
+void PrintUL(ulong value);
+void PrintF(float value);
+void PrintD(double value);
+
+}
+}

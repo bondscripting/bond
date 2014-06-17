@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\bond\api\libinclude.h" />
+    <ClInclude Include="..\..\include\bond\api\libio.h" />
     <ClInclude Include="..\..\include\bond\api\libmath.h" />
     <ClInclude Include="..\..\include\bond\api\libmemory.h" />
     <ClInclude Include="..\..\include\bond\api\libruntime.h" />
@@ -120,6 +121,8 @@
     <ClCompile Include="..\..\source\frontend.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\libinclude.cpp" />
+    <ClCompile Include="..\..\source\libio.cpp" />
+    <ClCompile Include="..\..\source\libiobindings.cpp" />
     <ClCompile Include="..\..\source\libmath.cpp" />
     <ClCompile Include="..\..\source\libmathbindings.cpp" />
     <ClCompile Include="..\..\source\libmemory.cpp" />

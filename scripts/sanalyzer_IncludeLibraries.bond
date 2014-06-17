@@ -1,3 +1,4 @@
+include "io.bond";
 include "math.bond";
 include "memory.bond";
 include "string.bond";
@@ -5,6 +6,7 @@ include "type.bond";
 
 void TestForPresenceOfIncludedDeclarations()
 {
+	Bond::PrintC('a');
 	double value = Bond::Ceil(Bond::PI);
 	uint length = Bond::Strlen(null);
 	bool isalpha = Bond::IsAlpha('c');

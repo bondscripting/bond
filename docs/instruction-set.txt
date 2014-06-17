@@ -40,6 +40,7 @@ constd_2            ... -> double
 loadfp, short       ... -> address
 loadfpw, ushort     ... -> address
 !loadea, hash        ... -> address
+loadstr, ushort     ..., -> address
 loadc               ..., address -> ..., int
 loaduc              ..., address -> ..., uint
 loads               ..., address -> ..., int
@@ -59,7 +60,7 @@ pushuc, short       ... -> uint
 pushucw, ushort     ... -> uint
 pushs, short        ... -> int
 pushsw, ushort      ... -> int
-pushus, short       ... -> uint
+pushus, ushort      ... -> uint
 pushusw, ushort     ... -> uint
 push32, short       ... -> value32
 push32w, ushort     ... -> value32

@@ -277,6 +277,16 @@ void CboValidatorCore::ValidateFunctionBlob()
 				}
 			}
 			break;
+			case OC_PARAM_STRING:
+			{
+				AssertBytesRemaining(sizeof(Value16));
+				const size_t stringIndex = ReadValue16().mUShort;
+				if (stringIndex >= mResult.mStringCount)
+				{
+					CodeIsInvalid();
+				}
+			}
+			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));

@@ -1,6 +1,6 @@
 #include "bond/api/libruntime.h"
 #include "bond/io/diskfileloader.h"
-#include "bond/stl/list.h"
+#include "bond/stl/vector.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include "bond/vm/cboloader.h"
@@ -14,19 +14,33 @@
 const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 32;
 const char * const DEFAULT_ENTRY_POINT = "::main";
-typedef Bond::List<const char *> StringList;
+typedef Bond::Vector<const char *> StringList;
 
 int main(int argc, const char *argv[])
 {
 	Bond::DefaultAllocator allocator;
 	StringList::Type cboFileNameList((StringList::Allocator(&allocator)));
+	StringList::Type argList((StringList::Allocator(&allocator)));
 	size_t stackSize = DEFAULT_STACK_SIZE;
 	const char *entryPoint = DEFAULT_ENTRY_POINT;
+	Bond::bi32_t exitCode = 0;
+	bool pushingApplicationArgs = false;
 	bool error = false;
+
+	cboFileNameList.reserve(size_t(argc));
+	argList.reserve(size_t(argc));
 
 	for (int i = 1; i < argc; ++i)
 	{
-		if (strcmp(argv[i], "-e") == 0)
+		if (pushingApplicationArgs)
+		{
+			argList.push_back(argv[i]);
+		}
+		else if (strcmp(argv[i], "-") == 0)
+		{
+			pushingApplicationArgs = true;
+		}
+		else if (strcmp(argv[i], "-e") == 0)
 		{
 			if (++i < argc)
 			{
@@ -92,16 +106,10 @@ int main(int argc, const char *argv[])
 			codeSegmentHandle = cboLoader.Load();
 		}
 
+		const Bond::bu32_t numArgs = Bond::bu32_t(argList.size());
+		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : NULL;
 		Bond::VM vm(allocator, *codeSegmentHandle.Get(), stackSize * 1024);
-
-		// Test code.
-		Bond::bi32_t returnValue = -9999;
-		Bond::CallerStackFrame stackFrame(vm, entryPoint, &returnValue);
-		//stackFrame.PushArg(65);
-		//stackFrame.PushArg(13);
-		stackFrame.Call();
-		printf("return: %d\n", returnValue);
-		// End test code.
+		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
 	}
 	catch (const Bond::Exception &e)
 	{
@@ -109,5 +117,5 @@ int main(int argc, const char *argv[])
 		fprintf(stderr, "%s\n", e.GetMessage());
 	}
 
-	return error ? 1 : 0;
+	return error ? 1 : exitCode;
 }

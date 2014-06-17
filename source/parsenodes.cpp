@@ -353,6 +353,16 @@ bool TypeDescriptor::IsBooleanType() const
 }
 
 
+bool TypeDescriptor::IsCharType() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->IsCharType();
+	}
+	return false;
+}
+
+
 bool TypeDescriptor::IsIntegerType() const
 {
 	if (IsValueType())
@@ -408,6 +418,17 @@ bool TypeDescriptor::IsStructType() const
 	if (IsValueType())
 	{
 		return mTypeSpecifier->IsStructType();
+	}
+	return false;
+}
+
+
+bool TypeDescriptor::IsStringType() const
+{
+	if (IsPointerType())
+	{
+		TypeDescriptor typeDescriptor = GetDereferencedType();
+		return typeDescriptor.IsCharType();
 	}
 	return false;
 }
@@ -656,6 +677,16 @@ bool TypeSpecifier::IsBooleanType() const
 	if (mPrimitiveType != NULL)
 	{
 		return BOOLEAN_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+	}
+	return false;
+}
+
+
+bool TypeSpecifier::IsCharType() const
+{
+	if (mPrimitiveType != NULL)
+	{
+		return CHAR_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
 	return false;
 }

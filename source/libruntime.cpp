@@ -12,10 +12,18 @@ namespace Bond
 
 void LoadAllLibs(CboLoader &cboLoader)
 {
+	LoadLibIo(cboLoader);
 	LoadLibMath(cboLoader);
 	LoadLibMemory(cboLoader);
 	LoadLibString(cboLoader);
 	LoadLibType(cboLoader);
+}
+
+
+void LoadLibIo(CboLoader &cboLoader)
+{
+	cboLoader.AddNativeBinding(IO_BINDING_COLLECTION);
+	cboLoader.AddCboFile(IO_CBO);
 }
 
 

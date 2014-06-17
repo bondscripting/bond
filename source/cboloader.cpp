@@ -251,6 +251,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				case OC_PARAM_VAL64:
 				case OC_PARAM_OFF16:
 				case OC_PARAM_OFF32:
+				case OC_PARAM_STRING:
 					ConvertBigEndian16(code);
 					code += sizeof(Value16);
 					break;

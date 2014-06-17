@@ -1,7 +1,6 @@
 #include "bond/api/libmemory.h"
 #include "bond/systems/allocator.h"
 #include "bond/vm/vm.h"
-#include <string.h>
 
 namespace Bond
 {

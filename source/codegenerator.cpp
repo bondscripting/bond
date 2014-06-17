@@ -1808,7 +1808,6 @@ void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const T
 void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 {
 	const TypeDescriptor *typeDescriptor = typeAndValue.GetTypeDescriptor();
-	// TODO: Deal with string literals.
 	switch (typeDescriptor->GetPrimitiveType())
 	{
 		case Token::KEY_BOOL:
@@ -1841,7 +1840,13 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 			{
 				EmitOpCode(Is64BitPointer() ? OPCODE_CONSTL_0 : OPCODE_CONSTI_0);
 			}
-			// TODO: Deal with non-primitive values.
+			else if (typeDescriptor->IsStringType())
+			{
+				EmitOpCode(OPCODE_LOADSTR);
+				const bu16_t stringIndex = MapString(typeAndValue.GetHashedStringValue());
+				EmitValue16(Value16(stringIndex));
+			}
+			// TODO: Determine if there is anything to do for non-primitive values.
 			break;
 	}
 }
@@ -2909,23 +2914,24 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 
 	Result result(Result::CONTEXT_STACK_VALUE);
 
+	switch (pointerResult.GetValue().mContext)
+	{
+		case Result::CONTEXT_ADDRESS_INDIRECT:
+		case Result::CONTEXT_FP_INDIRECT:
+		case Result::CONTEXT_CONSTANT_VALUE:
+		case Result::CONTEXT_NATIVE_MEMBER:
+			EmitPushResult(pointerResult, pointerDescriptor);
+			break;
+		default:
+			result = pointerResult;
+	}
+
 	if (offsetTav.IsValueDefined() && IsInIntRange(offset))
 	{
-		if ((pointerResult.GetValue().mContext == Result::CONTEXT_ADDRESS_INDIRECT) ||
-		    (pointerResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT))
-		{
-			EmitPushResult(pointerResult, pointerDescriptor);
-		}
-		else
-		{
-			result = pointerResult;
-		}
-
 		result.mOffset += bi32_t(offset);
 	}
 	else
 	{
-		EmitPushResult(pointerResult, pointerDescriptor);
 		EmitPointerOffset(offsetExpression, elementSize);
 	}
 

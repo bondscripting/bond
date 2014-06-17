@@ -45,6 +45,7 @@ private:
 	void DisassembleParamListSignature();
 	void DisassembleSizeAndType();
 	void WriteSimpleString(const SimpleString &str);
+	void WriteAbbreviatedString(const SimpleString &str);
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -225,6 +226,12 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
+			case OC_PARAM_STRING:
+			{
+				const size_t stringIndex = ReadValue16().mUShort;
+				WriteAbbreviatedString(mStringTable[stringIndex]);
+			}
+			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
@@ -318,6 +325,35 @@ void DisassemblerCore::WriteSimpleString(const SimpleString &str)
 	{
 		mWriter.Write("%c", s[i]);
 	}
+}
+
+
+void DisassemblerCore::WriteAbbreviatedString(const SimpleString &str)
+{
+	const size_t length = str.GetLength();
+	const char *s = str.GetString();
+
+	mWriter.Write("%c", '"');
+	if (length < 28)
+	{
+		for (size_t i = 0; i < length; ++i)
+		{
+			mWriter.Write("%c", s[i]);
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < 12; ++i)
+		{
+			mWriter.Write("%c", s[i]);
+		}
+		mWriter.Write("%s", "...");
+		for (size_t i = length - 12; i < length; ++i)
+		{
+			mWriter.Write("%c", s[i]);
+		}
+	}
+	mWriter.Write("%c", '"');
 }
 
 

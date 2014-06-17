@@ -120,8 +120,8 @@ VM::~VM()
 void VM::ExecuteScriptFunction()
 {
 	CalleeStackFrame &frame = GetTopStackFrame();
-	const Value32 *value32Table = frame.mFunction->mConstantTable->mValue32Table;
-	const Value64 *value64Table = frame.mFunction->mConstantTable->mValue64Table;
+	const ConstantTable *constantTable = frame.mFunction->mConstantTable;
+	const Value32 *value32Table = constantTable->mValue32Table;
 	const Function *functionTable = mCodeSegment.GetFunctionAtIndex(0);
 	const bu8_t *code = frame.mFunction->mCode;
 	bu8_t *const fp = frame.mFramePointer;
@@ -175,7 +175,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_CONST64:
 			{
 				const Value16 valueIndex(code + pc);
-				CopyValue64(value64Table + valueIndex.mUShort, sp);
+				CopyValue64(constantTable->mValue64Table + valueIndex.mUShort, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -412,6 +412,15 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADEA:
 				// TODO
 				break;
+
+			case OPCODE_LOADSTR:
+			{
+				const Value16 stringIndex(code + pc);
+				*reinterpret_cast<const char **>(sp) = constantTable->mStringTable[stringIndex.mUShort].GetString();
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
 
 			case OPCODE_LOADC:
 			{

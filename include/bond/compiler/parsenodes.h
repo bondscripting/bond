@@ -218,6 +218,7 @@ public:
 	bu32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
+	bool IsCharType() const;
 	bool IsIntegerType() const;
 	bool IsLeast32IntegerType() const;
 	bool IsMost32IntegerType() const;
@@ -229,6 +230,7 @@ public:
 	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
 	bool IsVoidType() const;
 	bool IsStructType() const;
+	bool IsStringType() const;
 
 	static TypeDescriptor GetVoidType();
 	static TypeDescriptor GetBoolType();
@@ -320,6 +322,7 @@ public:
 	bu32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
+	bool IsCharType() const;
 	bool IsIntegerType() const;
 	bool IsLeast32IntegerType() const;
 	bool IsMost32IntegerType() const;
