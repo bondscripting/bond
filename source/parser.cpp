@@ -29,7 +29,11 @@ private:
 	ParserCore &operator=(const ParserCore &other);
 
 	TranslationUnit *ParseTranslationUnit();
-	IncludeDirective *ParseIncludeDirectiveList();
+
+	void ParseIncludeDirectiveAndExternalDeclarationLists(
+		IncludeDirective **includeDirectiveList,
+		ListParseNode **externalDeclarationList);
+
 	IncludeDirective *ParseIncludeDirective();
 	ListParseNode *ParseExternalDeclarationList();
 	ListParseNode *ParseExternalDeclaration();
@@ -87,6 +91,7 @@ private:
 	Expression *ParsePrimaryExpression();
 	Expression *ParseArgumentList();
 
+	void SyncToIncludeAndDeclarationTerminator();
 	void ExpectDeclarationTerminator();
 	void SyncToDeclarationTerminator();
 	void SyncToEnumeratorDelimiter();
@@ -155,42 +160,56 @@ TranslationUnit *ParserCore::Parse()
 
 
 // translation_unit
-//  : include_directives* external_declaration*
+//   : include_directive_or_external_declaration*
 TranslationUnit *ParserCore::ParseTranslationUnit()
 {
 	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
 	BoolStack::Element inNativeBlockElement(mInNativeBlock, false);
-	IncludeDirective *includeDirectives = ParseIncludeDirectiveList();
-	ListParseNode *declarations = ParseExternalDeclarationList();
+	IncludeDirective *includeDirectives = NULL;
+	ListParseNode *declarations = NULL;
+	ParseIncludeDirectiveAndExternalDeclarationLists(&includeDirectives, &declarations);
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(includeDirectives, declarations);
 	ExpectToken(Token::END);
 	return unit;
 }
 
 
-IncludeDirective *ParserCore::ParseIncludeDirectiveList()
+// include_directive_or_external_declaration
+//   : include_directive
+//   | external_declaration
+void ParserCore::ParseIncludeDirectiveAndExternalDeclarationLists(
+		IncludeDirective **includeDirectiveList,
+		ListParseNode **externalDeclarationList)
 {
-	ParseNodeList<IncludeDirective> includeDirectiveList;
+	*includeDirectiveList = NULL;
+	*externalDeclarationList = NULL;
 
-	while (true)
+	ParseNodeList<IncludeDirective> includeList;
+	ParseNodeList<ListParseNode> declarationList;
+
+	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
 	{
-		if (mStream.PeekIf(Token::KEY_INCLUDE) != NULL)
-		{
-			IncludeDirective *next = ParseIncludeDirective();
-			AssertNode(next);
-			SyncToDeclarationTerminator();
-			includeDirectiveList.Append(next);
-		}
-
 		// Eat up superfluous semicolons.
-		else if (mStream.NextIf(Token::SEMICOLON) == NULL)
+		if (mStream.NextIf(Token::SEMICOLON) == NULL)
 		{
-			break;
+			ListParseNode *externalDeclaration = ParseExternalDeclaration();
+			if (externalDeclaration != NULL)
+			{
+				declarationList.Append(externalDeclaration);
+			}
+			else
+			{
+				IncludeDirective *includeDirective = ParseIncludeDirective();
+				AssertNode(includeDirective);
+				includeList.Append(includeDirective);
+			}
+			SyncToIncludeAndDeclarationTerminator();
 		}
 	}
 
-	return includeDirectiveList.GetHead();
+	*includeDirectiveList = includeList.GetHead();
+	*externalDeclarationList = declarationList.GetHead();
 }
 
 
@@ -231,13 +250,13 @@ ListParseNode *ParserCore::ParseExternalDeclarationList()
 }
 
 
-//external_declaration
-//  : namespace_definition
-//  | native_block
-//  | enum_declaration
-//  | struct_declaration
-//  | function_definition
-//  | const_declarative_statement
+// external_declaration
+//   : namespace_definition
+//   | native_block
+//   | enum_declaration
+//   | struct_declaration
+//   | function_definition
+//   | const_declarative_statement
 ListParseNode *ParserCore::ParseExternalDeclaration()
 {
 	ListParseNode *declaration = NULL;
@@ -307,7 +326,7 @@ NativeBlock *ParserCore::ParseNativeBlock()
 
 
 // enum_declaration
-//  : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
+//   : ENUM IDENTIFIER '{' enumerator_list [',] '}' ';'
 //
 // enumerator_list
 //   : enumerator
@@ -370,11 +389,11 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 
 
 // struct_declaration
-//  : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
 //
-//native_struct_declaration
-//  : STRUCT [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-//  | STRUCT '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER ';'
+// native_struct_declaration
+//   : STRUCT [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
+//   | STRUCT '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER ';'
 StructDeclaration *ParserCore::ParseStructDeclaration()
 {
 	StructDeclaration *declaration = NULL;
@@ -1808,6 +1827,16 @@ Expression *ParserCore::ParseArgumentList()
 	}
 
 	return head;
+}
+
+
+void ParserCore::SyncToIncludeAndDeclarationTerminator()
+{
+	if (mHasUnrecoveredError)
+	{
+		Recover(INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET);
+		mStream.NextIf(Token::SEMICOLON);
+	}
 }
 
 

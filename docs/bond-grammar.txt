@@ -2,7 +2,11 @@ External Definitions
 --------------------
 
 translation_unit
-  : include_directives* external_declaration*
+  : include_directive_or_external_declaration*
+
+include_directive_or_external_declaration
+  : include_directive
+  | external_declaration
 
 include_directive
   : INCLUDE STRING ';'
