@@ -2914,24 +2914,24 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 
 	Result result(Result::CONTEXT_STACK_VALUE);
 
-	switch (pointerResult.GetValue().mContext)
-	{
-		case Result::CONTEXT_ADDRESS_INDIRECT:
-		case Result::CONTEXT_FP_INDIRECT:
-		case Result::CONTEXT_CONSTANT_VALUE:
-		case Result::CONTEXT_NATIVE_MEMBER:
-			EmitPushResult(pointerResult, pointerDescriptor);
-			break;
-		default:
-			result = pointerResult;
-	}
-
 	if (offsetTav.IsValueDefined() && IsInIntRange(offset))
 	{
+		switch (pointerResult.GetValue().mContext)
+		{
+			case Result::CONTEXT_ADDRESS_INDIRECT:
+			case Result::CONTEXT_FP_INDIRECT:
+			case Result::CONTEXT_CONSTANT_VALUE:
+			case Result::CONTEXT_NATIVE_MEMBER:
+				EmitPushResult(pointerResult, pointerDescriptor);
+				break;
+			default:
+				result = pointerResult;
+		}
 		result.mOffset += bi32_t(offset);
 	}
 	else
 	{
+		EmitPushResult(pointerResult, pointerDescriptor);
 		EmitPointerOffset(offsetExpression, elementSize);
 	}
 
