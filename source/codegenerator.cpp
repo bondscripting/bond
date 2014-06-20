@@ -3808,7 +3808,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 			}
 
 			bu8_t opCode = byteCode[byteCodeIndex++];
-			const bi32_t offset = jumpIt->mToPos - jumpIt->GetFromPos();
+			const bi32_t offset = bi32_t(jumpIt->mToPos) - bi32_t(jumpIt->GetFromPos());
 			Value16 arg(offset);
 
 			if (!IsInShortRange(offset))

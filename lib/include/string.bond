@@ -5,5 +5,10 @@ native
 
 uint Strlen(const char *str);
 
+bool TryParseInt(const char *str, int *result);
+bool TryParseLong(const char *str, long *result);
+bool TryParseFloat(const char *str, int *result);
+bool TryParseDouble(const char *str, int *result);
+
 }
 }
