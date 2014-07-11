@@ -269,6 +269,16 @@ bool TypeDescriptor::IsResolved() const
 }
 
 
+bool TypeDescriptor::IsInstantiable() const
+{
+	if (IsValueType())
+	{
+		return mTypeSpecifier->IsInstantiable();
+	}
+	return true;
+}
+
+
 bu32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
 {
 	if (IsPointerType())
@@ -535,6 +545,17 @@ const Token *TypeSpecifier::GetContextToken() const
 bool TypeSpecifier::IsResolved() const
 {
 	return (mDefinition == NULL) || (mDefinition->IsResolved());
+}
+
+
+bool TypeSpecifier::IsInstantiable() const
+{
+	const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
+	if (structDeclaration != NULL)
+	{
+		return structDeclaration->IsInstantiable();
+	}
+	return true;
 }
 
 

@@ -297,6 +297,11 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 94},
 		{Bond::CompilerError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 109},
 		{Bond::CompilerError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 115},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 196},
+		{Bond::CompilerError::RETURN_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 198},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 198},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 200},
+		{Bond::CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN, 201},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

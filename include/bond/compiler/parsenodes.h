@@ -196,6 +196,7 @@ public:
 
 	bool IsDefined() const { return (mFlags & STORAGE_MASK) != 0; }
 	bool IsResolved() const;
+	bool IsInstantiable() const;
 
 	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
 	void SetConst() { mFlags |= FLAG_CONST; }
@@ -315,6 +316,7 @@ public:
 	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
 
 	bool IsResolved() const;
+	bool IsInstantiable() const;
 
 	bu32_t GetSize(PointerSize pointerSize) const;
 	bu32_t GetAlignment() const;
@@ -817,7 +819,7 @@ public:
 	Initializer *GetInitializerList() { return mInitializerList; }
 	const Initializer *GetInitializerList() const { return mInitializerList; }
 
-	bool IsResolved() const;
+	virtual bool IsResolved() const;
 
 private:
 	Expression *mExpression;

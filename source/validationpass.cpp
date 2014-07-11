@@ -59,6 +59,27 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 }
 
 
+void ValidationPass::Visit(FunctionPrototype *functionPrototype)
+{
+	const TypeDescriptor *typeDescriptor = functionPrototype->GetReturnType();
+	if (!typeDescriptor->IsInstantiable())
+	{
+		mErrorBuffer.PushError(CompilerError::RETURN_OF_UNDEFINED_SIZE, functionPrototype->GetName(), typeDescriptor);
+	}
+	ParseNodeTraverser::Visit(functionPrototype);
+}
+
+
+void ValidationPass::Visit(Parameter *parameter)
+{
+	const TypeDescriptor *typeDescriptor = parameter->GetTypeDescriptor();
+	if (!typeDescriptor->IsInstantiable())
+	{
+		mErrorBuffer.PushError(CompilerError::DECLARATION_OF_UNDEFINED_SIZE, parameter->GetName(), typeDescriptor);
+	}
+}
+
+
 void ValidationPass::Visit(IfStatement *ifStatement)
 {
 	AssertReachableCode(ifStatement);
@@ -255,6 +276,14 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 
 void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
+	const TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
+	if (!typeDescriptor->IsInstantiable())
+	{
+		mErrorBuffer.PushError(
+			CompilerError::DECLARATION_OF_UNDEFINED_SIZE,
+			declarativeStatement->GetNamedInitializerList()->GetName(),
+			typeDescriptor);
+	}
 	AssertReachableCode(declarativeStatement);
 	mEndsWithJump.SetTop(false);
 	ParseNodeTraverser::Visit(declarativeStatement);
@@ -269,6 +298,17 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 	}
 	mEndsWithJump.SetTop(false);
 	ParseNodeTraverser::Visit(expressionStatement);
+}
+
+
+void ValidationPass::Visit(BinaryExpression *binaryExpression)
+{
+	const TypeDescriptor *typeDescriptor = binaryExpression->GetTypeDescriptor();
+	if (!typeDescriptor->IsInstantiable())
+	{
+		mErrorBuffer.PushError(CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, binaryExpression->GetContextToken(), typeDescriptor);
+	}
+	ParseNodeTraverser::Visit(binaryExpression);
 }
 
 

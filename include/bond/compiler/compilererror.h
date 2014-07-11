@@ -154,6 +154,12 @@
     "Struct alignment must be a power of 2 greater than or equal to 1.")                   \
   BOND_COMPILER_ERROR(STRUCT_SIZE_ALIGNMENT_MISMATCH,                                      \
     "Struct size must be a multiple of alignment.")                                        \
+  BOND_COMPILER_ERROR(DECLARATION_OF_UNDEFINED_SIZE,                                       \
+    "Cannot declare '%c' with type '%n' of undefined size.")                               \
+  BOND_COMPILER_ERROR(RETURN_OF_UNDEFINED_SIZE,                                            \
+    "Function '%c' cannot return type '%n' of undefined size.")                            \
+  BOND_COMPILER_ERROR(ASSIGNMENT_OF_UNDEFINED_SIZE,                                        \
+    "Cannot assign type '%n' of undefined size.")                                          \
   BOND_COMPILER_ERROR(NOT_ALL_PATHS_RETURN_A_VALUE,                                        \
     "Not all paths return a value in function '%c'.")                                      \
   BOND_COMPILER_ERROR(INVALID_BREAK,                                                       \

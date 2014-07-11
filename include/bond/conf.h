@@ -40,4 +40,9 @@
 #define BOND_FILESYSTEM_PREFIX ""
 #endif
 
+namespace Bond
+{
+	void ValidateConfiguration();
+}
+
 #endif // BOND_CONF_H

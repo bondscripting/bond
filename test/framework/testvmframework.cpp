@@ -29,6 +29,8 @@ bool RunVMTest(
 	__ASSERT_FORMAT__(scriptName != 0, logger, assertFile, assertLine, ("Script name is NULL."));
 	__ASSERT_FORMAT__(validationFunction != 0, logger, assertFile, assertLine, ("Validation function is NULL."));
 
+	Bond::ValidateConfiguration();
+
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
 	Bond::DefaultAllocator fileLoaderAllocator;

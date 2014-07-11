@@ -18,6 +18,8 @@ typedef Bond::Vector<const char *> StringList;
 
 int main(int argc, const char *argv[])
 {
+	Bond::ValidateConfiguration();
+
 	Bond::DefaultAllocator allocator;
 	StringList::Type cboFileNameList((StringList::Allocator(&allocator)));
 	StringList::Type argList((StringList::Allocator(&allocator)));

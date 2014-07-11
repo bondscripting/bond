@@ -20,7 +20,8 @@ public:
 
 protected:
 	virtual void Visit(FunctionDefinition *functionDefinition);
-	virtual void Visit(FunctionPrototype *functionPrototype) {}
+	virtual void Visit(FunctionPrototype *functionPrototype);
+	virtual void Visit(Parameter *parameter);
 	virtual void Visit(IfStatement *ifStatement);
 	virtual void Visit(SwitchStatement *switchStatement);
 	virtual void Visit(SwitchSection *switchSection);
@@ -30,6 +31,7 @@ protected:
 	virtual void Visit(JumpStatement *jumpStatement);
 	virtual void Visit(DeclarativeStatement *declarativeStatement);
 	virtual void Visit(ExpressionStatement *expressionStatement);
+	virtual void Visit(BinaryExpression *binaryExpression);
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;

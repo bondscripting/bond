@@ -190,3 +190,14 @@ int AllPathsReturnAValue4(int x)
 		return 3;
 	}
 }
+
+native { struct NativePoint { float x; float y; }; }
+
+struct Point { NativePoint p; };
+
+NativePoint UseTypeOfUndefinedSize(NativePoint p1)
+{
+	NativePoint p2;
+	p2 = p1;
+	return p2;
+}
