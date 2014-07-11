@@ -303,14 +303,59 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 
 void ValidationPass::Visit(BinaryExpression *binaryExpression)
 {
-	const TypeDescriptor *typeDescriptor = binaryExpression->GetTypeDescriptor();
-	if (!typeDescriptor->IsInstantiable())
+	const Token *op = binaryExpression->GetOperator();
+	switch (op->GetTokenType())
 	{
-		mErrorBuffer.PushError(CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, binaryExpression->GetContextToken(), typeDescriptor);
+		case Token::ASSIGN:
+		{
+			const TypeDescriptor *typeDescriptor = binaryExpression->GetTypeDescriptor();
+			if (!typeDescriptor->IsInstantiable())
+			{
+				mErrorBuffer.PushError(
+					CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE,
+					binaryExpression->GetContextToken(),
+					typeDescriptor);
+			}
+		}
+		break;
+		case Token::ASSIGN_PLUS:
+		case Token::ASSIGN_MINUS:
+		case Token::OP_PLUS:
+		case Token::OP_MINUS:
+		{
+			const TypeDescriptor *lhDescriptor = binaryExpression->GetLhs()->GetTypeDescriptor();
+			if (lhDescriptor->IsPointerType())
+			{
+				const TypeDescriptor parentType = lhDescriptor->GetDereferencedType();
+				if (!parentType.IsInstantiable())
+				{
+					mErrorBuffer.PushError(
+						CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
+						binaryExpression->GetContextToken(),
+						lhDescriptor);
+				}
+			}
+		}
+		break;
+		default:
+			break;
 	}
 	ParseNodeTraverser::Visit(binaryExpression);
 }
 
+
+void ValidationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
+{
+	const TypeDescriptor *typeDescriptor = arraySubscriptExpression->GetTypeDescriptor();
+	if (!typeDescriptor->IsInstantiable())
+	{
+		mErrorBuffer.PushError(
+			CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
+			arraySubscriptExpression->GetContextToken(),
+			arraySubscriptExpression->GetLhs()->GetTypeDescriptor());
+	}
+	ParseNodeTraverser::Visit(arraySubscriptExpression);
+}
 
 void ValidationPass::AssertReachableCode(const ParseNode *node)
 {

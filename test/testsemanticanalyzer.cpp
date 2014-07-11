@@ -302,6 +302,8 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 198},
 		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 200},
 		{Bond::CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN, 201},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OBRACKET, 201},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 202},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

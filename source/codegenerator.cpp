@@ -999,10 +999,8 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 	{
 		const Expression *lhs = binaryExpression->GetLhs();
 		const Expression *rhs = binaryExpression->GetRhs();
-		const TypeAndValue &lhTav = lhs->GetTypeAndValue();
-		const TypeAndValue &rhTav = rhs->GetTypeAndValue();
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+		const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 		const Token *op = binaryExpression->GetOperator();
 
 		Result result = Result(Result::CONTEXT_STACK_VALUE);
@@ -1176,8 +1174,7 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 	if (!ProcessConstantExpression(unaryExpression))
 	{
 		const Expression *rhs = unaryExpression->GetRhs();
-		const TypeAndValue &rhTav = rhs->GetTypeAndValue();
-		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 		const Token *op = unaryExpression->GetOperator();
 		Result result;
 
@@ -1238,8 +1235,7 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 void GeneratorCore::Visit(const PostfixExpression *postfixExpression)
 {
 	const Expression *lhs = postfixExpression->GetLhs();
-	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
-	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const Token *op = postfixExpression->GetOperator();
 	Result result;
 

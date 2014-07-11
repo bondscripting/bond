@@ -275,6 +275,11 @@ bool TypeDescriptor::IsInstantiable() const
 	{
 		return mTypeSpecifier->IsInstantiable();
 	}
+	else if (IsArrayType())
+	{
+		const TypeDescriptor parent = GetDereferencedType();
+		return parent.IsInstantiable();
+	}
 	return true;
 }
 

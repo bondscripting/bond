@@ -32,6 +32,7 @@ protected:
 	virtual void Visit(DeclarativeStatement *declarativeStatement);
 	virtual void Visit(ExpressionStatement *expressionStatement);
 	virtual void Visit(BinaryExpression *binaryExpression);
+	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;

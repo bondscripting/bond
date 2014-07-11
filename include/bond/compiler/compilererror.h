@@ -160,6 +160,8 @@
     "Function '%c' cannot return type '%n' of undefined size.")                            \
   BOND_COMPILER_ERROR(ASSIGNMENT_OF_UNDEFINED_SIZE,                                        \
     "Cannot assign type '%n' of undefined size.")                                          \
+  BOND_COMPILER_ERROR(POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,                                \
+    "Cannot do pointer artithmetic on type '%n' of undefined size.")                       \
   BOND_COMPILER_ERROR(NOT_ALL_PATHS_RETURN_A_VALUE,                                        \
     "Not all paths return a value in function '%c'.")                                      \
   BOND_COMPILER_ERROR(INVALID_BREAK,                                                       \

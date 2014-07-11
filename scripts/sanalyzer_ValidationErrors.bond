@@ -197,7 +197,7 @@ struct Point { NativePoint p; };
 
 NativePoint UseTypeOfUndefinedSize(NativePoint p1)
 {
-	NativePoint p2;
-	p2 = p1;
-	return p2;
-}
+	NativePoint[2] p2;
+	p2[0] = p1;
+	return *(p2 + 1);
+ }
