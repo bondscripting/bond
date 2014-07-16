@@ -1,0 +1,31 @@
+# Makefile suitable for POSIXy 64 bit platforms having GCC.
+
+# Folders
+BLDDIR := build
+LIBDIR := $(BLDDIR)/lib
+
+# File name manipulations.
+DEP_SUFFIX := .d
+OBJ_SUFFIX := .o
+LIB_PREFIX :=
+LIB_SUFFIX := .a
+EXE_SUFFIX :=
+
+# Tools
+AR := ar
+CC := clang
+CHECK := cppcheck
+ETAGS := etags
+MKDIR := mkdir
+RM := rm
+
+# Command line options
+#BASE_CFLAGS := -DBOND_USE_64BIT_POINTERS=1 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-overflow=5 -Wundef -Wno-unused -O3
+#TODO: Figure out what the deal is with clang. It hangs while compiling parsenodeutils.cpp with -O
+BASE_CFLAGS := -DBOND_USE_64BIT_POINTERS=1 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-overflow=5 -Wundef -Wno-unused
+INCLUDE_CFLAGS := -I
+DEP_CFLAGS := -MMD -MP
+COMP_CFLAGS := -c
+OUT_CFLAGS := -o
+
+-include Makefile.common

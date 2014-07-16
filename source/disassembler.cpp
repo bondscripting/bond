@@ -25,7 +25,6 @@ public:
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
 		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
 		mValidationResult(validationResult),
-		mAllocator(allocator),
 		mWriter(writer),
 		mByteCode(byteCode),
 		mIndex(0)
@@ -55,7 +54,6 @@ private:
 	Value64Table::Type mValue64Table;
 	StringTable::Type mStringTable;
 	CboValidator::Result mValidationResult;
-	Allocator &mAllocator;
 	TextWriter &mWriter;
 	const bu8_t *mByteCode;
 	size_t mIndex;

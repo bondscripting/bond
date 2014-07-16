@@ -3793,7 +3793,6 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 
 		const ByteCode::Type &byteCode = functionIt->mByteCode;
 		const JumpList::Type &jumpList = functionIt->mJumpList;
-		const LabelList::Type &labelList = functionIt->mLabelList;
 
 		size_t byteCodeIndex = 0;
 		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
@@ -4116,7 +4115,7 @@ bu16_t GeneratorCore::MapValue64(const Value64 &value)
 
 void GeneratorCore::AssertStackEmpty()
 {
-	if (!mStackTop.GetTop() == 0)
+	if (mStackTop.GetTop() != 0)
 	{
 		PushError(CompilerError::INTERNAL_ERROR);
 	}

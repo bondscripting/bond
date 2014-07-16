@@ -23,6 +23,7 @@ public:
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
+	using SemanticAnalysisPass::Visit;
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(StructDeclaration *structDeclaration);
 	virtual void Visit(FunctionDefinition *functionDefinition);

@@ -1,4 +1,4 @@
-#ifndef BOND_API_LIBRUMTIME_H
+#ifndef BOND_API_LIBRUNTIME_H
 #define BOND_API_LIBRUNTIME_H
 
 #include "bond/api/libio.h"

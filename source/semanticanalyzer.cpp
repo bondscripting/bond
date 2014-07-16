@@ -43,7 +43,7 @@ void SemanticAnalyzer::Analyze(TranslationUnit *translationUnitList)
 		return;
 	}
 
-	ValidationPass validationPass(mErrorBuffer, mSymbolTable, mPointerSize);
+	ValidationPass validationPass(mErrorBuffer, mSymbolTable);
 	validationPass.Analyze(translationUnitList);
 }
 

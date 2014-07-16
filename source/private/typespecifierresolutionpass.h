@@ -15,6 +15,8 @@ public:
 
 	virtual ~TypeSpecifierResolutionPass() {}
 
+protected:
+	using SemanticAnalysisPass::Visit;
 	virtual void Visit(StructDeclaration *structDeclaration);
 	virtual void Visit(TypeSpecifier *typeSpecifier);
 	virtual void Visit(CompoundStatement *compoundStatement);

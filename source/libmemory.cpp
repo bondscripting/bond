@@ -19,7 +19,7 @@ void AllocateAligned(Bond::CalleeStackFrame &frame)
 	Allocator &allocator = frame.GetVM().GetAllocator();
 	const size_t size = size_t(frame.GetArg<bu32_t>(0));
 	const size_t alignment = size_t(frame.GetArg<bu32_t>(1));
-	void *ptr = allocator.Allocate(size);
+	void *ptr = allocator.AllocateAligned(size, alignment);
 	frame.SetReturnValue(ptr);
 }
 

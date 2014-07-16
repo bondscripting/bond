@@ -9,9 +9,8 @@ namespace Bond
 class ValidationPass: public SemanticAnalysisPass
 {
 public:
-	ValidationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, PointerSize pointerSize):
-		SemanticAnalysisPass(errorBuffer, symbolTable),
-		mPointerSize(pointerSize)
+	ValidationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable):
+		SemanticAnalysisPass(errorBuffer, symbolTable)
 	{}
 
 	virtual ~ValidationPass() {}
@@ -19,6 +18,7 @@ public:
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
+	using SemanticAnalysisPass::Visit;
 	virtual void Visit(FunctionDefinition *functionDefinition);
 	virtual void Visit(FunctionPrototype *functionPrototype);
 	virtual void Visit(Parameter *parameter);
@@ -51,7 +51,6 @@ private:
 	SizeStack mSwitchJumpTargetId;
 	TypeStack mReturnType;
 	FunctionStack mFunction;
-	PointerSize mPointerSize;
 	SwitchLabelStack mSwitchLabelList;
 };
 

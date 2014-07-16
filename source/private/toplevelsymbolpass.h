@@ -15,6 +15,8 @@ public:
 
 	virtual ~TopLevelSymbolPass() {}
 
+protected:
+	using SemanticAnalysisPass::Visit;
 	virtual void Visit(EnumDeclaration *enumDeclaration);
 	virtual void Visit(Enumerator *enumerator);
 	virtual void Visit(StructDeclaration *structDeclaration);

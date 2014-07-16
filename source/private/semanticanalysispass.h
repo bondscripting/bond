@@ -20,6 +20,7 @@ public:
 	virtual void Analyze(TranslationUnit *translationUnitList);
 
 protected:
+
 	SemanticAnalysisPass(
 			CompilerErrorBuffer &errorBuffer,
 			SymbolTable &symbolTable):
@@ -27,6 +28,7 @@ protected:
 		mSymbolTable(symbolTable)
 	{}
 
+	using ParseNodeTraverser::Visit;
 	virtual void Visit(TranslationUnit *translationUnit);
 	virtual void Visit(NamespaceDefinition *namespaceDefinition);
 	virtual void Visit(StructDeclaration *structDeclaration);

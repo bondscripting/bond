@@ -20,7 +20,7 @@ MKDIR := mkdir
 RM := rm
 
 # Command line options
-BASE_CFLAGS := -DBOND_USE_32BIT_POINTERS=1 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -O3
+BASE_CFLAGS := -DBOND_USE_32BIT_POINTERS=1 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wlogical-op -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -O3
 INCLUDE_CFLAGS := -I
 DEP_CFLAGS := -MMD -MP
 COMP_CFLAGS := -c

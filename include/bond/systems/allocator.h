@@ -244,7 +244,7 @@ public:
 		{
 			if (mAllocator != NULL)
 			{
-				for (size_t i = 0; i < mNumElements; +i)
+				for (size_t i = 0; i < mNumElements; ++i)
 				{
 					ptr[i].~T();
 				}
