@@ -61,7 +61,7 @@ int main(int argc, const char *argv[])
 				stackSize = size_t(atol(argv[i]));
 				if (stackSize < MIN_STACK_SIZE)
 				{
-					fprintf(stderr, "Stack size must be at least %u kB.\n", MIN_STACK_SIZE);
+					fprintf(stderr, "Stack size must be at least %u kB.\n", unsigned(MIN_STACK_SIZE));
 				}
 			}
 			else

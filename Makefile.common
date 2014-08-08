@@ -11,7 +11,7 @@ SRCFILES := $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES := $(patsubst $(SRCFILE),$(OBJFILE),$(SRCFILES))
 DEPFILES := $(patsubst $(SRCFILE),$(OBJDEPFILE),$(SRCFILES))
 LIB := $(LIBDIR)/$(LIB_PREFIX)bond$(LIB_SUFFIX)
-CFLAGS := $(BASE_CFLAGS) $(INCLUDE_CFLAGS) $(INCLUDEDIR) $(INCLUDE_CFLAGS) $(SRCDIR)
+LIB_CXXFLAGS := $(CXXFLAGS) $(INCLUDE_CXXFLAGS) $(INCLUDEDIR) $(INCLUDE_CXXFLAGS) $(SRCDIR)
 
 # Tool files, folders and configuration.
 TOOL := %
@@ -24,7 +24,7 @@ TOOL_EXEFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEFILE),$(TOOL_SRCFILES))
 TOOL_EXEDEPFILE := $(TOOL_EXEDIR)/%$(DEP_SUFFIX)
 TOOL_DEPFILES := $(patsubst $(TOOL_SRCFILE),$(TOOL_EXEDEPFILE),$(TOOL_SRCFILES))
 TOOLS := $(patsubst $(TOOL_SRCFILE),$(TOOL),$(TOOL_SRCFILES))
-TOOL_CFLAGS := $(BASE_CFLAGS) $(INCLUDE_CFLAGS) $(INCLUDEDIR)
+TOOL_CXXFLAGS := $(CXXFLAGS) $(INCLUDE_CXXFLAGS) $(INCLUDEDIR)
 
 # Util files, folders and configuration.
 UTIL := %
@@ -37,7 +37,7 @@ UTIL_EXEFILES := $(patsubst $(UTIL_SRCFILE),$(UTIL_EXEFILE),$(UTIL_SRCFILES))
 UTIL_EXEDEPFILE := $(UTIL_EXEDIR)/%$(DEP_SUFFIX)
 UTIL_DEPFILES := $(patsubst $(UTIL_SRCFILE),$(UTIL_EXEDEPFILE),$(UTIL_SRCFILES))
 UTILS := $(patsubst $(UTIL_SRCFILE),$(UTIL),$(UTIL_SRCFILES))
-UTIL_CFLAGS := $(BASE_CFLAGS)
+UTIL_CXXFLAGS := $(CXXFLAGS)
 
 # Test Framework library files, folders and configuration.
 TF_SRCDIR := test/framework
@@ -49,7 +49,7 @@ TF_SRCFILES := $(wildcard $(TF_SRCDIR)/*.cpp)
 TF_OBJFILES := $(patsubst $(TF_SRCFILE),$(TF_OBJFILE),$(TF_SRCFILES))
 TF_DEPFILES := $(patsubst $(TF_SRCFILE),$(TF_OBJDEPFILE),$(TF_SRCFILES))
 TF_LIB := $(LIBDIR)/$(LIB_PREFIX)framework$(LIB_SUFFIX)
-TF_CFLAGS := $(BASE_CFLAGS) $(INCLUDE_CFLAGS) $(INCLUDEDIR) $(INCLUDE_CFLAGS) test
+TF_CXXFLAGS := $(CXXFLAGS) $(INCLUDE_CXXFLAGS) $(INCLUDEDIR) $(INCLUDE_CXXFLAGS) test
 
 # Unit Test files, folders and configuration.
 UT_TEST := %
@@ -62,7 +62,7 @@ UT_EXEFILES := $(patsubst $(UT_SRCFILE),$(UT_EXEFILE),$(UT_SRCFILES))
 UT_EXEDEPFILE := $(UT_EXEDIR)/%$(DEP_SUFFIX)
 UT_DEPFILES := $(patsubst $(UT_SRCFILE),$(UT_EXEDEPFILE),$(UT_SRCFILES))
 UT_TESTS := $(patsubst $(UT_SRCFILE),$(UT_TEST),$(UT_SRCFILES))
-UT_CFLAGS := $(BASE_CFLAGS) $(INCLUDE_CFLAGS) $(INCLUDEDIR) $(INCLUDE_CFLAGS) test
+UT_CXXFLAGS := $(CXXFLAGS) $(INCLUDE_CXXFLAGS) $(INCLUDEDIR) $(INCLUDE_CXXFLAGS) test
 
 
 .PHONY: all check clean deepclean libinclude test tools tags utils
@@ -94,7 +94,7 @@ $(LIB): $(OBJFILES)
 
 $(OBJFILE): $(SRCFILE) Makefile.common
 	@$(MKDIR) -p $(OBJDIR)
-	$(CC) $(CFLAGS) $(DEP_CFLAGS) $(COMP_CFLAGS) $< $(OUT_CFLAGS) $@
+	$(CXX) $(LIB_CXXFLAGS) $(DEP_CXXFLAGS) $(COMP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@
 
 check: $(SRCFILES)
 	$(CHECK) -DBOGUS_CONFIG --enable=all -I $(INCLUDEDIR) -I $(SOURCEDIR) $^
@@ -109,7 +109,7 @@ $(TOOL): $(TOOL_EXEFILE) ;
 
 $(TOOL_EXEFILE): $(TOOL_SRCFILE) Makefile.common $(LIB)
 	@$(MKDIR) -p $(TOOL_EXEDIR)
-	$(CC) $(TOOL_CFLAGS) $(DEP_CFLAGS) $< $(LIB) $(OUT_CFLAGS) $@
+	$(CXX) $(TOOL_CXXFLAGS) $(DEP_CXXFLAGS) $< $(LIB) $(OUT_CXXFLAGS) $@ $(LDFLAGS) $(LDLIBS)
 
 
 # Test Framework targets.
@@ -123,7 +123,7 @@ $(TF_LIB): $(TF_OBJFILES)
 
 $(TF_OBJFILE): $(TF_SRCFILE) Makefile.common
 	@$(MKDIR) -p $(TF_OBJDIR)
-	$(CC) $(TF_CFLAGS) $(DEP_CFLAGS) $(COMP_CFLAGS) $< $(OUT_CFLAGS) $@
+	$(CXX) $(TF_CXXFLAGS) $(DEP_CXXFLAGS) $(COMP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@
 
 
 # Unit Test targets.
@@ -140,7 +140,7 @@ endif
 
 $(UT_EXEFILE): $(UT_SRCFILE) Makefile.common $(LIB) $(TF_LIB)
 	@$(MKDIR) -p $(UT_EXEDIR)
-	$(CC) $(UT_CFLAGS) $(DEP_CFLAGS) $< $(TF_LIB) $(LIB) $(OUT_CFLAGS) $@
+	$(CXX) $(UT_CXXFLAGS) $(DEP_CXXFLAGS) $< $(TF_LIB) $(LIB) $(OUT_CXXFLAGS) $@ $(LDFLAGS) $(LDLIBS)
 
 
 ifneq ($(CROSS_COMPILE), "true")
@@ -154,7 +154,7 @@ $(UTIL): $(UTIL_EXEFILE) ;
 
 $(UTIL_EXEFILE): $(UTIL_SRCFILE) Makefile.common
 	@$(MKDIR) -p $(UTIL_EXEDIR)
-	$(CC) $(UTIL_CFLAGS) $(DEP_CFLAGS) $< $(OUT_CFLAGS) $@
+	$(CXX) $(UTIL_CXXFLAGS) $(DEP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@ $(LDFLAGS) $(LDLIBS)
 
 
 # Embed the standard library .bond files.

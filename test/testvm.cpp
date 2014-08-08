@@ -336,16 +336,16 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(0) << bi32_t(1), bi32_t(0), bi32_t(1));
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Lshi", bu32_t(1) << bu32_t(1), bu32_t(1), bu32_t(1));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(1) << bi32_t(31), bi32_t(1), bi32_t(31));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(2) << bi32_t(31), bi32_t(2), bi32_t(31));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(3) << bi32_t(31), bi32_t(3), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(1 & 1) << bi32_t(31), bi32_t(1), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(2 & 1) << bi32_t(31), bi32_t(2), bi32_t(31));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(3 & 1) << bi32_t(31), bi32_t(3), bi32_t(31));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Lshi", bi32_t(-3) << bi32_t(16), bi32_t(-3), bi32_t(16));
 
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(0) << bi64_t(1), bi64_t(0), bi64_t(1));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Lshl", bu64_t(1) << bu64_t(1), bu64_t(1), bu64_t(1));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(1) << bi64_t(63), bi64_t(1), bi64_t(63));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(2) << bi64_t(63), bi64_t(2), bi64_t(63));
-	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(3) << bi64_t(63), bi64_t(3), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(1 & 1) << bi64_t(63), bi64_t(1), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(2 & 1) << bi64_t(63), bi64_t(2), bi64_t(63));
+	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(3 & 1) << bi64_t(63), bi64_t(3), bi64_t(63));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Lshl", bi64_t(-3) << bi64_t(16), bi64_t(-3), bi64_t(16));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Rshi", bi32_t(0) >> bi32_t(1), bi32_t(0), bi32_t(1));
