@@ -2,7 +2,7 @@
 #define BOND_IO_STDIOBINARYWRITER_H
 
 #include "bond/io/binarywriter.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace Bond
 {

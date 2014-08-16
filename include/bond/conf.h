@@ -3,7 +3,7 @@
 
 #define __STDC_LIMIT_MACROS
 #define __STDC_FORMAT_MACROS
-#include <stddef.h>
+#include <cstddef>
 #include <new>
 
 #ifdef USER_BOND_CONFIG_HEADER

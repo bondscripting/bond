@@ -1,5 +1,4 @@
 #include "bond/io/textwriter.h"
-#include <stdio.h>
 
 namespace Bond
 {

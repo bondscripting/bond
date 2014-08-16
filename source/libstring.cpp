@@ -1,7 +1,7 @@
 #include "bond/api/libstring.h"
 #include "bond/vm/vm.h"
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 namespace Bond
 {

@@ -1,7 +1,6 @@
 #include "bond/io/diskfileloader.h"
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
-#include <stdio.h>
 
 #ifdef _MSC_VER
 #define snprintf _snprintf

@@ -1,10 +1,10 @@
 #ifndef BOND_PRIVATE_TYPES_H
 #define BOND_PRIVATE_TYPES_H
 
-#include <stdint.h>
+#include <cstdint>
 
 #if !defined(PRId32) && !defined(_MSC_VER)
-#include <inttypes.h>
+#include <cinttypes>
 #endif
 
 #if defined(PRId32)

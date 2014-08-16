@@ -13,7 +13,6 @@
 #include "bond/systems/exception.h"
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
-#include <stdio.h>
 
 namespace TestFramework
 {

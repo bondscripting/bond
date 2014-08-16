@@ -1,7 +1,7 @@
 #ifndef BOND_IO_TEXTWRITER_H
 #define BOND_IO_TEXTWRITER_H
 
-#include <stdarg.h>
+#include <cstdarg>
 
 namespace Bond
 {

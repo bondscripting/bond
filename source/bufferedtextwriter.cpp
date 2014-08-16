@@ -1,5 +1,5 @@
 #include "bond/io/bufferedtextwriter.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace Bond
 {

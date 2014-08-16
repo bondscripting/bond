@@ -20,7 +20,7 @@ MKDIR := mkdir
 RM := rm
 
 # Command line options
-CXXFLAGS := -DBOND_USE_32BIT_POINTERS=1 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wlogical-op -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -O3
+CXXFLAGS := -DBOND_USE_32BIT_POINTERS=1 -std=c++11 -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wlogical-op -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -O3
 INCLUDE_CXXFLAGS := -I
 DEP_CXXFLAGS := -MMD -MP
 COMP_CXXFLAGS := -c

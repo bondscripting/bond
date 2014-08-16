@@ -2,7 +2,7 @@
 #define BOND_IO_DISKFILELOADER_H
 
 #include "bond/io/fileloader.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace Bond
 {

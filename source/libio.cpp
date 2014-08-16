@@ -1,7 +1,7 @@
 #include "bond/api/libio.h"
 #include "bond/systems/allocator.h"
 #include "bond/vm/vm.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace Bond
 {

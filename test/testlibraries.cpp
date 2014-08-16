@@ -1,6 +1,6 @@
 #include "framework/testvmframework.h"
-#include <ctype.h>
-#include <string.h>
+#include <cctype>
+#include <cstring>
 
 
 DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")

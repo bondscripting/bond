@@ -4,7 +4,7 @@
 #include "bond/systems/math.h"
 #include "bond/types/opcodes.h"
 #include "bond/vm/vm.h"
-#include <string.h>
+#include <cstring>
 
 namespace Bond
 {

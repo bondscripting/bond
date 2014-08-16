@@ -1,6 +1,6 @@
 #include "bond/systems/exception.h"
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 namespace Bond
 {

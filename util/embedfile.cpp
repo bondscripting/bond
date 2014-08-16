@@ -1,7 +1,7 @@
-#include <ctype.h>
-#include <limits.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cctype>
+#include <climits>
+#include <cstring>
 
 void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 {

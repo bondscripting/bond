@@ -4,7 +4,7 @@
 #include "bond/stl/autostack.h"
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/types/simplestring.h"
-#include <ctype.h>
+#include <cctype>
 
 namespace Bond
 {

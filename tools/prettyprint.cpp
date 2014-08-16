@@ -8,8 +8,8 @@
 #include "bond/systems/exception.h"
 #include "bond/tools/parsetreeprinter.h"
 #include "bond/tools/prettyprinter.h"
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 
 void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)

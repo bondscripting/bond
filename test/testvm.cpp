@@ -1,5 +1,5 @@
 #include "framework/testvmframework.h"
-#include <string.h>
+#include <cstring>
 
 struct Char3
 {

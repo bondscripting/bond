@@ -6,10 +6,10 @@
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
 #include "bond/vm/vm.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <new>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 32;

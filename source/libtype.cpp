@@ -1,6 +1,6 @@
 #include "bond/api/libtype.h"
 #include "bond/vm/vm.h"
-#include <ctype.h>
+#include <cctype>
 
 namespace Bond
 {

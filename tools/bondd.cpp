@@ -3,7 +3,7 @@
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include "bond/tools/disassembler.h"
-#include <stdio.h>
+#include <cstdio>
 
 void Disassemble(const char *cboFileName)
 {

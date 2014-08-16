@@ -12,8 +12,8 @@
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 typedef Bond::List<Bond::DiskFileLoader> FileLoaderList;
 

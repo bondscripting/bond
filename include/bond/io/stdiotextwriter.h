@@ -2,7 +2,7 @@
 #define BOND_IO_STDIOTEXTWRITER_H
 
 #include "bond/io/textwriter.h"
-#include <stdio.h>
+#include <cstdio>
 
 namespace Bond
 {

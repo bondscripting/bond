@@ -1,6 +1,6 @@
 #include "bond/api/libmath.h"
 #include "bond/vm/vm.h"
-#include <math.h>
+#include <cmath>
 
 namespace Bond
 {

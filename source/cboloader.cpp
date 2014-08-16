@@ -14,7 +14,7 @@
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
 #include "private/memory.h"
-#include <string.h>
+#include <cstring>
 
 namespace Bond
 {
