@@ -11,7 +11,7 @@ namespace Bond
 
 FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 {
-	Handle handle(*this);
+	Handle handle;
 	FILE *file = NULL;
 	const size_t MAX_PATH_LENGTH = 1024;
 	char fullPath[MAX_PATH_LENGTH];
@@ -64,7 +64,7 @@ FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 		}
 	}
 
-	return Handle(*this, FileData(dataHandle.Release(), length));
+	return Handle(FileData(dataHandle.Release(), length), this);
 }
 
 

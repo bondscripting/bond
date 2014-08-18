@@ -1,6 +1,8 @@
 #ifndef BOND_PRIVATE_STLALLOCATOR_H
 #define BOND_PRIVATE_STLALLOCATOR_H
 
+#include <utility>
+
 namespace Bond
 {
 
@@ -14,8 +16,9 @@ public:
 	typedef const T *const_pointer;
 	typedef T &reference;
 	typedef const T &const_reference;
+	typedef T &&rval_reference;
 	typedef T value_type;
-	template <class U> struct rebind { typedef StlAllocator<U> other; };
+	template <typename U> struct rebind { typedef StlAllocator<U> other; };
 
 	StlAllocator():
 		mAllocator(NULL)
@@ -29,7 +32,7 @@ public:
 		mAllocator(other.GetAllocator())
 	{}
 
-	template <class U> StlAllocator(const StlAllocator<U> &other):
+	template <typename U> StlAllocator(const StlAllocator<U> &other):
 		mAllocator(other.GetAllocator())
 	{}
 
@@ -52,6 +55,11 @@ public:
 	void construct(pointer p, const_reference t)
 	{
 		new (static_cast<void *>(p)) T(t);
+	}
+
+	void construct(pointer p, rval_reference t)
+	{
+		new (static_cast<void *>(p)) T(std::forward<T>(t));
 	}
 
 	void destroy(pointer p)

@@ -7,7 +7,7 @@ namespace Bond
 
 FileLoader::Handle MemoryFileLoader::LoadFile(const char *fileName)
 {
-	Handle handle(*this);
+	Handle handle;
 	const SimpleString name(fileName);
 	const SimpleString *firstFileName = mIndex.mFileNames;
 	const SimpleString *lastFileName = firstFileName + mIndex.mNumFiles;
@@ -15,7 +15,7 @@ FileLoader::Handle MemoryFileLoader::LoadFile(const char *fileName)
 
 	if ((result != lastFileName) && (*result == name))
 	{
-		handle = Handle(*this, mIndex.mFiles[result - firstFileName]);
+		handle = Handle(mIndex.mFiles[result - firstFileName], this);
 	}
 	else if (mDelegateLoader != NULL)
 	{

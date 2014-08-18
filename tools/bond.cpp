@@ -15,6 +15,7 @@ const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 32;
 const char * const DEFAULT_ENTRY_POINT = "::main";
 typedef Bond::Vector<const char *> StringList;
+typedef Bond::Vector<Bond::FileLoader::Handle> FileHandleList;
 
 int main(int argc, const char *argv[])
 {
@@ -92,17 +93,16 @@ int main(int argc, const char *argv[])
 		{
 			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
-			Bond::Allocator::ArrayHandle<Bond::FileLoader::Handle> cboFileHandles(allocator, allocator.Alloc<Bond::FileLoader::Handle>(cboFileNameList.size()));
+			FileHandleList::Type cboFileHandleList((FileHandleList::Allocator(&allocator)));
+			cboFileHandleList.reserve(cboFileNameList.size());
 
 			Bond::LoadAllLibs(cboLoader);
 
 			StringList::Type::const_iterator it = cboFileNameList.begin();
 			for (size_t i = 0; it != cboFileNameList.end(); ++it, ++i)
 			{
-				Bond::FileLoader::Handle &handle = cboFileHandles.Get()[i];
-				new (&handle) Bond::FileLoader::Handle(fileLoader.LoadFile(*it));
-				cboFileHandles.SetNumElements(i);
-				cboLoader.AddCboFile(handle.Get());
+				cboFileHandleList.push_back(fileLoader.LoadFile(*it));
+				cboLoader.AddCboFile(cboFileHandleList[i].Get());
 			}
 
 			codeSegmentHandle = cboLoader.Load();

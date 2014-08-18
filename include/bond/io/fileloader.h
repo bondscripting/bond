@@ -10,39 +10,55 @@ namespace Bond
 class FileLoader
 {
 public:
-	class Deallocator
+	class Handle
 	{
 	public:
-		Deallocator(): mFileLoader(NULL) {}
-		Deallocator(FileLoader *fileLoader): mFileLoader(fileLoader) {}
-
-		void operator()(FileData &fileData) { if (mFileLoader != NULL) mFileLoader->DisposeFile(fileData); }
-
-	private:
-		FileLoader *mFileLoader;
-	};
-
-
-	class Handle: public ResourceHandle<FileData, Deallocator>
-	{
-	public:
-		Handle(FileLoader &fileLoader, const FileData &fileData = FileData()):
-			ResourceHandle<FileData, Deallocator>(fileData, Deallocator(&fileLoader))
+		Handle():
+			mFileData(),
+			mFileLoader(NULL)
 		{}
 
-		Handle(Handle &other):
-			ResourceHandle<FileData, Deallocator>(other)
+		Handle(const FileData &fileData, FileLoader *fileLoader):
+			mFileData(fileData),
+			mFileLoader(fileLoader)
 		{}
 
-		Handle(const ResourceHandleProxy<FileData, Deallocator> &proxy):
-			ResourceHandle<FileData, Deallocator>(proxy)
-		{}
-
-		Handle &operator=(const ResourceHandleProxy<FileData, Deallocator> &proxy)
+		Handle(Handle &&other):
+			mFileData(other.mFileData),
+			mFileLoader(other.mFileLoader)
 		{
-			ResourceHandle<FileData, Deallocator>::operator=(proxy);
+			other.mFileData = FileData();
+			other.mFileLoader = NULL;
+		}
+
+		~Handle()
+		{
+			if (mFileLoader != NULL)
+			{
+				mFileLoader->DisposeFile(mFileData);
+			}
+		}
+
+		Handle &operator=(Handle &&other)
+		{
+			FileData tempData = mFileData;
+			mFileData = other.mFileData;
+			other.mFileData = tempData;
+			FileLoader *tempLoader = mFileLoader;
+			mFileLoader = other.mFileLoader;
+			other.mFileLoader = tempLoader;
 			return *this;
 		}
+
+		FileData &Get() { return mFileData; }
+		const FileData &Get() const { return mFileData; }
+
+	private:
+		Handle(const Handle &other);
+		Handle &operator=(const Handle &other);
+
+		FileData mFileData;
+		FileLoader *mFileLoader;
 	};
 
 
