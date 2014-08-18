@@ -110,7 +110,7 @@ int main(int argc, const char *argv[])
 
 		const Bond::bu32_t numArgs = Bond::bu32_t(argList.size());
 		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : NULL;
-		Bond::VM vm(allocator, *codeSegmentHandle.Get(), stackSize * 1024);
+		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024);
 		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
 	}
 	catch (const Bond::Exception &e)

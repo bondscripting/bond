@@ -150,9 +150,6 @@
     <ClInclude Include="..\..\include\bond\systems\math.h">
       <Filter>Header Files\include\bond\systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\systems\resourcehandle.h">
-      <Filter>Header Files\include\bond\systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\tools\cboutil.h">
       <Filter>Header Files\include\bond\tools</Filter>
     </ClInclude>

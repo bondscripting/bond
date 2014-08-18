@@ -59,12 +59,12 @@ FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 
 		if (length > 0)
 		{
-			dataHandle.Reset(mAllocator.Alloc<bu8_t>(length));
-			fread(dataHandle.Get(), sizeof(bu8_t), length, file);
+			dataHandle.reset(mAllocator.Alloc<bu8_t>(length));
+			fread(dataHandle.get(), sizeof(bu8_t), length, file);
 		}
 	}
 
-	return Handle(FileData(dataHandle.Release(), length), this);
+	return Handle(FileData(dataHandle.release(), length), this);
 }
 
 

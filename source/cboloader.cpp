@@ -142,7 +142,7 @@ CboLoader::Handle CboLoader::Load()
 	const size_t CBO_ALIGNMENT = 256;
 	Allocator::AlignedHandle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
 	CboLoaderResources resources(
-		memHandle.Get(),
+		memHandle.get(),
 		constantTablesStart,
 		value32TableStart,
 		value64TableStart,
@@ -156,7 +156,7 @@ CboLoader::Handle CboLoader::Load()
 
 	bu32_t *functionLookup = resources.mFunctionLookup;
 	Function *functions = resources.mFunctions;
-	CodeSegment *codeSegment = new (memHandle.Get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
+	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
 
 	fdit = mFileDataList.begin();
 	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
@@ -189,7 +189,7 @@ CboLoader::Handle CboLoader::Load()
 		ProcessFunction(functions[i], *codeSegment);
 	}
 
-	memHandle.Release();
+	memHandle.release();
 	return Handle(mPermAllocator, codeSegment);
 }
 

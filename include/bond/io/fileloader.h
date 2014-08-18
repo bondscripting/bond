@@ -2,7 +2,6 @@
 #define BOND_IO_FILELOADER_H
 
 #include "bond/io/filedata.h"
-#include "bond/systems/resourcehandle.h"
 
 namespace Bond
 {

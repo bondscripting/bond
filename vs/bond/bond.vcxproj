@@ -78,7 +78,6 @@
     <ClInclude Include="..\..\include\bond\systems\endian.h" />
     <ClInclude Include="..\..\include\bond\systems\exception.h" />
     <ClInclude Include="..\..\include\bond\systems\math.h" />
-    <ClInclude Include="..\..\include\bond\systems\resourcehandle.h" />
     <ClInclude Include="..\..\include\bond\tools\cboutil.h" />
     <ClInclude Include="..\..\include\bond\tools\cbovalidator.h" />
     <ClInclude Include="..\..\include\bond\tools\disassembler.h" />

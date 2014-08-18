@@ -1,7 +1,8 @@
 #ifndef BOND_SYSTEMS_ALLOCATOR_H
 #define BOND_SYSTEMS_ALLOCATOR_H
 
-#include "bond/systems/resourcehandle.h"
+#include "bond/conf.h"
+#include <memory>
 
 namespace Bond
 {
@@ -19,28 +20,24 @@ public:
 
 	// Stores a pointer to memory.
 	template <typename T>
-	class Handle: public PointerHandle<T, Deallocator<T> >
+	class Handle: public std::unique_ptr<T, Deallocator<T> >
 	{
 	public:
 		Handle():
-			PointerHandle<T, Deallocator<T> >(NULL, Deallocator<T>(NULL))
+			std::unique_ptr<T, Deallocator<T> >(NULL, Deallocator<T>(NULL))
 		{}
 
 		Handle(Allocator &allocator, T *ptr = NULL):
-			PointerHandle<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
+			std::unique_ptr<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
 		{}
 
-		Handle(Handle &other):
-			PointerHandle<T, Deallocator<T> >(other)
+		Handle(Handle &&other):
+			std::unique_ptr<T, Deallocator<T> >(std::forward<Handle>(other))
 		{}
 
-		Handle(const ResourceHandleProxy<T *, Deallocator<T> > &proxy):
-			PointerHandle<T, Deallocator<T> >(proxy)
-		{}
-
-		Handle &operator=(const ResourceHandleProxy<T *, Deallocator<T> > &proxy)
+		Handle &operator=(Handle &&other)
 		{
-			PointerHandle<T, Deallocator<T> >::operator=(proxy);
+			std::unique_ptr<T, Deallocator<T> >::operator=(std::forward<Handle>(other));
 			return *this;
 		}
 	};
@@ -56,32 +53,31 @@ public:
 
 	// Stores a pointer to aligned memory.
 	template <typename T>
-	class AlignedHandle: public PointerHandle<T, AlignedDeallocator<T> >
+	class AlignedHandle: public std::unique_ptr<T, AlignedDeallocator<T> >
 	{
 	public:
 		AlignedHandle():
-			PointerHandle<T, AlignedDeallocator<T> >(NULL, AlignedDeallocator<T>(NULL))
+			std::unique_ptr<T, AlignedDeallocator<T> >(NULL, AlignedDeallocator<T>(NULL))
 		{}
 
 		AlignedHandle(Allocator &allocator, T *ptr = NULL):
-			PointerHandle<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
+			std::unique_ptr<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
 		{}
 
-		AlignedHandle(AlignedHandle &other):
-			PointerHandle<T, AlignedDeallocator<T> >(other)
+		AlignedHandle(AlignedHandle &&other):
+			std::unique_ptr<T, AlignedDeallocator<T> >(std::forward<AlignedHandle>(other))
 		{}
 
-		AlignedHandle(const ResourceHandleProxy<T *, AlignedDeallocator<T> > &proxy):
-			PointerHandle<T, AlignedDeallocator<T> >(proxy)
-		{}
-
-		AlignedHandle &operator=(const ResourceHandleProxy<T *, AlignedDeallocator<T> > &proxy)
+		AlignedHandle &operator=(AlignedHandle &&other)
 		{
-			PointerHandle<T, AlignedDeallocator<T> >::operator=(proxy);
+			std::unique_ptr<T, AlignedDeallocator<T> >::operator=(std::forward<AlignedHandle>(other));
 			return *this;
 		}
 	};
 
+
+/* TODO: These are no longer used internally. See if they need to make a comeback and
+	 be updated to use std::unique_ptr.
 
 	template <typename T>
 	struct ObjectDeallocator
@@ -287,7 +283,7 @@ public:
 		size_t GetNumElements() const { return this->mDeallocator.mNumElements; }
 		void SetNumElements(size_t numElements) { this->mDeallocator.mNumElements = numElements; }
 	};
-
+*/
 
 	virtual ~Allocator() {}
 	virtual void *Allocate(size_t size) = 0;

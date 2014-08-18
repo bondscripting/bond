@@ -190,15 +190,15 @@ TokenCollection *LexerCore::Lex()
 	const size_t stringBufferStart = TallyMemoryRequirements<Token>(memSize, resources.stringBufferLength);
 
 	Allocator::Handle<char> memHandle(mAllocator, mAllocator.Alloc<char>(memSize));
-	mTokens = reinterpret_cast<Token *>(memHandle.Get() + tokensStart);
-	mStringBuffer = memHandle.Get() + stringBufferStart;
+	mTokens = reinterpret_cast<Token *>(memHandle.get() + tokensStart);
+	mStringBuffer = memHandle.get() + stringBufferStart;
 	mFileName = AllocString(mFileName, fileNameLength);
 
 	stream.Reset();
 	GenerateTokens(stream);
 
-	TokenCollection *tokenCollection = new (memHandle.Get() + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
-	memHandle.Release();
+	TokenCollection *tokenCollection = new (memHandle.get() + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
+	memHandle.release();
 
 	return tokenCollection;
 }
