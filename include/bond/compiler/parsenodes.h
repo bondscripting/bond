@@ -813,6 +813,9 @@ public:
 
 	virtual const Token *GetContextToken() const;
 
+	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
+
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
 
@@ -822,6 +825,7 @@ public:
 	virtual bool IsResolved() const;
 
 private:
+	TypeDescriptor mTypeDescriptor;
 	Expression *mExpression;
 	Initializer *mInitializerList;
 };

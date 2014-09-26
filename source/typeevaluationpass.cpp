@@ -85,11 +85,11 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	if (tav.IsTypeDefined())
 	{
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		const Initializer *initializer = namedInitializer->GetInitializer();
+		Initializer *initializer = namedInitializer->GetInitializer();
 
 		if (initializer != NULL)
 		{
-			ValidateInitializer(namedInitializer->GetName(), initializer, typeDescriptor);
+			ValidateInitializer(initializer, typeDescriptor);
 		}
 		else if (typeDescriptor->IsConst())
 		{
@@ -465,15 +465,13 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			}
 		}
 
-		const TypeSpecifier *structSpecifier = structDescriptor.GetTypeSpecifier();
-		if ((structSpecifier == NULL) ||
-		    (structSpecifier->GetDefinition() == NULL) ||
-		    (structSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_STRUCT))
+		if (!structDescriptor.IsStructType())
 		{
 			mErrorBuffer.PushError(CompilerError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
 		}
 		else
 		{
+			const TypeSpecifier *structSpecifier = structDescriptor.GetTypeSpecifier();
 			const Symbol *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
 			if (member == NULL)
@@ -894,22 +892,21 @@ bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, cons
 }
 
 
-void TypeEvaluationPass::ValidateInitializer(
-	const Token *name,
-	const Initializer *initializer,
-	const TypeDescriptor *typeDescriptor)
+void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescriptor)
 {
+	initializer->SetTypeDescriptor(*typeDescriptor);
+	const TypeDescriptor *descriptor = initializer->GetTypeDescriptor();
 	const Expression *expression = initializer->GetExpression();
-	const Initializer *initializerList = initializer->GetInitializerList();
+	Initializer *initializerList = initializer->GetInitializerList();
 
-	if (typeDescriptor->IsArrayType())
+	if (descriptor->IsArrayType())
 	{
 		if (initializerList != NULL)
 		{
-			const TypeDescriptor parent = typeDescriptor->GetDereferencedType();
+			const TypeDescriptor parent = descriptor->GetDereferencedType();
 			while (initializerList != NULL)
 			{
-				ValidateInitializer(name, initializerList, &parent);
+				ValidateInitializer(initializerList, &parent);
 				initializerList = NextNode(initializerList);
 			}
 		}
@@ -918,7 +915,7 @@ void TypeEvaluationPass::ValidateInitializer(
 			mErrorBuffer.PushError(
 				CompilerError::MISSING_BRACES_IN_INITIALIZER,
 				initializer->GetContextToken(),
-				typeDescriptor);
+				descriptor);
 		}
 	}
 	else
@@ -930,7 +927,7 @@ void TypeEvaluationPass::ValidateInitializer(
 			{
 				AssertConvertibleTypes(
 					expression->GetTypeAndValue().GetTypeDescriptor(),
-					typeDescriptor,
+					descriptor,
 					expression->GetContextToken(),
 					CompilerError::INVALID_TYPE_CONVERSION);
 			}
@@ -940,7 +937,7 @@ void TypeEvaluationPass::ValidateInitializer(
 			mErrorBuffer.PushError(
 				CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
 				initializerList->GetContextToken(),
-				typeDescriptor);
+				descriptor);
 		}
 	}
 }

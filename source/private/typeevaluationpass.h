@@ -94,10 +94,7 @@ private:
 
 	bool AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
 
-	void ValidateInitializer(
-		const Token *name,
-		const Initializer *initializer,
-		const TypeDescriptor *typeDescrioptor);
+	void ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescrioptor);
 
 	BoolStack mEnforceConstExpressions;
 	StructStack mStruct;

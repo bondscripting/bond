@@ -86,7 +86,7 @@ NodeType *InsertNode(NodeType *head, NodeType *node, Comparator compare)
 	return head;
 }
 
-
+/*
 template <typename NodeType, typename Comparator>
 NodeType *SortNodes(NodeType *list, Comparator compare)
 {
@@ -100,7 +100,7 @@ NodeType *SortNodes(NodeType *list, Comparator compare)
 	}
 	return head;
 }
-
+*/
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
