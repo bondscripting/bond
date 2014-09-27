@@ -14,7 +14,7 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{0x20bbfa90, Bond::PrintUL},
 	{0x2a835327, Bond::PrintF},
 	{0x2a835325, Bond::PrintD},
-	{0, NULL}
+	{0, nullptr}
 };
 
 const Bond::NativeBindingCollection IO_BINDING_COLLECTION =

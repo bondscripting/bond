@@ -12,11 +12,11 @@ namespace Bond
 FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 {
 	Handle handle;
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	const size_t MAX_PATH_LENGTH = 1024;
 	char fullPath[MAX_PATH_LENGTH];
 
-	if (mRootPath != NULL)
+	if (mRootPath != nullptr)
 	{
 		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s%c%s", BOND_FILESYSTEM_PREFIX, mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
 	}
@@ -27,12 +27,12 @@ FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 
 	file = fopen(fullPath, "rb");
 
-	if (file != NULL)
+	if (file != nullptr)
 	{
 		handle = LoadFile(file);
 		fclose(file);
 	}
-	else if (mDelegateLoader != NULL)
+	else if (mDelegateLoader != nullptr)
 	{
 		handle = mDelegateLoader->LoadFile(fileName);
 	}

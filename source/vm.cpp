@@ -59,7 +59,7 @@ void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void
 	bu8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
-	BOND_ASSERT_FORMAT(function != NULL, ("Failed to look up function '%s'.", functionName.GetString()));
+	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName.GetString()));
 	bu8_t *framePointer = static_cast<bu8_t *>(AlignPointerUp(prevStackPointer + function->mArgSize, function->mFramePointerAlignment));
 	bu8_t *stackPointer = static_cast<bu8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
 	mValue.mFunction = function;
@@ -98,22 +98,22 @@ VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
 	mDummyFrame(mStackFrames, CalleeStackFrame(*this)),
 	mAllocator(allocator),
 	mCodeSegment(codeSegment),
-	mStack(NULL),
+	mStack(nullptr),
 	mStackSize(stackSize)
 {
 	mStack = mAllocator.Alloc<bu8_t>(stackSize);
 	CalleeStackFrame &top = mDummyFrame.GetValue();
-	top.mFunction = NULL;
+	top.mFunction = nullptr;
 	top.mStackPointer = mStack;
 	top.mFramePointer = mStack;
-	top.mReturnPointer = NULL;
+	top.mReturnPointer = nullptr;
 }
 
 
 VM::~VM()
 {
 	mAllocator.Free(mStack);
-	mStack = NULL;
+	mStack = nullptr;
 }
 
 
@@ -2117,7 +2117,7 @@ bu8_t *VM::InvokeFunction(const Function *function, bu8_t *stackTop)
 			break;
 		case SIG_VOID:
 			argTop = stackTop;
-			returnPointer = NULL;
+			returnPointer = nullptr;
 			finalStackPointer = argTop - function->mPackedArgSize;
 			break;
 		default:
@@ -2203,7 +2203,7 @@ void VM::DumpCallStack(TextWriter &writer) const
 void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 {
 	const Function *function = frame.mFunction;
-	if (function != NULL)
+	if (function != nullptr)
 	{
 		const SignatureType returnType = static_cast<SignatureType>(function->mReturnSignature.mType);
 		const bu32_t returnSize = function->mReturnSignature.mSize;
@@ -2212,7 +2212,7 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 
 		const char *const *elements = function->mName;
 		bool isFirstElement = true;
-		while (*elements != NULL)
+		while (*elements != nullptr)
 		{
 			if (!isFirstElement)
 			{

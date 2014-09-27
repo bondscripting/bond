@@ -6,7 +6,7 @@
 #include "bond/vm/vm.h"
 
 #define DEFINE_VM_TEST(testName, scriptName)                                                   \
-  DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, NULL)
+  DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, nullptr)
 
 #define DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, nativeBinding)                       \
   bool __Validate ## testName ## __(                                                           \
@@ -79,7 +79,7 @@
 #define DECLARE_RETURN_VALUE_ULONG() Bond::bu64_t returnValue = 0;
 #define DECLARE_RETURN_VALUE_FLOAT() Bond::bf32_t returnValue = 0.0f;
 #define DECLARE_RETURN_VALUE_DOUBLE() Bond::bf64_t returnValue = 0.0;
-#define DECLARE_RETURN_VALUE_PTR() const void *returnValue = NULL;
+#define DECLARE_RETURN_VALUE_PTR() const void *returnValue = nullptr;
 
 
 #define VALIDATE_RETURN_VALUE_BOOL(expectedResult)                                            \

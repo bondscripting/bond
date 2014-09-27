@@ -14,8 +14,8 @@ bool RunParserTest(
 	const char *scriptName,
 	ParserValidationFunction *validationFunction)
 {
-	__ASSERT_FORMAT__(scriptName != 0, logger, assertFile, assertLine, ("Script name is NULL."));
-	__ASSERT_FORMAT__(validationFunction != 0, logger, assertFile, assertLine, ("Validation function is NULL."));
+	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, ("Script name is NULL."));
+	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, ("Validation function is NULL."));
 
 	Bond::DefaultAllocator fileLoaderAllocator;
 	Bond::DefaultAllocator lexerAllocator;

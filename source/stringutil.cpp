@@ -8,7 +8,7 @@ namespace Bond
 size_t StringLength(const char *str)
 {
 	size_t length = 0;
-	if (str != NULL)
+	if (str != nullptr)
 	{
 		const char *s = str;
 		while (*s != '\0')

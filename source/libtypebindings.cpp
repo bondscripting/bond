@@ -18,7 +18,7 @@ const Bond::NativeFunctionBinding TYPE_BINDING_COLLECTION_FUNCTIONS[] =
 	{0xc8732d81, Bond::IsXDigit},
 	{0x24a99ae8, Bond::ToLower},
 	{0x815db49f, Bond::ToUpper},
-	{0, NULL}
+	{0, nullptr}
 };
 
 const Bond::NativeBindingCollection TYPE_BINDING_COLLECTION =

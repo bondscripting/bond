@@ -109,7 +109,7 @@ int main(int argc, const char *argv[])
 		}
 
 		const Bond::bu32_t numArgs = Bond::bu32_t(argList.size());
-		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : NULL;
+		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : nullptr;
 		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024);
 		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
 	}

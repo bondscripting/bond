@@ -45,7 +45,7 @@ void FrontEnd::Analyze()
 			{
 				translationUnit->SetRequiresCodeGeneration(i < numFilesToCompile);
 				const IncludeDirective *includeDirectiveList = translationUnit->GetIncludeDirectiveList();
-				while (includeDirectiveList != NULL)
+				while (includeDirectiveList != nullptr)
 				{
 					AddInputFile(includeDirectiveList->GetIncludePath()->GetStringValue());
 					includeDirectiveList = NextNode(includeDirectiveList);

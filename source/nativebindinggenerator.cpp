@@ -116,7 +116,7 @@ void NativeBindingGeneratorCore::Generate()
 		mHWriter.Write("\n#endif\n");
 
 		// Bottom of the .cpp file.
-		mCppWriter.Write("\t{0, NULL}\n};\n\nconst Bond::NativeBindingCollection ");
+		mCppWriter.Write("\t{0, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
 		WriteString(mCppWriter, collectionName);
 		mCppWriter.Write(" =\n{\n\t");
 		WriteString(mCppWriter, collectionName);
@@ -275,7 +275,7 @@ void NativeBindingGeneratorCore::PrintNamespaceStack(TextWriter &writer, Namespa
 
 void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol)
 {
-	if ((symbol != NULL) && (symbol->GetName() != NULL))
+	if ((symbol != nullptr) && (symbol->GetName() != nullptr))
 	{
 		PrintQualifiedSymbolName(writer, symbol->GetParentSymbol());
 		const char *suffix = "";

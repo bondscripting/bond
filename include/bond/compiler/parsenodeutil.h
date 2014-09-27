@@ -20,7 +20,7 @@ template <typename T>
 class CastVisitor: public ParseNodeVisitorAdapter
 {
 public:
-	CastVisitor(): mNode(NULL) {}
+	CastVisitor(): mNode(nullptr) {}
 
 	using ParseNodeVisitor::Visit;
 	virtual void Visit(T *node) { mNode = node; }
@@ -35,35 +35,35 @@ private:
 template <typename T>
 T *CastNode(ParseNode *node)
 {
-	if (node != NULL)
+	if (node != nullptr)
 	{
 		CastVisitor<T> castVisitor;
 		node->Accept(castVisitor);
 		return castVisitor.GetNode();
 	}
-	return static_cast<T *>(NULL);
+	return static_cast<T *>(nullptr);
 }
 
 
 template <typename T>
 const T *CastNode(const ParseNode *node)
 {
-	if (node != NULL)
+	if (node != nullptr)
 	{
 		CastVisitor<const T> castVisitor;
 		node->Accept(castVisitor);
 		return castVisitor.GetNode();
 	}
-	return static_cast<const T *>(NULL);
+	return static_cast<const T *>(nullptr);
 }
 
 
 template <typename NodeType, typename Comparator>
 NodeType *InsertNode(NodeType *head, NodeType *node, Comparator compare)
 {
-	if (head == NULL)
+	if (head == nullptr)
 	{
-		node->SetNextNode(NULL);
+		node->SetNextNode(nullptr);
 		return node;
 	}
 
@@ -75,7 +75,7 @@ NodeType *InsertNode(NodeType *head, NodeType *node, Comparator compare)
 
 	NodeType *current = head;
 	NodeType *next = NextNode(head);
-	while ((next != NULL) && !compare(*node, *next))
+	while ((next != nullptr) && !compare(*node, *next))
 	{
 		current = next;
 		next = NextNode(next);
@@ -91,8 +91,8 @@ template <typename NodeType, typename Comparator>
 NodeType *SortNodes(NodeType *list, Comparator compare)
 {
 	NodeType *node = list;
-	NodeType *head = NULL;
-	while (node != NULL)
+	NodeType *head = nullptr;
+	while (node != nullptr)
 	{
 		NodeType *current = node;
 		node = NextNode(node);

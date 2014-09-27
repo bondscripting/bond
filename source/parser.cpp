@@ -43,7 +43,7 @@ private:
 	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
 
-	ListParseNode *ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration = NULL);
+	ListParseNode *ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration = nullptr);
 	void ParseFunctionOrDeclarativeStatement(
 		StructDeclaration *structDeclaration,
 		FunctionDefinition **functionDefinition,
@@ -108,8 +108,8 @@ private:
 	void AssertNode(ParseNode *node);
 	void AssertNonConstExpression(CompilerError::Type type, const Token *token);
 	void AssertNonVoidType(const TypeDescriptor *typeDescriptor);
-	void PushUnrecoveredError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
-	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = NULL);
+	void PushUnrecoveredError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
+	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
 
 	CompilerErrorBuffer &mErrorBuffer;
 	ParseNodeFactory &mFactory;
@@ -126,7 +126,7 @@ private:
 Parser::Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 	mFactory(allocator),
 	mErrorBuffer(errorBuffer),
-	mTranslationUnitList(NULL)
+	mTranslationUnitList(nullptr)
 {}
 
 
@@ -139,7 +139,7 @@ Parser::~Parser()
 void Parser::Dispose()
 {
 	mFactory.DestroyListHierarchy(mTranslationUnitList);
-	mTranslationUnitList = NULL;
+	mTranslationUnitList = nullptr;
 }
 
 
@@ -166,8 +166,8 @@ TranslationUnit *ParserCore::ParseTranslationUnit()
 	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
 	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
 	BoolStack::Element inNativeBlockElement(mInNativeBlock, false);
-	IncludeDirective *includeDirectives = NULL;
-	ListParseNode *declarations = NULL;
+	IncludeDirective *includeDirectives = nullptr;
+	ListParseNode *declarations = nullptr;
 	ParseIncludeDirectiveAndExternalDeclarationLists(&includeDirectives, &declarations);
 	TranslationUnit *unit = mFactory.CreateTranslationUnit(includeDirectives, declarations);
 	ExpectToken(Token::END);
@@ -182,19 +182,19 @@ void ParserCore::ParseIncludeDirectiveAndExternalDeclarationLists(
 		IncludeDirective **includeDirectiveList,
 		ListParseNode **externalDeclarationList)
 {
-	*includeDirectiveList = NULL;
-	*externalDeclarationList = NULL;
+	*includeDirectiveList = nullptr;
+	*externalDeclarationList = nullptr;
 
 	ParseNodeList<IncludeDirective> includeList;
 	ParseNodeList<ListParseNode> declarationList;
 
-	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 	{
 		// Eat up superfluous semicolons.
-		if (mStream.NextIf(Token::SEMICOLON) == NULL)
+		if (mStream.NextIf(Token::SEMICOLON) == nullptr)
 		{
 			ListParseNode *externalDeclaration = ParseExternalDeclaration();
-			if (externalDeclaration != NULL)
+			if (externalDeclaration != nullptr)
 			{
 				declarationList.Append(externalDeclaration);
 			}
@@ -217,9 +217,9 @@ void ParserCore::ParseIncludeDirectiveAndExternalDeclarationLists(
 //   : INCLUDE STRING ';'
 IncludeDirective *ParserCore::ParseIncludeDirective()
 {
-	IncludeDirective *includeDirective = NULL;
+	IncludeDirective *includeDirective = nullptr;
 
-	if (mStream.NextIf(Token::KEY_INCLUDE) != NULL)
+	if (mStream.NextIf(Token::KEY_INCLUDE) != nullptr)
 	{
 		const Token *includePath = ExpectToken(Token::CONST_STRING);
 		ExpectToken(Token::SEMICOLON);
@@ -234,10 +234,10 @@ ListParseNode *ParserCore::ParseExternalDeclarationList()
 {
 	ParseNodeList<ListParseNode> declarationList;
 
-	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 	{
 		// Eat up superfluous semicolons.
-		if (mStream.NextIf(Token::SEMICOLON) == NULL)
+		if (mStream.NextIf(Token::SEMICOLON) == nullptr)
 		{
 			ListParseNode *next = ParseExternalDeclaration();
 			AssertNode(next);
@@ -259,7 +259,7 @@ ListParseNode *ParserCore::ParseExternalDeclarationList()
 //   | const_declarative_statement
 ListParseNode *ParserCore::ParseExternalDeclaration()
 {
-	ListParseNode *declaration = NULL;
+	ListParseNode *declaration = nullptr;
 
 	switch (mStream.Peek()->GetTokenType())
 	{
@@ -292,9 +292,9 @@ ListParseNode *ParserCore::ParseExternalDeclaration()
 //   : NAMESPACE IDENTIFIER '{' external_declaration* '}'
 NamespaceDefinition *ParserCore::ParseNamespaceDefinition()
 {
-	NamespaceDefinition *space = NULL;
+	NamespaceDefinition *space = nullptr;
 
-	if (mStream.NextIf(Token::KEY_NAMESPACE) != NULL)
+	if (mStream.NextIf(Token::KEY_NAMESPACE) != nullptr)
 	{
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		ExpectToken(Token::OBRACE);
@@ -309,10 +309,10 @@ NamespaceDefinition *ParserCore::ParseNamespaceDefinition()
 
 NativeBlock *ParserCore::ParseNativeBlock()
 {
-	NativeBlock *block = NULL;
+	NativeBlock *block = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_NATIVE);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OBRACE);
 		BoolStack::Element inNativeBlockElement(mInNativeBlock, true);
@@ -333,23 +333,23 @@ NativeBlock *ParserCore::ParseNativeBlock()
 //   | enumerator_list ',' enumerator
 EnumDeclaration *ParserCore::ParseEnumDeclaration()
 {
-	EnumDeclaration *enumeration = NULL;
+	EnumDeclaration *enumeration = nullptr;
 
-	if (mStream.NextIf(Token::KEY_ENUM) != NULL)
+	if (mStream.NextIf(Token::KEY_ENUM) != nullptr)
 	{
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		enumeration = mFactory.CreateEnumDeclaration(name);
 		ExpectToken(Token::OBRACE);
 		ParseNodeList<Enumerator> enumeratorList;
 
-		while (mStream.PeekIf(ENUM_DELIMITERS_TYPESET) == NULL)
+		while (mStream.PeekIf(ENUM_DELIMITERS_TYPESET) == nullptr)
 		{
 			Enumerator *next = ParseEnumerator(enumeration->GetTypeDescriptor());
 			AssertNode(next);
 			SyncToEnumeratorDelimiter();
 
 			// Note that the comma on the last enumerator is optional.
-			if (mStream.PeekIf(ENUM_DELIMITERS_TYPESET) == NULL)
+			if (mStream.PeekIf(ENUM_DELIMITERS_TYPESET) == nullptr)
 			{
 				ExpectToken(Token::COMMA);
 			}
@@ -370,13 +370,13 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 //   : IDENTIFIER ['=' const_expression]
 Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 {
-	Enumerator *enumerator = NULL;
+	Enumerator *enumerator = nullptr;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
 
-	if (name != NULL)
+	if (name != nullptr)
 	{
-		Expression *value = NULL;
-		if (mStream.NextIf(Token::ASSIGN) != NULL)
+		Expression *value = nullptr;
+		if (mStream.NextIf(Token::ASSIGN) != nullptr)
 		{
 			value = ParseConstExpression();
 			AssertNode(value);
@@ -396,21 +396,21 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 //   | STRUCT '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER ';'
 StructDeclaration *ParserCore::ParseStructDeclaration()
 {
-	StructDeclaration *declaration = NULL;
+	StructDeclaration *declaration = nullptr;
 
-	if (mStream.NextIf(Token::KEY_STRUCT) != NULL)
+	if (mStream.NextIf(Token::KEY_STRUCT) != nullptr)
 	{
 		ScopeStack::Element scopeElement(mScope, SCOPE_STRUCT_MEMBER);
 		const bool isNative = mInNativeBlock.GetTop();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
-		const Token *size = NULL;
-		const Token *alignment = NULL;
+		const Token *size = nullptr;
+		const Token *alignment = nullptr;
 		bool isStub = false;
 
-		if (mStream.NextIf(Token::OP_LT) != NULL)
+		if (mStream.NextIf(Token::OP_LT) != nullptr)
 		{
 			size = mStream.PeekIf(INTEGER_CONSTANTS_TYPESET);;
-			if (!isNative && (size != NULL))
+			if (!isNative && (size != nullptr))
 			{
 				PushError(CompilerError::SIZE_AND_ALIGNMENT_NOT_ALLOWED, size);
 			}
@@ -425,15 +425,15 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			}
 
 			ExpectToken(Token::OP_GT);
-			isStub = mStream.NextIf(Token::SEMICOLON) != NULL;
+			isStub = mStream.NextIf(Token::SEMICOLON) != nullptr;
 		}
 
 		declaration = mFactory.CreateStructDeclaration(
 			name,
 			size,
 			alignment,
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			isNative ?
 				(isStub ? StructDeclaration::VARIANT_NATIVE_STUB : StructDeclaration::VARIANT_NATIVE) :
 				StructDeclaration::VARIANT_BOND);
@@ -445,15 +445,15 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			ParseNodeList<FunctionDefinition> memberFunctionList;
 			ParseNodeList<DeclarativeStatement> memberVariableList;
 
-			while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+			while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 			{
 				// Eat up superfluous semicolons.
-				if (mStream.NextIf(Token::SEMICOLON) == NULL)
+				if (mStream.NextIf(Token::SEMICOLON) == nullptr)
 				{
-					FunctionDefinition *functionDefinition = NULL;
-					DeclarativeStatement *declarativeStatement = NULL;
+					FunctionDefinition *functionDefinition = nullptr;
+					DeclarativeStatement *declarativeStatement = nullptr;
 					ParseFunctionOrDeclarativeStatement(declaration, &functionDefinition, &declarativeStatement);
-					if (functionDefinition != NULL)
+					if (functionDefinition != nullptr)
 					{
 						memberFunctionList.Append(functionDefinition);
 					}
@@ -491,10 +491,10 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration)
 {
-	FunctionDefinition *functionDefinition = NULL;
-	DeclarativeStatement *declarativeStatement = NULL;
+	FunctionDefinition *functionDefinition = nullptr;
+	DeclarativeStatement *declarativeStatement = nullptr;
 	ParseFunctionOrDeclarativeStatement(structDeclaration, &functionDefinition, &declarativeStatement);
-	if (functionDefinition != NULL)
+	if (functionDefinition != nullptr)
 	{
 		return functionDefinition;
 	}
@@ -507,29 +507,29 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 	FunctionDefinition **functionDefinition,
 	DeclarativeStatement **declarativeStatement)
 {
-	*functionDefinition = NULL;
-	*declarativeStatement = NULL;
+	*functionDefinition = nullptr;
+	*declarativeStatement = nullptr;
 	const int startPos = mStream.GetPosition();
 	TypeDescriptor *descriptor = ParseTypeDescriptor();
 
 	// Could be a function declaration, function definition or a constant declarative statement.
-	if (descriptor != NULL)
+	if (descriptor != nullptr)
 	{
 		const int namePos = mStream.GetPosition();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 
-		if (name != NULL)
+		if (name != nullptr)
 		{
-			if (mStream.NextIf(Token::OPAREN) != NULL)
+			if (mStream.NextIf(Token::OPAREN) != nullptr)
 			{
 				const bool isNative = mInNativeBlock.GetTop();
 				Parameter *parameterList = ParseParameterList();
 				ExpectToken(Token::CPAREN);
 				const Token *keywordConst = mStream.NextIf(Token::KEY_CONST);
-				bool isConst = keywordConst != NULL;
-				TypeDescriptor *thisTypeDescriptor = NULL;
+				bool isConst = keywordConst != nullptr;
+				TypeDescriptor *thisTypeDescriptor = nullptr;
 
-				if (structDeclaration != NULL)
+				if (structDeclaration != nullptr)
 				{
 					thisTypeDescriptor = isConst ?
 						structDeclaration->GetConstThisTypeDescriptor() :
@@ -547,10 +547,10 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				}
 
 				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList, isConst);
-				CompoundStatement *body = NULL;
+				CompoundStatement *body = nullptr;
 				const Token *obrace = mStream.PeekIf(Token::OBRACE);
 
-				if (obrace != NULL)
+				if (obrace != nullptr)
 				{
 					ScopeStack::Element scopeElement(mScope, SCOPE_LOCAL);
 					body = ParseCompoundStatement();
@@ -575,10 +575,10 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				// Put the name back into the stream since ParseNamedInitializerList will consume it.
 				mStream.SetPosition(namePos);
 				NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
-				if (initializerList != NULL)
+				if (initializerList != nullptr)
 				{
 					AssertNonVoidType(descriptor);
-					if ((structDeclaration != NULL) && (structDeclaration->IsNative()))
+					if ((structDeclaration != nullptr) && (structDeclaration->IsNative()))
 					{
 						descriptor->SetLimitedLValue();
 					}
@@ -609,7 +609,7 @@ Parameter *ParserCore::ParseParameterList()
 	Parameter *head = ParseParameter();
 	Parameter *current = head;
 
-	while ((current != NULL) && (mStream.NextIf(Token::COMMA) != NULL))
+	while ((current != nullptr) && (mStream.NextIf(Token::COMMA) != nullptr))
 	{
 		Parameter *next = ParseParameter();
 		AssertNode(next);
@@ -625,10 +625,10 @@ Parameter *ParserCore::ParseParameterList()
 //   : type_descriptor IDENTIFIER
 Parameter *ParserCore::ParseParameter()
 {
-	Parameter *parameter = NULL;
+	Parameter *parameter = nullptr;
 	TypeDescriptor *descriptor = ParseTypeDescriptor();
 
-	if (descriptor != NULL)
+	if (descriptor != nullptr)
 	{
 		if (descriptor->IsArrayType())
 		{
@@ -655,25 +655,25 @@ TypeDescriptor *ParserCore::ParseRelaxedTypeDescriptor()
 }
 TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 {
-	TypeDescriptor *descriptor = NULL;
+	TypeDescriptor *descriptor = nullptr;
 	const int pos = mStream.GetPosition();
-	const bool isConst1 = mStream.NextIf(Token::KEY_CONST) != NULL;
+	const bool isConst1 = mStream.NextIf(Token::KEY_CONST) != nullptr;
 	TypeSpecifier *specifier = ParseTypeSpecifier();
 
-	if (specifier != NULL)
+	if (specifier != nullptr)
 	{
 		const Token *const2 = mStream.NextIf(Token::KEY_CONST);
-		const bool isConst2 = const2 != NULL;
+		const bool isConst2 = const2 != nullptr;
 		if (isConst1 && isConst2)
 		{
 			PushError(CompilerError::DUPLICATE_CONST, const2);
 		}
 
 		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
-		Expression *lengthTail = NULL;
+		Expression *lengthTail = nullptr;
 
 		const Token *token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			// This loop gets tricky. Suppose we have the following type descriptor:
 			//
@@ -689,23 +689,23 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			// appropriate places in the parser.
 			if (token->GetTokenType() == Token::OP_STAR)
 			{
-				const bool isConst = mStream.NextIf(Token::KEY_CONST) != NULL;
+				const bool isConst = mStream.NextIf(Token::KEY_CONST) != nullptr;
 				descriptor->SetAddressable();
 				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
-				lengthTail = NULL;
+				lengthTail = nullptr;
 			}
 			else
 			{
 				Expression *length = isRelaxedTypeDescriptor ? ParseExpression() : ParseConstExpression();
 
-				const bool lengthAbsent = length == NULL;
+				const bool lengthAbsent = length == nullptr;
 				if (lengthAbsent)
 				{
 					length = mFactory.CreateEmptyExpression();
 				}
 
 				ExpectToken(Token::CBRACKET);
-				if (lengthTail == NULL)
+				if (lengthTail == nullptr)
 				{
 					if (descriptor->IsVoidType())
 					{
@@ -742,10 +742,10 @@ TypeSpecifier *ParserCore::ParseTypeSpecifier()
 {
 	TypeSpecifier *specifier = ParsePrimitiveTypeSpecifier();
 
-	if (specifier == NULL)
+	if (specifier == nullptr)
 	{
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier();
-		if (identifier != NULL)
+		if (identifier != nullptr)
 		{
 			specifier = mFactory.CreateTypeSpecifier(identifier);
 		}
@@ -770,10 +770,10 @@ TypeSpecifier *ParserCore::ParseTypeSpecifier()
 //   | DOUBLE
 TypeSpecifier *ParserCore::ParsePrimitiveTypeSpecifier()
 {
-	TypeSpecifier *specifier = NULL;
+	TypeSpecifier *specifier = nullptr;
 	const Token *primitiveType = mStream.NextIf(PRIMITIVE_TYPE_SPECIFIERS_TYPESET);
 
-	if (primitiveType != NULL)
+	if (primitiveType != nullptr)
 	{
 		specifier = mFactory.CreateTypeSpecifier(primitiveType);
 	}
@@ -790,7 +790,7 @@ NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDesc
 	NamedInitializer *head = ParseNamedInitializer(typeDescriptor);
 	NamedInitializer *current = head;
 
-	while ((current != NULL) && (mStream.NextIf(Token::COMMA) != NULL))
+	while ((current != nullptr) && (mStream.NextIf(Token::COMMA) != nullptr))
 	{
 		NamedInitializer *next = ParseNamedInitializer(typeDescriptor);
 		AssertNode(next);
@@ -806,15 +806,15 @@ NamedInitializer *ParserCore::ParseNamedInitializerList(TypeDescriptor *typeDesc
 //   : IDENTIFIER ['=' initializer]
 NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescriptor)
 {
-	NamedInitializer *namedInitializer = NULL;
+	NamedInitializer *namedInitializer = nullptr;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
 
-	if (name != NULL)
+	if (name != nullptr)
 	{
 		const Token *assign = mStream.NextIf(Token::ASSIGN);
-		Initializer *initializer = NULL;
+		Initializer *initializer = nullptr;
 
-		if (assign != NULL)
+		if (assign != nullptr)
 		{
 			initializer = ParseInitializer();
 			if (mScope.GetTop() == SCOPE_STRUCT_MEMBER)
@@ -840,20 +840,20 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 //   | '{' initializer_list [','] '}'
 Initializer *ParserCore::ParseInitializer()
 {
-	Initializer *initializer = NULL;
+	Initializer *initializer = nullptr;
 
 	if (mStream.NextIf(Token::OBRACE))
 	{
 		ParseNodeList<Initializer> initializerList;
 
-		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 		{
 			Initializer *next = ParseInitializer();
 			AssertNode(next);
 			SyncToInitializerDelimiter();
 
 			// Note that the comma on the last initializer is optional.
-			if (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+			if (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 			{
 				ExpectToken(Token::COMMA);
 			}
@@ -867,7 +867,7 @@ Initializer *ParserCore::ParseInitializer()
 	else
 	{
 		Expression *expression = ParseAssignmentExpression();
-		if (expression != NULL)
+		if (expression != nullptr)
 		{
 			initializer = mFactory.CreateInitializer(expression);
 		}
@@ -882,15 +882,15 @@ Initializer *ParserCore::ParseInitializer()
 //   | qualified_id '::' IDENTIFIER
 QualifiedIdentifier *ParserCore::ParseQualifiedIdentifier()
 {
-	QualifiedIdentifier *head = NULL;
+	QualifiedIdentifier *head = nullptr;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
 
-	if (name != NULL)
+	if (name != nullptr)
 	{
 		head = mFactory.CreateQualifiedIdentifier(name);
 		QualifiedIdentifier *current = head;
 
-		while ((current != NULL) && mStream.NextIf(Token::SCOPE))
+		while ((current != nullptr) && mStream.NextIf(Token::SCOPE))
 		{
 			name = ExpectToken(Token::IDENTIFIER);
 			QualifiedIdentifier *next = mFactory.CreateQualifiedIdentifier(name);
@@ -916,7 +916,7 @@ QualifiedIdentifier *ParserCore::ParseQualifiedIdentifier()
 //   | expression_statement
 ListParseNode *ParserCore::ParseStatement()
 {
-	ListParseNode *statement = NULL;
+	ListParseNode *statement = nullptr;
 
 	switch (mStream.Peek()->GetTokenType())
 	{
@@ -963,13 +963,13 @@ ListParseNode *ParserCore::ParseStatement()
 //   : '{' statement* '}'
 CompoundStatement *ParserCore::ParseCompoundStatement()
 {
-	CompoundStatement *compoundStatement = NULL;
+	CompoundStatement *compoundStatement = nullptr;
 
 	if (mStream.NextIf(Token::OBRACE))
 	{
 		ParseNodeList<ListParseNode> statementList;
 
-		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 		{
 			ListParseNode *next = ParseStatement();
 			AssertNode(next);
@@ -989,10 +989,10 @@ CompoundStatement *ParserCore::ParseCompoundStatement()
 //   : IF '(' expression ')' statement [ELSE statement]
 IfStatement *ParserCore::ParseIfStatement()
 {
-	IfStatement *ifStatement = NULL;
+	IfStatement *ifStatement = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_IF);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -1000,7 +1000,7 @@ IfStatement *ParserCore::ParseIfStatement()
 		ExpectToken(Token::CPAREN);
 		ParseNode *thenStatement = ParseStatement();
 		AssertNode(thenStatement);
-		ParseNode *elseStatement = NULL;
+		ParseNode *elseStatement = nullptr;
 
 		if (mStream.NextIf(Token::KEY_ELSE))
 		{
@@ -1019,10 +1019,10 @@ IfStatement *ParserCore::ParseIfStatement()
 //   : SWITCH '(' expression ')' '{' switch_section* '}'
 SwitchStatement *ParserCore::ParseSwitchStatement()
 {
-	SwitchStatement *switchStatement = NULL;
+	SwitchStatement *switchStatement = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_SWITCH);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *control = ParseExpression();
@@ -1031,7 +1031,7 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 		ExpectToken(Token::OBRACE);
 
 		ParseNodeList<SwitchSection> sectionList;
-		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == NULL)
+		while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
 		{
 			SwitchSection *next = ParseSwitchSection();
 			sectionList.Append(next);
@@ -1039,7 +1039,7 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 
 		ExpectToken(Token::CBRACE);
 
-		if (sectionList.GetHead() == NULL)
+		if (sectionList.GetHead() == nullptr)
 		{
 			PushError(CompilerError::EMPTY_SWITCH_STATEMENT, keyword);
 		}
@@ -1055,23 +1055,23 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 //   : switch_label+ statement+
 SwitchSection *ParserCore::ParseSwitchSection()
 {
-	SwitchSection *section = NULL;
+	SwitchSection *section = nullptr;
 	SwitchLabel *labelList = ParseSwitchLabel();
 	SwitchLabel *currentLabel = labelList;
-	while (currentLabel != NULL)
+	while (currentLabel != nullptr)
 	{
 		SwitchLabel *next = ParseSwitchLabel();
 		currentLabel->SetNextNode(next);
 		currentLabel = next;
 	}
 
-	if (labelList == NULL)
+	if (labelList == nullptr)
 	{
 		PushError(CompilerError::EMPTY_SWITCH_LABEL_LIST, mStream.Peek());
 	}
 
 	ParseNodeList<ListParseNode> statementList;
-	while (mStream.PeekIf(SWITCH_SECTION_DELIMITERS_TYPESET) == NULL)
+	while (mStream.PeekIf(SWITCH_SECTION_DELIMITERS_TYPESET) == nullptr)
 	{
 		ListParseNode *next = ParseStatement();
 		AssertNode(next);
@@ -1090,10 +1090,10 @@ SwitchSection *ParserCore::ParseSwitchSection()
 //   | DEFAULT ':'
 SwitchLabel *ParserCore::ParseSwitchLabel()
 {
-	SwitchLabel *label = NULL;
+	SwitchLabel *label = nullptr;
 	const Token *labelToken = mStream.NextIf(SWITCH_LABELS_TYPESET);
 
-	if (labelToken != NULL)
+	if (labelToken != nullptr)
 	{
 		if (labelToken->GetTokenType() == Token::KEY_CASE)
 		{
@@ -1117,10 +1117,10 @@ SwitchLabel *ParserCore::ParseSwitchLabel()
 //   : WHILE '(' expression ')' statement
 WhileStatement *ParserCore::ParseWhileStatement()
 {
-	WhileStatement *whileStatement = NULL;
+	WhileStatement *whileStatement = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_WHILE);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OPAREN);
 		Expression *condition = ParseExpression();
@@ -1139,10 +1139,10 @@ WhileStatement *ParserCore::ParseWhileStatement()
 //   : DO statement WHILE '(' expression ')' ';'
 WhileStatement *ParserCore::ParseDoWhileStatement()
 {
-	WhileStatement *whileStatement = NULL;
+	WhileStatement *whileStatement = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_DO);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
@@ -1167,10 +1167,10 @@ WhileStatement *ParserCore::ParseDoWhileStatement()
 //   | expression_statement
 ForStatement *ParserCore::ParseForStatement()
 {
-	ForStatement *forStatement = NULL;
+	ForStatement *forStatement = nullptr;
 	const Token *keyword = mStream.NextIf(Token::KEY_FOR);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OPAREN);
 		ParseNode *initializer = ParseExpressionOrDeclarativeStatement();
@@ -1194,12 +1194,12 @@ ForStatement *ParserCore::ParseForStatement()
 //   | RETURN [expression] ';'
 JumpStatement *ParserCore::ParseJumpStatement()
 {
-	JumpStatement *jumpStatement = NULL;
+	JumpStatement *jumpStatement = nullptr;
 	const Token *keyword = mStream.NextIf(JUMP_KEYWORDS_TYPESET);
 
-	if (keyword != NULL)
+	if (keyword != nullptr)
 	{
-		Expression *rhs = NULL;
+		Expression *rhs = nullptr;
 		if (keyword->GetTokenType() == Token::KEY_RETURN)
 		{
 			rhs = ParseExpression();
@@ -1216,18 +1216,18 @@ JumpStatement *ParserCore::ParseJumpStatement()
 //   : type_descriptor named_initializer_list ';'
 ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 {
-	ListParseNode *statement = NULL;
+	ListParseNode *statement = nullptr;
 	const int startPos = mStream.GetPosition();
 
 	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
 	// index operators can appear like a type descriptor as well as an expression, we'll treat anything
 	// that fits the profile of a declaration as such and everything else like an expression statement.
 	TypeDescriptor *descriptor = ParseRelaxedTypeDescriptor();
-	if (descriptor != NULL)
+	if (descriptor != nullptr)
 	{
 		NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
 
-		if (initializerList != NULL)
+		if (initializerList != nullptr)
 		{
 			AssertNonVoidType(descriptor);
 			descriptor->SetAddressable();
@@ -1239,12 +1239,12 @@ ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 			// The tokens that looked like a type descriptor, might actually be part of an expression.
 			const int descriptorPos = mStream.GetPosition();
 			mFactory.DestroyHierarchy(descriptor);
-			descriptor = NULL;
+			descriptor = nullptr;
 			mStream.SetPosition(startPos);
 
 			statement = ParseExpressionStatement();
 
-			if (statement == NULL)
+			if (statement == nullptr)
 			{
 				// Uh, oh. Looks like we're even worse off.
 				mStream.SetPosition(descriptorPos);
@@ -1267,17 +1267,17 @@ ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 //   : [expression] ';'
 ExpressionStatement *ParserCore::ParseExpressionStatement()
 {
-	ExpressionStatement *expressionStatement = NULL;
+	ExpressionStatement *expressionStatement = nullptr;
 	Expression *expression = ParseExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		ExpectStatementTerminator();
 		expressionStatement = mFactory.CreateExpressionStatement(expression);
 	}
 	else if (mStream.NextIf(Token::SEMICOLON))
 	{
-		expressionStatement = mFactory.CreateExpressionStatement(NULL);
+		expressionStatement = mFactory.CreateExpressionStatement(nullptr);
 	}
 
 	return expressionStatement;
@@ -1297,7 +1297,7 @@ Expression *ParserCore::ParseConstExpression()
 }
 Expression *ParserCore::ParseExpression()
 {
-	Expression *expression = NULL;
+	Expression *expression = nullptr;
 
 	if (mParseConstExpressions.GetTop())
 	{
@@ -1307,10 +1307,10 @@ Expression *ParserCore::ParseExpression()
 	{
 		expression = ParseAssignmentExpression();
  
-		if (expression != NULL)
+		if (expression != nullptr)
  		{
 			const Token *token = mStream.NextIf(Token::COMMA);
-			while (token != NULL)
+			while (token != nullptr)
 			{
 				Expression *rhs = ParseAssignmentExpression();
 				AssertNode(rhs);
@@ -1341,10 +1341,10 @@ Expression *ParserCore::ParseAssignmentExpression()
 {
 	Expression *expression = ParseConditionalExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(ASSIGNMENT_OPERATORS_TYPESET);
-		if (token != NULL)
+		if (token != nullptr)
 		{
 			AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression();
@@ -1364,10 +1364,10 @@ Expression *ParserCore::ParseConditionalExpression()
 {
 	Expression *expression = ParseLogicalOrExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_TERNARY);
-		if (token != NULL)
+		if (token != nullptr)
 		{
 			Expression *trueExpression = ParseExpression();
 			AssertNode(trueExpression);
@@ -1389,10 +1389,10 @@ Expression *ParserCore::ParseLogicalOrExpression()
 {
 	Expression *expression = ParseLogicalAndExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_OR);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseLogicalAndExpression();
 			AssertNode(rhs);
@@ -1412,10 +1412,10 @@ Expression *ParserCore::ParseLogicalAndExpression()
 {
 	Expression *expression = ParseInclusiveOrExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_AND);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseInclusiveOrExpression();
 			AssertNode(rhs);
@@ -1435,10 +1435,10 @@ Expression *ParserCore::ParseInclusiveOrExpression()
 {
 	Expression *expression = ParseExclusiveOrExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_BIT_OR);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseExclusiveOrExpression();
 			AssertNode(rhs);
@@ -1458,10 +1458,10 @@ Expression *ParserCore::ParseExclusiveOrExpression()
 {
 	Expression *expression = ParseAndExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_BIT_XOR);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseAndExpression();
 			AssertNode(rhs);
@@ -1481,10 +1481,10 @@ Expression *ParserCore::ParseAndExpression()
 {
 	Expression *expression = ParseEqualityExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(Token::OP_AMP);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseEqualityExpression();
 			AssertNode(rhs);
@@ -1505,10 +1505,10 @@ Expression *ParserCore::ParseEqualityExpression()
 {
 	Expression *expression = ParseRelationalExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(EQUALITY_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseRelationalExpression();
 			AssertNode(rhs);
@@ -1531,10 +1531,10 @@ Expression *ParserCore::ParseRelationalExpression()
 {
 	Expression *expression = ParseShiftExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(RELATIONAL_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseShiftExpression();
 			AssertNode(rhs);
@@ -1555,10 +1555,10 @@ Expression *ParserCore::ParseShiftExpression()
 {
 	Expression *expression = ParseAdditiveExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(SHIFT_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseAdditiveExpression();
 			AssertNode(rhs);
@@ -1579,10 +1579,10 @@ Expression *ParserCore::ParseAdditiveExpression()
 {
 	Expression *expression = ParseMultiplicativeExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(ADDITIVE_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseMultiplicativeExpression();
 			AssertNode(rhs);
@@ -1604,10 +1604,10 @@ Expression *ParserCore::ParseMultiplicativeExpression()
 {
 	Expression *expression = ParseCastExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(MULTIPLICATIVE_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			Expression *rhs = ParseCastExpression();
 			AssertNode(rhs);
@@ -1625,10 +1625,10 @@ Expression *ParserCore::ParseMultiplicativeExpression()
 //   | CAST '<' type_descriptor '>' '(' cast_expression ')'
 Expression *ParserCore::ParseCastExpression()
 {
-	Expression *expression = NULL;
+	Expression *expression = nullptr;
 	const Token *token = mStream.NextIf(Token::KEY_CAST);
 
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		ExpectToken(Token::OP_LT);
 		TypeDescriptor *descriptor = ParseTypeDescriptor();
@@ -1664,12 +1664,12 @@ Expression *ParserCore::ParseCastExpression()
 //   | SIZEOF '<' type_descriptor '>'
 Expression *ParserCore::ParseUnaryExpression()
 {
-	Expression *expression = NULL;
-	const Token *op = NULL;
+	Expression *expression = nullptr;
+	const Token *op = nullptr;
 
-	if ((op = mStream.NextIf(UNARY_OPERATORS_TYPESET)) != NULL)
+	if ((op = mStream.NextIf(UNARY_OPERATORS_TYPESET)) != nullptr)
 	{
-		Expression *rhs = NULL;
+		Expression *rhs = nullptr;
 
 		switch (op->GetTokenType())
 		{
@@ -1688,9 +1688,9 @@ Expression *ParserCore::ParseUnaryExpression()
 		expression = mFactory.CreateUnaryExpression(op, rhs);
 	}
 
-	else if ((op = mStream.NextIf(Token::KEY_SIZEOF)) != NULL)
+	else if ((op = mStream.NextIf(Token::KEY_SIZEOF)) != nullptr)
 	{
-		if (mStream.NextIf(Token::OP_LT) != NULL)
+		if (mStream.NextIf(Token::OP_LT) != nullptr)
 		{
 			TypeDescriptor *descriptor = ParseTypeDescriptor();
 			AssertNode(descriptor);
@@ -1726,10 +1726,10 @@ Expression *ParserCore::ParsePostfixExpression()
 {
 	Expression *expression = ParsePrimaryExpression();
 
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const Token *token = mStream.NextIf(POSTFIX_OPERATORS_TYPESET);
-		while (token != NULL)
+		while (token != nullptr)
 		{
 			switch (token->GetTokenType())
 			{
@@ -1780,18 +1780,18 @@ Expression *ParserCore::ParsePostfixExpression()
 //   | '(' expression ')'
 Expression *ParserCore::ParsePrimaryExpression()
 {
-	Expression *expression = NULL;
+	Expression *expression = nullptr;
 	const Token *token = mStream.NextIf(CONSTANT_VALUES_TYPESET);
 
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		expression = mFactory.CreateConstantExpression(token);
 	}
-	else if ((token = mStream.NextIf(Token::KEY_THIS)) != NULL)
+	else if ((token = mStream.NextIf(Token::KEY_THIS)) != nullptr)
 	{
 		expression = mFactory.CreateThisExpression(token);
 	}
-	else if (mStream.NextIf(Token::OPAREN) != NULL)
+	else if (mStream.NextIf(Token::OPAREN) != nullptr)
 	{
 		expression = ParseExpression();
 		AssertNode(expression);
@@ -1800,7 +1800,7 @@ Expression *ParserCore::ParsePrimaryExpression()
 	else
 	{
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier();
-		if (identifier != NULL)
+		if (identifier != nullptr)
 		{
 			expression = mFactory.CreateIdentifierExpression(identifier);
 		}
@@ -1818,7 +1818,7 @@ Expression *ParserCore::ParseArgumentList()
 	Expression *head = ParseAssignmentExpression();
 	Expression *current = head;
 
-	while ((current != NULL) && (mStream.NextIf(Token::COMMA) != NULL))
+	while ((current != nullptr) && (mStream.NextIf(Token::COMMA) != nullptr))
 	{
 		Expression *next = ParseAssignmentExpression();
 		AssertNode(next);
@@ -1919,7 +1919,7 @@ void ParserCore::Recover(const TokenTypeSet &delimiters)
 const Token *ParserCore::ExpectToken(Token::TokenType expectedType)
 {
 	const Token *token = mStream.NextIf(expectedType);
-	if (token == NULL)
+	if (token == nullptr)
 	{
 		PushUnrecoveredError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), Token::GetTokenName(expectedType));
 	}
@@ -1930,7 +1930,7 @@ const Token *ParserCore::ExpectToken(Token::TokenType expectedType)
 const Token *ParserCore::ExpectToken(const TokenTypeSet &expectedTypes)
 {
 	const Token *token = mStream.NextIf(expectedTypes);
-	if (token == NULL)
+	if (token == nullptr)
 	{
 		PushUnrecoveredError(CompilerError::UNEXPECTED_TOKEN, mStream.Peek(), expectedTypes.GetTypeName());
 	}
@@ -1940,7 +1940,7 @@ const Token *ParserCore::ExpectToken(const TokenTypeSet &expectedTypes)
 
 void ParserCore::AssertNode(ParseNode *node)
 {
-	if (node == NULL)
+	if (node == nullptr)
 	{
 		PushUnrecoveredError(CompilerError::PARSE_ERROR, mStream.Peek());
 	}
@@ -1958,7 +1958,7 @@ void ParserCore::AssertNonConstExpression(CompilerError::Type errorType, const T
 
 void ParserCore::AssertNonVoidType(const TypeDescriptor *typeDescriptor)
 {
-	if ((typeDescriptor != NULL) && typeDescriptor->IsVoidType())
+	if ((typeDescriptor != nullptr) && typeDescriptor->IsVoidType())
 	{
 		PushError(CompilerError::VOID_NOT_ALLOWED, typeDescriptor->GetContextToken());
 	}

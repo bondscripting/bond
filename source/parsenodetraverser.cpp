@@ -6,7 +6,7 @@ namespace Bond
 
 void ParseNodeTraverser::Traverse(ParseNode *parseNode)
 {
-	if (parseNode != NULL)
+	if (parseNode != nullptr)
 	{
 		parseNode->Accept(*this);
 	}
@@ -15,7 +15,7 @@ void ParseNodeTraverser::Traverse(ParseNode *parseNode)
 
 void ParseNodeTraverser::Traverse(const ParseNode *parseNode)
 {
-	if (parseNode != NULL)
+	if (parseNode != nullptr)
 	{
 		parseNode->Accept(*this);
 	}
@@ -25,7 +25,7 @@ void ParseNodeTraverser::Traverse(const ParseNode *parseNode)
 void ParseNodeTraverser::TraverseList(ListParseNode *listNode)
 {
 	ListParseNode *current = listNode;
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		ListParseNode *next = current->GetNextNode();
 		Traverse(current);
@@ -37,7 +37,7 @@ void ParseNodeTraverser::TraverseList(ListParseNode *listNode)
 void ParseNodeTraverser::TraverseList(const ListParseNode *listNode)
 {
 	const ListParseNode *current = listNode;
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		const ListParseNode *next = current->GetNextNode();
 		Traverse(current);

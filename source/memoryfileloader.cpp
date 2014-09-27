@@ -17,7 +17,7 @@ FileLoader::Handle MemoryFileLoader::LoadFile(const char *fileName)
 	{
 		handle = Handle(mIndex.mFiles[result - firstFileName], this);
 	}
-	else if (mDelegateLoader != NULL)
+	else if (mDelegateLoader != nullptr)
 	{
 		handle = mDelegateLoader->LoadFile(fileName);
 	}

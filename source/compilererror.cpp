@@ -48,7 +48,7 @@ void CompilerError::Print(TextWriter &writer) const
 {
 	const char *format = GetFormat();
 
-	if (mContext != NULL)
+	if (mContext != nullptr)
 	{
 		const char *fileName = mContext->GetFileName();
 		const Bond::StreamPos &pos = mContext->GetStartPos();

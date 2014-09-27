@@ -25,8 +25,8 @@ public:
 		mFileName(fileName),
 		mText(text),
 		mTextLength(length),
-		mTokens(NULL),
-		mStringBuffer(NULL)
+		mTokens(nullptr),
+		mStringBuffer(nullptr)
 	{}
 
 	TokenCollection *Lex();
@@ -93,7 +93,7 @@ private:
 
 	struct CharResult
 	{
-		CharResult(): error(CompilerError::NO_ERROR), end(NULL), value(0) {}
+		CharResult(): error(CompilerError::NO_ERROR), end(nullptr), value(0) {}
 
 		CompilerError::Type error;
 		const char *end;
@@ -155,9 +155,9 @@ Lexer::~Lexer()
 void Lexer::Dispose()
 {
 	TokenCollection *list = mTokenCollectionList;
-	mTokenCollectionList = NULL;
+	mTokenCollectionList = nullptr;
 
-	while (list != NULL)
+	while (list != nullptr)
 	{
 		TokenCollection *next = list->GetNextCollection();
 		mAllocator.Free(list);

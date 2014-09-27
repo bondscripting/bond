@@ -11,9 +11,9 @@ void TypeSpecifierResolutionPass::Visit(StructDeclaration *structDeclaration)
 	if (structDeclaration->GetVariant() == StructDeclaration::VARIANT_NATIVE_STUB)
 	{
 		StructDeclaration *declaration = CastNode<StructDeclaration>(GetSymbol(structDeclaration->GetName()));
-		if (declaration != NULL)
+		if (declaration != nullptr)
 		{
-			if (declaration->GetSizeSpecifier() == NULL)
+			if (declaration->GetSizeSpecifier() == nullptr)
 			{
 				declaration->SetSizeSpecifier(structDeclaration);
 			}
@@ -35,10 +35,10 @@ void TypeSpecifierResolutionPass::Visit(StructDeclaration *structDeclaration)
 void TypeSpecifierResolutionPass::Visit(TypeSpecifier *typeSpecifier)
 {
 	const QualifiedIdentifier *identifier = typeSpecifier->GetIdentifier();
-	if (identifier != NULL)
+	if (identifier != nullptr)
 	{
 		const Symbol *symbol = GetSymbol(identifier);
-		if (symbol == NULL)
+		if (symbol == nullptr)
 		{
 			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 		}

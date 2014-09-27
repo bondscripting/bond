@@ -41,7 +41,7 @@ public:
 	void SetNextNode(ListParseNode *next) { mNextNode = next; }
 
 protected:
-	ListParseNode(): mNextNode(NULL) {}
+	ListParseNode(): mNextNode(nullptr) {}
 
 private:
 	ListParseNode *mNextNode;
@@ -52,15 +52,15 @@ template <typename NodeType>
 class ParseNodeList
 {
 public:
-	ParseNodeList(): mHead(NULL), mTail(NULL) {}
+	ParseNodeList(): mHead(nullptr), mTail(nullptr) {}
 
 	NodeType *GetHead() const { return mHead; }
 
 	void Append(NodeType *node)
 	{
-		if (node != NULL)
+		if (node != nullptr)
 		{
-			if (mHead == NULL)
+			if (mHead == nullptr)
 			{
 				mHead = node;
 			}
@@ -96,10 +96,10 @@ public:
 	virtual const Token *GetContextToken() const { return GetName(); }
 
 	virtual SymbolType GetSymbolType() const = 0;
-	virtual const Token *GetName() const { return NULL; }
+	virtual const Token *GetName() const { return nullptr; }
 
-	virtual TypeAndValue *GetTypeAndValue() { return NULL; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return NULL; }
+	virtual TypeAndValue *GetTypeAndValue() { return nullptr; }
+	virtual const TypeAndValue *GetTypeAndValue() const { return nullptr; }
 
 	virtual bool IsResolved() const { return true; }
 
@@ -120,7 +120,7 @@ public:
 
 	void InsertSymbol(Symbol *symbol);
 
-	bool IsAnonymous() const { return GetName() == NULL; }
+	bool IsAnonymous() const { return GetName() == nullptr; }
 
 	bool Matches(const HashedString &name) const;
 
@@ -129,9 +129,9 @@ public:
 
 protected:
 	Symbol():
-		mNextSymbol(NULL),
-		mParentSymbol(NULL),
-		mSymbolList(NULL),
+		mNextSymbol(nullptr),
+		mParentSymbol(nullptr),
+		mSymbolList(nullptr),
 		mGlobalHashCode(STRING_HASH_SEED)
 	{}
 
@@ -151,23 +151,23 @@ class TypeDescriptor: public ParseNode
 {
 public:
 	TypeDescriptor():
-		mTypeSpecifier(NULL),
-		mParent(NULL),
-		mLengthExpressionList(NULL),
+		mTypeSpecifier(nullptr),
+		mParent(nullptr),
+		mLengthExpressionList(nullptr),
 		mFlags(0)
 	{}
 
 	TypeDescriptor(const TypeSpecifier *specifier, bool isConst):
 		mTypeSpecifier(specifier),
-		mParent(NULL),
-		mLengthExpressionList(NULL),
+		mParent(nullptr),
+		mLengthExpressionList(nullptr),
 		mFlags(FLAG_VALUE | (isConst ? FLAG_CONST : 0))
 	{}
 
 	TypeDescriptor(TypeDescriptor *parent, bool isConst):
-		mTypeSpecifier(NULL),
+		mTypeSpecifier(nullptr),
 		mParent(parent),
-		mLengthExpressionList(NULL),
+		mLengthExpressionList(nullptr),
 		mFlags(FLAG_POINTER | (isConst ? FLAG_CONST : 0))
 	{}
 
@@ -251,8 +251,8 @@ public:
 private:
 	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
 		mTypeSpecifier(specifier),
-		mParent(NULL),
-		mLengthExpressionList(NULL),
+		mParent(nullptr),
+		mLengthExpressionList(nullptr),
 		mFlags(flags)
 	{}
 
@@ -282,16 +282,16 @@ class TypeSpecifier: public ParseNode
 {
 public:
 
-	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = NULL):
+	explicit TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier = nullptr):
 		mPrimitiveType(primitiveType),
 		mIdentifier(identifier),
-		mDefinition(NULL)
+		mDefinition(nullptr)
 	{}
 
 	explicit TypeSpecifier(QualifiedIdentifier *identifier):
-		mPrimitiveType(NULL),
+		mPrimitiveType(nullptr),
 		mIdentifier(identifier),
-		mDefinition(NULL)
+		mDefinition(nullptr)
 	{}
 
 	TypeSpecifier(const Token *primitiveType, QualifiedIdentifier *identifier, const Symbol *definition):
@@ -355,7 +355,7 @@ public:
 	QualifiedIdentifier *GetNextIdentifier() { return static_cast<QualifiedIdentifier *>(GetNextNode()); }
 	const QualifiedIdentifier *GetNextIdentifier() const { return static_cast<const QualifiedIdentifier *>(GetNextNode()); }
 
-	bool IsTerminal() const { return GetNextNode() == NULL; }
+	bool IsTerminal() const { return GetNextNode() == nullptr; }
 
 private:
 	const Token *mName;
@@ -376,7 +376,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return NULL; }
+	virtual const Token *GetContextToken() const { return nullptr; }
 
 	IncludeDirective *GetIncludeDirectiveList() { return mIncludeDirectiveList; }
 	const IncludeDirective *GetIncludeDirectiveList() const { return mIncludeDirectiveList; }
@@ -470,7 +470,7 @@ public:
 		mIdentifier(name),
 		mTypeSpecifier(&INT_TOKEN, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, true),
-		mEnumeratorList(NULL)
+		mEnumeratorList(nullptr)
 	{}
 
 	virtual ~EnumDeclaration() {}
@@ -542,14 +542,14 @@ public:
 			DeclarativeStatement *memberVariableList,
 			Variant variant):
 		mIdentifier(name),
-		mTypeSpecifier(NULL, &mIdentifier, this),
+		mTypeSpecifier(nullptr, &mIdentifier, this),
 		mThisTypeDescriptor(TypeDescriptor::GetPointerType(&mTypeSpecifier)),
 		mConstThisTypeDescriptor(TypeDescriptor::GetConstPointerType(&mTypeSpecifier)),
 		mSizeToken(size),
 		mAlignmentToken(alignment),
 		mMemberFunctionList(memberFunctionList),
 		mMemberVariableList(memberVariableList),
-		mSizeSpecifier((size != NULL) ? this : NULL),
+		mSizeSpecifier((size != nullptr) ? this : nullptr),
 		mVariant(variant),
 		mSize(0),
 		mAlignment(BOND_DEFAULT_STRUCT_ALIGN)
@@ -594,7 +594,7 @@ public:
 	bu32_t GetAlignment() const { return mAlignment; }
 	void SetAlignment(bu32_t alignment) { mAlignment = alignment; }
 
-	bool IsInstantiable() const { return (mVariant == VARIANT_BOND) || (mSizeSpecifier != NULL); }
+	bool IsInstantiable() const { return (mVariant == VARIANT_BOND) || (mSizeSpecifier != nullptr); }
 
 private:
 	QualifiedIdentifier mIdentifier;
@@ -656,7 +656,7 @@ public:
 			TypeDescriptor *thisTypeDescriptor,
 			Scope scope):
 		mIdentifier(prototype->GetName()),
-		mTypeSpecifier(NULL, &mIdentifier, this),
+		mTypeSpecifier(nullptr, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, false),
 		mTypeAndValue(&mTypeDescriptor),
 		mPrototype(prototype),
@@ -688,7 +688,7 @@ public:
 
 	Scope GetScope() const { return mScope; }
 
-	bool IsNative() const { return mBody == NULL; }
+	bool IsNative() const { return mBody == nullptr; }
 
 	size_t GetNumReservedJumpTargetIds() const { return mNumReservedJumpTargetIds; }
 	void SetNumReservedJumpTargetIds(size_t numIds) { mNumReservedJumpTargetIds = numIds; }
@@ -720,7 +720,7 @@ public:
 	// the signature for native member accessors.
 	Parameter(const TypeDescriptor *typeDescriptor, bi32_t offset):
 		mTypeAndValue(const_cast<TypeDescriptor *>(typeDescriptor)),
-		mName(NULL),
+		mName(nullptr),
 		mTypeDescriptor(const_cast<TypeDescriptor *>(typeDescriptor)),
 		mOffset(offset)
 	{}
@@ -798,11 +798,11 @@ class Initializer: public ListParseNode
 public:
 	explicit Initializer(Expression *expression):
 		mExpression(expression),
-		mInitializerList(NULL)
+		mInitializerList(nullptr)
 	{}
 
 	explicit Initializer(Initializer *initializerList):
-		mExpression(NULL),
+		mExpression(nullptr),
 		mInitializerList(initializerList)
 	{}
 
@@ -893,7 +893,7 @@ public:
 		mKeyword(keyword),
 		mControl(control),
 		mSectionList(sectionList),
-		mResolvedLabelList(NULL),
+		mResolvedLabelList(nullptr),
 		mNumMatches(0),
 		mMinMatch(0),
 		mMaxMatch(0)
@@ -976,7 +976,7 @@ public:
 
 	virtual void Accept(ParseNodeVisitor &visitor) {}
 	virtual void Accept(ParseNodeVisitor &visitor) const {}
-	virtual const Token *GetContextToken() const { return NULL; }
+	virtual const Token *GetContextToken() const { return nullptr; }
 
 	bi32_t GetMatch() const { return mMatch; }
 	void SetMatch(bi32_t match) { mMatch = match; }
@@ -1001,7 +1001,7 @@ class SwitchLabel: public ListParseNode
 public:
 	explicit SwitchLabel(const Token *label):
 		mLabel(label),
-		mExpression(NULL)
+		mExpression(nullptr)
 	{}
 
 	SwitchLabel(const Token *label, Expression *expression):
@@ -1196,7 +1196,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return (mExpression == NULL) ? NULL : mExpression->GetContextToken(); }
+	virtual const Token *GetContextToken() const { return (mExpression == nullptr) ? nullptr : mExpression->GetContextToken(); }
 
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
@@ -1326,7 +1326,7 @@ public:
 		mOperator(op),
 		mMemberName(memberName),
 		mLhs(lhs),
-		mDefinition(NULL)
+		mDefinition(nullptr)
 	{}
 
 	virtual ~MemberExpression() {}
@@ -1448,12 +1448,12 @@ public:
 	SizeofExpression(const Token *op, TypeDescriptor *typeDescriptor):
 		mOperator(op),
 		mTypeDescriptor(typeDescriptor),
-		mRhs(NULL)
+		mRhs(nullptr)
 	{}
 
 	SizeofExpression(const Token *op, Expression *rhs):
 		mOperator(op),
-		mTypeDescriptor(NULL),
+		mTypeDescriptor(nullptr),
 		mRhs(rhs)
 	{}
 
@@ -1500,7 +1500,7 @@ class IdentifierExpression: public Expression
 public:
 	explicit IdentifierExpression(QualifiedIdentifier *identifier):
 		mIdentifier(identifier),
-		mDefinition(NULL)
+		mDefinition(nullptr)
 	{}
 
 	virtual ~IdentifierExpression() {}
@@ -1546,7 +1546,7 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return NULL; }
+	virtual const Token *GetContextToken() const { return nullptr; }
 };
 
 

@@ -100,7 +100,7 @@ void PrettyPrinter::PrintList(const ListParseNode *listNode, TextWriter &writer,
 
 void PrettyPrinterCore::Print(const ParseNode *parseNode)
 {
-	if (parseNode != NULL)
+	if (parseNode != nullptr)
 	{
 		parseNode->Accept(*this);
 	}
@@ -110,7 +110,7 @@ void PrettyPrinterCore::Print(const ParseNode *parseNode)
 void PrettyPrinterCore::PrintList(const ListParseNode *listNode)
 {
 	const ListParseNode *current = listNode;
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		Print(current);
 		current = current->GetNextNode();
@@ -189,7 +189,7 @@ void PrettyPrinterCore::Visit(const Enumerator *enumerator)
 	{
 		mWriter.Write(" = %" BOND_PRId32, enumerator->GetTypeAndValue()->GetIntValue());
 	}
-	else if (enumerator->GetValue() != NULL)
+	else if (enumerator->GetValue() != nullptr)
 	{
 		mWriter.Write(" = ");
 		Print(enumerator->GetValue());
@@ -205,13 +205,13 @@ void PrettyPrinterCore::Visit(const StructDeclaration *structDeclaration)
 	Print(structDeclaration->GetName());
 
 	const Token *sizeToken = structDeclaration->GetSizeToken();
-	if (sizeToken != NULL)
+	if (sizeToken != nullptr)
 	{
 		const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
 		mWriter.Write("<%" BOND_PRId32, size);
 
 		const Token *alignmentToken = structDeclaration->GetAlignmentToken();
-		if (alignmentToken != NULL)
+		if (alignmentToken != nullptr)
 		{
 			const bi32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
 			mWriter.Write(", %" BOND_PRId32, alignment);
@@ -239,7 +239,7 @@ void PrettyPrinterCore::Visit(const FunctionDefinition *functionDefinition)
 {
 	Tab();
 	Print(functionDefinition->GetPrototype());
-	if (functionDefinition->GetBody() != NULL)
+	if (functionDefinition->GetBody() != nullptr)
 	{
 		mWriter.Write("\n");
 		Print(functionDefinition->GetBody());
@@ -312,7 +312,7 @@ void PrettyPrinterCore::Visit(const TypeDescriptor *typeDescriptor)
 
 void PrettyPrinterCore::Visit(const TypeSpecifier *typeSpecifier)
 {
-	if (typeSpecifier->GetPrimitiveTypeToken() != NULL)
+	if (typeSpecifier->GetPrimitiveTypeToken() != nullptr)
 	{
 		Print(typeSpecifier->GetPrimitiveTypeToken());
 	}
@@ -327,7 +327,7 @@ void PrettyPrinterCore::Visit(const NamedInitializer *namedInitializer)
 {
 	Print(namedInitializer->GetName());
 
-	if (namedInitializer->GetInitializer() != NULL)
+	if (namedInitializer->GetInitializer() != nullptr)
 	{
 		mWriter.Write(" = ");
 		Print(namedInitializer->GetInitializer());
@@ -337,7 +337,7 @@ void PrettyPrinterCore::Visit(const NamedInitializer *namedInitializer)
 
 void PrettyPrinterCore::Visit(const Initializer *initializer)
 {
-	if (initializer->GetExpression() != NULL)
+	if (initializer->GetExpression() != nullptr)
 	{
 		Print(initializer->GetExpression());
 	}
@@ -385,7 +385,7 @@ void PrettyPrinterCore::Visit(const IfStatement *ifStatement)
 
 	PrintBlockOrStatement(ifStatement->GetThenStatement());
 
-	if (ifStatement->GetElseStatement() != NULL)
+	if (ifStatement->GetElseStatement() != nullptr)
 	{
 		Tab();
 		mWriter.Write("else\n");
@@ -425,7 +425,7 @@ void PrettyPrinterCore::Visit(const SwitchLabel *switchLabel)
 	Tab();
 	Print(switchLabel->GetLabel());
 
-	if (switchLabel->GetExpression() != NULL)
+	if (switchLabel->GetExpression() != nullptr)
 	{
 		mWriter.Write(" ");
 		Print(switchLabel->GetExpression());
@@ -480,7 +480,7 @@ void PrettyPrinterCore::Visit(const JumpStatement *jumpStatement)
 	Print(jumpStatement->GetKeyword());
 
 	const Expression *rhs = jumpStatement->GetRhs(); 
-	if (jumpStatement->IsReturn() && (rhs != NULL))
+	if (jumpStatement->IsReturn() && (rhs != nullptr))
 	{
 		mWriter.Write(" ");
 		Print(rhs);
@@ -505,7 +505,7 @@ void PrettyPrinterCore::Visit(const DeclarativeStatement *declarativeStatement)
 void PrettyPrinterCore::Visit(const ExpressionStatement *expressionStatement)
 {
 	Tab();
-	if (expressionStatement->GetExpression() != NULL)
+	if (expressionStatement->GetExpression() != nullptr)
 	{
 		Print(expressionStatement->GetExpression());
 	}
@@ -618,7 +618,7 @@ void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
 	if (!PrintFoldedConstant(sizeofExpression))
 	{
 		mWriter.Write("sizeof");
-		if (sizeofExpression->GetTypeDescriptor() != NULL)
+		if (sizeofExpression->GetTypeDescriptor() != nullptr)
 		{
 			mWriter.Write("<");
 			Print(sizeofExpression->GetTypeDescriptor());
@@ -659,13 +659,13 @@ void PrettyPrinterCore::PrintList(const ListParseNode *listNode, const char *sep
 {
 	const ListParseNode *current = listNode;
 
-	if (current != NULL)
+	if (current != nullptr)
 	{
 		Print(current);
 		current = current->GetNextNode();
 	}
 
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		mWriter.Write("%s", separator);
 		Print(current);
@@ -676,7 +676,7 @@ void PrettyPrinterCore::PrintList(const ListParseNode *listNode, const char *sep
 
 void PrettyPrinterCore::Print(const Token *token)
 {
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		mWriter.Write("%s", token->GetText());
 	}
@@ -685,7 +685,7 @@ void PrettyPrinterCore::Print(const Token *token)
 
 void PrettyPrinterCore::PrintBlockOrStatement(const ParseNode *parseNode)
 {
-	if (CastNode<CompoundStatement>(parseNode) != NULL)
+	if (CastNode<CompoundStatement>(parseNode) != nullptr)
 	{
 		Print(parseNode);
 	}

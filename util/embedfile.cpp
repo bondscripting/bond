@@ -15,17 +15,17 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 	}
 	baseName[j] = '\0';
 
-	if (hFile != NULL)
+	if (hFile != nullptr)
 	{
 		fprintf(hFile, "extern const Bond::FileData %s;\n", baseName);
 	}
 
-	if (cppFile != NULL)
+	if (cppFile != nullptr)
 	{
 		const unsigned BUFFER_SIZE = 16;
 		unsigned char buffer[BUFFER_SIZE];
 		FILE *inputFile = fopen(inputFileName, "rb");
-		if (inputFile != NULL)
+		if (inputFile != nullptr)
 		{
 			fprintf(cppFile, "extern const Bond::bu8_t %s_DATA[] =\n{\n", baseName);
 
@@ -53,8 +53,8 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 int main(int argc, const char *argv[])
 {
 	const size_t MAX_ENTRIES = 256;
-	const char *cppFileName = NULL;
-	const char *hFileName = NULL;
+	const char *cppFileName = nullptr;
+	const char *hFileName = nullptr;
 	const char *inputFileNames[MAX_ENTRIES];
 	size_t numInputFiles = 0;
 
@@ -101,15 +101,15 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	FILE *cppFile = NULL;
-	FILE *hFile = NULL;
+	FILE *cppFile = nullptr;
+	FILE *hFile = nullptr;
 
-	if (cppFileName != NULL)
+	if (cppFileName != nullptr)
 	{
 		cppFile = fopen(cppFileName, "w");
 	}
 
-	if (hFileName != NULL)
+	if (hFileName != nullptr)
 	{
 		hFile = fopen(hFileName, "w");
 	}

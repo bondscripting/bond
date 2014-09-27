@@ -17,7 +17,7 @@ public:
 	Lexer(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),
-		mTokenCollectionList(NULL)
+		mTokenCollectionList(nullptr)
 	{}
 
 	~Lexer();

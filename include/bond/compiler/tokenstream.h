@@ -10,7 +10,7 @@ class TokenStream
 {
 public:
 	TokenStream():
-		mBuffer(NULL),
+		mBuffer(nullptr),
 		mLength(-1),
 		mIndex(0)
 	{
@@ -56,7 +56,7 @@ class TokenCollection
 {
 public:
 	TokenCollection(const Token *tokens, int numTokens):
-		mNextCollection(NULL),
+		mNextCollection(nullptr),
 		mTokens(tokens),
 		mNumTokens(numTokens)
 	{}

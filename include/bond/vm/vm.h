@@ -19,10 +19,10 @@ class CalleeStackFrame
 public:
 	CalleeStackFrame(VM &vm):
 		mVm(vm),
-		mFunction(NULL),
-		mFramePointer(NULL),
-		mStackPointer(NULL),
-		mReturnPointer(NULL)
+		mFunction(nullptr),
+		mFramePointer(nullptr),
+		mStackPointer(nullptr),
+		mReturnPointer(nullptr)
 	{}
 
 	CalleeStackFrame(

@@ -22,24 +22,24 @@ const Token *TokenStream::Next()
 const Token *TokenStream::NextIf(Token::TokenType type)
 {
 	const Token *token = PeekIf(type);
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		Advance();
 		return token;
 	}
-	return NULL;
+	return nullptr;
 }
 
 
 const Token *TokenStream::NextIf(const TokenTypeSet &typeSet)
 {
 	const Token *token = PeekIf(typeSet);
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		Advance();
 		return token;
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -50,7 +50,7 @@ const Token *TokenStream::PeekIf(Token::TokenType type) const
 	{
 		return token;
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -61,7 +61,7 @@ const Token *TokenStream::PeekIf(const TokenTypeSet &typeSet) const
 	{
 		return token;
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -69,7 +69,7 @@ void TokenStream::SkipTo(Token::TokenType type)
 {
 	while (mIndex < (mLength - 1))
 	{
-		if (PeekIf(type) != NULL)
+		if (PeekIf(type) != nullptr)
 		{
 			break;
 		}
@@ -82,7 +82,7 @@ void TokenStream::SkipTo(const TokenTypeSet &typeSet)
 {
 	while (mIndex < (mLength - 1))
 	{
-		if (PeekIf(typeSet) != NULL)
+		if (PeekIf(typeSet) != nullptr)
 		{
 			break;
 		}

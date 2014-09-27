@@ -33,7 +33,7 @@ bu32_t Symbol::ComputeGlobalHashCode() const
 	if (!IsAnonymous())
 	{
 		const HashedString &name = GetName()->GetHashedText();
-		if (mParentSymbol != NULL)
+		if (mParentSymbol != nullptr)
 		{
 			hash = mParentSymbol->GetGlobalHashCode();
 			hash = StringHash("::", hash);
@@ -52,7 +52,7 @@ Symbol *Symbol::FindSymbol(const HashedString &name)
 {
 	Symbol *symbol = mSymbolList;
 
-	while ((symbol != NULL) && !symbol->Matches(name))
+	while ((symbol != nullptr) && !symbol->Matches(name))
 	{
 		symbol = symbol->mNextSymbol;
 	}
@@ -65,7 +65,7 @@ const Symbol *Symbol::FindSymbol(const HashedString &name) const
 {
 	const Symbol *symbol = mSymbolList;
 
-	while ((symbol != NULL) && !symbol->Matches(name))
+	while ((symbol != nullptr) && !symbol->Matches(name))
 	{
 		symbol = symbol->mNextSymbol;
 	}
@@ -78,7 +78,7 @@ Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier)
 {
 	Symbol *symbol = FindQualifiedSymbol(identifier);
 
-	if ((symbol == NULL) && (mParentSymbol != NULL))
+	if ((symbol == nullptr) && (mParentSymbol != nullptr))
 	{
 		symbol = mParentSymbol->FindSymbol(identifier);
 	}
@@ -91,7 +91,7 @@ const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
 {
 	const Symbol *symbol = FindQualifiedSymbol(identifier);
 
-	if ((symbol == NULL) && (mParentSymbol != NULL))
+	if ((symbol == nullptr) && (mParentSymbol != nullptr))
 	{
 		symbol = mParentSymbol->FindSymbol(identifier);
 	}
@@ -102,7 +102,7 @@ const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
 
 Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 {
-	Symbol *symbol = NULL;
+	Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
@@ -111,7 +111,7 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	else if (GetSymbolType() == TYPE_NAMESPACE)
 	{
 		Symbol *nextScope = FindSymbol(identifier->GetName());
-		if (nextScope != NULL)
+		if (nextScope != nullptr)
 		{
 			const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
 			symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
@@ -124,7 +124,7 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 
 const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier) const
 {
-	const Symbol *symbol = NULL;
+	const Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
@@ -158,15 +158,15 @@ bool Symbol::Matches(const HashedString &name) const
 
 const Token *TypeDescriptor::GetContextToken() const
 {
-	if (mTypeSpecifier != NULL)
+	if (mTypeSpecifier != nullptr)
 	{
 		return mTypeSpecifier->GetContextToken();
 	}
-	if (mParent != NULL)
+	if (mParent != nullptr)
 	{
 		return mParent->GetContextToken();
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -194,7 +194,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 	if (IsArrayType())
 	{
 		Expression *nextLength = NextNode(mLengthExpressionList);
-		if (nextLength != NULL)
+		if (nextLength != nullptr)
 		{
 			typeDescriptor = *this;
 			typeDescriptor.mLengthExpressionList = nextLength;
@@ -203,7 +203,7 @@ TypeDescriptor TypeDescriptor::GetDereferencedType() const
 		{
 			typeDescriptor = *this;
 			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
-			typeDescriptor.mLengthExpressionList = NULL;
+			typeDescriptor.mLengthExpressionList = nullptr;
 		}
 		else
 		{
@@ -241,7 +241,7 @@ TypeDescriptor TypeDescriptor::GetArrayElementType() const
 		{
 			typeDescriptor = *this;
 			typeDescriptor.mFlags = mFlags >> PARENT_SHIFT;
-			typeDescriptor.mLengthExpressionList = NULL;
+			typeDescriptor.mLengthExpressionList = nullptr;
 		}
 		else
 		{
@@ -255,7 +255,7 @@ TypeDescriptor TypeDescriptor::GetArrayElementType() const
 bool TypeDescriptor::IsResolved() const
 {
 	const Expression *lengthExpressionList = mLengthExpressionList;
-	while (lengthExpressionList != NULL)
+	while (lengthExpressionList != nullptr)
 	{
 		if (!lengthExpressionList->GetTypeAndValue().IsValueDefined())
 		{
@@ -264,8 +264,8 @@ bool TypeDescriptor::IsResolved() const
 		lengthExpressionList = NextNode(lengthExpressionList);
 	}
 	return
-		((mParent == NULL) || mParent->IsResolved()) &&
-		((mTypeSpecifier == NULL) || (mTypeSpecifier->IsResolved()));
+		((mParent == nullptr) || mParent->IsResolved()) &&
+		((mTypeSpecifier == nullptr) || (mTypeSpecifier->IsResolved()));
 }
 
 
@@ -529,34 +529,34 @@ TypeDescriptor TypeDescriptor::GetConstPointerType(const TypeSpecifier *specifie
 
 TypeDescriptor TypeDescriptor::GetNullType()
 {
-	return TypeDescriptor(NULL, FLAG_NULL);
+	return TypeDescriptor(nullptr, FLAG_NULL);
 }
 
 
 const Token *TypeSpecifier::GetContextToken() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return mPrimitiveType;
 	}
-	if (mIdentifier != NULL)
+	if (mIdentifier != nullptr)
 	{
 		return mIdentifier->GetContextToken();
 	}
-	return NULL;
+	return nullptr;
 }
 
 
 bool TypeSpecifier::IsResolved() const
 {
-	return (mDefinition == NULL) || (mDefinition->IsResolved());
+	return (mDefinition == nullptr) || (mDefinition->IsResolved());
 }
 
 
 bool TypeSpecifier::IsInstantiable() const
 {
 	const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
-	if (structDeclaration != NULL)
+	if (structDeclaration != nullptr)
 	{
 		return structDeclaration->IsInstantiable();
 	}
@@ -596,7 +596,7 @@ bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 		default:
 		{
 			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
-			if (structDeclaration != NULL)
+			if (structDeclaration != nullptr)
 			{
 				return structDeclaration->GetSize();
 			}
@@ -638,7 +638,7 @@ bu32_t TypeSpecifier::GetAlignment() const
 		default:
 		{
 			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
-			if (structDeclaration != NULL)
+			if (structDeclaration != nullptr)
 			{
 				return structDeclaration->GetAlignment();
 			}
@@ -678,7 +678,7 @@ bu32_t TypeSpecifier::GetSignatureType() const
 		default:
 		{
 			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
-			if (structDeclaration != NULL)
+			if (structDeclaration != nullptr)
 			{
 				return SIG_STRUCT;
 			}
@@ -690,7 +690,7 @@ bu32_t TypeSpecifier::GetSignatureType() const
 
 Token::TokenType TypeSpecifier::GetPrimitiveType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return mPrimitiveType->GetTokenType();
 	}
@@ -700,7 +700,7 @@ Token::TokenType TypeSpecifier::GetPrimitiveType() const
 
 bool TypeSpecifier::IsBooleanType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return BOOLEAN_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -710,7 +710,7 @@ bool TypeSpecifier::IsBooleanType() const
 
 bool TypeSpecifier::IsCharType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return CHAR_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -720,7 +720,7 @@ bool TypeSpecifier::IsCharType() const
 
 bool TypeSpecifier::IsIntegerType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -730,7 +730,7 @@ bool TypeSpecifier::IsIntegerType() const
 
 bool TypeSpecifier::IsLeast32IntegerType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -740,7 +740,7 @@ bool TypeSpecifier::IsLeast32IntegerType() const
 
 bool TypeSpecifier::IsMost32IntegerType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -750,7 +750,7 @@ bool TypeSpecifier::IsMost32IntegerType() const
 
 bool TypeSpecifier::IsNumericType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -760,7 +760,7 @@ bool TypeSpecifier::IsNumericType() const
 
 bool TypeSpecifier::IsVoidType() const
 {
-	if (mPrimitiveType != NULL)
+	if (mPrimitiveType != nullptr)
 	{
 		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
 	}
@@ -782,28 +782,28 @@ bool StructDeclaration::IsResolved() const
 
 const Token *Initializer::GetContextToken() const
 {
-	if (mExpression != NULL)
+	if (mExpression != nullptr)
 	{
 		return mExpression->GetContextToken();
 	}
-	else if (mInitializerList != NULL)
+	else if (mInitializerList != nullptr)
 	{
 		return mInitializerList->GetContextToken();
 	}
-	return NULL;
+	return nullptr;
 }
 
 
 bool Initializer::IsResolved() const
 {
-	if (mExpression != NULL)
+	if (mExpression != nullptr)
 	{
 		return mExpression->GetTypeAndValue().IsResolved();
 	}
 	else
 	{
 		const Initializer *initializer = mInitializerList;
-		while (initializer != NULL)
+		while (initializer != nullptr)
 		{
 			if (!initializer->IsResolved())
 			{

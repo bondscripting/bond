@@ -9,7 +9,7 @@ const Bond::NativeFunctionBinding MEMORY_BINDING_COLLECTION_FUNCTIONS[] =
 	{0xf5081d35, Bond::AllocateAligned},
 	{0x8cdf3dac, Bond::Free},
 	{0x97f0b018, Bond::FreeAligned},
-	{0, NULL}
+	{0, nullptr}
 };
 
 const Bond::NativeBindingCollection MEMORY_BINDING_COLLECTION =

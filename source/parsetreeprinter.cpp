@@ -90,7 +90,7 @@ void ParseTreePrinter::PrintList(const ListParseNode *listNode, TextWriter &writ
 
 void ParseTreePrinterCore::Print(const ParseNode *parseNode)
 {
-	if (parseNode != NULL)
+	if (parseNode != nullptr)
 	{
 		parseNode->Accept(*this);
 	}
@@ -100,7 +100,7 @@ void ParseTreePrinterCore::Print(const ParseNode *parseNode)
 void ParseTreePrinterCore::PrintList(const ListParseNode *listNode)
 {
 	const ListParseNode *current = listNode;
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		Print(current);
 		current = current->GetNextNode();
@@ -181,13 +181,13 @@ void ParseTreePrinterCore::Visit(const StructDeclaration *structDeclaration)
 	Print(structDeclaration->GetName());
 
 	const Token *sizeToken = structDeclaration->GetSizeToken();
-	if (sizeToken != NULL)
+	if (sizeToken != nullptr)
 	{
 		const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
 		mWriter.Write("<%" BOND_PRId32, size);
 
 		const Token *alignmentToken = structDeclaration->GetAlignmentToken();
-		if (alignmentToken != NULL)
+		if (alignmentToken != nullptr)
 		{
 			const bi32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
 			mWriter.Write(", %" BOND_PRId32, alignment);
@@ -290,7 +290,7 @@ void ParseTreePrinterCore::Visit(const TypeSpecifier *typeSpecifier)
 {
 	Tab();
 	mWriter.Write("TypeSpecifier: ");
-	if (typeSpecifier->GetPrimitiveTypeToken() != NULL)
+	if (typeSpecifier->GetPrimitiveTypeToken() != nullptr)
 	{
 		Print(typeSpecifier->GetPrimitiveTypeToken());
 	}
@@ -360,7 +360,7 @@ void ParseTreePrinterCore::Visit(const IfStatement *ifStatement)
 	Tab();
 	mWriter.Write("(body)\n");
 	Print(ifStatement->GetThenStatement());
-	if (ifStatement->GetElseStatement() != NULL)
+	if (ifStatement->GetElseStatement() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(else)\n");
@@ -388,13 +388,13 @@ void ParseTreePrinterCore::Visit(const SwitchSection *switchSection)
 	Tab();
 	mWriter.Write("SwitchSection\n");
 	IncrementTab();
-	if (switchSection->GetLabelList() != NULL)
+	if (switchSection->GetLabelList() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(labels)\n");
 		PrintList(switchSection->GetLabelList());
 	}
-	if (switchSection->GetStatementList() != NULL)
+	if (switchSection->GetStatementList() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(statements)\n");
@@ -436,19 +436,19 @@ void ParseTreePrinterCore::Visit(const ForStatement *forStatement)
 	Tab();
 	mWriter.Write("ForStatement\n");
 	IncrementTab();
-	if (forStatement->GetInitializer() != NULL)
+	if (forStatement->GetInitializer() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(initializer)\n");
 		Print(forStatement->GetInitializer());
 	}
-	if (forStatement->GetCondition() != NULL)
+	if (forStatement->GetCondition() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(condition)\n");
 		Print(forStatement->GetCondition());
 	}
-	if (forStatement->GetCountingExpression() != NULL)
+	if (forStatement->GetCountingExpression() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(counting)\n");
@@ -584,7 +584,7 @@ void ParseTreePrinterCore::Visit(const FunctionCallExpression *functionCallExpre
 	Tab();
 	mWriter.Write("(function)\n");
 	Print(functionCallExpression->GetLhs());
-	if (functionCallExpression->GetArgumentList() != NULL)
+	if (functionCallExpression->GetArgumentList() != nullptr)
 	{
 		Tab();
 		mWriter.Write("(arguments)\n");
@@ -649,13 +649,13 @@ void ParseTreePrinterCore::PrintList(const ListParseNode *listNode, const char *
 {
 	const ListParseNode *current = listNode;
 
-	if (current != NULL)
+	if (current != nullptr)
 	{
 		Print(current);
 		current = current->GetNextNode();
 	}
 
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		mWriter.Write("%s", separator);
 		Print(current);
@@ -666,7 +666,7 @@ void ParseTreePrinterCore::PrintList(const ListParseNode *listNode, const char *
 
 void ParseTreePrinterCore::Print(const Token *token)
 {
-	if (token != NULL)
+	if (token != nullptr)
 	{
 		mWriter.Write("%s", token->GetText());
 	}

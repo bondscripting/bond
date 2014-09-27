@@ -52,9 +52,9 @@ void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 
 void ValueEvaluationPass::Visit(EnumDeclaration *enumDeclaration)
 {
-	mPrevEnumerator = NULL;
+	mPrevEnumerator = nullptr;
 	ParseNodeTraverser::Visit(enumDeclaration);
-	mPrevEnumerator = NULL;
+	mPrevEnumerator = nullptr;
 }
 
 
@@ -65,7 +65,7 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 	{
 		ParseNodeTraverser::Visit(enumerator);
 
-		if (enumerator->GetValue() != NULL)
+		if (enumerator->GetValue() != nullptr)
 		{
 			const TypeAndValue &valueTav = enumerator->GetValue()->GetTypeAndValue();
 			if (valueTav.IsValueDefined())
@@ -77,7 +77,7 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 		}
 		else
 		{
-			if (mPrevEnumerator != NULL)
+			if (mPrevEnumerator != nullptr)
 			{
 				const TypeAndValue &prevTav = *mPrevEnumerator->GetTypeAndValue();
 				if (prevTav.IsValueDefined())
@@ -111,7 +111,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 			{
 				bool membersResolved = true;
 				DeclarativeStatement *memberList = structDeclaration->GetMemberVariableList();
-				while (memberList != NULL)
+				while (memberList != nullptr)
 				{
 					if (!memberList->GetTypeDescriptor()->IsResolved())
 					{
@@ -129,7 +129,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 
 					bu32_t structSize = 0;
 					bu32_t structAlign = BOND_DEFAULT_STRUCT_ALIGN;
-					while (memberList != NULL)
+					while (memberList != nullptr)
 					{
 						const TypeDescriptor *memberDescriptor = memberList->GetTypeDescriptor();
 						const bu32_t memberSize = memberDescriptor->GetSize(mPointerSize);
@@ -139,7 +139,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						structAlign = Max(structAlign, memberAlign);
 
 						NamedInitializer *initializerList = memberList->GetNamedInitializerList();
-						while (initializerList != NULL)
+						while (initializerList != nullptr)
 						{
 							// TODO: Ensure that the offset does not overflow.
 							initializerList->SetOffset(bi32_t(structSize));
@@ -173,7 +173,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				}
 
 				const Token *alignToken = structDeclaration->GetSizeSpecifier()->GetAlignmentToken();
-				if (alignToken != NULL)
+				if (alignToken != nullptr)
 				{
 					const bi32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;
 					if ((align <= 1) || !IsPowerOfTwo(align))
@@ -230,7 +230,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 		ParseNodeTraverser::Visit(typeDescriptor);
 
 		Expression *expressionList = typeDescriptor->GetLengthExpressionList();
-		while (expressionList != NULL)
+		while (expressionList != nullptr)
 		{
 			// Validate the value and cast it to an unsigned integar.
 			TypeAndValue &tav = expressionList->GetTypeAndValue();
@@ -278,7 +278,7 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
 		const Initializer *initializer = namedInitializer->GetInitializer();
 
-		if (initializer == NULL)
+		if (initializer == nullptr)
 		{
 			Resolve(tav);
 		}
@@ -305,7 +305,7 @@ void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
 {
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		const TypeAndValue &tav = expression->GetTypeAndValue();
 		if (tav.IsResolved() && !tav.IsValueDefined())
@@ -321,15 +321,15 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
 	TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
 	if ((typeDescriptor->IsArrayType()) &&
-	    (CastNode<EmptyExpression>(typeDescriptor->GetLengthExpressionList()) != NULL) &&
+	    (CastNode<EmptyExpression>(typeDescriptor->GetLengthExpressionList()) != nullptr) &&
 	    !typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().IsValueDefined())
 	{
 		bu32_t length = 0;
 		const NamedInitializer *current = declarativeStatement->GetNamedInitializerList();
-		while (current != NULL)
+		while (current != nullptr)
 		{
 			const Initializer *initializer = current->GetInitializer();
-			if ((initializer != NULL) && (initializer->GetInitializerList()) != NULL)
+			if ((initializer != nullptr) && (initializer->GetInitializerList()) != nullptr)
 			{
 				const bu32_t initializerListLength = GetLength(initializer->GetInitializerList());
 				length = (initializerListLength > length) ? initializerListLength : length;
@@ -615,7 +615,7 @@ void ValueEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		}
 
 		const Expression *argument = functionCallExpression->GetArgumentList();
-		while (argument != NULL)
+		while (argument != nullptr)
 		{
 			const TypeAndValue &argTav = argument->GetTypeAndValue();
 			if (!argTav.IsResolved())
@@ -656,9 +656,9 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(sizeofExpression);
-		const TypeDescriptor *typeDescriptor = NULL;
+		const TypeDescriptor *typeDescriptor = nullptr;
 
-		if (sizeofExpression->GetRhs() != NULL)
+		if (sizeofExpression->GetRhs() != nullptr)
 		{
 			const TypeAndValue &rhs = sizeofExpression->GetRhs()->GetTypeAndValue();
 			if (rhs.IsResolved())
@@ -671,7 +671,7 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 			typeDescriptor = sizeofExpression->GetTypeDescriptor();
 		}
 
-		if ((typeDescriptor != NULL) && typeDescriptor->IsResolved())
+		if ((typeDescriptor != nullptr) && typeDescriptor->IsResolved())
 		{
 			Resolve(tav);
 			tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));

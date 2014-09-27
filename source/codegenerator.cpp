@@ -172,31 +172,31 @@ private:
 		Result():
 			mContext(CONTEXT_NONE),
 			mThisPointerContext(CONTEXT_NONE),
-			mConstantValue(NULL),
-			mNativeMember(NULL),
+			mConstantValue(nullptr),
+			mNativeMember(nullptr),
 			mOffset(0)
 		{}
 
 		Result(Context context):
 			mContext(context),
 			mThisPointerContext(CONTEXT_NONE),
-			mConstantValue(NULL),
-			mNativeMember(NULL),
+			mConstantValue(nullptr),
+			mNativeMember(nullptr),
 			mOffset(0)
 		{}
 
 		Result(Context context, bi32_t offset):
 			mContext(context),
 			mThisPointerContext(CONTEXT_NONE),
-			mConstantValue(NULL),
-			mNativeMember(NULL),
+			mConstantValue(nullptr),
+			mNativeMember(nullptr),
 			mOffset(offset)
 		{}
 
-		Result(Context context, const Result &thisPointerResult, const NamedInitializer *nativeMember = NULL):
+		Result(Context context, const Result &thisPointerResult, const NamedInitializer *nativeMember = nullptr):
 			mContext(context),
 			mThisPointerContext(thisPointerResult.mContext),
-			mConstantValue(NULL),
+			mConstantValue(nullptr),
 			mNativeMember(nativeMember),
 			mOffset(thisPointerResult.mOffset)
 		{}
@@ -205,7 +205,7 @@ private:
 			mContext(CONTEXT_CONSTANT_VALUE),
 			mThisPointerContext(CONTEXT_NONE),
 			mConstantValue(constantValue),
-			mNativeMember(NULL),
+			mNativeMember(nullptr),
 			mOffset(0)
 		{}
 
@@ -528,7 +528,7 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	bu32_t packedOffset = offset;
 	bu32_t framePointerAlignment = bu32_t(BOND_SLOT_SIZE);
 	const Parameter *parameterList = prototype->GetParameterList();
-	while (parameterList != NULL)
+	while (parameterList != nullptr)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
 		const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
@@ -584,7 +584,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			namedInitializer->SetOffset(AllocateLocal(lhDescriptor));
 
 			const Initializer *initializer = namedInitializer->GetInitializer();
-			if ((initializer != NULL) && (initializer->GetExpression() != NULL))
+			if ((initializer != nullptr) && (initializer->GetExpression() != nullptr))
 			{
 				UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
@@ -646,7 +646,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 		{
 			Traverse(ifStatement->GetThenStatement());
 		}
-		else if (ifStatement->GetElseStatement() != NULL)
+		else if (ifStatement->GetElseStatement() != nullptr)
 		{
 			Traverse(ifStatement->GetElseStatement());
 		}
@@ -663,7 +663,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 		Traverse(ifStatement->GetThenStatement());
 		size_t thenEndPos = GetByteCode().size();
 
-		if (ifStatement->GetElseStatement() != NULL)
+		if (ifStatement->GetElseStatement() != nullptr)
 		{
 			size_t elseEndLabel = CreateLabel();
 			EmitJump(OPCODE_GOTO, elseEndLabel);
@@ -724,7 +724,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	const ResolvedSwitchLabel *resolvedLabels = switchStatement->GetResolvedLabelList();
 
 	bi32_t defaultOffset = 0;
-	if ((resolvedLabels != NULL) && resolvedLabels->IsDefault())
+	if ((resolvedLabels != nullptr) && resolvedLabels->IsDefault())
 	{
 		defaultOffset = bu32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 		resolvedLabels = NextNode(resolvedLabels);
@@ -740,7 +740,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	{
 		EmitValue32At(Value32(numMatches), jumpTableStart + sizeof(Value32));
 		size_t pos = jumpTableStart + (2 * sizeof(Value32));
-		while (resolvedLabels != NULL)
+		while (resolvedLabels != nullptr)
 		{
 			const bi32_t offset = bi32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 			EmitValue32At(Value32(resolvedLabels->GetMatch()), pos);
@@ -839,7 +839,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = forStatement->GetCondition();
-	if (condition != NULL)
+	if (condition != nullptr)
 	{
 		const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
@@ -1281,8 +1281,8 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 		result = lhResult;
 
 		const Symbol *member = memberExpression->GetDefinition();
-		const NamedInitializer *namedInitializer = NULL;
-		if ((namedInitializer = CastNode<NamedInitializer>(member)) != NULL)
+		const NamedInitializer *namedInitializer = nullptr;
+		if ((namedInitializer = CastNode<NamedInitializer>(member)) != nullptr)
 		{
 			if (namedInitializer->IsNativeStructMember())
 			{
@@ -1304,7 +1304,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 				result.mOffset += namedInitializer->GetOffset();
 			}
 		}
-		else if (CastNode<FunctionDefinition>(member) != NULL)
+		else if (CastNode<FunctionDefinition>(member) != nullptr)
 		{
 			if (op->GetTokenType() == Token::PERIOD)
 			{
@@ -1420,10 +1420,10 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 	if (!ProcessConstantExpression(identifierExpression))
 	{
 		const Symbol *symbol = identifierExpression->GetDefinition();
-		const NamedInitializer *namedInitializer = NULL;
-		const Parameter *parameter = NULL;
-		const FunctionDefinition *functionDefinition = NULL;
-		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != NULL)
+		const NamedInitializer *namedInitializer = nullptr;
+		const Parameter *parameter = nullptr;
+		const FunctionDefinition *functionDefinition = nullptr;
+		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != nullptr)
 		{
 			const bi32_t offset = namedInitializer->GetOffset();
 			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
@@ -1458,11 +1458,11 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 				break;
 			}
 		}
-		else if ((parameter = CastNode<Parameter>(symbol)) != NULL)
+		else if ((parameter = CastNode<Parameter>(symbol)) != nullptr)
 		{
 			mResult.SetTop(Result(Result::CONTEXT_FP_INDIRECT, parameter->GetOffset()));
 		}
-		else if (((functionDefinition = CastNode<FunctionDefinition>(symbol)) != NULL) &&
+		else if (((functionDefinition = CastNode<FunctionDefinition>(symbol)) != nullptr) &&
 		         (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER))
 		{
 			Result thisPointerResult(Result::CONTEXT_FP_INDIRECT, -BOND_SLOT_SIZE);
@@ -2579,10 +2579,10 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	Result result;
 
-	const MemberExpression *memberExpression = NULL;
-	const NamedInitializer *namedInitializer = NULL;
-	if (((memberExpression = CastNode<MemberExpression>(lhs)) != NULL) &&
-	    ((namedInitializer = CastNode<NamedInitializer>(memberExpression->GetDefinition())) != NULL) &&
+	const MemberExpression *memberExpression = nullptr;
+	const NamedInitializer *namedInitializer = nullptr;
+	if (((memberExpression = CastNode<MemberExpression>(lhs)) != nullptr) &&
+	    ((namedInitializer = CastNode<NamedInitializer>(memberExpression->GetDefinition())) != nullptr) &&
 	    namedInitializer->IsNativeStructMember())
 	{
 		bi32_t stackDelta = 0;
@@ -3273,7 +3273,7 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 	const Expression *rhs = unaryExpression;
 	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
 	bool negated = false;
-	while (unary != NULL)
+	while (unary != nullptr)
 	{
 		const Token::TokenType op = unary->GetOperator()->GetTokenType();
 		if (op == Token::OP_MINUS)
@@ -3329,7 +3329,7 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 	const Expression *rhs = unaryExpression;
 	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
 	bool negated = false;
-	while (unary != NULL)
+	while (unary != nullptr)
 	{
 		const Token::TokenType op = unary->GetOperator()->GetTokenType();
 		if (op == Token::OP_BIT_NOT)
@@ -3451,7 +3451,7 @@ GeneratorCore::Result GeneratorCore::EmitDereferenceResult(const Result &result,
 
 void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter *paramList)
 {
-	if (argList != NULL)
+	if (argList != nullptr)
 	{
 		EmitArgumentList(NextNode(argList), NextNode(paramList));
 
@@ -3579,7 +3579,7 @@ void GeneratorCore::ResolveJumps()
 			for (JumpList::Type::iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
 			{
 				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpIt->mToPos);
-				if (targetEntry != NULL)
+				if (targetEntry != nullptr)
 				{
 					const bu8_t opCode = byteCode[jumpIt->mOpCodePos];
 					const bu8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
@@ -3721,7 +3721,7 @@ void GeneratorCore::ResolveJumps()
 const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const
 {
 	JumpList::Type::const_iterator it = lower_bound(jumpList.begin(), jumpList.end(), opCodePos, JumpEntryOpCodePosComparator());
-	return ((it < jumpList.end()) && (it->mOpCodePos == opCodePos)) ? &(*it) : static_cast<const JumpEntry *>(NULL);
+	return ((it < jumpList.end()) && (it->mOpCodePos == opCodePos)) ? &(*it) : nullptr;
 }
 
 
@@ -3850,7 +3850,7 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			WriteValue16(Value16(functionIndex));
 			WriteReturnSignature(typeDescriptor);
 			WriteQualifiedSymbolName(member);
-			WriteParamListSignature(NULL, true);
+			WriteParamListSignature(nullptr, true);
 			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame size
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Packed frame size
@@ -3935,7 +3935,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 		WriteValue32(Value32(sizeAndType));
 	}
 
-	while (parameterList != NULL)
+	while (parameterList != nullptr)
 	{
 		const TypeDescriptor *type = parameterList->GetTypeDescriptor();
 		const bi32_t offset = parameterList->GetOffset();
@@ -3955,11 +3955,11 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 
 void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
 {
-	if (symbol != NULL)
+	if (symbol != nullptr)
 	{
 		WriteSymbolNameIndices(symbol->GetParentSymbol());
 		const Token *name = symbol->GetName();
-		if (name != NULL)
+		if (name != nullptr)
 		{
 			const bu16_t nameIndex = MapString(name->GetHashedText());
 			WriteValue16(Value16(nameIndex));
@@ -4049,10 +4049,10 @@ void GeneratorCore::SetLabelValue(size_t label, size_t value)
 void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 {
 	const Symbol *sym = symbol;
-	while (sym != NULL)
+	while (sym != nullptr)
 	{
 		const Token *name = sym->GetName();
-		if (name != NULL)
+		if (name != nullptr)
 		{
 			MapString(name->GetHashedText());
 		}

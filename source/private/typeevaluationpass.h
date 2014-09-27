@@ -57,7 +57,7 @@ private:
 	public:
 		RecursiveStructAnalyzer(CompilerErrorBuffer &errorBuffer):
 			mErrorBuffer(errorBuffer),
-			mTopLevelStruct(NULL)
+			mTopLevelStruct(nullptr)
 		{}
 
 		virtual ~RecursiveStructAnalyzer() {}
@@ -77,7 +77,7 @@ private:
 	};
 
 	bool AssertBooleanExpression(const Expression *expression, CompilerError::Type errorType) const;
-	bool AssertMost32IntegerExpression(const Expression *expression, CompilerError::Type errorType, const void *arg = NULL) const;
+	bool AssertMost32IntegerExpression(const Expression *expression, CompilerError::Type errorType, const void *arg = nullptr) const;
 	bool AssertNonConstExpression(const Token *op);
 	bool AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op);
 	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);

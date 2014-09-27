@@ -197,7 +197,7 @@ CboLoader::Handle CboLoader::Load()
 void CboLoader::BindNativeFunction(const NativeFunctionBinding &binding, const CodeSegment &codeSegment)
 {
 	Function *function = const_cast<Function *>(codeSegment.GetFunction(binding.mHash));
-	if (function != NULL)
+	if (function != nullptr)
 	{
 		if (function->IsNative())
 		{
@@ -219,7 +219,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 {
 	if (function.IsNative())
 	{
-		if (function.mNativeFunction == NULL)
+		if (function.mNativeFunction == nullptr)
 		{
 			FunctionIsNotBound(function);
 		}
@@ -338,7 +338,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 
-	while (*elements != NULL)
+	while (*elements != nullptr)
 	{
 		if (!isFirstElement)
 		{
@@ -359,7 +359,7 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 
-	while (*elements != NULL)
+	while (*elements != nullptr)
 	{
 		if (!isFirstElement)
 		{
@@ -490,7 +490,7 @@ void CboLoaderCore::LoadFunctionBlob()
 	}
 	else
 	{
-		function->mNativeFunction = NULL;
+		function->mNativeFunction = nullptr;
 	}
 
 	bool unpackArguments = function->mFramePointerAlignment > bu32_t(BOND_SLOT_SIZE);
@@ -519,7 +519,7 @@ const char *const *CboLoaderCore::LoadQualifiedIdentifier()
 		const size_t idIndex = ReadValue16().mUShort;
 		*element++ = mStringTable[idIndex].GetString();
 	}
-	*element++ = NULL;
+	*element++ = nullptr;
 	mResources.mQualifiedIdElements = element;
 	return elements;
 }

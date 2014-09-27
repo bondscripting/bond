@@ -11,7 +11,7 @@ void *DefaultAllocator::AllocateAligned(size_t size, size_t align)
 	char *mem = Alloc<char>(allocSize);
 	void *buffer = mem;
 
-	if (mem != NULL)
+	if (mem != nullptr)
 	{
 		buffer = AlignPointerUp(mem + sizeof(void*), allocAlign);
 		reinterpret_cast<void **>(buffer)[-1] = mem;
@@ -23,7 +23,7 @@ void *DefaultAllocator::AllocateAligned(size_t size, size_t align)
 
 void DefaultAllocator::FreeAligned(void *buffer)
 {
-	if (buffer != NULL)
+	if (buffer != nullptr)
 	{
 		Free(reinterpret_cast<void **>(buffer)[-1]);
 	}

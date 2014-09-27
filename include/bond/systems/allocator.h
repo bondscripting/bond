@@ -13,8 +13,8 @@ public:
 	template <typename T>
 	struct Deallocator
 	{
-		Deallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
-		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->Free(ptr); }
+		Deallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->Free(ptr); }
 		Allocator *mAllocator;
 	};
 
@@ -24,10 +24,10 @@ public:
 	{
 	public:
 		Handle():
-			std::unique_ptr<T, Deallocator<T> >(NULL, Deallocator<T>(NULL))
+			std::unique_ptr<T, Deallocator<T> >(nullptr, Deallocator<T>(nullptr))
 		{}
 
-		Handle(Allocator &allocator, T *ptr = NULL):
+		Handle(Allocator &allocator, T *ptr = nullptr):
 			std::unique_ptr<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
 		{}
 
@@ -46,8 +46,8 @@ public:
 	template <typename T>
 	struct AlignedDeallocator
 	{
-		AlignedDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
-		void operator()(T *ptr) { if (mAllocator != NULL) mAllocator->FreeAligned(ptr); }
+		AlignedDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->FreeAligned(ptr); }
 		Allocator *mAllocator;
 	};
 
@@ -57,10 +57,10 @@ public:
 	{
 	public:
 		AlignedHandle():
-			std::unique_ptr<T, AlignedDeallocator<T> >(NULL, AlignedDeallocator<T>(NULL))
+			std::unique_ptr<T, AlignedDeallocator<T> >(nullptr, AlignedDeallocator<T>(nullptr))
 		{}
 
-		AlignedHandle(Allocator &allocator, T *ptr = NULL):
+		AlignedHandle(Allocator &allocator, T *ptr = nullptr):
 			std::unique_ptr<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
 		{}
 
@@ -82,11 +82,11 @@ public:
 	template <typename T>
 	struct ObjectDeallocator
 	{
-		ObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
+		ObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != NULL)
+			if (mAllocator != nullptr)
 			{
 				ptr->~T();
 				mAllocator->Free(ptr);
@@ -102,10 +102,10 @@ public:
 	{
 	public:
 		ObjectHandle():
-			PointerHandle<T, ObjectDeallocator<T> >(NULL, ObjectDeallocator<T>(NULL))
+			PointerHandle<T, ObjectDeallocator<T> >(nullptr, ObjectDeallocator<T>(nullptr))
 		{}
 
-		ObjectHandle(Allocator &allocator, T *ptr = NULL):
+		ObjectHandle(Allocator &allocator, T *ptr = nullptr):
 			PointerHandle<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(&allocator))
 		{}
 
@@ -128,11 +128,11 @@ public:
 	template <typename T>
 	struct AlignedObjectDeallocator
 	{
-		AlignedObjectDeallocator(Allocator *allocator = NULL): mAllocator(allocator) {}
+		AlignedObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != NULL)
+			if (mAllocator != nullptr)
 			{
 				ptr->~T();
 				mAllocator->FreeAligned(ptr);
@@ -148,10 +148,10 @@ public:
 	{
 	public:
 		AlignedObjectHandle():
-			PointerHandle<T, AlignedObjectDeallocator<T> >(NULL, AlignedObjectDeallocator<T>(NULL))
+			PointerHandle<T, AlignedObjectDeallocator<T> >(nullptr, AlignedObjectDeallocator<T>(nullptr))
 		{}
 
-		AlignedObjectHandle(Allocator &allocator, T *ptr = NULL):
+		AlignedObjectHandle(Allocator &allocator, T *ptr = nullptr):
 			PointerHandle<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(&allocator))
 		{}
 
@@ -174,14 +174,14 @@ public:
 	template <typename T>
 	struct ArrayDeallocator
 	{
-		ArrayDeallocator(Allocator *allocator = NULL, size_t numElements = 0):
+		ArrayDeallocator(Allocator *allocator = nullptr, size_t numElements = 0):
 			mAllocator(allocator),
 			mNumElements(0)
 		{}
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != NULL)
+			if (mAllocator != nullptr)
 			{
 				for (size_t i = 0; i < mNumElements; ++i)
 				{
@@ -201,10 +201,10 @@ public:
 	{
 	public:
 		ArrayHandle():
-			PointerHandle<T, ArrayDeallocator<T> >(NULL, ArrayDeallocator<T>(NULL))
+			PointerHandle<T, ArrayDeallocator<T> >(nullptr, ArrayDeallocator<T>(nullptr))
 		{}
 
-		ArrayHandle(Allocator &allocator, T *ptr = NULL):
+		ArrayHandle(Allocator &allocator, T *ptr = nullptr):
 			PointerHandle<T, ArrayDeallocator<T> >(ptr, ArrayDeallocator<T>(&allocator))
 		{}
 
@@ -231,14 +231,14 @@ public:
 	class AlignedArrayDeallocator
 	{
 	public:
-		AlignedArrayDeallocator(Allocator *allocator = NULL, size_t numElements = 0):
+		AlignedArrayDeallocator(Allocator *allocator = nullptr, size_t numElements = 0):
 			mAllocator(allocator),
 			mNumElements(0)
 		{}
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != NULL)
+			if (mAllocator != nullptr)
 			{
 				for (size_t i = 0; i < mNumElements; ++i)
 				{
@@ -259,10 +259,10 @@ public:
 	{
 	public:
 		AlignedArrayHandle():
-			PointerHandle<T, AlignedArrayDeallocator<T> >(NULL, AlignedArrayDeallocator<T>(NULL))
+			PointerHandle<T, AlignedArrayDeallocator<T> >(nullptr, AlignedArrayDeallocator<T>(nullptr))
 		{}
 
-		AlignedArrayHandle(Allocator &allocator, T *ptr = NULL):
+		AlignedArrayHandle(Allocator &allocator, T *ptr = nullptr):
 			PointerHandle<T, AlignedArrayDeallocator<T> >(ptr, AlignedArrayDeallocator<T>(&allocator))
 		{}
 

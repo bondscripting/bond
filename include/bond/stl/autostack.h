@@ -23,7 +23,7 @@ public:
 	public:
 		explicit Element(AutoStack &stack):
 			mStack(stack),
-			mNext(NULL)
+			mNext(nullptr)
 		{
 			mStack.Push(this);
 		}
@@ -31,7 +31,7 @@ public:
 		Element(AutoStack &stack, const ElementType &value):
 			mValue(value),
 			mStack(stack),
-			mNext(NULL)
+			mNext(nullptr)
 		{
 			mStack.Push(this);
 		}
@@ -70,7 +70,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(): mElement(NULL) {}
+		Iterator(): mElement(nullptr) {}
 		explicit Iterator(Element *element): mElement(element) {}
 
 		bool operator==(const Iterator& other) const { return mElement == other.mElement; }
@@ -99,7 +99,7 @@ public:
 	class ConstIterator
 	{
 	public:
-		ConstIterator(): mElement(NULL) {}
+		ConstIterator(): mElement(nullptr) {}
 		explicit ConstIterator(const Element *element): mElement(element) {}
 		ConstIterator(const Iterator &iterator): mElement(iterator.mElement) {}
 
@@ -126,7 +126,7 @@ public:
 	};
 
 
-	AutoStack(): mTop(NULL) {}
+	AutoStack(): mTop(nullptr) {}
 
 
 	void Push(Element *element)
@@ -138,7 +138,7 @@ public:
 
 	void Pop()
 	{
-		if (mTop != NULL)
+		if (mTop != nullptr)
 		{
 			mTop = mTop->GetNext();
 		}
@@ -151,20 +151,20 @@ public:
 
 	void SetTop(const ElementType &value)
 	{
-		if (mTop != NULL)
+		if (mTop != nullptr)
 		{
 			mTop->SetValue(value);
 		}
 	}
 
 
-	bool IsEmpty() const { return mTop == NULL; }
+	bool IsEmpty() const { return mTop == nullptr; }
 
 
 	bool Contains(const ElementType &value) const
 	{
 		const Element *element = mTop;
-		while (element != NULL)
+		while (element != nullptr)
 		{
 			if (element->GetValue() == value)
 			{
@@ -177,8 +177,8 @@ public:
 
 	Iterator Begin() { return Iterator(mTop); }
 	ConstIterator Begin() const { return ConstIterator(mTop); }
-	Iterator End() { return Iterator(NULL); }
-	ConstIterator End() const { return ConstIterator(NULL); }
+	Iterator End() { return Iterator(nullptr); }
+	ConstIterator End() const { return ConstIterator(nullptr); }
 
 private:
 	Element *mTop;

@@ -8,8 +8,8 @@ namespace Bond
 void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
-	StructStack::Element structElement(mStruct, NULL);
-	FunctionStack::Element functionElement(mFunction, NULL);
+	StructStack::Element structElement(mStruct, nullptr);
+	FunctionStack::Element functionElement(mFunction, nullptr);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -19,7 +19,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(enumerator);
 	const Expression *value = enumerator->GetValue();
-	if (value != NULL)
+	if (value != nullptr)
 	{
 		AssertMost32IntegerExpression(value, CompilerError::ENUMERATOR_VALUE_IS_NOT_CONST_INTEGER, enumerator->GetName());
 	}
@@ -54,9 +54,9 @@ void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(typeDescriptor);
 	Expression *expressionList = typeDescriptor->GetLengthExpressionList();
-	while (expressionList != NULL)
+	while (expressionList != nullptr)
 	{
-		if (CastNode<EmptyExpression>(expressionList) != NULL)
+		if (CastNode<EmptyExpression>(expressionList) != nullptr)
 		{
 			expressionList->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 		}
@@ -87,7 +87,7 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
 		Initializer *initializer = namedInitializer->GetInitializer();
 
-		if (initializer != NULL)
+		if (initializer != nullptr)
 		{
 			ValidateInitializer(initializer, typeDescriptor);
 		}
@@ -125,7 +125,7 @@ void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
-	if (expression != NULL)
+	if (expression != nullptr)
 	{
 		AssertMost32IntegerExpression(expression, CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER);
 	}
@@ -144,7 +144,7 @@ void TypeEvaluationPass::Visit(ForStatement *forStatement)
 {
 	SemanticAnalysisPass::Visit(forStatement);
 	const Expression *condition = forStatement->GetCondition();
-	if (condition != NULL)
+	if (condition != nullptr)
 	{
 		AssertBooleanExpression(condition, CompilerError::FOR_CONDITION_IS_NOT_BOOLEAN);
 	}
@@ -474,7 +474,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			const TypeSpecifier *structSpecifier = structDescriptor.GetTypeSpecifier();
 			const Symbol *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
-			if (member == NULL)
+			if (member == nullptr)
 			{
 				mErrorBuffer.PushError(CompilerError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
 			}
@@ -485,14 +485,14 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 				if (structDescriptor.IsConst())
 				{
 					const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(member);
-					if (namedInitializer != NULL)
+					if (namedInitializer != nullptr)
 					{
 						memberDescriptor.SetConst();
 					}
 					else
 					{
 						const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(member);
-						if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
+						if ((functionDefinition != nullptr) && !functionDefinition->GetPrototype()->IsConst())
 						{
 							mErrorBuffer.PushError(
 								CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
@@ -552,8 +552,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 		const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
 		const Token *context = functionCallExpression->GetContextToken();
 
-		if ((lhSpecifier == NULL) ||
-		    (lhSpecifier->GetDefinition() == NULL) ||
+		if ((lhSpecifier == nullptr) ||
+		    (lhSpecifier->GetDefinition() == nullptr) ||
 		    (lhSpecifier->GetDefinition()->GetSymbolType() != Symbol::TYPE_FUNCTION))
 		{
 			mErrorBuffer.PushError(CompilerError::EXPRESSION_IS_NOT_CALLABLE, context);
@@ -574,7 +574,7 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 			if (numParams == numArgs)
 			{
-				while ((paramList != NULL) && (argList != NULL))
+				while ((paramList != nullptr) && (argList != nullptr))
 				{
 					const TypeAndValue &argTav = argList->GetTypeAndValue();
 					if (argTav.IsTypeDefined())
@@ -689,7 +689,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 	const QualifiedIdentifier *identifier = identifierExpression->GetIdentifier();
 	const Symbol *symbol = GetSymbol(identifier);
 
-	if (symbol == NULL)
+	if (symbol == nullptr)
 	{
 		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
 	}
@@ -698,7 +698,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		identifierExpression->SetDefinition(symbol);
 		const TypeAndValue *symbolTav = symbol->GetTypeAndValue();
 
-		if (symbolTav == NULL)
+		if (symbolTav == nullptr)
 		{
 			mErrorBuffer.PushError(CompilerError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
 		}
@@ -708,18 +708,18 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 
 			// Verify if the symbol was reached by implicitly dereferencing a const 'this' pointer.
 			if ((symbol->GetParentSymbol() == mStruct.GetTop()) &&
-			    (mFunction.GetTop() != NULL) &&
+			    (mFunction.GetTop() != nullptr) &&
 			    (mFunction.GetTop()->GetPrototype()->IsConst()))
 			{
 				const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
-				if (namedInitializer != NULL)
+				if (namedInitializer != nullptr)
 				{
 					typeDescriptor.SetConst();
 				}
 				else
 				{
 					const FunctionDefinition *functionDefinition = CastNode<FunctionDefinition>(symbol);
-					if ((functionDefinition != NULL) && !functionDefinition->GetPrototype()->IsConst())
+					if ((functionDefinition != nullptr) && !functionDefinition->GetPrototype()->IsConst())
 					{
 						mErrorBuffer.PushError(
 							CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
@@ -738,7 +738,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 void TypeEvaluationPass::Visit(ThisExpression *thisExpression)
 {
 	const StructDeclaration *structDeclaration = mStruct.GetTop();
-	if (structDeclaration != NULL)
+	if (structDeclaration != nullptr)
 	{
 		thisExpression->SetTypeDescriptor(*mFunction.GetTop()->GetThisTypeDescriptor());
 	}
@@ -901,16 +901,16 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 
 	if (descriptor->IsArrayType())
 	{
-		if (initializerList != NULL)
+		if (initializerList != nullptr)
 		{
 			const TypeDescriptor parent = descriptor->GetDereferencedType();
-			while (initializerList != NULL)
+			while (initializerList != nullptr)
 			{
 				ValidateInitializer(initializerList, &parent);
 				initializerList = NextNode(initializerList);
 			}
 		}
-		else if (expression != NULL)
+		else if (expression != nullptr)
 		{
 			mErrorBuffer.PushError(
 				CompilerError::MISSING_BRACES_IN_INITIALIZER,
@@ -920,7 +920,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 	}
 	else
 	{
-		if (expression != NULL)
+		if (expression != nullptr)
 		{
 			const TypeAndValue &tav = expression->GetTypeAndValue();
 			if (tav.IsTypeDefined())
@@ -932,7 +932,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 					CompilerError::INVALID_TYPE_CONVERSION);
 			}
 		}
-		else if (initializerList != NULL)
+		else if (initializerList != nullptr)
 		{
 			mErrorBuffer.PushError(
 				CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
@@ -948,7 +948,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Analyze(const StructDeclaratio
 	mTopLevelStruct = structDeclaration;
 	StructStack::Element structElement(mStruct, structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
-	mTopLevelStruct = NULL;
+	mTopLevelStruct = nullptr;
 }
 
 
@@ -984,7 +984,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeDescriptor *ty
 
 void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeSpecifier *typeSpecifier)
 {
-	if (typeSpecifier->GetDefinition() != NULL)
+	if (typeSpecifier->GetDefinition() != nullptr)
 	{
 		Traverse(CastNode<StructDeclaration>(typeSpecifier->GetDefinition()));
 	}

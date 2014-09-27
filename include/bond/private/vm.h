@@ -320,7 +320,7 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionNa
 	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
 	mNextArg(0)
 {
-	Initialize(vm, functionName, NULL);
+	Initialize(vm, functionName, nullptr);
 #if BOND_RUNTIME_CHECKS_ENABLED
 	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
 	if (ret.mType != SIG_VOID)

@@ -19,7 +19,7 @@ void TryParseInt(Bond::CalleeStackFrame &frame)
 	const char *str = frame.GetArg<const char *>(0);
 	bi32_t *result = frame.GetArg<bi32_t *>(1);
 	bool success = false;
-	if ((str != NULL) && (result != NULL))
+	if ((str != nullptr) && (result != nullptr))
 	{
 		success = sscanf(str, "%" BOND_SCNd32, result) == 1;
 	}
@@ -32,7 +32,7 @@ void TryParseLong(Bond::CalleeStackFrame &frame)
 	const char *str = frame.GetArg<const char *>(0);
 	bi64_t *result = frame.GetArg<bi64_t *>(1);
 	bool success = false;
-	if ((str != NULL) && (result != NULL))
+	if ((str != nullptr) && (result != nullptr))
 	{
 		success = sscanf(str, "%" BOND_SCNd64, result) == 1;
 	}
@@ -45,7 +45,7 @@ void TryParseFloat(Bond::CalleeStackFrame &frame)
 	const char *str = frame.GetArg<const char *>(0);
 	bf32_t *result = frame.GetArg<bf32_t *>(1);
 	bool success = false;
-	if ((str != NULL) && (result != NULL))
+	if ((str != nullptr) && (result != nullptr))
 	{
 		success = sscanf(str, "%" BOND_SCNf32, result) == 1;
 	}
@@ -58,7 +58,7 @@ void TryParseDouble(Bond::CalleeStackFrame &frame)
 	const char *str = frame.GetArg<const char *>(0);
 	bf64_t *result = frame.GetArg<bf64_t *>(1);
 	bool success = false;
-	if ((str != NULL) && (result != NULL))
+	if ((str != nullptr) && (result != nullptr))
 	{
 		success = sscanf(str, "%" BOND_SCNf64, result) == 1;
 	}

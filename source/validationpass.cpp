@@ -32,9 +32,9 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
 	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
 	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
-	TypeStack::Element returnTypeElement(mReturnType, NULL);
-	FunctionStack::Element functionElement(mFunction, NULL);
-	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
+	TypeStack::Element returnTypeElement(mReturnType, nullptr);
+	FunctionStack::Element functionElement(mFunction, nullptr);
+	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, nullptr);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -86,7 +86,7 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 	mEndsWithJump.SetTop(false);
 	Traverse(ifStatement->GetCondition());
 
-	bool hasReturn = ifStatement->GetElseStatement() != NULL;
+	bool hasReturn = ifStatement->GetElseStatement() != nullptr;
 	bool endsWithJump = hasReturn;
 	{
 		BoolStack::Element hasReturnElement(mHasReturn, false);
@@ -112,16 +112,16 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 {
 	AssertReachableCode(switchStatement);
 	BoolStack::Element isInSwitchElement(mIsInSwitch, true);
-	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, NULL);
+	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, nullptr);
 	mEndsWithJump.SetTop(false);
 	Traverse(switchStatement->GetControl());
 
 	bool hasReturn = true;
 	SwitchSection *sectionList = switchStatement->GetSectionList();
-	if (sectionList != NULL)
+	if (sectionList != nullptr)
 	{
 		BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
-		while (sectionList != NULL)
+		while (sectionList != nullptr)
 		{
 			BoolStack::Element hasReturnElement(mHasReturn, false);
 			Traverse(sectionList);
@@ -140,7 +140,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	bu32_t numMatches = 0;
 	bi32_t minMatch = BOND_INT_MAX;
 	bi32_t maxMatch = BOND_INT_MIN;
-	while (currLabel != NULL)
+	while (currLabel != nullptr)
 	{
 		if (!currLabel->IsDefault())
 		{
@@ -152,7 +152,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 		const ResolvedSwitchLabel *prevLabel = currLabel;
 		currLabel = NextNode(currLabel);
 
-		if ((currLabel != NULL) && (*prevLabel == *currLabel))
+		if ((currLabel != nullptr) && (*prevLabel == *currLabel))
 		{
 			if (currLabel->IsDefault())
 			{
@@ -163,7 +163,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 				mErrorBuffer.PushErrorInt(CompilerError::DUPLICATE_CASE_IN_SWITCH, switchStatement->GetContextToken(), currLabel->GetMatch());
 			}
 
-			while ((currLabel != NULL) && (*prevLabel == *currLabel))
+			while ((currLabel != nullptr) && (*prevLabel == *currLabel))
 			{
 				prevLabel = currLabel;
 				currLabel = NextNode(currLabel);
@@ -292,7 +292,7 @@ void ValidationPass::Visit(DeclarativeStatement *declarativeStatement)
 
 void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 {
-	if (expressionStatement->GetExpression() != NULL)
+	if (expressionStatement->GetExpression() != nullptr)
 	{
 		AssertReachableCode(expressionStatement);
 	}

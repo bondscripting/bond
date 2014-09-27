@@ -49,7 +49,7 @@ const Bond::NativeFunctionBinding MATH_BINDING_COLLECTION_FUNCTIONS[] =
 	{0xe2a01232, Bond::Modff},
 	{0x92d27b2c, Bond::Fmod},
 	{0x4d57e622, Bond::Fmodf},
-	{0, NULL}
+	{0, nullptr}
 };
 
 const Bond::NativeBindingCollection MATH_BINDING_COLLECTION =

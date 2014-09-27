@@ -8,7 +8,7 @@ bu32_t GetLength(const ListParseNode *list)
 {
 	bu32_t length = 0;
 	const ListParseNode *current = list;
-	while (current != NULL)
+	while (current != nullptr)
 	{
 		++length;
 		current = current->GetNextNode();
@@ -32,8 +32,8 @@ bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *t
 		AreComparableTypes(fromType, toType) ||
 		(fromType->IsValueType() &&
 		 toType->IsValueType() &&
-		 (fromType->GetTypeSpecifier()->GetDefinition() != NULL) &&
-		 (toType->GetTypeSpecifier()->GetDefinition() != NULL) &&
+		 (fromType->GetTypeSpecifier()->GetDefinition() != nullptr) &&
+		 (toType->GetTypeSpecifier()->GetDefinition() != nullptr) &&
 		 (fromType->GetTypeSpecifier()->GetDefinition() == toType->GetTypeSpecifier()->GetDefinition()));
 }
 

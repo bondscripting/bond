@@ -14,7 +14,7 @@ public:
 	public:
 		Handle():
 			mFileData(),
-			mFileLoader(NULL)
+			mFileLoader(nullptr)
 		{}
 
 		Handle(const FileData &fileData, FileLoader *fileLoader):
@@ -27,12 +27,12 @@ public:
 			mFileLoader(other.mFileLoader)
 		{
 			other.mFileData = FileData();
-			other.mFileLoader = NULL;
+			other.mFileLoader = nullptr;
 		}
 
 		~Handle()
 		{
-			if (mFileLoader != NULL)
+			if (mFileLoader != nullptr)
 			{
 				mFileLoader->DisposeFile(mFileData);
 			}

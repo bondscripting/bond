@@ -13,7 +13,7 @@ class ValueEvaluationPass: public SemanticAnalysisPass
 public:
 	ValueEvaluationPass(CompilerErrorBuffer &errorBuffer, SymbolTable &symbolTable, PointerSize pointerSize):
 		SemanticAnalysisPass(errorBuffer, symbolTable),
-		mPrevEnumerator(NULL),
+		mPrevEnumerator(nullptr),
 		mPointerSize(pointerSize),
 		mHasResolvedItems(false),
 		mHasUnresolvedItems(false)

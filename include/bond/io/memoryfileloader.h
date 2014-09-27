@@ -23,7 +23,7 @@ public:
 		size_t mNumFiles;
 	};
 
-	explicit MemoryFileLoader(const Index &index, FileLoader *delegateLoader = NULL):
+	explicit MemoryFileLoader(const Index &index, FileLoader *delegateLoader = nullptr):
 		mIndex(index),
 		mDelegateLoader(delegateLoader)
 	{}

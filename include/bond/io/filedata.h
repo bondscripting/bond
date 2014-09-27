@@ -8,7 +8,7 @@ namespace Bond
 
 struct FileData
 {
-	FileData(): mData(NULL), mLength(0) {}
+	FileData(): mData(nullptr), mLength(0) {}
 
 	FileData(const void *data, size_t length):
 		mData(data),

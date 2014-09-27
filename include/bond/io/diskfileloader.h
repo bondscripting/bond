@@ -12,7 +12,7 @@ class Allocator;
 class DiskFileLoader: public FileLoader
 {
 public:
-	explicit DiskFileLoader(Allocator &allocator, const char *rootPath = NULL, FileLoader *delegateLoader = NULL):
+	explicit DiskFileLoader(Allocator &allocator, const char *rootPath = nullptr, FileLoader *delegateLoader = nullptr):
 		mAllocator(allocator),
 		mRootPath(rootPath),
 		mDelegateLoader(delegateLoader)

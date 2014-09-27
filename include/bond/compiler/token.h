@@ -132,10 +132,10 @@ public:
 	};
 
 	Token():
-		mText(NULL),
+		mText(nullptr),
 		mStartPos(0, 0, 0),
 		mEndIndex(0),
-		mFileName(NULL),
+		mFileName(nullptr),
 		mTokenType(INVALID),
 		mAnnotations(0)
 	{}
@@ -145,7 +145,7 @@ public:
 		mValue(),
 		mStartPos(0, 0, 0),
 		mEndIndex(0),
-		mFileName(NULL),
+		mFileName(nullptr),
 		mTokenType(tokenType),
 		mAnnotations(0)
 	{}

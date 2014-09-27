@@ -199,7 +199,7 @@ public:
 #undef BOND_COMPILER_ERROR
 	};
 
-	CompilerError(): mType(NO_ERROR), mContext(NULL), mArg0(0), mArg1(0) {}
+	CompilerError(): mType(NO_ERROR), mContext(nullptr), mArg0(0), mArg1(0) {}
 
 	CompilerError(Type type, const Token *context, intptr_t arg0, intptr_t arg1):
 		mType(type),
@@ -234,8 +234,8 @@ public:
 
 	void Reset();
 
-	void PushError(CompilerError::Type type, const Token *context = NULL, const void *arg0 = NULL, const void *arg1 = NULL);
-	void PushErrorInt(CompilerError::Type type, const Token *context = NULL, intptr_t arg0 = 0, intptr_t arg1 = 0);
+	void PushError(CompilerError::Type type, const Token *context = nullptr, const void *arg0 = nullptr, const void *arg1 = nullptr);
+	void PushErrorInt(CompilerError::Type type, const Token *context = nullptr, intptr_t arg0 = 0, intptr_t arg1 = 0);
 	bool HasErrors() const { return mNumErrors > 0; }
 	size_t GetNumErrors() const { return mNumErrors; }
 	const CompilerError &GetError(size_t index) const { return mErrors[index]; }

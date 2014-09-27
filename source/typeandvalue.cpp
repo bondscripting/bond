@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != NULL) && mTypeDescriptor->IsDefined(); }
+bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != nullptr) && mTypeDescriptor->IsDefined(); }
 
 
 bi64_t TypeAndValue::AsLongValue() const

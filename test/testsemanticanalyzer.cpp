@@ -12,14 +12,14 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *outerSpace = globalScope->FindSymbol("OuterSpace");
-	ASSERT_MESSAGE(outerSpace != NULL, "Failed to find symbol 'OuterSpace'.");
+	ASSERT_MESSAGE(outerSpace != nullptr, "Failed to find symbol 'OuterSpace'.");
 	ASSERT_MESSAGE(outerSpace->GetSymbolType() == Bond::Symbol::TYPE_NAMESPACE, "Expected 'OuterSpace' to be a namespace.");
 
 	const Bond::Symbol *firstInnerSpace = outerSpace->FindSymbol("FirstInnerSpace");
-	ASSERT_MESSAGE(firstInnerSpace != NULL, "Failed to find symbol 'FirstInnerSpace'.");
+	ASSERT_MESSAGE(firstInnerSpace != nullptr, "Failed to find symbol 'FirstInnerSpace'.");
 
 	const Bond::Symbol *secondInnerSpace = outerSpace->FindSymbol("SecondInnerSpace");
-	ASSERT_MESSAGE(secondInnerSpace != NULL, "Failed to find symbol 'SecondInnerSpace'.");
+	ASSERT_MESSAGE(secondInnerSpace != nullptr, "Failed to find symbol 'SecondInnerSpace'.");
 
 	const Bond::bu32_t actualHash = secondInnerSpace->GetGlobalHashCode();
 	const Bond::bu32_t expectedHash = Bond::StringHash("::OuterSpace::SecondInnerSpace");
@@ -37,15 +37,15 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *empty = globalScope->FindSymbol("Empty");
-	ASSERT_MESSAGE(empty != NULL, "Failed to find symbol 'Empty'.");
+	ASSERT_MESSAGE(empty != nullptr, "Failed to find symbol 'Empty'.");
 	ASSERT_MESSAGE(empty->GetSymbolType() == Bond::Symbol::TYPE_ENUM, "Expected 'Empty' to be an enum.");
 
 	const Bond::Symbol *eighth = globalScope->FindSymbol("EIGHTH");
-	ASSERT_MESSAGE(eighth != NULL, "Failed to find symbol 'EIGHTH'.");
+	ASSERT_MESSAGE(eighth != nullptr, "Failed to find symbol 'EIGHTH'.");
 	ASSERT_MESSAGE(eighth->GetSymbolType() == Bond::Symbol::TYPE_VALUE, "Expected 'EIGHTH' to be a value.");
 
 	const Bond::Enumerator *enumerator = Bond::CastNode<Bond::Enumerator>(eighth);
-	ASSERT_MESSAGE(enumerator != NULL, "Expected 'EIGHTH' to be an enumerator.");
+	ASSERT_MESSAGE(enumerator != nullptr, "Expected 'EIGHTH' to be an enumerator.");
 
 	const Bond::TypeAndValue *tav = enumerator->GetTypeAndValue();
 	ASSERT_MESSAGE(tav->GetTypeDescriptor()->GetPrimitiveType() == Bond::Token::KEY_INT,
@@ -64,16 +64,16 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *symbol = globalScope->FindSymbol("VoidOneParameter");
-	ASSERT_MESSAGE(symbol != NULL, "Failed to find symbol 'VoidOneParameter'.");
+	ASSERT_MESSAGE(symbol != nullptr, "Failed to find symbol 'VoidOneParameter'.");
 	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'VoidOneParameter' to be a function.");
 	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
-	ASSERT_MESSAGE(function->GetBody() == NULL, "Expected 'VoidOneParameter' to have no body.");
+	ASSERT_MESSAGE(function->GetBody() == nullptr, "Expected 'VoidOneParameter' to have no body.");
 
 	symbol = globalScope->FindSymbol("ComplexFunctionPrototype2");
-	ASSERT_MESSAGE(symbol != NULL, "Failed to find symbol 'ComplexFunctionPrototype2'.");
+	ASSERT_MESSAGE(symbol != nullptr, "Failed to find symbol 'ComplexFunctionPrototype2'.");
 	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype2' to be a function.");
 	function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
-	ASSERT_MESSAGE(function->GetBody() != NULL, "Expected 'ComplexFunctionPrototype2' to have a body.");
+	ASSERT_MESSAGE(function->GetBody() != nullptr, "Expected 'ComplexFunctionPrototype2' to have a body.");
 
 	return true;
 }
@@ -94,15 +94,15 @@ DEFINE_SEMANTICANALYZER_TEST(Structs, "scripts/parser_Structs.bond")
 	const Bond::Symbol *globalScope = table.GetGlobalScope();
 
 	const Bond::Symbol *structSymbol = globalScope->FindSymbol("DataAndFunctions");
-	ASSERT_MESSAGE(structSymbol != NULL, "Failed to find symbol 'DataAndFunctions'.");
+	ASSERT_MESSAGE(structSymbol != nullptr, "Failed to find symbol 'DataAndFunctions'.");
 	ASSERT_MESSAGE(structSymbol->GetSymbolType() == Bond::Symbol::TYPE_STRUCT, "Expected 'DataAndFunctions' to be a struct.");
 
 	const Bond::Symbol *memberSymbol = structSymbol->FindSymbol("x");
-	ASSERT_MESSAGE(memberSymbol != NULL, "Failed to find symbol 'x'.");
+	ASSERT_MESSAGE(memberSymbol != nullptr, "Failed to find symbol 'x'.");
 	ASSERT_MESSAGE(memberSymbol->GetSymbolType() == Bond::Symbol::TYPE_VALUE, "Expected 'x' to be a value.");
 
 	memberSymbol = structSymbol->FindSymbol("DoStuff");
-	ASSERT_MESSAGE(memberSymbol != NULL, "Failed to find symbol 'DoStuff'.");
+	ASSERT_MESSAGE(memberSymbol != nullptr, "Failed to find symbol 'DoStuff'.");
 	ASSERT_MESSAGE(memberSymbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'DoStuff to be a function.");
 
 	return true;

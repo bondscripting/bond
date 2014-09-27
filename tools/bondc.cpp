@@ -44,11 +44,11 @@ int main(int argc, const char *argv[])
 		loaderList.push_back(Bond::DiskFileLoader(allocator));
 		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
 		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdLibLoader);
-		const char *cboFileName = NULL;
-		const char *cppFileName = NULL;
-		const char *hFileName = NULL;
-		const char *bindingCollectionName = NULL;
-		const char *includeName = NULL;
+		const char *cboFileName = nullptr;
+		const char *cppFileName = nullptr;
+		const char *hFileName = nullptr;
+		const char *bindingCollectionName = nullptr;
+		const char *includeName = nullptr;
 		bool generateBindings = false;
 
 		for (int i = 1; i < argc; ++i)
@@ -146,9 +146,9 @@ int main(int argc, const char *argv[])
 			}
 		}
 
-		if ((cppFileName != NULL) || (hFileName != NULL) || (bindingCollectionName != NULL) || (includeName != NULL))
+		if ((cppFileName != nullptr) || (hFileName != nullptr) || (bindingCollectionName != nullptr) || (includeName != nullptr))
 		{
-			if ((cppFileName == NULL) || (hFileName == NULL) || (bindingCollectionName == NULL) || (includeName == NULL))
+			if ((cppFileName == nullptr) || (hFileName == nullptr) || (bindingCollectionName == nullptr) || (includeName == nullptr))
 			{
 				fprintf(stderr, "Options -b -c -h and -i must all be specified together.\n");
 				error = true;
@@ -159,7 +159,7 @@ int main(int argc, const char *argv[])
 			}
 		}
 
-		if (!generateBindings && (cboFileName == NULL))
+		if (!generateBindings && (cboFileName == nullptr))
 		{
 			// If no output file name specified, then compile to bond.cbo.
 			cboFileName = "bond.cbo";
@@ -174,10 +174,10 @@ int main(int argc, const char *argv[])
 
 		if (!errorBuffer.HasErrors())
 		{
-			if (cboFileName != NULL)
+			if (cboFileName != nullptr)
 			{
 				FILE *cboFile = fopen(cboFileName, "wb");
-				if (cboFile != NULL)
+				if (cboFile != nullptr)
 				{
 					Bond::StdioBinaryWriter cboWriter(cboFile);
 					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
@@ -194,19 +194,19 @@ int main(int argc, const char *argv[])
 			{
 				FILE *cppFile = fopen(cppFileName, "w");
 				FILE *hFile = fopen(hFileName, "w");
-				if ((cppFile != NULL) && (hFile != NULL))
+				if ((cppFile != nullptr) && (hFile != nullptr))
 				{
 					Bond::StdioTextWriter cppWriter(cppFile);
 					Bond::StdioTextWriter hWriter(hFile);
 					Bond::NativeBindingGenerator generator;
 					generator.Generate(parser.GetTranslationUnitList(), cppWriter, hWriter, bindingCollectionName, includeName);
 				}
-				if (cppFile == NULL)
+				if (cppFile == nullptr)
 				{
 					fprintf(stderr, "Failed to open '%s'.\n", cppFileName);
 					error = true;
 				}
-				if (hFile == NULL)
+				if (hFile == nullptr)
 				{
 					fprintf(stderr, "Failed to open '%s'.\n", hFileName);
 					error = true;

@@ -10,7 +10,7 @@ const Bond::NativeFunctionBinding STRING_BINDING_COLLECTION_FUNCTIONS[] =
 	{0x1d1a7bd4, Bond::TryParseLong},
 	{0xc86cddb0, Bond::TryParseFloat},
 	{0xc8b53ac5, Bond::TryParseDouble},
-	{0, NULL}
+	{0, nullptr}
 };
 
 const Bond::NativeBindingCollection STRING_BINDING_COLLECTION =

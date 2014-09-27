@@ -18,7 +18,7 @@ public:
 		mByteCode(reinterpret_cast<const bu8_t *>(byteCode)),
 		mLength(length),
 		mIndex(0),
-		mValue32Table(NULL)
+		mValue32Table(nullptr)
 	{}
 
 	CboValidator::Result Validate();

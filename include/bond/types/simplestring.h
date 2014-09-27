@@ -13,7 +13,7 @@ class SimpleString
 {
 public:
 	SimpleString():
-		mStr(NULL),
+		mStr(nullptr),
 		mLength(0)
 	{}
 

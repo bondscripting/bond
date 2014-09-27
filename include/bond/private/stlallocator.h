@@ -21,7 +21,7 @@ public:
 	template <typename U> struct rebind { typedef StlAllocator<U> other; };
 
 	StlAllocator():
-		mAllocator(NULL)
+		mAllocator(nullptr)
 	{}
 
 	StlAllocator(Allocator *allocator):
@@ -42,7 +42,7 @@ public:
 
 	const_pointer address(const_reference t) const { return &t; }
 
-	pointer allocate(size_type numElements, const void* = NULL)
+	pointer allocate(size_type numElements, const void* = nullptr)
 	{
 		return mAllocator->Alloc<T>(numElements);
 	}

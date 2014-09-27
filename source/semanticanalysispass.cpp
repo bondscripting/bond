@@ -86,7 +86,7 @@ void SemanticAnalysisPass::InsertSymbol(Symbol *parent, Symbol *symbol)
 {
 	Symbol *prev = parent->FindSymbol(symbol->GetName());
 
-	if (prev != NULL)
+	if (prev != nullptr)
 	{
 		mErrorBuffer.PushError(CompilerError::DUPLICATE_SYMBOL, symbol->GetName(), prev->GetName());
 	}
@@ -106,13 +106,13 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 {
 	Symbol *target = parent->FindSymbol(symbol->GetName());
 
-	if ((target != NULL) && (target->GetSymbolType() != symbol->GetSymbolType()))
+	if ((target != nullptr) && (target->GetSymbolType() != symbol->GetSymbolType()))
 	{
 		mErrorBuffer.PushError(CompilerError::DUPLICATE_SYMBOL, target->GetName(), symbol->GetName());
-		target = NULL;
+		target = nullptr;
 	}
 
-	if (target == NULL)
+	if (target == nullptr)
 	{
 		parent->InsertSymbol(symbol);
 		target = symbol;
