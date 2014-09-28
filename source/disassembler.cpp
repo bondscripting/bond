@@ -1,4 +1,4 @@
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/endian.h"
 #include "bond/systems/math.h"
@@ -19,13 +19,13 @@ public:
 	DisassemblerCore(
 			const CboValidator::Result &validationResult,
 			Allocator &allocator,
-			TextWriter &writer,
+			OutputStream &stream,
 			const bu8_t *byteCode):
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
 		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
 		mValidationResult(validationResult),
-		mWriter(writer),
+		mStream(stream),
 		mByteCode(byteCode),
 		mIndex(0)
 	{}
@@ -54,17 +54,17 @@ private:
 	Value64Table::Type mValue64Table;
 	StringTable::Type mStringTable;
 	CboValidator::Result mValidationResult;
-	TextWriter &mWriter;
+	OutputStream &mStream;
 	const bu8_t *mByteCode;
 	size_t mIndex;
 };
 
 
-void Disassembler::Disassemble(TextWriter &writer, const void *byteCode, size_t length)
+void Disassembler::Disassemble(OutputStream &stream, const void *byteCode, size_t length)
 {
 	CboValidator validator;
 	CboValidator::Result result = validator.Validate(byteCode, length);
-	DisassemblerCore disassembler(result, mAllocator, writer, static_cast<const bu8_t *>(byteCode));
+	DisassemblerCore disassembler(result, mAllocator, stream, static_cast<const bu8_t *>(byteCode));
 	disassembler.Disassemble();
 }
 
@@ -74,8 +74,8 @@ void DisassemblerCore::Disassemble()
 	// Skip some header information.
 	mIndex += 20;
 
-	mWriter.Write("Version %d.%02d\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
-	mWriter.Write("Pointer size: %d bits\n", (mValidationResult.mPointerSize == POINTER_64BIT) ? 64 : 32);
+	mStream.Print("Version %d.%02d\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
+	mStream.Print("Pointer size: %d bits\n", (mValidationResult.mPointerSize == POINTER_64BIT) ? 64 : 32);
 
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
 	{
@@ -132,13 +132,13 @@ void DisassemblerCore::DisassembleListBlob()
 
 void DisassemblerCore::DisassembleFunctionBlob()
 {
-	mWriter.Write("Function: ");
+	mStream.Print("Function: ");
 	DisassembleSizeAndType();
-	mWriter.Write(" ");
+	mStream.Print(" ");
 	DisassembleQualifiedIdentifier();
-	mWriter.Write("(");
+	mStream.Print("(");
 	DisassembleParamListSignature();
-	mWriter.Write(")\n");
+	mStream.Print(")\n");
 
 	const bu32_t functionHash = ReadValue32().mUInt;
 	const bu32_t argSize = ReadValue32().mUInt;
@@ -149,7 +149,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	const bu32_t codeSize = ReadValue32().mUInt;
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
-	mWriter.Write(
+	mStream.Print(
 		"\thash: 0x%" BOND_PRIx32 "\n"
 		"\targ size: %" BOND_PRIu32 "\n"
 		"\tpacked arg size: %" BOND_PRIu32 "\n"
@@ -164,7 +164,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 		const OpCode opCode = static_cast<OpCode>(mByteCode[mIndex]);
 		const OpCodeParam param = GetOpCodeParamType(opCode);
 
-		mWriter.Write("%6d: %-12s", mIndex - codeStart, GetOpCodeMnemonic(opCode));
+		mStream.Print("%6d: %-12s", mIndex - codeStart, GetOpCodeMnemonic(opCode));
 		++mIndex;
 
 		switch (param)
@@ -172,26 +172,26 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mWriter.Write("%" BOND_PRId32, bi32_t(char(mByteCode[mIndex++])));
+				mStream.Print("%" BOND_PRId32, bi32_t(char(mByteCode[mIndex++])));
 				break;
 			case OC_PARAM_UCHAR:
-				mWriter.Write("%" BOND_PRIu32, bu32_t(mByteCode[mIndex++]));
+				mStream.Print("%" BOND_PRIu32, bu32_t(mByteCode[mIndex++]));
 				break;
 			case OC_PARAM_UCHAR_CHAR:
-				mWriter.Write("%" BOND_PRIu32 ", %" BOND_PRId32, bu32_t(mByteCode[mIndex]), bi32_t(char(mByteCode[mIndex + 1])));
+				mStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, bu32_t(mByteCode[mIndex]), bi32_t(char(mByteCode[mIndex + 1])));
 				mIndex += 2;
 				break;
 			case OC_PARAM_SHORT:
-				mWriter.Write("%" BOND_PRId32, bi32_t(ReadValue16().mShort));
+				mStream.Print("%" BOND_PRId32, bi32_t(ReadValue16().mShort));
 				break;
 			case OC_PARAM_USHORT:
-				mWriter.Write("%" BOND_PRId32, bu32_t(ReadValue16().mUShort));
+				mStream.Print("%" BOND_PRId32, bu32_t(ReadValue16().mUShort));
 				break;
 			case OC_PARAM_INT:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
 				const bi32_t value = mValue32Table[valueIndex].mInt;
-				mWriter.Write("%" BOND_PRId32, value);
+				mStream.Print("%" BOND_PRId32, value);
 			}
 			break;
 			case OC_PARAM_VAL32:
@@ -199,21 +199,21 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
 				const bu32_t value = mValue32Table[valueIndex].mUInt;
-				mWriter.Write("0x%" BOND_PRIx32, value);
+				mStream.Print("0x%" BOND_PRIx32, value);
 			}
 			break;
 			case OC_PARAM_VAL64:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
 				const bu64_t value = mValue64Table[valueIndex].mULong;
-				mWriter.Write("0x%" BOND_PRIx64, value);
+				mStream.Print("0x%" BOND_PRIx64, value);
 			}
 			break;
 			case OC_PARAM_OFF16:
 			{
 				const bi32_t offset = ReadValue16().mShort;
 				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
-				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
+				mStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
@@ -221,7 +221,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const size_t offsetIndex = ReadValue16().mUShort;
 				const bi32_t offset = mValue32Table[offsetIndex].mInt;
 				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
-				mWriter.Write("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
+				mStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_STRING:
@@ -237,13 +237,13 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const bu32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
 				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
-				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
+				mStream.Print("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
 				for (bu32_t i = 0; i < numMatches; ++i)
 				{
 					const bi32_t match = ReadValue32().mInt;
 					const bi32_t offset = ReadValue32().mInt;
-					mWriter.Write("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
+					mStream.Print("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
 				}
 			}
 			break;
@@ -256,18 +256,18 @@ void DisassemblerCore::DisassembleFunctionBlob()
 				const bu32_t numMatches = maxMatch - minMatch + 1;
 				const size_t tableSize = numMatches * sizeof(Value32);
 				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
-				mWriter.Write("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
+				mStream.Print("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
 				for (bu32_t i = 0; i < numMatches; ++i)
 				{
 					const bi32_t match = minMatch + i;
 					const bi32_t offset = ReadValue32().mInt;
-					mWriter.Write("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
+					mStream.Print("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
 				}
 			}
 			break;
 		}
-		mWriter.Write("\n");
+		mStream.Print("\n");
 	}
 }
 
@@ -281,7 +281,7 @@ void DisassemblerCore::DisassembleQualifiedIdentifier()
 		const SimpleString &id = mStringTable[idIndex];
 		if (i > 0)
 		{
-			mWriter.Write("::");
+			mStream.Print("::");
 		}
 		WriteSimpleString(id);
 	}
@@ -297,7 +297,7 @@ void DisassemblerCore::DisassembleParamListSignature()
 		mIndex += sizeof(Value32);
 		if (i > 0)
 		{
-			mWriter.Write(", ");
+			mStream.Print(", ");
 		}
 		DisassembleSizeAndType();
 	}
@@ -311,7 +311,7 @@ void DisassemblerCore::DisassembleSizeAndType()
 	bu32_t type;
 	DecodeSizeAndType(sizeAndType, size, type);
 	const char *str = GetBondTypeMnemonic(SignatureType(type));
-	mWriter.Write(str, size);
+	mStream.Print(str, size);
 }
 
 
@@ -321,7 +321,7 @@ void DisassemblerCore::WriteSimpleString(const SimpleString &str)
 	const char *s = str.GetString();
 	for (size_t i = 0; i < length; ++i)
 	{
-		mWriter.Write("%c", s[i]);
+		mStream.Print("%c", s[i]);
 	}
 }
 
@@ -331,27 +331,27 @@ void DisassemblerCore::WriteAbbreviatedString(const SimpleString &str)
 	const size_t length = str.GetLength();
 	const char *s = str.GetString();
 
-	mWriter.Write("%c", '"');
+	mStream.Print("%c", '"');
 	if (length < 28)
 	{
 		for (size_t i = 0; i < length; ++i)
 		{
-			mWriter.Write("%c", s[i]);
+			mStream.Print("%c", s[i]);
 		}
 	}
 	else
 	{
 		for (size_t i = 0; i < 12; ++i)
 		{
-			mWriter.Write("%c", s[i]);
+			mStream.Print("%c", s[i]);
 		}
-		mWriter.Write("%s", "...");
+		mStream.Print("%s", "...");
 		for (size_t i = length - 12; i < length; ++i)
 		{
-			mWriter.Write("%c", s[i]);
+			mStream.Print("%c", s[i]);
 		}
 	}
-	mWriter.Write("%c", '"');
+	mStream.Print("%c", '"');
 }
 
 

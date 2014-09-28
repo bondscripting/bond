@@ -2,7 +2,7 @@
 #include "bond/compiler/codegenerator.h"
 #include "bond/compiler/parsenodetraverser.h"
 #include "bond/compiler/parsenodeutil.h"
-#include "bond/io/binarywriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/stl/algorithm.h"
 #include "bond/stl/autostack.h"
 #include "bond/stl/list.h"
@@ -127,7 +127,7 @@ class GeneratorCore: private ParseNodeTraverser
 public:
 	GeneratorCore(
 			Allocator &allocator,
-			BinaryWriter &writer,
+			OutputStream &stream,
 			CompilerErrorBuffer &errorBuffer,
 			const TranslationUnit *translationUnitList,
 			PointerSize pointerSize):
@@ -140,7 +140,7 @@ public:
 		mFunctionList(FunctionList::Allocator(&allocator)),
 		mNativeMemberList(NamedInitializerList::Allocator(&allocator)),
 		mAllocator(allocator),
-		mWriter(writer),
+		mStream(stream),
 		mErrorBuffer(errorBuffer),
 		mTranslationUnitList(translationUnitList),
 		mPointerSize(pointerSize)
@@ -431,16 +431,16 @@ private:
 	BoolStack mCollapseNotOperators;
 	BoolStack mExpressionIsNegated;
 	Allocator &mAllocator;
-	BinaryWriter &mWriter;
+	OutputStream &mStream;
 	CompilerErrorBuffer &mErrorBuffer;
 	const TranslationUnit *mTranslationUnitList;
 	PointerSize mPointerSize;
 };
 
 
-void CodeGenerator::Generate(const TranslationUnit *translationUnitList, BinaryWriter &writer)
+void CodeGenerator::Generate(const TranslationUnit *translationUnitList, OutputStream &stream)
 {
-	GeneratorCore generator(mAllocator, writer, mErrorBuffer, translationUnitList, mPointerSize);
+	GeneratorCore generator(mAllocator, stream, mErrorBuffer, translationUnitList, mPointerSize);
 	generator.Generate();
 }
 
@@ -461,8 +461,8 @@ void GeneratorCore::Generate()
 	WriteConstantTable();
 
 	// Cache the start position and skip 4 bytes for the blob size.
-	const int startPos = mWriter.GetPosition();
-	mWriter.AddOffset(sizeof(Value32));
+	const OutputStream::pos_t startPos = mStream.GetPosition();
+	mStream.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
 	WriteValue32(Value32(/* mDefinitionList.size() + */ bu32_t(mFunctionList.size()) + bu32_t(2 * mNativeMemberList.size())));
@@ -471,10 +471,10 @@ void GeneratorCore::Generate()
 	WriteNativeMemberList(functionIndex);
 
 	// Patch up the blob size.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
-	WriteValue32(Value32(endPos - startPos));
-	mWriter.SetPosition(endPos);
+	const OutputStream::pos_t endPos = mStream.GetPosition();
+	mStream.SetPosition(startPos);
+	WriteValue32(Value32(bu32_t(endPos - startPos)));
+	mStream.SetPosition(endPos);
 }
 
 
@@ -3727,10 +3727,10 @@ const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Typ
 
 void GeneratorCore::WriteConstantTable()
 {
-	const int startPos = mWriter.GetPosition();
+	const OutputStream::pos_t startPos = mStream.GetPosition();
 
 	// Skip the 4 bytes for the table size.
-	mWriter.AddOffset(sizeof(Value32));
+	mStream.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(bu16_t(mValue32List.size())));
 	WriteValue16(Value16(bu16_t(mValue64List.size())));
@@ -3753,15 +3753,15 @@ void GeneratorCore::WriteConstantTable()
 		WriteValue16(Value16(bu16_t(length)));
 		for (size_t i = 0; i < length; ++i)
 		{
-			mWriter.Write(str[i]);
+			mStream.Write(str[i]);
 		}
 	}
 
 	// Patch up the table size.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
-	WriteValue32(Value32(endPos - startPos));
-	mWriter.SetPosition(endPos);
+	const OutputStream::pos_t endPos = mStream.GetPosition();
+	mStream.SetPosition(startPos);
+	WriteValue32(Value32(bu32_t(endPos - startPos)));
+	mStream.SetPosition(endPos);
 }
 
 
@@ -3772,8 +3772,8 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		const FunctionDefinition *function = functionIt->mDefinition;
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
-		const int blobStartPos = mWriter.GetPosition();
-		mWriter.AddOffset(sizeof(Value32));
+		const int blobStartPos = mStream.GetPosition();
+		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
 		WriteReturnSignature(function->GetPrototype()->GetReturnType());
@@ -3787,9 +3787,9 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		WriteValue32(Value32(functionIt->mFramePointerAlignment));
 
 		// Cache the code start position and skip 4 bytes for the code size.
-		const int codeSizePos = mWriter.GetPosition();
-		mWriter.AddOffset(sizeof(Value32));
-		const int codeStartPos = mWriter.GetPosition();
+		const int codeSizePos = mStream.GetPosition();
+		mStream.AddOffset(sizeof(Value32));
+		const int codeStartPos = mStream.GetPosition();
 
 		const ByteCode::Type &byteCode = functionIt->mByteCode;
 		const JumpList::Type &jumpList = functionIt->mJumpList;
@@ -3799,7 +3799,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		{
 			while (byteCodeIndex < jumpIt->mOpCodePos)
 			{
-				mWriter.Write(byteCode[byteCodeIndex++]);
+				mStream.Write(byteCode[byteCodeIndex++]);
 			}
 
 			bu8_t opCode = byteCode[byteCodeIndex++];
@@ -3812,25 +3812,25 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 				arg.mUShort = MapValue32(Value32(offset));
 			}
 
-			mWriter.Write(opCode);
+			mStream.Write(opCode);
 			WriteValue16(arg);
 			byteCodeIndex += 2;
 		}
 
 		while (byteCodeIndex < byteCode.size())
 		{
-			mWriter.Write(byteCode[byteCodeIndex++]);
+			mStream.Write(byteCode[byteCodeIndex++]);
 		}
 
 		// Patch up the code size.
-		const int endPos = mWriter.GetPosition();
-		mWriter.SetPosition(codeSizePos);
-		WriteValue32(Value32(endPos - codeStartPos));
+		const OutputStream::pos_t endPos = mStream.GetPosition();
+		mStream.SetPosition(codeSizePos);
+		WriteValue32(Value32(bu32_t(endPos - codeStartPos)));
 
 		// Patch up the blob size.
-		mWriter.SetPosition(blobStartPos);
-		WriteValue32(Value32(endPos - blobStartPos));
-		mWriter.SetPosition(endPos);
+		mStream.SetPosition(blobStartPos);
+		WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+		mStream.SetPosition(endPos);
 	}
 }
 
@@ -3845,8 +3845,8 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 		// Write the getter function.
 		{
 			// Cache the blob start position and skip 4 bytes for the blob size.
-			const int blobStartPos = mWriter.GetPosition();
-			mWriter.AddOffset(sizeof(Value32));
+			const int blobStartPos = mStream.GetPosition();
+			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
 			WriteReturnSignature(typeDescriptor);
 			WriteQualifiedSymbolName(member);
@@ -3860,10 +3860,10 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			WriteValue32(Value32(0));              // Code size
 
 			// Patch up the blob size.
-			const int endPos = mWriter.GetPosition();
-			mWriter.SetPosition(blobStartPos);
-			WriteValue32(Value32(endPos - blobStartPos));
-			mWriter.SetPosition(endPos);
+			const OutputStream::pos_t endPos = mStream.GetPosition();
+			mStream.SetPosition(blobStartPos);
+			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+			mStream.SetPosition(endPos);
 		}
 
 		// Write the setter function.
@@ -3875,8 +3875,8 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			const Parameter parameter(typeDescriptor, -bi32_t(offset));
 
 			// Cache the blob start position and skip 4 bytes for the blob size.
-			const int blobStartPos = mWriter.GetPosition();
-			mWriter.AddOffset(sizeof(Value32));
+			const int blobStartPos = mStream.GetPosition();
+			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
 			WriteReturnSignature(&voidDescriptor);
 			WriteQualifiedSymbolName(member);
@@ -3890,10 +3890,10 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			WriteValue32(Value32(0));              // Code size
 
 			// Patch up the blob size.
-			const int endPos = mWriter.GetPosition();
-			mWriter.SetPosition(blobStartPos);
-			WriteValue32(Value32(endPos - blobStartPos));
-			mWriter.SetPosition(endPos);
+			const OutputStream::pos_t endPos = mStream.GetPosition();
+			mStream.SetPosition(blobStartPos);
+			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+			mStream.SetPosition(endPos);
 		}
 	}
 }
@@ -3902,16 +3902,16 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 {
 	// Cache the position for the number of elements and skip 2 bytes.
-	const int startPos = mWriter.GetPosition();
-	mWriter.AddOffset(sizeof(Value16));
+	const OutputStream::pos_t startPos = mStream.GetPosition();
+	mStream.AddOffset(sizeof(Value16));
 
 	WriteSymbolNameIndices(symbol);
 
 	// Patch up the number of elements.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
+	const OutputStream::pos_t endPos = mStream.GetPosition();
+	mStream.SetPosition(startPos);
 	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
-	mWriter.SetPosition(endPos);
+	mStream.SetPosition(endPos);
 }
 
 
@@ -3925,8 +3925,8 @@ void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
 void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool includeThis)
 {
 	// Cache the position for the number of parameters and skip 2 bytes.
-	const int startPos = mWriter.GetPosition();
-	mWriter.AddOffset(sizeof(Value16));
+	const OutputStream::pos_t startPos = mStream.GetPosition();
+	mStream.AddOffset(sizeof(Value16));
 
 	if (includeThis)
 	{
@@ -3946,10 +3946,10 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	}
 
 	// Patch up the number of parameters.
-	const int endPos = mWriter.GetPosition();
-	mWriter.SetPosition(startPos);
+	const OutputStream::pos_t endPos = mStream.GetPosition();
+	mStream.SetPosition(startPos);
 	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
-	mWriter.SetPosition(endPos);
+	mStream.SetPosition(endPos);
 }
 
 
@@ -3971,32 +3971,32 @@ void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
 void GeneratorCore::WriteValue16(Value16 value)
 {
 	ConvertBigEndian16(value.mBytes);
-	mWriter.Write(value.mBytes[0]);
-	mWriter.Write(value.mBytes[1]);
+	mStream.Write(value.mBytes[0]);
+	mStream.Write(value.mBytes[1]);
 }
 
 
 void GeneratorCore::WriteValue32(Value32 value)
 {
 	ConvertBigEndian32(value.mBytes);
-	mWriter.Write(value.mBytes[0]);
-	mWriter.Write(value.mBytes[1]);
-	mWriter.Write(value.mBytes[2]);
-	mWriter.Write(value.mBytes[3]);
+	mStream.Write(value.mBytes[0]);
+	mStream.Write(value.mBytes[1]);
+	mStream.Write(value.mBytes[2]);
+	mStream.Write(value.mBytes[3]);
 }
 
 
 void GeneratorCore::WriteValue64(Value64 value)
 {
 	ConvertBigEndian64(value.mBytes);
-	mWriter.Write(value.mBytes[0]);
-	mWriter.Write(value.mBytes[1]);
-	mWriter.Write(value.mBytes[2]);
-	mWriter.Write(value.mBytes[3]);
-	mWriter.Write(value.mBytes[4]);
-	mWriter.Write(value.mBytes[5]);
-	mWriter.Write(value.mBytes[6]);
-	mWriter.Write(value.mBytes[7]);
+	mStream.Write(value.mBytes[0]);
+	mStream.Write(value.mBytes[1]);
+	mStream.Write(value.mBytes[2]);
+	mStream.Write(value.mBytes[3]);
+	mStream.Write(value.mBytes[4]);
+	mStream.Write(value.mBytes[5]);
+	mStream.Write(value.mBytes[6]);
+	mStream.Write(value.mBytes[7]);
 }
 
 

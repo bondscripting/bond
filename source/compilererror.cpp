@@ -1,6 +1,6 @@
 #include "bond/compiler/compilererror.h"
 #include "bond/compiler/token.h"
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/tools/prettyprinter.h"
 
 namespace Bond
@@ -44,7 +44,7 @@ const char *CompilerError::GetErrorName(Type type)
 }
 
 
-void CompilerError::Print(TextWriter &writer) const
+void CompilerError::Print(OutputStream &stream) const
 {
 	const char *format = GetFormat();
 
@@ -52,7 +52,7 @@ void CompilerError::Print(TextWriter &writer) const
 	{
 		const char *fileName = mContext->GetFileName();
 		const Bond::StreamPos &pos = mContext->GetStartPos();
-		writer.Write("%s (%d, %d): ", fileName, pos.line, pos.column);
+		stream.Print("%s (%d, %d): ", fileName, pos.line, pos.column);
 	}
 
 	enum State
@@ -75,7 +75,7 @@ void CompilerError::Print(TextWriter &writer) const
 			}
 			else
 			{
-				writer.Write("%c", *format);
+				stream.Print("%c", *format);
 			}
 		}
 		else
@@ -96,14 +96,14 @@ void CompilerError::Print(TextWriter &writer) const
 
 				case 'c':
 				{
-					writer.Write("%s", mContext->GetText());
+					stream.Print("%s", mContext->GetText());
 					state = STATE_NORMAL;
 				}
 				break;
 
 				case 'd':
 				{
-					writer.Write("%" BOND_PRId32, bi32_t(arg));
+					stream.Print("%" BOND_PRId32, bi32_t(arg));
 					state = STATE_NORMAL;
 				}
 				break;
@@ -112,7 +112,7 @@ void CompilerError::Print(TextWriter &writer) const
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
 					const char *fileName = token->GetFileName();
-					writer.Write("%s", fileName);
+					stream.Print("%s", fileName);
 					state = STATE_NORMAL;
 				}
 				break;
@@ -121,7 +121,7 @@ void CompilerError::Print(TextWriter &writer) const
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
 					const Bond::StreamPos &argPos = token->GetStartPos();
-					writer.Write("%" BOND_PRIu32, bu32_t(argPos.line));
+					stream.Print("%" BOND_PRIu32, bu32_t(argPos.line));
 					state = STATE_NORMAL;
 				}
 				break;
@@ -130,7 +130,7 @@ void CompilerError::Print(TextWriter &writer) const
 				{
 					const ParseNode *node = reinterpret_cast<const ParseNode *>(arg);
 					PrettyPrinter printer;
-					printer.Print(node, writer, true);
+					printer.Print(node, stream, true);
 					state = STATE_NORMAL;
 				}
 				break;
@@ -138,7 +138,7 @@ void CompilerError::Print(TextWriter &writer) const
 				case 's':
 				{
 					const char *str = reinterpret_cast<const char *>(arg);
-					writer.Write("%s", str);
+					stream.Print("%s", str);
 					state = STATE_NORMAL;
 				}
 				break;
@@ -146,14 +146,14 @@ void CompilerError::Print(TextWriter &writer) const
 				case 't':
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
-					writer.Write("%s", token->GetText());
+					stream.Print("%s", token->GetText());
 					state = STATE_NORMAL;
 				}
 				break;
 
 				default:
 				{
-					writer.Write("%%%c", *format);
+					stream.Print("%%%c", *format);
 					state = STATE_NORMAL;
 				}
 				break;

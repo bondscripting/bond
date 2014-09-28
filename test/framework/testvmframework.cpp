@@ -7,7 +7,7 @@
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/bufferedbinarywriter.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/io/diskfileloader.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -18,7 +18,7 @@ namespace TestFramework
 {
 
 bool RunVMTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
@@ -54,15 +54,15 @@ bool RunVMTest(
 
 		if (!errorBuffer.HasErrors())
 		{
-			const int MAX_CBO_SIZE = 8 * 1024;
+			const Bond::OutputStream::pos_t MAX_CBO_SIZE = 8 * 1024;
 			Bond::bu8_t cboBuffer[MAX_CBO_SIZE];
-			Bond::BufferedBinaryWriter cboWriter(cboBuffer, MAX_CBO_SIZE);
+			Bond::MemoryOutputStream cboStream(cboBuffer, MAX_CBO_SIZE);
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);
-			generator.Generate(parser.GetTranslationUnitList(), cboWriter);
+			generator.Generate(parser.GetTranslationUnitList(), cboStream);
 
 			if (!errorBuffer.HasErrors())
 			{
-				Bond::FileData cboFile(cboBuffer, size_t(cboWriter.GetPosition()));
+				Bond::FileData cboFile(cboBuffer, size_t(cboStream.GetPosition()));
 				Bond::CboLoader cboLoader(cboLoaderAllocator);
 				Bond::LoadAllLibs(cboLoader);
 				if (nativeBinding != nullptr)
@@ -78,13 +78,13 @@ bool RunVMTest(
 
 		if (errorBuffer.HasErrors())
 		{
-			logger.Write("line %u in %s: Failed to compile '%s'.", assertLine, assertFile, scriptName);
+			logger.Print("line %u in %s: Failed to compile '%s'.", assertLine, assertFile, scriptName);
 			result = false;
 		}
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Write("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
+		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

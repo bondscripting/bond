@@ -9,7 +9,6 @@ namespace Bond
 {
 
 class CodeSegment;
-class TextWriter;
 struct CboLoaderResources;
 struct FileData;
 struct Function;

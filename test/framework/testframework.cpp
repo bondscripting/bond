@@ -1,5 +1,5 @@
 #include "framework/testframework.h"
-#include "bond/io/bufferedtextwriter.h"
+#include "bond/io/memoryoutputstream.h"
 #include <cstdio>
 
 namespace TestFramework
@@ -15,9 +15,9 @@ bool RunTests(const TestGroup &testGroup)
 
 	for (unsigned i = 0; i < numTests; ++i)
 	{
-		const int BUFFER_SIZE = 1024;
+		const Bond::OutputStream::pos_t BUFFER_SIZE = 1024;
 		char buffer[BUFFER_SIZE];
-		Bond::BufferedTextWriter logger(buffer, BUFFER_SIZE);
+		Bond::MemoryOutputStream logger(buffer, BUFFER_SIZE);
 		const TestItem &item = testGroup.items[i];
 		bool result = item.testFunction(logger);
 		const char *resultStr = "";

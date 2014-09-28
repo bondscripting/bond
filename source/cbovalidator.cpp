@@ -1,4 +1,3 @@
-#include "bond/io/textwriter.h"
 #include "bond/systems/assert.h"
 #include "bond/systems/endian.h"
 #include "bond/systems/math.h"

@@ -7,7 +7,7 @@ namespace TestFramework
 {
 
 bool RunLexerTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
@@ -31,7 +31,7 @@ bool RunLexerTest(
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Write("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
+		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
 	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

@@ -195,33 +195,6 @@
     <ClInclude Include="..\..\include\bond\vm\vm.h">
       <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\binarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\fileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\stdiobinarywriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\stdiotextwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\textwriter.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\api\libinclude.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
@@ -309,14 +282,32 @@
     <ClInclude Include="..\..\include\bond\api\libio.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\filedata.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\fileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\outputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\bufferedtextwriter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\cboloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -356,10 +347,22 @@
     <ClCompile Include="..\..\source\libinclude.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\libio.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libiobindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\libmath.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libmathbindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmemory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libmemorybindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libruntime.cpp">
@@ -371,13 +374,25 @@
     <ClCompile Include="..\..\source\libstringbindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\libtype.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libtypebindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\memoryfileloader.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\memoryoutputstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\opcodes.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\outputstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsenodecounter.cpp">
@@ -398,6 +413,9 @@
     <ClCompile Include="..\..\source\parser.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\parsetreeprinter.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\prettyprinter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -405,9 +423,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\semanticanalyzer.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\stdiotextwriter.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stringutil.cpp">
@@ -441,30 +456,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\vm.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\textwriter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\parsetreeprinter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libtype.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libtypebindings.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libmemory.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libmemorybindings.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libio.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\libiobindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

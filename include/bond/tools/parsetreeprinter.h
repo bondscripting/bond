@@ -8,14 +8,14 @@ namespace Bond
 
 class ParseNode;
 class ListParseNode;
-class TextWriter;
+class OutputStream;
 class Token;
 
 class ParseTreePrinter
 {
 public:
-	void Print(const ParseNode *parseNode, TextWriter &writer);
-	void PrintList(const ListParseNode *listNode, TextWriter &writer);
+	void Print(const ParseNode *parseNode, OutputStream &stream);
+	void PrintList(const ListParseNode *listNode, OutputStream &stream);
 };
 
 }

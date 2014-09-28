@@ -11,7 +11,7 @@ namespace TestFramework
 {
 
 bool RunSemanticAnalyzerTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
@@ -42,7 +42,7 @@ bool RunSemanticAnalyzerTest(
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Write("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
+		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

@@ -7,7 +7,7 @@ namespace Bond
 {
 
 class Allocator;
-class TextWriter;
+class OutputStream;
 
 class Disassembler
 {
@@ -17,7 +17,7 @@ public:
 	{}
 	~Disassembler() {}
 
-	void Disassemble(TextWriter &writer, const void *byteCode, size_t length);
+	void Disassemble(OutputStream &stream, const void *byteCode, size_t length);
 
 private:
 	Allocator &mAllocator;

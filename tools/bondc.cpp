@@ -6,8 +6,7 @@
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 #include "bond/io/diskfileloader.h"
-#include "bond/io/stdiobinarywriter.h"
-#include "bond/io/stdiotextwriter.h"
+#include "bond/io/stdiooutputstream.h"
 #include "bond/stl/list.h"
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
@@ -17,13 +16,13 @@
 
 typedef Bond::List<Bond::DiskFileLoader> FileLoaderList;
 
-void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
+void PrintErrors(Bond::OutputStream &stream, const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
 	{
 		const Bond::CompilerError &error = errorBuffer.GetError(i);
-		error.Print(writer);
-		writer.Write("\n");
+		error.Print(stream);
+		stream.Print("\n");
 	}
 }
 
@@ -179,9 +178,9 @@ int main(int argc, const char *argv[])
 				FILE *cboFile = fopen(cboFileName, "wb");
 				if (cboFile != nullptr)
 				{
-					Bond::StdioBinaryWriter cboWriter(cboFile);
+					Bond::StdioOutputStream cboStream(cboFile);
 					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
-					generator.Generate(parser.GetTranslationUnitList(), cboWriter);
+					generator.Generate(parser.GetTranslationUnitList(), cboStream);
 				}
 				else
 				{
@@ -196,10 +195,10 @@ int main(int argc, const char *argv[])
 				FILE *hFile = fopen(hFileName, "w");
 				if ((cppFile != nullptr) && (hFile != nullptr))
 				{
-					Bond::StdioTextWriter cppWriter(cppFile);
-					Bond::StdioTextWriter hWriter(hFile);
+					Bond::StdioOutputStream cppStream(cppFile);
+					Bond::StdioOutputStream hStream(hFile);
 					Bond::NativeBindingGenerator generator;
-					generator.Generate(parser.GetTranslationUnitList(), cppWriter, hWriter, bindingCollectionName, includeName);
+					generator.Generate(parser.GetTranslationUnitList(), cppStream, hStream, bindingCollectionName, includeName);
 				}
 				if (cppFile == nullptr)
 				{
@@ -216,8 +215,8 @@ int main(int argc, const char *argv[])
 			}
 		}
 
-		Bond::StdErrTextWriter errorWriter;
-		PrintErrors(errorWriter, errorBuffer);
+		Bond::StdErrOutputStream errorStream;
+		PrintErrors(errorStream, errorBuffer);
 		error = error || errorBuffer.HasErrors();
 	}
 	catch (const Bond::Exception &e)

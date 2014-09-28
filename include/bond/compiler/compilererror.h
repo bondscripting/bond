@@ -185,7 +185,7 @@
 namespace Bond
 {
 
-class TextWriter;
+class OutputStream;
 class Token;
 class ParseNode;
 
@@ -217,7 +217,7 @@ public:
 	const char *GetErrorName() const;
 	static const char *GetErrorName(Type type);
 
-	void Print(TextWriter &writer) const;
+	void Print(OutputStream &stream) const;
 
 private:
 	Type mType;

@@ -7,7 +7,7 @@ namespace Bond
 {
 
 class Allocator;
-class BinaryWriter;
+class OutputStream;
 class CompilerErrorBuffer;
 class TranslationUnit;
 
@@ -21,7 +21,7 @@ public:
 	{}
 	~CodeGenerator() {}
 
-	void Generate(const TranslationUnit *translationUnitList, BinaryWriter &writer);
+	void Generate(const TranslationUnit *translationUnitList, OutputStream &stream);
 
 private:
 	Allocator &mAllocator;

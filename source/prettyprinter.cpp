@@ -1,7 +1,7 @@
 #include "bond/compiler/parsenodes.h"
 #include "bond/compiler/parsenodeutil.h"
 #include "bond/compiler/parsenodevisitor.h"
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/stl/autostack.h"
 #include "bond/tools/prettyprinter.h"
 
@@ -11,8 +11,8 @@ namespace Bond
 class PrettyPrinterCore: private ParseNodeVisitorAdapter
 {
 public:
-	PrettyPrinterCore(TextWriter &writer, bool printFoldedConstants):
-		mWriter(writer),
+	PrettyPrinterCore(OutputStream &stream, bool printFoldedConstants):
+		mStream(stream),
 		mTabLevel(0),
 		mPrintFoldedConstants(printFoldedConstants)
 	{}
@@ -78,22 +78,22 @@ private:
 	BoolStack mIsTopLevelExpression;
 	BoolStack mIsTopLevelId;
 	BoolStack mShouldPrintTabsAndNewlines;
-	TextWriter &mWriter;
+	OutputStream &mStream;
 	int mTabLevel;
 	bool mPrintFoldedConstants;
 };
 
 
-void PrettyPrinter::Print(const ParseNode *parseNode, TextWriter &writer, bool printFoldedConstants)
+void PrettyPrinter::Print(const ParseNode *parseNode, OutputStream &stream, bool printFoldedConstants)
 {
-	PrettyPrinterCore printer(writer, printFoldedConstants);
+	PrettyPrinterCore printer(stream, printFoldedConstants);
 	printer.Print(parseNode);
 }
 
 
-void PrettyPrinter::PrintList(const ListParseNode *listNode, TextWriter &writer, bool printFoldedConstants)
+void PrettyPrinter::PrintList(const ListParseNode *listNode, OutputStream &stream, bool printFoldedConstants)
 {
-	PrettyPrinterCore printer(writer, printFoldedConstants);
+	PrettyPrinterCore printer(stream, printFoldedConstants);
 	printer.PrintList(listNode);
 }
 
@@ -121,7 +121,7 @@ void PrettyPrinterCore::PrintList(const ListParseNode *listNode)
 void PrettyPrinterCore::Visit(const TranslationUnit *translationUnit)
 {
 	PrintList(translationUnit->GetIncludeDirectiveList());
-	mWriter.Write("\n");
+	mStream.Print("\n");
 	PrintList(translationUnit->GetExternalDeclarationList());
 }
 
@@ -129,55 +129,55 @@ void PrettyPrinterCore::Visit(const TranslationUnit *translationUnit)
 void PrettyPrinterCore::Visit(const IncludeDirective *includeDirective)
 {
 	Tab();
-	mWriter.Write("include ");
+	mStream.Print("include ");
 	Print(includeDirective->GetIncludePath());
-	mWriter.Write(";\n");
+	mStream.Print(";\n");
 }
 
 
 void PrettyPrinterCore::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	Tab();
-	mWriter.Write("namespace ");
+	mStream.Print("namespace ");
 	Print(namespaceDefinition->GetName());
-	mWriter.Write("\n");
+	mStream.Print("\n");
 	Tab();
-	mWriter.Write("{\n");
+	mStream.Print("{\n");
 	IncrementTab();
 	PrintList(namespaceDefinition->GetExternalDeclarationList());
 	DecrementTab();
 	Tab();
-	mWriter.Write("}\n");
+	mStream.Print("}\n");
 }
 
 
 void PrettyPrinterCore::Visit(const NativeBlock *nativeBlock)
 {
 	Tab();
-	mWriter.Write("native\n");
+	mStream.Print("native\n");
 	Tab();
-	mWriter.Write("{\n");
+	mStream.Print("{\n");
 	IncrementTab();
 	PrintList(nativeBlock->GetNativeDeclarationList());
 	DecrementTab();
 	Tab();
-	mWriter.Write("}\n");
+	mStream.Print("}\n");
 }
 
 
 void PrettyPrinterCore::Visit(const EnumDeclaration *enumDeclaration)
 {
 	Tab();
-	mWriter.Write("enum ");
+	mStream.Print("enum ");
 	Print(enumDeclaration->GetName());
-	mWriter.Write("\n");
+	mStream.Print("\n");
 	Tab();
-	mWriter.Write("{\n");
+	mStream.Print("{\n");
 	IncrementTab();
 	PrintList(enumDeclaration->GetEnumeratorList());
 	DecrementTab();
 	Tab();
-	mWriter.Write("};\n");
+	mStream.Print("};\n");
 }
 
 
@@ -187,51 +187,51 @@ void PrettyPrinterCore::Visit(const Enumerator *enumerator)
 	Print(enumerator->GetName());
 	if (mPrintFoldedConstants && enumerator->GetTypeAndValue()->IsValueDefined())
 	{
-		mWriter.Write(" = %" BOND_PRId32, enumerator->GetTypeAndValue()->GetIntValue());
+		mStream.Print(" = %" BOND_PRId32, enumerator->GetTypeAndValue()->GetIntValue());
 	}
 	else if (enumerator->GetValue() != nullptr)
 	{
-		mWriter.Write(" = ");
+		mStream.Print(" = ");
 		Print(enumerator->GetValue());
 	}
-	mWriter.Write(",\n");
+	mStream.Print(",\n");
 }
 
 
 void PrettyPrinterCore::Visit(const StructDeclaration *structDeclaration)
 {
 	Tab();
-	mWriter.Write("struct ");
+	mStream.Print("struct ");
 	Print(structDeclaration->GetName());
 
 	const Token *sizeToken = structDeclaration->GetSizeToken();
 	if (sizeToken != nullptr)
 	{
 		const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
-		mWriter.Write("<%" BOND_PRId32, size);
+		mStream.Print("<%" BOND_PRId32, size);
 
 		const Token *alignmentToken = structDeclaration->GetAlignmentToken();
 		if (alignmentToken != nullptr)
 		{
 			const bi32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
-			mWriter.Write(", %" BOND_PRId32, alignment);
+			mStream.Print(", %" BOND_PRId32, alignment);
 		}
-		mWriter.Write(">");
+		mStream.Print(">");
 	}
 
 	if (structDeclaration->GetVariant() != StructDeclaration::VARIANT_NATIVE_STUB)
 	{
-		mWriter.Write("\n");
+		mStream.Print("\n");
 		Tab();
-		mWriter.Write("{\n");
+		mStream.Print("{\n");
 		IncrementTab();
 		PrintList(structDeclaration->GetMemberFunctionList());
 		PrintList(structDeclaration->GetMemberVariableList());
 		DecrementTab();
 		Tab();
-		mWriter.Write("}");
+		mStream.Print("}");
 	}
-	mWriter.Write(";\n");
+	mStream.Print(";\n");
 }
 
 
@@ -241,12 +241,12 @@ void PrettyPrinterCore::Visit(const FunctionDefinition *functionDefinition)
 	Print(functionDefinition->GetPrototype());
 	if (functionDefinition->GetBody() != nullptr)
 	{
-		mWriter.Write("\n");
+		mStream.Print("\n");
 		Print(functionDefinition->GetBody());
 	}
 	else
 	{
-		mWriter.Write(";\n");
+		mStream.Print(";\n");
 	}
 }
 
@@ -254,15 +254,15 @@ void PrettyPrinterCore::Visit(const FunctionDefinition *functionDefinition)
 void PrettyPrinterCore::Visit(const FunctionPrototype *functionPrototype)
 {
 	Print(functionPrototype->GetReturnType());
-	mWriter.Write(" ");
+	mStream.Print(" ");
 	Print(functionPrototype->GetName());
-	mWriter.Write("(");
+	mStream.Print("(");
 	PrintList(functionPrototype->GetParameterList(), ", ");
-	mWriter.Write(")");
+	mStream.Print(")");
 
 	if (functionPrototype->IsConst())
 	{
-		mWriter.Write(" const");
+		mStream.Print(" const");
 	}
 }
 
@@ -270,7 +270,7 @@ void PrettyPrinterCore::Visit(const FunctionPrototype *functionPrototype)
 void PrettyPrinterCore::Visit(const Parameter *parameter)
 {
 	Print(parameter->GetTypeDescriptor());
-	mWriter.Write(" ");
+	mStream.Print(" ");
 	Print(parameter->GetName());
 }
 
@@ -281,31 +281,31 @@ void PrettyPrinterCore::Visit(const TypeDescriptor *typeDescriptor)
 	{
 		const TypeDescriptor parent = typeDescriptor->GetDereferencedType();
 		Visit(&parent);
-		mWriter.Write(" *");
+		mStream.Print(" *");
 		if (typeDescriptor->IsConst())
 		{
-			mWriter.Write(" const");
+			mStream.Print(" const");
 		}
 	}
 	else if (typeDescriptor->IsArrayType())
 	{
 		const TypeDescriptor value = typeDescriptor->GetArrayElementType();
 		Visit(&value);
-		mWriter.Write("[");
+		mStream.Print("[");
 		PrintList(typeDescriptor->GetLengthExpressionList(), "][");
-		mWriter.Write("]");
+		mStream.Print("]");
 	}
 	else if (typeDescriptor->IsValueType())
 	{
 		if (typeDescriptor->IsConst())
 		{
-			mWriter.Write("const ");
+			mStream.Print("const ");
 		}
 		Print(typeDescriptor->GetTypeSpecifier());
 	}
 	else if (typeDescriptor->IsNullType())
 	{
-		mWriter.Write("null");
+		mStream.Print("null");
 	}
 }
 
@@ -329,7 +329,7 @@ void PrettyPrinterCore::Visit(const NamedInitializer *namedInitializer)
 
 	if (namedInitializer->GetInitializer() != nullptr)
 	{
-		mWriter.Write(" = ");
+		mStream.Print(" = ");
 		Print(namedInitializer->GetInitializer());
 	}
 }
@@ -343,9 +343,9 @@ void PrettyPrinterCore::Visit(const Initializer *initializer)
 	}
 	else
 	{
-		mWriter.Write("{ ");
+		mStream.Print("{ ");
 		PrintList(initializer->GetInitializerList(), ", ");
-		mWriter.Write(" }");
+		mStream.Print(" }");
 	}
 }
 
@@ -367,28 +367,28 @@ void PrettyPrinterCore::Visit(const QualifiedIdentifier *identifier)
 void PrettyPrinterCore::Visit(const CompoundStatement *compoundStatement)
 {
 	Tab();
-	mWriter.Write("{\n");
+	mStream.Print("{\n");
 	IncrementTab();
 	PrintList(compoundStatement->GetStatementList());
 	DecrementTab();
 	Tab();
-	mWriter.Write("}\n");
+	mStream.Print("}\n");
 }
 
 
 void PrettyPrinterCore::Visit(const IfStatement *ifStatement)
 {
 	Tab();
-	mWriter.Write("if (");
+	mStream.Print("if (");
 	Print(ifStatement->GetCondition());
-	mWriter.Write(")\n");
+	mStream.Print(")\n");
 
 	PrintBlockOrStatement(ifStatement->GetThenStatement());
 
 	if (ifStatement->GetElseStatement() != nullptr)
 	{
 		Tab();
-		mWriter.Write("else\n");
+		mStream.Print("else\n");
 		PrintBlockOrStatement(ifStatement->GetElseStatement());
 	}
 }
@@ -397,17 +397,17 @@ void PrettyPrinterCore::Visit(const IfStatement *ifStatement)
 void PrettyPrinterCore::Visit(const SwitchStatement *switchStatement)
 {
 	Tab();
-	mWriter.Write("switch (");
+	mStream.Print("switch (");
 	Print(switchStatement->GetControl());
-	mWriter.Write(")\n");
+	mStream.Print(")\n");
 
 	Tab();
-	mWriter.Write("{\n");
+	mStream.Print("{\n");
 	IncrementTab();
 	PrintList(switchStatement->GetSectionList());
 	DecrementTab();
 	Tab();
-	mWriter.Write("}\n");
+	mStream.Print("}\n");
 }
 
 
@@ -427,11 +427,11 @@ void PrettyPrinterCore::Visit(const SwitchLabel *switchLabel)
 
 	if (switchLabel->GetExpression() != nullptr)
 	{
-		mWriter.Write(" ");
+		mStream.Print(" ");
 		Print(switchLabel->GetExpression());
 	}
 
-	mWriter.Write(":\n");
+	mStream.Print(":\n");
 }
 
 
@@ -440,18 +440,18 @@ void PrettyPrinterCore::Visit(const WhileStatement *whileStatement)
 	Tab();
 	if (whileStatement->IsDoLoop())
 	{
-		mWriter.Write("do\n");
+		mStream.Print("do\n");
 		PrintBlockOrStatement(whileStatement->GetBody());
 		Tab();
-		mWriter.Write("while (");
+		mStream.Print("while (");
 		Print(whileStatement->GetCondition());
-		mWriter.Write(");\n");
+		mStream.Print(");\n");
 	}
 	else
 	{
-		mWriter.Write("while (");
+		mStream.Print("while (");
 		Print(whileStatement->GetCondition());
-		mWriter.Write(")\n");
+		mStream.Print(")\n");
 		PrintBlockOrStatement(whileStatement->GetBody());
 	}
 }
@@ -460,16 +460,16 @@ void PrettyPrinterCore::Visit(const WhileStatement *whileStatement)
 void PrettyPrinterCore::Visit(const ForStatement *forStatement)
 {
 	Tab();
-	mWriter.Write("for (");
+	mStream.Print("for (");
 	{
 		BoolStack::Element shouldPrintTabsAndNewlinesElement(mShouldPrintTabsAndNewlines, false);
 		Print(forStatement->GetInitializer());
 	}
-	mWriter.Write(" ");
+	mStream.Print(" ");
 	Print(forStatement->GetCondition());
-	mWriter.Write("; ");
+	mStream.Print("; ");
 	Print(forStatement->GetCountingExpression());
-	mWriter.Write(")\n");
+	mStream.Print(")\n");
 	PrintBlockOrStatement(forStatement->GetBody());
 }
 
@@ -482,11 +482,11 @@ void PrettyPrinterCore::Visit(const JumpStatement *jumpStatement)
 	const Expression *rhs = jumpStatement->GetRhs(); 
 	if (jumpStatement->IsReturn() && (rhs != nullptr))
 	{
-		mWriter.Write(" ");
+		mStream.Print(" ");
 		Print(rhs);
 	}
 
-	mWriter.Write(";");
+	mStream.Print(";");
 	Newline();
 }
 
@@ -495,9 +495,9 @@ void PrettyPrinterCore::Visit(const DeclarativeStatement *declarativeStatement)
 {
 	Tab();
 	Print(declarativeStatement->GetTypeDescriptor());
-	mWriter.Write(" ");
+	mStream.Print(" ");
 	PrintList(declarativeStatement->GetNamedInitializerList(), ", ");
-	mWriter.Write(";");
+	mStream.Print(";");
 	Newline();
 }
 
@@ -509,7 +509,7 @@ void PrettyPrinterCore::Visit(const ExpressionStatement *expressionStatement)
 	{
 		Print(expressionStatement->GetExpression());
 	}
-	mWriter.Write(";");
+	mStream.Print(";");
 	Newline();
 }
 
@@ -520,16 +520,16 @@ void PrettyPrinterCore::Visit(const ConditionalExpression *conditionalExpression
 	{
 		if (!IsTopLevelExpression())
 		{
-			mWriter.Write("(");
+			mStream.Print("(");
 		}
 		PrintExpression(conditionalExpression->GetCondition());
-		mWriter.Write(" ? ");
+		mStream.Print(" ? ");
 		PrintExpression(conditionalExpression->GetTrueExpression());
-		mWriter.Write(" : ");
+		mStream.Print(" : ");
 		PrintExpression(conditionalExpression->GetFalseExpression());
 		if (!IsTopLevelExpression())
 		{
-			mWriter.Write(")");
+			mStream.Print(")");
 		}
 	}
 }
@@ -541,16 +541,16 @@ void PrettyPrinterCore::Visit(const BinaryExpression *binaryExpression)
 	{
 		if (!IsTopLevelExpression())
 		{
-			mWriter.Write("(");
+			mStream.Print("(");
 		}
 		PrintExpression(binaryExpression->GetLhs());
-		mWriter.Write(" ");
+		mStream.Print(" ");
 		Print(binaryExpression->GetOperator());
-		mWriter.Write(" ");
+		mStream.Print(" ");
 		PrintExpression(binaryExpression->GetRhs());
 		if (!IsTopLevelExpression())
 		{
-			mWriter.Write(")");
+			mStream.Print(")");
 		}
 	}
 }
@@ -584,9 +584,9 @@ void PrettyPrinterCore::Visit(const MemberExpression *memberExpression)
 void PrettyPrinterCore::Visit(const ArraySubscriptExpression *arraySubscriptExpression)
 {
 	PrintExpression(arraySubscriptExpression->GetLhs());
-	mWriter.Write("[");
+	mStream.Print("[");
 	PrintTopLevelExpression(arraySubscriptExpression->GetIndex());
-	mWriter.Write("]");
+	mStream.Print("]");
 }
 
 
@@ -594,9 +594,9 @@ void PrettyPrinterCore::Visit(const FunctionCallExpression *functionCallExpressi
 {
 	BoolStack::Element topLevelExpressionElement(mIsTopLevelExpression, true);
 	Print(functionCallExpression->GetLhs());
-	mWriter.Write("(");
+	mStream.Print("(");
 	PrintList(functionCallExpression->GetArgumentList(), ", ");
-	mWriter.Write(")");
+	mStream.Print(")");
 }
 
 
@@ -604,11 +604,11 @@ void PrettyPrinterCore::Visit(const CastExpression *castExpression)
 {
 	if (!PrintFoldedConstant(castExpression))
 	{
-		mWriter.Write("cast<");
+		mStream.Print("cast<");
 		Print(castExpression->GetTypeDescriptor());
-		mWriter.Write(">(");
+		mStream.Print(">(");
 		PrintTopLevelExpression(castExpression->GetRhs());
-		mWriter.Write(")");
+		mStream.Print(")");
 	}
 }
 
@@ -617,18 +617,18 @@ void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
 {
 	if (!PrintFoldedConstant(sizeofExpression))
 	{
-		mWriter.Write("sizeof");
+		mStream.Print("sizeof");
 		if (sizeofExpression->GetTypeDescriptor() != nullptr)
 		{
-			mWriter.Write("<");
+			mStream.Print("<");
 			Print(sizeofExpression->GetTypeDescriptor());
-			mWriter.Write(">");
+			mStream.Print(">");
 		}
 		else
 		{
-			mWriter.Write("(");
+			mStream.Print("(");
 			PrintTopLevelExpression(sizeofExpression->GetRhs());
-			mWriter.Write(")");
+			mStream.Print(")");
 		}
 	}
 }
@@ -642,7 +642,7 @@ void PrettyPrinterCore::Visit(const ConstantExpression *constantExpression)
 
 void PrettyPrinterCore::Visit(const ThisExpression *thisExpression)
 {
-	mWriter.Write("this");
+	mStream.Print("this");
 }
 
 
@@ -667,7 +667,7 @@ void PrettyPrinterCore::PrintList(const ListParseNode *listNode, const char *sep
 
 	while (current != nullptr)
 	{
-		mWriter.Write("%s", separator);
+		mStream.Print("%s", separator);
 		Print(current);
 		current = current->GetNextNode();
 	}
@@ -678,7 +678,7 @@ void PrettyPrinterCore::Print(const Token *token)
 {
 	if (token != nullptr)
 	{
-		mWriter.Write("%s", token->GetText());
+		mStream.Print("%s", token->GetText());
 	}
 }
 
@@ -721,31 +721,31 @@ bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 		switch (typeDescriptor->GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
-				mWriter.Write("%s", tav.GetBoolValue() ? "true" : "false");
+				mStream.Print("%s", tav.GetBoolValue() ? "true" : "false");
 				return true;
 			case Token::KEY_CHAR:
-				mWriter.Write("%c", char(tav.GetIntValue()));
+				mStream.Print("%c", char(tav.GetIntValue()));
 				return true;
 			case Token::KEY_UCHAR:
-				mWriter.Write("%c", static_cast<unsigned char>(tav.GetUIntValue()));
+				mStream.Print("%c", static_cast<unsigned char>(tav.GetUIntValue()));
 				return true;
 			case Token::KEY_INT:
-				mWriter.Write("%" BOND_PRId32, tav.GetIntValue());
+				mStream.Print("%" BOND_PRId32, tav.GetIntValue());
 				return true;
 			case Token::KEY_UINT:
-				mWriter.Write("%" BOND_PRIu32, tav.GetUIntValue());
+				mStream.Print("%" BOND_PRIu32, tav.GetUIntValue());
 				return true;
 			case Token::KEY_LONG:
-				mWriter.Write("%" BOND_PRId64, tav.GetLongValue());
+				mStream.Print("%" BOND_PRId64, tav.GetLongValue());
 				return true;
 			case Token::KEY_ULONG:
-				mWriter.Write("%" BOND_PRId64, tav.GetULongValue());
+				mStream.Print("%" BOND_PRId64, tav.GetULongValue());
 				return true;
 			case Token::KEY_FLOAT:
-				mWriter.Write("%" BOND_PRIf32, tav.GetFloatValue());
+				mStream.Print("%" BOND_PRIf32, tav.GetFloatValue());
 				return true;
 			case Token::KEY_DOUBLE:
-				mWriter.Write("%" BOND_PRIf64, tav.GetDoubleValue());
+				mStream.Print("%" BOND_PRIf64, tav.GetDoubleValue());
 				return true;
 			default:
 				break;
@@ -761,7 +761,7 @@ void PrettyPrinterCore::Tab()
 	{
 		for (int i = 0; i < mTabLevel; ++i)
 		{
-			mWriter.Write("\t");
+			mStream.Print("\t");
 		}
 	}
 }
@@ -771,7 +771,7 @@ void PrettyPrinterCore::Newline()
 {
 	if (ShouldPrintTabsAndNewlines())
 	{
-		mWriter.Write("\n");
+		mStream.Print("\n");
 	}
 }
 

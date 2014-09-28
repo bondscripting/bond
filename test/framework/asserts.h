@@ -30,13 +30,13 @@ struct ExpectedCompilerError
 };
 
 bool AssertNoCompilerErrors(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer);
 
 bool AssertCompilerErrors(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer,

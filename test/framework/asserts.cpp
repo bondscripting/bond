@@ -4,21 +4,21 @@ namespace TestFramework
 {
 
 bool AssertNoCompilerErrors(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
-		logger.Write("line %u in %s:\n", assertLine, assertFile);
+		logger.Print("line %u in %s:\n", assertLine, assertFile);
 
 		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
-			logger.Write("\t\t");
+			logger.Print("\t\t");
 			const Bond::CompilerError &error = errorBuffer.GetError(i);
 			error.Print(logger);
-			logger.Write("\n");
+			logger.Print("\n");
 		}
 		return false;
 	}
@@ -28,7 +28,7 @@ bool AssertNoCompilerErrors(
 
 
 bool AssertCompilerErrors(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	size_t assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer,

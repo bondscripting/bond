@@ -11,7 +11,7 @@ namespace Bond
 class Allocator;
 class CalleeStackFrame;
 class CallerStackFrame;
-class TextWriter;
+class OutputStream;
 class VM;
 
 class CalleeStackFrame
@@ -99,8 +99,8 @@ public:
 	CalleeStackFrame &GetTopStackFrame() { return mStackFrames.GetTop(); }
 	const CalleeStackFrame &GetTopStackFrame() const { return mStackFrames.GetTop(); }
 
-	void DumpCallStack(TextWriter &writer) const;
-	void DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const;
+	void DumpCallStack(OutputStream &stream) const;
+	void DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) const;
 
 	void RaiseError(const char *format, ...) const;
 

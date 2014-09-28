@@ -1,6 +1,5 @@
-#include "bond/io/bufferedtextwriter.h"
 #include "bond/io/fileloader.h"
-#include "bond/io/textwriter.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/allocator.h"
@@ -334,7 +333,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 void CboLoader::FunctionIsNotNative(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 
@@ -342,10 +341,10 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 	{
 		if (!isFirstElement)
 		{
-			writer.Write("::");
+			stream.Print("::");
 			isFirstElement = false;
 		}
-		writer.Write(*elements++);
+		stream.Print(*elements++);
 	}
 
 	BOND_FAIL_FORMAT(("Target function '%s' of native function binding is not native.", buffer));
@@ -355,7 +354,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 void CboLoader::FunctionIsNotBound(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 
@@ -363,10 +362,10 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 	{
 		if (!isFirstElement)
 		{
-			writer.Write("::");
+			stream.Print("::");
 			isFirstElement = false;
 		}
-		writer.Write(*elements++);
+		stream.Print(*elements++);
 	}
 
 	BOND_FAIL_FORMAT(("Native function '%s' is not bound.", buffer));

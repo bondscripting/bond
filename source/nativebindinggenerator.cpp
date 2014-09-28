@@ -1,6 +1,6 @@
 #include "bond/compiler/parsenodetraverser.h"
 #include "bond/compiler/parsenodes.h"
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/stl/autostack.h"
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/types/simplestring.h"
@@ -14,13 +14,13 @@ class NativeBindingGeneratorCore: private ParseNodeTraverser
 public:
 	NativeBindingGeneratorCore(
 			const TranslationUnit *translationUnitList,
-			TextWriter &cppWriter,
-			TextWriter &hWriter,
+			OutputStream &cppStream,
+			OutputStream &hStream,
 			const char *collectionName,
 			const char *includeName):
 		mTranslationUnitList(translationUnitList),
-		mCppWriter(cppWriter),
-		mHWriter(hWriter),
+		mCppStream(cppStream),
+		mHStream(hStream),
 		mCollectionName(collectionName),
 		mIncludeName(includeName),
 		mNumFunctions(0)
@@ -46,15 +46,15 @@ private:
 	virtual void Visit(const NamedInitializer *namedInitializer);
 
 	size_t SplitIdentifiers(const char *str, SimpleString *identifiers, size_t maxIdentifiers) const;
-	void OpenNamespaces(TextWriter &writer, const SimpleString *identifiers, size_t numIdentifiers);
-	void CloseNamespaces(TextWriter &writer, size_t numIdentifiers);
-	void PrintNamespaceStack(TextWriter &writer, NamespaceStack::Iterator &it);
-	void PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol);
+	void OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers);
+	void CloseNamespaces(OutputStream &stream, size_t numIdentifiers);
+	void PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it);
+	void PrintQualifiedSymbolName(OutputStream &stream, const Symbol *symbol);
 
 	NamespaceStack mNamespaceStack;
 	const TranslationUnit *mTranslationUnitList;
-	TextWriter &mCppWriter;
-	TextWriter &mHWriter;
+	OutputStream &mCppStream;
+	OutputStream &mHStream;
 	const char *mCollectionName;
 	const char *mIncludeName;
 	bu32_t mNumFunctions;
@@ -63,12 +63,12 @@ private:
 
 void NativeBindingGenerator::Generate(
 	const TranslationUnit *translationUnitList,
-	TextWriter &hWriter,
-	TextWriter &cppWriter,
+	OutputStream &hStream,
+	OutputStream &cppStream,
 	const char *collectionName,
 	const char *includeName)
 {
-	NativeBindingGeneratorCore generator(translationUnitList, hWriter, cppWriter, collectionName, includeName);
+	NativeBindingGeneratorCore generator(translationUnitList, hStream, cppStream, collectionName, includeName);
 	generator.Generate();
 }
 
@@ -94,34 +94,34 @@ void NativeBindingGeneratorCore::Generate()
 			includeGuard[i++] = isalnum(c) ? toupper(c) : '_';
 		}
 		includeGuard[i] = '\0';
-		mHWriter.Write("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
-		OpenNamespaces(mHWriter, identifiers, numIdentifiers);
-		mHWriter.Write("extern const Bond::NativeBindingCollection ");
-		WriteString(mHWriter, collectionName);
-		mHWriter.Write(";\n");
-		CloseNamespaces(mHWriter, numIdentifiers);
-		mHWriter.Write("\n");
+		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
+		OpenNamespaces(mHStream, identifiers, numIdentifiers);
+		mHStream.Print("extern const Bond::NativeBindingCollection ");
+		PrintString(mHStream, collectionName);
+		mHStream.Print(";\n");
+		CloseNamespaces(mHStream, numIdentifiers);
+		mHStream.Print("\n");
 
 		// Top of the .cpp file.
-		mCppWriter.Write("#include \"%s\"\n\n", mIncludeName);
-		OpenNamespaces(mCppWriter, identifiers, numIdentifiers);
-		mCppWriter.Write("\nconst Bond::NativeFunctionBinding ");
-		WriteString(mCppWriter, collectionName);
-		mCppWriter.Write("_FUNCTIONS[] =\n{\n");
+		mCppStream.Print("#include \"%s\"\n\n", mIncludeName);
+		OpenNamespaces(mCppStream, identifiers, numIdentifiers);
+		mCppStream.Print("\nconst Bond::NativeFunctionBinding ");
+		PrintString(mCppStream, collectionName);
+		mCppStream.Print("_FUNCTIONS[] =\n{\n");
 
 		// Spit out the function bindings.
 		TraverseList(mTranslationUnitList);
 
 		// Bottom of the .h file.
-		mHWriter.Write("\n#endif\n");
+		mHStream.Print("\n#endif\n");
 
 		// Bottom of the .cpp file.
-		mCppWriter.Write("\t{0, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
-		WriteString(mCppWriter, collectionName);
-		mCppWriter.Write(" =\n{\n\t");
-		WriteString(mCppWriter, collectionName);
-		mCppWriter.Write("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
-		CloseNamespaces(mCppWriter, numIdentifiers);
+		mCppStream.Print("\t{0, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
+		PrintString(mCppStream, collectionName);
+		mCppStream.Print(" =\n{\n\t");
+		PrintString(mCppStream, collectionName);
+		mCppStream.Print("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
+		CloseNamespaces(mCppStream, numIdentifiers);
 	}
 }
 
@@ -143,7 +143,7 @@ void NativeBindingGeneratorCore::Visit(const NamespaceDefinition *namespaceDefin
 
 	if (namespaceItem.GetValue().mPrinted)
 	{
-		mHWriter.Write("}\n");
+		mHStream.Print("}\n");
 	}
 }
 
@@ -153,20 +153,20 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 	if (functionDefinition->IsNative())
 	{
 		NamespaceStack::Iterator it = mNamespaceStack.Begin();
-		PrintNamespaceStack(mHWriter, it);
+		PrintNamespaceStack(mHStream, it);
 
 		// Generate the function prototype.
-		mHWriter.Write("void ");
+		mHStream.Print("void ");
 		if (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER)
 		{
-			mHWriter.Write("%s__", functionDefinition->GetParentSymbol()->GetName()->GetText());
+			mHStream.Print("%s__", functionDefinition->GetParentSymbol()->GetName()->GetText());
 		}
-		mHWriter.Write("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetText());
+		mHStream.Print("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetText());
 
 		// Generate the function binding.
-		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
-		PrintQualifiedSymbolName(mCppWriter, functionDefinition);
-		mCppWriter.Write("},\n");
+		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
+		PrintQualifiedSymbolName(mCppStream, functionDefinition);
+		mCppStream.Print("},\n");
 		++mNumFunctions;
 	}
 }
@@ -177,21 +177,21 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 	if (namedInitializer->IsNativeStructMember())
 	{
 		NamespaceStack::Iterator it = mNamespaceStack.Begin();
-		PrintNamespaceStack(mHWriter, it);
+		PrintNamespaceStack(mHStream, it);
 
 		// Generate the getter and setter function prototypes.
 		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetText();
 		const char *memberName = namedInitializer->GetName()->GetText();
-		mHWriter.Write("void %s__%s__get(Bond::CalleeStackFrame &frame);\n", structName, memberName);
-		mHWriter.Write("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHStream.Print("void %s__%s__get(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHStream.Print("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
 
 		// Generate the function bindings.
-		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
-		PrintQualifiedSymbolName(mCppWriter, namedInitializer);
-		mCppWriter.Write("__get},\n");
-		mCppWriter.Write("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
-		PrintQualifiedSymbolName(mCppWriter, namedInitializer);
-		mCppWriter.Write("__set},\n");
+		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
+		PrintQualifiedSymbolName(mCppStream, namedInitializer);
+		mCppStream.Print("__get},\n");
+		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		PrintQualifiedSymbolName(mCppStream, namedInitializer);
+		mCppStream.Print("__set},\n");
 		mNumFunctions += 2;
 	}
 }
@@ -235,49 +235,49 @@ size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, SimpleStrin
 }
 
 
-void NativeBindingGeneratorCore::OpenNamespaces(TextWriter &writer, const SimpleString *identifiers, size_t numIdentifiers)
+void NativeBindingGeneratorCore::OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers)
 {
 	if (numIdentifiers > 1)
 	{
 		for (size_t i = 0; i < (numIdentifiers - 1); ++i)
 		{
-			writer.Write("namespace ");
-			WriteString(writer, identifiers[i]);
-			writer.Write("\n{\n");
+			stream.Print("namespace ");
+			PrintString(stream, identifiers[i]);
+			stream.Print("\n{\n");
 		}
 	}
 }
 
 
-void NativeBindingGeneratorCore::CloseNamespaces(TextWriter &writer, size_t numIdentifiers)
+void NativeBindingGeneratorCore::CloseNamespaces(OutputStream &stream, size_t numIdentifiers)
 {
 	if (numIdentifiers > 1)
 	{
 		for (size_t i = 0; i < (numIdentifiers - 1); ++i)
 		{
-			writer.Write("}\n");
+			stream.Print("}\n");
 		}
 	}
 }
 
 
-void NativeBindingGeneratorCore::PrintNamespaceStack(TextWriter &writer, NamespaceStack::Iterator &it)
+void NativeBindingGeneratorCore::PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it)
 {
 	if ((it != mNamespaceStack.End()) && !it->mPrinted)
 	{
 		NamespaceItem &item = *it++;
-		PrintNamespaceStack(writer, it);
-		writer.Write("namespace %s\n{\n", item.mName);
+		PrintNamespaceStack(stream, it);
+		stream.Print("namespace %s\n{\n", item.mName);
 		item.mPrinted = true;
 	}
 }
 
 
-void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, const Symbol *symbol)
+void NativeBindingGeneratorCore::PrintQualifiedSymbolName(OutputStream &stream, const Symbol *symbol)
 {
 	if ((symbol != nullptr) && (symbol->GetName() != nullptr))
 	{
-		PrintQualifiedSymbolName(writer, symbol->GetParentSymbol());
+		PrintQualifiedSymbolName(stream, symbol->GetParentSymbol());
 		const char *suffix = "";
 		switch (symbol->GetSymbolType())
 		{
@@ -291,7 +291,7 @@ void NativeBindingGeneratorCore::PrintQualifiedSymbolName(TextWriter &writer, co
 				suffix = "";
 				break;
 		}
-		writer.Write("%s%s", symbol->GetName()->GetText(), suffix);
+		stream.Print("%s%s", symbol->GetName()->GetText(), suffix);
 	}
 }
 

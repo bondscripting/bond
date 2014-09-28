@@ -3,7 +3,7 @@
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 #include "bond/io/diskfileloader.h"
-#include "bond/io/stdiotextwriter.h"
+#include "bond/io/stdiooutputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 #include "bond/tools/parsetreeprinter.h"
@@ -12,15 +12,15 @@
 #include <cstring>
 
 
-void PrintErrors(Bond::TextWriter &writer, const Bond::CompilerErrorBuffer &errorBuffer)
+void PrintErrors(Bond::OutputStream &stream, const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
 		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
 		{
 			const Bond::CompilerError &error = errorBuffer.GetError(i);
-			error.Print(writer);
-			writer.Write("\n");
+			error.Print(stream);
+			stream.Print("\n");
 		}
 	}
 }
@@ -50,20 +50,20 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 			analyzer.Analyze(parser.GetTranslationUnitList());
 		}
 
-		Bond::StdOutTextWriter outputWriter;
+		Bond::StdOutOutputStream outputStream;
 		if (printParseTree)
 		{
 			Bond::ParseTreePrinter printer;
-			printer.PrintList(parser.GetTranslationUnitList(), outputWriter);
+			printer.PrintList(parser.GetTranslationUnitList(), outputStream);
 		}
 		else
 		{
 			Bond::PrettyPrinter printer;
-			printer.PrintList(parser.GetTranslationUnitList(), outputWriter, foldConstants);
+			printer.PrintList(parser.GetTranslationUnitList(), outputStream, foldConstants);
 		}
 
-		Bond::StdErrTextWriter errorWriter;
-		PrintErrors(errorWriter, errorBuffer);
+		Bond::StdErrOutputStream errorStream;
+		PrintErrors(errorStream, errorBuffer);
 	}
 	catch (const Bond::Exception &e)
 	{

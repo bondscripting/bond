@@ -6,8 +6,6 @@
 namespace Bond
 {
 
-class TextWriter;
-
 class CboValidator
 {
 public:

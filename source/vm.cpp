@@ -1,4 +1,4 @@
-#include "bond/io/bufferedtextwriter.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
 #include "bond/systems/allocator.h"
 #include "bond/systems/math.h"
@@ -2189,26 +2189,26 @@ void VM::ValidateStackPointer(bu8_t *stackPointer) const
 }
 
 
-void VM::DumpCallStack(TextWriter &writer) const
+void VM::DumpCallStack(OutputStream &stream) const
 {
 	StackFrames::ConstIterator it = mStackFrames.Begin();
 	while (it != mStackFrames.End())
 	{
-		DumpStackFrame(writer, *it);
+		DumpStackFrame(stream, *it);
 		++it;
 	}
 }
 
 
-void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
+void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) const
 {
 	const Function *function = frame.mFunction;
 	if (function != nullptr)
 	{
 		const SignatureType returnType = static_cast<SignatureType>(function->mReturnSignature.mType);
 		const bu32_t returnSize = function->mReturnSignature.mSize;
-		writer.Write(GetBondTypeMnemonic(returnType), returnSize);
-		writer.Write(" ");
+		stream.Print(GetBondTypeMnemonic(returnType), returnSize);
+		stream.Print(" ");
 
 		const char *const *elements = function->mName;
 		bool isFirstElement = true;
@@ -2216,13 +2216,13 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 		{
 			if (!isFirstElement)
 			{
-				writer.Write("::");
+				stream.Print("::");
 			}
-			writer.Write(*elements++);
+			stream.Print(*elements++);
 			isFirstElement = false;
 		}
 
-		writer.Write("(");
+		stream.Print("(");
 		const ParamSignature *paramSignatures = function->mParamListSignature.mParamSignatures;
 		const bu32_t numParams = function->mParamListSignature.mParamCount;
 		const bu8_t *framePointer = frame.mFramePointer;
@@ -2233,54 +2233,54 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 
 			if (i > 0)
 			{
-				writer.Write(", ");
+				stream.Print(", ");
 			}
 
 			switch (signature.mType)
 			{
 				case SIG_BOOL:
-					writer.Write("%s", (*argPointer != 0) ? "true" : "false");
+					stream.Print("%s", (*argPointer != 0) ? "true" : "false");
 					break;
 				case SIG_CHAR:
-					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi8_t *>(argPointer));
+					stream.Print("%" BOND_PRId32, *reinterpret_cast<const bi8_t *>(argPointer));
 					break;
 				case SIG_UCHAR:
-					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu8_t *>(argPointer));
+					stream.Print("%" BOND_PRIu32, *reinterpret_cast<const bu8_t *>(argPointer));
 					break;
 				case SIG_SHORT:
-					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi16_t *>(argPointer));
+					stream.Print("%" BOND_PRId32, *reinterpret_cast<const bi16_t *>(argPointer));
 					break;
 				case SIG_USHORT:
-					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu16_t *>(argPointer));
+					stream.Print("%" BOND_PRIu32, *reinterpret_cast<const bu16_t *>(argPointer));
 					break;
 				case SIG_INT:
-					writer.Write("%" BOND_PRId32, *reinterpret_cast<const bi32_t *>(argPointer));
+					stream.Print("%" BOND_PRId32, *reinterpret_cast<const bi32_t *>(argPointer));
 					break;
 				case SIG_UINT:
-					writer.Write("%" BOND_PRIu32, *reinterpret_cast<const bu32_t *>(argPointer));
+					stream.Print("%" BOND_PRIu32, *reinterpret_cast<const bu32_t *>(argPointer));
 					break;
 				case SIG_LONG:
-					writer.Write("%" BOND_PRId64, *reinterpret_cast<const bi64_t *>(argPointer));
+					stream.Print("%" BOND_PRId64, *reinterpret_cast<const bi64_t *>(argPointer));
 					break;
 				case SIG_ULONG:
-					writer.Write("%" BOND_PRIu64, *reinterpret_cast<const bu64_t *>(argPointer));
+					stream.Print("%" BOND_PRIu64, *reinterpret_cast<const bu64_t *>(argPointer));
 					break;
 				case SIG_FLOAT:
-					writer.Write("%" BOND_PRIf32, *reinterpret_cast<const bf32_t *>(argPointer));
+					stream.Print("%" BOND_PRIf32, *reinterpret_cast<const bf32_t *>(argPointer));
 					break;
 				case SIG_DOUBLE:
-					writer.Write("%" BOND_PRIf64, *reinterpret_cast<const bf64_t *>(argPointer));
+					stream.Print("%" BOND_PRIf64, *reinterpret_cast<const bf64_t *>(argPointer));
 					break;
 				case SIG_POINTER:
-					writer.Write("%p", reinterpret_cast<const void *>(argPointer));
+					stream.Print("%p", reinterpret_cast<const void *>(argPointer));
 					break;
 				case SIG_STRUCT:
 				case SIG_VOID:
-					writer.Write(GetBondTypeMnemonic(SignatureType(signature.mType)), signature.mSize);
+					stream.Print(GetBondTypeMnemonic(SignatureType(signature.mType)), signature.mSize);
 					break;
 			}
 		}
-		writer.Write(")\n");
+		stream.Print(")\n");
 	}
 }
 
@@ -2288,15 +2288,15 @@ void VM::DumpStackFrame(TextWriter &writer, const CalleeStackFrame &frame) const
 void VM::RaiseError(const char *format, ...) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	BufferedTextWriter writer(buffer, Exception::MESSAGE_BUFFER_LENGTH);
+	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 
 	va_list argList;
 	va_start(argList, format);
-	writer.VWrite(format, argList);
+	stream.VPrint(format, argList);
 	va_end(argList);
 
-	writer.Write("\n");
-	DumpCallStack(writer);
+	stream.Print("\n");
+	DumpCallStack(stream);
 
 	BOND_FAIL_MESSAGE(buffer);
 }

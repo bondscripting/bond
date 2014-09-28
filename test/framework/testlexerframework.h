@@ -7,18 +7,18 @@
 
 #define DEFINE_LEXER_TEST(testName, scriptName)                               \
   bool __Validate ## testName ## __(                                          \
-    Bond::TextWriter &logger,                                                 \
+    Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::Lexer &lexer);                                                      \
                                                                               \
-  bool __Test ## testName ## __(Bond::TextWriter &logger)                     \
+  bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
   {                                                                           \
     return TestFramework::RunLexerTest(                                       \
       logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
   }                                                                           \
                                                                               \
   bool __Validate ## testName ## __(                                          \
-    Bond::TextWriter &logger,                                                 \
+    Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::Lexer &lexer)                                                       \
 
@@ -27,12 +27,12 @@ namespace TestFramework
 {
 
 typedef bool LexerValidationFunction(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	Bond::CompilerErrorBuffer &errorBuffer,
 	Bond::Lexer &lexer);
 
 bool RunLexerTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,

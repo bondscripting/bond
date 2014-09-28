@@ -8,14 +8,14 @@ namespace Bond
 
 class ParseNode;
 class ListParseNode;
-class TextWriter;
+class OutputStream;
 class Token;
 
 class PrettyPrinter
 {
 public:
-	void Print(const ParseNode *parseNode, TextWriter &writer, bool printFoldedConstants = false);
-	void PrintList(const ListParseNode *listNode, TextWriter &writer, bool printFoldedConstants = false);
+	void Print(const ParseNode *parseNode, OutputStream &stream, bool printFoldedConstants = false);
+	void PrintList(const ListParseNode *listNode, OutputStream &stream, bool printFoldedConstants = false);
 };
 
 }

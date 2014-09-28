@@ -10,17 +10,17 @@
 
 #define DEFINE_VM_TEST_WITH_BINDING(testName, scriptName, nativeBinding)                       \
   bool __Validate ## testName ## __(                                                           \
-    Bond::TextWriter &logger,                                                                  \
+    Bond::OutputStream &logger,                                                                \
     Bond::VM &vm);                                                                             \
                                                                                                \
-  bool __Test ## testName ## __(Bond::TextWriter &logger)                                      \
+  bool __Test ## testName ## __(Bond::OutputStream &logger)                                    \
   {                                                                                            \
     return TestFramework::RunVMTest(                                                           \
       logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __, nativeBinding);   \
   }                                                                                            \
                                                                                                \
   bool __Validate ## testName ## __(                                                           \
-    Bond::TextWriter &logger,                                                                  \
+    Bond::OutputStream &logger,                                                                \
     Bond::VM &vm)                                                                              \
 
 
@@ -133,11 +133,11 @@ namespace TestFramework
 {
 
 typedef bool VMValidationFunction(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	Bond::VM &vm);
 
 bool RunVMTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,

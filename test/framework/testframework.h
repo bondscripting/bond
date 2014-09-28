@@ -1,9 +1,9 @@
 #ifndef TEST_FRAMEWORK_TESTFRAMEWORK_H
 #define TEST_FRAMEWORK_TESTFRAMEWORK_H
 
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 
-#define DEFINE_TEST(testName) bool __Test ## testName ## __(Bond::TextWriter &logger)
+#define DEFINE_TEST(testName) bool __Test ## testName ## __(Bond::OutputStream &logger)
 
 #define TEST_ITEM(testName) {#testName, &__Test ## testName ## __ },
 
@@ -35,8 +35,8 @@
 #define __ASSERT_FORMAT__(condition, logger, file, line, format)            \
   if (!(condition))                                                         \
   {                                                                         \
-    logger.Write("line %u in %s: ", line, file);                            \
-    logger.Write format;                                                    \
+    logger.Print("line %u in %s: ", line, file);                            \
+    logger.Print format;                                                    \
     return false;                                                           \
   }                                                                         \
 
@@ -49,15 +49,15 @@
 
 #define __ERROR_FORMAT__(logger, file, line, format)                        \
   {                                                                         \
-    logger.Write("line %u in %s: ", line, file);                            \
-    logger.Write format;                                                    \
+    logger.Print("line %u in %s: ", line, file);                            \
+    logger.Print format;                                                    \
   }                                                                         \
 
 
 namespace TestFramework
 {
 
-typedef bool TestFunction(Bond::TextWriter &logger);
+typedef bool TestFunction(Bond::OutputStream &logger);
 
 struct TestItem
 {

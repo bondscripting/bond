@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-class TextWriter;
+class OutputStream;
 class TranslationUnit;
 
 class NativeBindingGenerator
@@ -14,8 +14,8 @@ class NativeBindingGenerator
 public:
 	void Generate(
 		const TranslationUnit *translationUnitList,
-		TextWriter &cppWriter,
-		TextWriter &hWriter,
+		OutputStream &cppStream,
+		OutputStream &hStream,
 		const char *collectionName,
 		const char *includeName);
 };

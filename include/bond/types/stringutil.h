@@ -7,7 +7,7 @@ namespace Bond
 {
 
 class SimpleString;
-class TextWriter;
+class OutputStream;
 
 size_t StringLength(const char *str);
 
@@ -27,7 +27,7 @@ inline bool StringEqual(const char *str1, size_t length1, const char *str2, size
 int StringCompare(const char *str1, const char *str2, size_t length);
 int StringCompare(const char *str1, size_t length1, const char *str2, size_t length2);
 
-void WriteString(TextWriter &writer, const SimpleString &str);
+void PrintString(OutputStream &stream, const SimpleString &str);
 
 }
 

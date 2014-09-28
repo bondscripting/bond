@@ -8,18 +8,18 @@
 
 #define DEFINE_PARSER_TEST(testName, scriptName)                              \
   bool __Validate ## testName ## __(                                          \
-    Bond::TextWriter &logger,                                                 \
+    Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::Parser &parser);                                                    \
                                                                               \
-  bool __Test ## testName ## __(Bond::TextWriter &logger)                     \
+  bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
   {                                                                           \
     return TestFramework::RunParserTest(                                      \
       logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
   }                                                                           \
                                                                               \
   bool __Validate ## testName ## __(                                          \
-    Bond::TextWriter &logger,                                                 \
+    Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::Parser &parser)                                                     \
 
@@ -31,19 +31,19 @@ namespace TestFramework
 {
 
 typedef bool ParserValidationFunction(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	Bond::CompilerErrorBuffer &errorBuffer,
 	Bond::Parser &parser);
 
 bool RunParserTest(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
 	ParserValidationFunction *validationFunction);
 
 bool AssertParseNodeCount(
-	Bond::TextWriter &logger,
+	Bond::OutputStream &logger,
 	const char *assertFile,
 	int assertLine,
 	const Bond::ListParseNode *root,

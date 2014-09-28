@@ -45,15 +45,14 @@
     <ClInclude Include="..\..\include\bond\compiler\token.h" />
     <ClInclude Include="..\..\include\bond\compiler\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h" />
-    <ClInclude Include="..\..\include\bond\io\binarywriter.h" />
-    <ClInclude Include="..\..\include\bond\io\bufferedbinarywriter.h" />
-    <ClInclude Include="..\..\include\bond\io\bufferedtextwriter.h" />
     <ClInclude Include="..\..\include\bond\io\diskfileloader.h" />
+    <ClInclude Include="..\..\include\bond\io\filedata.h" />
     <ClInclude Include="..\..\include\bond\io\fileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
-    <ClInclude Include="..\..\include\bond\io\stdiobinarywriter.h" />
-    <ClInclude Include="..\..\include\bond\io\stdiotextwriter.h" />
-    <ClInclude Include="..\..\include\bond\io\textwriter.h" />
+    <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\outputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\stream.h" />
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\assert.h" />
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h" />
@@ -105,8 +104,6 @@
     <ClInclude Include="..\..\source\private\valueevaluationpass.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\bufferedbinarywriter.cpp" />
-    <ClCompile Include="..\..\source\bufferedtextwriter.cpp" />
     <ClCompile Include="..\..\source\cboloader.cpp" />
     <ClCompile Include="..\..\source\cbovalidator.cpp" />
     <ClCompile Include="..\..\source\charstream.cpp" />
@@ -132,8 +129,10 @@
     <ClCompile Include="..\..\source\libtype.cpp" />
     <ClCompile Include="..\..\source\libtypebindings.cpp" />
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
+    <ClCompile Include="..\..\source\memoryoutputstream.cpp" />
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
+    <ClCompile Include="..\..\source\outputstream.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />
     <ClCompile Include="..\..\source\parsenodes.cpp" />
@@ -144,9 +143,7 @@
     <ClCompile Include="..\..\source\prettyprinter.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
-    <ClCompile Include="..\..\source\stdiotextwriter.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
-    <ClCompile Include="..\..\source\textwriter.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />
     <ClCompile Include="..\..\source\toplevelsymbolpass.cpp" />

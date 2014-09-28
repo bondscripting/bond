@@ -1,4 +1,4 @@
-#include "bond/io/bufferedtextwriter.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/types/opcodes.h"
 
 namespace Bond
@@ -18,8 +18,8 @@ const char *GetBondTypeMnemonic(SignatureType signatureType)
 
 char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
 {
-	BufferedTextWriter writer(buffer, length);
-	writer.Write(GetBondTypeMnemonic(SignatureType(signatureType)), size);
+	MemoryOutputStream stream(buffer, OutputStream::pos_t(length));
+	stream.Print(GetBondTypeMnemonic(SignatureType(signatureType)), size);
 	return buffer;
 }
 
@@ -38,8 +38,8 @@ const char *GetApiTypeMnemonic(SignatureType signatureType)
 
 char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
 {
-	BufferedTextWriter writer(buffer, length);
-	writer.Write(GetApiTypeMnemonic(SignatureType(signatureType)), size);
+	MemoryOutputStream stream(buffer, OutputStream::pos_t(length));
+	stream.Print(GetApiTypeMnemonic(SignatureType(signatureType)), size);
 	return buffer;
 }
 

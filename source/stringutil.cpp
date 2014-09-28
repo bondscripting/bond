@@ -1,4 +1,4 @@
-#include "bond/io/textwriter.h"
+#include "bond/io/outputstream.h"
 #include "bond/types/simplestring.h"
 #include "bond/types/stringutil.h"
 
@@ -97,13 +97,13 @@ int StringCompare(const char *str1, size_t length1, const char *str2, size_t len
 }
 
 
-void WriteString(TextWriter &writer, const SimpleString &str)
+void PrintString(OutputStream &stream, const SimpleString &str)
 {
 	const size_t length = str.GetLength();
 	const char *s = str.GetString();;
 	for (size_t i = 0; i < length; ++i)
 	{
-		writer.Write("%c", s[i]);
+		stream.Print("%c", s[i]);
 	}
 }
 
