@@ -6,7 +6,7 @@ include "type.bond";
 
 void TestForPresenceOfIncludedDeclarations()
 {
-	Bond::PrintC('a');
+	Bond::StdOut()->PrintC('a');
 	double value = Bond::Ceil(Bond::PI);
 	uint length = Bond::Strlen(null);
 	bool isalpha = Bond::IsAlpha('c');

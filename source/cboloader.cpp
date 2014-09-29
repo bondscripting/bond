@@ -333,7 +333,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 void CboLoader::FunctionIsNotNative(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 
@@ -354,7 +354,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 void CboLoader::FunctionIsNotBound(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	const char *const *elements = function.mName;
 	bool isFirstElement = true;
 

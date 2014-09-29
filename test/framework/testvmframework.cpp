@@ -54,7 +54,7 @@ bool RunVMTest(
 
 		if (!errorBuffer.HasErrors())
 		{
-			const Bond::OutputStream::pos_t MAX_CBO_SIZE = 8 * 1024;
+			const Bond::Stream::pos_t MAX_CBO_SIZE = 8 * 1024;
 			Bond::bu8_t cboBuffer[MAX_CBO_SIZE];
 			Bond::MemoryOutputStream cboStream(cboBuffer, MAX_CBO_SIZE);
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);

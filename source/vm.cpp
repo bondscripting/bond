@@ -93,11 +93,18 @@ void CallerStackFrame::Call()
 }
 
 
-VM::VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize):
+VM::VM(
+		Allocator &allocator,
+		const CodeSegment &codeSegment,
+		size_t stackSize,
+		OutputStream *stdOut,
+		OutputStream *stdErr):
 	mStackFrames(),
 	mDummyFrame(mStackFrames, CalleeStackFrame(*this)),
 	mAllocator(allocator),
 	mCodeSegment(codeSegment),
+	mStdOut(stdOut),
+	mStdErr(stdErr),
 	mStack(nullptr),
 	mStackSize(stackSize)
 {
@@ -2288,7 +2295,7 @@ void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) con
 void VM::RaiseError(const char *format, ...) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
-	MemoryOutputStream stream(buffer, OutputStream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 
 	va_list argList;
 	va_start(argList, format);

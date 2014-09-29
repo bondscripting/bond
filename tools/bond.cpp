@@ -1,5 +1,6 @@
 #include "bond/api/libruntime.h"
 #include "bond/io/diskfileloader.h"
+#include "bond/io/stdiooutputstream.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -110,7 +111,9 @@ int main(int argc, const char *argv[])
 
 		const Bond::bu32_t numArgs = Bond::bu32_t(argList.size());
 		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : nullptr;
-		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024);
+		Bond::StdOutOutputStream outStream;
+		Bond::StdErrOutputStream errStream;
+		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &outStream, &errStream);
 		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
 	}
 	catch (const Bond::Exception &e)

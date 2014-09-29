@@ -3,17 +3,25 @@ namespace Bond
 native
 {
 
-// Since Bond does not yet support variadic functions, this collection of functions
-// fills the gap left by the missing printf-like function.
-void PrintStr(const char *str);
-void PrintB(bool value);
-void PrintC(char value);
-void PrintI(int value);
-void PrintUI(uint value);
-void PrintL(long value);
-void PrintUL(ulong value);
-void PrintF(float value);
-void PrintD(double value);
+struct OutputStream
+{
+	OutputStream *PrintStr(const char *str);
+	OutputStream *PrintB(bool value);
+	OutputStream *PrintC(char value);
+	OutputStream *PrintI(int value);
+	OutputStream *PrintUI(uint value);
+	OutputStream *PrintL(long value);
+	OutputStream *PrintUL(ulong value);
+	OutputStream *PrintF(float value);
+	OutputStream *PrintD(double value);
+	int GetPosition() const;
+	void SetPosition(int offset);
+	void SetPositionFromEnd(int offset);
+	void AddOffset(int offset);
+};
+
+OutputStream *StdOut();
+OutputStream *StdErr();
 
 }
 }

@@ -15,7 +15,7 @@ bool RunTests(const TestGroup &testGroup)
 
 	for (unsigned i = 0; i < numTests; ++i)
 	{
-		const Bond::OutputStream::pos_t BUFFER_SIZE = 1024;
+		const Bond::Stream::pos_t BUFFER_SIZE = 1024;
 		char buffer[BUFFER_SIZE];
 		Bond::MemoryOutputStream logger(buffer, BUFFER_SIZE);
 		const TestItem &item = testGroup.items[i];

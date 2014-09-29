@@ -18,7 +18,7 @@ const char *GetBondTypeMnemonic(SignatureType signatureType)
 
 char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
 {
-	MemoryOutputStream stream(buffer, OutputStream::pos_t(length));
+	MemoryOutputStream stream(buffer, Stream::pos_t(length));
 	stream.Print(GetBondTypeMnemonic(SignatureType(signatureType)), size);
 	return buffer;
 }
@@ -38,7 +38,7 @@ const char *GetApiTypeMnemonic(SignatureType signatureType)
 
 char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
 {
-	MemoryOutputStream stream(buffer, OutputStream::pos_t(length));
+	MemoryOutputStream stream(buffer, Stream::pos_t(length));
 	stream.Print(GetApiTypeMnemonic(SignatureType(signatureType)), size);
 	return buffer;
 }

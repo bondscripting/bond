@@ -89,7 +89,12 @@ private:
 class VM
 {
 public:
-	VM(Allocator &allocator, const CodeSegment &codeSegment, size_t stackSize);
+	VM(
+			Allocator &allocator,
+			const CodeSegment &codeSegment,
+			size_t stackSize,
+			OutputStream *stdOut = nullptr,
+			OutputStream *stdErr = nullptr);
 	~VM();
 
 	Allocator &GetAllocator() const { return mAllocator; }
@@ -98,6 +103,9 @@ public:
 
 	CalleeStackFrame &GetTopStackFrame() { return mStackFrames.GetTop(); }
 	const CalleeStackFrame &GetTopStackFrame() const { return mStackFrames.GetTop(); }
+
+	OutputStream *GetStdOut() const { return mStdOut; }
+	OutputStream *GetStdErr() const { return mStdErr; }
 
 	void DumpCallStack(OutputStream &stream) const;
 	void DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) const;
@@ -159,6 +167,8 @@ private:
 	StackFrames::Element mDummyFrame;
 	Allocator &mAllocator;
 	const CodeSegment &mCodeSegment;
+	OutputStream *mStdOut;
+	OutputStream *mStdErr;
 	bu8_t *mStack;
 	size_t mStackSize;
 };

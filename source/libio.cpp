@@ -1,71 +1,135 @@
 #include "bond/api/libio.h"
+#include "bond/io/outputstream.h"
 #include "bond/systems/allocator.h"
 #include "bond/vm/vm.h"
-#include <cstdio>
 
 namespace Bond
 {
 
-void PrintStr(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintStr(Bond::CalleeStackFrame &frame)
 {
-	const char *str = frame.GetArg<const char *>(0);
-	printf("%s", str);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const char *str = frame.GetArg<const char *>(1);
+	stream->Print("%s", str);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintB(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintB(Bond::CalleeStackFrame &frame)
 {
-	const bool value = frame.GetArg<bool>(0);
-	printf("%s", value ? "true" : "false");
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bool value = frame.GetArg<bool>(1);
+	stream->Print("%s", value ? "true" : "false");
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintC(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintC(Bond::CalleeStackFrame &frame)
 {
-	const bi8_t value = frame.GetArg<bi8_t>(0);
-	printf("%c", char(value));
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi8_t value = frame.GetArg<bi8_t>(1);
+	stream->Print("%c", char(value));
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintI(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintI(Bond::CalleeStackFrame &frame)
 {
-	const bi32_t value = frame.GetArg<bi32_t>(0);
-	printf("%" BOND_PRId32, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi32_t value = frame.GetArg<bi32_t>(1);
+	stream->Print("%" BOND_PRId32, value);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintUI(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintUI(Bond::CalleeStackFrame &frame)
 {
-	const bu32_t value = frame.GetArg<bu32_t>(0);
-	printf("%" BOND_PRIu32, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bu32_t value = frame.GetArg<bu32_t>(1);
+	stream->Print("%" BOND_PRIu32, value);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintL(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintL(Bond::CalleeStackFrame &frame)
 {
-	const bi64_t value = frame.GetArg<bi64_t>(0);
-	printf("%" BOND_PRId64, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi64_t value = frame.GetArg<bi64_t>(1);
+	stream->Print("%" BOND_PRId64, value);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintUL(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintUL(Bond::CalleeStackFrame &frame)
 {
-	const bu64_t value = frame.GetArg<bu64_t>(0);
-	printf("%" BOND_PRIu64, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bu64_t value = frame.GetArg<bu64_t>(1);
+	stream->Print("%" BOND_PRIu64, value);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintF(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintF(Bond::CalleeStackFrame &frame)
 {
-	const bf32_t value = frame.GetArg<bf32_t>(0);
-	printf("%" BOND_PRIf32, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bf32_t value = frame.GetArg<bf32_t>(1);
+	stream->Print("%" BOND_PRIf32, value);
+	frame.SetReturnValue(stream);
 }
 
 
-void PrintD(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintD(Bond::CalleeStackFrame &frame)
 {
-	const bf64_t value = frame.GetArg<bf64_t>(0);
-	printf("%" BOND_PRIf64, value);
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bf64_t value = frame.GetArg<bf64_t>(1);
+	stream->Print("%" BOND_PRIf64, value);
+	frame.SetReturnValue(stream);
+}
+
+
+void OutputStream__GetPosition(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	bi32_t pos = bi32_t(stream->GetPosition());
+	frame.SetReturnValue(pos);
+}
+
+
+void OutputStream__SetPosition(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi32_t offset = frame.GetArg<bi32_t>(1);
+	stream->SetPosition(Stream::pos_t(offset));
+}
+
+
+void OutputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi32_t offset = frame.GetArg<bi32_t>(1);
+	stream->SetPositionFromEnd(Stream::pos_t(offset));
+}
+
+
+void OutputStream__AddOffset(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *stream = frame.GetArg<OutputStream *>(0);
+	const bi32_t value = frame.GetArg<bi32_t>(1);
+	stream->AddOffset(Stream::pos_t(value));
+}
+
+
+void StdOut(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *outStream = frame.GetVM().GetStdOut();
+	frame.SetReturnValue(outStream);
+}
+
+
+void StdErr(Bond::CalleeStackFrame &frame)
+{
+	OutputStream *errStream = frame.GetVM().GetStdErr();
+	frame.SetReturnValue(errStream);
 }
 
 }

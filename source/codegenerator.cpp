@@ -461,7 +461,7 @@ void GeneratorCore::Generate()
 	WriteConstantTable();
 
 	// Cache the start position and skip 4 bytes for the blob size.
-	const OutputStream::pos_t startPos = mStream.GetPosition();
+	const Stream::pos_t startPos = mStream.GetPosition();
 	mStream.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
@@ -471,7 +471,7 @@ void GeneratorCore::Generate()
 	WriteNativeMemberList(functionIndex);
 
 	// Patch up the blob size.
-	const OutputStream::pos_t endPos = mStream.GetPosition();
+	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue32(Value32(bu32_t(endPos - startPos)));
 	mStream.SetPosition(endPos);
@@ -3727,7 +3727,7 @@ const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Typ
 
 void GeneratorCore::WriteConstantTable()
 {
-	const OutputStream::pos_t startPos = mStream.GetPosition();
+	const Stream::pos_t startPos = mStream.GetPosition();
 
 	// Skip the 4 bytes for the table size.
 	mStream.AddOffset(sizeof(Value32));
@@ -3758,7 +3758,7 @@ void GeneratorCore::WriteConstantTable()
 	}
 
 	// Patch up the table size.
-	const OutputStream::pos_t endPos = mStream.GetPosition();
+	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue32(Value32(bu32_t(endPos - startPos)));
 	mStream.SetPosition(endPos);
@@ -3823,7 +3823,7 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		}
 
 		// Patch up the code size.
-		const OutputStream::pos_t endPos = mStream.GetPosition();
+		const Stream::pos_t endPos = mStream.GetPosition();
 		mStream.SetPosition(codeSizePos);
 		WriteValue32(Value32(bu32_t(endPos - codeStartPos)));
 
@@ -3860,7 +3860,7 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			WriteValue32(Value32(0));              // Code size
 
 			// Patch up the blob size.
-			const OutputStream::pos_t endPos = mStream.GetPosition();
+			const Stream::pos_t endPos = mStream.GetPosition();
 			mStream.SetPosition(blobStartPos);
 			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
 			mStream.SetPosition(endPos);
@@ -3890,7 +3890,7 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			WriteValue32(Value32(0));              // Code size
 
 			// Patch up the blob size.
-			const OutputStream::pos_t endPos = mStream.GetPosition();
+			const Stream::pos_t endPos = mStream.GetPosition();
 			mStream.SetPosition(blobStartPos);
 			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
 			mStream.SetPosition(endPos);
@@ -3902,13 +3902,13 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 {
 	// Cache the position for the number of elements and skip 2 bytes.
-	const OutputStream::pos_t startPos = mStream.GetPosition();
+	const Stream::pos_t startPos = mStream.GetPosition();
 	mStream.AddOffset(sizeof(Value16));
 
 	WriteSymbolNameIndices(symbol);
 
 	// Patch up the number of elements.
-	const OutputStream::pos_t endPos = mStream.GetPosition();
+	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
 	mStream.SetPosition(endPos);
@@ -3925,7 +3925,7 @@ void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
 void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool includeThis)
 {
 	// Cache the position for the number of parameters and skip 2 bytes.
-	const OutputStream::pos_t startPos = mStream.GetPosition();
+	const Stream::pos_t startPos = mStream.GetPosition();
 	mStream.AddOffset(sizeof(Value16));
 
 	if (includeThis)
@@ -3946,7 +3946,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	}
 
 	// Patch up the number of parameters.
-	const OutputStream::pos_t endPos = mStream.GetPosition();
+	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
 	mStream.SetPosition(endPos);
