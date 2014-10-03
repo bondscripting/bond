@@ -1,8 +1,6 @@
 #ifndef BOND_CONF_H
 #define BOND_CONF_H
 
-#define __STDC_LIMIT_MACROS
-#define __STDC_FORMAT_MACROS
 #include <cstddef>
 #include <new>
 

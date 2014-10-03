@@ -17,11 +17,11 @@ public:
 
 protected:
 	using SemanticAnalysisPass::Visit;
-	virtual void Visit(StructDeclaration *structDeclaration);
-	virtual void Visit(TypeSpecifier *typeSpecifier);
-	virtual void Visit(CompoundStatement *compoundStatement);
-	virtual void Visit(SwitchSection *switchSection);
-	virtual void Visit(ForStatement *forStatement);
+	virtual void Visit(StructDeclaration *structDeclaration) override;
+	virtual void Visit(TypeSpecifier *typeSpecifier) override;
+	virtual void Visit(CompoundStatement *compoundStatement) override;
+	virtual void Visit(SwitchSection *switchSection) override;
+	virtual void Visit(ForStatement *forStatement) override;
 };
 
 }

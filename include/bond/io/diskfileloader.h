@@ -20,8 +20,8 @@ public:
 
 	virtual ~DiskFileLoader() {}
 
-	virtual Handle LoadFile(const char *fileName);
-	virtual void DisposeFile(FileData &fileData);
+	virtual Handle LoadFile(const char *fileName) override;
+	virtual void DisposeFile(FileData &fileData) override;
 
 	Handle LoadFile(FILE *file);
 

@@ -13,12 +13,12 @@ public:
 	MemoryOutputStream(char *buffer, pos_t size);
 	MemoryOutputStream(bu8_t *buffer, pos_t size);
 	virtual ~MemoryOutputStream() {}
-	virtual void VPrint(const char *format, va_list argList);
-	virtual void Write(bu8_t c);
-	virtual pos_t GetPosition() const { return mCurrent; }
-	virtual void SetPosition(off_t offset);
-	virtual void SetPositionFromEnd(off_t offset);
-	virtual void AddOffset(off_t offset);
+	virtual void VPrint(const char *format, va_list argList) override;
+	virtual void Write(bu8_t c) override;
+	virtual pos_t GetPosition() const override { return mCurrent; }
+	virtual void SetPosition(off_t offset) override;
+	virtual void SetPositionFromEnd(off_t offset) override;
+	virtual void AddOffset(off_t offset) override;
 	const bu8_t *GetBuffer() const { return mBuffer; }
 
 private:

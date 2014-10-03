@@ -17,11 +17,11 @@ public:
 
 protected:
 	using SemanticAnalysisPass::Visit;
-	virtual void Visit(EnumDeclaration *enumDeclaration);
-	virtual void Visit(Enumerator *enumerator);
-	virtual void Visit(StructDeclaration *structDeclaration);
-	virtual void Visit(FunctionDefinition *functionDefinition);
-	virtual void Visit(NamedInitializer *namedInitializer);
+	virtual void Visit(EnumDeclaration *enumDeclaration) override;
+	virtual void Visit(Enumerator *enumerator) override;
+	virtual void Visit(StructDeclaration *structDeclaration) override;
+	virtual void Visit(FunctionDefinition *functionDefinition) override;
+	virtual void Visit(NamedInitializer *namedInitializer) override;
 };
 
 }

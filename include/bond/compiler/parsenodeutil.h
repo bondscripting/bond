@@ -23,7 +23,7 @@ public:
 	CastVisitor(): mNode(nullptr) {}
 
 	using ParseNodeVisitor::Visit;
-	virtual void Visit(T *node) { mNode = node; }
+	virtual void Visit(T *node) override { mNode = node; }
 
 	T *GetNode() { return mNode; }
 

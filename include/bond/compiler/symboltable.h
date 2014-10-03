@@ -18,9 +18,9 @@ private:
 	class GlobalScope: public Symbol
 	{
 	public:
-		virtual void Accept(ParseNodeVisitor &visitor) {}
-		virtual void Accept(ParseNodeVisitor &visitor) const {}
-		virtual SymbolType GetSymbolType() const { return TYPE_NAMESPACE; }
+		virtual void Accept(ParseNodeVisitor &visitor) override {}
+		virtual void Accept(ParseNodeVisitor &visitor) const override {}
+		virtual SymbolType GetSymbolType() const override { return TYPE_NAMESPACE; }
 	};
 
 	GlobalScope mGlobalScope;

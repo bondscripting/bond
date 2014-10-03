@@ -29,13 +29,13 @@ protected:
 	{}
 
 	using ParseNodeTraverser::Visit;
-	virtual void Visit(TranslationUnit *translationUnit);
-	virtual void Visit(NamespaceDefinition *namespaceDefinition);
-	virtual void Visit(StructDeclaration *structDeclaration);
-	virtual void Visit(FunctionDefinition *functionDefinition);
-	virtual void Visit(CompoundStatement *compoundStatement);
-	virtual void Visit(SwitchSection *switchSection);
-	virtual void Visit(ForStatement *forStatement);
+	virtual void Visit(TranslationUnit *translationUnit) override;
+	virtual void Visit(NamespaceDefinition *namespaceDefinition) override;
+	virtual void Visit(StructDeclaration *structDeclaration) override;
+	virtual void Visit(FunctionDefinition *functionDefinition) override;
+	virtual void Visit(CompoundStatement *compoundStatement) override;
+	virtual void Visit(SwitchSection *switchSection) override;
+	virtual void Visit(ForStatement *forStatement) override;
 
 	Symbol *GetCurrentScope() { return mScopeStack.GetTop(); }
 

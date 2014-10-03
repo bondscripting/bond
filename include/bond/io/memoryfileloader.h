@@ -30,8 +30,8 @@ public:
 
 	virtual ~MemoryFileLoader() {}
 
-	virtual Handle LoadFile(const char *fileName);
-	virtual void DisposeFile(FileData &fileData) {}
+	virtual Handle LoadFile(const char *fileName) override;
+	virtual void DisposeFile(FileData &fileData) override {}
 
 	void SetDelegateLoader(FileLoader *delegateLoader) { mDelegateLoader = delegateLoader; }
 

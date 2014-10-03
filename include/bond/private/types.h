@@ -68,20 +68,20 @@
 
 #if !defined(BOND_PRIf64)
 #define BOND_SCNf64 "lf"
-#define BOND_PRIf64 "lf"
+#define BOND_PRIf64 "f"
 #endif
 
 namespace Bond
 {
 
-typedef int8_t bi8_t;
-typedef uint8_t bu8_t;
-typedef int16_t bi16_t;
-typedef uint16_t bu16_t;
-typedef int32_t bi32_t;
-typedef uint32_t bu32_t;
-typedef int64_t bi64_t;
-typedef uint64_t bu64_t;
+typedef std::int8_t bi8_t;
+typedef std::uint8_t bu8_t;
+typedef std::int16_t bi16_t;
+typedef std::uint16_t bu16_t;
+typedef std::int32_t bi32_t;
+typedef std::uint32_t bu32_t;
+typedef std::int64_t bi64_t;
+typedef std::uint64_t bu64_t;
 typedef float bf32_t;
 typedef double bf64_t;
 

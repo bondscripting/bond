@@ -15,24 +15,24 @@ public:
 
 	virtual ~ValidationPass() {}
 
-	virtual void Analyze(TranslationUnit *translationUnitList);
+	virtual void Analyze(TranslationUnit *translationUnitList) override;
 
 protected:
 	using SemanticAnalysisPass::Visit;
-	virtual void Visit(FunctionDefinition *functionDefinition);
-	virtual void Visit(FunctionPrototype *functionPrototype);
-	virtual void Visit(Parameter *parameter);
-	virtual void Visit(IfStatement *ifStatement);
-	virtual void Visit(SwitchStatement *switchStatement);
-	virtual void Visit(SwitchSection *switchSection);
-	virtual void Visit(SwitchLabel *switchLabel);
-	virtual void Visit(WhileStatement *whileStatement);
-	virtual void Visit(ForStatement *forStatement);
-	virtual void Visit(JumpStatement *jumpStatement);
-	virtual void Visit(DeclarativeStatement *declarativeStatement);
-	virtual void Visit(ExpressionStatement *expressionStatement);
-	virtual void Visit(BinaryExpression *binaryExpression);
-	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression);
+	virtual void Visit(FunctionDefinition *functionDefinition) override;
+	virtual void Visit(FunctionPrototype *functionPrototype) override;
+	virtual void Visit(Parameter *parameter) override;
+	virtual void Visit(IfStatement *ifStatement) override;
+	virtual void Visit(SwitchStatement *switchStatement) override;
+	virtual void Visit(SwitchSection *switchSection) override;
+	virtual void Visit(SwitchLabel *switchLabel) override;
+	virtual void Visit(WhileStatement *whileStatement) override;
+	virtual void Visit(ForStatement *forStatement) override;
+	virtual void Visit(JumpStatement *jumpStatement) override;
+	virtual void Visit(DeclarativeStatement *declarativeStatement) override;
+	virtual void Visit(ExpressionStatement *expressionStatement) override;
+	virtual void Visit(BinaryExpression *binaryExpression) override;
+	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;
