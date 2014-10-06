@@ -3,9 +3,6 @@
 
 #include "bond/systems/exception.h"
 
-#define BOND_STATIC_ASSERT(condition, message)                  \
-  typedef char assert_failed_ ## message[(condition) ? 1 : -1]; \
-
 #define BOND_ASSERT(condition) \
   if (!(condition))            \
   {                            \

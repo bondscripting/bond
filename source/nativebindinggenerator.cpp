@@ -39,11 +39,13 @@ private:
 	};
 	typedef AutoStack<NamespaceItem> NamespaceStack;
 
-	virtual void Visit(const TranslationUnit *translationUnit);
-	virtual void Visit(const NamespaceDefinition *namespaceDefinition);
-	virtual void Visit(const EnumDeclaration *enumDeclaration) {}
-	virtual void Visit(const FunctionDefinition *functionDefinition);
-	virtual void Visit(const NamedInitializer *namedInitializer);
+	virtual void Visit(const TranslationUnit *translationUnit) override;
+	virtual void Visit(const NamespaceDefinition *namespaceDefinition) override;
+	virtual void Visit(const NativeBlock *nativeBlock) override;
+	virtual void Visit(const EnumDeclaration *enumDeclaration) override;
+	virtual void Visit(const Enumerator *enumerator) override;
+	virtual void Visit(const FunctionDefinition *functionDefinition) override;
+	virtual void Visit(const NamedInitializer *namedInitializer) override;
 
 	size_t SplitIdentifiers(const char *str, SimpleString *identifiers, size_t maxIdentifiers) const;
 	void OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers);
@@ -52,6 +54,7 @@ private:
 	void PrintQualifiedSymbolName(OutputStream &stream, const Symbol *symbol);
 
 	NamespaceStack mNamespaceStack;
+	BoolStack mInNativeBlockStack;
 	const TranslationUnit *mTranslationUnitList;
 	OutputStream &mCppStream;
 	OutputStream &mHStream;
@@ -75,6 +78,8 @@ void NativeBindingGenerator::Generate(
 
 void NativeBindingGeneratorCore::Generate()
 {
+	BoolStack::Element inNativeBlockElement(mInNativeBlockStack, true);
+
 	const size_t MAX_IDENTIFIER_DEPTH = 128;
 	SimpleString identifiers[MAX_IDENTIFIER_DEPTH];
 	const size_t numIdentifiers = SplitIdentifiers(mCollectionName, identifiers, MAX_IDENTIFIER_DEPTH);
@@ -145,6 +150,33 @@ void NativeBindingGeneratorCore::Visit(const NamespaceDefinition *namespaceDefin
 	{
 		mHStream.Print("}\n");
 	}
+}
+
+
+void NativeBindingGeneratorCore::Visit(const NativeBlock *nativeBlock)
+{
+	BoolStack::Element inNativeBlockElement(mInNativeBlockStack, true);
+	ParseNodeTraverser::Visit(nativeBlock);
+}
+
+
+void NativeBindingGeneratorCore::Visit(const EnumDeclaration *enumDeclaration)
+{
+	if (mInNativeBlockStack.GetTop())
+	{
+		NamespaceStack::Iterator it = mNamespaceStack.Begin();
+		PrintNamespaceStack(mHStream, it);
+
+		mHStream.Print("enum %s\n{\n", enumDeclaration->GetName()->GetText());
+		TraverseList(enumDeclaration->GetEnumeratorList());
+		mHStream.Print("};\n");
+	}
+}
+
+
+void NativeBindingGeneratorCore::Visit(const Enumerator *enumerator)
+{
+	mHStream.Print("\t%s = %" BOND_PRId32 ",\n", enumerator->GetName()->GetText(), enumerator->GetTypeAndValue()->GetIntValue());
 }
 
 
