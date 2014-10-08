@@ -7,43 +7,43 @@ DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")
 {
 	using namespace Bond;
 
-	const bf64_t PI = 3.14159265358979323846;
-	const bf64_t TWO_PI = PI * 2.0;
-	const bf64_t HALF_PI = PI / 2.0;
-	const bf64_t THIRD_PI = PI / 3.0;
-	const bf64_t SIXTH_PI = PI / 6.0;
+	const double PI = 3.14159265358979323846;
+	const double TWO_PI = PI * 2.0;
+	const double HALF_PI = PI / 2.0;
+	const double THIRD_PI = PI / 3.0;
+	const double SIXTH_PI = PI / 6.0;
 
-	const bf32_t PI_F = bf32_t(3.14159265358979323846);
-	const bf32_t TWO_PI_F = bf32_t(PI * 2.0);
-	const bf32_t HALF_PI_F = bf32_t(PI / 2.0);
-	const bf32_t THIRD_PI_F = bf32_t(PI / 3.0);
-	const bf32_t SIXTH_PI_F = bf32_t(PI / 6.0);
+	const float PI_F = float(3.14159265358979323846);
+	const float TWO_PI_F = float(PI * 2.0);
+	const float HALF_PI_F = float(PI / 2.0);
+	const float THIRD_PI_F = float(PI / 3.0);
+	const float SIXTH_PI_F = float(PI / 6.0);
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(1.0), HALF_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(0.5), SIXTH_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(-1.0), -HALF_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", bf64_t(-0.5), TWO_PI - SIXTH_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", double(1.0), HALF_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", double(0.5), SIXTH_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", double(-1.0), -HALF_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Sin", double(-0.5), TWO_PI - SIXTH_PI);
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", bf32_t(0.0), bf32_t(0.0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", bf32_t(1.0), HALF_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", bf32_t(0.5), SIXTH_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", bf32_t(-1.0), -HALF_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", bf32_t(-0.5), TWO_PI_F - SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", float(0.0), float(0.0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", float(1.0), HALF_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", float(0.5), SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", float(-1.0), -HALF_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Sinf", float(-0.5), TWO_PI_F - SIXTH_PI_F);
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(1.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(0.0), HALF_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(0.5), THIRD_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(0.0), -HALF_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(0.5), TWO_PI - THIRD_PI);
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", bf64_t(-0.5), HALF_PI + SIXTH_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(1.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(0.0), HALF_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(0.5), THIRD_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(0.0), -HALF_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(0.5), TWO_PI - THIRD_PI);
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Bond::Cos", double(-0.5), HALF_PI + SIXTH_PI);
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(1.0), bf32_t(0.0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(0.0), HALF_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(0.5), THIRD_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(0.0), -HALF_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(0.5), TWO_PI_F - THIRD_PI_F);
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", bf32_t(-0.5), HALF_PI_F + SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(1.0), float(0.0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(0.0), HALF_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(0.5), THIRD_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(0.0), -HALF_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(0.5), TWO_PI_F - THIRD_PI_F);
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Bond::Cosf", float(-0.5), HALF_PI_F + SIXTH_PI_F);
 
 	return true;
 }

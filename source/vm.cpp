@@ -302,98 +302,98 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CONSTF_N2:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(-2.0f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(-2.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_N1:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(-1.0f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(-1.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_NH:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(-0.5f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(-0.5f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_0:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(0.0f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(0.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_H:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(0.5f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(0.5f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_1:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(1.0f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(1.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTF_2:
 			{
-				*reinterpret_cast<bf32_t *>(sp) = static_cast<bf32_t>(2.0f);
+				*reinterpret_cast<float *>(sp) = static_cast<float>(2.0f);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_N2:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(-2.0);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(-2.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_N1:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(-1.0);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(-1.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_NH:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(-0.5);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(-0.5);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_0:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(0.0);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(0.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_H:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(0.5);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(0.5);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_1:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(1.0);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(1.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
 
 			case OPCODE_CONSTD_2:
 			{
-				*reinterpret_cast<bf64_t *>(sp) = static_cast<bf64_t>(2.0);
+				*reinterpret_cast<double *>(sp) = static_cast<double>(2.0);
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -1004,33 +1004,33 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_ITOF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				float *a = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf32_t>(*b);
+				*a = static_cast<float>(*b);
 			}
 			break;
 
 			case OPCODE_UITOF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				float *a = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf32_t>(*b);
+				*a = static_cast<float>(*b);
 			}
 			break;
 
 			case OPCODE_ITOD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				double *a = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				const bi32_t *b = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf64_t>(*b);
+				*a = static_cast<double>(*b);
 			}
 			break;
 
 			case OPCODE_UITOD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				double *a = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				const bu32_t *b = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf64_t>(*b);
+				*a = static_cast<double>(*b);
 			}
 			break;
 
@@ -1044,40 +1044,40 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_LTOF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				float *a = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf32_t>(*b);
+				*a = static_cast<float>(*b);
 			}
 			break;
 
 			case OPCODE_ULTOF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				float *a = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf32_t>(*b);
+				*a = static_cast<float>(*b);
 			}
 			break;
 
 			case OPCODE_LTOD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				double *a = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				const bi64_t *b = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf64_t>(*b);
+				*a = static_cast<double>(*b);
 			}
 			break;
 
 			case OPCODE_ULTOD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				double *a = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				const bu64_t *b = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf64_t>(*b);
+				*a = static_cast<double>(*b);
 			}
 			break;
 
 			case OPCODE_FTOI:
 			{
 				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const float *b = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bi32_t>(*b);
 			}
 			break;
@@ -1085,7 +1085,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_FTOUI:
 			{
 				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const float *b = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bu32_t>(*b);
 			}
 			break;
@@ -1093,7 +1093,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_FTOL:
 			{
 				bi64_t *a = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const float *b = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bi64_t>(*b);
 			}
 			break;
@@ -1101,23 +1101,23 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_FTOUL:
 			{
 				bu64_t *a = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
+				const float *b = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bu64_t>(*b);
 			}
 			break;
 
 			case OPCODE_FTOD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf64_t>(*b);
+				double *a = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
+				const float *b = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<double>(*b);
 			}
 			break;
 
 			case OPCODE_DTOI:
 			{
 				bi32_t *a = reinterpret_cast<bi32_t *>(sp - BOND_SLOT_SIZE);
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const double *b = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bi32_t>(*b);
 			}
 			break;
@@ -1125,7 +1125,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_DTOUI:
 			{
 				bu32_t *a = reinterpret_cast<bu32_t *>(sp - BOND_SLOT_SIZE);
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const double *b = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bu32_t>(*b);
 			}
 			break;
@@ -1133,7 +1133,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_DTOL:
 			{
 				bi64_t *a = reinterpret_cast<bi64_t *>(sp - BOND_SLOT_SIZE);
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const double *b = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bi64_t>(*b);
 			}
 			break;
@@ -1141,16 +1141,16 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_DTOUL:
 			{
 				bu64_t *a = reinterpret_cast<bu64_t *>(sp - BOND_SLOT_SIZE);
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
+				const double *b = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
 				*a = static_cast<bu64_t>(*b);
 			}
 			break;
 
 			case OPCODE_DTOF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - BOND_SLOT_SIZE);
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<bf32_t>(*b);
+				float *a = reinterpret_cast<float *>(sp - BOND_SLOT_SIZE);
+				const double *b = reinterpret_cast<double *>(sp - BOND_SLOT_SIZE);
+				*a = static_cast<float>(*b);
 			}
 			break;
 
@@ -1214,8 +1214,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_ADDF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				*a += *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1223,8 +1223,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_ADDD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				*a += *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1250,8 +1250,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_SUBF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				*a -= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1259,8 +1259,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_SUBD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				*a -= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1304,8 +1304,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_MULF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				*a *= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1313,8 +1313,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_MULD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				*a *= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1358,8 +1358,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_DIVF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				*a /= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1367,8 +1367,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_DIVD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				*a /= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1534,14 +1534,14 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_NEGF:
 			{
-				bf32_t *a = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				float *a = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				*a = -(*a);
 			}
 			break;
 
 			case OPCODE_NEGD:
 			{
-				bf64_t *a = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				double *a = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				*a = -(*a);
 			}
 			break;
@@ -1575,8 +1575,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPEQF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1585,8 +1585,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPEQD:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a == *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1615,8 +1615,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPNEQF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1625,8 +1625,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPNEQD:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a != *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1675,8 +1675,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPLTF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1685,8 +1685,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPLTD:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a < *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1735,8 +1735,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPLEF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1745,8 +1745,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPLED:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a <= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1795,8 +1795,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPGTF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1805,8 +1805,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPGTD:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a > *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1855,8 +1855,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPGEF:
 			{
-				const bf32_t *a = reinterpret_cast<bf32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf32_t *b = reinterpret_cast<bf32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const float *a = reinterpret_cast<float *>(sp - (2 * BOND_SLOT_SIZE));
+				const float *b = reinterpret_cast<float *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -1865,8 +1865,8 @@ void VM::ExecuteScriptFunction()
 
 			case OPCODE_CMPGED:
 			{
-				const bf64_t *a = reinterpret_cast<bf64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const bf64_t *b = reinterpret_cast<bf64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const double *a = reinterpret_cast<double *>(sp - (2 * BOND_SLOT_SIZE));
+				const double *b = reinterpret_cast<double *>(sp - (1 * BOND_SLOT_SIZE));
 				bi32_t *result = reinterpret_cast<bi32_t *>(sp - (2 * BOND_SLOT_SIZE));
 				*result = (*a >= *b) ? 1 : 0;
 				sp -= BOND_SLOT_SIZE;
@@ -2273,10 +2273,10 @@ void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) con
 					stream.Print("%" BOND_PRIu64, *reinterpret_cast<const bu64_t *>(argPointer));
 					break;
 				case SIG_FLOAT:
-					stream.Print("%" BOND_PRIf32, *reinterpret_cast<const bf32_t *>(argPointer));
+					stream.Print("%f", *reinterpret_cast<const float *>(argPointer));
 					break;
 				case SIG_DOUBLE:
-					stream.Print("%" BOND_PRIf64, *reinterpret_cast<const bf64_t *>(argPointer));
+					stream.Print("%f", *reinterpret_cast<const double *>(argPointer));
 					break;
 				case SIG_POINTER:
 					stream.Print("%p", reinterpret_cast<const void *>(argPointer));

@@ -205,11 +205,11 @@ public:
 	bu64_t GetULongValue() const { return mValue.mULong; }
 	void SetULongValue(bu64_t value) { mValue.mULong = value; }
 
-	bf32_t GetFloatValue() const { return mValue.mFloat; }
-	void SetFloatValue(bf32_t value) { mValue.mFloat = value; }
+	float GetFloatValue() const { return mValue.mFloat; }
+	void SetFloatValue(float value) { mValue.mFloat = value; }
 
-	bf64_t GetDoubleValue() const { return mValue.mDouble; }
-	void SetDoubleValue(bf64_t value) { mValue.mDouble = value; }
+	double GetDoubleValue() const { return mValue.mDouble; }
+	void SetDoubleValue(double value) { mValue.mDouble = value; }
 
 	const char *GetStringValue() const { return mValue.mString.buffer; }
 	size_t GetStringLength() const { return mValue.mString.length; }

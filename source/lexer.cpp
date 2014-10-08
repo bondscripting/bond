@@ -1305,8 +1305,8 @@ void LexerCore::EvaluateCharToken(Token &token)
 
 void LexerCore::EvaluateFloatToken(Token &token) const
 {
-	bf32_t value;
-	sscanf(token.GetText(), "%" BOND_SCNf32, &value);
+	float value;
+	sscanf(token.GetText(), "%f", &value);
 	token.SetFloatValue(value);
 }
 
@@ -1369,8 +1369,8 @@ void LexerCore::EvaluateLongToken(Token &token) const
 
 void LexerCore::EvaluateDoubleToken(Token &token) const
 {
-	bf64_t value;
-	sscanf(token.GetText(), "%" BOND_SCNf64, &value);
+	double value;
+	sscanf(token.GetText(), "%lf", &value);
 	token.SetDoubleValue(value);
 }
 

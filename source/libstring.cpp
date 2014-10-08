@@ -43,11 +43,11 @@ void TryParseLong(Bond::CalleeStackFrame &frame)
 void TryParseFloat(Bond::CalleeStackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
-	bf32_t *result = frame.GetArg<bf32_t *>(1);
+	float *result = frame.GetArg<float *>(1);
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%" BOND_SCNf32, result) == 1;
+		success = sscanf(str, "%f", result) == 1;
 	}
 	frame.SetReturnValue(success);
 }
@@ -56,11 +56,11 @@ void TryParseFloat(Bond::CalleeStackFrame &frame)
 void TryParseDouble(Bond::CalleeStackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
-	bf64_t *result = frame.GetArg<bf64_t *>(1);
+	double *result = frame.GetArg<double *>(1);
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%" BOND_SCNf64, result) == 1;
+		success = sscanf(str, "%lf", result) == 1;
 	}
 	frame.SetReturnValue(success);
 }

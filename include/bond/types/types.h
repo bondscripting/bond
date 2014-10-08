@@ -34,8 +34,8 @@ enum PointerSize
   BOND_SIGNATURE_TYPE_ITEM(UINT,    "uint",                     "bu32_t")                   \
   BOND_SIGNATURE_TYPE_ITEM(LONG,    "long",                     "bi64_t")                   \
   BOND_SIGNATURE_TYPE_ITEM(ULONG,   "ulong",                    "bu64_t")                   \
-  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float",                    "bf32_t")                   \
-  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double",                   "bf64_t")                   \
+  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float",                    "float")                    \
+  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double",                   "double")                   \
   BOND_SIGNATURE_TYPE_ITEM(POINTER, "*",                        "pointer")                  \
   BOND_SIGNATURE_TYPE_ITEM(STRUCT,  "struct<%" BOND_PRIu32 ">", "struct<%" BOND_PRIu32 ">") \
 

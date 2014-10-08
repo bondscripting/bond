@@ -123,10 +123,10 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const Bond::bu64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX };
 	const int NUM_ULONGS = sizeof(EXPECTED_ULONGS) / sizeof(*EXPECTED_ULONGS);
 
-	const Bond::bf32_t EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
+	const float EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
 	const int NUM_FLOATS = sizeof(EXPECTED_FLOATS) / sizeof(*EXPECTED_FLOATS);
 
-	const Bond::bf64_t EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2 };
+	const double EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2 };
 	const int NUM_DOUBLES = sizeof(EXPECTED_DOUBLES) / sizeof(*EXPECTED_DOUBLES);
 
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
@@ -213,10 +213,10 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_FLOAT == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_FLOAT), token->GetTokenName()));
 
-		const Bond::bf32_t expected = EXPECTED_FLOATS[i];
-		const Bond::bf32_t actual = token->GetFloatValue();
+		const float expected = EXPECTED_FLOATS[i];
+		const float actual = token->GetFloatValue();
 		ASSERT_FORMAT((actual >= (expected - 0.0000001f)) && (actual <= (expected + 0.0000001f)),
-			("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", expected, actual));
+			("Expected %f, but was %f.", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_DOUBLES; ++i)
@@ -225,10 +225,10 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_DOUBLE == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_DOUBLE), token->GetTokenName()));
 
-		const Bond::bf64_t expected = EXPECTED_DOUBLES[i];
-		const Bond::bf64_t actual = token->GetDoubleValue();
+		const double expected = EXPECTED_DOUBLES[i];
+		const double actual = token->GetDoubleValue();
 		ASSERT_FORMAT((expected >= (actual - 0.0000001)) && (expected <= (actual + 0.0000001)),
-			("Expected %.16" BOND_PRIf64 ", but was %.16" BOND_PRIf64 ".", expected, actual));
+			("Expected %.16f, but was %.16f.", expected, actual));
 	}
 
 	for (int i = 0; i < NUM_CHARS; ++i)

@@ -77,8 +77,8 @@
 #define DECLARE_RETURN_VALUE_UINT() Bond::bu32_t returnValue = 0;
 #define DECLARE_RETURN_VALUE_LONG() Bond::bi64_t returnValue = 0;
 #define DECLARE_RETURN_VALUE_ULONG() Bond::bu64_t returnValue = 0;
-#define DECLARE_RETURN_VALUE_FLOAT() Bond::bf32_t returnValue = 0.0f;
-#define DECLARE_RETURN_VALUE_DOUBLE() Bond::bf64_t returnValue = 0.0;
+#define DECLARE_RETURN_VALUE_FLOAT() float returnValue = 0.0f;
+#define DECLARE_RETURN_VALUE_DOUBLE() double returnValue = 0.0;
 #define DECLARE_RETURN_VALUE_PTR() const void *returnValue = nullptr;
 
 
@@ -108,19 +108,19 @@
 
 #define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                              \
   {                                                                                              \
-    const Bond::bf32_t delta = Bond::Max(Bond::Abs((expectedResult) * bf32_t(1.0e-6)), bf32_t(1.0e-6)); \
+    const float delta = Bond::Max(Bond::Abs((expectedResult) * float(1.0e-6)), float(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                 \
       (returnValue <= ((expectedResult) + delta)),                                               \
-      ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", (expectedResult), returnValue));  \
+      ("Expected %f, but was %f.", (expectedResult), returnValue));  \
   }                                                                                              \
 
 
 #define VALIDATE_RETURN_VALUE_DOUBLE(expectedResult)                                            \
   {                                                                                             \
-    const Bond::bf64_t delta = Bond::Max(Bond::Abs((expectedResult) * bf64_t(1.0e-6)), bf64_t(1.0e-6)); \
+    const double delta = Bond::Max(Bond::Abs((expectedResult) * double(1.0e-6)), double(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                \
       (returnValue <= ((expectedResult) + delta)),                                              \
-      ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", (expectedResult), returnValue)); \
+      ("Expected %f, but was %f.", (expectedResult), returnValue)); \
   }                                                                                             \
 
 

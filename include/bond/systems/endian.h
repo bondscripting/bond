@@ -66,12 +66,12 @@ inline void ConvertBigEndian32(void *value) {}
 inline Value32 ConvertBigEndian32(Value32 value) { return value; }
 inline bi32_t ConvertBigEndianI32(bi32_t value) { return value; }
 inline bu32_t ConvertBigEndianU32(bu32_t value) { return value; }
-inline bf32_t ConvertBigEndianF32(bf32_t value) { return value; }
+inline float ConvertBigEndianF32(float value) { return value; }
 inline void ConvertBigEndian64(void *value) {}
 inline Value64 ConvertBigEndian64(Value64 value) { return value; }
 inline bi64_t ConvertBigEndianI64(bi64_t value) { return value; }
 inline bu64_t ConvertBigEndianU64(bu64_t value) { return value; }
-inline bf64_t ConvertBigEndianF64(bf64_t value) { return value; }
+inline double ConvertBigEndianF64(double value) { return value; }
 
 #else
 
@@ -123,7 +123,7 @@ inline bu32_t ConvertBigEndianU32(bu32_t value)
 }
 
 
-inline bf32_t ConvertBigEndianF32(bf32_t value)
+inline float ConvertBigEndianF32(float value)
 {
 	return ReverseByteOrder32(Value32(value)).mFloat;
 }
@@ -153,7 +153,7 @@ inline bu64_t ConvertBigEndianU64(bu64_t value)
 }
 
 
-inline bf64_t ConvertBigEndianF64(bf64_t value)
+inline double ConvertBigEndianF64(double value)
 {
 	return ReverseByteOrder64(Value64(value)).mDouble;
 }

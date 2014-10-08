@@ -100,14 +100,14 @@ inline bool ValidateSignatureType<bu64_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bf32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<float>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_FLOAT;
 }
 
 
 template <>
-inline bool ValidateSignatureType<bf64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<double>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_DOUBLE;
 }
@@ -204,14 +204,14 @@ inline bool ValidateReturnType<bu64_t>(size_t size, SignatureType signatureType)
 
 
 template <>
-inline bool ValidateReturnType<bf32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<float>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_FLOAT;
 }
 
 
 template <>
-inline bool ValidateReturnType<bf64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<double>(size_t size, SignatureType signatureType)
 {
 	return signatureType == SIG_DOUBLE;
 }

@@ -14,8 +14,8 @@ void ValidateConfiguration()
 	static_assert(sizeof(bu32_t) == 4, "sizeof(bu32_t) is not 4");
 	static_assert(sizeof(bi64_t) == 8, "sizeof(bi64_t) is not 8");
 	static_assert(sizeof(bu64_t) == 8, "sizeof(bu64_t) is not 8");
-	static_assert(sizeof(bf32_t) == 4, "sizeof(bf32_t) is not 4");
-	static_assert(sizeof(bf64_t) == 8, "sizeof(bf64_t) is not 8");
+	static_assert(sizeof(float) == 4, "sizeof(float) is not 4");
+	static_assert(sizeof(double) == 8, "sizeof(double) is not 8");
 	static_assert(sizeof(Value16) == 2, "sizeof(Value16) is not 2");
 	static_assert(sizeof(Value32) == 4, "sizeof(Value32) is not 4");
 	static_assert(sizeof(Value64) == 8, "sizeof(Value64) is not 8");

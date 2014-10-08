@@ -50,20 +50,20 @@ DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 	VALIDATE_FUNCTION_CALL_0(LONG, "::Constl_3", bi64_t(3));
 	VALIDATE_FUNCTION_CALL_0(LONG, "::Constl_4", bi64_t(4));
 	VALIDATE_FUNCTION_CALL_0(LONG, "::Constl_8", bi64_t(8));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_n2", bf32_t(-2.0f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_n1", bf32_t(-1.0f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_nh", bf32_t(-0.5f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_0", bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_h", bf32_t( 0.5f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_1", bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_2", bf32_t(2.0f));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_n2", bf64_t(-2.0));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_n1", bf64_t(-1.0));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_nh", bf64_t(-0.5));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_0", bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_h", bf64_t( 0.5));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_1", bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_2", bf64_t(2.0));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_n2", float(-2.0f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_n1", float(-1.0f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_nh", float(-0.5f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_0", float(0.0f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_h", float( 0.5f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_1", float(1.0f));
+	VALIDATE_FUNCTION_CALL_0(FLOAT, "::Constf_2", float(2.0f));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_n2", double(-2.0));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_n1", double(-1.0));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_nh", double(-0.5));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_0", double(0.0));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_h", double( 0.5));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_1", double(1.0));
+	VALIDATE_FUNCTION_CALL_0(DOUBLE, "::Constd_2", double(2.0));
 
 	return true;
 }
@@ -160,119 +160,119 @@ DEFINE_VM_TEST(TypeConversions, "scripts/vm_TypeConversions.bond")
 
 	VALIDATE_FUNCTION_CALL_1(ULONG, "::Uitoul", bu64_t(bu32_t(7654)), bu32_t(7654));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(0)), bi32_t(0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(1)), bi32_t(1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(2)), bi32_t(2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(-1)), bi32_t(-1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(-2)), bi32_t(-2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", bf32_t(bi32_t(-3000)), bi32_t(-3000));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(0)), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(1)), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(2)), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(-1)), bi32_t(-1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(-2)), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Itof", float(bi32_t(-3000)), bi32_t(-3000));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", bf32_t(bu32_t(0)), bu32_t(0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", bf32_t(bu32_t(1)), bu32_t(1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", bf32_t(bu32_t(2)), bu32_t(2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", bf32_t(bu32_t(3000)), bu32_t(3000));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", float(bu32_t(0)), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", float(bu32_t(1)), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", float(bu32_t(2)), bu32_t(2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Uitof", float(bu32_t(3000)), bu32_t(3000));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(0)), bi32_t(0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(1)), bi32_t(1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(2)), bi32_t(2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(-1)), bi32_t(-1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(-2)), bi32_t(-2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", bf64_t(bi32_t(-3000)), bi32_t(-3000));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(0)), bi32_t(0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(1)), bi32_t(1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(2)), bi32_t(2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(-1)), bi32_t(-1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(-2)), bi32_t(-2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Itod", double(bi32_t(-3000)), bi32_t(-3000));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", bf64_t(bu32_t(0)), bu32_t(0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", bf64_t(bu32_t(1)), bu32_t(1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", bf64_t(bu32_t(2)), bu32_t(2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", bf64_t(bu32_t(3000)), bu32_t(3000));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", double(bu32_t(0)), bu32_t(0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", double(bu32_t(1)), bu32_t(1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", double(bu32_t(2)), bu32_t(2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Uitod", double(bu32_t(3000)), bu32_t(3000));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "::Ltoi", bi32_t(bi64_t(-8745)), bi64_t(-8745));
 	VALIDATE_FUNCTION_CALL_1(INT, "::Ltoi", bi32_t(bi64_t(0xabcdef) << 16), bi64_t(0xabcdef) << 16);
 	VALIDATE_FUNCTION_CALL_1(INT, "::Ltoi", bi32_t(bi64_t(8745)), bi64_t(8745));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(0)), bi64_t(0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(1)), bi64_t(1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(2)), bi64_t(2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(-1)), bi64_t(-1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(-2)), bi64_t(-2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", bf32_t(bi64_t(-3000)), bi64_t(-3000));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(0)), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(1)), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(2)), bi64_t(2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(-1)), bi64_t(-1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(-2)), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ltof", float(bi64_t(-3000)), bi64_t(-3000));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", bf32_t(bu64_t(0)), bu64_t(0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", bf32_t(bu64_t(1)), bu64_t(1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", bf32_t(bu64_t(2)), bu64_t(2));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", bf32_t(bu64_t(3000)), bu64_t(3000));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", float(bu64_t(0)), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", float(bu64_t(1)), bu64_t(1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", float(bu64_t(2)), bu64_t(2));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Ultof", float(bu64_t(3000)), bu64_t(3000));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(0)), bi64_t(0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(1)), bi64_t(1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(2)), bi64_t(2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(-1)), bi64_t(-1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(-2)), bi64_t(-2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", bf64_t(bi64_t(-3000)), bi64_t(-3000));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(0)), bi64_t(0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(1)), bi64_t(1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(2)), bi64_t(2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(-1)), bi64_t(-1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(-2)), bi64_t(-2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ltod", double(bi64_t(-3000)), bi64_t(-3000));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", bf64_t(bu64_t(0)), bu64_t(0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", bf64_t(bu64_t(1)), bu64_t(1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", bf64_t(bu64_t(2)), bu64_t(2));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", bf64_t(bu64_t(3000)), bu64_t(3000));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", double(bu64_t(0)), bu64_t(0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", double(bu64_t(1)), bu64_t(1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", double(bu64_t(2)), bu64_t(2));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ultod", double(bu64_t(3000)), bu64_t(3000));
 
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(0)), bf32_t(0));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(0.1)), bf32_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(1.1)), bf32_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(-0.1)), bf32_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(-1.1)), bf32_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(bf32_t(1.23e9)), bf32_t(1.23e9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(0)), float(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(0.1)), float(0.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(1.1)), float(1.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(-0.1)), float(-0.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(-1.1)), float(-1.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Ftoi", bi32_t(float(1.23e9)), float(1.23e9));
 
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(bf32_t(0)), bf32_t(0));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(bf32_t(0.1)), bf32_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(bf32_t(1.1)), bf32_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(bf32_t(1.23e9)), bf32_t(1.23e9));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(float(0)), float(0));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(float(0.1)), float(0.1));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(float(1.1)), float(1.1));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Ftoui", bu32_t(float(1.23e9)), float(1.23e9));
 
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(0)), bf32_t(0));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(0.1)), bf32_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(1.1)), bf32_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(-0.1)), bf32_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(-1.1)), bf32_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(bf32_t(1.23e10)), bf32_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(0)), float(0));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(0.1)), float(0.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(1.1)), float(1.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(-0.1)), float(-0.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(-1.1)), float(-1.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Ftol", bi64_t(float(1.23e10)), float(1.23e10));
 
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(bf32_t(0)), bf32_t(0));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(bf32_t(0.1)), bf32_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(bf32_t(1.1)), bf32_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(bf32_t(1.23e10)), bf32_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(float(0)), float(0));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(float(0.1)), float(0.1));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(float(1.1)), float(1.1));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Ftoul", bu64_t(float(1.23e10)), float(1.23e10));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(0), bf32_t(0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(0.1), bf32_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(1.1), bf32_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(-0.1), bf32_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(-1.1), bf32_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", bf64_t(1.23e10), bf32_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(0), float(0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(0.1), float(0.1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(1.1), float(1.1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(-0.1), float(-0.1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(-1.1), float(-1.1));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Ftod", double(1.23e10), float(1.23e10));
 
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(0)), bf64_t(0));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(0.1)), bf64_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(1.1)), bf64_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(-0.1)), bf64_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(-1.1)), bf64_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(bf64_t(1.23e9)), bf64_t(1.23e9));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(0)), double(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(0.1)), double(0.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(1.1)), double(1.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(-0.1)), double(-0.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(-1.1)), double(-1.1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::Dtoi", bi32_t(double(1.23e9)), double(1.23e9));
 
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(bf64_t(0)), bf64_t(0));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(bf64_t(0.1)), bf64_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(bf64_t(1.1)), bf64_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(bf64_t(1.23e9)), bf64_t(1.23e9));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(double(0)), double(0));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(double(0.1)), double(0.1));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(double(1.1)), double(1.1));
+	VALIDATE_FUNCTION_CALL_1(UINT, "::Dtoui", bu32_t(double(1.23e9)), double(1.23e9));
 
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(0)), bf64_t(0));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(0.1)), bf64_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(1.1)), bf64_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(-0.1)), bf64_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(-1.1)), bf64_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(bf64_t(1.23e10)), bf64_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(0)), double(0));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(0.1)), double(0.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(1.1)), double(1.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(-0.1)), double(-0.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(-1.1)), double(-1.1));
+	VALIDATE_FUNCTION_CALL_1(LONG, "::Dtol", bi64_t(double(1.23e10)), double(1.23e10));
 
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(bf64_t(0)), bf64_t(0));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(bf64_t(0.1)), bf64_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(bf64_t(1.1)), bf64_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(bf64_t(1.23e10)), bf64_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(double(0)), double(0));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(double(0.1)), double(0.1));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(double(1.1)), double(1.1));
+	VALIDATE_FUNCTION_CALL_1(ULONG, "::Dtoul", bu64_t(double(1.23e10)), double(1.23e10));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(0), bf64_t(0));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(0.1), bf64_t(0.1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(1.1), bf64_t(1.1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(-0.1), bf64_t(-0.1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(-1.1), bf64_t(-1.1));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", bf32_t(1.23e10), bf64_t(1.23e10));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(0), double(0));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(0.1), double(0.1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(1.1), double(1.1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(-0.1), double(-0.1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(-1.1), double(-1.1));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Dtof", float(1.23e10), double(1.23e10));
 
 	return true;
 }
@@ -285,43 +285,43 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Addi", bu32_t(65) + bu32_t(13), bu32_t(65), bu32_t(13));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Addl", (bi64_t(-65) << 40) + (bi64_t(13) << 40), (bi64_t(-65) << 40), (bi64_t(13) << 40));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Addl", (bu64_t(65) << 40) + (bu64_t(13) << 40), (bu64_t(65) << 40), (bu64_t(13) << 40));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", bf32_t(-65.0f) + bf32_t(13.0f), bf32_t(-65.0f), bf32_t(13.0f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", bf32_t(1e20f) + bf32_t(0.5e20f), bf32_t(1e20f), bf32_t(0.5e20f));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", bf64_t(-65.0) + bf64_t(13.0), bf64_t(-65.0), bf64_t(13.0));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", bf64_t(1e40) + bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", float(-65.0f) + float(13.0f), float(-65.0f), float(13.0f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", float(1e20f) + float(0.5e20f), float(1e20f), float(0.5e20f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", double(-65.0) + double(13.0), double(-65.0), double(13.0));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", double(1e40) + double(0.5e40), double(1e40), double(0.5e40));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Subi", bi32_t(-43) - bi32_t(12), bi32_t(-43), bi32_t(12));
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Subi", bu32_t(43) - bu32_t(12), bu32_t(43), bu32_t(12));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Subl", (bi64_t(-43) << 40) - (bi64_t(12) << 40), (bi64_t(-43) << 40), (bi64_t(12) << 40));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Subl", (bu64_t(43) << 40) - (bu64_t(12) << 40), (bu64_t(43) << 40), (bu64_t(12) << 40));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", bf32_t(-43.0f) - bf32_t(12.0f), bf32_t(-43.0f), bf32_t(12.0f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", bf32_t(1e20f) - bf32_t(0.5e20f), bf32_t(1e20f), bf32_t(0.5e20f));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(-43.0) - bf64_t(12.0), bf64_t(-43.0), bf64_t(12.0));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", bf64_t(1e40) - bf64_t(0.5e40), bf64_t(1e40), bf64_t(0.5e40));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", float(-43.0f) - float(12.0f), float(-43.0f), float(12.0f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", float(1e20f) - float(0.5e20f), float(1e20f), float(0.5e20f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", double(-43.0) - double(12.0), double(-43.0), double(12.0));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", double(1e40) - double(0.5e40), double(1e40), double(0.5e40));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(0), bi32_t(-58), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Muli", bi32_t(-58) * bi32_t(17), bi32_t(-58), bi32_t(17));
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Mului", bu32_t(58) * bu32_t(17), bu32_t(58), bu32_t(17));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Mull", (bi64_t(-58) << 40) * bi64_t(17), (bi64_t(-58) << 40), bi64_t(17));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Mulul", (bu64_t(58) << 40) * bu64_t(17), (bu64_t(58) << 40), bu64_t(17));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(0.0f) * bf32_t(84.3f), bf32_t(-0.0f), bf32_t(84.3f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(-98.1f) * bf32_t(84.3f), bf32_t(-98.1f), bf32_t(84.3f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", bf32_t(1e20f) * bf32_t(3.3e10f), bf32_t(1e20f), bf32_t(3.3e10f));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(0.0) * bf64_t(84.3), bf64_t(-0.0), bf64_t(84.3));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(-98.1) * bf64_t(84.3), bf64_t(-98.1), bf64_t(84.3));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", bf64_t(1e40) * bf64_t(3.3e20), bf64_t(1e40), bf64_t(3.3e20));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", float(0.0f) * float(84.3f), float(-0.0f), float(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", float(-98.1f) * float(84.3f), float(-98.1f), float(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", float(1e20f) * float(3.3e10f), float(1e20f), float(3.3e10f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", double(0.0) * double(84.3), double(-0.0), double(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", double(-98.1) * double(84.3), double(-98.1), double(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", double(1e40) * double(3.3e20), double(1e40), double(3.3e20));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Divi", bi32_t(0) / bi32_t(3), bi32_t(0), bi32_t(3));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Divi", bi32_t(-10) / bi32_t(3), bi32_t(-10), bi32_t(3));
 	VALIDATE_FUNCTION_CALL_2(UINT, "::Divui", Bond::BOND_UINT_MAX / bu32_t(5678), BOND_UINT_MAX, bu32_t(5678));
 	VALIDATE_FUNCTION_CALL_2(LONG, "::Divl", Bond::BOND_LONG_MIN / bi64_t(5678), BOND_LONG_MIN, bi64_t(5678));
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Divul", Bond::BOND_ULONG_MAX / bu64_t(5678), BOND_ULONG_MAX, bu64_t(5678));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(0.0f) / bf32_t(84.3f), bf32_t(-0.0f), bf32_t(84.3f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(-98.1f) / bf32_t(84.3f), bf32_t(-98.1f), bf32_t(84.3f));
-	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", bf32_t(1e20f) / bf32_t(3.3e10f), bf32_t(1e20f), bf32_t(3.3e10f));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(0.0) / bf64_t(84.3), bf64_t(-0.0), bf64_t(84.3));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(-98.1) / bf64_t(84.3), bf64_t(-98.1), bf64_t(84.3));
-	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", bf64_t(1e40) / bf64_t(3.3e20), bf64_t(1e40), bf64_t(3.3e20));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", float(0.0f) / float(84.3f), float(-0.0f), float(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", float(-98.1f) / float(84.3f), float(-98.1f), float(84.3f));
+	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", float(1e20f) / float(3.3e10f), float(1e20f), float(3.3e10f));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", double(0.0) / double(84.3), double(-0.0), double(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", double(-98.1) / double(84.3), double(-98.1), double(84.3));
+	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", double(1e40) / double(3.3e20), double(1e40), double(3.3e20));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(0) % bi32_t(3), bi32_t(0), bi32_t(3));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Remi", bi32_t(10) % bi32_t(3), bi32_t(10), bi32_t(3));
@@ -390,17 +390,17 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(-BOND_LONG_MAX), bi64_t(BOND_LONG_MAX));
 	VALIDATE_FUNCTION_CALL_1(LONG, "::Negl", bi64_t(BOND_LONG_MAX), bi64_t(-BOND_LONG_MAX));
 
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(-1.0f), bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(1.0f), bf32_t(-1.0f));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(-2.34e21f), bf32_t(2.34e21f));
-	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", bf32_t(2.34e21f), bf32_t(-2.34e21f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", float(-1.0f), float(1.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", float(1.0f), float(-1.0f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", float(-2.34e21f), float(2.34e21f));
+	VALIDATE_FUNCTION_CALL_1(FLOAT, "::Negf", float(2.34e21f), float(-2.34e21f));
 
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(-1.0), bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(1.0), bf64_t(-1.0));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(-2.34e21), bf64_t(2.34e21));
-	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", bf64_t(2.34e21), bf64_t(-2.34e21));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", double(-1.0), double(1.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", double(1.0), double(-1.0));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", double(-2.34e21), double(2.34e21));
+	VALIDATE_FUNCTION_CALL_1(DOUBLE, "::Negd", double(2.34e21), double(-2.34e21));
 
 	VALIDATE_FUNCTION_CALL_1(UINT, "::Not", bu32_t(1), bu8_t(0));
 	VALIDATE_FUNCTION_CALL_1(UINT, "::Not", bu32_t(0), bu8_t(1));
@@ -462,17 +462,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(0), bi64_t(0), bi64_t(1));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeql", bi32_t(0), bi64_t(8382) << 31, bi64_t(2398) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(-1.0f), bf32_t(-1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.67e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), bf32_t(0.0f), bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), float(-1.0f), float(-1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(1), float(5.67e27f), float(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), float(0.0f), float(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqf", bi32_t(0), float(5.67e27f), float(5.68e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(-1.0), bf64_t(-1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.67e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), bf64_t(0.0), bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), double(-1.0), double(-1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(1), double(5.67e27), double(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), double(0.0), double(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpeqd", bi32_t(0), double(5.67e27), double(5.68e27));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(0), bi32_t(0), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqi", bi32_t(0), bi32_t(-1), bi32_t(-1));
@@ -485,17 +485,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(1), bi64_t(0), bi64_t(1));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneql", bi32_t(1), bi64_t(8382) << 31, bi64_t(2398) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(-1.0f), bf32_t(-1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.67e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), float(-1.0f), float(-1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(0), float(5.67e27f), float(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), float(0.0f), float(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqf", bi32_t(1), float(5.67e27f), float(5.68e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(-1.0), bf64_t(-1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.67e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), double(-1.0), double(-1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(0), double(5.67e27), double(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), double(0.0), double(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpneqd", bi32_t(1), double(5.67e27), double(5.68e27));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(0), bi32_t(0), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplti", bi32_t(1), bi32_t(0), bi32_t(1));
@@ -521,17 +521,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(0), bu64_t(8382) << 31, bu64_t(2398) << 31);
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltul", bi32_t(1), bu64_t(2938) << 31, bu64_t(8382) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(-2.0f), bf32_t(2.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), bf32_t(5.68e27f), bf32_t(5.67e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), float(0.0f), float(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), float(-2.0f), float(2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(0), float(5.68e27f), float(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltf", bi32_t(1), float(5.67e27f), float(5.68e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(-2.0), bf64_t(2.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), bf64_t(5.68e27), bf64_t(5.67e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), double(0.0), double(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), double(-2.0), double(2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(0), double(5.68e27), double(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpltd", bi32_t(1), double(5.67e27), double(5.68e27));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(0), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplei", bi32_t(1), bi32_t(0), bi32_t(1));
@@ -557,17 +557,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(0), bu64_t(8382) << 31, bu64_t(2398) << 31);
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpleul", bi32_t(1), bu64_t(2938) << 31, bu64_t(8382) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(0.0f), bf32_t(1.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(-2.0f), bf32_t(2.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(0), bf32_t(5.68e27f), bf32_t(5.67e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), bf32_t(5.67e27f), bf32_t(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), float(0.0f), float(1.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), float(-2.0f), float(2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(0), float(5.68e27f), float(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmplef", bi32_t(1), float(5.67e27f), float(5.68e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(0.0), bf64_t(1.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(-2.0), bf64_t(2.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(0), bf64_t(5.68e27), bf64_t(5.67e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), bf64_t(5.67e27), bf64_t(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), double(0.0), double(1.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), double(-2.0), double(2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(0), double(5.68e27), double(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpled", bi32_t(1), double(5.67e27), double(5.68e27));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(0), bi32_t(0), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgti", bi32_t(1), bi32_t(1), bi32_t(0));
@@ -593,17 +593,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(0), bu64_t(2398) << 31, bu64_t(8382) << 31);
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtul", bi32_t(1), bu64_t(8382) << 31, bu64_t(2938) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(1.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(2.0f), bf32_t(-2.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), bf32_t(5.68e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), float(1.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), float(2.0f), float(-2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(0), float(5.67e27f), float(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtf", bi32_t(1), float(5.68e27f), float(5.67e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(1.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(2.0), bf64_t(-2.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), bf64_t(5.68e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), double(1.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), double(2.0), double(-2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(0), double(5.67e27), double(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgtd", bi32_t(1), double(5.68e27), double(5.67e27));
 
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(0), bi32_t(0));
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgei", bi32_t(1), bi32_t(1), bi32_t(0));
@@ -629,17 +629,17 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(0), bu64_t(2398) << 31, bu64_t(8382) << 31);
 	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgeul", bi32_t(1), bu64_t(8382) << 31, bu64_t(2938) << 31);
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(0.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(1.0f), bf32_t(0.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(2.0f), bf32_t(-2.0f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(0), bf32_t(5.67e27f), bf32_t(5.68e27f));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), bf32_t(5.68e27f), bf32_t(5.67e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), float(0.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), float(1.0f), float(0.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), float(2.0f), float(-2.0f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(0), float(5.67e27f), float(5.68e27f));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpgef", bi32_t(1), float(5.68e27f), float(5.67e27f));
 
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(0.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(1.0), bf64_t(0.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(2.0), bf64_t(-2.0));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(0), bf64_t(5.67e27), bf64_t(5.68e27));
-	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), bf64_t(5.68e27), bf64_t(5.67e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), double(0.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), double(1.0), double(0.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), double(2.0), double(-2.0));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(0), double(5.67e27), double(5.68e27));
+	VALIDATE_FUNCTION_CALL_2(INT, "::Cmpged", bi32_t(1), double(5.68e27), double(5.67e27));
 
 	return true;
 }
@@ -824,13 +824,13 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL_2(ULONG, "::Addl", rul, &ul, oul);
 	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
 
-	bf32_t f = -97.0f; bf32_t of = 27.0f; bf32_t rf = f + of;
+	float f = -97.0f; float of = 27.0f; float rf = f + of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Addf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
 
-	bf64_t d = -97.0; bf64_t od = 27.0; bf64_t rd = d + od;
+	double d = -97.0; double od = 27.0; double rd = d + od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Addd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+	ASSERT_FORMAT(d == rd, ("Expected %f, but was %.", rd, d));
 
 
 	i = -85; oi = 39; ri = i - oi;
@@ -851,11 +851,11 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	f = -85.0f; of = 39.0f; rf = f - of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Subf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
 
 	d = -85.0; od = 39.0; rd = d - od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Subd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
 
 
 	i = -48; oi = 135; ri = i * oi;
@@ -876,11 +876,11 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	f = -48.0f; of = 135.0f; rf = f * of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Mulf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
 
 	d = -48.0; od = 135.0; rd = d * od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Muld", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
 
 
 	i = -10; oi = 3; ri = i / oi;
@@ -901,11 +901,11 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	f = -10.0f; of = 3.0f; rf = f / of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "::Divf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %" BOND_PRIf32 ", but was %" BOND_PRIf32 ".", rf, f));
+	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
 
 	d = -10.0; od = 3.0; rd = d / od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "::Divd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %" BOND_PRIf64 ", but was %" BOND_PRIf64 ".", rd, d));
+	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
 
 
 	i = -10; oi = 3; ri = i % oi;

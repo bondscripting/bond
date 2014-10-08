@@ -72,8 +72,8 @@ void OutputStream__PrintUL(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintF(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bf32_t value = frame.GetArg<bf32_t>(1);
-	stream->Print("%" BOND_PRIf32, value);
+	const float value = frame.GetArg<float>(1);
+	stream->Print("%f", value);
 	frame.SetReturnValue(stream);
 }
 
@@ -81,8 +81,8 @@ void OutputStream__PrintF(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintD(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bf64_t value = frame.GetArg<bf64_t>(1);
-	stream->Print("%" BOND_PRIf64, value);
+	const double value = frame.GetArg<double>(1);
+	stream->Print("%f", value);
 	frame.SetReturnValue(stream);
 }
 

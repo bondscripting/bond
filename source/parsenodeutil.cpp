@@ -475,29 +475,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mFloat = bf32_t(value.mInt);
+					resultValue.mFloat = float(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mFloat = bf32_t(value.mUInt);
+					resultValue.mFloat = float(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mFloat = bf32_t(value.mLong);
+					resultValue.mFloat = float(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mFloat = bf32_t(value.mULong);
+					resultValue.mFloat = float(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mFloat = bf32_t(value.mFloat);
+					resultValue.mFloat = float(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mFloat = bf32_t(value.mDouble);
+					resultValue.mFloat = float(value.mDouble);
 					break;
 				default:
 					break;
@@ -513,29 +513,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mDouble = bf64_t(value.mInt);
+					resultValue.mDouble = double(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mDouble = bf64_t(value.mUInt);
+					resultValue.mDouble = double(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mDouble = bf64_t(value.mLong);
+					resultValue.mDouble = double(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mDouble = bf64_t(value.mULong);
+					resultValue.mDouble = double(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mDouble = bf64_t(value.mFloat);
+					resultValue.mDouble = double(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mDouble = bf64_t(value.mDouble);
+					resultValue.mDouble = double(value.mDouble);
 					break;
 				default:
 					break;

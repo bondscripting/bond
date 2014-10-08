@@ -61,16 +61,6 @@
 
 #endif
 
-#if !defined(BOND_PRIf32)
-#define BOND_SCNf32 "f"
-#define BOND_PRIf32 "f"
-#endif
-
-#if !defined(BOND_PRIf64)
-#define BOND_SCNf64 "lf"
-#define BOND_PRIf64 "f"
-#endif
-
 namespace Bond
 {
 
@@ -82,8 +72,6 @@ typedef std::int32_t bi32_t;
 typedef std::uint32_t bu32_t;
 typedef std::int64_t bi64_t;
 typedef std::uint64_t bu64_t;
-typedef float bf32_t;
-typedef double bf64_t;
 
 const bi32_t BOND_CHAR_MAX = static_cast<bi32_t>(INT8_MAX);
 const bi32_t BOND_CHAR_MIN = static_cast<bi32_t>(INT8_MIN);

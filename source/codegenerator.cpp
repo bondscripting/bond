@@ -328,8 +328,8 @@ private:
 	void EmitPushConstantUInt(bu32_t value);
 	void EmitPushConstantLong(bi64_t value);
 	void EmitPushConstantULong(bu64_t value);
-	void EmitPushConstantFloat(bf32_t value);
-	void EmitPushConstantDouble(bf64_t value);
+	void EmitPushConstantFloat(float value);
+	void EmitPushConstantDouble(double value);
 
 	void EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor);
 	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
@@ -2020,7 +2020,7 @@ void GeneratorCore::EmitPushConstantULong(bu64_t value)
 }
 
 
-void GeneratorCore::EmitPushConstantFloat(bf32_t value)
+void GeneratorCore::EmitPushConstantFloat(float value)
 {
 	if (value == -2.0f)
 	{
@@ -2058,7 +2058,7 @@ void GeneratorCore::EmitPushConstantFloat(bf32_t value)
 }
 
 
-void GeneratorCore::EmitPushConstantDouble(bf64_t value)
+void GeneratorCore::EmitPushConstantDouble(double value)
 {
 	if (value == -2.0)
 	{

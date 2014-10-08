@@ -14,16 +14,16 @@ union Value
 	explicit Value(bu32_t value): mUInt(value) {}
 	explicit Value(bi64_t value): mLong(value) {}
 	explicit Value(bu64_t value): mULong(value) {}
-	explicit Value(bf32_t value): mFloat(value) {}
-	explicit Value(bf64_t value): mDouble(value) {}
+	explicit Value(float value): mFloat(value) {}
+	explicit Value(double value): mDouble(value) {}
 
 	bool mBool;
 	bi32_t mInt;
 	bu32_t mUInt;
 	bi64_t mLong;
 	bu64_t mULong;
-	bf32_t mFloat;
-	bf64_t mDouble;
+	float mFloat;
+	double mDouble;
 
 	struct
 	{
@@ -58,7 +58,7 @@ union Value32
 	Value32(): mInt(0) {}
 	explicit Value32(bi32_t value): mInt(value) {}
 	explicit Value32(bu32_t value): mUInt(value) {}
-	explicit Value32(bf32_t value): mFloat(value) {}
+	explicit Value32(float value): mFloat(value) {}
 
 	explicit Value32(const bu8_t value[])
 	{
@@ -70,7 +70,7 @@ union Value32
 
 	bi32_t mInt;
 	bu32_t mUInt;
-	bf32_t mFloat;
+	float mFloat;
 	bu8_t mBytes[4];
 };
 
@@ -80,7 +80,7 @@ union Value64
 	Value64(): mLong(0) {}
 	explicit Value64(bi64_t value): mLong(value) {}
 	explicit Value64(bu64_t value): mULong(value) {}
-	explicit Value64(bf64_t value): mDouble(value) {}
+	explicit Value64(double value): mDouble(value) {}
 
 	explicit Value64(const bu8_t value[])
 	{
@@ -96,7 +96,7 @@ union Value64
 
 	bi64_t mLong;
 	bu64_t mULong;
-	bf64_t mDouble;
+	double mDouble;
 	bu8_t mBytes[8];
 };
 

@@ -50,11 +50,11 @@ public:
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; mValueDefined = true; }
 
-	bf32_t GetFloatValue() const { return mValue.mFloat; }
-	void SetFloatValue(bf32_t value) { mValue.mFloat = value; mValueDefined = true; }
+	float GetFloatValue() const { return mValue.mFloat; }
+	void SetFloatValue(float value) { mValue.mFloat = value; mValueDefined = true; }
 
-	bf64_t GetDoubleValue() const { return mValue.mDouble; }
-	void SetDoubleValue(bf64_t value) { mValue.mDouble = value; mValueDefined = true; }
+	double GetDoubleValue() const { return mValue.mDouble; }
+	void SetDoubleValue(double value) { mValue.mDouble = value; mValueDefined = true; }
 
 	bi32_t GetIntValue() const { return mValue.mInt; }
 	void SetIntValue(bi32_t value) { mValue.mInt = value; mValueDefined = true; }

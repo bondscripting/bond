@@ -742,10 +742,10 @@ bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 				mStream.Print("%" BOND_PRId64, tav.GetULongValue());
 				return true;
 			case Token::KEY_FLOAT:
-				mStream.Print("%" BOND_PRIf32, tav.GetFloatValue());
+				mStream.Print("%f", tav.GetFloatValue());
 				return true;
 			case Token::KEY_DOUBLE:
-				mStream.Print("%" BOND_PRIf64, tav.GetDoubleValue());
+				mStream.Print("%f", tav.GetDoubleValue());
 				return true;
 			default:
 				break;
