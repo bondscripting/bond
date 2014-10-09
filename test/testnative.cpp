@@ -30,21 +30,21 @@ void Vector3__Dot(Bond::CalleeStackFrame &frame)
 	const Vector3 &v1 = *frame.GetArg<const Vector3 *>(0);
 	const Vector3 &v2 = *frame.GetArg<const Vector3 *>(1);
 	const int dot = v1.Dot(v2);
-	frame.SetReturnValue(Bond::bi32_t(dot));
+	frame.SetReturnValue(int32_t(dot));
 }
 
 
 void Vector3__X__get(Bond::CalleeStackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
-	frame.SetReturnValue(Bond::bi32_t(v.GetX()));
+	frame.SetReturnValue(int32_t(v.GetX()));
 }
 
 
 void Vector3__X__set(Bond::CalleeStackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
-	const int x = int(frame.GetArg<Bond::bi32_t>(1));
+	const int x = int(frame.GetArg<int32_t>(1));
 	v.SetX(x);
 }
 
@@ -52,14 +52,14 @@ void Vector3__X__set(Bond::CalleeStackFrame &frame)
 void Vector3__Y__get(Bond::CalleeStackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
-	frame.SetReturnValue(Bond::bi32_t(v.GetY()));
+	frame.SetReturnValue(int32_t(v.GetY()));
 }
 
 
 void Vector3__Y__set(Bond::CalleeStackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
-	const int y = int(frame.GetArg<Bond::bi32_t>(1));
+	const int y = int(frame.GetArg<int32_t>(1));
 	v.SetY(y);
 }
 
@@ -67,14 +67,14 @@ void Vector3__Y__set(Bond::CalleeStackFrame &frame)
 void Vector3__Z__get(Bond::CalleeStackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
-	frame.SetReturnValue(Bond::bi32_t(v.GetZ()));
+	frame.SetReturnValue(int32_t(v.GetZ()));
 }
 
 
 void Vector3__Z__set(Bond::CalleeStackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
-	const int z = int(frame.GetArg<Bond::bi32_t>(1));
+	const int z = int(frame.GetArg<int32_t>(1));
 	v.SetZ(z);
 }
 
@@ -86,26 +86,26 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 	Vector3 v3a;
 	Vector3 v3b;
 
-	vm.CallVoidFunction("::SetVector3", &v3a, bi32_t(21), bi32_t(-22), bi32_t(23));
+	vm.CallVoidFunction("::SetVector3", &v3a, int32_t(21), int32_t(-22), int32_t(23));
 	ASSERT_FORMAT(v3a.GetX() == 21, ("Expected 21, but was %" BOND_PRId32 ".", v3a.GetX()));
 	ASSERT_FORMAT(v3a.GetY() == -22, ("Expected -22, but was %" BOND_PRId32 ".", v3a.GetY()));
 	ASSERT_FORMAT(v3a.GetZ() == 23, ("Expected 23, but was %" BOND_PRId32 ".", v3a.GetZ()));
 
 	v3a = Vector3(44, 444, 4444);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3X", bi32_t(v3a.GetX()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::X" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetX()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Y", bi32_t(v3a.GetY()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Y" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetY()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Z", bi32_t(v3a.GetZ()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Z" BOND_NATIVE_GETTER_SUFFIX, bi32_t(v3a.GetZ()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3X", int32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::X" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Y", int32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Y" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Z", int32_t(v3a.GetZ()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Z" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetZ()), &v3a);
 
 	v3a = Vector3(2, 3, 4);
 	v3b = Vector3(5, -6, 7);
-	VALIDATE_FUNCTION_CALL_2(INT, "::DotVector3", bi32_t(20), &v3a, &v3b);
-	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", bi32_t(20), &v3a, &v3b);
+	VALIDATE_FUNCTION_CALL_2(INT, "::DotVector3", int32_t(20), &v3a, &v3b);
+	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", int32_t(20), &v3a, &v3b);
 
 	v3a = Vector3(17, 17, 17);
-	bi32_t oi = 91; bi32_t ri = v3a.GetY() + oi;
+	int32_t oi = 91; int32_t ri = v3a.GetY() + oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3AddY", ri, &v3a, oi);
 	ASSERT_FORMAT(v3a.GetX() == 17, ("Expected 17, but was %" BOND_PRId32 ".", v3a.GetX()));
 	ASSERT_FORMAT(v3a.GetY() == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, v3a.GetY()));

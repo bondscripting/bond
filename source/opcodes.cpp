@@ -16,7 +16,7 @@ const char *GetBondTypeMnemonic(SignatureType signatureType)
 }
 
 
-char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
+char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size)
 {
 	MemoryOutputStream stream(buffer, Stream::pos_t(length));
 	stream.Print(GetBondTypeMnemonic(SignatureType(signatureType)), size);
@@ -36,7 +36,7 @@ const char *GetApiTypeMnemonic(SignatureType signatureType)
 }
 
 
-char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, bu32_t size)
+char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size)
 {
 	MemoryOutputStream stream(buffer, Stream::pos_t(length));
 	stream.Print(GetApiTypeMnemonic(SignatureType(signatureType)), size);
@@ -67,9 +67,9 @@ OpCodeParam GetOpCodeParamType(OpCode opCode)
 }
 
 
-bi32_t GetStackDelta(OpCode opCode)
+int32_t GetStackDelta(OpCode opCode)
 {
-	static const bi32_t OPCODE_STACK_DELTAS[] =
+	static const int32_t OPCODE_STACK_DELTAS[] =
 	{
 #define BOND_OPCODE_ITEM(opCode, mnemonic, param, stackDelta) stackDelta * BOND_SLOT_SIZE,
 		BOND_OPCODE_LIST

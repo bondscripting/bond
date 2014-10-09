@@ -27,7 +27,7 @@ void OutputStream__PrintB(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintC(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi8_t value = frame.GetArg<bi8_t>(1);
+	const int8_t value = frame.GetArg<int8_t>(1);
 	stream->Print("%c", char(value));
 	frame.SetReturnValue(stream);
 }
@@ -36,7 +36,7 @@ void OutputStream__PrintC(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintI(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi32_t value = frame.GetArg<bi32_t>(1);
+	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->Print("%" BOND_PRId32, value);
 	frame.SetReturnValue(stream);
 }
@@ -45,7 +45,7 @@ void OutputStream__PrintI(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintUI(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bu32_t value = frame.GetArg<bu32_t>(1);
+	const uint32_t value = frame.GetArg<uint32_t>(1);
 	stream->Print("%" BOND_PRIu32, value);
 	frame.SetReturnValue(stream);
 }
@@ -54,7 +54,7 @@ void OutputStream__PrintUI(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintL(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi64_t value = frame.GetArg<bi64_t>(1);
+	const int64_t value = frame.GetArg<int64_t>(1);
 	stream->Print("%" BOND_PRId64, value);
 	frame.SetReturnValue(stream);
 }
@@ -63,7 +63,7 @@ void OutputStream__PrintL(Bond::CalleeStackFrame &frame)
 void OutputStream__PrintUL(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bu64_t value = frame.GetArg<bu64_t>(1);
+	const uint64_t value = frame.GetArg<uint64_t>(1);
 	stream->Print("%" BOND_PRIu64, value);
 	frame.SetReturnValue(stream);
 }
@@ -90,7 +90,7 @@ void OutputStream__PrintD(Bond::CalleeStackFrame &frame)
 void OutputStream__GetPosition(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	bi32_t pos = bi32_t(stream->GetPosition());
+	int32_t pos = int32_t(stream->GetPosition());
 	frame.SetReturnValue(pos);
 }
 
@@ -98,7 +98,7 @@ void OutputStream__GetPosition(Bond::CalleeStackFrame &frame)
 void OutputStream__SetPosition(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi32_t offset = frame.GetArg<bi32_t>(1);
+	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->SetPosition(Stream::pos_t(offset));
 }
 
@@ -106,7 +106,7 @@ void OutputStream__SetPosition(Bond::CalleeStackFrame &frame)
 void OutputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi32_t offset = frame.GetArg<bi32_t>(1);
+	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->SetPositionFromEnd(Stream::pos_t(offset));
 }
 
@@ -114,7 +114,7 @@ void OutputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
 void OutputStream__AddOffset(Bond::CalleeStackFrame &frame)
 {
 	OutputStream *stream = frame.GetArg<OutputStream *>(0);
-	const bi32_t value = frame.GetArg<bi32_t>(1);
+	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->AddOffset(Stream::pos_t(value));
 }
 

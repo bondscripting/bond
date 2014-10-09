@@ -30,8 +30,8 @@ public:
 			mCodeByteCount(0)
 		{}
 
-		bu32_t mMajorVersion;
-		bu32_t mMinorVersion;
+		uint32_t mMajorVersion;
+		uint32_t mMinorVersion;
 		PointerSize mPointerSize;
 		size_t mListBlobIdIndex;
 		size_t mFunctionBlobIdIndex;

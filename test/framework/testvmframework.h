@@ -73,10 +73,10 @@
 
 
 #define DECLARE_RETURN_VALUE_BOOL() DECLARE_RETURN_VALUE_INT()
-#define DECLARE_RETURN_VALUE_INT() Bond::bi32_t returnValue = 0;
-#define DECLARE_RETURN_VALUE_UINT() Bond::bu32_t returnValue = 0;
-#define DECLARE_RETURN_VALUE_LONG() Bond::bi64_t returnValue = 0;
-#define DECLARE_RETURN_VALUE_ULONG() Bond::bu64_t returnValue = 0;
+#define DECLARE_RETURN_VALUE_INT() int32_t returnValue = 0;
+#define DECLARE_RETURN_VALUE_UINT() uint32_t returnValue = 0;
+#define DECLARE_RETURN_VALUE_LONG() int64_t returnValue = 0;
+#define DECLARE_RETURN_VALUE_ULONG() uint64_t returnValue = 0;
 #define DECLARE_RETURN_VALUE_FLOAT() float returnValue = 0.0f;
 #define DECLARE_RETURN_VALUE_DOUBLE() double returnValue = 0.0;
 #define DECLARE_RETURN_VALUE_PTR() const void *returnValue = nullptr;

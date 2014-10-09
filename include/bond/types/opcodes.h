@@ -300,7 +300,7 @@ enum OpCodeParam
 
 const char *GetOpCodeMnemonic(OpCode opCode);
 OpCodeParam GetOpCodeParamType(OpCode opCode);
-bi32_t GetStackDelta(OpCode opCode);
+int32_t GetStackDelta(OpCode opCode);
 
 }
 

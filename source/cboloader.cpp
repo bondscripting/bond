@@ -21,7 +21,7 @@ namespace Bond
 struct CboLoaderResources
 {
 	CboLoaderResources(
-			bu8_t *memory,
+			uint8_t *memory,
 			size_t constantTablesStart,
 			size_t value32TableStart,
 			size_t value64TableStart,
@@ -39,9 +39,9 @@ struct CboLoaderResources
 		mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
 		mQualifiedIdElements(reinterpret_cast<const char **>(memory + qualifiedIdElementStart)),
 		mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
-		mFunctionLookup(reinterpret_cast<bu32_t *>(memory + functionLookupStart)),
+		mFunctionLookup(reinterpret_cast<uint32_t *>(memory + functionLookupStart)),
 		mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
-		mCode(reinterpret_cast<bu8_t *>(memory + codeStart))
+		mCode(reinterpret_cast<uint8_t *>(memory + codeStart))
 	{}
 	ConstantTable *mConstantTables;
 	Value32 *mValue32Table;
@@ -50,9 +50,9 @@ struct CboLoaderResources
 	char *mStringBytes;
 	const char **mQualifiedIdElements;
 	ParamSignature *mParamSignatures;
-	bu32_t *mFunctionLookup;
+	uint32_t *mFunctionLookup;
 	Function *mFunctions;
-	bu8_t *mCode;
+	uint8_t *mCode;
 };
 
 
@@ -62,12 +62,12 @@ public:
 	CboLoaderCore(
 			const CboValidator::Result &validationResult,
 			CboLoaderResources &resources,
-			const bu8_t *byteCode):
+			const uint8_t *byteCode):
 		mValidationResult(validationResult),
 		mResources(resources),
 		mConstantTable(resources.mConstantTables),
 		mStringTable(resources.mStringTable),
-		mByteCode(static_cast<const bu8_t *>(byteCode)),
+		mByteCode(static_cast<const uint8_t *>(byteCode)),
 		mIndex(0)
 	{}
 
@@ -89,7 +89,7 @@ private:
 	CboLoaderResources &mResources;
 	ConstantTable *mConstantTable;
 	SimpleString *mStringTable;
-	const bu8_t *mByteCode;
+	const uint8_t *mByteCode;
 	size_t mIndex;
 };
 
@@ -114,7 +114,7 @@ CboLoader::Handle CboLoader::Load()
 	{
 		const FileData &file = **fdit;
 		CboValidator::Result &result = resultList[i];
-		result = validator.Validate(reinterpret_cast<const bu8_t *>(file.mData), file.mLength);
+		result = validator.Validate(reinterpret_cast<const uint8_t *>(file.mData), file.mLength);
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
@@ -134,12 +134,12 @@ CboLoader::Handle CboLoader::Load()
 	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
 	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const char *>(memSize, qualifiedIdElementCount);
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
-	const size_t functionLookupStart = TallyMemoryRequirements<bu32_t>(memSize, functionCount);
+	const size_t functionLookupStart = TallyMemoryRequirements<uint32_t>(memSize, functionCount);
 	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
-	const size_t codeStart = TallyMemoryRequirements<const bu8_t>(memSize, codeByteCount, sizeof(Value32));
+	const size_t codeStart = TallyMemoryRequirements<const uint8_t>(memSize, codeByteCount, sizeof(Value32));
 
 	const size_t CBO_ALIGNMENT = 256;
-	Allocator::AlignedHandle<bu8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<bu8_t>(memSize, CBO_ALIGNMENT));
+	Allocator::AlignedHandle<uint8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<uint8_t>(memSize, CBO_ALIGNMENT));
 	CboLoaderResources resources(
 		memHandle.get(),
 		constantTablesStart,
@@ -153,14 +153,14 @@ CboLoader::Handle CboLoader::Load()
 		functionsStart,
 		codeStart);
 
-	bu32_t *functionLookup = resources.mFunctionLookup;
+	uint32_t *functionLookup = resources.mFunctionLookup;
 	Function *functions = resources.mFunctions;
 	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
 
 	fdit = mFileDataList.begin();
 	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
 	{
-		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const bu8_t *>((*fdit)->mData));
+		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const uint8_t *>((*fdit)->mData));
 		loader.Load();
 	}
 
@@ -177,7 +177,7 @@ CboLoader::Handle CboLoader::Load()
 	for (NativeBindingList::Type::const_iterator nbit = mNativeBindingList.begin(); nbit != mNativeBindingList.end(); ++nbit)
 	{
 		const NativeBindingCollection &bindingCollection = **nbit;
-		for (bu32_t i = 0; i < bindingCollection.mFunctionBindingCount; ++i)
+		for (uint32_t i = 0; i < bindingCollection.mFunctionBindingCount; ++i)
 		{
 			BindNativeFunction(bindingCollection.mFunctionBindings[i], *codeSegment);
 		}
@@ -225,8 +225,8 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 	}
 	else
 	{
-		bu8_t *code = const_cast<bu8_t *>(function.mCode);
-		const bu8_t *codeEnd = code + function.mCodeSize;
+		uint8_t *code = const_cast<uint8_t *>(function.mCode);
+		const uint8_t *codeEnd = code + function.mCodeSize;
 		while (code < codeEnd)
 		{
 			const OpCode opCode = static_cast<OpCode>(*code++);
@@ -257,8 +257,8 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				case OC_PARAM_HASH:
 				{
 					ConvertBigEndian16(code);
-					const bu32_t hash = function.mConstantTable->mValue32Table[Value16(code).mUShort].mUInt;
-					bi32_t resolvedIndex = -1;
+					const uint32_t hash = function.mConstantTable->mValue32Table[Value16(code).mUShort].mUInt;
+					int32_t resolvedIndex = -1;
 
 					switch (opCode)
 					{
@@ -288,15 +288,15 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				break;
 				case OC_PARAM_LOOKUPSWITCH:
 				{
-					code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
+					code = static_cast<uint8_t *>(AlignPointerUp(code, sizeof(Value32)));
 					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
 					ConvertBigEndian32(code);
-					const bu32_t numMatches = *reinterpret_cast<bu32_t *>(code);
+					const uint32_t numMatches = *reinterpret_cast<uint32_t *>(code);
 					code += sizeof(Value32);
 
-					for (bu32_t i = 0; i < (2 * numMatches); ++i)
+					for (uint32_t i = 0; i < (2 * numMatches); ++i)
 					{
 						ConvertBigEndian32(code);
 						code += sizeof(Value32);
@@ -305,20 +305,20 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				break;
 				case OC_PARAM_TABLESWITCH:
 				{
-					code = static_cast<bu8_t *>(AlignPointerUp(code, sizeof(Value32)));
+					code = static_cast<uint8_t *>(AlignPointerUp(code, sizeof(Value32)));
 					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
 					ConvertBigEndian32(code);
-					const bu32_t minMatch = *reinterpret_cast<bu32_t *>(code);
+					const uint32_t minMatch = *reinterpret_cast<uint32_t *>(code);
 					code += sizeof(Value32);
 
 					ConvertBigEndian32(code);
-					const bu32_t maxMatch = *reinterpret_cast<bu32_t *>(code);
+					const uint32_t maxMatch = *reinterpret_cast<uint32_t *>(code);
 					code += sizeof(Value32);
 
-					const bu32_t numMatches = maxMatch - minMatch + 1;
-					for (bu32_t i = 0; i < numMatches; ++i)
+					const uint32_t numMatches = maxMatch - minMatch + 1;
+					for (uint32_t i = 0; i < numMatches; ++i)
 					{
 						ConvertBigEndian32(code);
 						code += sizeof(Value32);
@@ -372,13 +372,13 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 }
 
 
-void CboLoader::UnresolvedHash(bu32_t hash) const
+void CboLoader::UnresolvedHash(uint32_t hash) const
 {
 	BOND_FAIL_FORMAT(("Unresolved hash 0x%" BOND_PRIx32 ".", hash));
 }
 
 
-void CboLoader::HashCollision(bu32_t hash) const
+void CboLoader::HashCollision(uint32_t hash) const
 {
 	BOND_FAIL_FORMAT(("Hash collision 0x%" BOND_PRIx32 ".", hash));
 }
@@ -477,14 +477,14 @@ void CboLoaderCore::LoadFunctionBlob()
 	function->mStackSize = ReadValue32().mUInt;
 	function->mFramePointerAlignment = ReadValue32().mUInt;
 
-	const bu32_t codeSize = ReadValue32().mUInt;
+	const uint32_t codeSize = ReadValue32().mUInt;
 	function->mCodeSize = codeSize;
 	if (codeSize > 0)
 	{
-		bu8_t *code = mResources.mCode;
+		uint8_t *code = mResources.mCode;
 		function->mCode = code;
 		memcpy(code, mByteCode + mIndex, codeSize);
-		mResources.mCode += AlignUp(codeSize, bu32_t(sizeof(Value32)));
+		mResources.mCode += AlignUp(codeSize, uint32_t(sizeof(Value32)));
 		mIndex += codeSize;
 	}
 	else
@@ -492,10 +492,10 @@ void CboLoaderCore::LoadFunctionBlob()
 		function->mNativeFunction = nullptr;
 	}
 
-	bool unpackArguments = function->mFramePointerAlignment > bu32_t(BOND_SLOT_SIZE);
-	const bu32_t numParams = function->mParamListSignature.mParamCount;
+	bool unpackArguments = function->mFramePointerAlignment > uint32_t(BOND_SLOT_SIZE);
+	const uint32_t numParams = function->mParamListSignature.mParamCount;
 	const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
-	for (bu32_t i = 0; (i < numParams) && !unpackArguments; ++i)
+	for (uint32_t i = 0; (i < numParams) && !unpackArguments; ++i)
 	{
 		const SignatureType type = SignatureType(signatures[i].mType);
 		if ((type >= SIG_BOOL) && (type <= SIG_USHORT))
@@ -512,8 +512,8 @@ const char *const *CboLoaderCore::LoadQualifiedIdentifier()
 {
 	const char **elements = mResources.mQualifiedIdElements;
 	const char **element = elements;
-	const bu32_t numElements = ReadValue16().mUShort;
-	for (bu32_t i = 0; i < numElements; ++i)
+	const uint32_t numElements = ReadValue16().mUShort;
+	for (uint32_t i = 0; i < numElements; ++i)
 	{
 		const size_t idIndex = ReadValue16().mUShort;
 		*element++ = mStringTable[idIndex].GetString();
@@ -526,9 +526,9 @@ const char *const *CboLoaderCore::LoadQualifiedIdentifier()
 
 ReturnSignature CboLoaderCore::LoadReturnSignature()
 {
-	const bu32_t returnSizeAndType = ReadValue32().mUInt;
-	bu32_t returnSize;
-	bu32_t returnType;
+	const uint32_t returnSizeAndType = ReadValue32().mUInt;
+	uint32_t returnSize;
+	uint32_t returnType;
 	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
 	return ReturnSignature(returnSize, returnType);
 }
@@ -538,13 +538,13 @@ ParamListSignature CboLoaderCore::LoadParamListSignature()
 {
 	ParamSignature *params = mResources.mParamSignatures;
 	ParamSignature *param = params;
-	const bu32_t numParams = ReadValue16().mUShort;
-	for (bu32_t i = 0; i < numParams; ++i)
+	const uint32_t numParams = ReadValue16().mUShort;
+	for (uint32_t i = 0; i < numParams; ++i)
 	{
-		const bi32_t offset = ReadValue32().mInt;
-		const bu32_t paramSizeAndType = ReadValue32().mUInt;
-		bu32_t paramSize;
-		bu32_t paramType;
+		const int32_t offset = ReadValue32().mInt;
+		const uint32_t paramSizeAndType = ReadValue32().mUInt;
+		uint32_t paramSize;
+		uint32_t paramType;
 		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
 		*param++ = ParamSignature(offset, paramSize, paramType);
 	}

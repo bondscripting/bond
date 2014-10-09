@@ -10,18 +10,18 @@ union Value
 {
 	Value(): mInt(0) {}
 	explicit Value(bool value): mBool(value) {}
-	explicit Value(bi32_t value): mInt(value) {}
-	explicit Value(bu32_t value): mUInt(value) {}
-	explicit Value(bi64_t value): mLong(value) {}
-	explicit Value(bu64_t value): mULong(value) {}
+	explicit Value(int32_t value): mInt(value) {}
+	explicit Value(uint32_t value): mUInt(value) {}
+	explicit Value(int64_t value): mLong(value) {}
+	explicit Value(uint64_t value): mULong(value) {}
 	explicit Value(float value): mFloat(value) {}
 	explicit Value(double value): mDouble(value) {}
 
 	bool mBool;
-	bi32_t mInt;
-	bu32_t mUInt;
-	bi64_t mLong;
-	bu64_t mULong;
+	int32_t mInt;
+	uint32_t mUInt;
+	int64_t mLong;
+	uint64_t mULong;
 	float mFloat;
 	double mDouble;
 
@@ -36,19 +36,19 @@ union Value
 union Value16
 {
 	Value16(): mShort(0) {}
-	explicit Value16(bi16_t value): mShort(value) {}
-	explicit Value16(bu16_t value): mUShort(value) {}
-	explicit Value16(bi32_t value): mShort(static_cast<bi16_t>(value)) {}
-	explicit Value16(bu32_t value): mUShort(static_cast<bu16_t>(value)) {}
+	explicit Value16(int16_t value): mShort(value) {}
+	explicit Value16(uint16_t value): mUShort(value) {}
+	explicit Value16(int32_t value): mShort(static_cast<int16_t>(value)) {}
+	explicit Value16(uint32_t value): mUShort(static_cast<uint16_t>(value)) {}
 
-	explicit Value16(const bu8_t value[])
+	explicit Value16(const uint8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
 	}
 
-	bi16_t mShort;
-	bu16_t mUShort;
+	int16_t mShort;
+	uint16_t mUShort;
 	unsigned char mBytes[2];
 };
 
@@ -56,11 +56,11 @@ union Value16
 union Value32
 {
 	Value32(): mInt(0) {}
-	explicit Value32(bi32_t value): mInt(value) {}
-	explicit Value32(bu32_t value): mUInt(value) {}
+	explicit Value32(int32_t value): mInt(value) {}
+	explicit Value32(uint32_t value): mUInt(value) {}
 	explicit Value32(float value): mFloat(value) {}
 
-	explicit Value32(const bu8_t value[])
+	explicit Value32(const uint8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
@@ -68,21 +68,21 @@ union Value32
 		mBytes[3] = value[3];
 	}
 
-	bi32_t mInt;
-	bu32_t mUInt;
+	int32_t mInt;
+	uint32_t mUInt;
 	float mFloat;
-	bu8_t mBytes[4];
+	uint8_t mBytes[4];
 };
 
 
 union Value64
 {
 	Value64(): mLong(0) {}
-	explicit Value64(bi64_t value): mLong(value) {}
-	explicit Value64(bu64_t value): mULong(value) {}
+	explicit Value64(int64_t value): mLong(value) {}
+	explicit Value64(uint64_t value): mULong(value) {}
 	explicit Value64(double value): mDouble(value) {}
 
-	explicit Value64(const bu8_t value[])
+	explicit Value64(const uint8_t value[])
 	{
 		mBytes[0] = value[0];
 		mBytes[1] = value[1];
@@ -94,10 +94,10 @@ union Value64
 		mBytes[7] = value[7];
 	}
 
-	bi64_t mLong;
-	bu64_t mULong;
+	int64_t mLong;
+	uint64_t mULong;
 	double mDouble;
-	bu8_t mBytes[8];
+	uint8_t mBytes[8];
 };
 
 

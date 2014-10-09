@@ -20,7 +20,7 @@ public:
 			const CboValidator::Result &validationResult,
 			Allocator &allocator,
 			OutputStream &stream,
-			const bu8_t *byteCode):
+			const uint8_t *byteCode):
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
 		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
@@ -55,7 +55,7 @@ private:
 	StringTable::Type mStringTable;
 	CboValidator::Result mValidationResult;
 	OutputStream &mStream;
-	const bu8_t *mByteCode;
+	const uint8_t *mByteCode;
 	size_t mIndex;
 };
 
@@ -64,7 +64,7 @@ void Disassembler::Disassemble(OutputStream &stream, const void *byteCode, size_
 {
 	CboValidator validator;
 	CboValidator::Result result = validator.Validate(byteCode, length);
-	DisassemblerCore disassembler(result, mAllocator, stream, static_cast<const bu8_t *>(byteCode));
+	DisassemblerCore disassembler(result, mAllocator, stream, static_cast<const uint8_t *>(byteCode));
 	disassembler.Disassemble();
 }
 
@@ -140,13 +140,13 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	DisassembleParamListSignature();
 	mStream.Print(")\n");
 
-	const bu32_t functionHash = ReadValue32().mUInt;
-	const bu32_t argSize = ReadValue32().mUInt;
-	const bu32_t packedArgSize = ReadValue32().mUInt;
-	const bu32_t localSize = ReadValue32().mUInt;
-	const bu32_t stackSize = ReadValue32().mUInt;
-	const bu32_t framePointerAlignment = ReadValue32().mUInt;
-	const bu32_t codeSize = ReadValue32().mUInt;
+	const uint32_t functionHash = ReadValue32().mUInt;
+	const uint32_t argSize = ReadValue32().mUInt;
+	const uint32_t packedArgSize = ReadValue32().mUInt;
+	const uint32_t localSize = ReadValue32().mUInt;
+	const uint32_t stackSize = ReadValue32().mUInt;
+	const uint32_t framePointerAlignment = ReadValue32().mUInt;
+	const uint32_t codeSize = ReadValue32().mUInt;
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
 	mStream.Print(
@@ -172,25 +172,25 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mStream.Print("%" BOND_PRId32, bi32_t(char(mByteCode[mIndex++])));
+				mStream.Print("%" BOND_PRId32, int32_t(char(mByteCode[mIndex++])));
 				break;
 			case OC_PARAM_UCHAR:
-				mStream.Print("%" BOND_PRIu32, bu32_t(mByteCode[mIndex++]));
+				mStream.Print("%" BOND_PRIu32, uint32_t(mByteCode[mIndex++]));
 				break;
 			case OC_PARAM_UCHAR_CHAR:
-				mStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, bu32_t(mByteCode[mIndex]), bi32_t(char(mByteCode[mIndex + 1])));
+				mStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, uint32_t(mByteCode[mIndex]), int32_t(char(mByteCode[mIndex + 1])));
 				mIndex += 2;
 				break;
 			case OC_PARAM_SHORT:
-				mStream.Print("%" BOND_PRId32, bi32_t(ReadValue16().mShort));
+				mStream.Print("%" BOND_PRId32, int32_t(ReadValue16().mShort));
 				break;
 			case OC_PARAM_USHORT:
-				mStream.Print("%" BOND_PRId32, bu32_t(ReadValue16().mUShort));
+				mStream.Print("%" BOND_PRId32, uint32_t(ReadValue16().mUShort));
 				break;
 			case OC_PARAM_INT:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
-				const bi32_t value = mValue32Table[valueIndex].mInt;
+				const int32_t value = mValue32Table[valueIndex].mInt;
 				mStream.Print("%" BOND_PRId32, value);
 			}
 			break;
@@ -198,29 +198,29 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_HASH:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
-				const bu32_t value = mValue32Table[valueIndex].mUInt;
+				const uint32_t value = mValue32Table[valueIndex].mUInt;
 				mStream.Print("0x%" BOND_PRIx32, value);
 			}
 			break;
 			case OC_PARAM_VAL64:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
-				const bu64_t value = mValue64Table[valueIndex].mULong;
+				const uint64_t value = mValue64Table[valueIndex].mULong;
 				mStream.Print("0x%" BOND_PRIx64, value);
 			}
 			break;
 			case OC_PARAM_OFF16:
 			{
-				const bi32_t offset = ReadValue16().mShort;
-				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
+				const int32_t offset = ReadValue16().mShort;
+				const uint32_t baseAddress = uint32_t(mIndex - codeStart);
 				mStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
 			case OC_PARAM_OFF32:
 			{
 				const size_t offsetIndex = ReadValue16().mUShort;
-				const bi32_t offset = mValue32Table[offsetIndex].mInt;
-				const bu32_t baseAddress = bu32_t(mIndex - codeStart);
+				const int32_t offset = mValue32Table[offsetIndex].mInt;
+				const uint32_t baseAddress = uint32_t(mIndex - codeStart);
 				mStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
@@ -233,16 +233,16 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_LOOKUPSWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
-				const bi32_t defaultOffset = ReadValue32().mInt;
-				const bu32_t numMatches = ReadValue32().mUInt;
+				const int32_t defaultOffset = ReadValue32().mInt;
+				const uint32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
-				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
+				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
 				mStream.Print("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
-				for (bu32_t i = 0; i < numMatches; ++i)
+				for (uint32_t i = 0; i < numMatches; ++i)
 				{
-					const bi32_t match = ReadValue32().mInt;
-					const bi32_t offset = ReadValue32().mInt;
+					const int32_t match = ReadValue32().mInt;
+					const int32_t offset = ReadValue32().mInt;
 					mStream.Print("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
 				}
 			}
@@ -250,18 +250,18 @@ void DisassemblerCore::DisassembleFunctionBlob()
 			case OC_PARAM_TABLESWITCH:
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
-				const bi32_t defaultOffset = ReadValue32().mInt;
-				const bi32_t minMatch = ReadValue32().mInt;
-				const bi32_t maxMatch = ReadValue32().mInt;
-				const bu32_t numMatches = maxMatch - minMatch + 1;
+				const int32_t defaultOffset = ReadValue32().mInt;
+				const int32_t minMatch = ReadValue32().mInt;
+				const int32_t maxMatch = ReadValue32().mInt;
+				const uint32_t numMatches = maxMatch - minMatch + 1;
 				const size_t tableSize = numMatches * sizeof(Value32);
-				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
+				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
 				mStream.Print("\n%16s: %" BOND_PRId32 " (%" BOND_PRIu32 ")", "default", defaultOffset, baseAddress + defaultOffset);
 
-				for (bu32_t i = 0; i < numMatches; ++i)
+				for (uint32_t i = 0; i < numMatches; ++i)
 				{
-					const bi32_t match = minMatch + i;
-					const bi32_t offset = ReadValue32().mInt;
+					const int32_t match = minMatch + i;
+					const int32_t offset = ReadValue32().mInt;
 					mStream.Print("\n%16" BOND_PRId32 ": %" BOND_PRId32 " (%" BOND_PRIu32 ")", match, offset, baseAddress + offset);
 				}
 			}
@@ -306,9 +306,9 @@ void DisassemblerCore::DisassembleParamListSignature()
 
 void DisassemblerCore::DisassembleSizeAndType()
 {
-	const bu32_t sizeAndType = ReadValue32().mUInt;
-	bu32_t size;
-	bu32_t type;
+	const uint32_t sizeAndType = ReadValue32().mUInt;
+	uint32_t size;
+	uint32_t type;
 	DecodeSizeAndType(sizeAndType, size, type);
 	const char *str = GetBondTypeMnemonic(SignatureType(type));
 	mStream.Print(str, size);

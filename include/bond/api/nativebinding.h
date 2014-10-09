@@ -13,7 +13,7 @@ typedef void (*NativeFunction)(CalleeStackFrame &frame);
 
 struct NativeFunctionBinding
 {
-	bu32_t mHash;
+	uint32_t mHash;
 	NativeFunction mFunction;
 };
 
@@ -21,7 +21,7 @@ struct NativeFunctionBinding
 struct NativeBindingCollection
 {
 	const NativeFunctionBinding *mFunctionBindings;
-	bu32_t mFunctionBindingCount;
+	uint32_t mFunctionBindingCount;
 };
 
 }

@@ -1313,7 +1313,7 @@ void LexerCore::EvaluateFloatToken(Token &token) const
 
 void LexerCore::EvaluateIntegerToken(Token &token) const
 {
-	bu32_t value;
+	uint32_t value;
 	const char *text = token.GetText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
@@ -1330,7 +1330,7 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
-		token.SetIntValue(bi32_t(value));
+		token.SetIntValue(int32_t(value));
 	}
 	else
 	{
@@ -1341,7 +1341,7 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 
 void LexerCore::EvaluateLongToken(Token &token) const
 {
-	bu64_t value;
+	uint64_t value;
 	const char *text = token.GetText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
@@ -1358,7 +1358,7 @@ void LexerCore::EvaluateLongToken(Token &token) const
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
-		token.SetLongValue(bi64_t(value));
+		token.SetLongValue(int64_t(value));
 	}
 	else
 	{
@@ -1425,7 +1425,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 
 			case 'x':
 			{
-				bu32_t value;
+				uint32_t value;
 				int length;
 				sscanf(text + 2, "%" BOND_SCNx32 "%n", &value, &length);
 				result.value = char(value);
@@ -1440,7 +1440,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			default:
 				if (IsOctalChar(text[1]))
 				{
-					bu32_t value;
+					uint32_t value;
 					int length;
 					sscanf(text + 1, "%" BOND_SCNo32 "%n", &value, &length);
 					result.value = char(value);

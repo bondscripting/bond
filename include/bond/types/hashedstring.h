@@ -24,7 +24,7 @@ public:
 		mHashCode = StringHash(length, str);
 	}
 
-	bu32_t GetHashCode() const { return mHashCode; }
+	uint32_t GetHashCode() const { return mHashCode; }
 
 	bool operator==(const HashedString &other) const
 	{
@@ -42,7 +42,7 @@ public:
 	}
 
 private:
-	bu32_t mHashCode;
+	uint32_t mHashCode;
 };
 
 }

@@ -21,15 +21,15 @@ void Symbol::SetParentSymbol(Symbol *parent)
 }
 
 
-bu32_t Symbol::GetGlobalHashCodeWithSuffix(const char *suffix) const
+uint32_t Symbol::GetGlobalHashCodeWithSuffix(const char *suffix) const
 {
 	return StringHash(suffix, mGlobalHashCode);
 }
 
 
-bu32_t Symbol::ComputeGlobalHashCode() const
+uint32_t Symbol::ComputeGlobalHashCode() const
 {
-	bu32_t hash = STRING_HASH_SEED;
+	uint32_t hash = STRING_HASH_SEED;
 	if (!IsAnonymous())
 	{
 		const HashedString &name = GetName()->GetHashedText();
@@ -172,7 +172,7 @@ const Token *TypeDescriptor::GetContextToken() const
 
 void TypeDescriptor::ConvertToArray(Expression *expressionList)
 {
-	const bu32_t constFlag = mFlags & FLAG_CONST;
+	const uint32_t constFlag = mFlags & FLAG_CONST;
 	mFlags = ((mFlags | FLAG_ADDRESSABLE) << PARENT_SHIFT) | FLAG_ARRAY | constFlag;
 	mLengthExpressionList = expressionList;
 }
@@ -284,7 +284,7 @@ bool TypeDescriptor::IsInstantiable() const
 }
 
 
-bu32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
+uint32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
 {
 	if (IsPointerType())
 	{
@@ -292,12 +292,12 @@ bu32_t TypeDescriptor::GetStackSize(PointerSize pointerSize) const
 	}
 	else
 	{
-		return AlignUp(GetSize(pointerSize), bu32_t(BOND_SLOT_SIZE));
+		return AlignUp(GetSize(pointerSize), uint32_t(BOND_SLOT_SIZE));
 	}
 }
 
 
-bu32_t TypeDescriptor::GetSize(PointerSize pointerSize) const
+uint32_t TypeDescriptor::GetSize(PointerSize pointerSize) const
 {
 	if (IsValueType())
 	{
@@ -310,16 +310,16 @@ bu32_t TypeDescriptor::GetSize(PointerSize pointerSize) const
 	else if (IsArrayType())
 	{
 		const TypeDescriptor parent = GetDereferencedType();
-		const bu32_t parentSize = parent.GetSize(pointerSize);
-		const bu32_t arraySize = mLengthExpressionList->GetTypeAndValue().GetUIntValue();
-		const bu32_t size = arraySize * parentSize;
+		const uint32_t parentSize = parent.GetSize(pointerSize);
+		const uint32_t arraySize = mLengthExpressionList->GetTypeAndValue().GetUIntValue();
+		const uint32_t size = arraySize * parentSize;
 		return size;
 	}
 	return 0;
 }
 
 
-bu32_t TypeDescriptor::GetAlignment(PointerSize pointerSize) const
+uint32_t TypeDescriptor::GetAlignment(PointerSize pointerSize) const
 {
 	if (IsValueType())
 	{
@@ -338,7 +338,7 @@ bu32_t TypeDescriptor::GetAlignment(PointerSize pointerSize) const
 }
 
 
-bu32_t TypeDescriptor::GetSignatureType() const
+uint32_t TypeDescriptor::GetSignatureType() const
 {
 	if (IsPointerType())
 	{
@@ -564,7 +564,7 @@ bool TypeSpecifier::IsInstantiable() const
 }
 
 
-bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
+uint32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 {
 	switch (GetPrimitiveType())
 	{
@@ -606,7 +606,7 @@ bu32_t TypeSpecifier::GetSize(PointerSize pointerSize) const
 }
 
 
-bu32_t TypeSpecifier::GetAlignment() const
+uint32_t TypeSpecifier::GetAlignment() const
 {
 	switch (GetPrimitiveType())
 	{
@@ -648,7 +648,7 @@ bu32_t TypeSpecifier::GetAlignment() const
 }
 
 
-bu32_t TypeSpecifier::GetSignatureType() const
+uint32_t TypeSpecifier::GetSignatureType() const
 {
 	switch (GetPrimitiveType())
 	{

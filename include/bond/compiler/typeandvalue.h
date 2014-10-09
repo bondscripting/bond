@@ -56,19 +56,19 @@ public:
 	double GetDoubleValue() const { return mValue.mDouble; }
 	void SetDoubleValue(double value) { mValue.mDouble = value; mValueDefined = true; }
 
-	bi32_t GetIntValue() const { return mValue.mInt; }
-	void SetIntValue(bi32_t value) { mValue.mInt = value; mValueDefined = true; }
+	int32_t GetIntValue() const { return mValue.mInt; }
+	void SetIntValue(int32_t value) { mValue.mInt = value; mValueDefined = true; }
 
-	bu32_t GetUIntValue() const { return mValue.mUInt; }
-	void SetUIntValue(bu32_t value) { mValue.mUInt = value; mValueDefined = true; }
+	uint32_t GetUIntValue() const { return mValue.mUInt; }
+	void SetUIntValue(uint32_t value) { mValue.mUInt = value; mValueDefined = true; }
 
-	bi64_t GetLongValue() const { return mValue.mLong; }
-	void SetLongValue(bi64_t value) { mValue.mLong = value; mValueDefined = true; }
-	bi64_t AsLongValue() const;
+	int64_t GetLongValue() const { return mValue.mLong; }
+	void SetLongValue(int64_t value) { mValue.mLong = value; mValueDefined = true; }
+	int64_t AsLongValue() const;
 
-	bu64_t GetULongValue() const { return mValue.mULong; }
-	void SetULongValue(bu64_t value) { mValue.mULong = value; mValueDefined = true; }
-	bu64_t AsULongValue() const;
+	uint64_t GetULongValue() const { return mValue.mULong; }
+	void SetULongValue(uint64_t value) { mValue.mULong = value; mValueDefined = true; }
+	uint64_t AsULongValue() const;
 
 	const SimpleString GetStringValue() const { return SimpleString(mValue.mString.buffer, mValue.mString.length); }
 	const HashedString GetHashedStringValue() const { return HashedString(mValue.mString.buffer, mValue.mString.length); }

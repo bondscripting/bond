@@ -183,13 +183,13 @@ void ParseTreePrinterCore::Visit(const StructDeclaration *structDeclaration)
 	const Token *sizeToken = structDeclaration->GetSizeToken();
 	if (sizeToken != nullptr)
 	{
-		const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
+		const int32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
 		mStream.Print("<%" BOND_PRId32, size);
 
 		const Token *alignmentToken = structDeclaration->GetAlignmentToken();
 		if (alignmentToken != nullptr)
 		{
-			const bi32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
+			const int32_t alignment = CastValue(alignmentToken->GetValue(), alignmentToken->GetTokenType(), Token::CONST_INT).mInt;
 			mStream.Print(", %" BOND_PRId32, alignment);
 		}
 		mStream.Print(">");

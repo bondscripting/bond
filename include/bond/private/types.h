@@ -64,31 +64,22 @@
 namespace Bond
 {
 
-typedef std::int8_t bi8_t;
-typedef std::uint8_t bu8_t;
-typedef std::int16_t bi16_t;
-typedef std::uint16_t bu16_t;
-typedef std::int32_t bi32_t;
-typedef std::uint32_t bu32_t;
-typedef std::int64_t bi64_t;
-typedef std::uint64_t bu64_t;
-
-const bi32_t BOND_CHAR_MAX = static_cast<bi32_t>(INT8_MAX);
-const bi32_t BOND_CHAR_MIN = static_cast<bi32_t>(INT8_MIN);
-const bu32_t BOND_UCHAR_MAX = static_cast<bu32_t>(UINT8_MAX);
-const bu32_t BOND_UCHAR_MIN = static_cast<bu32_t>(0);
-const bi32_t BOND_SHORT_MAX = static_cast<bi32_t>(INT16_MAX);
-const bi32_t BOND_SHORT_MIN = static_cast<bi32_t>(INT16_MIN);
-const bu32_t BOND_USHORT_MAX = static_cast<bu32_t>(UINT16_MAX);
-const bu32_t BOND_USHORT_MIN = static_cast<bu32_t>(0);
-const bi32_t BOND_INT_MAX = static_cast<bi32_t>(INT32_MAX);
-const bi32_t BOND_INT_MIN = static_cast<bi32_t>(INT32_MIN);
-const bu32_t BOND_UINT_MAX = static_cast<bu32_t>(UINT32_MAX);
-const bu32_t BOND_UINT_MIN = static_cast<bu32_t>(0);
-const bi64_t BOND_LONG_MAX = static_cast<bi64_t>(INT64_MAX);
-const bi64_t BOND_LONG_MIN = static_cast<bi64_t>(INT64_MIN);
-const bu64_t BOND_ULONG_MAX = static_cast<bu64_t>(UINT64_MAX);
-const bu64_t BOND_ULONG_MIN = static_cast<bu64_t>(0);
+const int32_t BOND_CHAR_MAX = static_cast<int32_t>(INT8_MAX);
+const int32_t BOND_CHAR_MIN = static_cast<int32_t>(INT8_MIN);
+const uint32_t BOND_UCHAR_MAX = static_cast<uint32_t>(UINT8_MAX);
+const uint32_t BOND_UCHAR_MIN = static_cast<uint32_t>(0);
+const int32_t BOND_SHORT_MAX = static_cast<int32_t>(INT16_MAX);
+const int32_t BOND_SHORT_MIN = static_cast<int32_t>(INT16_MIN);
+const uint32_t BOND_USHORT_MAX = static_cast<uint32_t>(UINT16_MAX);
+const uint32_t BOND_USHORT_MIN = static_cast<uint32_t>(0);
+const int32_t BOND_INT_MAX = static_cast<int32_t>(INT32_MAX);
+const int32_t BOND_INT_MIN = static_cast<int32_t>(INT32_MIN);
+const uint32_t BOND_UINT_MAX = static_cast<uint32_t>(UINT32_MAX);
+const uint32_t BOND_UINT_MIN = static_cast<uint32_t>(0);
+const int64_t BOND_LONG_MAX = static_cast<int64_t>(INT64_MAX);
+const int64_t BOND_LONG_MIN = static_cast<int64_t>(INT64_MIN);
+const uint64_t BOND_ULONG_MAX = static_cast<uint64_t>(UINT64_MAX);
+const uint64_t BOND_ULONG_MIN = static_cast<uint64_t>(0);
 
 }
 

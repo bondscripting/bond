@@ -14,7 +14,7 @@ void Disassemble(const char *cboFileName)
 		Bond::FileLoader::Handle cboFileHandle = fileLoader.LoadFile(cboFileName);
 		Bond::StdOutOutputStream stream;
 		Bond::Disassembler disassembler(allocator);
-		disassembler.Disassemble(stream, static_cast<const Bond::bu8_t *>(cboFileHandle.Get().mData), cboFileHandle.Get().mLength);
+		disassembler.Disassemble(stream, static_cast<const uint8_t *>(cboFileHandle.Get().mData), cboFileHandle.Get().mLength);
 	}
 	catch (const Bond::Exception &e)
 	{

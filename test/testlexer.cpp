@@ -111,16 +111,16 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const bool EXPECTED_BOOLS[] = { true, false };
 	const int NUM_BOOLS = sizeof(EXPECTED_BOOLS) / sizeof(*EXPECTED_BOOLS);
 
-	const Bond::bi32_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, Bond::bi32_t(0xffffffff) };
+	const int32_t EXPECTED_INTS[] = { 98765, 07777, 0x7fffffff, int32_t(0xffffffff) };
 	const int NUM_INTS = sizeof(EXPECTED_INTS) / sizeof(*EXPECTED_INTS);
 
-	const Bond::bu32_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
+	const uint32_t EXPECTED_UINTS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu };
 	const int NUM_UINTS = sizeof(EXPECTED_UINTS) / sizeof(*EXPECTED_UINTS);
 
-	const Bond::bi64_t EXPECTED_LONGS[] = { 98765, 07777, 0x7fffffff, 0xffffffff, Bond::BOND_LONG_MAX };
+	const int64_t EXPECTED_LONGS[] = { 98765, 07777, 0x7fffffff, 0xffffffff, Bond::BOND_LONG_MAX };
 	const int NUM_LONGS = sizeof(EXPECTED_LONGS) / sizeof(*EXPECTED_LONGS);
 
-	const Bond::bu64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX };
+	const uint64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX };
 	const int NUM_ULONGS = sizeof(EXPECTED_ULONGS) / sizeof(*EXPECTED_ULONGS);
 
 	const float EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
@@ -165,8 +165,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
 
-		const Bond::bi32_t expected = EXPECTED_INTS[i];
-		const Bond::bi32_t actual = token->GetIntValue();
+		const int32_t expected = EXPECTED_INTS[i];
+		const int32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expected, actual));
 	}
@@ -177,8 +177,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
 
-		const Bond::bu32_t expected = EXPECTED_UINTS[i];
-		const Bond::bu32_t actual = token->GetUIntValue();
+		const uint32_t expected = EXPECTED_UINTS[i];
+		const uint32_t actual = token->GetUIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", expected, actual));
 	}
@@ -189,8 +189,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_LONG == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_LONG), token->GetTokenName()));
 
-		const Bond::bi64_t expected = EXPECTED_LONGS[i];
-		const Bond::bi64_t actual = token->GetLongValue();
+		const int64_t expected = EXPECTED_LONGS[i];
+		const int64_t actual = token->GetLongValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", expected, actual));
 	}
@@ -201,8 +201,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_ULONG == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName()));
 
-		const Bond::bu64_t expected = EXPECTED_ULONGS[i];
-		const Bond::bu64_t actual = token->GetULongValue();
+		const uint64_t expected = EXPECTED_ULONGS[i];
+		const uint64_t actual = token->GetULongValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", expected, actual));
 	}
@@ -237,8 +237,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_CHAR == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_CHAR), token->GetTokenName()));
 
-		const Bond::bi32_t expected = EXPECTED_CHARS[i];
-		const Bond::bi32_t actual = token->GetIntValue();
+		const int32_t expected = EXPECTED_CHARS[i];
+		const int32_t actual = token->GetIntValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", expected, actual));
 	}

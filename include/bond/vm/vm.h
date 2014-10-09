@@ -28,9 +28,9 @@ public:
 	CalleeStackFrame(
 			VM &vm,
 			const Function *function,
-			bu8_t *framePointer,
-			bu8_t *stackPointer,
-			bu8_t *returnPointer):
+			uint8_t *framePointer,
+			uint8_t *stackPointer,
+			uint8_t *returnPointer):
 		mVm(vm),
 		mFunction(function),
 		mFramePointer(framePointer),
@@ -58,9 +58,9 @@ private:
 
 	VM &mVm;
 	const Function *mFunction;
-	bu8_t *mFramePointer;
-	bu8_t *mStackPointer;
-	bu8_t *mReturnPointer;
+	uint8_t *mFramePointer;
+	uint8_t *mStackPointer;
+	uint8_t *mReturnPointer;
 };
 
 typedef AutoStack<CalleeStackFrame> StackFrames;
@@ -82,7 +82,7 @@ public:
 private:
 	void Initialize(VM &vm, const HashedString &functionName, void *returnPointer);
 
-	bu32_t mNextArg;
+	uint32_t mNextArg;
 };
 
 
@@ -160,8 +160,8 @@ private:
 	friend class CallerStackFrame;
 
 	void ExecuteScriptFunction();
-	bu8_t *InvokeFunction(const Function *function, bu8_t *stackTop);
-	void ValidateStackPointer(bu8_t *stackPointer) const;
+	uint8_t *InvokeFunction(const Function *function, uint8_t *stackTop);
+	void ValidateStackPointer(uint8_t *stackPointer) const;
 
 	StackFrames mStackFrames;
 	StackFrames::Element mDummyFrame;
@@ -169,7 +169,7 @@ private:
 	const CodeSegment &mCodeSegment;
 	OutputStream *mStdOut;
 	OutputStream *mStdErr;
-	bu8_t *mStack;
+	uint8_t *mStack;
 	size_t mStackSize;
 };
 

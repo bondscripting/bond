@@ -300,7 +300,7 @@ void Fabsf(Bond::CalleeStackFrame &frame)
 void Ldexp(Bond::CalleeStackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
-	const int n = int(frame.GetArg<bi32_t>(1));
+	const int n = int(frame.GetArg<int32_t>(1));
 	const double result = ldexp(x, n);
 	frame.SetReturnValue(double(result));
 }
@@ -309,7 +309,7 @@ void Ldexp(Bond::CalleeStackFrame &frame)
 void Ldexpf(Bond::CalleeStackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
-	const int n = int(frame.GetArg<bi32_t>(1));
+	const int n = int(frame.GetArg<int32_t>(1));
 	const double result = ldexp(x, n);
 	frame.SetReturnValue(float(result));
 }
@@ -321,7 +321,7 @@ void Frexp(Bond::CalleeStackFrame &frame)
 	int exp;
 	const double result = frexp(x, &exp);
 	frame.SetReturnValue(double(result));
-	*frame.GetArg<bi32_t *>(1) = bi32_t(exp);
+	*frame.GetArg<int32_t *>(1) = int32_t(exp);
 }
 
 
@@ -331,7 +331,7 @@ void Frexpf(Bond::CalleeStackFrame &frame)
 	int exp;
 	const double result = frexp(x, &exp);
 	frame.SetReturnValue(float(result));
-	*frame.GetArg<bi32_t *>(1) = bi32_t(exp);
+	*frame.GetArg<int32_t *>(1) = int32_t(exp);
 }
 
 

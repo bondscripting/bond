@@ -569,8 +569,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 			const FunctionPrototype *prototype = function->GetPrototype();
 			const Parameter *paramList = prototype->GetParameterList();
 			const Expression *argList = functionCallExpression->GetArgumentList();
-			const bu32_t numParams = GetLength(paramList);
-			const bu32_t numArgs = GetLength(argList);
+			const uint32_t numParams = GetLength(paramList);
+			const uint32_t numArgs = GetLength(argList);
 
 			if (numParams == numArgs)
 			{

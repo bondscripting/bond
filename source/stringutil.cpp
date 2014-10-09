@@ -21,29 +21,29 @@ size_t StringLength(const char *str)
 }
 
 
-bu32_t StringHash(const char *str, bu32_t seed)
+uint32_t StringHash(const char *str, uint32_t seed)
 {
 	const unsigned char *s = reinterpret_cast<const unsigned char *>(str);
-	bu32_t hash = seed;
+	uint32_t hash = seed;
 
 	while (*s != '\0')
 	{
-		hash = (hash * 0x01000193u) ^ bu32_t(*s++);
+		hash = (hash * 0x01000193u) ^ uint32_t(*s++);
 	}
 
 	return hash;
 }
 
 
-bu32_t StringHash(size_t length, const char *str, bu32_t seed)
+uint32_t StringHash(size_t length, const char *str, uint32_t seed)
 {
 	const unsigned char *s = reinterpret_cast<const unsigned char *>(str);
 	const unsigned char *end = s + length;
-	bu32_t hash = seed;
+	uint32_t hash = seed;
 
 	while (s < end)
 	{
-		hash = (hash * 0x01000193u) ^ bu32_t(*s++);
+		hash = (hash * 0x01000193u) ^ uint32_t(*s++);
 	}
 
 	return hash;

@@ -18,39 +18,39 @@ struct ConstantTable
 
 struct ParamSignature
 {
-	ParamSignature(bi32_t framePointerOffset, bu32_t size, bu32_t type):
+	ParamSignature(int32_t framePointerOffset, uint32_t size, uint32_t type):
 		mFramePointerOffset(framePointerOffset),
 		mSize(size),
 		mType(type)
 	{}
 
-	bi32_t mFramePointerOffset;
-	bu32_t mSize:28;
-	bu32_t mType:4;
+	int32_t mFramePointerOffset;
+	uint32_t mSize:28;
+	uint32_t mType:4;
 };
 
 
 struct ParamListSignature
 {
-	ParamListSignature(const ParamSignature *paramSignatures, bu32_t paramCount):
+	ParamListSignature(const ParamSignature *paramSignatures, uint32_t paramCount):
 		mParamSignatures(paramSignatures),
 		mParamCount(paramCount)
 	{}
 
 	const ParamSignature *mParamSignatures;
-	bu32_t mParamCount;
+	uint32_t mParamCount;
 };
 
 
 struct ReturnSignature
 {
-	ReturnSignature(bu32_t size, bu32_t type):
+	ReturnSignature(uint32_t size, uint32_t type):
 		mSize(size),
 		mType(type)
 	{}
 
-	bu32_t mSize:28;
-	bu32_t mType:4;
+	uint32_t mSize:28;
+	uint32_t mType:4;
 };
 
 
@@ -65,17 +65,17 @@ struct Function
 
 	union
 	{
-		const bu8_t *mCode;
+		const uint8_t *mCode;
 		NativeFunction mNativeFunction;
 	};
 
-	bu32_t mCodeSize;
-	bu32_t mArgSize;
-	bu32_t mPackedArgSize;
-	bu32_t mLocalSize;
-	bu32_t mStackSize;
-	bu32_t mFramePointerAlignment;
-	bu32_t mHash;
+	uint32_t mCodeSize;
+	uint32_t mArgSize;
+	uint32_t mPackedArgSize;
+	uint32_t mLocalSize;
+	uint32_t mStackSize;
+	uint32_t mFramePointerAlignment;
+	uint32_t mHash;
 	bool mUnpackArguments;
 };
 
@@ -83,21 +83,21 @@ struct Function
 class CodeSegment
 {
 public:
-	CodeSegment(const bu32_t *functionLookup, const Function *functionTable, size_t functionCount):
+	CodeSegment(const uint32_t *functionLookup, const Function *functionTable, size_t functionCount):
 		mFunctionLookup(functionLookup),
 		mFunctionTable(functionTable),
 		mFunctionCount(functionCount)
 	{}
 
 	const Function *GetFunction(const HashedString &functionName) const { return GetFunction(functionName.GetHashCode()); }
-	const Function *GetFunction(bu32_t functionHash) const;
+	const Function *GetFunction(uint32_t functionHash) const;
 
-	bi32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
-	bi32_t GetFunctionIndex(bu32_t functionHash) const;
-	const Function *GetFunctionAtIndex(bu32_t functionIndex) const { return mFunctionTable + functionIndex; }
+	int32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
+	int32_t GetFunctionIndex(uint32_t functionHash) const;
+	const Function *GetFunctionAtIndex(uint32_t functionIndex) const { return mFunctionTable + functionIndex; }
 
 private:
-	const bu32_t *mFunctionLookup;
+	const uint32_t *mFunctionLookup;
 	const Function *mFunctionTable;
 	size_t mFunctionCount;
 };

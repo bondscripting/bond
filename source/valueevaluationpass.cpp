@@ -19,8 +19,8 @@ bool AlignmentComparator::operator()(const DeclarativeStatement &a, const Declar
 {
 	const TypeDescriptor *aType = a.GetTypeDescriptor();
 	const TypeDescriptor *bType = b.GetTypeDescriptor();
-	const bu32_t aAlign = aType->GetAlignment(mPointerSize);
-	const bu32_t bAlign = bType->GetAlignment(mPointerSize);
+	const uint32_t aAlign = aType->GetAlignment(mPointerSize);
+	const uint32_t bAlign = bType->GetAlignment(mPointerSize);
 	return aAlign > bAlign;
 }
 
@@ -127,13 +127,13 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					//memberList = SortNodes<DeclarativeStatement, AlignmentComparator>(memberList, AlignmentComparator(mPointerSize));
 					//structDeclaration->SetMemberVariableList(memberList);
 
-					bu32_t structSize = 0;
-					bu32_t structAlign = BOND_DEFAULT_STRUCT_ALIGN;
+					uint32_t structSize = 0;
+					uint32_t structAlign = BOND_DEFAULT_STRUCT_ALIGN;
 					while (memberList != nullptr)
 					{
 						const TypeDescriptor *memberDescriptor = memberList->GetTypeDescriptor();
-						const bu32_t memberSize = memberDescriptor->GetSize(mPointerSize);
-						const bu32_t memberAlign = memberDescriptor->GetAlignment(mPointerSize);
+						const uint32_t memberSize = memberDescriptor->GetSize(mPointerSize);
+						const uint32_t memberAlign = memberDescriptor->GetAlignment(mPointerSize);
 
 						structSize = AlignUp(structSize, memberAlign);
 						structAlign = Max(structAlign, memberAlign);
@@ -142,7 +142,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						while (initializerList != nullptr)
 						{
 							// TODO: Ensure that the offset does not overflow.
-							initializerList->SetOffset(bi32_t(structSize));
+							initializerList->SetOffset(int32_t(structSize));
 							structSize += memberSize;
 							initializerList = NextNode(initializerList);
 						}
@@ -161,7 +161,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 			{
 				bool hasError = false;
 				const Token *sizeToken = structDeclaration->GetSizeSpecifier()->GetSizeToken();
-				const bi32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
+				const int32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
 				if (size <= 0)
 				{
 					hasError = true;
@@ -169,13 +169,13 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				}
 				else
 				{
-					structDeclaration->SetSize(bu32_t(size));
+					structDeclaration->SetSize(uint32_t(size));
 				}
 
 				const Token *alignToken = structDeclaration->GetSizeSpecifier()->GetAlignmentToken();
 				if (alignToken != nullptr)
 				{
-					const bi32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;
+					const int32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;
 					if ((align <= 1) || !IsPowerOfTwo(align))
 					{
 						hasError = true;
@@ -183,7 +183,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					}
 					else
 					{
-						structDeclaration->SetAlignment(bu32_t(align));
+						structDeclaration->SetAlignment(uint32_t(align));
 					}
 				}
 
@@ -324,14 +324,14 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 	    (CastNode<EmptyExpression>(typeDescriptor->GetLengthExpressionList()) != nullptr) &&
 	    !typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().IsValueDefined())
 	{
-		bu32_t length = 0;
+		uint32_t length = 0;
 		const NamedInitializer *current = declarativeStatement->GetNamedInitializerList();
 		while (current != nullptr)
 		{
 			const Initializer *initializer = current->GetInitializer();
 			if ((initializer != nullptr) && (initializer->GetInitializerList()) != nullptr)
 			{
-				const bu32_t initializerListLength = GetLength(initializer->GetInitializerList());
+				const uint32_t initializerListLength = GetLength(initializer->GetInitializerList());
 				length = (initializerListLength > length) ? initializerListLength : length;
 			}
 			current = NextNode(current);

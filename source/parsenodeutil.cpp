@@ -4,9 +4,9 @@
 namespace Bond
 {
 
-bu32_t GetLength(const ListParseNode *list)
+uint32_t GetLength(const ListParseNode *list)
 {
-	bu32_t length = 0;
+	uint32_t length = 0;
 	const ListParseNode *current = list;
 	while (current != nullptr)
 	{
@@ -174,29 +174,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = bi8_t(value.mInt);
+					resultValue.mInt = int8_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = bi8_t(value.mUInt);
+					resultValue.mInt = int8_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = bi8_t(value.mLong);
+					resultValue.mInt = int8_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = bi8_t(value.mULong);
+					resultValue.mInt = int8_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = bi8_t(value.mFloat);
+					resultValue.mInt = int8_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = bi8_t(value.mDouble);
+					resultValue.mInt = int8_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -211,29 +211,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = bu8_t(value.mInt);
+					resultValue.mUInt = uint8_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = bu8_t(value.mUInt);
+					resultValue.mUInt = uint8_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = bu8_t(value.mLong);
+					resultValue.mUInt = uint8_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = bu8_t(value.mULong);
+					resultValue.mUInt = uint8_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = bu8_t(value.mFloat);
+					resultValue.mUInt = uint8_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = bu8_t(value.mDouble);
+					resultValue.mUInt = uint8_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -248,29 +248,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = bi16_t(value.mInt);
+					resultValue.mInt = int16_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = bi16_t(value.mUInt);
+					resultValue.mInt = int16_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = bi16_t(value.mLong);
+					resultValue.mInt = int16_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = bi16_t(value.mULong);
+					resultValue.mInt = int16_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = bi16_t(value.mFloat);
+					resultValue.mInt = int16_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = bi16_t(value.mDouble);
+					resultValue.mInt = int16_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -285,29 +285,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = bu16_t(value.mInt);
+					resultValue.mUInt = uint16_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = bu16_t(value.mUInt);
+					resultValue.mUInt = uint16_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = bu16_t(value.mLong);
+					resultValue.mUInt = uint16_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = bu16_t(value.mULong);
+					resultValue.mUInt = uint16_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = bu16_t(value.mFloat);
+					resultValue.mUInt = uint16_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = bu16_t(value.mDouble);
+					resultValue.mUInt = uint16_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -323,29 +323,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mInt = bi32_t(value.mInt);
+					resultValue.mInt = int32_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mInt = bi32_t(value.mUInt);
+					resultValue.mInt = int32_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mInt = bi32_t(value.mLong);
+					resultValue.mInt = int32_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mInt = bi32_t(value.mULong);
+					resultValue.mInt = int32_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mInt = bi32_t(value.mFloat);
+					resultValue.mInt = int32_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mInt = bi32_t(value.mDouble);
+					resultValue.mInt = int32_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -361,29 +361,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mUInt = bu32_t(value.mInt);
+					resultValue.mUInt = uint32_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mUInt = bu32_t(value.mUInt);
+					resultValue.mUInt = uint32_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mUInt = bu32_t(value.mLong);
+					resultValue.mUInt = uint32_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mUInt = bu32_t(value.mULong);
+					resultValue.mUInt = uint32_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mUInt = bu32_t(value.mFloat);
+					resultValue.mUInt = uint32_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mUInt = bu32_t(value.mDouble);
+					resultValue.mUInt = uint32_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -399,29 +399,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mLong = bi64_t(value.mInt);
+					resultValue.mLong = int64_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mLong = bi64_t(value.mUInt);
+					resultValue.mLong = int64_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mLong = bi64_t(value.mLong);
+					resultValue.mLong = int64_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mLong = bi64_t(value.mULong);
+					resultValue.mLong = int64_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mLong = bi64_t(value.mFloat);
+					resultValue.mLong = int64_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mLong = bi64_t(value.mDouble);
+					resultValue.mLong = int64_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -437,29 +437,29 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::CONST_INT:
-					resultValue.mULong = bu64_t(value.mInt);
+					resultValue.mULong = uint64_t(value.mInt);
 					break;
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
 				case Token::CONST_UINT:
-					resultValue.mULong = bu64_t(value.mUInt);
+					resultValue.mULong = uint64_t(value.mUInt);
 					break;
 				case Token::KEY_LONG:
 				case Token::CONST_LONG:
-					resultValue.mULong = bu64_t(value.mLong);
+					resultValue.mULong = uint64_t(value.mLong);
 					break;
 				case Token::KEY_ULONG:
 				case Token::CONST_ULONG:
-					resultValue.mULong = bu64_t(value.mULong);
+					resultValue.mULong = uint64_t(value.mULong);
 					break;
 				case Token::KEY_FLOAT:
 				case Token::CONST_FLOAT:
-					resultValue.mULong = bu64_t(value.mFloat);
+					resultValue.mULong = uint64_t(value.mFloat);
 					break;
 				case Token::KEY_DOUBLE:
 				case Token::CONST_DOUBLE:
-					resultValue.mULong = bu64_t(value.mDouble);
+					resultValue.mULong = uint64_t(value.mDouble);
 					break;
 				default:
 					break;
@@ -569,13 +569,13 @@ Value UnaryMinus(const TypeAndValue &value)
 			resultValue.mInt = -value.GetIntValue();
 			break;
 		case Token::KEY_UINT:
-			resultValue.mUInt = bu32_t(-bi32_t(value.GetUIntValue()));
+			resultValue.mUInt = uint32_t(-int32_t(value.GetUIntValue()));
 			break;
 		case Token::KEY_LONG:
 			resultValue.mLong = -value.GetLongValue();
 			break;
 		case Token::KEY_ULONG:
-			resultValue.mULong = bu64_t(-bi64_t(value.GetULongValue()));
+			resultValue.mULong = uint64_t(-int64_t(value.GetULongValue()));
 			break;
 		case Token::KEY_FLOAT:
 			resultValue.mFloat = -value.GetFloatValue();

@@ -185,7 +185,7 @@ private:
 			mOffset(0)
 		{}
 
-		Result(Context context, bi32_t offset):
+		Result(Context context, int32_t offset):
 			mContext(context),
 			mThisPointerContext(CONTEXT_NONE),
 			mConstantValue(nullptr),
@@ -215,7 +215,7 @@ private:
 		Context mThisPointerContext;
 		const TypeAndValue *mConstantValue;
 		const NamedInitializer *mNativeMember;
-		bi32_t mOffset;
+		int32_t mOffset;
 	};
 
 	struct JumpEntry
@@ -236,7 +236,7 @@ private:
 		bool operator()(const JumpEntry &entry, size_t opCodePos) const;
 	};
 
-	typedef Vector<bu8_t> ByteCode;
+	typedef Vector<uint8_t> ByteCode;
 	typedef Vector<size_t> LabelList;
 	typedef Vector<JumpEntry> JumpList;
 
@@ -245,9 +245,9 @@ private:
 		CompiledFunction(
 				const FunctionDefinition *definition,
 				Allocator &allocator,
-				bu32_t argSize,
-				bu32_t packedArgSize,
-				bu32_t framePointerAlignment):
+				uint32_t argSize,
+				uint32_t packedArgSize,
+				uint32_t framePointerAlignment):
 			mDefinition(definition),
 			mByteCode(ByteCode::Allocator(&allocator)),
 			mLabelList(LabelList::Allocator(&allocator)),
@@ -262,16 +262,16 @@ private:
 		ByteCode::Type mByteCode;
 		LabelList::Type mLabelList;
 		JumpList::Type mJumpList;
-		bu32_t mArgSize;
-		bu32_t mPackedArgSize;
-		bu32_t mLocalSize;
-		bu32_t mStackSize;
-		bu32_t mFramePointerAlignment;
+		uint32_t mArgSize;
+		uint32_t mPackedArgSize;
+		uint32_t mLocalSize;
+		uint32_t mStackSize;
+		uint32_t mFramePointerAlignment;
 	};
 
-	typedef Map<HashedString, bu16_t> StringIndexMap;
-	typedef Map<Value32, bu16_t> Value32IndexMap;
-	typedef Map<Value64, bu16_t> Value64IndexMap;
+	typedef Map<HashedString, uint16_t> StringIndexMap;
+	typedef Map<Value32, uint16_t> Value32IndexMap;
+	typedef Map<Value64, uint16_t> Value64IndexMap;
 	typedef List<HashedString> StringList;
 	typedef Vector<Value32> Value32List;
 	typedef Vector<Value64> Value64List;
@@ -316,28 +316,28 @@ private:
 
 	void EmitPushResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 	void EmitPushResult(const Result &result, const TypeDescriptor *typeDescriptor);
-	void EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
-	void EmitPushFramePointerIndirectValue32(bi32_t offset);
-	void EmitPushFramePointerIndirectValue64(bi32_t offset);
-	void EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
-	void EmitPushStackValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPushFramePointerIndirectValue32(int32_t offset);
+	void EmitPushFramePointerIndirectValue64(int32_t offset);
+	void EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPushStackValue(const TypeDescriptor *typeDescriptor, int32_t offset);
 
 	void EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor *resultType);
 	void EmitPushConstant(const TypeAndValue &typeAndValue);
-	void EmitPushConstantInt(bi32_t value);
-	void EmitPushConstantUInt(bu32_t value);
-	void EmitPushConstantLong(bi64_t value);
-	void EmitPushConstantULong(bu64_t value);
+	void EmitPushConstantInt(int32_t value);
+	void EmitPushConstantUInt(uint32_t value);
+	void EmitPushConstantLong(int64_t value);
+	void EmitPushConstantULong(uint64_t value);
 	void EmitPushConstantFloat(float value);
 	void EmitPushConstantDouble(double value);
 
 	void EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor);
-	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
-	void EmitPopFramePointerIndirectValue32(bi32_t offset);
-	void EmitPopFramePointerIndirectValue64(bi32_t offset);
-	void EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset);
+	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPopFramePointerIndirectValue32(int32_t offset);
+	void EmitPopFramePointerIndirectValue64(int32_t offset);
+	void EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
 	Result EmitAccumulateAddressOffset(const Result &result);
-	void EmitAccumulateAddressOffset(bi32_t offset);
+	void EmitAccumulateAddressOffset(int32_t offset);
 
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 
@@ -357,7 +357,7 @@ private:
 	Result EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 	Result EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet);
 	Result EmitPointerDifference(const Expression *lhs, const Expression *rhs);
-	void EmitPointerOffset(const Expression *offsetExpression, bi32_t elementSize);
+	void EmitPointerOffset(const Expression *offsetExpression, int32_t elementSize);
 
 	Result EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign);
 	Result EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign);
@@ -374,13 +374,13 @@ private:
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 
-	void EmitOpCodeWithOffset(OpCode opCode, bi32_t offset);
+	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
 	void EmitOpCode(OpCode opCode);
 	void EmitValue16(Value16 value);
 	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
 	void EmitIndexedValue64(Value64 value);
-	void EmitHashCode(bu32_t hash);
+	void EmitHashCode(uint32_t hash);
 
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
@@ -388,8 +388,8 @@ private:
 	const JumpEntry *FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const;
 
 	void WriteConstantTable();
-	void WriteFunctionList(bu16_t functionIndex);
-	void WriteNativeMemberList(bu16_t functionIndex);
+	void WriteFunctionList(uint16_t functionIndex);
+	void WriteNativeMemberList(uint16_t functionIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
 	void WriteReturnSignature(const TypeDescriptor *type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
@@ -401,14 +401,14 @@ private:
 	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
 	CompiledFunction &GetFunction() { return *mFunction.GetTop(); }
 	ByteCode::Type &GetByteCode() { return GetFunction().mByteCode; }
-	void ApplyStackDelta(bi32_t delta);
-	bi32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
+	void ApplyStackDelta(int32_t delta);
+	int32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	void MapQualifiedSymbolName(const Symbol *symbol);
-	bu16_t MapString(const HashedString &str);
-	bu16_t MapValue32(const Value32 &value32);
-	bu16_t MapValue64(const Value64 &value32);
+	uint16_t MapString(const HashedString &str);
+	uint16_t MapValue32(const Value32 &value32);
+	uint16_t MapValue64(const Value64 &value32);
 
 	void AssertStackEmpty();
 	void PushError(CompilerError::Type type);
@@ -454,8 +454,8 @@ void GeneratorCore::Generate()
 	WriteValue16(Value16(MINOR_VERSION));
 	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
 
-	const bu16_t listIndex = MapString("List");
-	const bu16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
+	const uint16_t listIndex = MapString("List");
+	const uint16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
 
 	ResolveJumps();
 	WriteConstantTable();
@@ -465,7 +465,7 @@ void GeneratorCore::Generate()
 	mStream.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(/* mDefinitionList.size() + */ bu32_t(mFunctionList.size()) + bu32_t(2 * mNativeMemberList.size())));
+	WriteValue32(Value32(/* mDefinitionList.size() + */ uint32_t(mFunctionList.size()) + uint32_t(2 * mNativeMemberList.size())));
 
 	WriteFunctionList(functionIndex);
 	WriteNativeMemberList(functionIndex);
@@ -473,7 +473,7 @@ void GeneratorCore::Generate()
 	// Patch up the blob size.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
-	WriteValue32(Value32(bu32_t(endPos - startPos)));
+	WriteValue32(Value32(uint32_t(endPos - startPos)));
 	mStream.SetPosition(endPos);
 }
 
@@ -524,19 +524,19 @@ void GeneratorCore::Visit(const TranslationUnit *translationUnit)
 void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 {
 	const FunctionPrototype *prototype = functionDefinition->GetPrototype();
-	bu32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? bu32_t(BOND_SLOT_SIZE) : 0;
-	bu32_t packedOffset = offset;
-	bu32_t framePointerAlignment = bu32_t(BOND_SLOT_SIZE);
+	uint32_t offset = (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER) ? uint32_t(BOND_SLOT_SIZE) : 0;
+	uint32_t packedOffset = offset;
+	uint32_t framePointerAlignment = uint32_t(BOND_SLOT_SIZE);
 	const Parameter *parameterList = prototype->GetParameterList();
 	while (parameterList != nullptr)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
+		const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
 		offset += typeDescriptor->GetSize(mPointerSize);
 		offset = AlignUp(offset, alignment);
 		packedOffset += typeDescriptor->GetStackSize(mPointerSize);
 		framePointerAlignment = Max(framePointerAlignment, alignment);
-		parameterList->SetOffset(-bi32_t(offset));
+		parameterList->SetOffset(-int32_t(offset));
 		parameterList = NextNode(parameterList);
 	}
 
@@ -691,10 +691,10 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	Traverse(control);
 	EmitPushResult(controlResult, controlDescriptor);
 
-	const bu32_t numMatches = switchStatement->GetNumMatches();
-	const bi32_t minMatch = switchStatement->GetMinMatch();
-	const bi32_t maxMatch = switchStatement->GetMaxMatch();
-	const bu32_t range = maxMatch - minMatch;
+	const uint32_t numMatches = switchStatement->GetNumMatches();
+	const int32_t minMatch = switchStatement->GetMinMatch();
+	const int32_t maxMatch = switchStatement->GetMaxMatch();
+	const uint32_t range = maxMatch - minMatch;
 	const bool doLookupSwitch = (numMatches <= 0) || (((numMatches * 2) - 2) < range);
 	size_t jumpTableSize = 0;
 
@@ -723,15 +723,15 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	const LabelList::Type &labelList = GetFunction().mLabelList;
 	const ResolvedSwitchLabel *resolvedLabels = switchStatement->GetResolvedLabelList();
 
-	bi32_t defaultOffset = 0;
+	int32_t defaultOffset = 0;
 	if ((resolvedLabels != nullptr) && resolvedLabels->IsDefault())
 	{
-		defaultOffset = bu32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
+		defaultOffset = uint32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 		resolvedLabels = NextNode(resolvedLabels);
 	}
 	else
 	{
-		defaultOffset = bu32_t(endPos - jumpTableEnd);
+		defaultOffset = uint32_t(endPos - jumpTableEnd);
 	}
 
 	EmitValue32At(Value32(defaultOffset), jumpTableStart);
@@ -742,7 +742,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 		size_t pos = jumpTableStart + (2 * sizeof(Value32));
 		while (resolvedLabels != nullptr)
 		{
-			const bi32_t offset = bi32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
+			const int32_t offset = int32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 			EmitValue32At(Value32(resolvedLabels->GetMatch()), pos);
 			EmitValue32At(Value32(offset), pos + sizeof(Value32));
 			pos += 2 * sizeof(Value32);
@@ -754,13 +754,13 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 		EmitValue32At(Value32(minMatch), jumpTableStart + sizeof(Value32));
 		EmitValue32At(Value32(maxMatch), jumpTableStart + (2 * sizeof(Value32)));
 		size_t pos = jumpTableStart + (3 * sizeof(Value32));
-		for (bu32_t i = 0; i <= range; ++i)
+		for (uint32_t i = 0; i <= range; ++i)
 		{
-			const bi32_t match = minMatch + i;
-			bi32_t offset = 0;
+			const int32_t match = minMatch + i;
+			int32_t offset = 0;
 			if (match >= resolvedLabels->GetMatch())
 			{
-				offset = bi32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
+				offset = int32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 				EmitValue32At(Value32(offset), pos);
 				resolvedLabels = NextNode(resolvedLabels);
 			}
@@ -1342,8 +1342,8 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
-	const bu32_t returnType = returnDescriptor->GetSignatureType();
-	const bi32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
+	const uint32_t returnType = returnDescriptor->GetSignatureType();
+	const int32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1425,7 +1425,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		const FunctionDefinition *functionDefinition = nullptr;
 		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != nullptr)
 		{
-			const bi32_t offset = namedInitializer->GetOffset();
+			const int32_t offset = namedInitializer->GetOffset();
 			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 			switch (namedInitializer->GetScope())
 			{
@@ -1493,8 +1493,8 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member)
 {
 	const TypeDescriptor *returnDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
-	const bu32_t returnType = returnDescriptor->GetSignatureType();
-	const bi32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
+	const uint32_t returnType = returnDescriptor->GetSignatureType();
+	const int32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
 
 	{
 		const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
@@ -1509,7 +1509,7 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	EmitOpCode(OPCODE_INVOKE);
 	EmitHashCode(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
 
-	bi32_t stackDelta = -BOND_SLOT_SIZE;
+	int32_t stackDelta = -BOND_SLOT_SIZE;
 	Result result;
 	if (returnType == SIG_STRUCT)
 	{
@@ -1608,7 +1608,7 @@ void GeneratorCore::EmitPushResult(const Result &result, const TypeDescriptor *t
 }
 
 
-void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
 {
 	if (typeDescriptor->IsValueType())
 	{
@@ -1658,7 +1658,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 }
 
 
-void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue32(int32_t offset)
 {
 	switch (offset)
 	{
@@ -1693,7 +1693,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue32(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPushFramePointerIndirectValue64(bi32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue64(int32_t offset)
 {
 	switch (offset)
 	{
@@ -1728,7 +1728,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue64(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
@@ -1774,7 +1774,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 }
 
 
-void GeneratorCore::EmitPushStackValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPushStackValue(const TypeDescriptor *typeDescriptor, int32_t offset)
 {
 	if (typeDescriptor->IsPointerType())
 	{
@@ -1839,7 +1839,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 			else if (typeDescriptor->IsStringType())
 			{
 				EmitOpCode(OPCODE_LOADSTR);
-				const bu16_t stringIndex = MapString(typeAndValue.GetHashedStringValue());
+				const uint16_t stringIndex = MapString(typeAndValue.GetHashedStringValue());
 				EmitValue16(Value16(stringIndex));
 			}
 			// TODO: Determine if there is anything to do for non-primitive values.
@@ -1848,7 +1848,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 }
 
 
-void GeneratorCore::EmitPushConstantInt(bi32_t value)
+void GeneratorCore::EmitPushConstantInt(int32_t value)
 {
 	switch (value)
 	{
@@ -1880,12 +1880,12 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 			if (IsInCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTC);
-				GetByteCode().push_back(bu8_t(value));
+				GetByteCode().push_back(uint8_t(value));
 			}
 			else if (IsInUCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
-				GetByteCode().push_back(bu8_t(value));
+				GetByteCode().push_back(uint8_t(value));
 			}
 			else if (IsInShortRange(value))
 			{
@@ -1907,7 +1907,7 @@ void GeneratorCore::EmitPushConstantInt(bi32_t value)
 }
 
 
-void GeneratorCore::EmitPushConstantUInt(bu32_t value)
+void GeneratorCore::EmitPushConstantUInt(uint32_t value)
 {
 	switch (value)
 	{
@@ -1933,7 +1933,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 			if (IsInUCharRange(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
-				GetByteCode().push_back(bu8_t(value));
+				GetByteCode().push_back(uint8_t(value));
 			}
 			else if (IsInUShortRange(value))
 			{
@@ -1950,7 +1950,7 @@ void GeneratorCore::EmitPushConstantUInt(bu32_t value)
 }
 
 
-void GeneratorCore::EmitPushConstantLong(bi64_t value)
+void GeneratorCore::EmitPushConstantLong(int64_t value)
 {
 	switch (value)
 	{
@@ -1988,7 +1988,7 @@ void GeneratorCore::EmitPushConstantLong(bi64_t value)
 }
 
 
-void GeneratorCore::EmitPushConstantULong(bu64_t value)
+void GeneratorCore::EmitPushConstantULong(uint64_t value)
 {
 	switch (value)
 	{
@@ -2115,7 +2115,7 @@ void GeneratorCore::EmitPopResult(const Result &result, const TypeDescriptor *ty
 }
 
 
-void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
 {
 	if (typeDescriptor->IsValueType())
 	{
@@ -2158,7 +2158,7 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 }
 
 
-void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue32(int32_t offset)
 {
 	switch (offset)
 	{
@@ -2193,7 +2193,7 @@ void GeneratorCore::EmitPopFramePointerIndirectValue32(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue64(int32_t offset)
 {
 	switch (offset)
 	{
@@ -2228,7 +2228,7 @@ void GeneratorCore::EmitPopFramePointerIndirectValue64(bi32_t offset)
 }
 
 
-void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, bi32_t offset)
+void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
 {
 	EmitAccumulateAddressOffset(offset);
 
@@ -2278,7 +2278,7 @@ GeneratorCore::Result GeneratorCore::EmitAccumulateAddressOffset(const Result &r
 }
 
 
-void GeneratorCore::EmitAccumulateAddressOffset(bi32_t offset)
+void GeneratorCore::EmitAccumulateAddressOffset(int32_t offset)
 {
 	if (offset != 0)
 	{
@@ -2585,7 +2585,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	    ((namedInitializer = CastNode<NamedInitializer>(memberExpression->GetDefinition())) != nullptr) &&
 	    namedInitializer->IsNativeStructMember())
 	{
-		bi32_t stackDelta = 0;
+		int32_t stackDelta = 0;
 		{
 			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
 			ResultStack::Element rhResult(mResult);
@@ -2681,7 +2681,7 @@ void GeneratorCore::EmitLogicalOperator(
 	ResultStack::Element lhResult(mResult);
 	const bool lhsNegated = TraverseCollapseNotOperators(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
-	const bu32_t stackTop = mStackTop.GetTop();
+	const uint32_t stackTop = mStackTop.GetTop();
 
 	const size_t endLabel = CreateLabel();
 	const size_t opCodePos = GetByteCode().size();
@@ -2725,13 +2725,13 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
-	const bi64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
-	bu32_t stackTop = mStackTop.GetTop();
+	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
+	uint32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
-	const bi32_t frameOffset = lhResult.GetValue().mOffset;
-	const bi32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
+	const int32_t frameOffset = lhResult.GetValue().mOffset;
+	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if (((&opCodeSet == &ADD_OPCODES) || (&opCodeSet == &SUB_OPCODES)) &&
 	    (lhResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
@@ -2743,8 +2743,8 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	{
 		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(bu8_t(slotIndex));
-		byteCode.push_back(bu8_t(rhValue));
+		byteCode.push_back(uint8_t(slotIndex));
+		byteCode.push_back(uint8_t(rhValue));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2816,15 +2816,15 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
 	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const bi32_t elementSize = bi32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const int32_t elementSize = int32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
-	const bi64_t offset = offsetTav.AsLongValue() * elementSize;
-	bu32_t stackTop = mStackTop.GetTop();
+	const int64_t offset = offsetTav.AsLongValue() * elementSize;
+	uint32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element pointerResult(mResult);
 	Traverse(pointerExpression);
-	const bi32_t frameOffset = pointerResult.GetValue().mOffset;
-	const bi32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
+	const int32_t frameOffset = pointerResult.GetValue().mOffset;
+	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((pointerResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInUCharRange(slotIndex) &&
@@ -2834,8 +2834,8 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	{
 		EmitOpCode(INC_OPCODES.GetPointerOpCode(mPointerSize));
 		ByteCode::Type &byteCode = GetByteCode();
-		byteCode.push_back(bu8_t(slotIndex));
-		byteCode.push_back(bu8_t(offset));
+		byteCode.push_back(uint8_t(slotIndex));
+		byteCode.push_back(uint8_t(offset));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -2901,9 +2901,9 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
 	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const bi32_t elementSize = bi32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const int32_t elementSize = int32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
-	const bi64_t offset = offsetTav.AsLongValue() * elementSize;
+	const int64_t offset = offsetTav.AsLongValue() * elementSize;
 
 	ResultStack::Element pointerResult(mResult);
 	Traverse(pointerExpression);
@@ -2923,7 +2923,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 			default:
 				result = pointerResult;
 		}
-		result.mOffset += bi32_t(offset);
+		result.mOffset += int32_t(offset);
 	}
 	else
 	{
@@ -2965,7 +2965,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerDifference(const Expression *lhs
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	const bu32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
+	const uint32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
 	if (IsInShortRange(elementSize))
 	{
 		EmitOpCode(OPCODE_PTRDIFF);
@@ -2988,20 +2988,20 @@ GeneratorCore::Result GeneratorCore::EmitPointerDifference(const Expression *lhs
 }
 
 
-void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t elementSize)
+void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_t elementSize)
 {
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	if (offsetTav.IsValueDefined())
 	{
 		if (Is64BitPointer())
 		{
-			const bi64_t offset = offsetTav.AsLongValue() * elementSize;
+			const int64_t offset = offsetTav.AsLongValue() * elementSize;
 			EmitPushConstantLong(offset);
 			EmitOpCode(OPCODE_ADDL);
 		}
 		else
 		{
-			const bi32_t offset = offsetTav.GetIntValue() * elementSize;
+			const int32_t offset = offsetTav.GetIntValue() * elementSize;
 			EmitPushConstantInt(offset);
 			EmitOpCode(OPCODE_ADDI);
 		}
@@ -3023,7 +3023,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 		{
 			const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &longTypeDescriptor);
-			EmitPushConstantLong(bu64_t(elementSize));
+			EmitPushConstantLong(uint64_t(elementSize));
 			EmitOpCode(OPCODE_MULL);
 			EmitOpCode(OPCODE_ADDL);
 		}
@@ -3042,13 +3042,13 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, bi32_t
 GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const bi32_t pointerOffset = bi32_t(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
-	bu32_t stackTop = mStackTop.GetTop();
+	const int32_t pointerOffset = int32_t(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
+	uint32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element operandResult(mResult);
 	Traverse(operand);
-	const bi32_t frameOffset = operandResult.GetValue().mOffset;
-	const bi32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
+	const int32_t frameOffset = operandResult.GetValue().mOffset;
+	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInUCharRange(slotIndex) &&
@@ -3064,8 +3064,8 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			}
 
 			EmitOpCode(OPCODE_INCL);
-			byteCode.push_back(bu8_t(slotIndex));
-			byteCode.push_back(bu8_t(pointerOffset));
+			byteCode.push_back(uint8_t(slotIndex));
+			byteCode.push_back(uint8_t(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -3080,8 +3080,8 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			}
 
 			EmitOpCode(OPCODE_INCI);
-			byteCode.push_back(bu8_t(slotIndex));
-			byteCode.push_back(bu8_t(pointerOffset));
+			byteCode.push_back(uint8_t(slotIndex));
+			byteCode.push_back(uint8_t(pointerOffset));
 
 			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 			{
@@ -3107,7 +3107,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 		if (Is64BitPointer())
 		{
-			EmitPushConstantLong(bi64_t(pointerOffset));
+			EmitPushConstantLong(int64_t(pointerOffset));
 			EmitOpCode(OPCODE_ADDL);
 		}
 		else
@@ -3146,7 +3146,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 		if (Is64BitPointer())
 		{
-			EmitPushConstantLong(bi64_t(pointerOffset));
+			EmitPushConstantLong(int64_t(pointerOffset));
 			EmitOpCode(OPCODE_ADDL);
 		}
 		else
@@ -3176,12 +3176,12 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	const Token::TokenType operandType = operandDescriptor->GetPrimitiveType();
 	const Token::TokenType resultType = resultDescriptor->GetPrimitiveType();
 	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
-	bu32_t stackTop = mStackTop.GetTop();
+	uint32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element operandResult(mResult);
 	Traverse(operand);
-	const bi32_t frameOffset = operandResult.GetValue().mOffset;
-	const bi32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
+	const int32_t frameOffset = operandResult.GetValue().mOffset;
+	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInUCharRange(slotIndex) &&
@@ -3195,8 +3195,8 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 		}
 
 		EmitOpCode(INC_OPCODES.GetOpCode(resultType));
-		GetByteCode().push_back(bu8_t(slotIndex));
-		GetByteCode().push_back(bu8_t(sign));
+		GetByteCode().push_back(uint8_t(slotIndex));
+		GetByteCode().push_back(uint8_t(sign));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
@@ -3475,7 +3475,7 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 }
 
 
-void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, bi32_t offset)
+void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, int32_t offset)
 {
 	if (IsInShortRange(offset))
 	{
@@ -3518,19 +3518,19 @@ void GeneratorCore::EmitValue32At(Value32 value, size_t pos)
 
 void GeneratorCore::EmitIndexedValue32(Value32 value)
 {
-	const bu16_t index = MapValue32(value);
+	const uint16_t index = MapValue32(value);
 	EmitValue16(Value16(index));
 }
 
 
 void GeneratorCore::EmitIndexedValue64(Value64 value)
 {
-	const bu16_t index = MapValue64(value);
+	const uint16_t index = MapValue64(value);
 	EmitValue16(Value16(index));
 }
 
 
-void GeneratorCore::EmitHashCode(bu32_t hash)
+void GeneratorCore::EmitHashCode(uint32_t hash)
 {
 	EmitIndexedValue32(Value32(hash));
 }
@@ -3581,8 +3581,8 @@ void GeneratorCore::ResolveJumps()
 				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpIt->mToPos);
 				if (targetEntry != nullptr)
 				{
-					const bu8_t opCode = byteCode[jumpIt->mOpCodePos];
-					const bu8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
+					const uint8_t opCode = byteCode[jumpIt->mOpCodePos];
+					const uint8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
 					if (targetOpCode == OPCODE_GOTO)
 					{
 						jumpIt->mToPos = targetEntry->mToPos;
@@ -3708,7 +3708,7 @@ void GeneratorCore::ResolveJumps()
 		// Add jump offsets to the constant table if necessary.
 		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
 		{
-			const bi32_t offset = bi32_t(jumpIt->mToPos - jumpIt->GetFromPos());
+			const int32_t offset = int32_t(jumpIt->mToPos - jumpIt->GetFromPos());
 			if (!IsInShortRange(offset))
 			{
 				MapValue32(Value32(offset));
@@ -3732,9 +3732,9 @@ void GeneratorCore::WriteConstantTable()
 	// Skip the 4 bytes for the table size.
 	mStream.AddOffset(sizeof(Value32));
 
-	WriteValue16(Value16(bu16_t(mValue32List.size())));
-	WriteValue16(Value16(bu16_t(mValue64List.size())));
-	WriteValue16(Value16(bu16_t(mStringList.size())));
+	WriteValue16(Value16(uint16_t(mValue32List.size())));
+	WriteValue16(Value16(uint16_t(mValue64List.size())));
+	WriteValue16(Value16(uint16_t(mStringList.size())));
 
 	for (Value32List::Type::const_iterator it = mValue32List.begin(); it != mValue32List.end(); ++it)
 	{
@@ -3750,7 +3750,7 @@ void GeneratorCore::WriteConstantTable()
 	{
 		const size_t length = it->GetLength();
 		const char *str = it->GetString();
-		WriteValue16(Value16(bu16_t(length)));
+		WriteValue16(Value16(uint16_t(length)));
 		for (size_t i = 0; i < length; ++i)
 		{
 			mStream.Write(str[i]);
@@ -3760,12 +3760,12 @@ void GeneratorCore::WriteConstantTable()
 	// Patch up the table size.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
-	WriteValue32(Value32(bu32_t(endPos - startPos)));
+	WriteValue32(Value32(uint32_t(endPos - startPos)));
 	mStream.SetPosition(endPos);
 }
 
 
-void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
+void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 {
 	for (FunctionList::Type::const_iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
 	{
@@ -3802,8 +3802,8 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 				mStream.Write(byteCode[byteCodeIndex++]);
 			}
 
-			bu8_t opCode = byteCode[byteCodeIndex++];
-			const bi32_t offset = bi32_t(jumpIt->mToPos) - bi32_t(jumpIt->GetFromPos());
+			uint8_t opCode = byteCode[byteCodeIndex++];
+			const int32_t offset = int32_t(jumpIt->mToPos) - int32_t(jumpIt->GetFromPos());
 			Value16 arg(offset);
 
 			if (!IsInShortRange(offset))
@@ -3825,17 +3825,17 @@ void GeneratorCore::WriteFunctionList(bu16_t functionIndex)
 		// Patch up the code size.
 		const Stream::pos_t endPos = mStream.GetPosition();
 		mStream.SetPosition(codeSizePos);
-		WriteValue32(Value32(bu32_t(endPos - codeStartPos)));
+		WriteValue32(Value32(uint32_t(endPos - codeStartPos)));
 
 		// Patch up the blob size.
 		mStream.SetPosition(blobStartPos);
-		WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+		WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
 		mStream.SetPosition(endPos);
 	}
 }
 
 
-void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
+void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 {
 	for (NamedInitializerList::Type::const_iterator memberIt = mNativeMemberList.begin(); memberIt != mNativeMemberList.end(); ++memberIt)
 	{
@@ -3862,17 +3862,17 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			// Patch up the blob size.
 			const Stream::pos_t endPos = mStream.GetPosition();
 			mStream.SetPosition(blobStartPos);
-			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+			WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
 			mStream.SetPosition(endPos);
 		}
 
 		// Write the setter function.
 		{
-			const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
-			const bu32_t offset = AlignUp(bu32_t(BOND_SLOT_SIZE) + typeDescriptor->GetSize(mPointerSize), alignment);
-			const bu32_t packedOffset = bu32_t(BOND_SLOT_SIZE) + typeDescriptor->GetStackSize(mPointerSize);
+			const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+			const uint32_t offset = AlignUp(uint32_t(BOND_SLOT_SIZE) + typeDescriptor->GetSize(mPointerSize), alignment);
+			const uint32_t packedOffset = uint32_t(BOND_SLOT_SIZE) + typeDescriptor->GetStackSize(mPointerSize);
 			const TypeDescriptor voidDescriptor = TypeDescriptor::GetVoidType();
-			const Parameter parameter(typeDescriptor, -bi32_t(offset));
+			const Parameter parameter(typeDescriptor, -int32_t(offset));
 
 			// Cache the blob start position and skip 4 bytes for the blob size.
 			const int blobStartPos = mStream.GetPosition();
@@ -3892,7 +3892,7 @@ void GeneratorCore::WriteNativeMemberList(bu16_t functionIndex)
 			// Patch up the blob size.
 			const Stream::pos_t endPos = mStream.GetPosition();
 			mStream.SetPosition(blobStartPos);
-			WriteValue32(Value32(bu32_t(endPos - blobStartPos)));
+			WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
 			mStream.SetPosition(endPos);
 		}
 	}
@@ -3910,14 +3910,14 @@ void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 	// Patch up the number of elements.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
-	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
+	WriteValue16(Value16(uint16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
 	mStream.SetPosition(endPos);
 }
 
 
 void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
 {
-	const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+	const uint32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
 	WriteValue32(Value32(sizeAndType));
 }
 
@@ -3930,7 +3930,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 
 	if (includeThis)
 	{
-		const bu32_t sizeAndType = EncodeSizeAndType(GetPointerSize(mPointerSize), SIG_POINTER);
+		const uint32_t sizeAndType = EncodeSizeAndType(GetPointerSize(mPointerSize), SIG_POINTER);
 		WriteValue32(Value32(-BOND_SLOT_SIZE));
 		WriteValue32(Value32(sizeAndType));
 	}
@@ -3938,8 +3938,8 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	while (parameterList != nullptr)
 	{
 		const TypeDescriptor *type = parameterList->GetTypeDescriptor();
-		const bi32_t offset = parameterList->GetOffset();
-		const bu32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+		const int32_t offset = parameterList->GetOffset();
+		const uint32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
 		WriteValue32(Value32(offset));
 		WriteValue32(Value32(sizeAndType));
 		parameterList = NextNode(parameterList);
@@ -3948,7 +3948,7 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	// Patch up the number of parameters.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
-	WriteValue16(Value16(bu16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
+	WriteValue16(Value16(uint16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
 	mStream.SetPosition(endPos);
 }
 
@@ -3961,7 +3961,7 @@ void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
 		const Token *name = symbol->GetName();
 		if (name != nullptr)
 		{
-			const bu16_t nameIndex = MapString(name->GetHashedText());
+			const uint16_t nameIndex = MapString(name->GetHashedText());
 			WriteValue16(Value16(nameIndex));
 		}
 	}
@@ -4000,34 +4000,34 @@ void GeneratorCore::WriteValue64(Value64 value)
 }
 
 
-void GeneratorCore::ApplyStackDelta(bi32_t delta)
+void GeneratorCore::ApplyStackDelta(int32_t delta)
 {
 	CompiledFunction &function = GetFunction();
-	bu32_t top = mStackTop.GetTop();
+	uint32_t top = mStackTop.GetTop();
 
 	// Check for stack underflow.
-	if ((delta < 0) && (bu32_t(-delta) > top))
+	if ((delta < 0) && (uint32_t(-delta) > top))
 	{
 		PushError(CompilerError::INTERNAL_ERROR);
 	}
 
-	const bu32_t stackTop = mStackTop.GetTop() + delta;
+	const uint32_t stackTop = mStackTop.GetTop() + delta;
 	mStackTop.SetTop(stackTop);
 	function.mStackSize = Max(function.mStackSize, stackTop);
 }
 
 
-bi32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
+int32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
 {
 	CompiledFunction &function = GetFunction();
-	const bu32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), bu32_t(BOND_SLOT_SIZE));
-	const bu32_t size = typeDescriptor->GetSize(mPointerSize);
-	const bu32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
-	const bu32_t nextOffset = AlignUp(offset + size, bu32_t(BOND_SLOT_SIZE));
+	const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+	const uint32_t size = typeDescriptor->GetSize(mPointerSize);
+	const uint32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
+	const uint32_t nextOffset = AlignUp(offset + size, uint32_t(BOND_SLOT_SIZE));
 	mLocalOffset.SetTop(nextOffset);
 	function.mLocalSize = Max(function.mLocalSize, nextOffset);
 	function.mFramePointerAlignment = Max(function.mFramePointerAlignment, alignment);
-	return bi32_t(offset);
+	return int32_t(offset);
 }
 
 
@@ -4061,7 +4061,7 @@ void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 }
 
 
-bu16_t GeneratorCore::MapString(const HashedString &str)
+uint16_t GeneratorCore::MapString(const HashedString &str)
 {
 	if (!IsInUShortRange(mStringList.size()))
 	{
@@ -4071,7 +4071,7 @@ bu16_t GeneratorCore::MapString(const HashedString &str)
 	{
 		PushError(CompilerError::STRING_OVERFLOW);
 	}
-	const bu16_t index = bu16_t(mStringList.size());
+	const uint16_t index = uint16_t(mStringList.size());
 	StringIndexMap::InsertResult insertResult = mStringIndexMap.insert(StringIndexMap::KeyValue(str, index));
 	if (insertResult.second)
 	{
@@ -4081,13 +4081,13 @@ bu16_t GeneratorCore::MapString(const HashedString &str)
 }
 
 
-bu16_t GeneratorCore::MapValue32(const Value32 &value)
+uint16_t GeneratorCore::MapValue32(const Value32 &value)
 {
 	if (!IsInUShortRange(mValue32List.size()))
 	{
 		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
 	}
-	const bu16_t index = bu16_t(mValue32List.size());
+	const uint16_t index = uint16_t(mValue32List.size());
 	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.insert(Value32IndexMap::KeyValue(value, index));
 	if (insertResult.second)
 	{
@@ -4097,13 +4097,13 @@ bu16_t GeneratorCore::MapValue32(const Value32 &value)
 }
 
 
-bu16_t GeneratorCore::MapValue64(const Value64 &value)
+uint16_t GeneratorCore::MapValue64(const Value64 &value)
 {
 	if (!IsInUShortRange(mValue64List.size()))
 	{
 		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
 	}
-	const bu16_t index = bu16_t(mValue64List.size());
+	const uint16_t index = uint16_t(mValue64List.size());
 	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.insert(Value64IndexMap::KeyValue(value, index));
 	if (insertResult.second)
 	{

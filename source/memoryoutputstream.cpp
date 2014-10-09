@@ -6,22 +6,22 @@ namespace Bond
 {
 
 MemoryOutputStream::MemoryOutputStream(char *buffer, pos_t size):
-	mBuffer(reinterpret_cast<bu8_t *>(buffer)),
+	mBuffer(reinterpret_cast<uint8_t *>(buffer)),
 	mSize(size),
 	mCurrent(0),
 	mEnd(0)
 {
-	mBuffer[0] = bu8_t('\0');
+	mBuffer[0] = uint8_t('\0');
 }
 
 
-MemoryOutputStream::MemoryOutputStream(bu8_t *buffer, pos_t size):
+MemoryOutputStream::MemoryOutputStream(uint8_t *buffer, pos_t size):
 	mBuffer(buffer),
 	mSize(size),
 	mCurrent(0),
 	mEnd(0)
 {
-	mBuffer[0] = bu8_t('\0');
+	mBuffer[0] = uint8_t('\0');
 }
 
 
@@ -37,13 +37,13 @@ void MemoryOutputStream::VPrint(const char *format, va_list argList)
 		if (mCurrent >= mSize)
 		{
 			mCurrent = mSize - 1;
-			mBuffer[mSize - 1] = bu8_t('\0');
+			mBuffer[mSize - 1] = uint8_t('\0');
 		}
 	}
 }
 
 
-void MemoryOutputStream::Write(bu8_t c)
+void MemoryOutputStream::Write(uint8_t c)
 {
 	if (mCurrent < mSize)
 	{

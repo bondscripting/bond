@@ -27,7 +27,7 @@ int main(int argc, const char *argv[])
 	StringList::Type argList((StringList::Allocator(&allocator)));
 	size_t stackSize = DEFAULT_STACK_SIZE;
 	const char *entryPoint = DEFAULT_ENTRY_POINT;
-	Bond::bi32_t exitCode = 0;
+	int32_t exitCode = 0;
 	bool pushingApplicationArgs = false;
 	bool error = false;
 
@@ -109,8 +109,8 @@ int main(int argc, const char *argv[])
 			codeSegmentHandle = cboLoader.Load();
 		}
 
-		const Bond::bu32_t numArgs = Bond::bu32_t(argList.size());
-		const char **args = (numArgs > Bond::bu32_t(0)) ? &argList[0] : nullptr;
+		const uint32_t numArgs = uint32_t(argList.size());
+		const char **args = (numArgs > uint32_t(0)) ? &argList[0] : nullptr;
 		Bond::StdOutOutputStream outStream;
 		Bond::StdErrOutputStream errStream;
 		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &outStream, &errStream);

@@ -137,9 +137,9 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	switchStatement->SetResolvedLabelList(switchLabelListElement.GetValue());
 
 	const ResolvedSwitchLabel *currLabel = switchLabelListElement.GetValue();
-	bu32_t numMatches = 0;
-	bi32_t minMatch = BOND_INT_MAX;
-	bi32_t maxMatch = BOND_INT_MIN;
+	uint32_t numMatches = 0;
+	int32_t minMatch = BOND_INT_MAX;
+	int32_t maxMatch = BOND_INT_MIN;
 	while (currLabel != nullptr)
 	{
 		if (!currLabel->IsDefault())

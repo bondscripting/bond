@@ -9,7 +9,7 @@ namespace Bond
 void Strlen(Bond::CalleeStackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
-	const bu32_t length = bu32_t(strlen(str));
+	const uint32_t length = uint32_t(strlen(str));
 	frame.SetReturnValue(length);
 }
 
@@ -17,7 +17,7 @@ void Strlen(Bond::CalleeStackFrame &frame)
 void TryParseInt(Bond::CalleeStackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
-	bi32_t *result = frame.GetArg<bi32_t *>(1);
+	int32_t *result = frame.GetArg<int32_t *>(1);
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
@@ -30,7 +30,7 @@ void TryParseInt(Bond::CalleeStackFrame &frame)
 void TryParseLong(Bond::CalleeStackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
-	bi64_t *result = frame.GetArg<bi64_t *>(1);
+	int64_t *result = frame.GetArg<int64_t *>(1);
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{

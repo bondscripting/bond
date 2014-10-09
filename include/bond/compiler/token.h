@@ -193,17 +193,17 @@ public:
 	bool GetBoolValue() const { return mValue.mBool; }
 	void SetBoolValue(bool value) { mValue.mBool = value; }
 
-	bi32_t GetIntValue() const { return mValue.mInt; }
-	void SetIntValue(bi32_t value) { mValue.mInt = value; }
+	int32_t GetIntValue() const { return mValue.mInt; }
+	void SetIntValue(int32_t value) { mValue.mInt = value; }
 
-	bu32_t GetUIntValue() const { return mValue.mUInt; }
-	void SetUIntValue(bu32_t value) { mValue.mUInt = value; }
+	uint32_t GetUIntValue() const { return mValue.mUInt; }
+	void SetUIntValue(uint32_t value) { mValue.mUInt = value; }
 
-	bi64_t GetLongValue() const { return mValue.mLong; }
-	void SetLongValue(bi64_t value) { mValue.mLong = value; }
+	int64_t GetLongValue() const { return mValue.mLong; }
+	void SetLongValue(int64_t value) { mValue.mLong = value; }
 
-	bu64_t GetULongValue() const { return mValue.mULong; }
-	void SetULongValue(bu64_t value) { mValue.mULong = value; }
+	uint64_t GetULongValue() const { return mValue.mULong; }
+	void SetULongValue(uint64_t value) { mValue.mULong = value; }
 
 	float GetFloatValue() const { return mValue.mFloat; }
 	void SetFloatValue(float value) { mValue.mFloat = value; }
@@ -253,13 +253,13 @@ class TokenTypeSet
 
 	const char *GetTypeName() const { return mTypeName; }
 
-	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & bu32_t(1 << (type % 32))) != 0; }
+	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & uint32_t(1 << (type % 32))) != 0; }
 
-	void Set(Token::TokenType type) { mBitField[type / 32] |= bu32_t(1 << (type % 32)); }
+	void Set(Token::TokenType type) { mBitField[type / 32] |= uint32_t(1 << (type % 32)); }
 
 private:
 	static const int NUM_BIT_FIELD_ELEMENTS = (Token::NUM_TOKEN_TYPES / 32) + 1;
-	bu32_t mBitField[NUM_BIT_FIELD_ELEMENTS];
+	uint32_t mBitField[NUM_BIT_FIELD_ELEMENTS];
 	const char *mTypeName;
 };
 

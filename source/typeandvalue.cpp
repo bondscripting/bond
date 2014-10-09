@@ -8,14 +8,14 @@ namespace Bond
 bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != nullptr) && mTypeDescriptor->IsDefined(); }
 
 
-bi64_t TypeAndValue::AsLongValue() const
+int64_t TypeAndValue::AsLongValue() const
 {
 	const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
 	return CastValue(*this, &longTypeDescriptor).mLong;
 }
 
 
-bu64_t TypeAndValue::AsULongValue() const
+uint64_t TypeAndValue::AsULongValue() const
 {
 	const TypeDescriptor ulongTypeDescriptor = TypeDescriptor::GetULongType();
 	return CastValue(*this, &ulongTypeDescriptor).mULong;

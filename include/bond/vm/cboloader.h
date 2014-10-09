@@ -51,8 +51,8 @@ private:
 
 	void FunctionIsNotNative(const Function &function) const;
 	void FunctionIsNotBound(const Function &function) const;
-	void UnresolvedHash(bu32_t hash) const;
-	void HashCollision(bu32_t hash) const;
+	void UnresolvedHash(uint32_t hash) const;
+	void HashCollision(uint32_t hash) const;
 
 	NativeBindingList::Type mNativeBindingList;
 	FileDataList::Type mFileDataList;

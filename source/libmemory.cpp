@@ -8,7 +8,7 @@ namespace Bond
 void Allocate(Bond::CalleeStackFrame &frame)
 {
 	Allocator &allocator = frame.GetVM().GetAllocator();
-	const size_t size = size_t(frame.GetArg<bu32_t>(0));
+	const size_t size = size_t(frame.GetArg<uint32_t>(0));
 	void *ptr = allocator.Allocate(size);
 	frame.SetReturnValue(ptr);
 }
@@ -17,8 +17,8 @@ void Allocate(Bond::CalleeStackFrame &frame)
 void AllocateAligned(Bond::CalleeStackFrame &frame)
 {
 	Allocator &allocator = frame.GetVM().GetAllocator();
-	const size_t size = size_t(frame.GetArg<bu32_t>(0));
-	const size_t alignment = size_t(frame.GetArg<bu32_t>(1));
+	const size_t size = size_t(frame.GetArg<uint32_t>(0));
+	const size_t alignment = size_t(frame.GetArg<uint32_t>(1));
 	void *ptr = allocator.AllocateAligned(size, alignment);
 	frame.SetReturnValue(ptr);
 }

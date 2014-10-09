@@ -9,7 +9,7 @@ namespace Bond
 
 class Symbol;
 
-bu32_t GetLength(const ListParseNode *list);
+uint32_t GetLength(const ListParseNode *list);
 
 
 template <typename NodeType>

@@ -21,8 +21,8 @@ DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 	const Bond::Symbol *secondInnerSpace = outerSpace->FindSymbol("SecondInnerSpace");
 	ASSERT_MESSAGE(secondInnerSpace != nullptr, "Failed to find symbol 'SecondInnerSpace'.");
 
-	const Bond::bu32_t actualHash = secondInnerSpace->GetGlobalHashCode();
-	const Bond::bu32_t expectedHash = Bond::StringHash("::OuterSpace::SecondInnerSpace");
+	const uint32_t actualHash = secondInnerSpace->GetGlobalHashCode();
+	const uint32_t expectedHash = Bond::StringHash("::OuterSpace::SecondInnerSpace");
 	ASSERT_FORMAT(actualHash == expectedHash, ("Expected 'SecondInnerSpace' global hash to be %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", expectedHash, actualHash));
 
 	return true;

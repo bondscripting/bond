@@ -103,7 +103,7 @@ void CompilerError::Print(OutputStream &stream) const
 
 				case 'd':
 				{
-					stream.Print("%" BOND_PRId32, bi32_t(arg));
+					stream.Print("%" BOND_PRId32, int32_t(arg));
 					state = STATE_NORMAL;
 				}
 				break;
@@ -121,7 +121,7 @@ void CompilerError::Print(OutputStream &stream) const
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
 					const Bond::StreamPos &argPos = token->GetStartPos();
-					stream.Print("%" BOND_PRIu32, bu32_t(argPos.line));
+					stream.Print("%" BOND_PRIu32, uint32_t(argPos.line));
 					state = STATE_NORMAL;
 				}
 				break;

@@ -26,7 +26,7 @@ inline bool ValidateSignatureType<bool>(size_t size, SignatureType signatureType
 
 
 template <>
-inline bool ValidateSignatureType<bi8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<int8_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -36,7 +36,7 @@ inline bool ValidateSignatureType<bi8_t>(size_t size, SignatureType signatureTyp
 
 
 template <>
-inline bool ValidateSignatureType<bu8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<uint8_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -46,7 +46,7 @@ inline bool ValidateSignatureType<bu8_t>(size_t size, SignatureType signatureTyp
 
 
 template <>
-inline bool ValidateSignatureType<bi16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<int16_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_SHORT) ||
@@ -55,7 +55,7 @@ inline bool ValidateSignatureType<bi16_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bu16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<uint16_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_SHORT) ||
@@ -64,7 +64,7 @@ inline bool ValidateSignatureType<bu16_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bi32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<int32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_INT) ||
@@ -73,7 +73,7 @@ inline bool ValidateSignatureType<bi32_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bu32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<uint32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_INT) ||
@@ -82,7 +82,7 @@ inline bool ValidateSignatureType<bu32_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bi64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<int64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -91,7 +91,7 @@ inline bool ValidateSignatureType<bi64_t>(size_t size, SignatureType signatureTy
 
 
 template <>
-inline bool ValidateSignatureType<bu64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateSignatureType<uint64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -130,35 +130,35 @@ inline bool ValidateReturnType<bool>(size_t size, SignatureType signatureType)
 
 
 template <>
-inline bool ValidateReturnType<bi8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<int8_t>(size_t size, SignatureType signatureType)
 {
 	return false;
 }
 
 
 template <>
-inline bool ValidateReturnType<bu8_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<uint8_t>(size_t size, SignatureType signatureType)
 {
 	return false;
 }
 
 
 template <>
-inline bool ValidateReturnType<bi16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<int16_t>(size_t size, SignatureType signatureType)
 {
 	return false;
 }
 
 
 template <>
-inline bool ValidateReturnType<bu16_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<uint16_t>(size_t size, SignatureType signatureType)
 {
 	return false;
 }
 
 
 template <>
-inline bool ValidateReturnType<bi32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<int32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -172,7 +172,7 @@ inline bool ValidateReturnType<bi32_t>(size_t size, SignatureType signatureType)
 
 
 template <>
-inline bool ValidateReturnType<bu32_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<uint32_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_BOOL) ||
@@ -186,7 +186,7 @@ inline bool ValidateReturnType<bu32_t>(size_t size, SignatureType signatureType)
 
 
 template <>
-inline bool ValidateReturnType<bi64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<int64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -195,7 +195,7 @@ inline bool ValidateReturnType<bi64_t>(size_t size, SignatureType signatureType)
 
 
 template <>
-inline bool ValidateReturnType<bu64_t>(size_t size, SignatureType signatureType)
+inline bool ValidateReturnType<uint64_t>(size_t size, SignatureType signatureType)
 {
 	return
 		(signatureType == SIG_LONG) ||
@@ -236,39 +236,39 @@ template <>
 inline void CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
 {
 	AssertValidReturnAssignmentType<bool>();
-	*reinterpret_cast<bi32_t*>(mReturnPointer) = returnValue ? bi32_t(1) : bi32_t(0);
+	*reinterpret_cast<int32_t*>(mReturnPointer) = returnValue ? int32_t(1) : int32_t(0);
 }
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<bi8_t>(const bi8_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<int8_t>(const int8_t &returnValue)
 {
-	AssertValidReturnAssignmentType<bi8_t>();
-	*reinterpret_cast<bi32_t*>(mReturnPointer) = bi32_t(returnValue);
+	AssertValidReturnAssignmentType<int8_t>();
+	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
 }
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<bu8_t>(const bu8_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<uint8_t>(const uint8_t &returnValue)
 {
-	AssertValidReturnAssignmentType<bu8_t>();
-	*reinterpret_cast<bu32_t*>(mReturnPointer) = bi32_t(returnValue);
+	AssertValidReturnAssignmentType<uint8_t>();
+	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
 }
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<bi16_t>(const bi16_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<int16_t>(const int16_t &returnValue)
 {
-	AssertValidReturnAssignmentType<bi16_t>();
-	*reinterpret_cast<bi32_t*>(mReturnPointer) = bi32_t(returnValue);
+	AssertValidReturnAssignmentType<int16_t>();
+	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
 }
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<bu16_t>(const bu16_t &returnValue)
+inline void CalleeStackFrame::SetReturnValue<uint16_t>(const uint16_t &returnValue)
 {
-	AssertValidReturnAssignmentType<bu16_t>();
-	*reinterpret_cast<bu32_t*>(mReturnPointer) = bi32_t(returnValue);
+	AssertValidReturnAssignmentType<uint16_t>();
+	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
 }
 
 
@@ -280,7 +280,7 @@ inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 #if BOND_RUNTIME_CHECKS_ENABLED
 	if (index >= paramListSignature.mParamCount)
 	{
-		mVm.RaiseError("Attempt to index argument %" BOND_PRIu32 " out of range.", bu32_t(index));
+		mVm.RaiseError("Attempt to index argument %" BOND_PRIu32 " out of range.", uint32_t(index));
 	}
 #endif
 
@@ -292,7 +292,7 @@ inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 		char buffer[64];
 		mVm.RaiseError(
 			"Attempt to access argument %" BOND_PRIu32 " using wrong type. Expected '%s'.",
-			bu32_t(index),
+			uint32_t(index),
 			ExpandApiTypeMnemonic(buffer, sizeof(buffer), SignatureType(param.mType), param.mSize));
 	}
 #endif

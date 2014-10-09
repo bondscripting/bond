@@ -47,7 +47,7 @@ FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 
 FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 {
-	Allocator::Handle<bu8_t> dataHandle(mAllocator);
+	Allocator::Handle<uint8_t> dataHandle(mAllocator);
 	size_t length = 0;
 
 	if (file != 0)
@@ -59,8 +59,8 @@ FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 
 		if (length > 0)
 		{
-			dataHandle.reset(mAllocator.Alloc<bu8_t>(length));
-			fread(dataHandle.get(), sizeof(bu8_t), length, file);
+			dataHandle.reset(mAllocator.Alloc<uint8_t>(length));
+			fread(dataHandle.get(), sizeof(uint8_t), length, file);
 		}
 	}
 

@@ -13,8 +13,8 @@ namespace Bond
 class CboValidatorCore
 {
 public:
-	CboValidatorCore(const bu8_t *byteCode, size_t length):
-		mByteCode(reinterpret_cast<const bu8_t *>(byteCode)),
+	CboValidatorCore(const uint8_t *byteCode, size_t length):
+		mByteCode(reinterpret_cast<const uint8_t *>(byteCode)),
 		mLength(length),
 		mIndex(0),
 		mValue32Table(nullptr)
@@ -39,7 +39,7 @@ private:
 	void CboIsInvalid() const;
 
 	CboValidator::Result mResult;
-	const bu8_t *mByteCode;
+	const uint8_t *mByteCode;
 	size_t mLength;
 	size_t mIndex;
 	const Value32 *mValue32Table;
@@ -48,7 +48,7 @@ private:
 
 CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 {
-	CboValidatorCore validator(static_cast<const bu8_t *>(byteCode), length);
+	CboValidatorCore validator(static_cast<const uint8_t *>(byteCode), length);
 	return validator.Validate();
 }
 
@@ -57,10 +57,10 @@ CboValidator::Result CboValidatorCore::Validate()
 {
 	AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16)));
 
-	const bu32_t magicNumber = ReadValue32().mUInt;
-	const bu32_t majorVersion = ReadValue16().mUShort;
-	const bu32_t minorVersion = ReadValue16().mUShort;
-	const bu16_t flags = ReadValue16().mUShort;
+	const uint32_t magicNumber = ReadValue32().mUInt;
+	const uint32_t majorVersion = ReadValue16().mUShort;
+	const uint32_t minorVersion = ReadValue16().mUShort;
+	const uint16_t flags = ReadValue16().mUShort;
 	const size_t tableStart = mIndex;
 	const size_t tableSize = ReadValue32().mUInt;
 	const size_t value32Count = ReadValue16().mUShort;
@@ -180,11 +180,11 @@ void CboValidatorCore::ValidateFunctionBlob()
 	// Ignore the hash.
 	mIndex += sizeof(Value32);
 
-	const bu32_t argSize = ReadValue32().mUInt;
-	const bu32_t packedArgSize = ReadValue32().mUInt;
-	const bu32_t localSize = ReadValue32().mUInt;
+	const uint32_t argSize = ReadValue32().mUInt;
+	const uint32_t packedArgSize = ReadValue32().mUInt;
+	const uint32_t localSize = ReadValue32().mUInt;
 	mIndex += sizeof(Value32); // Ignore the stack size.
-	const bu32_t framePointerAlignment = ReadValue32().mUInt;
+	const uint32_t framePointerAlignment = ReadValue32().mUInt;
 	const size_t codeSize = ReadValue32().mUInt;
 
 	if ((packedArgSize > argSize) ||
@@ -247,10 +247,10 @@ void CboValidatorCore::ValidateFunctionBlob()
 			case OC_PARAM_OFF16:
 			{
 				AssertBytesRemaining(sizeof(Value16));
-				const bi32_t offset = ReadValue16().mShort;
-				const bi32_t baseAddress = bi32_t(mIndex - codeStart);
-				const bi32_t targetAddress = baseAddress + offset;
-				if ((targetAddress < 0) || (bu32_t(targetAddress) > codeSize))
+				const int32_t offset = ReadValue16().mShort;
+				const int32_t baseAddress = int32_t(mIndex - codeStart);
+				const int32_t targetAddress = baseAddress + offset;
+				if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 				{
 					CodeIsInvalid();
 				}
@@ -266,10 +266,10 @@ void CboValidatorCore::ValidateFunctionBlob()
 				}
 				else
 				{
-					const bi32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
-					const bi32_t baseAddress = bi32_t(mIndex - codeStart);
-					const bi32_t targetAddress = baseAddress + offset;
-					if ((targetAddress < 0) || (bu32_t(targetAddress) > codeSize))
+					const int32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
+					const int32_t baseAddress = int32_t(mIndex - codeStart);
+					const int32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 					{
 						CodeIsInvalid();
 					}
@@ -291,25 +291,25 @@ void CboValidatorCore::ValidateFunctionBlob()
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				AssertBytesRemaining(2 * sizeof(Value32));
 
-				const bi32_t defaultOffset = ReadValue32().mInt;
-				const bu32_t numMatches = ReadValue32().mUInt;
+				const int32_t defaultOffset = ReadValue32().mInt;
+				const uint32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
-				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
-				const bi32_t defaultAddress = baseAddress + defaultOffset;
+				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
+				const int32_t defaultAddress = baseAddress + defaultOffset;
 
 				AssertBytesRemaining(tableSize);
-				if ((defaultAddress < 0) || (bu32_t(defaultAddress) > codeSize))
+				if ((defaultAddress < 0) || (uint32_t(defaultAddress) > codeSize))
 				{
 					CodeIsInvalid();
 				}
 
-				for (bu32_t i = 0; i < numMatches; ++i)
+				for (uint32_t i = 0; i < numMatches; ++i)
 				{
 					// Skip the match.
 					mIndex += sizeof(Value32);
-					const bi32_t offset = ReadValue32().mInt;
-					const bi32_t targetAddress = baseAddress + offset;
-					if ((targetAddress < 0) || (bu32_t(targetAddress) > codeSize))
+					const int32_t offset = ReadValue32().mInt;
+					const int32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 					{
 						CodeIsInvalid();
 					}
@@ -321,29 +321,29 @@ void CboValidatorCore::ValidateFunctionBlob()
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				AssertBytesRemaining(3 * sizeof(Value32));
 
-				const bi32_t defaultOffset = ReadValue32().mInt;
-				const bi32_t minMatch = ReadValue32().mInt;
-				const bi32_t maxMatch = ReadValue32().mInt;
-				const bu32_t numMatches = bu32_t(maxMatch - minMatch + 1);
+				const int32_t defaultOffset = ReadValue32().mInt;
+				const int32_t minMatch = ReadValue32().mInt;
+				const int32_t maxMatch = ReadValue32().mInt;
+				const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
 				const size_t tableSize = numMatches * sizeof(Value32);
-				const bi32_t baseAddress = bi32_t(mIndex + tableSize - codeStart);
-				const bi32_t defaultAddress = baseAddress + defaultOffset;
+				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
+				const int32_t defaultAddress = baseAddress + defaultOffset;
 
 				AssertBytesRemaining(tableSize);
 				if (minMatch > maxMatch)
 				{
 					CodeIsInvalid();
 				}
-				if ((defaultAddress < 0) || (bu32_t(defaultAddress) > codeSize))
+				if ((defaultAddress < 0) || (uint32_t(defaultAddress) > codeSize))
 				{
 					CodeIsInvalid();
 				}
 
 				for (size_t i = 0; i < numMatches; ++i)
 				{
-					const bi32_t offset = ReadValue32().mInt;
-					const bi32_t targetAddress = baseAddress + offset;
-					if ((targetAddress < 0) || (bu32_t(targetAddress) > codeSize))
+					const int32_t offset = ReadValue32().mInt;
+					const int32_t targetAddress = baseAddress + offset;
+					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 					{
 						CodeIsInvalid();
 					}
@@ -379,9 +379,9 @@ void CboValidatorCore::ValidateQualifiedIdentifier()
 void CboValidatorCore::ValidateReturnSignature()
 {
 	AssertBytesRemaining(sizeof(Value32));
-	const bu32_t returnSizeAndType = ReadValue32().mUInt;
-	bu32_t returnSize;
-	bu32_t returnType;
+	const uint32_t returnSizeAndType = ReadValue32().mUInt;
+	uint32_t returnSize;
+	uint32_t returnType;
 	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
 	// TODO: Do some sanity checks.
 }
@@ -397,19 +397,19 @@ void CboValidatorCore::ValidateParamListSignature()
 	++mResult.mParamListSignatureCount;
 	mResult.mParamSignatureCount += numParams;
 
-	bi32_t prevOffset = 0;
+	int32_t prevOffset = 0;
 	for (size_t i = 0; i < numParams; ++i)
 	{
-		const bi32_t offset = ReadValue32().mInt;
+		const int32_t offset = ReadValue32().mInt;
 		if (offset >= prevOffset)
 		{
 			FunctionIsInvalid();
 		}
 		prevOffset = offset;
 
-		const bu32_t paramSizeAndType = ReadValue32().mUInt;
-		bu32_t paramSize;
-		bu32_t paramType;
+		const uint32_t paramSizeAndType = ReadValue32().mUInt;
+		uint32_t paramSize;
+		uint32_t paramType;
 		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
 		// TODO: Do some sanity checks.
 	}

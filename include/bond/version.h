@@ -6,9 +6,9 @@
 namespace Bond
 {
 
-const bu32_t MAGIC_NUMBER = 0x57EDFA57;
-const bu16_t MAJOR_VERSION = 0;
-const bu16_t MINOR_VERSION = 1;
+const uint32_t MAGIC_NUMBER = 0x57EDFA57;
+const uint16_t MAJOR_VERSION = 0;
+const uint16_t MINOR_VERSION = 1;
 
 }
 

@@ -60,7 +60,7 @@ private:
 	OutputStream &mHStream;
 	const char *mCollectionName;
 	const char *mIncludeName;
-	bu32_t mNumFunctions;
+	uint32_t mNumFunctions;
 };
 
 

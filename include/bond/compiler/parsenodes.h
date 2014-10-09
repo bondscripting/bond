@@ -124,8 +124,8 @@ public:
 
 	bool Matches(const HashedString &name) const;
 
-	bu32_t GetGlobalHashCode() const { return mGlobalHashCode; }
-	bu32_t GetGlobalHashCodeWithSuffix(const char *suffix) const;
+	uint32_t GetGlobalHashCode() const { return mGlobalHashCode; }
+	uint32_t GetGlobalHashCodeWithSuffix(const char *suffix) const;
 
 protected:
 	Symbol():
@@ -138,12 +138,12 @@ protected:
 private:
 	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
-	bu32_t ComputeGlobalHashCode() const;
+	uint32_t ComputeGlobalHashCode() const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;
 	Symbol *mSymbolList;
-	bu32_t mGlobalHashCode;
+	uint32_t mGlobalHashCode;
 };
 
 
@@ -212,11 +212,11 @@ public:
 
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
-	bu32_t GetStackSize(PointerSize pointerSize) const;
-	bu32_t GetSize(PointerSize pointerSize) const;
-	bu32_t GetAlignment(PointerSize pointerSize) const;
+	uint32_t GetStackSize(PointerSize pointerSize) const;
+	uint32_t GetSize(PointerSize pointerSize) const;
+	uint32_t GetAlignment(PointerSize pointerSize) const;
 
-	bu32_t GetSignatureType() const;
+	uint32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsCharType() const;
@@ -249,7 +249,7 @@ public:
 	static TypeDescriptor GetNullType();
 
 private:
-	TypeDescriptor(const TypeSpecifier *specifier, bu32_t flags):
+	TypeDescriptor(const TypeSpecifier *specifier, uint32_t flags):
 		mTypeSpecifier(specifier),
 		mParent(nullptr),
 		mLengthExpressionList(nullptr),
@@ -258,23 +258,23 @@ private:
 
 	bool HasFlattenedParent() const { return ((mFlags >> PARENT_SHIFT) & STORAGE_MASK) != 0; }
 
-	static const bu32_t FLAG_VALUE = 1 << 0;
-	static const bu32_t FLAG_POINTER = 1 << 1;
-	static const bu32_t FLAG_ARRAY = 1 << 2;
-	static const bu32_t FLAG_NULL = 1 << 3;
-	static const bu32_t FLAG_CONST = 1 << 4;
-	static const bu32_t FLAG_ADDRESSABLE = 1 << 5;
-	static const bu32_t FLAG_LIMITED_LVALUE = 1 << 6;
-	static const bu32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY | FLAG_NULL;
-	static const bu32_t FLAG_ANY_LVALUE = FLAG_ADDRESSABLE | FLAG_LIMITED_LVALUE;
-	static const bu32_t PARENT_SHIFT = 8;
-	static const bu32_t STORAGE_MASK = FLAG_VALUE | FLAG_ANY_POINTER;
-	static const bu32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
+	static const uint32_t FLAG_VALUE = 1 << 0;
+	static const uint32_t FLAG_POINTER = 1 << 1;
+	static const uint32_t FLAG_ARRAY = 1 << 2;
+	static const uint32_t FLAG_NULL = 1 << 3;
+	static const uint32_t FLAG_CONST = 1 << 4;
+	static const uint32_t FLAG_ADDRESSABLE = 1 << 5;
+	static const uint32_t FLAG_LIMITED_LVALUE = 1 << 6;
+	static const uint32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY | FLAG_NULL;
+	static const uint32_t FLAG_ANY_LVALUE = FLAG_ADDRESSABLE | FLAG_LIMITED_LVALUE;
+	static const uint32_t PARENT_SHIFT = 8;
+	static const uint32_t STORAGE_MASK = FLAG_VALUE | FLAG_ANY_POINTER;
+	static const uint32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;
 
 	const TypeSpecifier *mTypeSpecifier;
 	TypeDescriptor *mParent;
 	Expression *mLengthExpressionList;
-	bu32_t mFlags;
+	uint32_t mFlags;
 };
 
 
@@ -318,10 +318,10 @@ public:
 	bool IsResolved() const;
 	bool IsInstantiable() const;
 
-	bu32_t GetSize(PointerSize pointerSize) const;
-	bu32_t GetAlignment() const;
+	uint32_t GetSize(PointerSize pointerSize) const;
+	uint32_t GetAlignment() const;
 
-	bu32_t GetSignatureType() const;
+	uint32_t GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsCharType() const;
@@ -588,11 +588,11 @@ public:
 	Variant GetVariant() const { return mVariant; }
 	bool IsNative() const { return mVariant != VARIANT_BOND; }
 
-	bu32_t GetSize() const { return mSize; }
-	void SetSize(bu32_t size) { mSize = size; }
+	uint32_t GetSize() const { return mSize; }
+	void SetSize(uint32_t size) { mSize = size; }
 
-	bu32_t GetAlignment() const { return mAlignment; }
-	void SetAlignment(bu32_t alignment) { mAlignment = alignment; }
+	uint32_t GetAlignment() const { return mAlignment; }
+	void SetAlignment(uint32_t alignment) { mAlignment = alignment; }
 
 	bool IsInstantiable() const { return (mVariant == VARIANT_BOND) || (mSizeSpecifier != nullptr); }
 
@@ -607,8 +607,8 @@ private:
 	DeclarativeStatement *mMemberVariableList;
 	const StructDeclaration *mSizeSpecifier;
 	Variant mVariant;
-	bu32_t mSize;
-	bu32_t mAlignment;
+	uint32_t mSize;
+	uint32_t mAlignment;
 };
 
 
@@ -718,7 +718,7 @@ public:
 
 	// Used by the code generator to create a temporary Parameter object when writing
 	// the signature for native member accessors.
-	Parameter(const TypeDescriptor *typeDescriptor, bi32_t offset):
+	Parameter(const TypeDescriptor *typeDescriptor, int32_t offset):
 		mTypeAndValue(const_cast<TypeDescriptor *>(typeDescriptor)),
 		mName(nullptr),
 		mTypeDescriptor(const_cast<TypeDescriptor *>(typeDescriptor)),
@@ -739,15 +739,15 @@ public:
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 
-	bi32_t GetOffset() const { return mOffset; }
-	void SetOffset(bi32_t offset) const { mOffset = offset; }
+	int32_t GetOffset() const { return mOffset; }
+	void SetOffset(int32_t offset) const { mOffset = offset; }
 
 private:
 	TypeAndValue mTypeAndValue;
 	const Token *mName;
 	TypeDescriptor *mTypeDescriptor;
 	// Ew. Became mutable after population of this field was moved to the code generator.
-	mutable bi32_t mOffset;
+	mutable int32_t mOffset;
 };
 
 
@@ -778,8 +778,8 @@ public:
 
 	Scope GetScope() const { return mScope; }
 
-	bi32_t GetOffset() const { return mOffset; }
-	void SetOffset(bi32_t offset) const { mOffset = offset; }
+	int32_t GetOffset() const { return mOffset; }
+	void SetOffset(int32_t offset) const { mOffset = offset; }
 
 	bool IsNativeStructMember() const { return (mScope == SCOPE_STRUCT_MEMBER) && (mOffset < 0); }
 
@@ -789,7 +789,7 @@ private:
 	Initializer *mInitializer;
 	Scope mScope;
 	// Ew. Became mutable after population of this field was moved to the code generator.
-	mutable bi32_t mOffset;
+	mutable int32_t mOffset;
 };
 
 
@@ -917,23 +917,23 @@ public:
 	const ResolvedSwitchLabel *GetResolvedLabelList() const { return mResolvedLabelList; }
 	void SetResolvedLabelList(const ResolvedSwitchLabel *labelList) { mResolvedLabelList = labelList; }
 
-	bu32_t GetNumMatches() const { return mNumMatches; }
-	void SetNumMatches(bu32_t numMatches) { mNumMatches = numMatches; }
+	uint32_t GetNumMatches() const { return mNumMatches; }
+	void SetNumMatches(uint32_t numMatches) { mNumMatches = numMatches; }
 
-	bi32_t GetMinMatch() const { return mMinMatch; }
-	void SetMinMatch(bi32_t minMatch) { mMinMatch = minMatch; }
+	int32_t GetMinMatch() const { return mMinMatch; }
+	void SetMinMatch(int32_t minMatch) { mMinMatch = minMatch; }
 
-	bi32_t GetMaxMatch() const { return mMaxMatch; }
-	void SetMaxMatch(bi32_t maxMatch) { mMaxMatch = maxMatch; }
+	int32_t GetMaxMatch() const { return mMaxMatch; }
+	void SetMaxMatch(int32_t maxMatch) { mMaxMatch = maxMatch; }
 
 private:
 	const Token *mKeyword;
 	Expression *mControl;
 	SwitchSection *mSectionList;
 	const ResolvedSwitchLabel *mResolvedLabelList;
-	bu32_t mNumMatches;
-	bi32_t mMinMatch;
-	bi32_t mMaxMatch;
+	uint32_t mNumMatches;
+	int32_t mMinMatch;
+	int32_t mMaxMatch;
 };
 
 
@@ -978,8 +978,8 @@ public:
 	virtual void Accept(ParseNodeVisitor &visitor) const {}
 	virtual const Token *GetContextToken() const { return nullptr; }
 
-	bi32_t GetMatch() const { return mMatch; }
-	void SetMatch(bi32_t match) { mMatch = match; }
+	int32_t GetMatch() const { return mMatch; }
+	void SetMatch(int32_t match) { mMatch = match; }
 
 	size_t GetJumpTargetId() const { return mJumpTargetId; }
 	void SetJumpTargetId(size_t targetId) { mJumpTargetId = targetId; }
@@ -990,7 +990,7 @@ public:
 	bool operator==(const ResolvedSwitchLabel &other) const { return (mIsDefault == other.mIsDefault) && (mMatch == other.mMatch); }
 
 private:
-	bi32_t mMatch;
+	int32_t mMatch;
 	size_t mJumpTargetId;
 	bool mIsDefault;
 };

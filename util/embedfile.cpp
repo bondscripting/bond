@@ -27,7 +27,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 		FILE *inputFile = fopen(inputFileName, "rb");
 		if (inputFile != nullptr)
 		{
-			fprintf(cppFile, "extern const Bond::bu8_t %s_DATA[] =\n{\n", baseName);
+			fprintf(cppFile, "extern const uint8_t %s_DATA[] =\n{\n", baseName);
 
 			while (!feof(inputFile))
 			{
