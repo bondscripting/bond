@@ -1877,22 +1877,22 @@ void GeneratorCore::EmitPushConstantInt(int32_t value)
 			EmitOpCode(OPCODE_CONSTI_8);
 			break;
 		default:
-			if (IsInCharRange(value))
+			if (IsInRange<int8_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTC);
 				GetByteCode().push_back(uint8_t(value));
 			}
-			else if (IsInUCharRange(value))
+			else if (IsInRange<uint8_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
 				GetByteCode().push_back(uint8_t(value));
 			}
-			else if (IsInShortRange(value))
+			else if (IsInRange<int16_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTS);
 				EmitValue16(Value16(value));
 			}
-			else if (IsInUShortRange(value))
+			else if (IsInRange<uint16_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
@@ -1930,12 +1930,12 @@ void GeneratorCore::EmitPushConstantUInt(uint32_t value)
 			EmitOpCode(OPCODE_CONSTI_8);
 			break;
 		default:
-			if (IsInUCharRange(value))
+			if (IsInRange<uint8_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTUC);
 				GetByteCode().push_back(uint8_t(value));
 			}
-			else if (IsInUShortRange(value))
+			else if (IsInRange<uint16_t>(value))
 			{
 				EmitOpCode(OPCODE_CONSTUS);
 				EmitValue16(Value16(value));
@@ -2735,11 +2735,11 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 
 	if (((&opCodeSet == &ADD_OPCODES) || (&opCodeSet == &SUB_OPCODES)) &&
 	    (lhResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
-	    IsInUCharRange(slotIndex) &&
+	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    lhDescriptor->IsLeast32IntegerType() &&
 	    rhTav.IsValueDefined() &&
-	    IsInCharRange(rhValue))
+	    IsInRange<int8_t>(rhValue))
 	{
 		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
 		ByteCode::Type &byteCode = GetByteCode();
@@ -2827,10 +2827,10 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((pointerResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
-	    IsInUCharRange(slotIndex) &&
+	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    offsetTav.IsValueDefined() &&
-	    IsInCharRange(offset))
+	    IsInRange<int8_t>(offset))
 	{
 		EmitOpCode(INC_OPCODES.GetPointerOpCode(mPointerSize));
 		ByteCode::Type &byteCode = GetByteCode();
@@ -2910,7 +2910,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 
 	Result result(Result::CONTEXT_STACK_VALUE);
 
-	if (offsetTav.IsValueDefined() && IsInIntRange(offset))
+	if (offsetTav.IsValueDefined() && IsInRange<int32_t>(offset))
 	{
 		switch (pointerResult.GetValue().mContext)
 		{
@@ -2966,7 +2966,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerDifference(const Expression *lhs
 	EmitPushResult(rhResult, rhDescriptor);
 
 	const uint32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
-	if (IsInShortRange(elementSize))
+	if (IsInRange<int16_t>(elementSize))
 	{
 		EmitOpCode(OPCODE_PTRDIFF);
 		EmitValue16(Value16(elementSize));
@@ -3012,7 +3012,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 		Traverse(offsetExpression);
 
 		const TypeDescriptor *offsetDescriptor = offsetTav.GetTypeDescriptor();
-		if (IsInShortRange(elementSize))
+		if (IsInRange<int16_t>(elementSize))
 		{
 			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
 			EmitPushResultAs(offsetResult, offsetDescriptor, &intTypeDescriptor);
@@ -3051,9 +3051,9 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
-	    IsInUCharRange(slotIndex) &&
+	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    IsInCharRange(pointerOffset))
+	    IsInRange<int8_t>(pointerOffset))
 	{
 		ByteCode::Type &byteCode = GetByteCode();
 		if (Is64BitPointer())
@@ -3184,7 +3184,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
-	    IsInUCharRange(slotIndex) &&
+	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    resultDescriptor->IsLeast32IntegerType() &&
 	    (operandType == resultType))
@@ -3477,7 +3477,7 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 
 void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, int32_t offset)
 {
-	if (IsInShortRange(offset))
+	if (IsInRange<int16_t>(offset))
 	{
 		EmitOpCode(opCode);
 		EmitValue16(Value16(offset));
@@ -3709,7 +3709,7 @@ void GeneratorCore::ResolveJumps()
 		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
 		{
 			const int32_t offset = int32_t(jumpIt->mToPos - jumpIt->GetFromPos());
-			if (!IsInShortRange(offset))
+			if (!IsInRange<int16_t>(offset))
 			{
 				MapValue32(Value32(offset));
 			}
@@ -3806,7 +3806,7 @@ void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 			const int32_t offset = int32_t(jumpIt->mToPos) - int32_t(jumpIt->GetFromPos());
 			Value16 arg(offset);
 
-			if (!IsInShortRange(offset))
+			if (!IsInRange<int16_t>(offset))
 			{
 				++opCode;
 				arg.mUShort = MapValue32(Value32(offset));
@@ -4063,11 +4063,11 @@ void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
 
 uint16_t GeneratorCore::MapString(const HashedString &str)
 {
-	if (!IsInUShortRange(mStringList.size()))
+	if (!IsInRange<uint16_t>(mStringList.size()))
 	{
 		PushError(CompilerError::STRING_TABLE_OVERFLOW);
 	}
-	if (!IsInUShortRange(str.GetLength()))
+	if (!IsInRange<uint16_t>(str.GetLength()))
 	{
 		PushError(CompilerError::STRING_OVERFLOW);
 	}
@@ -4083,7 +4083,7 @@ uint16_t GeneratorCore::MapString(const HashedString &str)
 
 uint16_t GeneratorCore::MapValue32(const Value32 &value)
 {
-	if (!IsInUShortRange(mValue32List.size()))
+	if (!IsInRange<uint16_t>(mValue32List.size()))
 	{
 		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
 	}
@@ -4099,7 +4099,7 @@ uint16_t GeneratorCore::MapValue32(const Value32 &value)
 
 uint16_t GeneratorCore::MapValue64(const Value64 &value)
 {
-	if (!IsInUShortRange(mValue64List.size()))
+	if (!IsInRange<uint16_t>(mValue64List.size()))
 	{
 		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
 	}

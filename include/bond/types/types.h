@@ -68,38 +68,6 @@ const PointerSize BOND_NATIVE_POINTER_SIZE = (sizeof(void *) == 8) ? POINTER_64B
 
 inline uint32_t GetPointerSize(PointerSize pointerSize) { return (pointerSize == POINTER_64BIT) ? 8 : 4; }
 
-
-inline bool IsInCharRange(int32_t value) { return (value >= BOND_CHAR_MIN) && (value <= BOND_CHAR_MAX); }
-inline bool IsInCharRange(uint32_t value) { return value <= static_cast<uint32_t>(BOND_CHAR_MAX); }
-inline bool IsInCharRange(int64_t value) { return (value >= BOND_CHAR_MIN) && (value <= BOND_CHAR_MAX); }
-inline bool IsInCharRange(uint64_t value) { return value <= static_cast<uint64_t>(BOND_CHAR_MAX); }
-
-
-inline bool IsInUCharRange(int32_t value) { return (value >= 0) && (value <= static_cast<int32_t>(BOND_UCHAR_MAX)); }
-inline bool IsInUCharRange(uint32_t value) { return value <= BOND_UCHAR_MAX; }
-inline bool IsInUCharRange(int64_t value) { return (value >= 0) && (value <= static_cast<int64_t>(BOND_UCHAR_MAX)); }
-inline bool IsInUCharRange(uint64_t value) { return value <= BOND_UCHAR_MAX; }
-
-
-inline bool IsInShortRange(int32_t value) { return (value >= BOND_SHORT_MIN) && (value <= BOND_SHORT_MAX); }
-inline bool IsInShortRange(uint32_t value) { return value <= static_cast<uint32_t>(BOND_SHORT_MAX); }
-inline bool IsInShortRange(int64_t value) { return (value >= BOND_SHORT_MIN) && (value <= BOND_SHORT_MAX); }
-inline bool IsInShortRange(uint64_t value) { return value <= static_cast<uint64_t>(BOND_SHORT_MAX); }
-
-
-inline bool IsInUShortRange(int32_t value) { return (value >= 0) && (value <= static_cast<int32_t>(BOND_USHORT_MAX)); }
-inline bool IsInUShortRange(uint32_t value) { return value <= BOND_USHORT_MAX; }
-inline bool IsInUShortRange(int64_t value) { return (value >= 0) && (value <= static_cast<int64_t>(BOND_USHORT_MAX)); }
-inline bool IsInUShortRange(uint64_t value) { return value <= BOND_USHORT_MAX; }
-
-
-inline bool IsInIntRange(int64_t value) { return (value >= BOND_INT_MIN) && (value <= BOND_INT_MAX); }
-inline bool IsInIntRange(uint64_t value) { return value <= static_cast<uint64_t>(BOND_INT_MAX); }
-
-
-inline bool IsInUIntRange(int64_t value) { return (value >= 0) && (value <= static_cast<int64_t>(BOND_UINT_MAX)); }
-inline bool IsInUIntRange(uint64_t value) { return value <= BOND_UINT_MAX; }
-
 const char *GetBondTypeMnemonic(SignatureType signatureType);
 char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size);
 

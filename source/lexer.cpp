@@ -1430,7 +1430,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 				sscanf(text + 2, "%" BOND_SCNx32 "%n", &value, &length);
 				result.value = char(value);
 				result.end = text + 2 + length;
-				if (!IsInUCharRange(value))
+				if (!IsInRange<uint8_t>(value))
 				{
 					result.error = CompilerError::HEX_ESCAPE_RANGE;
 				}
@@ -1445,7 +1445,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 					sscanf(text + 1, "%" BOND_SCNo32 "%n", &value, &length);
 					result.value = char(value);
 					result.end = text + 1 + length;
-					if (!IsInUCharRange(value))
+					if (!IsInRange<uint8_t>(value))
 					{
 						result.error = CompilerError::OCTAL_ESCAPE_RANGE;
 					}

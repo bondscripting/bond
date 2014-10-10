@@ -2,6 +2,8 @@
 #define BOND_PRIVATE_TYPES_H
 
 #include <cstdint>
+#include <limits>
+#include <type_traits>
 
 #if !defined(PRId32) && !defined(_MSC_VER)
 #include <cinttypes>
@@ -64,22 +66,92 @@
 namespace Bond
 {
 
-const int32_t BOND_CHAR_MAX = static_cast<int32_t>(INT8_MAX);
-const int32_t BOND_CHAR_MIN = static_cast<int32_t>(INT8_MIN);
-const uint32_t BOND_UCHAR_MAX = static_cast<uint32_t>(UINT8_MAX);
-const uint32_t BOND_UCHAR_MIN = static_cast<uint32_t>(0);
-const int32_t BOND_SHORT_MAX = static_cast<int32_t>(INT16_MAX);
-const int32_t BOND_SHORT_MIN = static_cast<int32_t>(INT16_MIN);
-const uint32_t BOND_USHORT_MAX = static_cast<uint32_t>(UINT16_MAX);
-const uint32_t BOND_USHORT_MIN = static_cast<uint32_t>(0);
-const int32_t BOND_INT_MAX = static_cast<int32_t>(INT32_MAX);
-const int32_t BOND_INT_MIN = static_cast<int32_t>(INT32_MIN);
-const uint32_t BOND_UINT_MAX = static_cast<uint32_t>(UINT32_MAX);
-const uint32_t BOND_UINT_MIN = static_cast<uint32_t>(0);
-const int64_t BOND_LONG_MAX = static_cast<int64_t>(INT64_MAX);
-const int64_t BOND_LONG_MIN = static_cast<int64_t>(INT64_MIN);
-const uint64_t BOND_ULONG_MAX = static_cast<uint64_t>(UINT64_MAX);
-const uint64_t BOND_ULONG_MIN = static_cast<uint64_t>(0);
+using std::false_type;
+using std::true_type;
+
+using std::integral_constant;
+using std::numeric_limits;
+
+const int32_t BOND_CHAR_MAX = numeric_limits<int8_t>::max();
+const int32_t BOND_CHAR_MIN = numeric_limits<int8_t>::min();
+const uint32_t BOND_UCHAR_MAX = numeric_limits<uint8_t>::max();
+const uint32_t BOND_UCHAR_MIN = numeric_limits<uint8_t>::min();
+
+const int32_t BOND_SHORT_MAX = numeric_limits<int16_t>::max();
+const int32_t BOND_SHORT_MIN = numeric_limits<int16_t>::min();
+const uint32_t BOND_USHORT_MAX = numeric_limits<uint16_t>::max();
+const uint32_t BOND_USHORT_MIN = numeric_limits<uint16_t>::min();
+
+const int32_t BOND_INT_MAX = numeric_limits<int32_t>::max();
+const int32_t BOND_INT_MIN = numeric_limits<int32_t>::min();
+const uint32_t BOND_UINT_MAX = numeric_limits<uint32_t>::max();
+const uint32_t BOND_UINT_MIN = numeric_limits<uint32_t>::min();
+
+const int64_t BOND_LONG_MAX = numeric_limits<int64_t>::max();
+const int64_t BOND_LONG_MIN = numeric_limits<int64_t>::min();
+const uint64_t BOND_ULONG_MAX = numeric_limits<uint64_t>::max();
+const uint64_t BOND_ULONG_MIN = numeric_limits<uint64_t>::min();
+
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType value, std::false_type, std::false_type, std::false_type)
+{
+    return value <= ValueType(std::numeric_limits<RangeType>::max());
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType value, std::false_type, std::false_type, std::true_type)
+{
+    return (value >= 0) && (value <= ValueType(std::numeric_limits<RangeType>::max()));
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType value, std::false_type, std::true_type, std::false_type)
+{
+    return (value <= ValueType(std::numeric_limits<RangeType>::max()));
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType value, std::false_type, std::true_type, std::true_type)
+{
+    return (value >= ValueType(std::numeric_limits<RangeType>::min())) &&
+        (value <= ValueType(std::numeric_limits<RangeType>::max()));
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType, std::true_type, std::false_type, std::false_type)
+{
+    return true;
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType value, std::true_type, std::false_type, std::true_type)
+{
+    return value >= 0;
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType, std::true_type, std::true_type, std::false_type)
+{
+    return true;
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRangeInternal(ValueType, std::true_type, std::true_type, std::true_type)
+{
+    return true;
+}
+
+template <typename RangeType, typename ValueType>
+bool IsInRange(ValueType value)
+{
+    using namespace std;
+    return IsInRangeInternal<RangeType>(
+        value,
+        integral_constant<bool, numeric_limits<ValueType>::digits <= numeric_limits<RangeType>::digits>(),
+        integral_constant<bool, numeric_limits<RangeType>::is_signed>(),
+        integral_constant<bool, numeric_limits<ValueType>::is_signed>());
+}
 
 }
 
