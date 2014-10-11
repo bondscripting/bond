@@ -250,7 +250,7 @@ inline Value BinaryMod(const TypeAndValue &lhs, const TypeAndValue &rhs, const T
 }
 
 
-struct BinaryLeftOperator { template <typename T> T operator()(T a, T b) { return a >> b; } };
+struct BinaryLeftOperator { template <typename T> T operator()(T a, T b) { return a << b; } };
 inline Value BinaryLeft(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryLeftOperator());

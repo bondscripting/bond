@@ -51,6 +51,7 @@
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\stream.h" />
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
@@ -133,6 +134,7 @@
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\outputstream.cpp" />
+    <ClCompile Include="..\..\source\outputstreamadaptor.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
     <ClCompile Include="..\..\source\parsenodefactory.cpp" />
     <ClCompile Include="..\..\source\parsenodes.cpp" />

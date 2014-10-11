@@ -14,6 +14,14 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{0x68f854f5, Bond::OutputStream__PrintUL},
 	{0x72987010, Bond::OutputStream__PrintF},
 	{0x72987012, Bond::OutputStream__PrintD},
+	{0x94cf4f40, Bond::OutputStream__GetFlags},
+	{0x794e91b4, Bond::OutputStream__SetFlags},
+	{0xa24af331, Bond::OutputStream__UnsetFlags},
+	{0x28215b61, Bond::OutputStream__ClearFlags},
+	{0x0423bd89, Bond::OutputStream__GetPrecision},
+	{0x84c207fd, Bond::OutputStream__SetPrecision},
+	{0x5f387ab1, Bond::OutputStream__GetWidth},
+	{0x0a673635, Bond::OutputStream__SetWidth},
 	{0x0d3c922a, Bond::OutputStream__GetPosition},
 	{0x5b2b6cfe, Bond::OutputStream__SetPosition},
 	{0xaacb2e19, Bond::OutputStream__SetPositionFromEnd},
@@ -26,7 +34,7 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 const Bond::NativeBindingCollection IO_BINDING_COLLECTION =
 {
 	IO_BINDING_COLLECTION_FUNCTIONS,
-	15
+	23
 };
 
 }
