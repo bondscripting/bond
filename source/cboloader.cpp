@@ -115,6 +115,7 @@ CboLoader::Handle CboLoader::Load()
 		const FileData &file = **fdit;
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(reinterpret_cast<const uint8_t *>(file.mData), file.mLength);
+		BOND_ASSERT_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, ("CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE)));
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
