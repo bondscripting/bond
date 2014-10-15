@@ -1,18 +1,16 @@
 #ifndef BOND_PRIVATE_TYPES_H
 #define BOND_PRIVATE_TYPES_H
 
+#include <cinttypes>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
 
-#if !defined(PRId32) && !defined(_MSC_VER)
-#include <cinttypes>
-#endif
-
-#if defined(PRId32)
-
 #define BOND_SCNd32 SCNd32
 #define BOND_PRId32 PRId32
+
+#define BOND_SCNi32 SCNi32
+#define BOND_PRIi32 PRIi32
 
 #define BOND_SCNu32 SCNu32
 #define BOND_PRIu32 PRIu32
@@ -26,6 +24,9 @@
 #define BOND_SCNd64 SCNd64
 #define BOND_PRId64 PRId64
 
+#define BOND_SCNi64 SCNi64
+#define BOND_PRIi64 PRIi64
+
 #define BOND_SCNu64 SCNu64
 #define BOND_PRIu64 PRIu64
 
@@ -34,34 +35,6 @@
 
 #define BOND_SCNx64 SCNx64
 #define BOND_PRIx64 PRIx64
-
-#else
-
-#define BOND_SCNd32 "d"
-#define BOND_PRId32 "d"
-
-#define BOND_SCNu32 "u"
-#define BOND_PRIu32 "u"
-
-#define BOND_SCNo32 "o"
-#define BOND_PRIo32 "o"
-
-#define BOND_SCNx32 "x"
-#define BOND_PRIx32 "x"
-
-#define BOND_SCNd64 "lld"
-#define BOND_PRId64 "lld"
-
-#define BOND_SCNu64 "llu"
-#define BOND_PRIu64 "llu"
-
-#define BOND_SCNo64 "llo"
-#define BOND_PRIo64 "llo"
-
-#define BOND_SCNx64 "llx"
-#define BOND_PRIx64 "llx"
-
-#endif
 
 namespace Bond
 {

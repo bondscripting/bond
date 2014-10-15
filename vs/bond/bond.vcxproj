@@ -48,6 +48,8 @@
     <ClInclude Include="..\..\include\bond\io\diskfileloader.h" />
     <ClInclude Include="..\..\include\bond\io\filedata.h" />
     <ClInclude Include="..\..\include\bond\io\fileloader.h" />
+    <ClInclude Include="..\..\include\bond\io\inputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
@@ -116,6 +118,8 @@
     <ClCompile Include="..\..\source\diskfileloader.cpp" />
     <ClCompile Include="..\..\source\exception.cpp" />
     <ClCompile Include="..\..\source\frontend.cpp" />
+    <ClCompile Include="..\..\source\inputstream.cpp" />
+    <ClCompile Include="..\..\source\inputstreamadaptor.cpp" />
     <ClCompile Include="..\..\source\lexer.cpp" />
     <ClCompile Include="..\..\source\libinclude.cpp" />
     <ClCompile Include="..\..\source\libio.cpp" />
@@ -167,25 +171,27 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

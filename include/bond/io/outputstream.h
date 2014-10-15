@@ -13,7 +13,8 @@ public:
 	virtual ~OutputStream() {}
 	virtual void Print(const char *format, ...);
 	virtual void VPrint(const char *format, va_list argList) = 0;
-	virtual void Write(uint8_t c) = 0;
+	virtual void Write(const uint8_t *bytes, size_t numBytes);
+	virtual void Write(uint8_t byte) = 0;
 };
 
 }

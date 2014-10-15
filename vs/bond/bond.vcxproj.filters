@@ -309,6 +309,12 @@
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\inputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\cboloader.cpp">
@@ -462,6 +468,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\outputstreamadaptor.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\inputstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\inputstreamadaptor.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

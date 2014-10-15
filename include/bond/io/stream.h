@@ -9,6 +9,7 @@ namespace Bond
 class Stream
 {
 public:
+	static const int Eof = -1;
 	typedef long pos_t;
 	typedef long off_t;
 

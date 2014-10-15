@@ -1,6 +1,7 @@
 #ifndef BOND_VM_VM_H
 #define BOND_VM_VM_H
 
+#include "bond/io/inputstreamadaptor.h"
 #include "bond/io/outputstreamadaptor.h"
 #include "bond/stl/autostack.h"
 #include "bond/systems/assert.h"
@@ -93,6 +94,7 @@ public:
 			Allocator &allocator,
 			const CodeSegment &codeSegment,
 			size_t stackSize,
+			InputStream *stdIn = nullptr,
 			OutputStream *stdOut = nullptr,
 			OutputStream *stdErr = nullptr);
 	~VM();
@@ -104,6 +106,7 @@ public:
 	CalleeStackFrame &GetTopStackFrame() { return mStackFrames.GetTop(); }
 	const CalleeStackFrame &GetTopStackFrame() const { return mStackFrames.GetTop(); }
 
+	InputStreamAdaptor &GetStdIn() { return mStdIn; }
 	OutputStreamAdaptor &GetStdOut() { return mStdOut; }
 	OutputStreamAdaptor &GetStdErr() { return mStdErr; }
 
@@ -167,6 +170,7 @@ private:
 	StackFrames::Element mDummyFrame;
 	Allocator &mAllocator;
 	const CodeSegment &mCodeSegment;
+	InputStreamAdaptor mStdIn;
 	OutputStreamAdaptor mStdOut;
 	OutputStreamAdaptor mStdErr;
 	uint8_t *mStack;
