@@ -36,7 +36,7 @@ void MemoryOutputStream::VPrint(const char *format, va_list argList)
 		mCurrent += pos_t(n);
 		if (mCurrent >= mSize)
 		{
-			mCurrent = mSize - 1;
+			mCurrent = mSize;
 			mBuffer[mSize - 1] = uint8_t('\0');
 		}
 	}

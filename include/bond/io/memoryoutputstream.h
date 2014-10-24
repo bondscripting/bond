@@ -21,6 +21,8 @@ public:
 	virtual void AddOffset(off_t offset) override;
 	const uint8_t *GetBuffer() const { return mBuffer; }
 
+	virtual bool IsEof() const override { return mCurrent >= mSize; }
+
 private:
 	uint8_t *mBuffer;
 	pos_t mSize;

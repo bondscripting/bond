@@ -20,6 +20,8 @@ public:
 	virtual void SetPositionFromEnd(off_t offset) override { fseek(mFile, offset, SEEK_END); }
 	virtual void AddOffset(off_t offset) override { fseek(mFile, offset, SEEK_CUR); }
 
+	virtual bool IsEof() const override { return feof(mFile) != 0; }
+
 private:
 	FILE *mFile;
 };

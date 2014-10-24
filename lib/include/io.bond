@@ -53,6 +53,7 @@ struct InputStream
 	void SetPosition(int offset);
 	void SetPositionFromEnd(int offset);
 	void AddOffset(int offset);
+	bool IsEof();
 };
 
 struct OutputStream
@@ -89,6 +90,7 @@ struct OutputStream
 	void SetPosition(int offset);
 	void SetPositionFromEnd(int offset);
 	void AddOffset(int offset);
+	bool IsEof();
 };
 
 InputStream *StdIn();

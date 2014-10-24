@@ -166,6 +166,14 @@ void InputStream__AddOffset(Bond::CalleeStackFrame &frame)
 }
 
 
+void InputStream__IsEof(Bond::CalleeStackFrame &frame)
+{
+	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	const bool isEof = stream->GetStream()->IsEof();
+	frame.SetReturnValue(isEof);
+}
+
+
 void OutputStream__PrintStr(Bond::CalleeStackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
@@ -363,6 +371,14 @@ void OutputStream__AddOffset(Bond::CalleeStackFrame &frame)
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->GetStream()->AddOffset(Stream::pos_t(value));
+}
+
+
+void OutputStream__IsEof(Bond::CalleeStackFrame &frame)
+{
+	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	const bool isEof = stream->GetStream()->IsEof();
+	frame.SetReturnValue(isEof);
 }
 
 

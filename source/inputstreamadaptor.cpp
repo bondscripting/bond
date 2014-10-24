@@ -43,9 +43,9 @@ int32_t InputStreamAdaptor::ScanInt()
 {
 	int32_t value = 0;
 	const char *format =
-		(mFlags & IO::Dec) ? "%" BOND_SCNd32 :
-		(mFlags & IO::Hex) ? "%" BOND_SCNx32 :
-		(mFlags & IO::Oct) ? "%" BOND_SCNo32 :
+		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNd32 :
+		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx32 :
+		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo32 :
 		"%" BOND_SCNi32;
 	mStream->Scan(format, &value);
 	return value;
@@ -56,9 +56,9 @@ uint32_t InputStreamAdaptor::ScanUInt()
 {
 	uint32_t value = 0;
 	const char *format =
-		(mFlags & IO::Dec) ? "%" BOND_SCNu32 :
-		(mFlags & IO::Hex) ? "%" BOND_SCNx32 :
-		(mFlags & IO::Oct) ? "%" BOND_SCNo32 :
+		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNu32 :
+		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx32 :
+		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo32 :
 		"%" BOND_SCNi32;
 	mStream->Scan(format, &value);
 	return value;
@@ -69,9 +69,9 @@ int64_t InputStreamAdaptor::ScanLong()
 {
 	int64_t value = 0;
 	const char *format =
-		(mFlags & IO::Dec) ? "%" BOND_SCNd64 :
-		(mFlags & IO::Hex) ? "%" BOND_SCNx64 :
-		(mFlags & IO::Oct) ? "%" BOND_SCNo64 :
+		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNd64 :
+		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx64 :
+		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo64 :
 		"%" BOND_SCNi64;
 	mStream->Scan(format, &value);
 	return value;
@@ -82,9 +82,9 @@ uint64_t InputStreamAdaptor::ScanULong()
 {
 	uint64_t value = 0;
 	const char *format =
-		(mFlags & IO::Dec) ? "%" BOND_SCNu64 :
-		(mFlags & IO::Hex) ? "%" BOND_SCNx64 :
-		(mFlags & IO::Oct) ? "%" BOND_SCNo64 :
+		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNu64 :
+		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx64 :
+		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo64 :
 		"%" BOND_SCNi64;
 	mStream->Scan(format, &value);
 	return value;

@@ -14,10 +14,15 @@ public:
 	typedef long off_t;
 
 	virtual ~Stream() {}
+
+	// Stream position.
 	virtual pos_t GetPosition() const = 0;
 	virtual void SetPosition(off_t offset) = 0;
 	virtual void SetPositionFromEnd(off_t offset) = 0;
 	virtual void AddOffset(off_t offset) = 0;
+
+	// Status
+	virtual bool IsEof() const = 0;
 };
 
 }
