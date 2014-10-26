@@ -903,11 +903,47 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 	{
 		if (initializerList != nullptr)
 		{
+			// TODO: Assert if too many initializers.
 			const TypeDescriptor parent = descriptor->GetDereferencedType();
 			while (initializerList != nullptr)
 			{
 				ValidateInitializer(initializerList, &parent);
 				initializerList = NextNode(initializerList);
+			}
+		}
+		else if (expression != nullptr)
+		{
+			mErrorBuffer.PushError(
+				CompilerError::MISSING_BRACES_IN_INITIALIZER,
+				initializer->GetContextToken(),
+				descriptor);
+		}
+	}
+	else if (descriptor->IsStructType())
+	{
+		if (initializerList != nullptr)
+		{
+			const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
+			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
+			const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
+			while (memberDeclarationList != nullptr)
+			{
+				const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
+				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
+				while ((nameList != nullptr) && (initializerList != nullptr))
+				{
+					ValidateInitializer(initializerList, memberDescriptor);
+					nameList = NextNode(nameList);
+					initializerList = NextNode(initializerList);
+				}
+				memberDeclarationList = NextNode(memberDeclarationList);
+			}
+			if (initializerList != nullptr)
+			{
+				mErrorBuffer.PushError(
+					CompilerError::TOO_MANY_INITIALIZERS,
+					initializerList->GetContextToken(),
+					descriptor);
 			}
 		}
 		else if (expression != nullptr)
