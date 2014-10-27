@@ -92,9 +92,9 @@ DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 	const Bond::ListParseNode *root = parser.GetTranslationUnitList();
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mDeclarativeStatement = 3;
-	expectedCount.mNamedInitializer = 4;
-	expectedCount.mInitializer = 16;
+	expectedCount.mDeclarativeStatement = 10;
+	expectedCount.mNamedInitializer = 11;
+	expectedCount.mInitializer = 25;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);
 

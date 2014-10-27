@@ -1,6 +1,5 @@
 #include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
-#include "bond/systems/allocator.h"
 #include "bond/systems/math.h"
 #include "bond/types/opcodes.h"
 #include "bond/vm/vm.h"
@@ -107,22 +106,19 @@ VM::VM(
 	mStdIn(stdIn),
 	mStdOut(stdOut),
 	mStdErr(stdErr),
-	mStack(nullptr),
+	mStack(allocator, mAllocator.Alloc<uint8_t>(stackSize)),
 	mStackSize(stackSize)
 {
-	mStack = mAllocator.Alloc<uint8_t>(stackSize);
 	CalleeStackFrame &top = mDummyFrame.GetValue();
 	top.mFunction = nullptr;
-	top.mStackPointer = mStack;
-	top.mFramePointer = mStack;
+	top.mStackPointer = mStack.get();
+	top.mFramePointer = mStack.get();
 	top.mReturnPointer = nullptr;
 }
 
 
 VM::~VM()
 {
-	mAllocator.Free(mStack);
-	mStack = nullptr;
 }
 
 
@@ -2191,7 +2187,7 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 
 void VM::ValidateStackPointer(uint8_t *stackPointer) const
 {
-	if (stackPointer >= mStack + mStackSize)
+	if (stackPointer >= mStack.get() + mStackSize)
 	{
 		RaiseError("Stack overflow");
 	}

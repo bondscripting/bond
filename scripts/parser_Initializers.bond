@@ -1,6 +1,26 @@
+struct Vector2
+{
+	int x;
+	int y;
+};
+
+struct Thing
+{
+	Vector2 a;
+	Vector2 b;
+	Vector2 c;
+};
+
+Vector2 MakeVector2(int x, int y)
+{
+	Vector2 v = {x, y};
+	return v;
+}
+
 void TheFunction()
 {
 	int a = 0, b = 0;
 	int [] c = {1, 2, 3};
 	int [3][2] d = {{4, 5}, {6, 7}, {8, 9}};
+	Thing t = { MakeVector2(11, 22), {33, 44}, MakeVector2(55, 66)};
 }

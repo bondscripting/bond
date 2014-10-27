@@ -4,13 +4,13 @@
 #include "bond/io/inputstreamadaptor.h"
 #include "bond/io/outputstreamadaptor.h"
 #include "bond/stl/autostack.h"
+#include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
 #include "bond/vm/codesegment.h"
 
 namespace Bond
 {
 
-class Allocator;
 class CalleeStackFrame;
 class CallerStackFrame;
 class VM;
@@ -173,7 +173,7 @@ private:
 	InputStreamAdaptor mStdIn;
 	OutputStreamAdaptor mStdOut;
 	OutputStreamAdaptor mStdErr;
-	uint8_t *mStack;
+	Allocator::Handle<uint8_t> mStack;
 	size_t mStackSize;
 };
 
