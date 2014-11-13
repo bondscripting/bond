@@ -27,7 +27,7 @@ enum Flags
 };
 enum Constants
 {
-	EOF = -1,
+	Eof = -1,
 };
 }
 void InputStream__ScanStr(Bond::CalleeStackFrame &frame);

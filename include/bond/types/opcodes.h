@@ -120,6 +120,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(POP64_L3,     pop64_l3,     NONE,         -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(MEMCOPYW,     memcopyw,     INT,          -2) \
+	BOND_OPCODE_ITEM(MEMZEROW,     memzerow,     INT,          -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(DUP,          dup,          NONE,         1)  \
 	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE,         1)  \

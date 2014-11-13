@@ -256,7 +256,9 @@ private:
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
 			mStackSize(0),
-			mFramePointerAlignment(framePointerAlignment)
+			mFramePointerAlignment(framePointerAlignment),
+			mZeroOffset(0),
+			mZeroSize(0)
 		{}
 		const FunctionDefinition *mDefinition;
 		ByteCode::Type mByteCode;
@@ -267,6 +269,8 @@ private:
 		uint32_t mLocalSize;
 		uint32_t mStackSize;
 		uint32_t mFramePointerAlignment;
+		uint32_t mZeroOffset;
+		uint32_t mZeroSize;
 	};
 
 	typedef Map<HashedString, uint16_t> StringIndexMap;
@@ -311,6 +315,10 @@ private:
 	virtual void Visit(const ThisExpression *thisExpression);
 
 	bool ProcessConstantExpression(const Expression *expression);
+
+	void EmitLocalInitializer(const Initializer *initializer, uint32_t offset);
+	void EmitZero(uint32_t offset, uint32_t size);
+	void FlushZero();
 
 	Result EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member);
 
@@ -581,35 +589,13 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			// TODO: Omit code generation and stack allocation for non lvalue foldable constants.
 			// Allocate stack space for the local variable.
 			const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-			namedInitializer->SetOffset(AllocateLocal(lhDescriptor));
-
+			const int32_t offset = AllocateLocal(lhDescriptor);
+			namedInitializer->SetOffset(offset);
 			const Initializer *initializer = namedInitializer->GetInitializer();
-			if ((initializer != nullptr) && (initializer->GetExpression() != nullptr))
+			if (initializer != nullptr)
 			{
-				UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
-
-				if (lhDescriptor->IsStructType())
-				{
-					EmitOpCodeWithOffset(OPCODE_LOADFP, namedInitializer->GetOffset());
-					ResultStack::Element rhResult(mResult);
-					Traverse(initializer);
-					EmitPushAddressOfResult(rhResult);
-					EmitOpCode(OPCODE_MEMCOPYW);
-					EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
-				}
-				else
-				{
-					const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
-					Result lhResult(Result::CONTEXT_FP_INDIRECT, namedInitializer->GetOffset());
-					ResultStack::Element rhResult(mResult);
-					Traverse(initializer);
-					EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
-					EmitPopResult(lhResult, lhDescriptor);
-				}
-			}
-			else
-			{
-				// TODO: Handle struct and array initializers.
+				EmitLocalInitializer(initializer, offset);
+				FlushZero();
 			}
 		}
 		break;
@@ -1487,6 +1473,122 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 		return true;
 	}
 	return false;
+}
+
+
+void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_t offset)
+{
+	const TypeDescriptor *typeDescriptor = initializer->GetTypeDescriptor();
+	const Expression *expression = initializer->GetExpression();
+	const Initializer *initializerList = initializer->GetInitializerList();
+
+	if (typeDescriptor->IsArrayType())
+	{
+		uint32_t numElements = typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+		const TypeDescriptor elementDescriptor = typeDescriptor->GetDereferencedType();
+		const uint32_t elementSize = elementDescriptor.GetSize(mPointerSize);
+
+		while ((numElements > 0) && (initializerList != nullptr))
+		{
+			EmitLocalInitializer(initializerList, offset);
+			offset += elementSize;
+			initializerList = NextNode(initializerList);
+			--numElements;
+		}
+
+		if (numElements > 0)
+		{
+			EmitZero(offset, numElements * elementSize);
+		}
+	}
+	else if (typeDescriptor->IsStructType() && (initializerList != nullptr))
+	{
+		// TODO: Can't initialize native structs via initializer list.
+		const TypeSpecifier *structSpecifier = typeDescriptor->GetTypeSpecifier();
+		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
+		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
+		while (memberDeclarationList != nullptr)
+		{
+			const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
+			const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
+			const uint32_t memberSize = memberDescriptor->GetSize(mPointerSize);
+			while (nameList != nullptr)
+			{
+				const uint32_t memberOffset = offset + uint32_t(nameList->GetOffset());
+
+				if (initializerList != nullptr)
+				{
+					EmitLocalInitializer(initializerList, memberOffset);
+					initializerList = NextNode(initializerList);
+				}
+				else
+				{
+					EmitZero(memberOffset, memberSize);
+				}
+				nameList = NextNode(nameList);
+			}
+			memberDeclarationList = NextNode(memberDeclarationList);
+		}
+		// TODO: EmitDefaultInitializer.
+	}
+	else
+	{
+		FlushZero();
+		UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+
+		if (typeDescriptor->IsStructType())
+		{
+			// TODO: Initialize the struct in-place without copying it.
+			EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+			ResultStack::Element rhResult(mResult);
+			Traverse(initializer);
+			EmitPushAddressOfResult(rhResult);
+			EmitOpCode(OPCODE_MEMCOPYW);
+			EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
+		}
+		else
+		{
+			const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
+			Result lhResult(Result::CONTEXT_FP_INDIRECT, offset);
+			ResultStack::Element rhResult(mResult);
+			Traverse(initializer);
+			EmitPushResultAs(rhResult, rhDescriptor, typeDescriptor);
+			EmitPopResult(lhResult, typeDescriptor);
+		}
+	}
+}
+
+
+void GeneratorCore::EmitZero(uint32_t offset, uint32_t size)
+{
+	CompiledFunction &function = GetFunction();
+
+	// Merge the requested run of zeros with an existing one.
+	if (function.mZeroSize > 0)
+	{
+		function.mZeroSize = (offset + size) - function.mZeroOffset;
+	}
+	// Otherwise start a new run.
+	else
+	{
+		function.mZeroOffset = offset;
+		function.mZeroSize = size;
+	}
+}
+
+
+void GeneratorCore::FlushZero()
+{
+	CompiledFunction &function = GetFunction();
+
+	if (function.mZeroSize > 0)
+	{
+		EmitOpCodeWithOffset(OPCODE_LOADFP, function.mZeroOffset);
+		EmitOpCode(OPCODE_MEMZEROW);
+		EmitIndexedValue32(Value32(function.mZeroSize));
+		function.mZeroOffset = 0;
+		function.mZeroSize = 0;
+	}
 }
 
 

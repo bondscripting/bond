@@ -21,7 +21,7 @@ namespace IO
 
 	enum Constants
 	{
-		EOF = -1
+		Eof = -1
 	};
 }
 

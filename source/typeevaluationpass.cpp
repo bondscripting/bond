@@ -904,10 +904,10 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		if (initializerList != nullptr)
 		{
 			// TODO: Assert if too many initializers.
-			const TypeDescriptor parent = descriptor->GetDereferencedType();
+			const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
 			while (initializerList != nullptr)
 			{
-				ValidateInitializer(initializerList, &parent);
+				ValidateInitializer(initializerList, &elementDescriptor);
 				initializerList = NextNode(initializerList);
 			}
 		}
@@ -924,7 +924,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
-		while (memberDeclarationList != nullptr)
+		while ((memberDeclarationList != nullptr) && (initializerList != nullptr))
 		{
 			const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
 			const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();

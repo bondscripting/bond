@@ -67,7 +67,7 @@ uint localSize;
 uint stackSize;
 uint framePointerAlignment;
 uint CodeSize;
-char[CodeSize] code;
+uchar[CodeSize] code;
 Blob metaData;
 
 DeclarationBlob
