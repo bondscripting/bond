@@ -462,8 +462,8 @@ void GeneratorCore::Generate()
 	WriteValue16(Value16(MINOR_VERSION));
 	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
 
-	const uint16_t listIndex = MapString("List");
-	const uint16_t functionIndex = mFunctionList.empty() ? 0 : MapString("Func");
+	const uint16_t listIndex = MapString(BOND_LIST_BLOB_ID);
+	const uint16_t functionIndex = mFunctionList.empty() ? 0 : MapString(BOND_FUNCTION_BLOB_ID);
 
 	ResolveJumps();
 	WriteConstantTable();
@@ -1328,8 +1328,8 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
-	const uint32_t returnType = returnDescriptor->GetSignatureType();
-	const int32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
+	const SignatureType returnType = returnDescriptor->GetSignatureType();
+	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(returnDescriptor) : 0;
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1347,7 +1347,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
 		}
 
-		if (returnType == SIG_STRUCT)
+		if (returnType == SIG_AGGREGATE)
 		{
 			EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
 		}
@@ -1356,7 +1356,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		EmitHashCode(function->GetGlobalHashCode());
 	}
 
-	if (returnType == SIG_STRUCT)
+	if (returnType == SIG_AGGREGATE)
 	{
 		mResult.SetTop(Result(Result::CONTEXT_FP_INDIRECT, returnOffset));
 	}
@@ -1595,15 +1595,15 @@ void GeneratorCore::FlushZero()
 GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member)
 {
 	const TypeDescriptor *returnDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
-	const uint32_t returnType = returnDescriptor->GetSignatureType();
-	const int32_t returnOffset = (returnType == SIG_STRUCT) ? AllocateLocal(returnDescriptor) : 0;
+	const SignatureType returnType = returnDescriptor->GetSignatureType();
+	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(returnDescriptor) : 0;
 
 	{
 		const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 		EmitPushResult(thisPointerResult, &voidStar);
 	}
 
-	if (returnType == SIG_STRUCT)
+	if (returnType == SIG_AGGREGATE)
 	{
 		EmitOpCodeWithOffset(OPCODE_LOADFP, returnOffset);
 	}
@@ -1613,7 +1613,7 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 
 	int32_t stackDelta = -BOND_SLOT_SIZE;
 	Result result;
-	if (returnType == SIG_STRUCT)
+	if (returnType == SIG_AGGREGATE)
 	{
 		result = Result(Result::CONTEXT_FP_INDIRECT, returnOffset);
 	}

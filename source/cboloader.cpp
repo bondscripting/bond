@@ -30,8 +30,11 @@ struct CboLoaderResources
 			size_t qualifiedIdElementStart,
 			size_t paramSignatureStart,
 			size_t functionLookupStart,
-			size_t functionsStart,
-			size_t codeStart):
+			size_t functionTableStart,
+			size_t codeStart,
+			size_t dataLookupStart,
+			size_t dataTableStart,
+			size_t dataStart):
 		mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
 		mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
 		mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
@@ -40,8 +43,11 @@ struct CboLoaderResources
 		mQualifiedIdElements(reinterpret_cast<const char **>(memory + qualifiedIdElementStart)),
 		mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
 		mFunctionLookup(reinterpret_cast<uint32_t *>(memory + functionLookupStart)),
-		mFunctions(reinterpret_cast<Function *>(memory + functionsStart)),
-		mCode(reinterpret_cast<uint8_t *>(memory + codeStart))
+		mFunctionTable(reinterpret_cast<Function *>(memory + functionTableStart)),
+		mCode(reinterpret_cast<uint8_t *>(memory + codeStart)),
+		mDataLookup(reinterpret_cast<uint32_t *>(memory + dataLookupStart)),
+		mDataTable(reinterpret_cast<DataEntry *>(memory + dataTableStart)),
+		mData(reinterpret_cast<uint8_t *>(memory + dataStart))
 	{}
 	ConstantTable *mConstantTables;
 	Value32 *mValue32Table;
@@ -51,8 +57,11 @@ struct CboLoaderResources
 	const char **mQualifiedIdElements;
 	ParamSignature *mParamSignatures;
 	uint32_t *mFunctionLookup;
-	Function *mFunctions;
+	Function *mFunctionTable;
 	uint8_t *mCode;
+	uint32_t *mDataLookup;
+	DataEntry *mDataTable;
+	uint8_t *mData;
 };
 
 
@@ -69,14 +78,16 @@ public:
 		mStringTable(resources.mStringTable),
 		mByteCode(static_cast<const uint8_t *>(byteCode)),
 		mIndex(0)
-	{}
+	{
+	}
 
 	void Load();
 
 private:
 	void LoadBlob();
 	void LoadListBlob();
-	void LoadFunctionBlob();
+	void LoadFunctionBlob(size_t blobEnd);
+	void LoadDataBlob(size_t blobEnd);
 	const char *const *LoadQualifiedIdentifier();
 	ReturnSignature LoadReturnSignature();
 	ParamListSignature LoadParamListSignature();
@@ -107,6 +118,9 @@ CboLoader::Handle CboLoader::Load()
 	size_t paramSignatureCount = 0;
 	size_t functionCount = 0;
 	size_t codeByteCount = 0;
+	size_t dataCount = 0;
+	size_t dataSize = 0;
+	size_t dataAlignment = size_t(BOND_SLOT_SIZE);
 
 	CboValidator validator;
 	FileDataList::Type::const_iterator fdit = mFileDataList.begin();
@@ -124,6 +138,10 @@ CboLoader::Handle CboLoader::Load()
 		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
 		codeByteCount += result.mCodeByteCount;
+		dataCount += result.mDataCount;
+		dataSize = AlignUp(dataSize, result.mDataAlignment);
+		dataSize += result.mDataSize;
+		dataAlignment = Max(dataAlignment, result.mDataAlignment);
 	}
 
 	size_t memSize = 0;
@@ -136,11 +154,16 @@ CboLoader::Handle CboLoader::Load()
 	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const char *>(memSize, qualifiedIdElementCount);
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<uint32_t>(memSize, functionCount);
-	const size_t functionsStart = TallyMemoryRequirements<Function>(memSize, functionCount);
+	const size_t functionTableStart = TallyMemoryRequirements<Function>(memSize, functionCount);
 	const size_t codeStart = TallyMemoryRequirements<const uint8_t>(memSize, codeByteCount, sizeof(Value32));
+	const size_t dataLookupStart = TallyMemoryRequirements<uint32_t>(memSize, dataCount);
+	const size_t dataTableStart = TallyMemoryRequirements<DataEntry>(memSize, dataCount);
+	const size_t dataStart = TallyMemoryRequirements<const uint8_t>(memSize, dataSize, dataAlignment);
 
-	const size_t CBO_ALIGNMENT = 256;
-	Allocator::AlignedHandle<uint8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<uint8_t>(memSize, CBO_ALIGNMENT));
+	const size_t DEFAULT_ALIGNMENT = 256;
+	const size_t alignment = Max(DEFAULT_ALIGNMENT, dataAlignment);
+
+	Allocator::AlignedHandle<uint8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<uint8_t>(memSize, alignment));
 	CboLoaderResources resources(
 		memHandle.get(),
 		constantTablesStart,
@@ -151,12 +174,18 @@ CboLoader::Handle CboLoader::Load()
 		qualifiedIdElementStart,
 		paramSignatureStart,
 		functionLookupStart,
-		functionsStart,
-		codeStart);
+		functionTableStart,
+		codeStart,
+		dataLookupStart,
+		dataTableStart,
+		dataStart);
 
 	uint32_t *functionLookup = resources.mFunctionLookup;
-	Function *functions = resources.mFunctions;
-	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart) CodeSegment(functionLookup, functions, functionCount);
+	Function *functionTable = resources.mFunctionTable;
+	uint32_t *dataLookup = resources.mDataLookup;
+	DataEntry *dataTable = resources.mDataTable;
+	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart)
+		CodeSegment(functionLookup, functionTable, functionCount, dataLookup, dataTable, dataCount);
 
 	fdit = mFileDataList.begin();
 	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
@@ -165,28 +194,39 @@ CboLoader::Handle CboLoader::Load()
 		loader.Load();
 	}
 
-	sort(functions, functions + functionCount, FunctionHashComparator());
+	auto functionComparator = [](const Function &a, const Function &b) { return a.mHash < b.mHash; };
+	sort(functionTable, functionTable + functionCount, functionComparator);
 	for (size_t i = 0; i < functionCount; ++i)
 	{
-		functionLookup[i] = functions[i].mHash;
+		functionLookup[i] = functionTable[i].mHash;
 		if ((i > 0) && (functionLookup[i] == functionLookup[i - 1]))
 		{
 			HashCollision(functionLookup[i]);
 		}
 	}
 
-	for (NativeBindingList::Type::const_iterator nbit = mNativeBindingList.begin(); nbit != mNativeBindingList.end(); ++nbit)
+	auto dataComparator = [](const DataEntry &a, const DataEntry &b) { return a.mHash < b.mHash; };
+	sort(dataTable, dataTable + dataCount, dataComparator);
+	for (size_t i = 0; i < dataCount; ++i)
 	{
-		const NativeBindingCollection &bindingCollection = **nbit;
-		for (uint32_t i = 0; i < bindingCollection.mFunctionBindingCount; ++i)
+		dataLookup[i] = dataTable[i].mHash;
+		if ((i > 0) && (dataLookup[i] == dataLookup[i - 1]))
 		{
-			BindNativeFunction(bindingCollection.mFunctionBindings[i], *codeSegment);
+			HashCollision(dataLookup[i]);
+		}
+	}
+
+	for (const NativeBindingCollection *bindingCollection: mNativeBindingList)
+	{
+		for (uint32_t i = 0; i < bindingCollection->mFunctionBindingCount; ++i)
+		{
+			BindNativeFunction(bindingCollection->mFunctionBindings[i], *codeSegment);
 		}
 	}
 
 	for (size_t i = 0; i < functionCount; ++i)
 	{
-		ProcessFunction(functions[i], *codeSegment);
+		ProcessFunction(functionTable[i], *codeSegment);
 	}
 
 	memHandle.release();
@@ -264,7 +304,10 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					switch (opCode)
 					{
 						case OPCODE_LOADEA:
-							break;
+						{
+							resolvedIndex = codeSegment.GetDataEntryIndex(hash);
+						}
+						break;
 						case OPCODE_INVOKE:
 						{
 							resolvedIndex = codeSegment.GetFunctionIndex(hash);
@@ -289,7 +332,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				break;
 				case OC_PARAM_LOOKUPSWITCH:
 				{
-					code = static_cast<uint8_t *>(AlignPointerUp(code, sizeof(Value32)));
+					code = AlignPointerUp(code, sizeof(Value32));
 					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
@@ -306,7 +349,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				break;
 				case OC_PARAM_TABLESWITCH:
 				{
-					code = static_cast<uint8_t *>(AlignPointerUp(code, sizeof(Value32)));
+					code = AlignPointerUp(code, sizeof(Value32));
 					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
@@ -385,12 +428,6 @@ void CboLoader::HashCollision(uint32_t hash) const
 }
 
 
-bool CboLoader::FunctionHashComparator::operator()(const Function &a, const Function &b) const
-{
-	return a.mHash < b.mHash;
-}
-
-
 void CboLoaderCore::Load()
 {
 	mConstantTable->mValue32Table = mResources.mValue32Table;
@@ -428,6 +465,8 @@ void CboLoaderCore::Load()
 	}
 	mResources.mStringTable = str;
 
+	mResources.mData = AlignPointerUp(mResources.mData, mValidationResult.mDataAlignment);
+
 	LoadBlob();
 }
 
@@ -445,7 +484,11 @@ void CboLoaderCore::LoadBlob()
 	}
 	else if (idIndex == mValidationResult.mFunctionBlobIdIndex)
 	{
-		LoadFunctionBlob();
+		LoadFunctionBlob(blobEnd);
+	}
+	else if (idIndex == mValidationResult.mDataBlobIdIndex)
+	{
+		LoadDataBlob(blobEnd);
 	}
 	else
 	{
@@ -464,9 +507,9 @@ void CboLoaderCore::LoadListBlob()
 }
 
 
-void CboLoaderCore::LoadFunctionBlob()
+void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 {
-	Function *function = mResources.mFunctions;
+	Function *function = mResources.mFunctionTable;
 	function->mReturnSignature = LoadReturnSignature();
 	function->mName = LoadQualifiedIdentifier();
 	function->mParamListSignature = LoadParamListSignature();
@@ -505,7 +548,86 @@ void CboLoaderCore::LoadFunctionBlob()
 		}
 	}
 	function->mUnpackArguments = unpackArguments;
-	++mResources.mFunctions;
+	++mResources.mFunctionTable;
+
+	// Load the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		LoadBlob();
+	}
+}
+
+
+void CboLoaderCore::LoadDataBlob(size_t blobEnd)
+{
+	DataEntry *dataEntry = mResources.mDataTable;
+
+	const uint32_t sizeAndType = ReadValue32().mUInt;
+	uint32_t size;
+	SignatureType type;
+	DecodeSizeAndType(sizeAndType, size, type);
+
+	dataEntry->mName = LoadQualifiedIdentifier();
+	dataEntry->mHash = ReadValue32().mUInt;
+	const Value32 payload = ReadValue32();
+
+	mResources.mData = AlignPointerUp(mResources.mData, size_t(BOND_SLOT_SIZE));
+	dataEntry->mData = mResources.mData;
+
+	switch (type)
+	{
+		case SIG_BOOL:
+		case SIG_CHAR:
+		case SIG_UCHAR:
+		{
+			*reinterpret_cast<uint8_t *>(dataEntry->mData) = uint8_t(payload.mUInt);
+		}
+		break;
+
+		case SIG_SHORT:
+		case SIG_USHORT:
+		{
+			*reinterpret_cast<uint16_t *>(dataEntry->mData) = uint16_t(payload.mUInt);
+		}
+		break;
+
+		case SIG_INT:
+		case SIG_UINT:
+		case SIG_FLOAT:
+		{
+			*reinterpret_cast<Value32 *>(dataEntry->mData) = payload;
+		}
+		break;
+
+		case SIG_LONG:
+		case SIG_ULONG:
+		case SIG_DOUBLE:
+		{
+			if (payload.mUInt <= 0xffff)
+			{
+				*reinterpret_cast<Value64 *>(dataEntry->mData) = mConstantTable->mValue64Table[payload.mUInt];
+			}
+		}
+		break;
+
+		case SIG_VOID:
+		case SIG_POINTER:
+		case SIG_AGGREGATE:
+		{
+			mResources.mData = AlignPointerUp(mResources.mData, size_t(payload.mUInt));
+			dataEntry->mData = mResources.mData;
+		}
+		break;
+	}
+
+	mResources.mData += size;
+	++mResources.mDataTable;
+
+	// Load the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		LoadBlob();
+	}
 }
 
 
@@ -529,7 +651,7 @@ ReturnSignature CboLoaderCore::LoadReturnSignature()
 {
 	const uint32_t returnSizeAndType = ReadValue32().mUInt;
 	uint32_t returnSize;
-	uint32_t returnType;
+	SignatureType returnType;
 	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
 	return ReturnSignature(returnSize, returnType);
 }
@@ -545,7 +667,7 @@ ParamListSignature CboLoaderCore::LoadParamListSignature()
 		const int32_t offset = ReadValue32().mInt;
 		const uint32_t paramSizeAndType = ReadValue32().mUInt;
 		uint32_t paramSize;
-		uint32_t paramType;
+		SignatureType paramType;
 		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
 		*param++ = ParamSignature(offset, paramSize, paramType);
 	}

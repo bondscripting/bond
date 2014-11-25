@@ -216,7 +216,7 @@ public:
 	uint32_t GetSize(PointerSize pointerSize) const;
 	uint32_t GetAlignment(PointerSize pointerSize) const;
 
-	uint32_t GetSignatureType() const;
+	SignatureType GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsCharType() const;
@@ -321,7 +321,7 @@ public:
 	uint32_t GetSize(PointerSize pointerSize) const;
 	uint32_t GetAlignment() const;
 
-	uint32_t GetSignatureType() const;
+	SignatureType GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
 	bool IsBooleanType() const;
 	bool IsCharType() const;

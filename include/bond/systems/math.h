@@ -14,15 +14,17 @@ template <typename T>
 inline T AlignDown(T value, T align) { return value & ~(align - 1); }
 
 
-inline void *AlignPointerUp(const void *ptr, size_t align)
+template <typename T>
+inline T *AlignPointerUp(T *ptr, size_t align)
 {
-	return reinterpret_cast<void *>(AlignUp(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
+	return reinterpret_cast<T *>(AlignUp(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
 }
 
 
-inline void *AlignPointerDown(const void *ptr, size_t align)
+template <typename T>
+inline T *AlignPointerDown(T *ptr, size_t align)
 {
-	return reinterpret_cast<void *>(AlignDown(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
+	return reinterpret_cast<T *>(AlignDown(reinterpret_cast<intptr_t>(ptr), intptr_t(align)));
 }
 
 

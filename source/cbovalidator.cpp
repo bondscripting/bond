@@ -25,9 +25,10 @@ public:
 private:
 	void ValidateBlob();
 	void ValidateListBlob();
-	void ValidateFunctionBlob();
+	void ValidateFunctionBlob(size_t blobEnd);
+	void ValidateDataBlob(size_t blobEnd);
 	void ValidateQualifiedIdentifier();
-	void ValidateReturnSignature();
+	void ValidateSizeAndType();
 	void ValidateParamListSignature();
 
 	Value16 ReadValue16();
@@ -94,13 +95,17 @@ CboValidator::Result CboValidatorCore::Validate()
 
 		AssertBytesRemaining(stringLength);
 		const char *str = reinterpret_cast<const char *>(mByteCode + mIndex);
-		if (StringEqual(str, stringLength, "List", 4))
+		if (StringEqual(str, stringLength, BOND_LIST_BLOB_ID, BOND_BLOB_ID_LENGTH))
 		{
 			mResult.mListBlobIdIndex = i;
 		}
-		else if (StringEqual(str, stringLength, "Func", 4))
+		else if (StringEqual(str, stringLength, BOND_FUNCTION_BLOB_ID, BOND_BLOB_ID_LENGTH))
 		{
 			mResult.mFunctionBlobIdIndex = i;
+		}
+		else if (StringEqual(str, stringLength, BOND_DATA_BLOB_ID, BOND_BLOB_ID_LENGTH))
+		{
+			mResult.mDataBlobIdIndex = i;
 		}
 		mIndex += stringLength;
 	}
@@ -142,7 +147,11 @@ void CboValidatorCore::ValidateBlob()
 	}
 	else if (idIndex == mResult.mFunctionBlobIdIndex)
 	{
-		ValidateFunctionBlob();
+		ValidateFunctionBlob(blobEnd);
+	}
+	else if (idIndex == mResult.mDataBlobIdIndex)
+	{
+		ValidateDataBlob(blobEnd);
 	}
 	else
 	{
@@ -168,14 +177,14 @@ void CboValidatorCore::ValidateListBlob()
 }
 
 
-void CboValidatorCore::ValidateFunctionBlob()
+void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 {
 	++mResult.mFunctionCount;
-	ValidateReturnSignature();
+	ValidateSizeAndType();
 	ValidateQualifiedIdentifier();
 	ValidateParamListSignature();
 
-	AssertBytesRemaining(6 * sizeof(Value32));
+	AssertBytesRemaining(7 * sizeof(Value32));
 
 	// Ignore the hash.
 	mIndex += sizeof(Value32);
@@ -352,6 +361,48 @@ void CboValidatorCore::ValidateFunctionBlob()
 			break;
 		}
 	}
+
+	// Validate the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		ValidateBlob();
+	}
+}
+
+
+void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
+{
+	++mResult.mDataCount;
+
+	AssertBytesRemaining(sizeof(Value32));
+	const uint32_t sizeAndType = ReadValue32().mUInt;
+	uint32_t size;
+	SignatureType type;
+	DecodeSizeAndType(sizeAndType, size, type);
+
+	ValidateQualifiedIdentifier();
+	AssertBytesRemaining(2 * sizeof(Value32));
+
+	// Ignore the hash.
+	mIndex += sizeof(Value32);
+
+	const Value32 payload = ReadValue32();
+	size_t alignment = size_t(BOND_SLOT_SIZE);
+
+	if (type == SIG_AGGREGATE)
+	{
+		alignment = Max(alignment, size_t(payload.mUInt));
+	}
+
+	mResult.mDataSize = AlignUp(mResult.mDataSize, alignment);
+	mResult.mDataSize += size;
+	mResult.mDataAlignment = Max(mResult.mDataAlignment, alignment);
+
+	// Validate the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		ValidateBlob();
+	}
 }
 
 
@@ -376,13 +427,13 @@ void CboValidatorCore::ValidateQualifiedIdentifier()
 }
 
 
-void CboValidatorCore::ValidateReturnSignature()
+void CboValidatorCore::ValidateSizeAndType()
 {
 	AssertBytesRemaining(sizeof(Value32));
-	const uint32_t returnSizeAndType = ReadValue32().mUInt;
-	uint32_t returnSize;
-	uint32_t returnType;
-	DecodeSizeAndType(returnSizeAndType, returnSize, returnType);
+	const uint32_t sizeAndType = ReadValue32().mUInt;
+	uint32_t size;
+	SignatureType type;
+	DecodeSizeAndType(sizeAndType, size, type);
 	// TODO: Do some sanity checks.
 }
 
@@ -407,11 +458,7 @@ void CboValidatorCore::ValidateParamListSignature()
 		}
 		prevOffset = offset;
 
-		const uint32_t paramSizeAndType = ReadValue32().mUInt;
-		uint32_t paramSize;
-		uint32_t paramType;
-		DecodeSizeAndType(paramSizeAndType, paramSize, paramType);
-		// TODO: Do some sanity checks.
+		ValidateSizeAndType();
 	}
 }
 

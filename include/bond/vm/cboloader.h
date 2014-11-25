@@ -2,7 +2,7 @@
 #define BOND_VM_CBOLOADER_H
 
 #include "bond/api/nativebinding.h"
-#include "bond/stl/list.h"
+#include "bond/stl/vector.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -38,13 +38,8 @@ public:
 	Handle Load();
 
 private:
-	typedef List<const NativeBindingCollection *> NativeBindingList;
-	typedef List<const FileData *> FileDataList;
-
-	struct FunctionHashComparator
-	{
-		bool operator()(const Function &a, const Function &b) const;
-	};
+	typedef Vector<const NativeBindingCollection *> NativeBindingList;
+	typedef Vector<const FileData *> FileDataList;
 
 	void BindNativeFunction(const NativeFunctionBinding &binding, const CodeSegment &codeSegment);
 	void ProcessFunction(Function &function, const CodeSegment &codeSegment);

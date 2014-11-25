@@ -338,11 +338,15 @@ uint32_t TypeDescriptor::GetAlignment(PointerSize pointerSize) const
 }
 
 
-uint32_t TypeDescriptor::GetSignatureType() const
+SignatureType TypeDescriptor::GetSignatureType() const
 {
-	if (IsPointerType())
+	if (IsPointerIntrinsicType())
 	{
 		return SIG_POINTER;
+	}
+	else if (IsArrayType())
+	{
+		return SIG_AGGREGATE;
 	}
 	return mTypeSpecifier->GetSignatureType();
 }
@@ -648,7 +652,7 @@ uint32_t TypeSpecifier::GetAlignment() const
 }
 
 
-uint32_t TypeSpecifier::GetSignatureType() const
+SignatureType TypeSpecifier::GetSignatureType() const
 {
 	switch (GetPrimitiveType())
 	{
@@ -680,7 +684,7 @@ uint32_t TypeSpecifier::GetSignatureType() const
 			const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(mDefinition);
 			if (structDeclaration != nullptr)
 			{
-				return SIG_STRUCT;
+				return SIG_AGGREGATE;
 			}
 		}
 	}
@@ -770,7 +774,7 @@ bool TypeSpecifier::IsVoidType() const
 
 bool TypeSpecifier::IsStructType() const
 {
-	return GetSignatureType() == SIG_STRUCT;
+	return GetSignatureType() == SIG_AGGREGATE;
 }
 
 

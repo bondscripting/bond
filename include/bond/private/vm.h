@@ -11,7 +11,7 @@ bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
 	return
 		(sizeof(T)  == size) &&
-		((signatureType == SIG_POINTER) || (signatureType == SIG_STRUCT));
+		((signatureType == SIG_POINTER) || (signatureType == SIG_AGGREGATE));
 }
 
 
@@ -118,7 +118,7 @@ bool ValidateReturnType(size_t size, SignatureType signatureType)
 {
 	return
 		(sizeof(T)  == size) &&
-		((signatureType == SIG_POINTER) || (signatureType == SIG_STRUCT));
+		((signatureType == SIG_POINTER) || (signatureType == SIG_AGGREGATE));
 }
 
 

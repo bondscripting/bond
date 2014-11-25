@@ -80,13 +80,30 @@ struct Function
 };
 
 
+struct DataEntry
+{
+	const char *const *mName;
+	void *mData;
+	uint32_t mHash;
+};
+
+
 class CodeSegment
 {
 public:
-	CodeSegment(const uint32_t *functionLookup, const Function *functionTable, size_t functionCount):
+	CodeSegment(
+			const uint32_t *functionLookup,
+			const Function *functionTable,
+			size_t functionCount,
+			const uint32_t *dataLookup,
+			const DataEntry *dataTable,
+			size_t dataCount):
 		mFunctionLookup(functionLookup),
 		mFunctionTable(functionTable),
-		mFunctionCount(functionCount)
+		mFunctionCount(functionCount),
+		mDataLookup(dataLookup),
+		mDataTable(dataTable),
+		mDataCount(dataCount)
 	{}
 
 	const Function *GetFunction(const HashedString &functionName) const { return GetFunction(functionName.GetHashCode()); }
@@ -96,10 +113,20 @@ public:
 	int32_t GetFunctionIndex(uint32_t functionHash) const;
 	const Function *GetFunctionAtIndex(uint32_t functionIndex) const { return mFunctionTable + functionIndex; }
 
+	const DataEntry *GetDataEntry(const HashedString &dataName) const { return GetDataEntry(dataName.GetHashCode()); }
+	const DataEntry *GetDataEntry(uint32_t dataHash) const;
+
+	int32_t GetDataEntryIndex(const HashedString &dataName) const { return GetDataEntryIndex(dataName.GetHashCode()); }
+	int32_t GetDataEntryIndex(uint32_t dataHash) const;
+	const DataEntry *GetDataEntryAtIndex(uint32_t dataIndex) const { return mDataTable + dataIndex; }
+
 private:
 	const uint32_t *mFunctionLookup;
 	const Function *mFunctionTable;
 	size_t mFunctionCount;
+	const uint32_t *mDataLookup;
+	const DataEntry *mDataTable;
+	size_t mDataCount;
 };
 
 }

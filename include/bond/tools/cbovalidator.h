@@ -18,6 +18,7 @@ public:
 			mPointerSize(POINTER_32BIT),
 			mListBlobIdIndex(0),
 			mFunctionBlobIdIndex(0),
+			mDataBlobIdIndex(0),
 			mValue32Count(0),
 			mValue64Count(0),
 			mStringCount(0),
@@ -27,7 +28,10 @@ public:
 			mParamListSignatureCount(0),
 			mParamSignatureCount(0),
 			mFunctionCount(0),
-			mCodeByteCount(0)
+			mCodeByteCount(0),
+			mDataCount(0),
+			mDataSize(0),
+			mDataAlignment(0)
 		{}
 
 		uint32_t mMajorVersion;
@@ -35,6 +39,7 @@ public:
 		PointerSize mPointerSize;
 		size_t mListBlobIdIndex;
 		size_t mFunctionBlobIdIndex;
+		size_t mDataBlobIdIndex;
 		size_t mValue32Count;
 		size_t mValue64Count;
 		size_t mStringCount;
@@ -45,6 +50,9 @@ public:
 		size_t mParamSignatureCount;
 		size_t mFunctionCount;
 		size_t mCodeByteCount;
+		size_t mDataCount;
+		size_t mDataSize;
+		size_t mDataAlignment;
 	};
 
 	Result Validate(const void *byteCode, size_t length);

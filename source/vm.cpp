@@ -59,8 +59,8 @@ void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
 	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName.GetString()));
-	uint8_t *framePointer = static_cast<uint8_t *>(AlignPointerUp(prevStackPointer + function->mArgSize, function->mFramePointerAlignment));
-	uint8_t *stackPointer = static_cast<uint8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
+	uint8_t *framePointer = AlignPointerUp(prevStackPointer + function->mArgSize, function->mFramePointerAlignment);
+	uint8_t *stackPointer = AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE);
 	mValue.mFunction = function;
 	mValue.mFramePointer = framePointer;
 	mValue.mStackPointer = stackPointer;
@@ -476,7 +476,7 @@ void VM::ExecuteScriptFunction()
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				memcpy(sp - BOND_SLOT_SIZE, address, memSize);
 				pc += sizeof(Value16);
-				sp = static_cast<uint8_t *>(AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE));
+				sp = AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE);
 			}
 			break;
 
@@ -2102,7 +2102,7 @@ void VM::ExecuteScriptFunction()
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				memcpy(frame.mReturnPointer, address, memSize);
 				//pc += sizeof(Value16);
-				//sp = static_cast<uint8_t *>(AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE));
+				//sp = AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE);
 			}
 			return;
 
@@ -2126,7 +2126,7 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 	uint8_t *finalStackPointer;
 	switch (function->mReturnSignature.mType)
 	{
-		case SIG_STRUCT:
+		case SIG_AGGREGATE:
 			argTop = stackTop - BOND_SLOT_SIZE;
 			returnPointer = *reinterpret_cast<uint8_t **>(argTop);
 			finalStackPointer = argTop - function->mPackedArgSize;
@@ -2143,7 +2143,7 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 			break;
 	}
 
-	uint8_t *framePointer = static_cast<uint8_t *>(AlignPointerUp(argTop + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment));
+	uint8_t *framePointer = AlignPointerUp(argTop + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment);
 
 	if (function->mUnpackArguments)
 	{
@@ -2178,7 +2178,7 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 		}
 	}
 
-	uint8_t *stackPointer = static_cast<uint8_t *>(AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE));
+	uint8_t *stackPointer = AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE);
 
 	StackFrames::Element stackFrameElement(mStackFrames, CalleeStackFrame(*this, function, framePointer, stackPointer, returnPointer));
 	ValidateStackPointer(stackPointer);
@@ -2290,7 +2290,7 @@ void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) con
 				case SIG_POINTER:
 					stream.Print("%p", reinterpret_cast<const void *>(argPointer));
 					break;
-				case SIG_STRUCT:
+				case SIG_AGGREGATE:
 				case SIG_VOID:
 					stream.Print(GetBondTypeMnemonic(SignatureType(signature.mType)), signature.mSize);
 					break;

@@ -68,10 +68,14 @@ uint stackSize;
 uint framePointerAlignment;
 uint CodeSize;
 uchar[CodeSize] code;
-Blob metaData;
+(Blob metadata;)
 
-DeclarationBlob
----------------
-BlobHeader header("Decl");
+DataBlob
+--------
+BlobHeader header("Data");
+uint size:28;
+uint type:4;
+QualifiedId name;
 uint Hash;
-???
+32bit payload;     // value, index of value or alignment
+(Blob metadata;)

@@ -39,10 +39,11 @@ private:
 
 	void DisassembleBlob();
 	void DisassembleListBlob();
-	void DisassembleFunctionBlob();
+	void DisassembleFunctionBlob(size_t blobEnd);
+	void DisassembleDataBlob(size_t blobEnd);
 	void DisassembleQualifiedIdentifier();
 	void DisassembleParamListSignature();
-	void DisassembleSizeAndType();
+	SignatureType DisassembleSizeAndType();
 	void WriteSimpleString(const SimpleString &str);
 	void WriteAbbreviatedString(const SimpleString &str);
 
@@ -111,7 +112,11 @@ void DisassemblerCore::DisassembleBlob()
 	}
 	else if (idIndex == mValidationResult.mFunctionBlobIdIndex)
 	{
-		DisassembleFunctionBlob();
+		DisassembleFunctionBlob(blobEnd);
+	}
+	else if (idIndex == mValidationResult.mDataBlobIdIndex)
+	{
+		DisassembleFunctionBlob(blobEnd);
 	}
 	else
 	{
@@ -130,7 +135,7 @@ void DisassemblerCore::DisassembleListBlob()
 }
 
 
-void DisassemblerCore::DisassembleFunctionBlob()
+void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 {
 	mStream.Print("Function: ");
 	DisassembleSizeAndType();
@@ -140,7 +145,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 	DisassembleParamListSignature();
 	mStream.Print(")\n");
 
-	const uint32_t functionHash = ReadValue32().mUInt;
+	const uint32_t idHash = ReadValue32().mUInt;
 	const uint32_t argSize = ReadValue32().mUInt;
 	const uint32_t packedArgSize = ReadValue32().mUInt;
 	const uint32_t localSize = ReadValue32().mUInt;
@@ -157,7 +162,7 @@ void DisassemblerCore::DisassembleFunctionBlob()
 		"\tstack size: %" BOND_PRIu32 "\n"
 		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
 		"\tcode size: %" BOND_PRIu32 "\n",
-		functionHash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
+		idHash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{
@@ -269,6 +274,97 @@ void DisassemblerCore::DisassembleFunctionBlob()
 		}
 		mStream.Print("\n");
 	}
+
+	// Disassemble the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		DisassembleBlob();
+	}
+}
+
+
+void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
+{
+	mStream.Print("Data: ");
+	const SignatureType type = DisassembleSizeAndType();
+	mStream.Print(" ");
+	DisassembleQualifiedIdentifier();
+
+	const uint32_t idHash = ReadValue32().mUInt;
+	const Value32 payload = ReadValue32();
+
+	switch (type)
+	{
+		case SIG_BOOL:
+		{
+			mStream.Print(" = %s\n", (payload.mInt == 0) ? "false" : "true");
+		}
+		break;
+
+		case SIG_CHAR:
+		case SIG_UCHAR:
+		{
+			mStream.Print(" = %c\n", payload.mInt);
+		}
+		break;
+
+		case SIG_SHORT:
+		case SIG_INT:
+		{
+			mStream.Print(" = " BOND_PRId32 "\n", payload.mInt);
+		}
+		break;
+
+		case SIG_USHORT:
+		case SIG_UINT:
+		{
+			mStream.Print(" = " BOND_PRIu32 "\n", payload.mUInt);
+		}
+		break;
+
+		case SIG_LONG:
+		{
+			const int64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mLong : 0;
+			mStream.Print(" = " BOND_PRId64 "\n", value);
+		}
+		break;
+
+		case SIG_ULONG:
+		{
+			const uint64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mULong : 0;
+			mStream.Print(" = " BOND_PRIu64 "\n", value);
+		}
+		break;
+
+		case SIG_FLOAT:
+		{
+			mStream.Print(" = %f\n", payload.mFloat);
+		}
+		break;
+
+		case SIG_DOUBLE:
+		{
+			const double value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mDouble : 0.0;
+			mStream.Print(" = %f\n", value);
+		}
+		break;
+
+		case SIG_VOID:
+		case SIG_POINTER:
+		case SIG_AGGREGATE:
+		{
+			mStream.Print("\n\talignment: " BOND_PRIu32 "\n", payload.mUInt);
+		}
+		break;
+	}
+
+	mStream.Print("\thash: 0x%" BOND_PRIx32 "\n", idHash);
+
+	// Disassemble the optional metadata blob.
+	if (mIndex < blobEnd)
+	{
+		DisassembleBlob();
+	}
 }
 
 
@@ -304,14 +400,15 @@ void DisassemblerCore::DisassembleParamListSignature()
 }
 
 
-void DisassemblerCore::DisassembleSizeAndType()
+SignatureType DisassemblerCore::DisassembleSizeAndType()
 {
 	const uint32_t sizeAndType = ReadValue32().mUInt;
 	uint32_t size;
-	uint32_t type;
+	SignatureType type;
 	DecodeSizeAndType(sizeAndType, size, type);
-	const char *str = GetBondTypeMnemonic(SignatureType(type));
+	const char *str = GetBondTypeMnemonic(type);
 	mStream.Print(str, size);
+	return type;
 }
 
 

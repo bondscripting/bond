@@ -6,16 +6,21 @@
 namespace Bond
 {
 
-inline uint32_t EncodeSizeAndType(uint32_t size, uint32_t type)
+#define BOND_LIST_BLOB_ID "List"
+#define BOND_FUNCTION_BLOB_ID "Func"
+#define BOND_DATA_BLOB_ID "Data"
+const size_t BOND_BLOB_ID_LENGTH = 4;
+
+inline uint32_t EncodeSizeAndType(uint32_t size, SignatureType type)
 {
 	return (size << 4) | (type & 0xf);
 }
 
 
-inline void DecodeSizeAndType(uint32_t sizeAndType, uint32_t &size, uint32_t &type)
+inline void DecodeSizeAndType(uint32_t sizeAndType, uint32_t &size, SignatureType &type)
 {
 	size = sizeAndType >> 4;
-	type = sizeAndType & 0xf;
+	type = SignatureType(sizeAndType & 0xf);
 }
 
 

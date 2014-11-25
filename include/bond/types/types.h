@@ -24,20 +24,20 @@ enum PointerSize
 
 
 #define BOND_SIGNATURE_TYPE_LIST \
-  BOND_SIGNATURE_TYPE_ITEM(VOID,    "void",                     "void")                     \
-  BOND_SIGNATURE_TYPE_ITEM(BOOL,    "bool",                     "bool")                     \
-  BOND_SIGNATURE_TYPE_ITEM(CHAR,    "char",                     "int8_t")                   \
-  BOND_SIGNATURE_TYPE_ITEM(UCHAR,   "uchar",                    "uint8_t")                  \
-  BOND_SIGNATURE_TYPE_ITEM(SHORT,   "short",                    "int16_t")                  \
-  BOND_SIGNATURE_TYPE_ITEM(USHORT,  "ushort",                   "uint16_t")                 \
-  BOND_SIGNATURE_TYPE_ITEM(INT,     "int",                      "int32_t")                  \
-  BOND_SIGNATURE_TYPE_ITEM(UINT,    "uint",                     "uint32_t")                 \
-  BOND_SIGNATURE_TYPE_ITEM(LONG,    "long",                     "int64_t")                  \
-  BOND_SIGNATURE_TYPE_ITEM(ULONG,   "ulong",                    "uint64_t")                 \
-  BOND_SIGNATURE_TYPE_ITEM(FLOAT,   "float",                    "float")                    \
-  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,  "double",                   "double")                   \
-  BOND_SIGNATURE_TYPE_ITEM(POINTER, "*",                        "pointer")                  \
-  BOND_SIGNATURE_TYPE_ITEM(STRUCT,  "struct<%" BOND_PRIu32 ">", "struct<%" BOND_PRIu32 ">") \
+  BOND_SIGNATURE_TYPE_ITEM(VOID,      "void",                   "void")                   \
+  BOND_SIGNATURE_TYPE_ITEM(BOOL,      "bool",                   "bool")                   \
+  BOND_SIGNATURE_TYPE_ITEM(CHAR,      "char",                   "int8_t")                 \
+  BOND_SIGNATURE_TYPE_ITEM(UCHAR,     "uchar",                  "uint8_t")                \
+  BOND_SIGNATURE_TYPE_ITEM(SHORT,     "short",                  "int16_t")                \
+  BOND_SIGNATURE_TYPE_ITEM(USHORT,    "ushort",                 "uint16_t")               \
+  BOND_SIGNATURE_TYPE_ITEM(INT,       "int",                    "int32_t")                \
+  BOND_SIGNATURE_TYPE_ITEM(UINT,      "uint",                   "uint32_t")               \
+  BOND_SIGNATURE_TYPE_ITEM(LONG,      "long",                   "int64_t")                \
+  BOND_SIGNATURE_TYPE_ITEM(ULONG,     "ulong",                  "uint64_t")               \
+  BOND_SIGNATURE_TYPE_ITEM(FLOAT,     "float",                  "float")                  \
+  BOND_SIGNATURE_TYPE_ITEM(DOUBLE,    "double",                 "double")                 \
+  BOND_SIGNATURE_TYPE_ITEM(POINTER,   "*",                      "pointer")                \
+  BOND_SIGNATURE_TYPE_ITEM(AGGREGATE, "aggr<%" BOND_PRIu32 ">", "aggr<%" BOND_PRIu32 ">") \
 
 
 enum SignatureType
