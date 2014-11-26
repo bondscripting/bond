@@ -127,7 +127,6 @@ void VM::ExecuteScriptFunction()
 	CalleeStackFrame &frame = GetTopStackFrame();
 	const ConstantTable *constantTable = frame.mFunction->mConstantTable;
 	const Value32 *value32Table = constantTable->mValue32Table;
-	const Function *functionTable = mCodeSegment.GetFunctionAtIndex(0);
 	const uint8_t *code = frame.mFunction->mCode;
 	uint8_t *const fp = frame.mFramePointer;
 	uint8_t *sp = frame.mStackPointer;
@@ -415,8 +414,14 @@ void VM::ExecuteScriptFunction()
 			break;
 
 			case OPCODE_LOADEA:
-				// TODO
-				break;
+			{
+				const Value16 dataIndex(code + pc);
+				const DataEntry *dataEntry = mCodeSegment.GetDataEntryAtIndex(dataIndex.mUShort);
+				*reinterpret_cast<void **>(sp) = dataEntry->mData;
+				pc += sizeof(Value16);
+				sp += BOND_SLOT_SIZE;
+			}
+			break;
 
 			case OPCODE_LOADSTR:
 			{
@@ -2076,7 +2081,8 @@ void VM::ExecuteScriptFunction()
 			{
 				const Value16 functionIndex(code + pc);
 				pc += sizeof(Value16);
-				sp = InvokeFunction(functionTable + functionIndex.mUShort, sp);
+				const Function *function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
+				sp = InvokeFunction(function, sp);
 			}
 			break;
 
