@@ -27,6 +27,11 @@ QualifiedId
 ushort elementCount;
 ushort[elementCount] elementIndices;
 
+SizeAndType
+----------------
+uint size:28;
+uint type:4;
+
 ParamListSignature
 ------------------
 ushort paramCount;
@@ -35,13 +40,7 @@ ParamSignature[paramCount] paramSignatures;
 ParamSignature
 --------------
 int framePointerOffset;
-uint size:28;
-uint type:4;
-
-ReturnSignature
-----------------
-uint size:28;
-uint type:4;
+SizeAndType paramType;
 
 BlobHeader
 ----------
@@ -57,7 +56,7 @@ Blob[blobCount] blobs;
 FunctionBlob
 ------------
 BlobHeader header("Func");
-ReturnSignature returnSignature;
+SizeAndType returnType;
 QualifiedId name;
 ParamListSignature paramListSignature;
 uint hash;
@@ -73,8 +72,7 @@ uchar[CodeSize] code;
 DataBlob
 --------
 BlobHeader header("Data");
-uint size:28;
-uint type:4;
+SizeAndType type;
 QualifiedId name;
 uint Hash;
 32bit payload;     // value, index of value or alignment

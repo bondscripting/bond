@@ -164,6 +164,8 @@ CboLoader::Handle CboLoader::Load()
 	const size_t alignment = Max(DEFAULT_ALIGNMENT, dataAlignment);
 
 	Allocator::AlignedHandle<uint8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<uint8_t>(memSize, alignment));
+	memset(memHandle.get(), 0, memSize);
+
 	CboLoaderResources resources(
 		memHandle.get(),
 		constantTablesStart,

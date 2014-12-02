@@ -139,6 +139,7 @@ public:
 		mValue64List(Value64List::Allocator(&allocator)),
 		mFunctionList(FunctionList::Allocator(&allocator)),
 		mNativeMemberList(NamedInitializerList::Allocator(&allocator)),
+		mDataList(NamedInitializerList::Allocator(&allocator)),
 		mAllocator(allocator),
 		mStream(stream),
 		mErrorBuffer(errorBuffer),
@@ -276,7 +277,7 @@ private:
 	typedef Map<HashedString, uint16_t> StringIndexMap;
 	typedef Map<Value32, uint16_t> Value32IndexMap;
 	typedef Map<Value64, uint16_t> Value64IndexMap;
-	typedef List<HashedString> StringList;
+	typedef Vector<HashedString> StringList;
 	typedef Vector<Value32> Value32List;
 	typedef Vector<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
@@ -398,8 +399,9 @@ private:
 	void WriteConstantTable();
 	void WriteFunctionList(uint16_t functionIndex);
 	void WriteNativeMemberList(uint16_t functionIndex);
+	void WriteDataList(uint16_t dataIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
-	void WriteReturnSignature(const TypeDescriptor *type);
+	void WriteSizeAndType(const TypeDescriptor *type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
 	void WriteSymbolNameIndices(const Symbol *symbol);
 	void WriteValue16(Value16 value);
@@ -429,6 +431,7 @@ private:
 	Value64List::Type mValue64List;
 	FunctionList::Type mFunctionList;
 	NamedInitializerList::Type mNativeMemberList;
+	NamedInitializerList::Type mDataList;
 	ResultStack mResult;
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
@@ -463,7 +466,9 @@ void GeneratorCore::Generate()
 	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
 
 	const uint16_t listIndex = MapString(BOND_LIST_BLOB_ID);
-	const uint16_t functionIndex = mFunctionList.empty() ? 0 : MapString(BOND_FUNCTION_BLOB_ID);
+	const uint16_t functionIndex = (mFunctionList.empty() && mNativeMemberList.empty()) ?
+		0 : MapString(BOND_FUNCTION_BLOB_ID);
+	const uint16_t dataIndex = mDataList.empty() ? 0 : MapString(BOND_DATA_BLOB_ID);
 
 	ResolveJumps();
 	WriteConstantTable();
@@ -473,10 +478,11 @@ void GeneratorCore::Generate()
 	mStream.AddOffset(sizeof(Value32));
 
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(/* mDefinitionList.size() + */ uint32_t(mFunctionList.size()) + uint32_t(2 * mNativeMemberList.size())));
+	WriteValue32(Value32(uint32_t(mFunctionList.size() + (2 * mNativeMemberList.size()) + mDataList.size())));
 
 	WriteFunctionList(functionIndex);
 	WriteNativeMemberList(functionIndex);
+	WriteDataList(dataIndex);
 
 	// Patch up the blob size.
 	const Stream::pos_t endPos = mStream.GetPosition();
@@ -579,10 +585,29 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 	switch (namedInitializer->GetScope())
 	{
 		case SCOPE_GLOBAL:
-			//MapString("Decl");
-			//MapString(namedInitializer->GetName()->GetHashedText());
-			// TODO: output initializer data.
-			break;
+		{
+			const TypeAndValue *typeAndValue = namedInitializer->GetTypeAndValue();
+			if (typeAndValue->IsValueDefined())
+			{
+				switch (typeAndValue->GetTypeDescriptor()->GetSignatureType())
+				{
+					case SIG_LONG:
+					case SIG_ULONG:
+					case SIG_DOUBLE:
+						MapValue64(Value64(typeAndValue->GetULongValue()));
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				// TODO: generate code for aggregate and non-constant initializers.
+			}
+			mDataList.push_back(namedInitializer);
+			MapQualifiedSymbolName(namedInitializer);
+		}
+		break;
 
 		case SCOPE_LOCAL:
 		{
@@ -1529,7 +1554,6 @@ void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_
 			}
 			memberDeclarationList = NextNode(memberDeclarationList);
 		}
-		// TODO: EmitDefaultInitializer.
 	}
 	else
 	{
@@ -3661,16 +3685,16 @@ GeneratorCore::Result::Context GeneratorCore::TransformContext(Result::Context t
 
 void GeneratorCore::ResolveJumps()
 {
-	for (FunctionList::Type::iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
+	for (CompiledFunction &compiledFunction: mFunctionList)
 	{
-		ByteCode::Type &byteCode = functionIt->mByteCode;
-		JumpList::Type &jumpList = functionIt->mJumpList;
-		const LabelList::Type &labelList = functionIt->mLabelList;
+		ByteCode::Type &byteCode = compiledFunction.mByteCode;
+		JumpList::Type &jumpList = compiledFunction.mJumpList;
+		const LabelList::Type &labelList = compiledFunction.mLabelList;
 
 		// Resolve jump targets.
-		for (JumpList::Type::iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+		for (JumpEntry &jumpEntry: jumpList)
 		{
-			jumpIt->mToPos = labelList[jumpIt->mToLabel];
+			jumpEntry.mToPos = labelList[jumpEntry.mToLabel];
 		}
 
 		// Optmize jumps if the target is another jump instruction.
@@ -3678,16 +3702,16 @@ void GeneratorCore::ResolveJumps()
 		while (requiresAnotherPass)
 		{
 			requiresAnotherPass = false;
-			for (JumpList::Type::iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+			for (JumpEntry &jumpEntry: jumpList)
 			{
-				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpIt->mToPos);
+				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpEntry.mToPos);
 				if (targetEntry != nullptr)
 				{
-					const uint8_t opCode = byteCode[jumpIt->mOpCodePos];
+					const uint8_t opCode = byteCode[jumpEntry.mOpCodePos];
 					const uint8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
 					if (targetOpCode == OPCODE_GOTO)
 					{
-						jumpIt->mToPos = targetEntry->mToPos;
+						jumpEntry.mToPos = targetEntry->mToPos;
 						requiresAnotherPass = true;
 					}
 					else
@@ -3698,24 +3722,24 @@ void GeneratorCore::ResolveJumps()
 								switch (targetOpCode)
 								{
 									case OPCODE_BRZ:
-										jumpIt->mToPos = targetEntry->mToPos;
+										jumpEntry.mToPos = targetEntry->mToPos;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_NBRNZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRNZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
 									case OPCODE_IFNZ:
-										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
 										requiresAnotherPass = true;
 										break;
 								}
@@ -3725,24 +3749,24 @@ void GeneratorCore::ResolveJumps()
 								switch (targetOpCode)
 								{
 									case OPCODE_BRNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
+										jumpEntry.mToPos = targetEntry->mToPos;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_NBRZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
 									case OPCODE_IFZ:
-										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
 										requiresAnotherPass = true;
 										break;
 								}
@@ -3752,24 +3776,24 @@ void GeneratorCore::ResolveJumps()
 								switch (targetOpCode)
 								{
 									case OPCODE_BRZ:
-										jumpIt->mToPos = targetEntry->mToPos;
+										jumpEntry.mToPos = targetEntry->mToPos;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_BRNZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRNZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
 									case OPCODE_IFNZ:
-										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFNZ;
+										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
 										requiresAnotherPass = true;
 										break;
 								}
@@ -3779,24 +3803,24 @@ void GeneratorCore::ResolveJumps()
 								switch (targetOpCode)
 								{
 									case OPCODE_BRNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
+										jumpEntry.mToPos = targetEntry->mToPos;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_BRZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFNZ:
-										jumpIt->mToPos = targetEntry->mToPos;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										jumpEntry.mToPos = targetEntry->mToPos;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
 										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
 									case OPCODE_IFZ:
-										jumpIt->mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpIt->mOpCodePos] = OPCODE_IFZ;
+										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
 										requiresAnotherPass = true;
 										break;
 								}
@@ -3808,9 +3832,9 @@ void GeneratorCore::ResolveJumps()
 		}
 
 		// Add jump offsets to the constant table if necessary.
-		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+		for (const JumpEntry &jumpEntry: jumpList)
 		{
-			const int32_t offset = int32_t(jumpIt->mToPos - jumpIt->GetFromPos());
+			const int32_t offset = int32_t(jumpEntry.mToPos - jumpEntry.GetFromPos());
 			if (!IsInRange<int16_t>(offset))
 			{
 				MapValue32(Value32(offset));
@@ -3838,20 +3862,20 @@ void GeneratorCore::WriteConstantTable()
 	WriteValue16(Value16(uint16_t(mValue64List.size())));
 	WriteValue16(Value16(uint16_t(mStringList.size())));
 
-	for (Value32List::Type::const_iterator it = mValue32List.begin(); it != mValue32List.end(); ++it)
+	for (const Value32 &value: mValue32List)
 	{
-		WriteValue32(*it);
+		WriteValue32(value);
 	}
 
-	for (Value64List::Type::const_iterator it = mValue64List.begin(); it != mValue64List.end(); ++it)
+	for (const Value64 &value: mValue64List)
 	{
-		WriteValue64(*it);
+		WriteValue64(value);
 	}
 
-	for (StringList::Type::const_iterator it = mStringList.begin(); it != mStringList.end(); ++it)
+	for (const HashedString &hashedString: mStringList)
 	{
-		const size_t length = it->GetLength();
-		const char *str = it->GetString();
+		const size_t length = hashedString.GetLength();
+		const char *str = hashedString.GetString();
 		WriteValue16(Value16(uint16_t(length)));
 		for (size_t i = 0; i < length; ++i)
 		{
@@ -3869,43 +3893,43 @@ void GeneratorCore::WriteConstantTable()
 
 void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 {
-	for (FunctionList::Type::const_iterator functionIt = mFunctionList.begin(); functionIt != mFunctionList.end(); ++functionIt)
+	for (const CompiledFunction &compiledFunction: mFunctionList)
 	{
-		const FunctionDefinition *function = functionIt->mDefinition;
+		const FunctionDefinition *function = compiledFunction.mDefinition;
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
 		const int blobStartPos = mStream.GetPosition();
 		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
-		WriteReturnSignature(function->GetPrototype()->GetReturnType());
+		WriteSizeAndType(function->GetPrototype()->GetReturnType());
 		WriteQualifiedSymbolName(function);
 		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		WriteValue32(Value32(function->GetGlobalHashCode()));
-		WriteValue32(Value32(functionIt->mArgSize));
-		WriteValue32(Value32(functionIt->mPackedArgSize));
-		WriteValue32(Value32(functionIt->mLocalSize));
-		WriteValue32(Value32(functionIt->mStackSize));
-		WriteValue32(Value32(functionIt->mFramePointerAlignment));
+		WriteValue32(Value32(compiledFunction.mArgSize));
+		WriteValue32(Value32(compiledFunction.mPackedArgSize));
+		WriteValue32(Value32(compiledFunction.mLocalSize));
+		WriteValue32(Value32(compiledFunction.mStackSize));
+		WriteValue32(Value32(compiledFunction.mFramePointerAlignment));
 
 		// Cache the code start position and skip 4 bytes for the code size.
 		const int codeSizePos = mStream.GetPosition();
 		mStream.AddOffset(sizeof(Value32));
 		const int codeStartPos = mStream.GetPosition();
 
-		const ByteCode::Type &byteCode = functionIt->mByteCode;
-		const JumpList::Type &jumpList = functionIt->mJumpList;
+		const ByteCode::Type &byteCode = compiledFunction.mByteCode;
+		const JumpList::Type &jumpList = compiledFunction.mJumpList;
 
 		size_t byteCodeIndex = 0;
-		for (JumpList::Type::const_iterator jumpIt = jumpList.begin(); jumpIt != jumpList.end(); ++jumpIt)
+		for (const JumpEntry &jumpEntry: jumpList)
 		{
-			while (byteCodeIndex < jumpIt->mOpCodePos)
+			while (byteCodeIndex < jumpEntry.mOpCodePos)
 			{
 				mStream.Write(byteCode[byteCodeIndex++]);
 			}
 
 			uint8_t opCode = byteCode[byteCodeIndex++];
-			const int32_t offset = int32_t(jumpIt->mToPos) - int32_t(jumpIt->GetFromPos());
+			const int32_t offset = int32_t(jumpEntry.mToPos) - int32_t(jumpEntry.GetFromPos());
 			Value16 arg(offset);
 
 			if (!IsInRange<int16_t>(offset))
@@ -3939,9 +3963,8 @@ void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 
 void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 {
-	for (NamedInitializerList::Type::const_iterator memberIt = mNativeMemberList.begin(); memberIt != mNativeMemberList.end(); ++memberIt)
+	for (const NamedInitializer *member: mNativeMemberList)
 	{
-		const NamedInitializer *member = *memberIt;
 		const TypeDescriptor *typeDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
 
 		// Write the getter function.
@@ -3950,7 +3973,7 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
-			WriteReturnSignature(typeDescriptor);
+			WriteSizeAndType(typeDescriptor);
 			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(nullptr, true);
 			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
@@ -3980,7 +4003,7 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
-			WriteReturnSignature(&voidDescriptor);
+			WriteSizeAndType(&voidDescriptor);
 			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(&parameter, true);
 			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX)));
@@ -4001,6 +4024,89 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 }
 
 
+void GeneratorCore::WriteDataList(uint16_t dataIndex)
+{
+	for (const NamedInitializer *namedInitializer: mDataList)
+	{
+		const TypeAndValue *typeAndValue = namedInitializer->GetTypeAndValue();
+		const TypeDescriptor *typeDescriptor = typeAndValue->GetTypeDescriptor();
+
+		// Cache the blob start position and skip 4 bytes for the blob size.
+		const int blobStartPos = mStream.GetPosition();
+		mStream.AddOffset(sizeof(Value32));
+
+		WriteValue16(Value16(dataIndex));
+		WriteSizeAndType(typeDescriptor);
+		WriteQualifiedSymbolName(namedInitializer);
+		WriteValue32(Value32(namedInitializer->GetGlobalHashCode()));
+
+		Value32 payload(uint32_t(0));
+		if (typeAndValue->IsValueDefined())
+		{
+			switch (typeDescriptor->GetSignatureType())
+			{
+				case SIG_BOOL:
+					payload.mUInt = typeAndValue->GetBoolValue() ? uint32_t(1) : uint32_t(0);
+					break;
+				case SIG_CHAR:
+				case SIG_SHORT:
+				case SIG_INT:
+					payload.mInt = typeAndValue->GetIntValue();
+					break;
+				case SIG_UCHAR:
+				case SIG_USHORT:
+				case SIG_UINT:
+					payload.mUInt = typeAndValue->GetUIntValue();
+					break;
+				case SIG_FLOAT:
+					payload.mFloat = typeAndValue->GetFloatValue();
+					break;
+				case SIG_LONG:
+				case SIG_ULONG:
+				case SIG_DOUBLE:
+				{
+					const Value64IndexMap::Type::const_iterator index = mValue64IndexMap.find(Value64(typeAndValue->GetULongValue()));
+					if (index != mValue64IndexMap.end())
+					{
+						payload.mUInt = uint32_t(index->second);
+					}
+					else
+					{
+						payload.mUInt = BOND_UINT_MAX;
+					}
+				}
+				break;
+				case SIG_VOID:
+				case SIG_POINTER:
+				case SIG_AGGREGATE:
+					payload.mUInt = typeDescriptor->GetAlignment(mPointerSize);
+					break;
+			}
+		}
+		else
+		{
+			switch (typeDescriptor->GetSignatureType())
+			{
+				case SIG_LONG:
+				case SIG_ULONG:
+				case SIG_DOUBLE:
+					payload.mUInt = BOND_UINT_MAX;
+				break;
+				default:
+					break;
+			}
+		}
+
+		WriteValue32(payload);
+
+		// Patch up the blob size.
+		const Stream::pos_t endPos = mStream.GetPosition();
+		mStream.SetPosition(blobStartPos);
+		WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
+		mStream.SetPosition(endPos);
+	}
+}
+
 void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 {
 	// Cache the position for the number of elements and skip 2 bytes.
@@ -4017,7 +4123,7 @@ void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 }
 
 
-void GeneratorCore::WriteReturnSignature(const TypeDescriptor *type)
+void GeneratorCore::WriteSizeAndType(const TypeDescriptor *type)
 {
 	const uint32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
 	WriteValue32(Value32(sizeAndType));

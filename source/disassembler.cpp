@@ -116,7 +116,7 @@ void DisassemblerCore::DisassembleBlob()
 	}
 	else if (idIndex == mValidationResult.mDataBlobIdIndex)
 	{
-		DisassembleFunctionBlob(blobEnd);
+		DisassembleDataBlob(blobEnd);
 	}
 	else
 	{
@@ -311,28 +311,28 @@ void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 		case SIG_SHORT:
 		case SIG_INT:
 		{
-			mStream.Print(" = " BOND_PRId32 "\n", payload.mInt);
+			mStream.Print(" = %" BOND_PRId32 "\n", payload.mInt);
 		}
 		break;
 
 		case SIG_USHORT:
 		case SIG_UINT:
 		{
-			mStream.Print(" = " BOND_PRIu32 "\n", payload.mUInt);
+			mStream.Print(" = %" BOND_PRIu32 "\n", payload.mUInt);
 		}
 		break;
 
 		case SIG_LONG:
 		{
 			const int64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mLong : 0;
-			mStream.Print(" = " BOND_PRId64 "\n", value);
+			mStream.Print(" = %" BOND_PRId64 "\n", value);
 		}
 		break;
 
 		case SIG_ULONG:
 		{
 			const uint64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mULong : 0;
-			mStream.Print(" = " BOND_PRIu64 "\n", value);
+			mStream.Print(" = %" BOND_PRIu64 "\n", value);
 		}
 		break;
 
@@ -353,7 +353,7 @@ void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 		case SIG_POINTER:
 		case SIG_AGGREGATE:
 		{
-			mStream.Print("\n\talignment: " BOND_PRIu32 "\n", payload.mUInt);
+			mStream.Print("\n\talignment: %" BOND_PRIu32 "\n", payload.mUInt);
 		}
 		break;
 	}
