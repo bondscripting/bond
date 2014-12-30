@@ -119,6 +119,7 @@ CboValidator::Result CboValidatorCore::Validate()
 		return mResult;
 	}
 
+	mResult.mDataAlignment = size_t(BOND_SLOT_SIZE);
 	ValidateBlob();
 
 	if (mIndex != mLength)

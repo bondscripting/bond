@@ -2,14 +2,10 @@
 #define BOND_STL_AUTOSTACK_H
 
 #include "bond/types/types.h"
+#include <utility>
 
 namespace Bond
 {
-
-template <typename ElementType>
-class AutoStackIterator
-{
-};
 
 template <typename ElementType>
 class AutoStack
@@ -28,8 +24,9 @@ public:
 			mStack.Push(this);
 		}
 
-		Element(AutoStack &stack, const ElementType &value):
-			mValue(value),
+		template<class... Args>
+		Element(AutoStack &stack, Args&&... args):
+			mValue(std::forward<Args>(args)...),
 			mStack(stack),
 			mNext(nullptr)
 		{
@@ -175,10 +172,10 @@ public:
 		return false;
 	}
 
-	Iterator Begin() { return Iterator(mTop); }
-	ConstIterator Begin() const { return ConstIterator(mTop); }
-	Iterator End() { return Iterator(nullptr); }
-	ConstIterator End() const { return ConstIterator(nullptr); }
+	Iterator begin() { return Iterator(mTop); }
+	ConstIterator begin() const { return ConstIterator(mTop); }
+	Iterator end() { return Iterator(nullptr); }
+	ConstIterator end() const { return ConstIterator(nullptr); }
 
 private:
 	Element *mTop;

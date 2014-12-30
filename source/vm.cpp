@@ -2186,7 +2186,7 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 
 	uint8_t *stackPointer = AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE);
 
-	StackFrames::Element stackFrameElement(mStackFrames, CalleeStackFrame(*this, function, framePointer, stackPointer, returnPointer));
+	StackFrames::Element stackFrameElement(mStackFrames, *this, function, framePointer, stackPointer, returnPointer);
 	ValidateStackPointer(stackPointer);
 
 	if (function->IsNative())
@@ -2213,11 +2213,9 @@ void VM::ValidateStackPointer(uint8_t *stackPointer) const
 
 void VM::DumpCallStack(OutputStream &stream) const
 {
-	StackFrames::ConstIterator it = mStackFrames.Begin();
-	while (it != mStackFrames.End())
+	for (const CalleeStackFrame &frame: mStackFrames)
 	{
-		DumpStackFrame(stream, *it);
-		++it;
+		DumpStackFrame(stream, frame);
 	}
 }
 

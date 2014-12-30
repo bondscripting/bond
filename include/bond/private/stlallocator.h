@@ -52,14 +52,10 @@ public:
 		mAllocator->Free(p);
 	}
 
-	void construct(pointer p, const_reference t)
+	template<class U, class... Args>
+	void construct(U* p, Args&&... args)
 	{
-		new (static_cast<void *>(p)) T(t);
-	}
-
-	void construct(pointer p, rval_reference t)
-	{
-		new (static_cast<void *>(p)) T(std::forward<T>(t));
+		new (static_cast<void *>(p)) U(std::forward<Args>(args)...);
 	}
 
 	void destroy(pointer p)

@@ -396,6 +396,7 @@ private:
 	void ResolveJumps();
 	const JumpEntry *FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const;
 
+	void WriteCbo();
 	void WriteConstantTable();
 	void WriteFunctionList(uint16_t functionIndex);
 	void WriteNativeMemberList(uint16_t functionIndex);
@@ -459,36 +460,8 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList, OutputS
 void GeneratorCore::Generate()
 {
 	TraverseList(mTranslationUnitList);
-
-	WriteValue32(Value32(MAGIC_NUMBER));
-	WriteValue16(Value16(MAJOR_VERSION));
-	WriteValue16(Value16(MINOR_VERSION));
-	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
-
-	const uint16_t listIndex = MapString(BOND_LIST_BLOB_ID);
-	const uint16_t functionIndex = (mFunctionList.empty() && mNativeMemberList.empty()) ?
-		0 : MapString(BOND_FUNCTION_BLOB_ID);
-	const uint16_t dataIndex = mDataList.empty() ? 0 : MapString(BOND_DATA_BLOB_ID);
-
 	ResolveJumps();
-	WriteConstantTable();
-
-	// Cache the start position and skip 4 bytes for the blob size.
-	const Stream::pos_t startPos = mStream.GetPosition();
-	mStream.AddOffset(sizeof(Value32));
-
-	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(uint32_t(mFunctionList.size() + (2 * mNativeMemberList.size()) + mDataList.size())));
-
-	WriteFunctionList(functionIndex);
-	WriteNativeMemberList(functionIndex);
-	WriteDataList(dataIndex);
-
-	// Patch up the blob size.
-	const Stream::pos_t endPos = mStream.GetPosition();
-	mStream.SetPosition(startPos);
-	WriteValue32(Value32(uint32_t(endPos - startPos)));
-	mStream.SetPosition(endPos);
+	WriteCbo();
 }
 
 
@@ -554,14 +527,13 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 		parameterList = NextNode(parameterList);
 	}
 
-	CompiledFunction &function = *mFunctionList.insert(
-		mFunctionList.end(),
-		CompiledFunction(
+	mFunctionList.emplace_back(
 			functionDefinition,
 			mAllocator,
 			offset,
 			packedOffset,
-			framePointerAlignment));
+			framePointerAlignment);
+	CompiledFunction &function = mFunctionList.back();
 	function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
 	MapQualifiedSymbolName(functionDefinition);
 
@@ -3848,6 +3820,39 @@ const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Typ
 {
 	JumpList::Type::const_iterator it = lower_bound(jumpList.begin(), jumpList.end(), opCodePos, JumpEntryOpCodePosComparator());
 	return ((it < jumpList.end()) && (it->mOpCodePos == opCodePos)) ? &(*it) : nullptr;
+}
+
+
+void GeneratorCore::WriteCbo()
+{
+	WriteValue32(Value32(MAGIC_NUMBER));
+	WriteValue16(Value16(MAJOR_VERSION));
+	WriteValue16(Value16(MINOR_VERSION));
+	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
+
+	const uint16_t listIndex = MapString(BOND_LIST_BLOB_ID);
+	const uint16_t functionIndex = (mFunctionList.empty() && mNativeMemberList.empty()) ?
+		0 : MapString(BOND_FUNCTION_BLOB_ID);
+	const uint16_t dataIndex = mDataList.empty() ? 0 : MapString(BOND_DATA_BLOB_ID);
+
+	WriteConstantTable();
+
+	// Cache the start position and skip 4 bytes for the blob size.
+	const Stream::pos_t startPos = mStream.GetPosition();
+	mStream.AddOffset(sizeof(Value32));
+
+	WriteValue16(Value16(listIndex));
+	WriteValue32(Value32(uint32_t(mFunctionList.size() + (2 * mNativeMemberList.size()) + mDataList.size())));
+
+	WriteFunctionList(functionIndex);
+	WriteNativeMemberList(functionIndex);
+	WriteDataList(dataIndex);
+
+	// Patch up the blob size.
+	const Stream::pos_t endPos = mStream.GetPosition();
+	mStream.SetPosition(startPos);
+	WriteValue32(Value32(uint32_t(endPos - startPos)));
+	mStream.SetPosition(endPos);
 }
 
 

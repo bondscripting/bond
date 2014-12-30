@@ -164,7 +164,7 @@ void NativeBindingGeneratorCore::Visit(const EnumDeclaration *enumDeclaration)
 {
 	if (mInNativeBlockStack.GetTop())
 	{
-		NamespaceStack::Iterator it = mNamespaceStack.Begin();
+		NamespaceStack::Iterator it = mNamespaceStack.begin();
 		PrintNamespaceStack(mHStream, it);
 
 		mHStream.Print("enum %s\n{\n", enumDeclaration->GetName()->GetText());
@@ -184,7 +184,7 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 {
 	if (functionDefinition->IsNative())
 	{
-		NamespaceStack::Iterator it = mNamespaceStack.Begin();
+		NamespaceStack::Iterator it = mNamespaceStack.begin();
 		PrintNamespaceStack(mHStream, it);
 
 		// Generate the function prototype.
@@ -208,7 +208,7 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 {
 	if (namedInitializer->IsNativeStructMember())
 	{
-		NamespaceStack::Iterator it = mNamespaceStack.Begin();
+		NamespaceStack::Iterator it = mNamespaceStack.begin();
 		PrintNamespaceStack(mHStream, it);
 
 		// Generate the getter and setter function prototypes.
@@ -295,7 +295,7 @@ void NativeBindingGeneratorCore::CloseNamespaces(OutputStream &stream, size_t nu
 
 void NativeBindingGeneratorCore::PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it)
 {
-	if ((it != mNamespaceStack.End()) && !it->mPrinted)
+	if ((it != mNamespaceStack.end()) && !it->mPrinted)
 	{
 		NamespaceItem &item = *it++;
 		PrintNamespaceStack(stream, it);
