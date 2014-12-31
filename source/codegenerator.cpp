@@ -398,9 +398,9 @@ private:
 
 	void WriteCbo();
 	void WriteConstantTable();
-	void WriteFunctionList(uint16_t functionIndex);
-	void WriteNativeMemberList(uint16_t functionIndex);
-	void WriteDataList(uint16_t dataIndex);
+	uint32_t WriteFunctionList(uint16_t functionIndex);
+	uint32_t WriteNativeMemberList(uint16_t functionIndex);
+	uint32_t WriteDataList(uint16_t dataIndex);
 	void WriteQualifiedSymbolName(const Symbol *symbol);
 	void WriteSizeAndType(const TypeDescriptor *type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
@@ -459,7 +459,18 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList, OutputS
 
 void GeneratorCore::Generate()
 {
+	mFunctionList.emplace_back(nullptr, mAllocator, 0, 0, uint32_t(BOND_SLOT_SIZE));
+	CompiledFunction &function = mFunctionList.back();
+	FunctionStack::Element functionElement(mFunction, &function);
+	UIntStack::Element localOffsetElement(mLocalOffset, 0);
+	UIntStack::Element stackTopElement(mStackTop, 0);
 	TraverseList(mTranslationUnitList);
+
+	if (!function.mByteCode.empty())
+	{
+		EmitOpCode(OPCODE_RETURN);
+	}
+
 	ResolveJumps();
 	WriteCbo();
 }
@@ -528,11 +539,11 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	}
 
 	mFunctionList.emplace_back(
-			functionDefinition,
-			mAllocator,
-			offset,
-			packedOffset,
-			framePointerAlignment);
+		functionDefinition,
+		mAllocator,
+		offset,
+		packedOffset,
+		framePointerAlignment);
 	CompiledFunction &function = mFunctionList.back();
 	function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
 	MapQualifiedSymbolName(functionDefinition);
@@ -3837,21 +3848,23 @@ void GeneratorCore::WriteCbo()
 
 	WriteConstantTable();
 
-	// Cache the start position and skip 4 bytes for the blob size.
+	// Write the list blob header, but skip the blob size and number of elements.
 	const Stream::pos_t startPos = mStream.GetPosition();
 	mStream.AddOffset(sizeof(Value32));
-
 	WriteValue16(Value16(listIndex));
-	WriteValue32(Value32(uint32_t(mFunctionList.size() + (2 * mNativeMemberList.size()) + mDataList.size())));
+	const Stream::pos_t numListElementsPos = mStream.GetPosition();
+	mStream.AddOffset(sizeof(Value32));
 
-	WriteFunctionList(functionIndex);
-	WriteNativeMemberList(functionIndex);
-	WriteDataList(dataIndex);
+	uint32_t numListElements = WriteFunctionList(functionIndex);
+	numListElements += WriteNativeMemberList(functionIndex);
+	numListElements += WriteDataList(dataIndex);
 
-	// Patch up the blob size.
+	// Patch up the blob size and number of list elements.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue32(Value32(uint32_t(endPos - startPos)));
+	mStream.SetPosition(numListElementsPos);
+	WriteValue32(Value32(numListElements));
 	mStream.SetPosition(endPos);
 }
 
@@ -3896,21 +3909,44 @@ void GeneratorCore::WriteConstantTable()
 }
 
 
-void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
+uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 {
+	uint32_t numFunctions = 0;
+
 	for (const CompiledFunction &compiledFunction: mFunctionList)
 	{
 		const FunctionDefinition *function = compiledFunction.mDefinition;
+		const ByteCode::Type &byteCode = compiledFunction.mByteCode;
+		const bool isStaticInitializer = function == nullptr;
+
+		// Skip empty static initializers.
+		if (isStaticInitializer && byteCode.empty())
+		{
+			continue;
+		}
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
 		const int blobStartPos = mStream.GetPosition();
 		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
-		WriteSizeAndType(function->GetPrototype()->GetReturnType());
-		WriteQualifiedSymbolName(function);
-		WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
-		WriteValue32(Value32(function->GetGlobalHashCode()));
+
+		if (isStaticInitializer)
+		{
+			const TypeDescriptor voidTypeDescriptor = TypeDescriptor::GetVoidType();
+			WriteValue32(Value32(BOND_STATIC_INITIALIZER_HASH));
+			WriteSizeAndType(&voidTypeDescriptor);
+			WriteQualifiedSymbolName(nullptr);
+			WriteParamListSignature(nullptr, false);
+		}
+		else
+		{
+			WriteValue32(Value32(function->GetGlobalHashCode()));
+			WriteSizeAndType(function->GetPrototype()->GetReturnType());
+			WriteQualifiedSymbolName(function);
+			WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
+		}
+
 		WriteValue32(Value32(compiledFunction.mArgSize));
 		WriteValue32(Value32(compiledFunction.mPackedArgSize));
 		WriteValue32(Value32(compiledFunction.mLocalSize));
@@ -3922,7 +3958,6 @@ void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		mStream.AddOffset(sizeof(Value32));
 		const int codeStartPos = mStream.GetPosition();
 
-		const ByteCode::Type &byteCode = compiledFunction.mByteCode;
 		const JumpList::Type &jumpList = compiledFunction.mJumpList;
 
 		size_t byteCodeIndex = 0;
@@ -3962,11 +3997,15 @@ void GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		mStream.SetPosition(blobStartPos);
 		WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
 		mStream.SetPosition(endPos);
+
+		++numFunctions;
 	}
+
+	return numFunctions;
 }
 
 
-void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
+uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 {
 	for (const NamedInitializer *member: mNativeMemberList)
 	{
@@ -3978,10 +4017,10 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
+			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
 			WriteSizeAndType(typeDescriptor);
 			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(nullptr, true);
-			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame size
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Packed frame size
 			WriteValue32(Value32(0));              // Local size
@@ -4008,10 +4047,10 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
+			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX)));
 			WriteSizeAndType(&voidDescriptor);
 			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(&parameter, true);
-			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX)));
 			WriteValue32(Value32(offset));         // Frame size
 			WriteValue32(Value32(packedOffset));   // Packed frame size
 			WriteValue32(Value32(0));              // Local size
@@ -4026,10 +4065,12 @@ void GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			mStream.SetPosition(endPos);
 		}
 	}
+
+	return uint32_t(2 * mNativeMemberList.size());
 }
 
 
-void GeneratorCore::WriteDataList(uint16_t dataIndex)
+uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 {
 	for (const NamedInitializer *namedInitializer: mDataList)
 	{
@@ -4041,9 +4082,9 @@ void GeneratorCore::WriteDataList(uint16_t dataIndex)
 		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(dataIndex));
-		WriteSizeAndType(typeDescriptor);
-		WriteQualifiedSymbolName(namedInitializer);
 		WriteValue32(Value32(namedInitializer->GetGlobalHashCode()));
+		WriteSizeAndType(typeDescriptor);
+		WriteQualifiedSymbolName(nullptr);
 
 		Value32 payload(uint32_t(0));
 		if (typeAndValue->IsValueDefined())
@@ -4110,7 +4151,10 @@ void GeneratorCore::WriteDataList(uint16_t dataIndex)
 		WriteValue32(Value32(uint32_t(endPos - blobStartPos)));
 		mStream.SetPosition(endPos);
 	}
+
+	return uint32_t(mDataList.size());
 }
+
 
 void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
 {

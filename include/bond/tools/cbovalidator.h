@@ -28,6 +28,7 @@ public:
 			mParamListSignatureCount(0),
 			mParamSignatureCount(0),
 			mFunctionCount(0),
+			mStaticInitializerCount(0),
 			mCodeByteCount(0),
 			mDataCount(0),
 			mDataSize(0),
@@ -49,6 +50,7 @@ public:
 		size_t mParamListSignatureCount;
 		size_t mParamSignatureCount;
 		size_t mFunctionCount;
+		size_t mStaticInitializerCount;
 		size_t mCodeByteCount;
 		size_t mDataCount;
 		size_t mDataSize;

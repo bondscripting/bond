@@ -31,6 +31,7 @@ struct CboLoaderResources
 			size_t paramSignatureStart,
 			size_t functionLookupStart,
 			size_t functionTableStart,
+			size_t staticInitializerTableStart,
 			size_t codeStart,
 			size_t dataLookupStart,
 			size_t dataTableStart,
@@ -44,6 +45,7 @@ struct CboLoaderResources
 		mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
 		mFunctionLookup(reinterpret_cast<uint32_t *>(memory + functionLookupStart)),
 		mFunctionTable(reinterpret_cast<Function *>(memory + functionTableStart)),
+		mStaticInitializerTable(reinterpret_cast<Function *>(memory + staticInitializerTableStart)),
 		mCode(reinterpret_cast<uint8_t *>(memory + codeStart)),
 		mDataLookup(reinterpret_cast<uint32_t *>(memory + dataLookupStart)),
 		mDataTable(reinterpret_cast<DataEntry *>(memory + dataTableStart)),
@@ -58,6 +60,7 @@ struct CboLoaderResources
 	ParamSignature *mParamSignatures;
 	uint32_t *mFunctionLookup;
 	Function *mFunctionTable;
+	Function *mStaticInitializerTable;
 	uint8_t *mCode;
 	uint32_t *mDataLookup;
 	DataEntry *mDataTable;
@@ -117,6 +120,7 @@ CboLoader::Handle CboLoader::Load()
 	size_t qualifiedIdElementCount = 0;
 	size_t paramSignatureCount = 0;
 	size_t functionCount = 0;
+	size_t staticInitializerCount = 0;
 	size_t codeByteCount = 0;
 	size_t dataCount = 0;
 	size_t dataSize = 0;
@@ -137,6 +141,7 @@ CboLoader::Handle CboLoader::Load()
 		qualifiedIdElementCount += result.mQualifiedIdElementCount + result.mFunctionCount;
 		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
+		staticInitializerCount += result.mStaticInitializerCount;
 		codeByteCount += result.mCodeByteCount;
 		dataCount += result.mDataCount;
 		dataSize = AlignUp(dataSize, result.mDataAlignment);
@@ -155,6 +160,7 @@ CboLoader::Handle CboLoader::Load()
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
 	const size_t functionLookupStart = TallyMemoryRequirements<uint32_t>(memSize, functionCount);
 	const size_t functionTableStart = TallyMemoryRequirements<Function>(memSize, functionCount);
+	const size_t staticInitializerTableStart = TallyMemoryRequirements<Function>(memSize, staticInitializerCount);
 	const size_t codeStart = TallyMemoryRequirements<const uint8_t>(memSize, codeByteCount, sizeof(Value32));
 	const size_t dataLookupStart = TallyMemoryRequirements<uint32_t>(memSize, dataCount);
 	const size_t dataTableStart = TallyMemoryRequirements<DataEntry>(memSize, dataCount);
@@ -177,6 +183,7 @@ CboLoader::Handle CboLoader::Load()
 		paramSignatureStart,
 		functionLookupStart,
 		functionTableStart,
+		staticInitializerTableStart,
 		codeStart,
 		dataLookupStart,
 		dataTableStart,
@@ -184,10 +191,18 @@ CboLoader::Handle CboLoader::Load()
 
 	uint32_t *functionLookup = resources.mFunctionLookup;
 	Function *functionTable = resources.mFunctionTable;
+	Function *staticInitializerTable = resources.mStaticInitializerTable;
 	uint32_t *dataLookup = resources.mDataLookup;
 	DataEntry *dataTable = resources.mDataTable;
-	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart)
-		CodeSegment(functionLookup, functionTable, functionCount, dataLookup, dataTable, dataCount);
+	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart) CodeSegment(
+		functionLookup,
+		functionTable,
+		functionCount,
+		staticInitializerTable,
+		staticInitializerCount,
+		dataLookup,
+		dataTable,
+		dataCount);
 
 	fdit = mFileDataList.begin();
 	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
@@ -511,12 +526,16 @@ void CboLoaderCore::LoadListBlob()
 
 void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 {
-	Function *function = mResources.mFunctionTable;
+	const uint32_t idHash = ReadValue32().mUInt;
+	const bool isStaticInitializer = idHash == BOND_STATIC_INITIALIZER_HASH;
+
+	Function *function = isStaticInitializer ?
+		mResources.mStaticInitializerTable++ : mResources.mFunctionTable++;
 	function->mReturnSignature = LoadReturnSignature();
 	function->mName = LoadQualifiedIdentifier();
 	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
-	function->mHash = ReadValue32().mUInt;
+	function->mHash = idHash;
 	function->mArgSize = ReadValue32().mUInt;
 	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
@@ -550,7 +569,6 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 		}
 	}
 	function->mUnpackArguments = unpackArguments;
-	++mResources.mFunctionTable;
 
 	// Load the optional metadata blob.
 	if (mIndex < blobEnd)
@@ -562,6 +580,7 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 
 void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 {
+	const uint32_t idHash = ReadValue32().mUInt;
 	DataEntry *dataEntry = mResources.mDataTable;
 
 	const uint32_t sizeAndType = ReadValue32().mUInt;
@@ -570,7 +589,7 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 	DecodeSizeAndType(sizeAndType, size, type);
 
 	dataEntry->mName = LoadQualifiedIdentifier();
-	dataEntry->mHash = ReadValue32().mUInt;
+	dataEntry->mHash = idHash;
 	const Value32 payload = ReadValue32();
 
 	mResources.mData = AlignPointerUp(mResources.mData, size_t(BOND_SLOT_SIZE));

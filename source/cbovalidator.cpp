@@ -57,7 +57,6 @@ CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 CboValidator::Result CboValidatorCore::Validate()
 {
 	AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16)));
-
 	const uint32_t magicNumber = ReadValue32().mUInt;
 	const uint32_t majorVersion = ReadValue16().mUShort;
 	const uint32_t minorVersion = ReadValue16().mUShort;
@@ -134,7 +133,6 @@ CboValidator::Result CboValidatorCore::Validate()
 void CboValidatorCore::ValidateBlob()
 {
 	AssertBytesRemaining(sizeof(Value32) + sizeof(Value16));
-
 	const size_t blobStart = mIndex;
 	const size_t blobSize = ReadValue32().mUInt;
 	const size_t blobEnd = blobStart + blobSize;
@@ -169,7 +167,6 @@ void CboValidatorCore::ValidateBlob()
 void CboValidatorCore::ValidateListBlob()
 {
 	AssertBytesRemaining(sizeof(Value32));
-
 	const size_t numBlobs = ReadValue32().mUInt;
 	for (size_t i = 0; i < numBlobs; ++i)
 	{
@@ -180,16 +177,14 @@ void CboValidatorCore::ValidateListBlob()
 
 void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 {
-	++mResult.mFunctionCount;
+	AssertBytesRemaining(sizeof(Value32));
+	const uint32_t idHash = ReadValue32().mUInt;
+
 	ValidateSizeAndType();
 	ValidateQualifiedIdentifier();
 	ValidateParamListSignature();
 
-	AssertBytesRemaining(7 * sizeof(Value32));
-
-	// Ignore the hash.
-	mIndex += sizeof(Value32);
-
+	AssertBytesRemaining(6 * sizeof(Value32));
 	const uint32_t argSize = ReadValue32().mUInt;
 	const uint32_t packedArgSize = ReadValue32().mUInt;
 	const uint32_t localSize = ReadValue32().mUInt;
@@ -204,6 +199,15 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	    ((framePointerAlignment % BOND_SLOT_SIZE) != 0))
 	{
 		FunctionIsInvalid();
+	}
+
+	if (idHash == BOND_STATIC_INITIALIZER_HASH)
+	{
+		++mResult.mStaticInitializerCount;
+	}
+	else
+	{
+		++mResult.mFunctionCount;
 	}
 
 	mResult.mCodeByteCount += AlignUp(codeSize, sizeof(Value32));
@@ -300,7 +304,6 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				AssertBytesRemaining(2 * sizeof(Value32));
-
 				const int32_t defaultOffset = ReadValue32().mInt;
 				const uint32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
@@ -330,7 +333,6 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			{
 				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
 				AssertBytesRemaining(3 * sizeof(Value32));
-
 				const int32_t defaultOffset = ReadValue32().mInt;
 				const int32_t minMatch = ReadValue32().mInt;
 				const int32_t maxMatch = ReadValue32().mInt;
@@ -375,18 +377,19 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 {
 	++mResult.mDataCount;
 
-	AssertBytesRemaining(sizeof(Value32));
+	AssertBytesRemaining(2 * sizeof(Value32));
+
+	// Ignore the hash.
+	mIndex += sizeof(Value32);
+
 	const uint32_t sizeAndType = ReadValue32().mUInt;
 	uint32_t size;
 	SignatureType type;
 	DecodeSizeAndType(sizeAndType, size, type);
 
 	ValidateQualifiedIdentifier();
-	AssertBytesRemaining(2 * sizeof(Value32));
 
-	// Ignore the hash.
-	mIndex += sizeof(Value32);
-
+	AssertBytesRemaining(sizeof(Value32));
 	const Value32 payload = ReadValue32();
 	size_t alignment = size_t(BOND_SLOT_SIZE);
 
@@ -410,10 +413,8 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 void CboValidatorCore::ValidateQualifiedIdentifier()
 {
 	AssertBytesRemaining(sizeof(Value16));
-
 	const size_t numElements = ReadValue16().mUShort;
 	AssertBytesRemaining(numElements * sizeof(Value16));
-
 	++mResult.mQualifiedIdCount;
 	mResult.mQualifiedIdElementCount += numElements;
 
@@ -442,10 +443,8 @@ void CboValidatorCore::ValidateSizeAndType()
 void CboValidatorCore::ValidateParamListSignature()
 {
 	AssertBytesRemaining(sizeof(Value16));
-
 	const size_t numParams = ReadValue16().mUShort;
 	AssertBytesRemaining(numParams * 2 * sizeof(Value32));
-
 	++mResult.mParamListSignatureCount;
 	mResult.mParamSignatureCount += numParams;
 

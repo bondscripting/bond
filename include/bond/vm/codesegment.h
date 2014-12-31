@@ -95,6 +95,8 @@ public:
 			const uint32_t *functionLookup,
 			const Function *functionTable,
 			size_t functionCount,
+			const Function *staticInitializerTable,
+			size_t staticInitializerCount,
 			const uint32_t *dataLookup,
 			const DataEntry *dataTable,
 			size_t dataCount):
@@ -112,6 +114,10 @@ public:
 	int32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
 	int32_t GetFunctionIndex(uint32_t functionHash) const;
 	const Function *GetFunctionAtIndex(uint32_t functionIndex) const { return mFunctionTable + functionIndex; }
+	size_t GetFunctionCount() const { return mFunctionCount; }
+
+	const Function *GetStaticInitializerAtIndex(uint32_t initializerIndex) const { return mStaticInitializerTable + initializerIndex; }
+	size_t GetStaticInitializerCount() const { return mStaticInitializerCount; }
 
 	const DataEntry *GetDataEntry(const HashedString &dataName) const { return GetDataEntry(dataName.GetHashCode()); }
 	const DataEntry *GetDataEntry(uint32_t dataHash) const;
@@ -119,11 +125,14 @@ public:
 	int32_t GetDataEntryIndex(const HashedString &dataName) const { return GetDataEntryIndex(dataName.GetHashCode()); }
 	int32_t GetDataEntryIndex(uint32_t dataHash) const;
 	const DataEntry *GetDataEntryAtIndex(uint32_t dataIndex) const { return mDataTable + dataIndex; }
+	size_t GetDataCount() const { return mDataCount; }
 
 private:
 	const uint32_t *mFunctionLookup;
 	const Function *mFunctionTable;
 	size_t mFunctionCount;
+	const Function *mStaticInitializerTable;
+	size_t mStaticInitializerCount;
 	const uint32_t *mDataLookup;
 	const DataEntry *mDataTable;
 	size_t mDataCount;

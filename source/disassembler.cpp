@@ -137,6 +137,8 @@ void DisassemblerCore::DisassembleListBlob()
 
 void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 {
+	const uint32_t idHash = ReadValue32().mUInt;
+
 	mStream.Print("Function: ");
 	DisassembleSizeAndType();
 	mStream.Print(" ");
@@ -145,7 +147,6 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 	DisassembleParamListSignature();
 	mStream.Print(")\n");
 
-	const uint32_t idHash = ReadValue32().mUInt;
 	const uint32_t argSize = ReadValue32().mUInt;
 	const uint32_t packedArgSize = ReadValue32().mUInt;
 	const uint32_t localSize = ReadValue32().mUInt;
@@ -285,12 +286,13 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 
 void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 {
+	const uint32_t idHash = ReadValue32().mUInt;
+
 	mStream.Print("Data: ");
 	const SignatureType type = DisassembleSizeAndType();
 	mStream.Print(" ");
 	DisassembleQualifiedIdentifier();
 
-	const uint32_t idHash = ReadValue32().mUInt;
 	const Value32 payload = ReadValue32();
 
 	switch (type)

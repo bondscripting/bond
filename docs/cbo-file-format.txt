@@ -56,10 +56,10 @@ Blob[blobCount] blobs;
 FunctionBlob
 ------------
 BlobHeader header("Func");
+uint hash;
 SizeAndType returnType;
 QualifiedId name;
 ParamListSignature paramListSignature;
-uint hash;
 uint frameSize;
 uint packedFrameSize;
 uint localSize;
@@ -72,8 +72,8 @@ uchar[CodeSize] code;
 DataBlob
 --------
 BlobHeader header("Data");
+uint hash;
 SizeAndType type;
 QualifiedId name;
-uint Hash;
 32bit payload;     // value, index of value or alignment
 (Blob metadata;)
