@@ -7,22 +7,6 @@
 namespace Bond
 {
 
-struct SwitchLabelComparator
-{
-	bool operator()(const ResolvedSwitchLabel &a, const ResolvedSwitchLabel &b) const;
-};
-
-
-bool SwitchLabelComparator::operator()(const ResolvedSwitchLabel &a, const ResolvedSwitchLabel &b) const
-{
-	if (a.IsDefault())
-	{
-		return !b.IsDefault();
-	}
-	return a.GetMatch() < b.GetMatch();
-}
-
-
 void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
@@ -211,7 +195,16 @@ void ValidationPass::Visit(SwitchLabel *switchLabel)
 		resolvedLabel.SetMatch(switchLabel->GetExpression()->GetTypeAndValue().GetIntValue());
 	}
 
-	mSwitchLabelList.SetTop(InsertNode(mSwitchLabelList.GetTop(), &resolvedLabel, SwitchLabelComparator()));
+	auto switchLabelComparator = [](const ResolvedSwitchLabel &a, const ResolvedSwitchLabel &b)
+		{
+			if (a.IsDefault())
+			{
+				return !b.IsDefault();
+			}
+			return a.GetMatch() < b.GetMatch();
+		};
+
+	mSwitchLabelList.SetTop(InsertNode(mSwitchLabelList.GetTop(), &resolvedLabel, switchLabelComparator));
 }
 
 

@@ -232,11 +232,6 @@ private:
 		size_t GetFromPos() const { return mOpCodePos + 3; }
 	};
 
-	struct JumpEntryOpCodePosComparator
-	{
-		bool operator()(const JumpEntry &entry, size_t opCodePos) const;
-	};
-
 	typedef Vector<uint8_t> ByteCode;
 	typedef Vector<size_t> LabelList;
 	typedef Vector<JumpEntry> JumpList;
@@ -257,9 +252,7 @@ private:
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
 			mStackSize(0),
-			mFramePointerAlignment(framePointerAlignment),
-			mZeroOffset(0),
-			mZeroSize(0)
+			mFramePointerAlignment(framePointerAlignment)
 		{}
 		const FunctionDefinition *mDefinition;
 		ByteCode::Type mByteCode;
@@ -270,8 +263,14 @@ private:
 		uint32_t mLocalSize;
 		uint32_t mStackSize;
 		uint32_t mFramePointerAlignment;
-		uint32_t mZeroOffset;
-		uint32_t mZeroSize;
+	};
+
+	struct InitializerIndex
+	{
+		InitializerIndex(bool isLocal): mCurrentOffset(0), mZeroSize(0), mIsLocal(isLocal) {}
+		int32_t mCurrentOffset;
+		int32_t mZeroSize;
+		bool mIsLocal;
 	};
 
 	typedef Map<HashedString, uint16_t> StringIndexMap;
@@ -317,9 +316,10 @@ private:
 
 	bool ProcessConstantExpression(const Expression *expression);
 
-	void EmitLocalInitializer(const Initializer *initializer, uint32_t offset);
-	void EmitZero(uint32_t offset, uint32_t size);
-	void FlushZero();
+	void EmitInitializer(const Initializer *initializer, InitializerIndex &index, int32_t offset, bool isLast);
+	void EmitZero(InitializerIndex &index, int32_t offset, uint32_t size);
+	void FlushZero(InitializerIndex &index, bool isLast);
+	void AdvancePointer(InitializerIndex &index, int32_t offset);
 
 	Result EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member);
 
@@ -585,7 +585,15 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			}
 			else
 			{
-				// TODO: generate code for aggregate and non-constant initializers.
+				const Initializer *initializer = namedInitializer->GetInitializer();
+				if (initializer != nullptr)
+				{
+					InitializerIndex index(false);
+					EmitOpCode(OPCODE_LOADEA);
+					EmitHashCode(namedInitializer->GetGlobalHashCode());
+					EmitInitializer(initializer, index, 0, true);
+					FlushZero(index, true);
+				}
 			}
 			mDataList.push_back(namedInitializer);
 			MapQualifiedSymbolName(namedInitializer);
@@ -595,15 +603,15 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_LOCAL:
 		{
 			// TODO: Omit code generation and stack allocation for non lvalue foldable constants.
-			// Allocate stack space for the local variable.
 			const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 			const int32_t offset = AllocateLocal(lhDescriptor);
 			namedInitializer->SetOffset(offset);
 			const Initializer *initializer = namedInitializer->GetInitializer();
 			if (initializer != nullptr)
 			{
-				EmitLocalInitializer(initializer, offset);
-				FlushZero();
+				InitializerIndex index(true);
+				EmitInitializer(initializer, index, offset, true);
+				FlushZero(index, true);
 			}
 		}
 		break;
@@ -1484,7 +1492,7 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 }
 
 
-void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_t offset)
+void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerIndex &index, int32_t offset, bool isLast)
 {
 	const TypeDescriptor *typeDescriptor = initializer->GetTypeDescriptor();
 	const Expression *expression = initializer->GetExpression();
@@ -1498,15 +1506,15 @@ void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_
 
 		while ((numElements > 0) && (initializerList != nullptr))
 		{
-			EmitLocalInitializer(initializerList, offset);
+			--numElements;
+			EmitInitializer(initializerList, index, offset, isLast && (numElements == 0));
 			offset += elementSize;
 			initializerList = NextNode(initializerList);
-			--numElements;
 		}
 
 		if (numElements > 0)
 		{
-			EmitZero(offset, numElements * elementSize);
+			EmitZero(index, offset, numElements * elementSize);
 		}
 	}
 	else if (typeDescriptor->IsStructType() && (initializerList != nullptr))
@@ -1517,36 +1525,47 @@ void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
 		while (memberDeclarationList != nullptr)
 		{
+			const DeclarativeStatement *nextMemberDeclaration = NextNode(memberDeclarationList);
 			const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
 			const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
 			const uint32_t memberSize = memberDescriptor->GetSize(mPointerSize);
 			while (nameList != nullptr)
 			{
+				const NamedInitializer *nextName = NextNode(nameList);
 				const uint32_t memberOffset = offset + uint32_t(nameList->GetOffset());
 
 				if (initializerList != nullptr)
 				{
-					EmitLocalInitializer(initializerList, memberOffset);
+					EmitInitializer(initializerList, index, memberOffset, isLast && (nextMemberDeclaration == nullptr) && (nextName == nullptr));
 					initializerList = NextNode(initializerList);
 				}
 				else
 				{
-					EmitZero(memberOffset, memberSize);
+					EmitZero(index, memberOffset, memberSize);
 				}
-				nameList = NextNode(nameList);
+				nameList = nextName;
 			}
-			memberDeclarationList = NextNode(memberDeclarationList);
+			memberDeclarationList = nextMemberDeclaration;
 		}
 	}
 	else
 	{
-		FlushZero();
+		FlushZero(index, false);
+		AdvancePointer(index, offset);
 		UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+
+		if (!index.mIsLocal && !isLast)
+		{
+			EmitOpCode(OPCODE_DUP);
+		}
 
 		if (typeDescriptor->IsStructType())
 		{
 			// TODO: Initialize the struct in-place without copying it.
-			EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+			if (index.mIsLocal)
+			{
+				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+			}
 			ResultStack::Element rhResult(mResult);
 			Traverse(initializer);
 			EmitPushAddressOfResult(rhResult);
@@ -1556,45 +1575,62 @@ void GeneratorCore::EmitLocalInitializer(const Initializer *initializer, uint32_
 		else
 		{
 			const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
-			Result lhResult(Result::CONTEXT_FP_INDIRECT, offset);
 			ResultStack::Element rhResult(mResult);
 			Traverse(initializer);
 			EmitPushResultAs(rhResult, rhDescriptor, typeDescriptor);
+			const Result lhResult = index.mIsLocal ?
+				Result(Result::CONTEXT_FP_INDIRECT, offset) :
+				Result(Result::CONTEXT_ADDRESS_INDIRECT, 0);
 			EmitPopResult(lhResult, typeDescriptor);
 		}
 	}
 }
 
 
-void GeneratorCore::EmitZero(uint32_t offset, uint32_t size)
+void GeneratorCore::EmitZero(InitializerIndex &index, int32_t offset, uint32_t size)
 {
-	CompiledFunction &function = GetFunction();
-
 	// Merge the requested run of zeros with an existing one.
-	if (function.mZeroSize > 0)
+	if (index.mZeroSize > 0)
 	{
-		function.mZeroSize = (offset + size) - function.mZeroOffset;
+		index.mZeroSize = (offset + size) - index.mCurrentOffset;
 	}
 	// Otherwise start a new run.
 	else
 	{
-		function.mZeroOffset = offset;
-		function.mZeroSize = size;
+		AdvancePointer(index, offset);
+		index.mZeroSize = size;
 	}
 }
 
 
-void GeneratorCore::FlushZero()
+void GeneratorCore::FlushZero(InitializerIndex &index, bool isLast)
 {
-	CompiledFunction &function = GetFunction();
-
-	if (function.mZeroSize > 0)
+	if (index.mZeroSize > 0)
 	{
-		EmitOpCodeWithOffset(OPCODE_LOADFP, function.mZeroOffset);
+		if (index.mIsLocal)
+		{
+			EmitOpCodeWithOffset(OPCODE_LOADFP, index.mCurrentOffset);
+		}
+		else if (!isLast)
+		{
+			EmitOpCode(OPCODE_DUP);
+		}
 		EmitOpCode(OPCODE_MEMZEROW);
-		EmitIndexedValue32(Value32(function.mZeroSize));
-		function.mZeroOffset = 0;
-		function.mZeroSize = 0;
+		EmitIndexedValue32(Value32(index.mZeroSize));
+		index.mZeroSize = 0;
+	}
+}
+
+
+void GeneratorCore::AdvancePointer(InitializerIndex &index, int32_t offset)
+{
+	if (index.mCurrentOffset < offset)
+	{
+		if (!index.mIsLocal)
+		{
+			EmitAccumulateAddressOffset(offset - index.mCurrentOffset);
+		}
+		index.mCurrentOffset = offset;
 	}
 }
 
@@ -3829,7 +3865,12 @@ void GeneratorCore::ResolveJumps()
 
 const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const
 {
-	JumpList::Type::const_iterator it = lower_bound(jumpList.begin(), jumpList.end(), opCodePos, JumpEntryOpCodePosComparator());
+	auto opCodePosComparator = [](const GeneratorCore::JumpEntry &entry, size_t pos)
+		{
+			return entry.mOpCodePos < pos;
+		};
+
+	auto it = lower_bound(jumpList.begin(), jumpList.end(), opCodePos, opCodePosComparator);
 	return ((it < jumpList.end()) && (it->mOpCodePos == opCodePos)) ? &(*it) : nullptr;
 }
 
@@ -4385,12 +4426,6 @@ void GeneratorCore::PushError(CompilerError::Type type)
 	{
 		mErrorBuffer.PushError(type);
 	}
-}
-
-
-bool GeneratorCore::JumpEntryOpCodePosComparator::operator()(const GeneratorCore::JumpEntry &entry, size_t opCodePos) const
-{
-	return entry.mOpCodePos < opCodePos;
 }
 
 }
