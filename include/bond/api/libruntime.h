@@ -13,11 +13,7 @@ namespace Bond
 
 class CboLoader;
 
-#if defined(BOND_USE_32BIT_POINTERS)
-#include "bond/private/libruntime32_embedded.h"
-#else
-#include "bond/private/libruntime64_embedded.h"
-#endif
+#include "bond/private/libruntime_embedded.h"
 
 void LoadAllLibs(CboLoader &cboLoader);
 void LoadLibIo(CboLoader &cboLoader);
