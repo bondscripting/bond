@@ -1,5 +1,6 @@
 #include "bond/stl/algorithm.h"
 #include "bond/vm/codesegment.h"
+#include "bond/vm/vm.h"
 
 namespace Bond
 {
@@ -37,6 +38,15 @@ int32_t CodeSegment::GetDataEntryIndex(uint32_t dataHash) const
 	const uint32_t *last = first + mDataCount;
 	const uint32_t *target = lower_bound(first, last, dataHash);
 	return ((target < last) && (*target == dataHash)) ? int32_t(target - first) : int32_t(-1);
+}
+
+
+void CodeSegment::CallStaticInitializers(VM &vm) const
+{
+	for (size_t i = 0; i < mStaticInitializerCount; ++i)
+	{
+		vm.CallVoidFunction(mStaticInitializerTable[i]);
+	}
 }
 
 }

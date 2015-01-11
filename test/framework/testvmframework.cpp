@@ -72,6 +72,7 @@ bool RunVMTest(
 				cboLoader.AddCboFile(cboFile);
 				Bond::CboLoader::Handle codeSegmentHandle = cboLoader.Load();
 				Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024);
+				codeSegmentHandle.get()->CallStaticInitializers(vm);
 				result = validationFunction(logger, vm);
 			}
 		}

@@ -28,12 +28,12 @@ public:
 
 	CalleeStackFrame(
 			VM &vm,
-			const Function *function,
+			const Function &function,
 			uint8_t *framePointer,
 			uint8_t *stackPointer,
 			uint8_t *returnPointer):
 		mVm(vm),
-		mFunction(function),
+		mFunction(&function),
 		mFramePointer(framePointer),
 		mStackPointer(stackPointer),
 		mReturnPointer(returnPointer)
@@ -71,17 +71,27 @@ class CallerStackFrame: private StackFrames::Element
 {
 public:
 	CallerStackFrame(VM &vm, const HashedString &functionName);
+	CallerStackFrame(VM &vm, const Function &function);
 
 	template <typename ReturnType>
 	CallerStackFrame(VM &vm, const HashedString &functionName, ReturnType *returnPointer);
 
+	template <typename ReturnType>
+	CallerStackFrame(VM &vm, const Function &function, ReturnType *returnPointer);
+
 	template <typename ArgType>
 	void PushArg(const ArgType &arg);
+
+	void PushArgs() {}
+
+	template <typename Arg1, typename... Args>
+	void PushArgs(Arg1 arg1, Args... args);
 
 	void Call();
 
 private:
 	void Initialize(VM &vm, const HashedString &functionName, void *returnPointer);
+	void Initialize(VM &vm, const Function &function, void *returnPointer);
 
 	uint32_t mNextArg;
 };
@@ -115,55 +125,23 @@ public:
 
 	void RaiseError(const char *format, ...) const;
 
-	template <typename ReturnType>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress);
+	template <typename ReturnType, typename... Args>
+	void CallFunction(const HashedString &functionName, ReturnType *returnAddress, Args... args);
 
-	void CallVoidFunction(const HashedString &functionName);
+	template <typename ReturnType, typename... Args>
+	void CallFunction(const Function &function, ReturnType *returnAddress, Args... args);
 
-	template <typename ReturnType, typename ArgType0>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress, ArgType0 a0);
+	template <typename... Args>
+	void CallVoidFunction(const HashedString &functionName, Args... args);
 
-	template <typename ArgType0>
-	void CallVoidFunction(const HashedString &functionName, ArgType0 a0);
-
-	template <typename ReturnType, typename ArgType0, typename ArgType1>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress,
-		ArgType0 a0, ArgType1 a1);
-
-	template <typename ArgType0, typename ArgType1>
-	void CallVoidFunction(const HashedString &functionName, ArgType0 a0, ArgType1 a1);
-
-	template <typename ReturnType, typename ArgType0, typename ArgType1, typename ArgType2>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress,
-		ArgType0 a0, ArgType1 a1, ArgType2 a2);
-
-	template <typename ArgType0, typename ArgType1, typename ArgType2>
-	void CallVoidFunction(const HashedString &functionName, ArgType0 a0, ArgType1 a1, ArgType2 a2);
-
-	template <typename ReturnType, typename ArgType0, typename ArgType1, typename ArgType2,
-		typename ArgType3>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress,
-		ArgType0 a0, ArgType1 a1, ArgType2 a2, ArgType3 a3);
-
-	template <typename ArgType0, typename ArgType1, typename ArgType2, typename ArgType3>
-	void CallVoidFunction(const HashedString &functionName, ArgType0 a0, ArgType1 a1,
-		ArgType2 a2, ArgType3 a3);
-
-	template <typename ReturnType, typename ArgType0, typename ArgType1, typename ArgType2,
-		typename ArgType3, typename ArgType4>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress,
-		ArgType0 a0, ArgType1 a1, ArgType2 a2, ArgType3 a3, ArgType4 a4);
-
-	template <typename ArgType0, typename ArgType1, typename ArgType2, typename ArgType3,
-		typename ArgType4>
-	void CallVoidFunction(const HashedString &functionName, ArgType0 a0, ArgType1 a1,
-		ArgType2 a2, ArgType3 a3, ArgType4 a4);
+	template <typename... Args>
+	void CallVoidFunction(const Function &function, Args... args);
 
 private:
 	friend class CallerStackFrame;
 
 	void ExecuteScriptFunction();
-	uint8_t *InvokeFunction(const Function *function, uint8_t *stackTop);
+	uint8_t *InvokeFunction(const Function &function, uint8_t *stackTop);
 	void ValidateStackPointer(uint8_t *stackPointer) const;
 
 	StackFrames mStackFrames;

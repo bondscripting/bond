@@ -55,13 +55,19 @@ inline void SwapValue64(void *a, void *b)
 
 void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void *returnPointer)
 {
-	uint8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
 	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName.GetString()));
-	uint8_t *framePointer = AlignPointerUp(prevStackPointer + function->mArgSize, function->mFramePointerAlignment);
-	uint8_t *stackPointer = AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE);
-	mValue.mFunction = function;
+	Initialize(vm, *function, returnPointer);
+}
+
+
+void CallerStackFrame::Initialize(VM &vm, const Function &function, void *returnPointer)
+{
+	uint8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
+	uint8_t *framePointer = AlignPointerUp(prevStackPointer + function.mArgSize, function.mFramePointerAlignment);
+	uint8_t *stackPointer = AlignPointerUp(framePointer + function.mLocalSize, BOND_SLOT_SIZE);
+	mValue.mFunction = &function;
 	mValue.mFramePointer = framePointer;
 	mValue.mStackPointer = stackPointer;
 	mValue.mReturnPointer = reinterpret_cast<uint8_t *>(returnPointer);
@@ -416,8 +422,8 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADEA:
 			{
 				const Value16 dataIndex(code + pc);
-				const DataEntry *dataEntry = mCodeSegment.GetDataEntryAtIndex(dataIndex.mUShort);
-				*reinterpret_cast<void **>(sp) = dataEntry->mData;
+				const DataEntry &dataEntry = mCodeSegment.GetDataEntryAtIndex(dataIndex.mUShort);
+				*reinterpret_cast<void **>(sp) = dataEntry.mData;
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -2081,7 +2087,7 @@ void VM::ExecuteScriptFunction()
 			{
 				const Value16 functionIndex(code + pc);
 				pc += sizeof(Value16);
-				const Function *function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
+				const Function &function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
 				sp = InvokeFunction(function, sp);
 			}
 			break;
@@ -2119,7 +2125,7 @@ void VM::ExecuteScriptFunction()
 }
 
 
-uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
+uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 {
 	// Functions return values on top of the stack with the exception of functions that return
 	// structs. Those functions expect an additional argument on the operand stack to indicate
@@ -2130,31 +2136,31 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 	uint8_t *argTop;
 	uint8_t *returnPointer;
 	uint8_t *finalStackPointer;
-	switch (function->mReturnSignature.mType)
+	switch (function.mReturnSignature.mType)
 	{
 		case SIG_AGGREGATE:
 			argTop = stackTop - BOND_SLOT_SIZE;
 			returnPointer = *reinterpret_cast<uint8_t **>(argTop);
-			finalStackPointer = argTop - function->mPackedArgSize;
+			finalStackPointer = argTop - function.mPackedArgSize;
 			break;
 		case SIG_VOID:
 			argTop = stackTop;
 			returnPointer = nullptr;
-			finalStackPointer = argTop - function->mPackedArgSize;
+			finalStackPointer = argTop - function.mPackedArgSize;
 			break;
 		default:
 			argTop = stackTop;
-			returnPointer = argTop - function->mPackedArgSize;
+			returnPointer = argTop - function.mPackedArgSize;
 			finalStackPointer = returnPointer + BOND_SLOT_SIZE;
 			break;
 	}
 
-	uint8_t *framePointer = AlignPointerUp(argTop + function->mArgSize - function->mPackedArgSize, function->mFramePointerAlignment);
+	uint8_t *framePointer = AlignPointerUp(argTop + function.mArgSize - function.mPackedArgSize, function.mFramePointerAlignment);
 
-	if (function->mUnpackArguments)
+	if (function.mUnpackArguments)
 	{
-		const uint32_t numParams = function->mParamListSignature.mParamCount;
-		const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
+		const uint32_t numParams = function.mParamListSignature.mParamCount;
+		const ParamSignature *signatures = function.mParamListSignature.mParamSignatures;
 		uint8_t *source = argTop;
 		for (uint32_t i = 0; i < numParams; ++i)
 		{
@@ -2184,14 +2190,14 @@ uint8_t *VM::InvokeFunction(const Function *function, uint8_t *stackTop)
 		}
 	}
 
-	uint8_t *stackPointer = AlignPointerUp(framePointer + function->mLocalSize, BOND_SLOT_SIZE);
+	uint8_t *stackPointer = AlignPointerUp(framePointer + function.mLocalSize, BOND_SLOT_SIZE);
 
 	StackFrames::Element stackFrameElement(mStackFrames, *this, function, framePointer, stackPointer, returnPointer);
 	ValidateStackPointer(stackPointer);
 
-	if (function->IsNative())
+	if (function.IsNative())
 	{
-		function->mNativeFunction(stackFrameElement.GetValue());
+		function.mNativeFunction(stackFrameElement.GetValue());
 	}
 	else
 	{

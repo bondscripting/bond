@@ -241,6 +241,10 @@ CboLoader::Handle CboLoader::Load()
 		}
 	}
 
+	for (size_t i = 0; i < staticInitializerCount; ++i)
+	{
+		ProcessFunction(staticInitializerTable[i], *codeSegment);
+	}
 	for (size_t i = 0; i < functionCount; ++i)
 	{
 		ProcessFunction(functionTable[i], *codeSegment);

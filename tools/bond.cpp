@@ -116,6 +116,7 @@ int main(int argc, const char *argv[])
 		Bond::StdOutOutputStream outStream;
 		Bond::StdErrOutputStream errStream;
 		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &inStream, &outStream, &errStream);
+		codeSegmentHandle.get()->CallStaticInitializers(vm);
 		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
 	}
 	catch (const Bond::Exception &e)

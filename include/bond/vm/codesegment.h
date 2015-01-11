@@ -8,6 +8,8 @@
 namespace Bond
 {
 
+class VM;
+
 struct ConstantTable
 {
 	const Value32 *mValue32Table;
@@ -103,6 +105,8 @@ public:
 		mFunctionLookup(functionLookup),
 		mFunctionTable(functionTable),
 		mFunctionCount(functionCount),
+		mStaticInitializerTable(staticInitializerTable),
+		mStaticInitializerCount(staticInitializerCount),
 		mDataLookup(dataLookup),
 		mDataTable(dataTable),
 		mDataCount(dataCount)
@@ -113,10 +117,10 @@ public:
 
 	int32_t GetFunctionIndex(const HashedString &functionName) const { return GetFunctionIndex(functionName.GetHashCode()); }
 	int32_t GetFunctionIndex(uint32_t functionHash) const;
-	const Function *GetFunctionAtIndex(uint32_t functionIndex) const { return mFunctionTable + functionIndex; }
+	const Function &GetFunctionAtIndex(uint32_t functionIndex) const { return mFunctionTable[functionIndex]; }
 	size_t GetFunctionCount() const { return mFunctionCount; }
 
-	const Function *GetStaticInitializerAtIndex(uint32_t initializerIndex) const { return mStaticInitializerTable + initializerIndex; }
+	const Function &GetStaticInitializerAtIndex(uint32_t initializerIndex) const { return mStaticInitializerTable[initializerIndex]; }
 	size_t GetStaticInitializerCount() const { return mStaticInitializerCount; }
 
 	const DataEntry *GetDataEntry(const HashedString &dataName) const { return GetDataEntry(dataName.GetHashCode()); }
@@ -124,8 +128,10 @@ public:
 
 	int32_t GetDataEntryIndex(const HashedString &dataName) const { return GetDataEntryIndex(dataName.GetHashCode()); }
 	int32_t GetDataEntryIndex(uint32_t dataHash) const;
-	const DataEntry *GetDataEntryAtIndex(uint32_t dataIndex) const { return mDataTable + dataIndex; }
+	const DataEntry &GetDataEntryAtIndex(uint32_t dataIndex) const { return mDataTable[dataIndex]; }
 	size_t GetDataCount() const { return mDataCount; }
+
+	void CallStaticInitializers(VM &vm) const;
 
 private:
 	const uint32_t *mFunctionLookup;

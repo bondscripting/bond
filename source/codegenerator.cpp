@@ -1427,20 +1427,23 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		const FunctionDefinition *functionDefinition = nullptr;
 		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != nullptr)
 		{
-			const int32_t offset = namedInitializer->GetOffset();
 			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+			Result::Context context = Result::CONTEXT_NONE;
+			int32_t offset = namedInitializer->GetOffset();
+
 			switch (namedInitializer->GetScope())
 			{
 				case SCOPE_GLOBAL:
 				{
-					// TODO
+					EmitOpCode(OPCODE_LOADEA);
+					EmitHashCode(namedInitializer->GetGlobalHashCode());
+					context = Result::CONTEXT_ADDRESS_INDIRECT;
+					offset = 0;
 				}
 				break;
 				case SCOPE_LOCAL:
 				{
-					const Result::Context context =
-						TransformContext(Result::CONTEXT_FP_INDIRECT, typeDescriptor);
-					mResult.SetTop(Result(context, offset));
+					context = Result::CONTEXT_FP_INDIRECT;
 				}
 				break;
 				case SCOPE_STRUCT_MEMBER:
@@ -1454,11 +1457,13 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 					{
 						EmitPushFramePointerIndirectValue32(-BOND_SLOT_SIZE);
 					}
-					const Result::Context context = TransformContext(Result::CONTEXT_ADDRESS_INDIRECT, typeDescriptor);
-					mResult.SetTop(Result(context, offset));
+					context = Result::CONTEXT_ADDRESS_INDIRECT;
 				}
 				break;
 			}
+
+			context = TransformContext(context, typeDescriptor);
+			mResult.SetTop(Result(context, offset));
 		}
 		else if ((parameter = CastNode<Parameter>(symbol)) != nullptr)
 		{
@@ -4163,10 +4168,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 					}
 				}
 				break;
-				case SIG_VOID:
-				case SIG_POINTER:
-				case SIG_AGGREGATE:
-					payload.mUInt = typeDescriptor->GetAlignment(mPointerSize);
+				default:
 					break;
 			}
 		}
@@ -4179,6 +4181,10 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 				case SIG_DOUBLE:
 					payload.mUInt = BOND_UINT_MAX;
 				break;
+				case SIG_POINTER:
+				case SIG_AGGREGATE:
+					payload.mUInt = typeDescriptor->GetAlignment(mPointerSize);
+					break;
 				default:
 					break;
 			}
