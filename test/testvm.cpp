@@ -1079,6 +1079,31 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 }
 
 
+DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecXAt", int32_t(121), uint32_t(0));
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecYAt", int32_t(123), uint32_t(0));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecXAt", int32_t(125), uint32_t(1));
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecYAt", int32_t(0), uint32_t(1));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecXAt", int32_t(127), uint32_t(2));
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecYAt", int32_t(129), uint32_t(2));
+
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecXAt", int32_t(0), uint32_t(3));
+	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecYAt", int32_t(0), uint32_t(3));
+
+	const char *testStr = nullptr;
+	vm.CallFunction("::GetTestString", &testStr);
+	ASSERT_MESSAGE((testStr != nullptr) && (strcmp(testStr, "Hooray! The test passed!") == 0),
+		"GetTestString() return an incorrect string.");
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1092,5 +1117,6 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
   TEST_ITEM(CompoundAssignmentOperators)        \
   TEST_ITEM(FunctionCalls)                      \
   TEST_ITEM(Structs)                            \
+  TEST_ITEM(Initializers)                       \
 
 RUN_TESTS(VM, TEST_ITEMS)

@@ -1,0 +1,29 @@
+struct Vector2
+{
+	int x;
+	int y;
+};
+
+Vector2 MakeV2(int x, int y)
+{
+	Vector2 v = {x, y};
+	return v;
+}
+
+const Vector2[4] VECTOR_ARRAY = {{121, 123}, {125}, MakeV2(127, 129)};
+const char *const TEST_STRING = "Hooray! The test passed!";
+
+int GetVecXAt(uint i)
+{
+	return VECTOR_ARRAY[i].x;
+}
+
+int GetVecYAt(int i)
+{
+	return VECTOR_ARRAY[i].y;
+}
+
+const char *GetTestString()
+{
+	return TEST_STRING;
+}
