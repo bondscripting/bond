@@ -4,6 +4,12 @@ struct Vector2
 	int y;
 };
 
+struct Vector2Collection
+{
+	const Vector2 *vectors;
+	uint size;
+};
+
 Vector2 MakeV2(int x, int y)
 {
 	Vector2 v = {x, y};
@@ -11,6 +17,7 @@ Vector2 MakeV2(int x, int y)
 }
 
 const Vector2[4] VECTOR_ARRAY = {{121, 123}, {125}, MakeV2(127, 129)};
+const Vector2Collection VECTOR_COLLECTION = { VECTOR_ARRAY, sizeof(VECTOR_ARRAY) / sizeof(*VECTOR_ARRAY) };
 const char *const TEST_STRING = "Hooray! The test passed!";
 
 int GetVecXAt(uint i)
@@ -26,4 +33,14 @@ int GetVecYAt(int i)
 const char *GetTestString()
 {
 	return TEST_STRING;
+}
+
+uint GetCollectionSize()
+{
+	return VECTOR_COLLECTION.size;
+}
+
+const Vector2 *GetCollectionVectors()
+{
+	return VECTOR_COLLECTION.vectors;
 }

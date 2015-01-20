@@ -1095,6 +1095,20 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecXAt", int32_t(0), uint32_t(3));
 	VALIDATE_FUNCTION_CALL_1(INT, "::GetVecYAt", int32_t(0), uint32_t(3));
 
+	VALIDATE_FUNCTION_CALL_0(UINT, "::GetCollectionSize", int32_t(4));
+
+	const int32_t *vectors = nullptr;
+	vm.CallFunction("::GetCollectionVectors", &vectors);
+
+	ASSERT_FORMAT(vectors[0] == 121, ("Expected 121, but was %" BOND_PRId32 ".", vectors[0]));
+	ASSERT_FORMAT(vectors[1] == 123, ("Expected 123, but was %" BOND_PRId32 ".", vectors[1]));
+	ASSERT_FORMAT(vectors[2] == 125, ("Expected 125, but was %" BOND_PRId32 ".", vectors[2]));
+	ASSERT_FORMAT(vectors[3] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[3]));
+	ASSERT_FORMAT(vectors[4] == 127, ("Expected 127, but was %" BOND_PRId32 ".", vectors[4]));
+	ASSERT_FORMAT(vectors[5] == 129, ("Expected 129, but was %" BOND_PRId32 ".", vectors[5]));
+	ASSERT_FORMAT(vectors[6] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[6]));
+	ASSERT_FORMAT(vectors[7] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[7]));
+
 	const char *testStr = nullptr;
 	vm.CallFunction("::GetTestString", &testStr);
 	ASSERT_MESSAGE((testStr != nullptr) && (strcmp(testStr, "Hooray! The test passed!") == 0),
