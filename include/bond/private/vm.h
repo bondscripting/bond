@@ -316,7 +316,22 @@ inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 }
 
 
-inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName):
+inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionName):
+	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+	mNextArg(0)
+{
+	Initialize(vm, functionName, nullptr);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
+	if (ret.mType != SIG_VOID)
+	{
+		vm.RaiseError("Attempt to call a non-void function without a return address.");
+	}
+#endif
+}
+
+
+inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName):
 	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
 	mNextArg(0)
 {
@@ -347,7 +362,25 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const Function &function):
 
 
 template <typename ReturnType>
-inline CallerStackFrame::CallerStackFrame(VM &vm, const HashedString &functionName, ReturnType *returnPointer):
+inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer):
+	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+	mNextArg(0)
+{
+	Initialize(vm, functionName, returnPointer);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	const ReturnSignature &ret = mValue.mFunction->mReturnSignature;
+	if (!ValidateReturnType<ReturnType>(size_t(ret.mSize), SignatureType(ret.mType)))
+	{
+		char buffer[64];
+		vm.RaiseError("Attempt to call a function with incorrect return address type. Expected '%s'.",
+			ExpandApiTypeMnemonic(buffer, sizeof(buffer), SignatureType(ret.mType), ret.mSize));
+	}
+#endif
+}
+
+
+template <typename ReturnType>
+inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer):
 	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
 	mNextArg(0)
 {
@@ -399,7 +432,16 @@ inline void CallerStackFrame::PushArgs(Arg1 arg1, Args... args)
 
 
 template <typename ReturnType, typename... Args>
-inline void VM::CallFunction(const HashedString &functionName, ReturnType *returnAddress, Args... args)
+inline void VM::CallFunction(const QualifiedName &functionName, ReturnType *returnAddress, Args... args)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	stackFrame.PushArgs(args...);
+	stackFrame.Call();
+}
+
+
+template <typename ReturnType, typename... Args>
+inline void VM::CallFunction(const char *functionName, ReturnType *returnAddress, Args... args)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArgs(args...);
@@ -417,7 +459,16 @@ inline void VM::CallFunction(const Function &function, ReturnType *returnAddress
 
 
 template <typename... Args>
-inline void VM::CallVoidFunction(const HashedString &functionName, Args... args)
+inline void VM::CallVoidFunction(const QualifiedName &functionName, Args... args)
+{
+	Bond::CallerStackFrame stackFrame(*this, functionName);
+	stackFrame.PushArgs(args...);
+	stackFrame.Call();
+}
+
+
+template <typename... Args>
+inline void VM::CallVoidFunction(const char *functionName, Args... args)
 {
 	Bond::CallerStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArgs(args...);

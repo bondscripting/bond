@@ -49,7 +49,7 @@ namespace Bond
 	                                                               \
 	BOND_OPCODE_ITEM(LOADFP,       loadfp,       SHORT,        1)  \
 	BOND_OPCODE_ITEM(LOADFPW,      loadfpw,      INT,          1)  \
-	BOND_OPCODE_ITEM(LOADEA,       loadea,       HASH,         1)  \
+	BOND_OPCODE_ITEM(LOADEA,       loadea,       NAME,         1)  \
 	BOND_OPCODE_ITEM(LOADSTR,      loadstr,      STRING,       1)  \
 	BOND_OPCODE_ITEM(LOADC,        loadc,        NONE,         0)  \
 	BOND_OPCODE_ITEM(LOADUC,       loaduc,       NONE,         0)  \
@@ -262,7 +262,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(LOOKUPSWITCH, lookupswitch, LOOKUPSWITCH, -1) \
 	BOND_OPCODE_ITEM(TABLESWITCH,  tableswitch,  TABLESWITCH,  -1) \
 	                                                               \
-	BOND_OPCODE_ITEM(INVOKE,       invoke,       HASH,         0)  \
+	BOND_OPCODE_ITEM(INVOKE,       invoke,       NAME,         0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE,         0)  \
 	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE,         -1) \
@@ -292,8 +292,8 @@ enum OpCodeParam
 	OC_PARAM_VAL64,
 	OC_PARAM_OFF16,
 	OC_PARAM_OFF32,
-	OC_PARAM_HASH,
 	OC_PARAM_STRING,
+	OC_PARAM_NAME,
 	OC_PARAM_LOOKUPSWITCH,
 	OC_PARAM_TABLESWITCH,
 };

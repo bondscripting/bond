@@ -65,6 +65,9 @@ const int64_t BOND_LONG_MIN = numeric_limits<int64_t>::min();
 const uint64_t BOND_ULONG_MAX = numeric_limits<uint64_t>::max();
 const uint64_t BOND_ULONG_MIN = numeric_limits<uint64_t>::min();
 
+const size_t BOND_SIZE_MAX = numeric_limits<size_t>::max();
+const size_t BOND_SIZE_MIN = numeric_limits<size_t>::min();
+
 
 template <typename RangeType, typename ValueType>
 bool IsInRangeInternal(ValueType value, std::false_type, std::false_type, std::false_type)

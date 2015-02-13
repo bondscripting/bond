@@ -8,6 +8,7 @@
 namespace Bond
 {
 
+class QualifiedName;
 class CodeSegment;
 struct CboLoaderResources;
 struct FileData;
@@ -46,8 +47,8 @@ private:
 
 	void FunctionIsNotNative(const Function &function) const;
 	void FunctionIsNotBound(const Function &function) const;
-	void UnresolvedHash(uint32_t hash) const;
-	void HashCollision(uint32_t hash) const;
+	void UnresolvedQualifiedName(const QualifiedName &name) const;
+	void UnresolvedQualifiedName(const char *name) const;
 
 	NativeBindingList::Type mNativeBindingList;
 	FileDataList::Type mFileDataList;

@@ -27,13 +27,12 @@ struct CboLoaderResources
 			size_t value64TableStart,
 			size_t stringTableStart,
 			size_t stringBytesStart,
-			size_t qualifiedIdElementStart,
+			size_t qualifiedNameTableStart,
+			size_t qualifiedNameElementTableStart,
 			size_t paramSignatureStart,
-			size_t functionLookupStart,
 			size_t functionTableStart,
 			size_t staticInitializerTableStart,
 			size_t codeStart,
-			size_t dataLookupStart,
 			size_t dataTableStart,
 			size_t dataStart):
 		mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
@@ -41,13 +40,12 @@ struct CboLoaderResources
 		mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
 		mStringTable(reinterpret_cast<SimpleString *>(memory + stringTableStart)),
 		mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
-		mQualifiedIdElements(reinterpret_cast<const char **>(memory + qualifiedIdElementStart)),
+		mQualifiedNameTable(reinterpret_cast<QualifiedName *>(memory + qualifiedNameTableStart)),
+		mQualifiedNameElementTable(reinterpret_cast<const char **>(memory + qualifiedNameElementTableStart)),
 		mParamSignatures(reinterpret_cast<ParamSignature *>(memory + paramSignatureStart)),
-		mFunctionLookup(reinterpret_cast<uint32_t *>(memory + functionLookupStart)),
 		mFunctionTable(reinterpret_cast<Function *>(memory + functionTableStart)),
 		mStaticInitializerTable(reinterpret_cast<Function *>(memory + staticInitializerTableStart)),
 		mCode(reinterpret_cast<uint8_t *>(memory + codeStart)),
-		mDataLookup(reinterpret_cast<uint32_t *>(memory + dataLookupStart)),
 		mDataTable(reinterpret_cast<DataEntry *>(memory + dataTableStart)),
 		mData(reinterpret_cast<uint8_t *>(memory + dataStart))
 	{}
@@ -56,13 +54,12 @@ struct CboLoaderResources
 	Value64 *mValue64Table;
 	SimpleString *mStringTable;
 	char *mStringBytes;
-	const char **mQualifiedIdElements;
+	QualifiedName *mQualifiedNameTable;
+	const char **mQualifiedNameElementTable;
 	ParamSignature *mParamSignatures;
-	uint32_t *mFunctionLookup;
 	Function *mFunctionTable;
 	Function *mStaticInitializerTable;
 	uint8_t *mCode;
-	uint32_t *mDataLookup;
 	DataEntry *mDataTable;
 	uint8_t *mData;
 };
@@ -78,7 +75,6 @@ public:
 		mValidationResult(validationResult),
 		mResources(resources),
 		mConstantTable(resources.mConstantTables),
-		mStringTable(resources.mStringTable),
 		mByteCode(static_cast<const uint8_t *>(byteCode)),
 		mIndex(0)
 	{
@@ -91,7 +87,7 @@ private:
 	void LoadListBlob();
 	void LoadFunctionBlob(size_t blobEnd);
 	void LoadDataBlob(size_t blobEnd);
-	const char *const *LoadQualifiedIdentifier();
+	QualifiedName LoadQualifiedName();
 	ReturnSignature LoadReturnSignature();
 	ParamListSignature LoadParamListSignature();
 
@@ -102,7 +98,6 @@ private:
 	CboValidator::Result mValidationResult;
 	CboLoaderResources &mResources;
 	ConstantTable *mConstantTable;
-	SimpleString *mStringTable;
 	const uint8_t *mByteCode;
 	size_t mIndex;
 };
@@ -117,7 +112,8 @@ CboLoader::Handle CboLoader::Load()
 	size_t value64Count = 0;
 	size_t stringCount = 0;
 	size_t stringByteCount = 0;
-	size_t qualifiedIdElementCount = 0;
+	size_t qualifiedNameCount = 0;
+	size_t qualifiedNameElementCount = 0;
 	size_t paramSignatureCount = 0;
 	size_t functionCount = 0;
 	size_t staticInitializerCount = 0;
@@ -138,7 +134,8 @@ CboLoader::Handle CboLoader::Load()
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
 		stringByteCount += result.mStringByteCount + result.mStringCount;
-		qualifiedIdElementCount += result.mQualifiedIdElementCount + result.mFunctionCount;
+		qualifiedNameCount += result.mQualifiedNameCount;
+		qualifiedNameElementCount += result.mQualifiedNameElementCount + result.mQualifiedNameCount;
 		paramSignatureCount += result.mParamSignatureCount;
 		functionCount += result.mFunctionCount;
 		staticInitializerCount += result.mStaticInitializerCount;
@@ -156,13 +153,12 @@ CboLoader::Handle CboLoader::Load()
 	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
 	const size_t stringTableStart = TallyMemoryRequirements<SimpleString>(memSize, stringCount);
 	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
-	const size_t qualifiedIdElementStart = TallyMemoryRequirements<const char *>(memSize, qualifiedIdElementCount);
+	const size_t qualifiedNameTableStart = TallyMemoryRequirements<QualifiedName>(memSize, qualifiedNameCount);
+	const size_t qualifiedNameElementTableStart = TallyMemoryRequirements<const char *>(memSize, qualifiedNameElementCount);
 	const size_t paramSignatureStart = TallyMemoryRequirements<ParamSignature>(memSize, paramSignatureCount);
-	const size_t functionLookupStart = TallyMemoryRequirements<uint32_t>(memSize, functionCount);
 	const size_t functionTableStart = TallyMemoryRequirements<Function>(memSize, functionCount);
 	const size_t staticInitializerTableStart = TallyMemoryRequirements<Function>(memSize, staticInitializerCount);
 	const size_t codeStart = TallyMemoryRequirements<const uint8_t>(memSize, codeByteCount, sizeof(Value32));
-	const size_t dataLookupStart = TallyMemoryRequirements<uint32_t>(memSize, dataCount);
 	const size_t dataTableStart = TallyMemoryRequirements<DataEntry>(memSize, dataCount);
 	const size_t dataStart = TallyMemoryRequirements<const uint8_t>(memSize, dataSize, dataAlignment);
 
@@ -179,28 +175,23 @@ CboLoader::Handle CboLoader::Load()
 		value64TableStart,
 		stringTableStart,
 		stringBytesStart,
-		qualifiedIdElementStart,
+		qualifiedNameTableStart,
+		qualifiedNameElementTableStart,
 		paramSignatureStart,
-		functionLookupStart,
 		functionTableStart,
 		staticInitializerTableStart,
 		codeStart,
-		dataLookupStart,
 		dataTableStart,
 		dataStart);
 
-	uint32_t *functionLookup = resources.mFunctionLookup;
 	Function *functionTable = resources.mFunctionTable;
 	Function *staticInitializerTable = resources.mStaticInitializerTable;
-	uint32_t *dataLookup = resources.mDataLookup;
 	DataEntry *dataTable = resources.mDataTable;
 	CodeSegment *codeSegment = new (memHandle.get() + codeSegmentStart) CodeSegment(
-		functionLookup,
 		functionTable,
 		functionCount,
 		staticInitializerTable,
 		staticInitializerCount,
-		dataLookup,
 		dataTable,
 		dataCount);
 
@@ -211,27 +202,11 @@ CboLoader::Handle CboLoader::Load()
 		loader.Load();
 	}
 
-	auto functionComparator = [](const Function &a, const Function &b) { return a.mHash < b.mHash; };
+	auto functionComparator = [](const Function &a, const Function &b) { return a.mName < b.mName; };
 	sort(functionTable, functionTable + functionCount, functionComparator);
-	for (size_t i = 0; i < functionCount; ++i)
-	{
-		functionLookup[i] = functionTable[i].mHash;
-		if ((i > 0) && (functionLookup[i] == functionLookup[i - 1]))
-		{
-			HashCollision(functionLookup[i]);
-		}
-	}
 
-	auto dataComparator = [](const DataEntry &a, const DataEntry &b) { return a.mHash < b.mHash; };
+	auto dataComparator = [](const DataEntry &a, const DataEntry &b) { return a.mName < b.mName; };
 	sort(dataTable, dataTable + dataCount, dataComparator);
-	for (size_t i = 0; i < dataCount; ++i)
-	{
-		dataLookup[i] = dataTable[i].mHash;
-		if ((i > 0) && (dataLookup[i] == dataLookup[i - 1]))
-		{
-			HashCollision(dataLookup[i]);
-		}
-	}
 
 	for (const NativeBindingCollection *bindingCollection: mNativeBindingList)
 	{
@@ -257,7 +232,7 @@ CboLoader::Handle CboLoader::Load()
 
 void CboLoader::BindNativeFunction(const NativeFunctionBinding &binding, const CodeSegment &codeSegment)
 {
-	Function *function = const_cast<Function *>(codeSegment.GetFunction(binding.mHash));
+	Function *function = const_cast<Function *>(codeSegment.GetFunction(binding.mName));
 	if (function != nullptr)
 	{
 		if (function->IsNative())
@@ -271,7 +246,7 @@ void CboLoader::BindNativeFunction(const NativeFunctionBinding &binding, const C
 	}
 	else
 	{
-		UnresolvedHash(binding.mHash);
+		UnresolvedQualifiedName(binding.mName);
 	}
 }
 
@@ -316,22 +291,22 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					ConvertBigEndian16(code);
 					code += sizeof(Value16);
 					break;
-				case OC_PARAM_HASH:
+				case OC_PARAM_NAME:
 				{
 					ConvertBigEndian16(code);
-					const uint32_t hash = function.mConstantTable->mValue32Table[Value16(code).mUShort].mUInt;
+					const QualifiedName &name = function.mConstantTable->mQualifiedNameTable[Value16(code).mUShort];
 					int32_t resolvedIndex = -1;
 
 					switch (opCode)
 					{
 						case OPCODE_LOADEA:
 						{
-							resolvedIndex = codeSegment.GetDataEntryIndex(hash);
+							resolvedIndex = codeSegment.GetDataEntryIndex(name);
 						}
 						break;
 						case OPCODE_INVOKE:
 						{
-							resolvedIndex = codeSegment.GetFunctionIndex(hash);
+							resolvedIndex = codeSegment.GetFunctionIndex(name);
 						}
 						break;
 						default:
@@ -347,7 +322,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					}
 					else
 					{
-						UnresolvedHash(hash);
+						UnresolvedQualifiedName(name);
 					}
 				}
 				break;
@@ -399,19 +374,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
-	const char *const *elements = function.mName;
-	bool isFirstElement = true;
-
-	while (*elements != nullptr)
-	{
-		if (!isFirstElement)
-		{
-			stream.Print("::");
-			isFirstElement = false;
-		}
-		stream.Print(*elements++);
-	}
-
+	function.mName.PrintTo(stream);
 	BOND_FAIL_FORMAT(("Target function '%s' of native function binding is not native.", buffer));
 }
 
@@ -420,32 +383,23 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 {
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
-	const char *const *elements = function.mName;
-	bool isFirstElement = true;
-
-	while (*elements != nullptr)
-	{
-		if (!isFirstElement)
-		{
-			stream.Print("::");
-			isFirstElement = false;
-		}
-		stream.Print(*elements++);
-	}
-
+	function.mName.PrintTo(stream);
 	BOND_FAIL_FORMAT(("Native function '%s' is not bound.", buffer));
 }
 
 
-void CboLoader::UnresolvedHash(uint32_t hash) const
+void CboLoader::UnresolvedQualifiedName(const QualifiedName &name) const
 {
-	BOND_FAIL_FORMAT(("Unresolved hash 0x%" BOND_PRIx32 ".", hash));
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	name.PrintTo(stream);
+	BOND_FAIL_FORMAT(("Unresolved qualified name '%s'.", buffer));
 }
 
 
-void CboLoader::HashCollision(uint32_t hash) const
+void CboLoader::UnresolvedQualifiedName(const char *name) const
 {
-	BOND_FAIL_FORMAT(("Hash collision 0x%" BOND_PRIx32 ".", hash));
+	BOND_FAIL_FORMAT(("Unresolved qualified name '%s'.", name));
 }
 
 
@@ -454,10 +408,11 @@ void CboLoaderCore::Load()
 	mConstantTable->mValue32Table = mResources.mValue32Table;
 	mConstantTable->mValue64Table = mResources.mValue64Table;
 	mConstantTable->mStringTable = mResources.mStringTable;
+	mConstantTable->mQualifiedNameTable = mResources.mQualifiedNameTable;
 	++mResources.mConstantTables;
 
-	// Skip some header information.
-	mIndex += 20;
+	// Skip some header information that is already included in the validation result.
+	mIndex += (2 * sizeof(Value32)) + (7 * sizeof(Value16));
 
 	Value32 *value32 = mResources.mValue32Table;
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
@@ -485,6 +440,22 @@ void CboLoaderCore::Load()
 		*str++ = SimpleString(buffer, length);
 	}
 	mResources.mStringTable = str;
+
+	QualifiedName *name = mResources.mQualifiedNameTable;
+	const char **element = mResources.mQualifiedNameElementTable;
+	for (size_t i = 0; i < mValidationResult.mQualifiedNameCount; ++i)
+	{
+		*name++ = QualifiedName(element);
+		const size_t numElements = ReadValue16().mUShort;
+		for (size_t j = 0; j < numElements; ++j)
+		{
+			const size_t elementIndex = ReadValue16().mUShort;
+			*element++ = mConstantTable->mStringTable[elementIndex].GetString();
+		}
+		*element++ = nullptr;
+	}
+	mResources.mQualifiedNameTable = name;
+	mResources.mQualifiedNameElementTable = element;
 
 	mResources.mData = AlignPointerUp(mResources.mData, mValidationResult.mDataAlignment);
 
@@ -530,16 +501,15 @@ void CboLoaderCore::LoadListBlob()
 
 void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 {
-	const uint32_t idHash = ReadValue32().mUInt;
-	const bool isStaticInitializer = idHash == BOND_STATIC_INITIALIZER_HASH;
+	const size_t functionNameIndex = ReadValue16().mUShort;
+	const bool isStaticInitializer = functionNameIndex == mValidationResult.mStaticInitializerNameIndex;
 
 	Function *function = isStaticInitializer ?
 		mResources.mStaticInitializerTable++ : mResources.mFunctionTable++;
+	function->mName = mConstantTable->mQualifiedNameTable[functionNameIndex];
 	function->mReturnSignature = LoadReturnSignature();
-	function->mName = LoadQualifiedIdentifier();
 	function->mParamListSignature = LoadParamListSignature();
 	function->mConstantTable = mConstantTable;
-	function->mHash = idHash;
 	function->mArgSize = ReadValue32().mUInt;
 	function->mPackedArgSize = ReadValue32().mUInt;
 	function->mLocalSize = ReadValue32().mUInt;
@@ -584,16 +554,15 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 
 void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 {
-	const uint32_t idHash = ReadValue32().mUInt;
 	DataEntry *dataEntry = mResources.mDataTable;
 
+	const size_t nameIndex = ReadValue16().mUShort;
+	dataEntry->mName = mConstantTable->mQualifiedNameTable[nameIndex];
 	const uint32_t sizeAndType = ReadValue32().mUInt;
 	uint32_t size;
 	SignatureType type;
 	DecodeSizeAndType(sizeAndType, size, type);
 
-	dataEntry->mName = LoadQualifiedIdentifier();
-	dataEntry->mHash = idHash;
 	const Value32 payload = ReadValue32();
 
 	mResources.mData = AlignPointerUp(mResources.mData, size_t(BOND_SLOT_SIZE));
@@ -656,19 +625,10 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 }
 
 
-const char *const *CboLoaderCore::LoadQualifiedIdentifier()
+QualifiedName CboLoaderCore::LoadQualifiedName()
 {
-	const char **elements = mResources.mQualifiedIdElements;
-	const char **element = elements;
-	const uint32_t numElements = ReadValue16().mUShort;
-	for (uint32_t i = 0; i < numElements; ++i)
-	{
-		const size_t idIndex = ReadValue16().mUShort;
-		*element++ = mStringTable[idIndex].GetString();
-	}
-	*element++ = nullptr;
-	mResources.mQualifiedIdElements = element;
-	return elements;
+	const size_t nameIndex = ReadValue16().mUShort;
+	return mConstantTable->mQualifiedNameTable[nameIndex];
 }
 
 

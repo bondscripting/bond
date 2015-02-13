@@ -13,22 +13,24 @@ uint size;
 ushort value32Count;
 ushort value64Count;
 ushort stringCount;
+ushort qualifiedNameCount;
 32bit[value32Count] value32Table;
 64bit[value64Count] value64Table;
 String[stringCount] stringTable;
+QualifiedName[qualifiedNameCount] qualifiedNameTable;
 
 String
 ------
 ushort length;
 char[length] string;
 
-QualifiedId
------------
+QualifiedName
+-------------
 ushort elementCount;
 ushort[elementCount] elementIndices;
 
 SizeAndType
-----------------
+-----------
 uint size:28;
 uint type:4;
 
@@ -56,9 +58,8 @@ Blob[blobCount] blobs;
 FunctionBlob
 ------------
 BlobHeader header("Func");
-uint hash;
+ushort nameIndex;
 SizeAndType returnType;
-QualifiedId name;
 ParamListSignature paramListSignature;
 uint frameSize;
 uint packedFrameSize;
@@ -72,8 +73,7 @@ uchar[CodeSize] code;
 DataBlob
 --------
 BlobHeader header("Data");
-uint hash;
+ushort nameIndex;
 SizeAndType type;
-QualifiedId name;
 32bit payload;     // value, index of value or alignment
 (Blob metadata;)

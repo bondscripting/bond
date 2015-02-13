@@ -77,8 +77,6 @@ char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signature
 #define BOND_NATIVE_GETTER_SUFFIX "@get"
 #define BOND_NATIVE_SETTER_SUFFIX "@set"
 
-const uint32_t BOND_STATIC_INITIALIZER_HASH = 0;
-
 }
 
 #endif

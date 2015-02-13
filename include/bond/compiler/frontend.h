@@ -2,7 +2,7 @@
 #define BOND_COMPILER_FRONTEND_H
 
 #include "bond/stl/list.h"
-#include "bond/types/hashedstring.h"
+#include "bond/types/simplestring.h"
 
 namespace Bond
 {
@@ -30,15 +30,15 @@ public:
 	{}
 
 	// Note that a copy of the queued file name is not made.
-	void AddInputFile(const HashedString &inputFileName);
-	bool ContainsInputFile(const HashedString &inputFileName);
+	void AddInputFile(const SimpleString &inputFileName);
+	bool ContainsInputFile(const SimpleString &inputFileName);
 
 	void Analyze();
 
 	bool HasErrors() const;
 
 private:
-	typedef List<HashedString> StringList;
+	typedef List<SimpleString> StringList;
 
 	StringList::Type mInputFileNameList;
 	Lexer &mLexer;

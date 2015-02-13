@@ -178,6 +178,8 @@
     "64-bit constant table overflow.")                                                     \
   BOND_COMPILER_ERROR(STRING_TABLE_OVERFLOW,                                               \
     "String table overflow.")                                                              \
+  BOND_COMPILER_ERROR(QUALIFIED_NAME_TABLE_OVERFLOW,                                       \
+    "Qualified name table overflow.")                                                      \
   BOND_COMPILER_ERROR(STRING_OVERFLOW,                                                     \
     "String overflow.")                                                                    \
   BOND_COMPILER_ERROR(INTERNAL_ERROR,                                                      \

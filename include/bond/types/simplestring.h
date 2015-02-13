@@ -30,6 +30,7 @@ public:
 
 	const char *GetString() const { return mStr; }
 	size_t GetLength() const { return mLength; }
+	bool IsEmpty() const { return mLength == 0; }
 
 	bool operator==(const SimpleString &other) const
 	{

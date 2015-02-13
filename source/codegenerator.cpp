@@ -131,6 +131,8 @@ public:
 			CompilerErrorBuffer &errorBuffer,
 			const TranslationUnit *translationUnitList,
 			PointerSize pointerSize):
+		mQualifiedNameIndexMap(QualifiedNameIndexMap::Compare(), QualifiedNameIndexMap::Allocator(&allocator)),
+		mQualifiedNameList(QualifiedNameList::Allocator(&allocator)),
 		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
 		mStringList(StringList::Allocator(&allocator)),
 		mValue32IndexMap(Value32IndexMap::Compare(), Value32IndexMap::Allocator(&allocator)),
@@ -138,8 +140,8 @@ public:
 		mValue64IndexMap(Value64IndexMap::Compare(), Value64IndexMap::Allocator(&allocator)),
 		mValue64List(Value64List::Allocator(&allocator)),
 		mFunctionList(FunctionList::Allocator(&allocator)),
-		mNativeMemberList(NamedInitializerList::Allocator(&allocator)),
-		mDataList(NamedInitializerList::Allocator(&allocator)),
+		mNativeMemberList(NativeMemberList::Allocator(&allocator)),
+		mDataList(DataList::Allocator(&allocator)),
 		mAllocator(allocator),
 		mStream(stream),
 		mErrorBuffer(errorBuffer),
@@ -243,7 +245,8 @@ private:
 				Allocator &allocator,
 				uint32_t argSize,
 				uint32_t packedArgSize,
-				uint32_t framePointerAlignment):
+				uint32_t framePointerAlignment,
+				uint16_t nameIndex):
 			mDefinition(definition),
 			mByteCode(ByteCode::Allocator(&allocator)),
 			mLabelList(LabelList::Allocator(&allocator)),
@@ -252,17 +255,20 @@ private:
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
 			mStackSize(0),
-			mFramePointerAlignment(framePointerAlignment)
+			mFramePointerAlignment(framePointerAlignment),
+			mNameIndex(nameIndex)
 		{}
 		const FunctionDefinition *mDefinition;
 		ByteCode::Type mByteCode;
 		LabelList::Type mLabelList;
 		JumpList::Type mJumpList;
+
 		uint32_t mArgSize;
 		uint32_t mPackedArgSize;
 		uint32_t mLocalSize;
 		uint32_t mStackSize;
 		uint32_t mFramePointerAlignment;
+		uint16_t mNameIndex;
 	};
 
 	struct InitializerIndex
@@ -273,14 +279,54 @@ private:
 		bool mIsLocal;
 	};
 
-	typedef Map<HashedString, uint16_t> StringIndexMap;
+	struct QualifiedNameEntry
+	{
+		QualifiedNameEntry(const Symbol *symbol, const SimpleString &suffix): mSymbol(symbol), mSuffix(suffix) {}
+
+		bool operator<(const QualifiedNameEntry &other) const
+		{
+			return (mSymbol == other.mSymbol) ? (mSuffix < other.mSuffix) : (mSymbol < other.mSymbol);
+		}
+
+		const Symbol *mSymbol;
+		SimpleString mSuffix;
+	};
+
+	struct NativeMemberEntry
+	{
+		NativeMemberEntry(const NamedInitializer *nativeMember, uint16_t getterIndex, uint16_t setterIndex):
+			mNativeMember(nativeMember),
+			mGetterNameIndex(getterIndex),
+			mSetterNameIndex(setterIndex)
+		{}
+
+		const NamedInitializer *mNativeMember;
+		const uint16_t mGetterNameIndex;
+		const uint16_t mSetterNameIndex;
+	};
+
+	struct DataEntry
+	{
+		DataEntry(const NamedInitializer *data, uint16_t nameIndex):
+			mData(data),
+			mNameIndex(nameIndex)
+		{}
+
+		const NamedInitializer *mData;
+		const uint16_t mNameIndex;
+	};
+
+	typedef Map<QualifiedNameEntry, uint16_t> QualifiedNameIndexMap;
+	typedef Map<SimpleString, uint16_t> StringIndexMap;
 	typedef Map<Value32, uint16_t> Value32IndexMap;
 	typedef Map<Value64, uint16_t> Value64IndexMap;
-	typedef Vector<HashedString> StringList;
+	typedef Vector<QualifiedNameEntry> QualifiedNameList;
+	typedef Vector<SimpleString> StringList;
 	typedef Vector<Value32> Value32List;
 	typedef Vector<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
-	typedef Vector<const NamedInitializer *> NamedInitializerList;
+	typedef Vector<NativeMemberEntry> NativeMemberList;
+	typedef Vector<DataEntry> DataList;
 	typedef AutoStack<CompiledFunction *> FunctionStack;
 	typedef AutoStack<Result> ResultStack;
 	typedef SizeStack LabelStack;
@@ -385,11 +431,11 @@ private:
 
 	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
 	void EmitOpCode(OpCode opCode);
+	void EmitQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
 	void EmitValue16(Value16 value);
 	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
 	void EmitIndexedValue64(Value64 value);
-	void EmitHashCode(uint32_t hash);
 
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
@@ -401,10 +447,11 @@ private:
 	uint32_t WriteFunctionList(uint16_t functionIndex);
 	uint32_t WriteNativeMemberList(uint16_t functionIndex);
 	uint32_t WriteDataList(uint16_t dataIndex);
-	void WriteQualifiedSymbolName(const Symbol *symbol);
+	void WriteQualifiedName(const QualifiedNameEntry &entry);
+	void WriteQualifiedNameIndices(const Symbol *symbol);
+	void WriteString(const SimpleString &simpleString);
 	void WriteSizeAndType(const TypeDescriptor *type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
-	void WriteSymbolNameIndices(const Symbol *symbol);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
 	void WriteValue64(Value64 value);
@@ -416,14 +463,16 @@ private:
 	int32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
-	void MapQualifiedSymbolName(const Symbol *symbol);
-	uint16_t MapString(const HashedString &str);
+	uint16_t MapQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
+	uint16_t MapString(const SimpleString &str);
 	uint16_t MapValue32(const Value32 &value32);
 	uint16_t MapValue64(const Value64 &value32);
 
 	void AssertStackEmpty();
 	void PushError(CompilerError::Type type);
 
+	QualifiedNameIndexMap::Type mQualifiedNameIndexMap;
+	QualifiedNameList::Type mQualifiedNameList;
 	StringIndexMap::Type mStringIndexMap;
 	StringList::Type mStringList;
 	Value32IndexMap::Type mValue32IndexMap;
@@ -431,8 +480,8 @@ private:
 	Value64IndexMap::Type mValue64IndexMap;
 	Value64List::Type mValue64List;
 	FunctionList::Type mFunctionList;
-	NamedInitializerList::Type mNativeMemberList;
-	NamedInitializerList::Type mDataList;
+	NativeMemberList::Type mNativeMemberList;
+	DataList::Type mDataList;
 	ResultStack mResult;
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
@@ -459,7 +508,8 @@ void CodeGenerator::Generate(const TranslationUnit *translationUnitList, OutputS
 
 void GeneratorCore::Generate()
 {
-	mFunctionList.emplace_back(nullptr, mAllocator, 0, 0, uint32_t(BOND_SLOT_SIZE));
+	const uint16_t nameIndex = MapQualifiedName(nullptr);
+	mFunctionList.emplace_back(nullptr, mAllocator, 0, 0, uint32_t(BOND_SLOT_SIZE), nameIndex);
 	CompiledFunction &function = mFunctionList.back();
 	FunctionStack::Element functionElement(mFunction, &function);
 	UIntStack::Element localOffsetElement(mLocalOffset, 0);
@@ -538,15 +588,16 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 		parameterList = NextNode(parameterList);
 	}
 
+	const uint16_t nameIndex = MapQualifiedName(functionDefinition);
 	mFunctionList.emplace_back(
 		functionDefinition,
 		mAllocator,
 		offset,
 		packedOffset,
-		framePointerAlignment);
+		framePointerAlignment,
+		nameIndex);
 	CompiledFunction &function = mFunctionList.back();
 	function.mLabelList.resize(functionDefinition->GetNumReservedJumpTargetIds());
-	MapQualifiedSymbolName(functionDefinition);
 
 	if (!functionDefinition->IsNative())
 	{
@@ -570,6 +621,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_GLOBAL:
 		{
 			const TypeAndValue *typeAndValue = namedInitializer->GetTypeAndValue();
+			const uint16_t nameIndex = MapQualifiedName(namedInitializer);
 			if (typeAndValue->IsValueDefined())
 			{
 				switch (typeAndValue->GetTypeDescriptor()->GetSignatureType())
@@ -590,13 +642,12 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 				{
 					InitializerIndex index(false);
 					EmitOpCode(OPCODE_LOADEA);
-					EmitHashCode(namedInitializer->GetGlobalHashCode());
+					EmitValue16(Value16(nameIndex));
 					EmitInitializer(initializer, index, 0, true);
 					FlushZero(index, true);
 				}
 			}
-			mDataList.push_back(namedInitializer);
-			MapQualifiedSymbolName(namedInitializer);
+			mDataList.emplace_back(namedInitializer, nameIndex);
 		}
 		break;
 
@@ -619,8 +670,9 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		case SCOPE_STRUCT_MEMBER:
 			if (namedInitializer->IsNativeStructMember())
 			{
-				mNativeMemberList.push_back(namedInitializer);
-				MapQualifiedSymbolName(namedInitializer);
+				const uint16_t getterIndex = MapQualifiedName(namedInitializer, BOND_NATIVE_GETTER_SUFFIX);
+				const uint16_t setterIndex = MapQualifiedName(namedInitializer, BOND_NATIVE_SETTER_SUFFIX);
+				mNativeMemberList.emplace_back(namedInitializer, getterIndex, setterIndex);
 			}
 			break;
 	}
@@ -1369,7 +1421,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		}
 
 		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(function->GetGlobalHashCode());
+		EmitQualifiedName(function);
 	}
 
 	if (returnType == SIG_AGGREGATE)
@@ -1436,7 +1488,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 				case SCOPE_GLOBAL:
 				{
 					EmitOpCode(OPCODE_LOADEA);
-					EmitHashCode(namedInitializer->GetGlobalHashCode());
+					EmitQualifiedName(namedInitializer);
 					context = Result::CONTEXT_ADDRESS_INDIRECT;
 					offset = 0;
 				}
@@ -1658,7 +1710,7 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 	}
 
 	EmitOpCode(OPCODE_INVOKE);
-	EmitHashCode(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
+	EmitQualifiedName(member, BOND_NATIVE_GETTER_SUFFIX);
 
 	int32_t stackDelta = -BOND_SLOT_SIZE;
 	Result result;
@@ -1990,7 +2042,7 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 			else if (typeDescriptor->IsStringType())
 			{
 				EmitOpCode(OPCODE_LOADSTR);
-				const uint16_t stringIndex = MapString(typeAndValue.GetHashedStringValue());
+				const uint16_t stringIndex = MapString(typeAndValue.GetStringValue());
 				EmitValue16(Value16(stringIndex));
 			}
 			// TODO: Determine if there is anything to do for non-primitive values.
@@ -2756,7 +2808,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
 
 			EmitOpCode(OPCODE_INVOKE);
-			EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+			EmitQualifiedName(lhResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		}
 		ApplyStackDelta(stackDelta);
 	}
@@ -2928,7 +2980,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 
 		EmitOpCode(OPCODE_SWAP);
 		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(lhResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		EmitQualifiedName(lhResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		mStackTop.SetTop(stackTop);
 	}
 	else
@@ -3019,7 +3071,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 
 		EmitOpCode(OPCODE_SWAP);
 		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(pointerResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		EmitQualifiedName(pointerResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		mStackTop.SetTop(stackTop);
 	}
 	else
@@ -3275,7 +3327,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 		EmitOpCode(OPCODE_SWAP);
 		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(operandResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		EmitQualifiedName(operandResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		mStackTop.SetTop(stackTop);
 	}
 	else
@@ -3381,7 +3433,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 
 		EmitOpCode(OPCODE_SWAP);
 		EmitOpCode(OPCODE_INVOKE);
-		EmitHashCode(operandResult.GetValue().mNativeMember->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
+		EmitQualifiedName(operandResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		mStackTop.SetTop(stackTop);
 	}
 	else
@@ -3648,6 +3700,13 @@ void GeneratorCore::EmitOpCode(OpCode opCode)
 }
 
 
+void GeneratorCore::EmitQualifiedName(const Symbol *symbol, const char *suffix)
+{
+	const uint16_t nameIndex = MapQualifiedName(symbol, suffix);
+	EmitValue16(Value16(nameIndex));
+}
+
+
 void GeneratorCore::EmitValue16(Value16 value)
 {
 	ConvertBigEndian16(value.mBytes);
@@ -3678,12 +3737,6 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 {
 	const uint16_t index = MapValue64(value);
 	EmitValue16(Value16(index));
-}
-
-
-void GeneratorCore::EmitHashCode(uint32_t hash)
-{
-	EmitIndexedValue32(Value32(hash));
 }
 
 
@@ -3926,6 +3979,7 @@ void GeneratorCore::WriteConstantTable()
 	WriteValue16(Value16(uint16_t(mValue32List.size())));
 	WriteValue16(Value16(uint16_t(mValue64List.size())));
 	WriteValue16(Value16(uint16_t(mStringList.size())));
+	WriteValue16(Value16(uint16_t(mQualifiedNameList.size())));
 
 	for (const Value32 &value: mValue32List)
 	{
@@ -3937,15 +3991,14 @@ void GeneratorCore::WriteConstantTable()
 		WriteValue64(value);
 	}
 
-	for (const HashedString &hashedString: mStringList)
+	for (const SimpleString &simpleString: mStringList)
 	{
-		const size_t length = hashedString.GetLength();
-		const char *str = hashedString.GetString();
-		WriteValue16(Value16(uint16_t(length)));
-		for (size_t i = 0; i < length; ++i)
-		{
-			mStream.Write(str[i]);
-		}
+		WriteString(simpleString);
+	}
+
+	for (const QualifiedNameEntry &qualifiedName: mQualifiedNameList)
+	{
+		WriteQualifiedName(qualifiedName);
 	}
 
 	// Patch up the table size.
@@ -3977,20 +4030,18 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(functionIndex));
+		const Value16 nameIndex(compiledFunction.mNameIndex);
+		WriteValue16(nameIndex);
 
 		if (isStaticInitializer)
 		{
 			const TypeDescriptor voidTypeDescriptor = TypeDescriptor::GetVoidType();
-			WriteValue32(Value32(BOND_STATIC_INITIALIZER_HASH));
 			WriteSizeAndType(&voidTypeDescriptor);
-			WriteQualifiedSymbolName(nullptr);
 			WriteParamListSignature(nullptr, false);
 		}
 		else
 		{
-			WriteValue32(Value32(function->GetGlobalHashCode()));
 			WriteSizeAndType(function->GetPrototype()->GetReturnType());
-			WriteQualifiedSymbolName(function);
 			WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		}
 
@@ -4054,9 +4105,9 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 
 uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 {
-	for (const NamedInitializer *member: mNativeMemberList)
+	for (const NativeMemberEntry &entry: mNativeMemberList)
 	{
-		const TypeDescriptor *typeDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
+		const TypeDescriptor *typeDescriptor = entry.mNativeMember->GetTypeAndValue()->GetTypeDescriptor();
 
 		// Write the getter function.
 		{
@@ -4064,9 +4115,8 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
-			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX)));
+			WriteValue16(Value16(entry.mGetterNameIndex));
 			WriteSizeAndType(typeDescriptor);
-			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(nullptr, true);
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame size
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Packed frame size
@@ -4094,9 +4144,8 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
-			WriteValue32(Value32(member->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX)));
+			WriteValue16(Value16(entry.mSetterNameIndex));
 			WriteSizeAndType(&voidDescriptor);
-			WriteQualifiedSymbolName(member);
 			WriteParamListSignature(&parameter, true);
 			WriteValue32(Value32(offset));         // Frame size
 			WriteValue32(Value32(packedOffset));   // Packed frame size
@@ -4119,9 +4168,9 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 
 uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 {
-	for (const NamedInitializer *namedInitializer: mDataList)
+	for (const DataEntry &entry: mDataList)
 	{
-		const TypeAndValue *typeAndValue = namedInitializer->GetTypeAndValue();
+		const TypeAndValue *typeAndValue = entry.mData->GetTypeAndValue();
 		const TypeDescriptor *typeDescriptor = typeAndValue->GetTypeDescriptor();
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
@@ -4129,9 +4178,8 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 		mStream.AddOffset(sizeof(Value32));
 
 		WriteValue16(Value16(dataIndex));
-		WriteValue32(Value32(namedInitializer->GetGlobalHashCode()));
+		WriteValue16(Value16(entry.mNameIndex));
 		WriteSizeAndType(typeDescriptor);
-		WriteQualifiedSymbolName(nullptr);
 
 		Value32 payload(uint32_t(0));
 		if (typeAndValue->IsValueDefined())
@@ -4204,19 +4252,52 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 }
 
 
-void GeneratorCore::WriteQualifiedSymbolName(const Symbol *symbol)
+void GeneratorCore::WriteQualifiedName(const QualifiedNameEntry &entry)
 {
 	// Cache the position for the number of elements and skip 2 bytes.
 	const Stream::pos_t startPos = mStream.GetPosition();
 	mStream.AddOffset(sizeof(Value16));
 
-	WriteSymbolNameIndices(symbol);
+	WriteQualifiedNameIndices(entry.mSymbol);
+
+	if (!entry.mSuffix.IsEmpty())
+	{
+			const uint16_t suffixIndex = MapString(entry.mSuffix);
+			WriteValue16(Value16(suffixIndex));
+	}
 
 	// Patch up the number of elements.
 	const Stream::pos_t endPos = mStream.GetPosition();
 	mStream.SetPosition(startPos);
 	WriteValue16(Value16(uint16_t((endPos - startPos - sizeof(Value16)) / sizeof(Value16))));
 	mStream.SetPosition(endPos);
+}
+
+
+void GeneratorCore::WriteQualifiedNameIndices(const Symbol *symbol)
+{
+	if (symbol != nullptr)
+	{
+		WriteQualifiedNameIndices(symbol->GetParentSymbol());
+		const Token *name = symbol->GetName();
+		if (name != nullptr)
+		{
+			const uint16_t nameIndex = MapString(name->GetHashedText());
+			WriteValue16(Value16(nameIndex));
+		}
+	}
+}
+
+
+void GeneratorCore::WriteString(const SimpleString &simpleString)
+{
+	const size_t length = simpleString.GetLength();
+	const char *str = simpleString.GetString();
+	WriteValue16(Value16(uint16_t(length)));
+	for (size_t i = 0; i < length; ++i)
+	{
+		mStream.Write(str[i]);
+	}
 }
 
 
@@ -4255,21 +4336,6 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 	mStream.SetPosition(startPos);
 	WriteValue16(Value16(uint16_t((endPos - startPos - sizeof(Value16)) / (2 * sizeof(Value32)))));
 	mStream.SetPosition(endPos);
-}
-
-
-void GeneratorCore::WriteSymbolNameIndices(const Symbol *symbol)
-{
-	if (symbol != nullptr)
-	{
-		WriteSymbolNameIndices(symbol->GetParentSymbol());
-		const Token *name = symbol->GetName();
-		if (name != nullptr)
-		{
-			const uint16_t nameIndex = MapString(name->GetHashedText());
-			WriteValue16(Value16(nameIndex));
-		}
-	}
 }
 
 
@@ -4351,22 +4417,43 @@ void GeneratorCore::SetLabelValue(size_t label, size_t value)
 }
 
 
-void GeneratorCore::MapQualifiedSymbolName(const Symbol *symbol)
+uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffix)
 {
-	const Symbol *sym = symbol;
-	while (sym != nullptr)
+	if (!IsInRange<uint16_t>(mQualifiedNameList.size()))
 	{
-		const Token *name = sym->GetName();
-		if (name != nullptr)
-		{
-			MapString(name->GetHashedText());
-		}
-		sym = sym->GetParentSymbol();
+		PushError(CompilerError::STRING_TABLE_OVERFLOW);
 	}
+
+	const uint16_t index = uint16_t(mQualifiedNameList.size());
+	const SimpleString simpleSuffix(suffix);
+	QualifiedNameEntry entry(symbol, simpleSuffix);
+	QualifiedNameIndexMap::InsertResult insertResult = mQualifiedNameIndexMap.emplace(entry, index);
+	if (insertResult.second)
+	{
+		mQualifiedNameList.push_back(entry);
+
+		const Symbol *sym = symbol;
+		while (sym != nullptr)
+		{
+			const Token *name = sym->GetName();
+			if (name != nullptr)
+			{
+				MapString(name->GetHashedText());
+			}
+			sym = sym->GetParentSymbol();
+		}
+
+		if (!simpleSuffix.IsEmpty())
+		{
+			MapString(simpleSuffix);
+		}
+	}
+
+	return insertResult.first->second;
 }
 
 
-uint16_t GeneratorCore::MapString(const HashedString &str)
+uint16_t GeneratorCore::MapString(const SimpleString &str)
 {
 	if (!IsInRange<uint16_t>(mStringList.size()))
 	{
@@ -4377,7 +4464,7 @@ uint16_t GeneratorCore::MapString(const HashedString &str)
 		PushError(CompilerError::STRING_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mStringList.size());
-	StringIndexMap::InsertResult insertResult = mStringIndexMap.insert(StringIndexMap::KeyValue(str, index));
+	StringIndexMap::InsertResult insertResult = mStringIndexMap.emplace(str, index);
 	if (insertResult.second)
 	{
 		mStringList.push_back(str);
@@ -4393,7 +4480,7 @@ uint16_t GeneratorCore::MapValue32(const Value32 &value)
 		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mValue32List.size());
-	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.insert(Value32IndexMap::KeyValue(value, index));
+	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.emplace(value, index);
 	if (insertResult.second)
 	{
 		mValue32List.push_back(value);
@@ -4409,7 +4496,7 @@ uint16_t GeneratorCore::MapValue64(const Value64 &value)
 		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mValue64List.size());
-	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.insert(Value64IndexMap::KeyValue(value, index));
+	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.emplace(value, index);
 	if (insertResult.second)
 	{
 		mValue64List.push_back(value);

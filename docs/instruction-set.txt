@@ -39,7 +39,7 @@ constd_2            ... -> double
 
 loadfp, short       ... -> address
 loadfpw, ushort     ... -> address
-!loadea, hash        ... -> address
+loadea, ushort      ... -> address
 loadstr, ushort     ..., -> address
 loadc               ..., address -> ..., int
 loaduc              ..., address -> ..., uint

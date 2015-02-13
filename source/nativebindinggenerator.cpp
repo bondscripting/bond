@@ -51,7 +51,8 @@ private:
 	void OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers);
 	void CloseNamespaces(OutputStream &stream, size_t numIdentifiers);
 	void PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it);
-	void PrintQualifiedSymbolName(OutputStream &stream, const Symbol *symbol);
+	void PrintQualifiedBondName(OutputStream &stream, const Symbol *symbol);
+	void PrintQualifiedCppName(OutputStream &stream, const Symbol *symbol);
 
 	NamespaceStack mNamespaceStack;
 	BoolStack mInNativeBlockStack;
@@ -121,7 +122,7 @@ void NativeBindingGeneratorCore::Generate()
 		mHStream.Print("\n#endif\n");
 
 		// Bottom of the .cpp file.
-		mCppStream.Print("\t{0, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
+		mCppStream.Print("\t{nullptr, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
 		PrintString(mCppStream, collectionName);
 		mCppStream.Print(" =\n{\n\t");
 		PrintString(mCppStream, collectionName);
@@ -196,8 +197,10 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 		mHStream.Print("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetText());
 
 		// Generate the function binding.
-		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", functionDefinition->GetGlobalHashCode());
-		PrintQualifiedSymbolName(mCppStream, functionDefinition);
+		mCppStream.Print("\t{\"");
+		PrintQualifiedBondName(mCppStream, functionDefinition);
+		mCppStream.Print("\", ");
+		PrintQualifiedCppName(mCppStream, functionDefinition);
 		mCppStream.Print("},\n");
 		++mNumFunctions;
 	}
@@ -218,12 +221,18 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		mHStream.Print("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
 
 		// Generate the function bindings.
-		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_GETTER_SUFFIX));
-		PrintQualifiedSymbolName(mCppStream, namedInitializer);
+		mCppStream.Print("\t{\"");
+		PrintQualifiedBondName(mCppStream, namedInitializer);
+		mCppStream.Print(".%s\", ", BOND_NATIVE_GETTER_SUFFIX);
+		PrintQualifiedCppName(mCppStream, namedInitializer);
 		mCppStream.Print("__get},\n");
-		mCppStream.Print("\t{0x%08" BOND_PRIx32 ", ", namedInitializer->GetGlobalHashCodeWithSuffix(BOND_NATIVE_SETTER_SUFFIX));
-		PrintQualifiedSymbolName(mCppStream, namedInitializer);
+
+		mCppStream.Print("\t{\"");
+		PrintQualifiedBondName(mCppStream, namedInitializer);
+		mCppStream.Print(".%s\", ", BOND_NATIVE_SETTER_SUFFIX);
+		PrintQualifiedCppName(mCppStream, namedInitializer);
 		mCppStream.Print("__set},\n");
+
 		mNumFunctions += 2;
 	}
 }
@@ -305,11 +314,26 @@ void NativeBindingGeneratorCore::PrintNamespaceStack(OutputStream &stream, Names
 }
 
 
-void NativeBindingGeneratorCore::PrintQualifiedSymbolName(OutputStream &stream, const Symbol *symbol)
+void NativeBindingGeneratorCore::PrintQualifiedBondName(OutputStream &stream, const Symbol *symbol)
 {
 	if ((symbol != nullptr) && (symbol->GetName() != nullptr))
 	{
-		PrintQualifiedSymbolName(stream, symbol->GetParentSymbol());
+		const Symbol *parent = symbol->GetParentSymbol();
+		if ((parent != nullptr) && (parent->GetName() != nullptr))
+		{
+			PrintQualifiedBondName(stream, parent);
+			stream.Print(".");
+		}
+		stream.Print("%s", symbol->GetName()->GetText());
+	}
+}
+
+
+void NativeBindingGeneratorCore::PrintQualifiedCppName(OutputStream &stream, const Symbol *symbol)
+{
+	if ((symbol != nullptr) && (symbol->GetName() != nullptr))
+	{
+		PrintQualifiedCppName(stream, symbol->GetParentSymbol());
 		const char *suffix = "";
 		switch (symbol->GetSymbolType())
 		{

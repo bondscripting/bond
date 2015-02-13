@@ -70,11 +70,15 @@ typedef AutoStack<CalleeStackFrame> StackFrames;
 class CallerStackFrame: private StackFrames::Element
 {
 public:
-	CallerStackFrame(VM &vm, const HashedString &functionName);
+	CallerStackFrame(VM &vm, const QualifiedName &functionName);
+	CallerStackFrame(VM &vm, const char *functionName);
 	CallerStackFrame(VM &vm, const Function &function);
 
 	template <typename ReturnType>
-	CallerStackFrame(VM &vm, const HashedString &functionName, ReturnType *returnPointer);
+	CallerStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer);
+
+	template <typename ReturnType>
+	CallerStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer);
 
 	template <typename ReturnType>
 	CallerStackFrame(VM &vm, const Function &function, ReturnType *returnPointer);
@@ -90,7 +94,8 @@ public:
 	void Call();
 
 private:
-	void Initialize(VM &vm, const HashedString &functionName, void *returnPointer);
+	void Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer);
+	void Initialize(VM &vm, const char *functionName, void *returnPointer);
 	void Initialize(VM &vm, const Function &function, void *returnPointer);
 
 	uint32_t mNextArg;
@@ -126,13 +131,19 @@ public:
 	void RaiseError(const char *format, ...) const;
 
 	template <typename ReturnType, typename... Args>
-	void CallFunction(const HashedString &functionName, ReturnType *returnAddress, Args... args);
+	void CallFunction(const QualifiedName &functionName, ReturnType *returnAddress, Args... args);
+
+	template <typename ReturnType, typename... Args>
+	void CallFunction(const char *functionName, ReturnType *returnAddress, Args... args);
 
 	template <typename ReturnType, typename... Args>
 	void CallFunction(const Function &function, ReturnType *returnAddress, Args... args);
 
 	template <typename... Args>
-	void CallVoidFunction(const HashedString &functionName, Args... args);
+	void CallVoidFunction(const QualifiedName &functionName, Args... args);
+
+	template <typename... Args>
+	void CallVoidFunction(const char *functionName, Args... args);
 
 	template <typename... Args>
 	void CallVoidFunction(const Function &function, Args... args);

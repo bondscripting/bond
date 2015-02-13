@@ -27,7 +27,7 @@ private:
 	void ValidateListBlob();
 	void ValidateFunctionBlob(size_t blobEnd);
 	void ValidateDataBlob(size_t blobEnd);
-	void ValidateQualifiedIdentifier();
+	size_t ValidateQualifiedNameIndex();
 	void ValidateSizeAndType();
 	void ValidateParamListSignature();
 
@@ -56,7 +56,6 @@ CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 
 CboValidator::Result CboValidatorCore::Validate()
 {
-	AssertBytesRemaining((2 * sizeof(Value32)) + (6 * sizeof(Value16)));
 	const uint32_t magicNumber = ReadValue32().mUInt;
 	const uint32_t majorVersion = ReadValue16().mUShort;
 	const uint32_t minorVersion = ReadValue16().mUShort;
@@ -66,6 +65,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	const size_t value32Count = ReadValue16().mUShort;
 	const size_t value64Count = ReadValue16().mUShort;
 	const size_t stringCount = ReadValue16().mUShort;
+	const size_t qualifiedNameCount = ReadValue16().mUShort;
 
 	BOND_ASSERT_FORMAT(magicNumber == MAGIC_NUMBER, ("CBO file contains invalid magic number: 0x%" BOND_PRIx32 ".", magicNumber));
 	BOND_ASSERT_FORMAT(majorVersion == MAJOR_VERSION, ("Unexpected major version: %" BOND_PRIu32 ".", majorVersion));
@@ -77,6 +77,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	mResult.mValue32Count = value32Count;
 	mResult.mValue64Count = value64Count;
 	mResult.mStringCount = stringCount;
+	mResult.mQualifiedNameCount = qualifiedNameCount;
 
 	const size_t valueSize = (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
 	AssertBytesRemaining(tableSize - (mIndex - tableStart));
@@ -108,8 +109,31 @@ CboValidator::Result CboValidatorCore::Validate()
 		}
 		mIndex += stringLength;
 	}
+	mResult.mStringByteCount = stringByteCount;
 
-	mResult.mStringByteCount += stringByteCount;
+	size_t qualifiedNameElementCount = 0;
+	for (size_t i = 0; i < qualifiedNameCount; ++i)
+	{
+		AssertBytesRemaining(sizeof(Value16));
+		const size_t numElements = ReadValue16().mUShort;
+		AssertBytesRemaining(numElements * sizeof(Value16));
+		qualifiedNameElementCount += numElements;
+
+		if (numElements == 0)
+		{
+			mResult.mStaticInitializerNameIndex = i;
+		}
+
+		for (size_t j = 0; j < numElements; ++j)
+		{
+			const size_t elementIndex = ReadValue16().mUShort;
+			if (elementIndex >= stringCount)
+			{
+				CboIsInvalid();
+			}
+		}
+	}
+	mResult.mQualifiedNameElementCount = qualifiedNameElementCount;
 
 	const size_t tableEnd = tableStart + tableSize;
 	if (mIndex != tableEnd)
@@ -177,11 +201,8 @@ void CboValidatorCore::ValidateListBlob()
 
 void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 {
-	AssertBytesRemaining(sizeof(Value32));
-	const uint32_t idHash = ReadValue32().mUInt;
-
+	const size_t functionNameIndex = ValidateQualifiedNameIndex();
 	ValidateSizeAndType();
-	ValidateQualifiedIdentifier();
 	ValidateParamListSignature();
 
 	AssertBytesRemaining(6 * sizeof(Value32));
@@ -201,7 +222,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 		FunctionIsInvalid();
 	}
 
-	if (idHash == BOND_STATIC_INITIALIZER_HASH)
+	if (functionNameIndex == mResult.mStaticInitializerNameIndex)
 	{
 		++mResult.mStaticInitializerCount;
 	}
@@ -238,7 +259,6 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				break;
 			case OC_PARAM_INT:
 			case OC_PARAM_VAL32:
-			case OC_PARAM_HASH:
 			{
 				AssertBytesRemaining(sizeof(Value16));
 				const size_t valueIndex = ReadValue16().mUShort;
@@ -295,6 +315,16 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				AssertBytesRemaining(sizeof(Value16));
 				const size_t stringIndex = ReadValue16().mUShort;
 				if (stringIndex >= mResult.mStringCount)
+				{
+					CodeIsInvalid();
+				}
+			}
+			break;
+			case OC_PARAM_NAME:
+			{
+				AssertBytesRemaining(sizeof(Value16));
+				const size_t nameIndex = ReadValue16().mUShort;
+				if (nameIndex >= mResult.mQualifiedNameCount)
 				{
 					CodeIsInvalid();
 				}
@@ -377,19 +407,13 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 {
 	++mResult.mDataCount;
 
+	ValidateQualifiedNameIndex();
+
 	AssertBytesRemaining(2 * sizeof(Value32));
-
-	// Ignore the hash.
-	mIndex += sizeof(Value32);
-
 	const uint32_t sizeAndType = ReadValue32().mUInt;
 	uint32_t size;
 	SignatureType type;
 	DecodeSizeAndType(sizeAndType, size, type);
-
-	ValidateQualifiedIdentifier();
-
-	AssertBytesRemaining(sizeof(Value32));
 	const Value32 payload = ReadValue32();
 	size_t alignment = size_t(BOND_SLOT_SIZE);
 
@@ -410,22 +434,15 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 }
 
 
-void CboValidatorCore::ValidateQualifiedIdentifier()
+size_t CboValidatorCore::ValidateQualifiedNameIndex()
 {
 	AssertBytesRemaining(sizeof(Value16));
-	const size_t numElements = ReadValue16().mUShort;
-	AssertBytesRemaining(numElements * sizeof(Value16));
-	++mResult.mQualifiedIdCount;
-	mResult.mQualifiedIdElementCount += numElements;
-
-	for (size_t i = 0; i < numElements; ++i)
+	const size_t nameIndex = ReadValue16().mUShort;
+	if (nameIndex >= mResult.mQualifiedNameCount)
 	{
-		const size_t elementIndex = ReadValue16().mUShort;
-		if (elementIndex >= mResult.mStringCount)
-		{
-			CboIsInvalid();
-		}
+		CboIsInvalid();
 	}
+	return nameIndex;
 }
 
 

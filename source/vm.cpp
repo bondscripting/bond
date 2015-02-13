@@ -53,11 +53,28 @@ inline void SwapValue64(void *a, void *b)
 }
 
 
-void CallerStackFrame::Initialize(VM &vm, const HashedString &functionName, void *returnPointer)
+void CallerStackFrame::Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer)
 {
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
-	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName.GetString()));
+
+	if (function == nullptr)
+	{
+		char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+		MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+		functionName.PrintTo(stream);
+		BOND_FAIL_FORMAT(("Failed to look up function '%s'.", buffer));
+	}
+
+	Initialize(vm, *function, returnPointer);
+}
+
+
+void CallerStackFrame::Initialize(VM &vm, const char *functionName, void *returnPointer)
+{
+	const CodeSegment &codeSegment = vm.GetCodeSegment();
+	const Function *function = codeSegment.GetFunction(functionName);
+	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName));
 	Initialize(vm, *function, returnPointer);
 }
 
@@ -2236,17 +2253,7 @@ void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) con
 		stream.Print(GetBondTypeMnemonic(returnType), returnSize);
 		stream.Print(" ");
 
-		const char *const *elements = function->mName;
-		bool isFirstElement = true;
-		while (*elements != nullptr)
-		{
-			if (!isFirstElement)
-			{
-				stream.Print("::");
-			}
-			stream.Print(*elements++);
-			isFirstElement = false;
-		}
+		function->mName.PrintTo(stream);
 
 		stream.Print("(");
 		const ParamSignature *paramSignatures = function->mParamListSignature.mParamSignatures;

@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h" />
     <ClInclude Include="..\..\include\bond\types\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
+    <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
     <ClInclude Include="..\..\include\bond\types\simplestring.h" />
     <ClInclude Include="..\..\include\bond\types\stringutil.h" />
     <ClInclude Include="..\..\include\bond\types\types.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="..\..\source\parser.cpp" />
     <ClCompile Include="..\..\source\parsetreeprinter.cpp" />
     <ClCompile Include="..\..\source\prettyprinter.cpp" />
+    <ClCompile Include="..\..\source\qualifiedname.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />

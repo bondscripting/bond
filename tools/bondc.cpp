@@ -41,8 +41,8 @@ int main(int argc, const char *argv[])
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		FileLoaderList::Type loaderList((FileLoaderList::Allocator(&allocator)));
 		loaderList.push_back(Bond::DiskFileLoader(allocator));
-		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
-		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdLibLoader);
+		Bond::MemoryFileLoader stdIncludeLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
+		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdIncludeLoader);
 		const char *cboFileName = nullptr;
 		const char *cppFileName = nullptr;
 		const char *hFileName = nullptr;

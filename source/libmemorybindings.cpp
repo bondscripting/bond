@@ -5,11 +5,11 @@ namespace Bond
 
 const Bond::NativeFunctionBinding MEMORY_BINDING_COLLECTION_FUNCTIONS[] =
 {
-	{0x8f000ab7, Bond::Allocate},
-	{0xf5081d35, Bond::AllocateAligned},
-	{0x8cdf3dac, Bond::Free},
-	{0x97f0b018, Bond::FreeAligned},
-	{0, nullptr}
+	{"Bond.Allocate", Bond::Allocate},
+	{"Bond.AllocateAligned", Bond::AllocateAligned},
+	{"Bond.Free", Bond::Free},
+	{"Bond.FreeAligned", Bond::FreeAligned},
+	{nullptr, nullptr}
 };
 
 const Bond::NativeBindingCollection MEMORY_BINDING_COLLECTION =

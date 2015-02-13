@@ -6,6 +6,7 @@
 #include "bond/tools/cbovalidator.h"
 #include "bond/tools/disassembler.h"
 #include "bond/types/opcodes.h"
+#include "bond/types/qualifiedname.h"
 #include "bond/types/simplestring.h"
 #include "bond/types/value.h"
 #include "bond/version.h"
@@ -24,6 +25,8 @@ public:
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
 		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
+		mQualifiedNameTable(validationResult.mQualifiedNameCount, QualifiedName(), QualifiedNameTable::Allocator(&allocator)),
+		mQualifiedNameElementTable(validationResult.mQualifiedNameElementCount + validationResult.mQualifiedNameCount, nullptr, QualifiedNameElementTable::Allocator(&allocator)),
 		mValidationResult(validationResult),
 		mStream(stream),
 		mByteCode(byteCode),
@@ -36,15 +39,15 @@ private:
 	typedef Vector<Value32> Value32Table;
 	typedef Vector<Value64> Value64Table;
 	typedef Vector<SimpleString> StringTable;
+	typedef Vector<QualifiedName> QualifiedNameTable;
+	typedef Vector<const char *> QualifiedNameElementTable;
 
 	void DisassembleBlob();
 	void DisassembleListBlob();
 	void DisassembleFunctionBlob(size_t blobEnd);
 	void DisassembleDataBlob(size_t blobEnd);
-	void DisassembleQualifiedIdentifier();
 	void DisassembleParamListSignature();
 	SignatureType DisassembleSizeAndType();
-	void WriteSimpleString(const SimpleString &str);
 	void WriteAbbreviatedString(const SimpleString &str);
 
 	Value16 ReadValue16();
@@ -54,6 +57,8 @@ private:
 	Value32Table::Type mValue32Table;
 	Value64Table::Type mValue64Table;
 	StringTable::Type mStringTable;
+	QualifiedNameTable::Type mQualifiedNameTable;
+	QualifiedNameElementTable::Type mQualifiedNameElementTable;
 	CboValidator::Result mValidationResult;
 	OutputStream &mStream;
 	const uint8_t *mByteCode;
@@ -72,8 +77,8 @@ void Disassembler::Disassemble(OutputStream &stream, const void *byteCode, size_
 
 void DisassemblerCore::Disassemble()
 {
-	// Skip some header information.
-	mIndex += 20;
+	// Skip some header information that is already included in the validation result.
+	mIndex += (2 * sizeof(Value32)) + (7 * sizeof(Value16));
 
 	mStream.Print("Version %d.%02d\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
 	mStream.Print("Pointer size: %d bits\n", (mValidationResult.mPointerSize == POINTER_64BIT) ? 64 : 32);
@@ -93,6 +98,20 @@ void DisassemblerCore::Disassemble()
 		const size_t length = ReadValue16().mUShort;
 		mStringTable[i] = SimpleString(reinterpret_cast<const char *>(mByteCode + mIndex), length);
 		mIndex += length;
+	}
+
+	QualifiedName *name = mQualifiedNameTable.data();
+	const char **element = mQualifiedNameElementTable.data();
+	for (size_t i = 0; i < mValidationResult.mQualifiedNameCount; ++i)
+	{
+		*name++ = QualifiedName(element);
+		const size_t numElements = ReadValue16().mUShort;
+		for (size_t j = 0; j < numElements; ++j)
+		{
+			const size_t elementIndex = ReadValue16().mUShort;
+			*element++ = mStringTable[elementIndex].GetString();
+		}
+		*element++ = nullptr;
 	}
 
 	DisassembleBlob();
@@ -137,12 +156,12 @@ void DisassemblerCore::DisassembleListBlob()
 
 void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 {
-	const uint32_t idHash = ReadValue32().mUInt;
+	const size_t functionNameIndex = ReadValue16().mUShort;
 
 	mStream.Print("Function: ");
 	DisassembleSizeAndType();
 	mStream.Print(" ");
-	DisassembleQualifiedIdentifier();
+	mQualifiedNameTable[functionNameIndex].PrintTo(mStream);
 	mStream.Print("(");
 	DisassembleParamListSignature();
 	mStream.Print(")\n");
@@ -156,14 +175,13 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 	const size_t codeStart = mIndex;
 	const size_t codeEnd = mIndex + codeSize;
 	mStream.Print(
-		"\thash: 0x%" BOND_PRIx32 "\n"
 		"\targ size: %" BOND_PRIu32 "\n"
 		"\tpacked arg size: %" BOND_PRIu32 "\n"
 		"\tlocal size: %" BOND_PRIu32 "\n"
 		"\tstack size: %" BOND_PRIu32 "\n"
 		"\tframe pointer alignment: %" BOND_PRIu32 "\n"
 		"\tcode size: %" BOND_PRIu32 "\n",
-		idHash, argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
+		argSize, packedArgSize, localSize, stackSize, framePointerAlignment, codeSize);
 
 	while (mIndex < codeEnd)
 	{
@@ -201,7 +219,6 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 			}
 			break;
 			case OC_PARAM_VAL32:
-			case OC_PARAM_HASH:
 			{
 				const size_t valueIndex = ReadValue16().mUShort;
 				const uint32_t value = mValue32Table[valueIndex].mUInt;
@@ -234,6 +251,12 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 			{
 				const size_t stringIndex = ReadValue16().mUShort;
 				WriteAbbreviatedString(mStringTable[stringIndex]);
+			}
+			break;
+			case OC_PARAM_NAME:
+			{
+				const size_t nameIndex = ReadValue16().mUShort;
+				mQualifiedNameTable[nameIndex].PrintTo(mStream);
 			}
 			break;
 			case OC_PARAM_LOOKUPSWITCH:
@@ -286,12 +309,12 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 
 void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 {
-	const uint32_t idHash = ReadValue32().mUInt;
+	const size_t nameIndex = ReadValue16().mUShort;
 
 	mStream.Print("Data: ");
 	const SignatureType type = DisassembleSizeAndType();
 	mStream.Print(" ");
-	DisassembleQualifiedIdentifier();
+	mQualifiedNameTable[nameIndex].PrintTo(mStream);
 
 	const Value32 payload = ReadValue32();
 
@@ -360,28 +383,10 @@ void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 		break;
 	}
 
-	mStream.Print("\thash: 0x%" BOND_PRIx32 "\n", idHash);
-
 	// Disassemble the optional metadata blob.
 	if (mIndex < blobEnd)
 	{
 		DisassembleBlob();
-	}
-}
-
-
-void DisassemblerCore::DisassembleQualifiedIdentifier()
-{
-	const size_t numElements = ReadValue16().mUShort;
-	for (size_t i = 0; i < numElements; ++i)
-	{
-		const size_t idIndex = ReadValue16().mUShort;
-		const SimpleString &id = mStringTable[idIndex];
-		if (i > 0)
-		{
-			mStream.Print("::");
-		}
-		WriteSimpleString(id);
 	}
 }
 
@@ -411,17 +416,6 @@ SignatureType DisassemblerCore::DisassembleSizeAndType()
 	const char *str = GetBondTypeMnemonic(type);
 	mStream.Print(str, size);
 	return type;
-}
-
-
-void DisassemblerCore::WriteSimpleString(const SimpleString &str)
-{
-	const size_t length = str.GetLength();
-	const char *s = str.GetString();
-	for (size_t i = 0; i < length; ++i)
-	{
-		mStream.Print("%c", s[i]);
-	}
 }
 
 

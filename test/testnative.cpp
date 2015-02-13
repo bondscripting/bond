@@ -86,39 +86,39 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 	Vector3 v3a;
 	Vector3 v3b;
 
-	vm.CallVoidFunction("::SetVector3", &v3a, int32_t(21), int32_t(-22), int32_t(23));
+	vm.CallVoidFunction("SetVector3", &v3a, int32_t(21), int32_t(-22), int32_t(23));
 	ASSERT_FORMAT(v3a.GetX() == 21, ("Expected 21, but was %" BOND_PRId32 ".", v3a.GetX()));
 	ASSERT_FORMAT(v3a.GetY() == -22, ("Expected -22, but was %" BOND_PRId32 ".", v3a.GetY()));
 	ASSERT_FORMAT(v3a.GetZ() == 23, ("Expected 23, but was %" BOND_PRId32 ".", v3a.GetZ()));
 
 	v3a = Vector3(44, 444, 4444);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3X", int32_t(v3a.GetX()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::X" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetX()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Y", int32_t(v3a.GetY()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Y" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetY()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::GetVector3Z", int32_t(v3a.GetZ()), &v3a);
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3::Z" BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetZ()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "GetVector3X", int32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "Vector3.X." BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetX()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "GetVector3Y", int32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "Vector3.Y." BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetY()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "GetVector3Z", int32_t(v3a.GetZ()), &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "Vector3.Z." BOND_NATIVE_GETTER_SUFFIX, int32_t(v3a.GetZ()), &v3a);
 
 	v3a = Vector3(2, 3, 4);
 	v3b = Vector3(5, -6, 7);
-	VALIDATE_FUNCTION_CALL_2(INT, "::DotVector3", int32_t(20), &v3a, &v3b);
-	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3::Dot", int32_t(20), &v3a, &v3b);
+	VALIDATE_FUNCTION_CALL_2(INT, "DotVector3", int32_t(20), &v3a, &v3b);
+	VALIDATE_FUNCTION_CALL_2(INT, "Vector3.Dot", int32_t(20), &v3a, &v3b);
 
 	v3a = Vector3(17, 17, 17);
 	int32_t oi = 91; int32_t ri = v3a.GetY() + oi;
-	VALIDATE_FUNCTION_CALL_2(INT, "::Vector3AddY", ri, &v3a, oi);
+	VALIDATE_FUNCTION_CALL_2(INT, "Vector3AddY", ri, &v3a, oi);
 	ASSERT_FORMAT(v3a.GetX() == 17, ("Expected 17, but was %" BOND_PRId32 ".", v3a.GetX()));
 	ASSERT_FORMAT(v3a.GetY() == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, v3a.GetY()));
 	ASSERT_FORMAT(v3a.GetZ() == 17, ("Expected 17, but was %" BOND_PRId32 ".", v3a.GetZ()));
 
 	v3a = Vector3(23, 23, 23);
 	ri = v3a.GetY() + 1;
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3PreincrementY", ri, &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "Vector3PreincrementY", ri, &v3a);
 	ASSERT_FORMAT(v3a.GetY() == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, v3a.GetY()));
 
 	v3a = Vector3(56, 56, 56);
 	ri = v3a.GetY();
-	VALIDATE_FUNCTION_CALL_1(INT, "::Vector3PostincrementY", ri, &v3a);
+	VALIDATE_FUNCTION_CALL_1(INT, "Vector3PostincrementY", ri, &v3a);
 	ASSERT_FORMAT(v3a.GetY() == (ri + 1), ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, v3a.GetY()));
 
 	return true;
