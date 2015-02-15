@@ -17,38 +17,10 @@ bool Symbol::IsTypeDefinition() const
 void Symbol::SetParentSymbol(Symbol *parent)
 {
 	mParentSymbol = parent;
-	mGlobalHashCode = ComputeGlobalHashCode();
 }
 
 
-uint32_t Symbol::GetGlobalHashCodeWithSuffix(const char *suffix) const
-{
-	return StringHash(suffix, mGlobalHashCode);
-}
-
-
-uint32_t Symbol::ComputeGlobalHashCode() const
-{
-	uint32_t hash = STRING_HASH_SEED;
-	if (!IsAnonymous())
-	{
-		const HashedString &name = GetName()->GetHashedText();
-		if (mParentSymbol != nullptr)
-		{
-			hash = mParentSymbol->GetGlobalHashCode();
-			hash = StringHash("::", hash);
-			hash = StringHash(name.GetLength(), name.GetString(), hash);
-		}
-		else
-		{
-			hash = name.GetHashCode();
-		}
-	}
-	return hash;
-}
-
-
-Symbol *Symbol::FindSymbol(const HashedString &name)
+Symbol *Symbol::FindSymbol(const SimpleString &name)
 {
 	Symbol *symbol = mSymbolList;
 
@@ -61,7 +33,7 @@ Symbol *Symbol::FindSymbol(const HashedString &name)
 }
 
 
-const Symbol *Symbol::FindSymbol(const HashedString &name) const
+const Symbol *Symbol::FindSymbol(const SimpleString &name) const
 {
 	const Symbol *symbol = mSymbolList;
 
@@ -149,10 +121,10 @@ void Symbol::InsertSymbol(Symbol *symbol)
 }
 
 
-bool Symbol::Matches(const HashedString &name) const
+bool Symbol::Matches(const SimpleString &name) const
 {
 	const Token *n = GetName();
-	return !IsAnonymous() && (n->GetHashedText() == name);
+	return !IsAnonymous() && (n->GetText() == name);
 }
 
 

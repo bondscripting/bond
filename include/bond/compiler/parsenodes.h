@@ -109,11 +109,11 @@ public:
 	const Symbol *GetParentSymbol() const { return mParentSymbol; }
 	void SetParentSymbol(Symbol *parent);
 
-	Symbol *FindSymbol(const HashedString &name);
-	const Symbol *FindSymbol(const HashedString &name) const;
+	Symbol *FindSymbol(const SimpleString &name);
+	const Symbol *FindSymbol(const SimpleString &name) const;
 
-	Symbol *FindSymbol(const Token *name) { return FindSymbol(name->GetHashedText()); }
-	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetHashedText()); }
+	Symbol *FindSymbol(const Token *name) { return FindSymbol(name->GetText()); }
+	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetText()); }
 
 	Symbol *FindSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
@@ -122,28 +122,22 @@ public:
 
 	bool IsAnonymous() const { return GetName() == nullptr; }
 
-	bool Matches(const HashedString &name) const;
-
-	uint32_t GetGlobalHashCode() const { return mGlobalHashCode; }
-	uint32_t GetGlobalHashCodeWithSuffix(const char *suffix) const;
+	bool Matches(const SimpleString &name) const;
 
 protected:
 	Symbol():
 		mNextSymbol(nullptr),
 		mParentSymbol(nullptr),
-		mSymbolList(nullptr),
-		mGlobalHashCode(STRING_HASH_SEED)
+		mSymbolList(nullptr)
 	{}
 
 private:
 	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
 	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
-	uint32_t ComputeGlobalHashCode() const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;
 	Symbol *mSymbolList;
-	uint32_t mGlobalHashCode;
 };
 
 

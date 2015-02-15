@@ -4282,7 +4282,7 @@ void GeneratorCore::WriteQualifiedNameIndices(const Symbol *symbol)
 		const Token *name = symbol->GetName();
 		if (name != nullptr)
 		{
-			const uint16_t nameIndex = MapString(name->GetHashedText());
+			const uint16_t nameIndex = MapString(name->GetText());
 			WriteValue16(Value16(nameIndex));
 		}
 	}
@@ -4438,7 +4438,7 @@ uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffi
 			const Token *name = sym->GetName();
 			if (name != nullptr)
 			{
-				MapString(name->GetHashedText());
+				MapString(name->GetText());
 			}
 			sym = sym->GetParentSymbol();
 		}

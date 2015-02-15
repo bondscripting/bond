@@ -1281,15 +1281,15 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 
 	const size_t numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
 	const SimpleString *lastKeyword = KEYWORD_NAMES + numKeywords;
-	const SimpleString *keyword = lower_bound(KEYWORD_NAMES, lastKeyword, token.GetHashedText());
+	const SimpleString *keyword = lower_bound(KEYWORD_NAMES, lastKeyword, token.GetText());
 
-	if ((keyword != lastKeyword) && (*keyword == token.GetHashedText()))
+	if ((keyword != lastKeyword) && (*keyword == token.GetText()))
 	{
 		const Token::TokenType type = KEYWORD_TYPES[keyword - KEYWORD_NAMES];
 		token.SetTokenType(type);
 		if (type == Token::CONST_BOOL)
 		{
-			token.SetBoolValue(token.GetText()[0] == 't');
+			token.SetBoolValue(token.GetRawText()[0] == 't');
 		}
 	}
 }
@@ -1297,7 +1297,7 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 
 void LexerCore::EvaluateCharToken(Token &token)
 {
-	const CharResult result = EvaluateChar(token.GetText() + 1);
+	const CharResult result = EvaluateChar(token.GetRawText() + 1);
 	token.SetIntValue(result.value);
 	PushError(result.error, token);
 }
@@ -1306,7 +1306,7 @@ void LexerCore::EvaluateCharToken(Token &token)
 void LexerCore::EvaluateFloatToken(Token &token) const
 {
 	float value;
-	sscanf(token.GetText(), "%f", &value);
+	sscanf(token.GetRawText(), "%f", &value);
 	token.SetFloatValue(value);
 }
 
@@ -1314,7 +1314,7 @@ void LexerCore::EvaluateFloatToken(Token &token) const
 void LexerCore::EvaluateIntegerToken(Token &token) const
 {
 	uint32_t value;
-	const char *text = token.GetText();
+	const char *text = token.GetRawText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
 		sscanf(text, "%" BOND_SCNo32, &value);
@@ -1342,7 +1342,7 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 void LexerCore::EvaluateLongToken(Token &token) const
 {
 	uint64_t value;
-	const char *text = token.GetText();
+	const char *text = token.GetRawText();
 	if (token.HasAnnotation(Token::OCTAL))
 	{
 		sscanf(text, "%" BOND_SCNo64, &value);
@@ -1370,7 +1370,7 @@ void LexerCore::EvaluateLongToken(Token &token) const
 void LexerCore::EvaluateDoubleToken(Token &token) const
 {
 	double value;
-	sscanf(token.GetText(), "%lf", &value);
+	sscanf(token.GetRawText(), "%lf", &value);
 	token.SetDoubleValue(value);
 }
 
@@ -1382,7 +1382,7 @@ void LexerCore::EvaluateStringToken(Token &token)
 	const size_t allocLength = token.GetEndIndex() - token.GetStartPos().index - 2;
 	char *buffer = AllocString(allocLength);
 	char *dest = buffer;
-	const char *source = token.GetText() + 1;
+	const char *source = token.GetRawText() + 1;
 	const char *end = source + allocLength;
 	size_t usedLength = 0;
 	CompilerError::Type error = CompilerError::NO_ERROR;

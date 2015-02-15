@@ -2,7 +2,7 @@
 #define BOND_COMPILER_TOKEN_H
 
 #include "bond/compiler/streampos.h"
-#include "bond/types/hashedstring.h"
+#include "bond/types/simplestring.h"
 #include "bond/types/value.h"
 
 #define BOND_TOKEN_LIST \
@@ -167,11 +167,11 @@ public:
 		mAnnotations(annotations)
 	{}
 
-	const char *GetText() const { return mText.GetString(); }
-	void SetText(const char *text) { mText = HashedString(text); }
-	void SetText(const char *text, size_t length) { mText = HashedString(text, length); }
+	const SimpleString &GetText() const { return mText; }
+	const char *GetRawText() const { return mText.GetString(); }
 
-	const HashedString &GetHashedText() const { return mText; }
+	void SetText(const char *text) { mText = SimpleString(text); }
+	void SetText(const char *text, size_t length) { mText = SimpleString(text, length); }
 
 	const char *GetFileName() const { return mFileName; }
 	void SetFileName(const char *fileName) { mFileName = fileName; }
@@ -219,7 +219,7 @@ public:
 	static const char *GetTokenName(TokenType type);
 
 private:
-	HashedString mText;
+	SimpleString mText;
 	Value mValue;
 	StreamPos mStartPos;
 	size_t mEndIndex;

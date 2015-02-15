@@ -165,9 +165,6 @@
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h">
       <Filter>Header Files\include\bond\tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\types\hashedstring.h">
-      <Filter>Header Files\include\bond\types</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\types\opcodes.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
@@ -480,6 +477,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\qualifiedname.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\simplestring.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

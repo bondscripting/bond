@@ -678,7 +678,7 @@ void PrettyPrinterCore::Print(const Token *token)
 {
 	if (token != nullptr)
 	{
-		mStream.Print("%s", token->GetText());
+		token->GetText().PrintTo(mStream);
 	}
 }
 

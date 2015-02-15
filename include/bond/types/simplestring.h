@@ -6,6 +6,8 @@
 namespace Bond
 {
 
+class OutputStream;
+
 // Wrapper around an externally allocated C string that handles embeded null characters
 // and non-null terminated strings. Also provides some comparison operators, making it
 // useful for storing in containers.
@@ -31,6 +33,8 @@ public:
 	const char *GetString() const { return mStr; }
 	size_t GetLength() const { return mLength; }
 	bool IsEmpty() const { return mLength == 0; }
+
+	void PrintTo(OutputStream &stream) const;
 
 	bool operator==(const SimpleString &other) const
 	{

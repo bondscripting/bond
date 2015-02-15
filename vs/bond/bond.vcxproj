@@ -85,7 +85,6 @@
     <ClInclude Include="..\..\include\bond\tools\disassembler.h" />
     <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h" />
-    <ClInclude Include="..\..\include\bond\types\hashedstring.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
     <ClInclude Include="..\..\include\bond\types\simplestring.h" />
@@ -151,6 +150,7 @@
     <ClCompile Include="..\..\source\qualifiedname.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
+    <ClCompile Include="..\..\source\simplestring.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />

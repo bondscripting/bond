@@ -103,7 +103,7 @@ void NativeBindingGeneratorCore::Generate()
 		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
 		OpenNamespaces(mHStream, identifiers, numIdentifiers);
 		mHStream.Print("extern const Bond::NativeBindingCollection ");
-		PrintString(mHStream, collectionName);
+		collectionName.PrintTo(mHStream);
 		mHStream.Print(";\n");
 		CloseNamespaces(mHStream, numIdentifiers);
 		mHStream.Print("\n");
@@ -112,7 +112,7 @@ void NativeBindingGeneratorCore::Generate()
 		mCppStream.Print("#include \"%s\"\n\n", mIncludeName);
 		OpenNamespaces(mCppStream, identifiers, numIdentifiers);
 		mCppStream.Print("\nconst Bond::NativeFunctionBinding ");
-		PrintString(mCppStream, collectionName);
+		collectionName.PrintTo(mCppStream);
 		mCppStream.Print("_FUNCTIONS[] =\n{\n");
 
 		// Spit out the function bindings.
@@ -123,9 +123,9 @@ void NativeBindingGeneratorCore::Generate()
 
 		// Bottom of the .cpp file.
 		mCppStream.Print("\t{nullptr, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
-		PrintString(mCppStream, collectionName);
+		collectionName.PrintTo(mCppStream);
 		mCppStream.Print(" =\n{\n\t");
-		PrintString(mCppStream, collectionName);
+		collectionName.PrintTo(mCppStream);
 		mCppStream.Print("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
 		CloseNamespaces(mCppStream, numIdentifiers);
 	}
@@ -143,7 +143,7 @@ void NativeBindingGeneratorCore::Visit(const TranslationUnit *translationUnit)
 
 void NativeBindingGeneratorCore::Visit(const NamespaceDefinition *namespaceDefinition)
 {
-	const char *name = namespaceDefinition->GetName()->GetText();
+	const char *name = namespaceDefinition->GetName()->GetRawText();
 	NamespaceStack::Element namespaceItem(mNamespaceStack, NamespaceItem(name));
 	ParseNodeTraverser::Visit(namespaceDefinition);
 
@@ -168,7 +168,7 @@ void NativeBindingGeneratorCore::Visit(const EnumDeclaration *enumDeclaration)
 		NamespaceStack::Iterator it = mNamespaceStack.begin();
 		PrintNamespaceStack(mHStream, it);
 
-		mHStream.Print("enum %s\n{\n", enumDeclaration->GetName()->GetText());
+		mHStream.Print("enum %s\n{\n", enumDeclaration->GetName()->GetRawText());
 		TraverseList(enumDeclaration->GetEnumeratorList());
 		mHStream.Print("};\n");
 	}
@@ -177,7 +177,7 @@ void NativeBindingGeneratorCore::Visit(const EnumDeclaration *enumDeclaration)
 
 void NativeBindingGeneratorCore::Visit(const Enumerator *enumerator)
 {
-	mHStream.Print("\t%s = %" BOND_PRId32 ",\n", enumerator->GetName()->GetText(), enumerator->GetTypeAndValue()->GetIntValue());
+	mHStream.Print("\t%s = %" BOND_PRId32 ",\n", enumerator->GetName()->GetRawText(), enumerator->GetTypeAndValue()->GetIntValue());
 }
 
 
@@ -192,9 +192,9 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 		mHStream.Print("void ");
 		if (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER)
 		{
-			mHStream.Print("%s__", functionDefinition->GetParentSymbol()->GetName()->GetText());
+			mHStream.Print("%s__", functionDefinition->GetParentSymbol()->GetName()->GetRawText());
 		}
-		mHStream.Print("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetText());
+		mHStream.Print("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetRawText());
 
 		// Generate the function binding.
 		mCppStream.Print("\t{\"");
@@ -215,8 +215,8 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		PrintNamespaceStack(mHStream, it);
 
 		// Generate the getter and setter function prototypes.
-		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetText();
-		const char *memberName = namedInitializer->GetName()->GetText();
+		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetRawText();
+		const char *memberName = namedInitializer->GetName()->GetRawText();
 		mHStream.Print("void %s__%s__get(Bond::CalleeStackFrame &frame);\n", structName, memberName);
 		mHStream.Print("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
 
@@ -283,7 +283,7 @@ void NativeBindingGeneratorCore::OpenNamespaces(OutputStream &stream, const Simp
 		for (size_t i = 0; i < (numIdentifiers - 1); ++i)
 		{
 			stream.Print("namespace ");
-			PrintString(stream, identifiers[i]);
+			identifiers[i].PrintTo(stream);
 			stream.Print("\n{\n");
 		}
 	}
@@ -324,7 +324,7 @@ void NativeBindingGeneratorCore::PrintQualifiedBondName(OutputStream &stream, co
 			PrintQualifiedBondName(stream, parent);
 			stream.Print(".");
 		}
-		stream.Print("%s", symbol->GetName()->GetText());
+		stream.Print("%s", symbol->GetName()->GetRawText());
 	}
 }
 
@@ -347,7 +347,7 @@ void NativeBindingGeneratorCore::PrintQualifiedCppName(OutputStream &stream, con
 				suffix = "";
 				break;
 		}
-		stream.Print("%s%s", symbol->GetName()->GetText(), suffix);
+		stream.Print("%s%s", symbol->GetName()->GetRawText(), suffix);
 	}
 }
 

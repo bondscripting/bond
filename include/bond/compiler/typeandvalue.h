@@ -1,7 +1,7 @@
 #ifndef BOND_COMPILER_TYPEANDVALUE_H
 #define BOND_COMPILER_TYPEANDVALUE_H
 
-#include "bond/types/hashedstring.h"
+#include "bond/types/simplestring.h"
 #include "bond/types/value.h"
 
 namespace Bond
@@ -71,7 +71,6 @@ public:
 	uint64_t AsULongValue() const;
 
 	const SimpleString GetStringValue() const { return SimpleString(mValue.mString.buffer, mValue.mString.length); }
-	const HashedString GetHashedStringValue() const { return HashedString(mValue.mString.buffer, mValue.mString.length); }
 
 	bool IsResolved() const { return mResolved; }
 	void Resolve() { mResolved = true; }
