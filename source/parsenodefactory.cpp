@@ -334,9 +334,9 @@ SizeofExpression *ParseNodeFactory::CreateSizeofExpression(const Token *op, Expr
 }
 
 
-ConstantExpression *ParseNodeFactory::CreateConstantExpression(const Token *value)
+ConstantLiteralExpression *ParseNodeFactory::CreateConstantLiteralExpression(const Token *value)
 {
-	return new (mAllocator.Alloc<ConstantExpression>()) ConstantExpression(value);
+	return new (mAllocator.Alloc<ConstantLiteralExpression>()) ConstantLiteralExpression(value);
 }
 
 

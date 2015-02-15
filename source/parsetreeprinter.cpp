@@ -56,7 +56,7 @@ private:
 	virtual void Visit(const FunctionCallExpression *functionCallExpression);
 	virtual void Visit(const CastExpression *castExpression);
 	virtual void Visit(const SizeofExpression *sizeofExpression);
-	virtual void Visit(const ConstantExpression *constantExpression);
+	virtual void Visit(const ConstantLiteralExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 	virtual void Visit(const ThisExpression *thisExpression);
 
@@ -620,7 +620,7 @@ void ParseTreePrinterCore::Visit(const SizeofExpression *sizeofExpression)
 }
 
 
-void ParseTreePrinterCore::Visit(const ConstantExpression *constantExpression)
+void ParseTreePrinterCore::Visit(const ConstantLiteralExpression *constantExpression)
 {
 	Tab();
 	mStream.Print("CastExpression: ");

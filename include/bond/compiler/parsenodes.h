@@ -1471,11 +1471,11 @@ private:
 };
 
 
-class ConstantExpression: public Expression
+class ConstantLiteralExpression: public Expression
 {
 public:
-	ConstantExpression(const Token *value): mValue(value) {}
-	virtual ~ConstantExpression() {}
+	ConstantLiteralExpression(const Token *value): mValue(value) {}
+	virtual ~ConstantLiteralExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }

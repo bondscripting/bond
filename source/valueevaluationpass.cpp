@@ -681,7 +681,7 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 }
 
 
-void ValueEvaluationPass::Visit(ConstantExpression *constantExpression)
+void ValueEvaluationPass::Visit(ConstantLiteralExpression *constantExpression)
 {
 	TypeAndValue &tav = constantExpression->GetTypeAndValue();
 	if (!tav.IsResolved())

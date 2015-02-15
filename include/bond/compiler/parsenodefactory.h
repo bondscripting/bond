@@ -111,7 +111,7 @@ public:
 	CastExpression *CreateCastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs);
 	SizeofExpression *CreateSizeofExpression(const Token *op, TypeDescriptor *typeDescriptor);
 	SizeofExpression *CreateSizeofExpression(const Token *op, Expression *rhs);
-	ConstantExpression *CreateConstantExpression(const Token *value);
+	ConstantLiteralExpression *CreateConstantLiteralExpression(const Token *value);
 	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
 	ThisExpression *CreateThisExpression(const Token *token);
 	EmptyExpression *CreateEmptyExpression();

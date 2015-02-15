@@ -44,7 +44,7 @@ namespace Bond
 	class FunctionCallExpression;
 	class CastExpression;
 	class SizeofExpression;
-	class ConstantExpression;
+	class ConstantLiteralExpression;
 	class IdentifierExpression;
 	class ThisExpression;
 	class EmptyExpression;

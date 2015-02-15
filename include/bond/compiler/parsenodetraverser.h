@@ -119,8 +119,8 @@ public:
 	virtual void Visit(SizeofExpression *sizeofExpression) override;
 	virtual void Visit(const SizeofExpression *sizeofExpression) override;
 
-	virtual void Visit(ConstantExpression *constantExpression) override {}
-	virtual void Visit(const ConstantExpression *constantExpression) override {}
+	virtual void Visit(ConstantLiteralExpression *constantExpression) override {}
+	virtual void Visit(const ConstantLiteralExpression *constantExpression) override {}
 
 	virtual void Visit(IdentifierExpression *identifierExpression) override;
 	virtual void Visit(const IdentifierExpression *identifierExpression) override;

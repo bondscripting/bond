@@ -106,7 +106,7 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(FunctionCallExpression);
 	ASSERT_COUNT(CastExpression);
 	ASSERT_COUNT(SizeofExpression);
-	ASSERT_COUNT(ConstantExpression);
+	ASSERT_COUNT(ConstantLiteralExpression);
 	ASSERT_COUNT(IdentifierExpression);
 
 #undef ASSERT_COUNT

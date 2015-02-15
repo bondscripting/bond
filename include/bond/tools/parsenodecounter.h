@@ -43,7 +43,7 @@ struct ParseNodeCount
 		mFunctionCallExpression(defaultValue),
 		mCastExpression(defaultValue),
 		mSizeofExpression(defaultValue),
-		mConstantExpression(defaultValue),
+		mConstantLiteralExpression(defaultValue),
 		mIdentifierExpression(defaultValue),
 		mThisExpression(defaultValue),
 		mEmptyExpression(defaultValue)
@@ -83,7 +83,7 @@ struct ParseNodeCount
 	int mFunctionCallExpression;
 	int mCastExpression;
 	int mSizeofExpression;
-	int mConstantExpression;
+	int mConstantLiteralExpression;
 	int mIdentifierExpression;
 	int mThisExpression;
 	int mEmptyExpression;
@@ -135,7 +135,7 @@ private:
 	virtual void Visit(const FunctionCallExpression *functionCallExpression) override;
 	virtual void Visit(const CastExpression *castExpression) override;
 	virtual void Visit(const SizeofExpression *sizeofExpression) override;
-	virtual void Visit(const ConstantExpression *constantExpression) override;
+	virtual void Visit(const ConstantLiteralExpression *constantExpression) override;
 	virtual void Visit(const IdentifierExpression *identifierExpression) override;
 	virtual void Visit(const ThisExpression *thisExpression) override;
 	virtual void Visit(const EmptyExpression *emptyExpression) override;

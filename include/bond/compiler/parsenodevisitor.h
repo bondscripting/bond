@@ -113,8 +113,8 @@ public:
 	virtual void Visit(SizeofExpression *sizeofExpression) = 0;
 	virtual void Visit(const SizeofExpression *sizeofExpression) = 0;
 
-	virtual void Visit(ConstantExpression *constantExpression) = 0;
-	virtual void Visit(const ConstantExpression *constantExpression) = 0;
+	virtual void Visit(ConstantLiteralExpression *constantExpression) = 0;
+	virtual void Visit(const ConstantLiteralExpression *constantExpression) = 0;
 
 	virtual void Visit(IdentifierExpression *identifierExpression) = 0;
 	virtual void Visit(const IdentifierExpression *identifierExpression) = 0;
@@ -234,8 +234,8 @@ public:
 	virtual void Visit(SizeofExpression *sizeofExpression) override {}
 	virtual void Visit(const SizeofExpression *sizeofExpression) override {}
 
-	virtual void Visit(ConstantExpression *constantExpression) override {}
-	virtual void Visit(const ConstantExpression *constantExpression) override {}
+	virtual void Visit(ConstantLiteralExpression *constantExpression) override {}
+	virtual void Visit(const ConstantLiteralExpression *constantExpression) override {}
 
 	virtual void Visit(IdentifierExpression *identifierExpression) override {}
 	virtual void Visit(const IdentifierExpression *identifierExpression) override {}

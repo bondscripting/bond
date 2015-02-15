@@ -242,9 +242,9 @@ void ParseNodeCounter::Visit(const SizeofExpression *sizeofExpression)
 }
 
 
-void ParseNodeCounter::Visit(const ConstantExpression *constantExpression)
+void ParseNodeCounter::Visit(const ConstantLiteralExpression *constantExpression)
 {
-	++mCount.mConstantExpression;
+	++mCount.mConstantLiteralExpression;
 	ParseNodeTraverser::Visit(constantExpression);
 }
 

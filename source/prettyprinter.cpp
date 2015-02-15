@@ -57,7 +57,7 @@ private:
 	virtual void Visit(const FunctionCallExpression *functionCallExpression);
 	virtual void Visit(const CastExpression *castExpression);
 	virtual void Visit(const SizeofExpression *sizeofExpression);
-	virtual void Visit(const ConstantExpression *constantExpression);
+	virtual void Visit(const ConstantLiteralExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 	virtual void Visit(const ThisExpression *thisExpression);
 
@@ -634,7 +634,7 @@ void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
 }
 
 
-void PrettyPrinterCore::Visit(const ConstantExpression *constantExpression)
+void PrettyPrinterCore::Visit(const ConstantLiteralExpression *constantExpression)
 {
 	Print(constantExpression->GetValueToken());
 }

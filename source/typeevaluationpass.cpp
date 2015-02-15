@@ -637,7 +637,7 @@ void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 }
 
 
-void TypeEvaluationPass::Visit(ConstantExpression *constantExpression)
+void TypeEvaluationPass::Visit(ConstantLiteralExpression *constantExpression)
 {
 	const Token *token = constantExpression->GetValueToken();
 	TypeDescriptor typeDescriptor = TypeDescriptor::GetIntType();
@@ -901,10 +901,10 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 
 	if (descriptor->IsArrayType())
 	{
+		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
 		if (initializerList != nullptr)
 		{
 			// TODO: Assert if too many initializers.
-			const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
 			while (initializerList != nullptr)
 			{
 				ValidateInitializer(initializerList, &elementDescriptor);

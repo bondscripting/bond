@@ -1781,11 +1781,11 @@ Expression *ParserCore::ParsePostfixExpression()
 Expression *ParserCore::ParsePrimaryExpression()
 {
 	Expression *expression = nullptr;
-	const Token *token = mStream.NextIf(CONSTANT_VALUES_TYPESET);
+	const Token *token = mStream.NextIf(CONSTANT_LITERALS_TYPESET);
 
 	if (token != nullptr)
 	{
-		expression = mFactory.CreateConstantExpression(token);
+		expression = mFactory.CreateConstantLiteralExpression(token);
 	}
 	else if ((token = mStream.NextIf(Token::KEY_THIS)) != nullptr)
 	{

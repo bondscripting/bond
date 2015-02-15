@@ -298,7 +298,7 @@ extern const TokenTypeSet ADDITIVE_OPERATORS_TYPESET;
 extern const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET;
 extern const TokenTypeSet UNARY_OPERATORS_TYPESET;
 extern const TokenTypeSet POSTFIX_OPERATORS_TYPESET;
-extern const TokenTypeSet CONSTANT_VALUES_TYPESET;
+extern const TokenTypeSet CONSTANT_LITERALS_TYPESET;
 extern const TokenTypeSet BLOCK_DELIMITERS_TYPESET;
 extern const TokenTypeSet DECLARATION_DELIMITERS_TYPESET;
 extern const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET;
