@@ -72,10 +72,10 @@ DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 DEFINE_VM_TEST(StackOperations, "scripts/vm_StackOperations.bond")
 {
 	using namespace Bond;
-	VALIDATE_FUNCTION_CALL_5(INT, "PushcPopc", int8_t(-123), int8_t(0), int8_t(0), int8_t(0), int8_t(0), int8_t(-123));
-	VALIDATE_FUNCTION_CALL_5(UINT, "PushucPopc", uint8_t(234), uint8_t(0), uint8_t(0), uint8_t(0), uint8_t(0), uint8_t(234));
-	VALIDATE_FUNCTION_CALL_5(INT, "PushsPops", int16_t(-1234), int16_t(0), int16_t(0), int16_t(0), int16_t(0), int16_t(-1234));
-	VALIDATE_FUNCTION_CALL_5(UINT, "PushusPops", uint16_t(60000), uint16_t(0), uint16_t(0), uint16_t(0), uint16_t(0), uint16_t(60000));
+	VALIDATE_FUNCTION_CALL_5(INT, "PushcPopc", int32_t(-123), int8_t(0), int8_t(0), int8_t(0), int8_t(0), int8_t(-123));
+	VALIDATE_FUNCTION_CALL_5(UINT, "PushucPopc", uint32_t(234), uint8_t(0), uint8_t(0), uint8_t(0), uint8_t(0), uint8_t(234));
+	VALIDATE_FUNCTION_CALL_5(INT, "PushsPops", int32_t(-1234), int16_t(0), int16_t(0), int16_t(0), int16_t(0), int16_t(-1234));
+	VALIDATE_FUNCTION_CALL_5(UINT, "PushusPops", uint32_t(60000), uint16_t(0), uint16_t(0), uint16_t(0), uint16_t(0), uint16_t(60000));
 	VALIDATE_FUNCTION_CALL_5(INT, "Push32Pop32", int32_t(-56789), int32_t(0), int32_t(0), int32_t(0), int32_t(0), int32_t(-56789));
 	VALIDATE_FUNCTION_CALL_5(LONG, "Push64Pop64", int64_t(-567890), int64_t(0), int64_t(0), int64_t(0), int64_t(0), int64_t(-567890));
 
@@ -1114,6 +1114,12 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 	vm.CallFunction("GetTestString", &testStr);
 	ASSERT_MESSAGE((testStr != nullptr) && (strcmp(testStr, "Hooray! The test passed!") == 0),
 		"GetTestString() return an incorrect string.");
+
+	vm.CallFunction("GetTestString2", &testStr);
+	ASSERT_MESSAGE((testStr != nullptr) && (strcmp(testStr, "Hooray! This test passed too!") == 0),
+		"GetTestString2() return an incorrect string.");
+
+	VALIDATE_FUNCTION_CALL_0(INT, "TestLocalStringInitializer", int32_t(1));
 
 	return true;
 }

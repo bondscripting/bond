@@ -1562,12 +1562,40 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 		const TypeDescriptor elementDescriptor = typeDescriptor->GetDereferencedType();
 		const uint32_t elementSize = elementDescriptor.GetSize(mPointerSize);
 
-		while ((numElements > 0) && (initializerList != nullptr))
+		if (initializerList != nullptr)
 		{
-			--numElements;
-			EmitInitializer(initializerList, index, offset, isLast && (numElements == 0));
-			offset += elementSize;
-			initializerList = NextNode(initializerList);
+			while ((numElements > 0) && (initializerList != nullptr))
+			{
+				--numElements;
+				EmitInitializer(initializerList, index, offset, isLast && (numElements == 0));
+				offset += elementSize;
+				initializerList = NextNode(initializerList);
+			}
+		}
+		else if (expression != nullptr)
+		{
+			const ConstantLiteralExpression *constantExpression = CastNode<ConstantLiteralExpression>(expression);
+			const bool isStringInitializer =
+				elementDescriptor.IsCharType() &&
+				(constantExpression != nullptr) &&
+				constantExpression->GetTypeDescriptor()->IsStringType();
+
+			if (isStringInitializer)
+			{
+				numElements = 0;
+				if (index.mIsLocal)
+				{
+					EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+				}
+				else if (!isLast)
+				{
+					EmitOpCode(OPCODE_DUP);
+				}
+				EmitPushConstant(constantExpression->GetTypeAndValue());
+				EmitOpCode(OPCODE_MEMCOPYW);
+				const uint32_t stringLength = uint32_t(constantExpression->GetValueToken()->GetStringLength() + 1);
+				EmitIndexedValue32(Value32(stringLength));
+			}
 		}
 
 		if (numElements > 0)

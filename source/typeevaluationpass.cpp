@@ -904,7 +904,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
 		if (initializerList != nullptr)
 		{
-			// TODO: Assert if too many initializers.
+			// TODO: Assert if too many initializers. Should be done after ValueEvaluationPass.
 			while (initializerList != nullptr)
 			{
 				ValidateInitializer(initializerList, &elementDescriptor);
@@ -913,10 +913,19 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		}
 		else if (expression != nullptr)
 		{
-			mErrorBuffer.PushError(
-				CompilerError::MISSING_BRACES_IN_INITIALIZER,
-				initializer->GetContextToken(),
-				descriptor);
+			const ConstantLiteralExpression *constantExpression = CastNode<ConstantLiteralExpression>(expression);
+			const bool isStringInitializer =
+				elementDescriptor.IsCharType() &&
+				(constantExpression != nullptr) &&
+				constantExpression->GetTypeDescriptor()->IsStringType();
+
+			if (!isStringInitializer)
+			{
+				mErrorBuffer.PushError(
+					CompilerError::MISSING_BRACES_IN_INITIALIZER,
+					initializer->GetContextToken(),
+					descriptor);
+			}
 		}
 	}
 	else if (descriptor->IsStructType() && (initializerList != nullptr))

@@ -19,6 +19,7 @@ Vector2 MakeV2(int x, int y)
 const Vector2[4] VECTOR_ARRAY = {{121, 123}, {125}, MakeV2(127, 129)};
 const Vector2Collection VECTOR_COLLECTION = { VECTOR_ARRAY, sizeof(VECTOR_ARRAY) / sizeof(*VECTOR_ARRAY) };
 const char *const TEST_STRING = "Hooray! The test passed!";
+const char[] TEST_STRING2 = "Hooray! This test passed too!";
 
 int GetVecXAt(uint i)
 {
@@ -35,6 +36,11 @@ const char *GetTestString()
 	return TEST_STRING;
 }
 
+const char *GetTestString2()
+{
+	return TEST_STRING2;
+}
+
 uint GetCollectionSize()
 {
 	return VECTOR_COLLECTION.size;
@@ -43,4 +49,27 @@ uint GetCollectionSize()
 const Vector2 *GetCollectionVectors()
 {
 	return VECTOR_COLLECTION.vectors;
+}
+
+bool TestLocalStringInitializer()
+{
+	const char[] str = "The test string";
+	const char *s = str;
+	return
+		(s[0] == 'T') &&
+		(s[1] == 'h') &&
+		(s[2] == 'e') &&
+		(s[3] == ' ') &&
+		(s[4] == 't') &&
+		(s[5] == 'e') &&
+		(s[6] == 's') &&
+		(s[7] == 't') &&
+		(s[8] == ' ') &&
+		(s[9] == 's') &&
+		(s[10] == 't') &&
+		(s[11] == 'r') &&
+		(s[12] == 'i') &&
+		(s[13] == 'n') &&
+		(s[14] == 'g') &&
+		(s[15] == '\0');
 }

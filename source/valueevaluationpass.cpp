@@ -326,13 +326,35 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 	{
 		uint32_t length = 0;
 		const NamedInitializer *current = declarativeStatement->GetNamedInitializerList();
+		const TypeDescriptor elementDescriptor = typeDescriptor->GetDereferencedType();
+		const bool isCharArray = elementDescriptor.IsCharType();
+
 		while (current != nullptr)
 		{
 			const Initializer *initializer = current->GetInitializer();
-			if ((initializer != nullptr) && (initializer->GetInitializerList()) != nullptr)
+			if (initializer != nullptr)
 			{
-				const uint32_t initializerListLength = GetLength(initializer->GetInitializerList());
-				length = (initializerListLength > length) ? initializerListLength : length;
+				const Expression *expression = initializer->GetExpression();
+				const Initializer *initializerList = initializer->GetInitializerList();
+				if (initializerList != nullptr)
+				{
+					const uint32_t initializerListLength = GetLength(initializer->GetInitializerList());
+					length = Max(length, initializerListLength);
+				}
+				else if (expression != nullptr)
+				{
+					const ConstantLiteralExpression *constantExpression = CastNode<ConstantLiteralExpression>(expression);
+					const bool isStringInitializer =
+						isCharArray &&
+						(constantExpression != nullptr) &&
+						constantExpression->GetTypeDescriptor()->IsStringType();
+
+					if (isStringInitializer)
+					{
+						const uint32_t stringLength = uint32_t(constantExpression->GetValueToken()->GetStringLength() + 1);
+						length = Max(length, stringLength);
+					}
+				}
 			}
 			current = NextNode(current);
 		}
