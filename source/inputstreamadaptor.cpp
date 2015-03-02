@@ -17,16 +17,33 @@ void InputStreamAdaptor::ScanStr(char *str, uint32_t bufferSize)
 		--bufferSize;
 	}
 	char format[32];
-	snprintf(format, sizeof(format), "%%%" BOND_PRIu32 "s", bufferSize);
+	snprintf(format, sizeof(format), "%s%%%" BOND_PRIu32 "s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", bufferSize);
 	mStream->Scan(format, str);
 }
 
 
 bool InputStreamAdaptor::ScanBool()
 {
-	// TODO: Handle IO::BoolAlpha
 	int32_t value = 0;
-	mStream->Scan("%" BOND_SCNi32, &value);
+	if ((mFlags & IO::BoolAlpha) != 0)
+	{
+		int n = 0;
+		const char *format = ((mFlags & IO::SkipWhite) != 0) ? " true%n" : "true%n";
+		mStream->Scan(format, &n);
+		if (n >= 4)
+		{
+			value = 1;
+		}
+		else
+		{
+			format = ((mFlags & IO::SkipWhite) != 0) ? " false%n" : "false%n";
+			mStream->Scan(format, &n);
+		}
+	}
+	else
+	{
+		mStream->Scan("%" BOND_SCNi32, &value);
+	}
 	return value != 0;
 }
 
@@ -34,7 +51,9 @@ bool InputStreamAdaptor::ScanBool()
 int8_t InputStreamAdaptor::ScanChar()
 {
 	char value = 0;
-	mStream->Scan("%c", &value);
+	char format[16];
+	Format(format, "c");
+	mStream->Scan(format, &value);
 	return int8_t(value);
 }
 
@@ -42,11 +61,13 @@ int8_t InputStreamAdaptor::ScanChar()
 int32_t InputStreamAdaptor::ScanInt()
 {
 	int32_t value = 0;
-	const char *format =
-		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNd32 :
-		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx32 :
-		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo32 :
-		"%" BOND_SCNi32;
+	const char *specifier =
+		((mFlags & IO::Dec) != 0) ? BOND_SCNd32 :
+		((mFlags & IO::Hex) != 0) ? BOND_SCNx32 :
+		((mFlags & IO::Oct) != 0) ? BOND_SCNo32 :
+		BOND_SCNi32;
+	char format[16];
+	Format(format, specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -55,11 +76,13 @@ int32_t InputStreamAdaptor::ScanInt()
 uint32_t InputStreamAdaptor::ScanUInt()
 {
 	uint32_t value = 0;
-	const char *format =
-		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNu32 :
-		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx32 :
-		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo32 :
-		"%" BOND_SCNi32;
+	const char *specifier =
+		((mFlags & IO::Dec) != 0) ? BOND_SCNu32 :
+		((mFlags & IO::Hex) != 0) ? BOND_SCNx32 :
+		((mFlags & IO::Oct) != 0) ? BOND_SCNo32 :
+		BOND_SCNu32;
+	char format[16];
+	Format(format, specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -68,11 +91,13 @@ uint32_t InputStreamAdaptor::ScanUInt()
 int64_t InputStreamAdaptor::ScanLong()
 {
 	int64_t value = 0;
-	const char *format =
-		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNd64 :
-		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx64 :
-		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo64 :
-		"%" BOND_SCNi64;
+	const char *specifier =
+		((mFlags & IO::Dec) != 0) ? BOND_SCNd64 :
+		((mFlags & IO::Hex) != 0) ? BOND_SCNx64 :
+		((mFlags & IO::Oct) != 0) ? BOND_SCNo64 :
+		BOND_SCNi64;
+	char format[16];
+	Format(format, specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -81,11 +106,13 @@ int64_t InputStreamAdaptor::ScanLong()
 uint64_t InputStreamAdaptor::ScanULong()
 {
 	uint64_t value = 0;
-	const char *format =
-		((mFlags & IO::Dec) != 0) ? "%" BOND_SCNu64 :
-		((mFlags & IO::Hex) != 0) ? "%" BOND_SCNx64 :
-		((mFlags & IO::Oct) != 0) ? "%" BOND_SCNo64 :
-		"%" BOND_SCNi64;
+	const char *specifier =
+		((mFlags & IO::Dec) != 0) ? BOND_SCNu64 :
+		((mFlags & IO::Hex) != 0) ? BOND_SCNx64 :
+		((mFlags & IO::Oct) != 0) ? BOND_SCNo64 :
+		BOND_SCNi64;
+	char format[16];
+	Format(format, specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -94,8 +121,21 @@ uint64_t InputStreamAdaptor::ScanULong()
 double InputStreamAdaptor::ScanDouble()
 {
 	double value = 0.0;
-	mStream->Scan("%lf", &value);
+	char format[16];
+	Format(format, "lf");
+	mStream->Scan(format, &value);
 	return value;
+}
+
+
+void InputStreamAdaptor::Format(char *format, const char *specifier) const
+{
+	if ((mFlags & IO::SkipWhite) != 0)
+	{
+		*format++ = ' ';
+	}
+	*format++ = '%';
+	sprintf(format, "%s", specifier);
 }
 
 }

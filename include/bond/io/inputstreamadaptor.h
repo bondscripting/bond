@@ -10,7 +10,7 @@ class InputStream;
 class InputStreamAdaptor
 {
 public:
-	InputStreamAdaptor(InputStream *stream): mStream(stream), mFlags(0) {}
+	InputStreamAdaptor(InputStream *stream): mStream(stream), mFlags() {}
 
 	InputStream *GetStream() const { return mStream; }
 
@@ -29,6 +29,8 @@ public:
 	void ClearFlags() { mFlags = 0; }
 
 private:
+	void Format(char *format, const char *specifier) const;
+
 	InputStream *mStream;
 	int mFlags;
 };

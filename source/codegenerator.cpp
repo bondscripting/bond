@@ -1557,7 +1557,6 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 
 	if (typeDescriptor->IsArrayType())
 	{
-		// TODO: Handle initialization of char[] with string literal.
 		uint32_t numElements = typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
 		const TypeDescriptor elementDescriptor = typeDescriptor->GetDereferencedType();
 		const uint32_t elementSize = elementDescriptor.GetSize(mPointerSize);
@@ -2073,7 +2072,6 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 				const uint16_t stringIndex = MapString(typeAndValue.GetStringValue());
 				EmitValue16(Value16(stringIndex));
 			}
-			// TODO: Determine if there is anything to do for non-primitive values.
 			break;
 	}
 }

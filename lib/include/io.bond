@@ -10,13 +10,14 @@ namespace IO
 		BoolAlpha = 1 << 0,
 		ShowBase = 1 << 1,
 		ShowPoint = 1 << 2,
-		Zero = 1 << 3,
-		Dec = 1 << 4,
-		Hex = 1 << 5,
-		Oct = 1 << 6,
-		Fixed = 1 << 7,
-		Scientific = 1 << 8,
-		Left = 1 << 9,
+		SkipWhite = 1 << 3,
+		Zero = 1 << 4,
+		Dec = 1 << 5,
+		Hex = 1 << 6,
+		Oct = 1 << 7,
+		Fixed = 1 << 8,
+		Scientific = 1 << 9,
+		Left = 1 << 10,
 	};
 
 	enum Constants

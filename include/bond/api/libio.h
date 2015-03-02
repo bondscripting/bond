@@ -17,13 +17,14 @@ enum Flags
 	BoolAlpha = 1,
 	ShowBase = 2,
 	ShowPoint = 4,
-	Zero = 8,
-	Dec = 16,
-	Hex = 32,
-	Oct = 64,
-	Fixed = 128,
-	Scientific = 256,
-	Left = 512,
+	SkipWhite = 8,
+	Zero = 16,
+	Dec = 32,
+	Hex = 64,
+	Oct = 128,
+	Fixed = 256,
+	Scientific = 512,
+	Left = 1024,
 };
 enum Constants
 {
