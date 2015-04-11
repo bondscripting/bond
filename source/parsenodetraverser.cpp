@@ -450,27 +450,28 @@ void ParseNodeTraverser::Visit(const FunctionCallExpression *functionCallExpress
 
 void ParseNodeTraverser::Visit(CastExpression *castExpression)
 {
-	Traverse(castExpression->GetTypeDescriptor());
+	Traverse(castExpression->GetTargetTypeDescriptor());
 	Traverse(castExpression->GetRhs());
 }
 
 
 void ParseNodeTraverser::Visit(const CastExpression *castExpression)
 {
+	Traverse(castExpression->GetTargetTypeDescriptor());
 	Traverse(castExpression->GetRhs());
 }
 
 
 void ParseNodeTraverser::Visit(SizeofExpression *sizeofExpression)
 {
-	Traverse(sizeofExpression->GetTypeDescriptor());
+	Traverse(sizeofExpression->GetTargetTypeDescriptor());
 	Traverse(sizeofExpression->GetRhs());
 }
 
 
 void ParseNodeTraverser::Visit(const SizeofExpression *sizeofExpression)
 {
-	Traverse(sizeofExpression->GetTypeDescriptor());
+	Traverse(sizeofExpression->GetTargetTypeDescriptor());
 	Traverse(sizeofExpression->GetRhs());
 }
 

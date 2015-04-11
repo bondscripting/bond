@@ -386,6 +386,7 @@ private:
 	void EmitPushConstantFloat(float value);
 	void EmitPushConstantDouble(double value);
 
+	void EmitPopResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 	void EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor);
 	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
 	void EmitPopFramePointerIndirectValue32(int32_t offset);
@@ -395,6 +396,7 @@ private:
 	void EmitAccumulateAddressOffset(int32_t offset);
 
 	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
+	void EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
 
 	Result EmitCommaOperator(const BinaryExpression *binaryExpression);
 	Result EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
@@ -653,16 +655,18 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 		case SCOPE_LOCAL:
 		{
-			// TODO: Omit code generation and stack allocation for non lvalue foldable constants.
-			const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
-			const int32_t offset = AllocateLocal(lhDescriptor);
-			namedInitializer->SetOffset(offset);
-			const Initializer *initializer = namedInitializer->GetInitializer();
-			if (initializer != nullptr)
+			if (!namedInitializer->IsElidable())
 			{
-				InitializerIndex index(true);
-				EmitInitializer(initializer, index, offset, true);
-				FlushZero(index, true);
+				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+				const int32_t offset = AllocateLocal(lhDescriptor);
+				namedInitializer->SetOffset(offset);
+				const Initializer *initializer = namedInitializer->GetInitializer();
+				if (initializer != nullptr)
+				{
+					InitializerIndex index(true);
+					EmitInitializer(initializer, index, offset, true);
+					FlushZero(index, true);
+				}
 			}
 		}
 		break;
@@ -1662,11 +1666,11 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 			ResultStack::Element rhResult(mResult);
 			Traverse(initializer);
-			EmitPushResultAs(rhResult, rhDescriptor, typeDescriptor);
+			EmitPushResult(rhResult, rhDescriptor);
 			const Result lhResult = index.mIsLocal ?
 				Result(Result::CONTEXT_FP_INDIRECT, offset) :
 				Result(Result::CONTEXT_ADDRESS_INDIRECT, 0);
-			EmitPopResult(lhResult, typeDescriptor);
+			EmitPopResultAs(lhResult, rhDescriptor, typeDescriptor);
 		}
 	}
 }
@@ -2325,6 +2329,13 @@ void GeneratorCore::EmitPushConstantDouble(double value)
 }
 
 
+void GeneratorCore::EmitPopResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+{
+	EmitCastWithoutNarrowing32(sourceType, destType);
+	EmitPopResult(result, destType);
+}
+
+
 void GeneratorCore::EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor)
 {
 	switch (result.mContext)
@@ -2778,6 +2789,227 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 }
 
 
+void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+{
+	switch (destType->GetPrimitiveType())
+	{
+		case Token::KEY_CHAR:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_BOOL:
+		case Token::KEY_UCHAR:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOUI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOUI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_SHORT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_USHORT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOUI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOUI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_INT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_UINT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_LTOI);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOUI);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOUI);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_LONG:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					EmitOpCode(OPCODE_ITOL);
+					break;
+				case Token::KEY_UCHAR:
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					EmitOpCode(OPCODE_UITOUL);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOL);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOL);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_ULONG:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					EmitOpCode(OPCODE_ITOL);
+					break;
+				case Token::KEY_UCHAR:
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					EmitOpCode(OPCODE_UITOUL);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOUL);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOUL);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_FLOAT:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					EmitOpCode(OPCODE_ITOF);
+					break;
+				case Token::KEY_UCHAR:
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					EmitOpCode(OPCODE_UITOF);
+					break;
+				case Token::KEY_LONG:
+					EmitOpCode(OPCODE_LTOF);
+					break;
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_ULTOF);
+					break;
+				case Token::KEY_DOUBLE:
+					EmitOpCode(OPCODE_DTOF);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case Token::KEY_DOUBLE:
+			switch (sourceType->GetPrimitiveType())
+			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
+				case Token::KEY_INT:
+					EmitOpCode(OPCODE_ITOD);
+					break;
+				case Token::KEY_UCHAR:
+				case Token::KEY_USHORT:
+				case Token::KEY_UINT:
+					EmitOpCode(OPCODE_UITOD);
+					break;
+				case Token::KEY_LONG:
+					EmitOpCode(OPCODE_LTOD);
+					break;
+				case Token::KEY_ULONG:
+					EmitOpCode(OPCODE_ULTOD);
+					break;
+				case Token::KEY_FLOAT:
+					EmitOpCode(OPCODE_FTOD);
+					break;
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+
+
 GeneratorCore::Result GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
@@ -2873,15 +3105,20 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
+			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 			EmitOpCode(valueDupOpCode);
+			EmitPopResult(lhResult, lhDescriptor);
 			result.mContext = Result::CONTEXT_STACK_VALUE;
 		}
-
-		EmitPopResult(lhResult, lhDescriptor);
+		else
+		{
+			TypeDescriptor intermediateDescriptor = PromoteType(lhDescriptor);
+			EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
+			EmitPopResultAs(lhResult, &intermediateDescriptor, lhDescriptor);
+		}
 	}
 	return result;
 }
@@ -2952,7 +3189,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 	uint32_t stackTop = mStackTop.GetTop();
@@ -2989,14 +3226,14 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		}
 
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), lhResult.GetValue().mNativeMember);
-		EmitCast(lhDescriptor, &resultDescriptor);
+		EmitCast(lhDescriptor, &intermediateDescriptor);
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
+		EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
 
-		EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
-		EmitCast(&resultDescriptor, lhDescriptor);
+		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
+		EmitCast(&intermediateDescriptor, lhDescriptor);
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
@@ -3019,21 +3256,24 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
-		EmitPushResultAs(lhResult, lhDescriptor, &resultDescriptor);
+		EmitPushResultAs(lhResult, lhDescriptor, &intermediateDescriptor);
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
+		EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
 
-		EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
-		EmitCast(&resultDescriptor, lhDescriptor);
+		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
 
 		if (mEmitOptionalTemporaries.GetTop())
 		{
+			EmitCast(&intermediateDescriptor, lhDescriptor);
 			EmitOpCode(valueDupOpCode);
+			EmitPopResult(lhResult, lhDescriptor);
 		}
-
-		EmitPopResult(lhResult, lhDescriptor);
+		else
+		{
+			EmitPopResultAs(lhResult, &intermediateDescriptor, lhDescriptor);
+		}
 	}
 
 	return Result(mEmitOptionalTemporaries.GetTop() ?
@@ -3401,9 +3641,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const TypeDescriptor *resultDescriptor = expression->GetTypeDescriptor();
-	const Token::TokenType operandType = operandDescriptor->GetPrimitiveType();
-	const Token::TokenType resultType = resultDescriptor->GetPrimitiveType();
+	const TypeDescriptor intermediateDescriptor = PromoteType(operandDescriptor);
 	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
 	uint32_t stackTop = mStackTop.GetTop();
 
@@ -3415,15 +3653,14 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    resultDescriptor->IsLeast32IntegerType() &&
-	    (operandType == resultType))
+	    operandDescriptor->IsLeast32IntegerType())
 	{
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
 		{
 			EmitPushResult(operandResult, operandDescriptor);
 		}
 
-		EmitOpCode(INC_OPCODES.GetOpCode(resultType));
+		EmitOpCode(INC_OPCODES.GetOpCode(intermediateDescriptor));
 		GetByteCode().push_back(uint8_t(slotIndex));
 		GetByteCode().push_back(uint8_t(sign));
 
@@ -3448,8 +3685,9 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 			EmitOpCode(OPCODE_DUPINS);
 		}
 
-		EmitOpCode(constOpCodeSet.GetOpCode(resultType));
-		EmitOpCode(ADD_OPCODES.GetOpCode(resultType));
+		EmitOpCode(constOpCodeSet.GetOpCode(intermediateDescriptor));
+		EmitOpCode(ADD_OPCODES.GetOpCode(intermediateDescriptor));
+		EmitCast(&intermediateDescriptor, operandDescriptor);
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
@@ -3472,22 +3710,26 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
-		EmitPushResultAs(operandResult, operandDescriptor, resultDescriptor);
+		EmitPushResultAs(operandResult, operandDescriptor, &intermediateDescriptor);
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
 		{
 			EmitOpCode(valueDupOpCode);
 		}
 
-		EmitOpCode(constOpCodeSet.GetOpCode(resultType));
-		EmitOpCode(ADD_OPCODES.GetOpCode(resultType));
+		EmitOpCode(constOpCodeSet.GetOpCode(intermediateDescriptor));
+		EmitOpCode(ADD_OPCODES.GetOpCode(intermediateDescriptor));
 
 		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
 		{
+			EmitCast(&intermediateDescriptor, operandDescriptor);
 			EmitOpCode(valueDupOpCode);
+			EmitPopResult(operandResult, operandDescriptor);
 		}
-
-		EmitPopResult(operandResult, operandDescriptor);
+		else
+		{
+			EmitPopResultAs(operandResult, &intermediateDescriptor, operandDescriptor);
+		}
 	}
 
 	return Result(mEmitOptionalTemporaries.GetTop() ?

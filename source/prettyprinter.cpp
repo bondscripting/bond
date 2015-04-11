@@ -605,7 +605,7 @@ void PrettyPrinterCore::Visit(const CastExpression *castExpression)
 	if (!PrintFoldedConstant(castExpression))
 	{
 		mStream.Print("cast<");
-		Print(castExpression->GetTypeDescriptor());
+		Print(castExpression->GetTargetTypeDescriptor());
 		mStream.Print(">(");
 		PrintTopLevelExpression(castExpression->GetRhs());
 		mStream.Print(")");
@@ -621,7 +621,7 @@ void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
 		if (sizeofExpression->GetTypeDescriptor() != nullptr)
 		{
 			mStream.Print("<");
-			Print(sizeofExpression->GetTypeDescriptor());
+			Print(sizeofExpression->GetTargetTypeDescriptor());
 			mStream.Print(">");
 		}
 		else

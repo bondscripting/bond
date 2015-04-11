@@ -690,7 +690,7 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 		}
 		else
 		{
-			typeDescriptor = sizeofExpression->GetTypeDescriptor();
+			typeDescriptor = sizeofExpression->GetTargetTypeDescriptor();
 		}
 
 		if ((typeDescriptor != nullptr) && typeDescriptor->IsResolved())

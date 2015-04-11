@@ -87,7 +87,6 @@ private:
 	void LoadListBlob();
 	void LoadFunctionBlob(size_t blobEnd);
 	void LoadDataBlob(size_t blobEnd);
-	QualifiedName LoadQualifiedName();
 	ReturnSignature LoadReturnSignature();
 	ParamListSignature LoadParamListSignature();
 
@@ -622,13 +621,6 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 	{
 		LoadBlob();
 	}
-}
-
-
-QualifiedName CboLoaderCore::LoadQualifiedName()
-{
-	const size_t nameIndex = ReadValue16().mUShort;
-	return mConstantTable->mQualifiedNameTable[nameIndex];
 }
 
 

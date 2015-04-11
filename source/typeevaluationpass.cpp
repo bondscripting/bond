@@ -366,7 +366,6 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
 				isResolvable = AssertNumericOperand(rhDescriptor, op);
-				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_INC:
@@ -375,7 +374,6 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 					(rhDescriptor->IsPointerType() || AssertNumericOperand(rhDescriptor, op)) &&
 					AssertAssignableType(rhDescriptor, op);
 				AssertNonConstExpression(op);
-				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_NOT:
@@ -612,18 +610,13 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 	if (rhTav.IsTypeDefined())
 	{
 		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		TypeDescriptor *lhDescriptor = castExpression->GetTypeDescriptor();
+		TypeDescriptor *lhDescriptor = castExpression->GetTargetTypeDescriptor();
 
 		AssertConvertibleTypes(
 			rhDescriptor,
 			lhDescriptor,
 			lhDescriptor->GetContextToken(),
 			CompilerError::INVALID_TYPE_CONVERSION);
-
-		if (rhDescriptor->IsAddressable())
-		{
-			lhDescriptor->SetAddressable();
-		}
 
 		castExpression->SetTypeDescriptor(*lhDescriptor);
 	}

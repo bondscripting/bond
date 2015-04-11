@@ -753,7 +753,8 @@ public:
 		mName(name),
 		mInitializer(initializer),
 		mScope(scope),
-		mOffset(isNative ? -1 : 0)
+		mOffset(isNative ? -1 : 0),
+		mIsElidable(false)
 	{}
 
 	virtual ~NamedInitializer() {}
@@ -776,6 +777,7 @@ public:
 	void SetOffset(int32_t offset) const { mOffset = offset; }
 
 	bool IsNativeStructMember() const { return (mScope == SCOPE_STRUCT_MEMBER) && (mOffset < 0); }
+	bool IsElidable() const { return mIsElidable; }
 
 private:
 	TypeAndValue mTypeAndValue;
@@ -784,6 +786,9 @@ private:
 	Scope mScope;
 	// Ew. Became mutable after population of this field was moved to the code generator.
 	mutable int32_t mOffset;
+
+	// TODO: populate this field.
+	bool mIsElidable;
 };
 
 
@@ -1410,9 +1415,9 @@ private:
 class CastExpression: public Expression
 {
 public:
-	CastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs):
+	CastExpression(const Token *op, TypeDescriptor *targetTypeDescriptor, Expression *rhs):
 		mOperator(op),
-		mTypeDescriptor(typeDescriptor),
+		mTargetTypeDescriptor(targetTypeDescriptor),
 		mRhs(rhs)
 	{}
 
@@ -1423,15 +1428,15 @@ public:
 
 	virtual const Token *GetContextToken() const { return mOperator; }
 
-	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor *GetTargetTypeDescriptor() const { return mTargetTypeDescriptor; }
+	TypeDescriptor *GetTargetTypeDescriptor() { return mTargetTypeDescriptor; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
 	const Token *mOperator;
-	TypeDescriptor *mTypeDescriptor;
+	TypeDescriptor *mTargetTypeDescriptor;
 	Expression *mRhs;
 };
 
@@ -1439,15 +1444,15 @@ private:
 class SizeofExpression: public Expression
 {
 public:
-	SizeofExpression(const Token *op, TypeDescriptor *typeDescriptor):
+	SizeofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor):
 		mOperator(op),
-		mTypeDescriptor(typeDescriptor),
+		mTargetTypeDescriptor(targetTypeDescriptor),
 		mRhs(nullptr)
 	{}
 
 	SizeofExpression(const Token *op, Expression *rhs):
 		mOperator(op),
-		mTypeDescriptor(nullptr),
+		mTargetTypeDescriptor(nullptr),
 		mRhs(rhs)
 	{}
 
@@ -1458,15 +1463,15 @@ public:
 
 	virtual const Token *GetContextToken() const { return mOperator; }
 
-	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor *GetTargetTypeDescriptor() const { return mTargetTypeDescriptor; }
+	TypeDescriptor *GetTargetTypeDescriptor() { return mTargetTypeDescriptor; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
 
 private:
 	const Token *mOperator;
-	TypeDescriptor *mTypeDescriptor;
+	TypeDescriptor *mTargetTypeDescriptor;
 	Expression *mRhs;
 };
 

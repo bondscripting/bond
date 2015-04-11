@@ -601,7 +601,7 @@ void ParseTreePrinterCore::Visit(const CastExpression *castExpression)
 	IncrementTab();
 	Tab();
 	mStream.Print("(type)\n");
-	Print(castExpression->GetTypeDescriptor());
+	Print(castExpression->GetTargetTypeDescriptor());
 	Tab();
 	mStream.Print("(expression)\n");
 	Print(castExpression->GetRhs());
@@ -614,7 +614,7 @@ void ParseTreePrinterCore::Visit(const SizeofExpression *sizeofExpression)
 	Tab();
 	mStream.Print("SizeofExpression\n");
 	IncrementTab();
-	Print(sizeofExpression->GetTypeDescriptor());
+	Print(sizeofExpression->GetTargetTypeDescriptor());
 	Print(sizeofExpression->GetRhs());
 	DecrementTab();
 }
@@ -623,7 +623,7 @@ void ParseTreePrinterCore::Visit(const SizeofExpression *sizeofExpression)
 void ParseTreePrinterCore::Visit(const ConstantLiteralExpression *constantExpression)
 {
 	Tab();
-	mStream.Print("CastExpression: ");
+	mStream.Print("ConstantLiteralExpression: ");
 	Print(constantExpression->GetValueToken());
 	Newline();
 }

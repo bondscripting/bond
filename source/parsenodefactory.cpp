@@ -316,15 +316,15 @@ FunctionCallExpression *ParseNodeFactory::CreateFunctionCallExpression(
 }
 
 
-CastExpression *ParseNodeFactory::CreateCastExpression(const Token *op, TypeDescriptor *typeDescriptor, Expression *rhs)
+CastExpression *ParseNodeFactory::CreateCastExpression(const Token *op, TypeDescriptor *targetTypeDescriptor, Expression *rhs)
 {
-	return new (mAllocator.Alloc<CastExpression>()) CastExpression(op, typeDescriptor, rhs);
+	return new (mAllocator.Alloc<CastExpression>()) CastExpression(op, targetTypeDescriptor, rhs);
 }
 
 
-SizeofExpression *ParseNodeFactory::CreateSizeofExpression(const Token *op, TypeDescriptor *typeDescriptor)
+SizeofExpression *ParseNodeFactory::CreateSizeofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor)
 {
-	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(op, typeDescriptor);
+	return new (mAllocator.Alloc<SizeofExpression>()) SizeofExpression(op, targetTypeDescriptor);
 }
 
 
