@@ -69,7 +69,7 @@ struct TestGroup
 {
 	const char *groupName;
 	const TestItem *items;
-	const unsigned numItems;
+	unsigned numItems;
 };
 
 bool RunTests(const TestGroup &testGroup);

@@ -30,6 +30,8 @@ public:
 
 	void Generate();
 
+	NativeBindingGeneratorCore &operator=(const NativeBindingGeneratorCore &other) = delete;
+
 private:
 	struct NamespaceItem
 	{
@@ -97,7 +99,7 @@ void NativeBindingGeneratorCore::Generate()
 		while ((*n != '\0') && (i < (BUFFER_SIZE - 1)))
 		{
 			const char c = *n++;
-			includeGuard[i++] = isalnum(c) ? toupper(c) : '_';
+			includeGuard[i++] = char(isalnum(c) ? toupper(c) : '_');
 		}
 		includeGuard[i] = '\0';
 		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);

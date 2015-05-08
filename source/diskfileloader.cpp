@@ -25,6 +25,7 @@ FileLoader::Handle DiskFileLoader::LoadFile(const char *fileName)
 		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s", BOND_FILESYSTEM_PREFIX, fileName);
 	}
 
+	fullPath[MAX_PATH_LENGTH - 1] = '\0';
 	file = fopen(fullPath, "rb");
 
 	if (file != nullptr)

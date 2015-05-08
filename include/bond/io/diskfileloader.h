@@ -28,6 +28,8 @@ public:
 	void SetRootPath(const char *rootPath) { mRootPath = rootPath; }
 	void SetDelegateLoader(FileLoader *delegateLoader) { mDelegateLoader = delegateLoader; }
 
+	DiskFileLoader &operator=(const DiskFileLoader &other) = delete;
+
 private:
 	Allocator &mAllocator;
 	const char *mRootPath;

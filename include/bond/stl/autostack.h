@@ -38,6 +38,7 @@ public:
 			mStack.Pop();
 		}
 
+		Element &operator=(const Element &other) = delete;
 		Element &operator=(const ElementType &value) { mValue = value; return *this; }
 
 		operator const ElementType&() const { return mValue; }

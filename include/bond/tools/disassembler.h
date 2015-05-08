@@ -19,6 +19,8 @@ public:
 
 	void Disassemble(OutputStream &stream, const void *byteCode, size_t length);
 
+	Disassembler &operator=(const Disassembler &other) = delete;
+
 private:
 	Allocator &mAllocator;
 };

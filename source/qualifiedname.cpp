@@ -89,7 +89,7 @@ int QualifiedName::Compare(const char *other) const
 		}
 		if (result == 0)
 		{
-			result = ((*elements == nullptr) && (*name1 == '\0') && (*name2 == '\0')) ? 0 : (*name2 == '\0') ? 1 : -1;
+			result = ((*elements == nullptr) && (name1 != nullptr) && (*name1 == '\0') && (*name2 == '\0')) ? 0 : (*name2 == '\0') ? 1 : -1;
 		}
 	}
 	return result;

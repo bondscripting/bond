@@ -13,7 +13,7 @@ DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")
 	const double THIRD_PI = PI / 3.0;
 	const double SIXTH_PI = PI / 6.0;
 
-	const float PI_F = float(3.14159265358979323846);
+	//const float PI_F = float(3.14159265358979323846);
 	const float TWO_PI_F = float(PI * 2.0);
 	const float HALF_PI_F = float(PI / 2.0);
 	const float THIRD_PI_F = float(PI / 3.0);

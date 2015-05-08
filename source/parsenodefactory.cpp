@@ -16,6 +16,8 @@ public:
 	void Destroy(ParseNode *parseNode) { Traverse(parseNode); }
 	void DestroyList(ListParseNode *listNode) { TraverseList(listNode); }
 
+	ParseNodeDeallocator &operator=(const ParseNodeDeallocator &other) = delete;
+
 private:
 	virtual void Traverse(ParseNode *parseNode);
 	virtual void Traverse(const ParseNode *parseNode);

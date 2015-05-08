@@ -35,6 +35,8 @@ public:
 
 	void SetDelegateLoader(FileLoader *delegateLoader) { mDelegateLoader = delegateLoader; }
 
+	MemoryFileLoader &operator=(const MemoryFileLoader &other) = delete;
+
 private:
 	const Index &mIndex;
 	FileLoader *mDelegateLoader;

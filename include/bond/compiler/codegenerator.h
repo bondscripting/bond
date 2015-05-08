@@ -23,6 +23,8 @@ public:
 
 	void Generate(const TranslationUnit *translationUnitList, OutputStream &stream);
 
+	CodeGenerator &operator=(const CodeGenerator &other) = delete;
+
 private:
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;

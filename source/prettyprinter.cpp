@@ -22,6 +22,8 @@ public:
 	void Print(const ParseNode *parseNode);
 	void PrintList(const ListParseNode *listNode);
 
+	PrettyPrinterCore &operator=(const PrettyPrinterCore &other) = delete;
+
 private:
 	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const IncludeDirective *includeDirective);

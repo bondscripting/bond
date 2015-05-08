@@ -151,6 +151,8 @@ public:
 
 	void Generate();
 
+	GeneratorCore &operator=(const GeneratorCore &other) = delete;
+
 private:
 	enum Fixedness
 	{
@@ -300,6 +302,8 @@ private:
 			mSetterNameIndex(setterIndex)
 		{}
 
+		NativeMemberEntry &operator=(const NativeMemberEntry &other) = delete;
+
 		const NamedInitializer *mNativeMember;
 		const uint16_t mGetterNameIndex;
 		const uint16_t mSetterNameIndex;
@@ -313,7 +317,7 @@ private:
 		{}
 
 		const NamedInitializer *mData;
-		const uint16_t mNameIndex;
+		uint16_t mNameIndex;
 	};
 
 	typedef Map<QualifiedNameEntry, uint16_t> QualifiedNameIndexMap;
@@ -816,7 +820,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 		{
 			const int32_t match = minMatch + i;
 			int32_t offset = 0;
-			if (match >= resolvedLabels->GetMatch())
+			if ((resolvedLabels != nullptr) && (match >= resolvedLabels->GetMatch()))
 			{
 				offset = int32_t(labelList[resolvedLabels->GetJumpTargetId()] - jumpTableEnd);
 				EmitValue32At(Value32(offset), pos);
@@ -2866,145 +2870,9 @@ void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType,
 			}
 			break;
 
-		case Token::KEY_INT:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_LONG:
-				case Token::KEY_ULONG:
-					EmitOpCode(OPCODE_LTOI);
-					break;
-				case Token::KEY_FLOAT:
-					EmitOpCode(OPCODE_FTOI);
-					break;
-				case Token::KEY_DOUBLE:
-					EmitOpCode(OPCODE_DTOI);
-					break;
-				default:
-					break;
-			}
-			break;
-
-		case Token::KEY_UINT:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_LONG:
-				case Token::KEY_ULONG:
-					EmitOpCode(OPCODE_LTOI);
-					break;
-				case Token::KEY_FLOAT:
-					EmitOpCode(OPCODE_FTOUI);
-					break;
-				case Token::KEY_DOUBLE:
-					EmitOpCode(OPCODE_DTOUI);
-					break;
-				default:
-					break;
-			}
-			break;
-
-		case Token::KEY_LONG:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_CHAR:
-				case Token::KEY_SHORT:
-				case Token::KEY_INT:
-					EmitOpCode(OPCODE_ITOL);
-					break;
-				case Token::KEY_UCHAR:
-				case Token::KEY_USHORT:
-				case Token::KEY_UINT:
-					EmitOpCode(OPCODE_UITOUL);
-					break;
-				case Token::KEY_FLOAT:
-					EmitOpCode(OPCODE_FTOL);
-					break;
-				case Token::KEY_DOUBLE:
-					EmitOpCode(OPCODE_DTOL);
-					break;
-				default:
-					break;
-			}
-			break;
-
-		case Token::KEY_ULONG:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_CHAR:
-				case Token::KEY_SHORT:
-				case Token::KEY_INT:
-					EmitOpCode(OPCODE_ITOL);
-					break;
-				case Token::KEY_UCHAR:
-				case Token::KEY_USHORT:
-				case Token::KEY_UINT:
-					EmitOpCode(OPCODE_UITOUL);
-					break;
-				case Token::KEY_FLOAT:
-					EmitOpCode(OPCODE_FTOUL);
-					break;
-				case Token::KEY_DOUBLE:
-					EmitOpCode(OPCODE_DTOUL);
-					break;
-				default:
-					break;
-			}
-			break;
-
-		case Token::KEY_FLOAT:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_CHAR:
-				case Token::KEY_SHORT:
-				case Token::KEY_INT:
-					EmitOpCode(OPCODE_ITOF);
-					break;
-				case Token::KEY_UCHAR:
-				case Token::KEY_USHORT:
-				case Token::KEY_UINT:
-					EmitOpCode(OPCODE_UITOF);
-					break;
-				case Token::KEY_LONG:
-					EmitOpCode(OPCODE_LTOF);
-					break;
-				case Token::KEY_ULONG:
-					EmitOpCode(OPCODE_ULTOF);
-					break;
-				case Token::KEY_DOUBLE:
-					EmitOpCode(OPCODE_DTOF);
-					break;
-				default:
-					break;
-			}
-			break;
-
-		case Token::KEY_DOUBLE:
-			switch (sourceType->GetPrimitiveType())
-			{
-				case Token::KEY_CHAR:
-				case Token::KEY_SHORT:
-				case Token::KEY_INT:
-					EmitOpCode(OPCODE_ITOD);
-					break;
-				case Token::KEY_UCHAR:
-				case Token::KEY_USHORT:
-				case Token::KEY_UINT:
-					EmitOpCode(OPCODE_UITOD);
-					break;
-				case Token::KEY_LONG:
-					EmitOpCode(OPCODE_LTOD);
-					break;
-				case Token::KEY_ULONG:
-					EmitOpCode(OPCODE_ULTOD);
-					break;
-				case Token::KEY_FLOAT:
-					EmitOpCode(OPCODE_FTOD);
-					break;
-				default:
-					break;
-			}
-			break;
-
 		default:
+			// Remaining logic remains unchanged.
+			EmitCast(sourceType, destType);
 			break;
 	}
 }
@@ -3163,7 +3031,7 @@ void GeneratorCore::EmitLogicalOperator(
 		if (rhsNegated)
 		{
 			// Patch up the opcode.
-			GetByteCode()[opCodePos] = lhsNegated ? altBranchOpCode : negatedAltOpCode;
+			GetByteCode()[opCodePos] = uint8_t(lhsNegated ? altBranchOpCode : negatedAltOpCode);
 			mExpressionIsNegated.SetTop(true);
 		}
 	}
@@ -3963,7 +3831,7 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, int32_t offset)
 
 void GeneratorCore::EmitOpCode(OpCode opCode)
 {
-	GetByteCode().push_back(opCode);
+	GetByteCode().push_back(uint8_t(opCode));
 	ApplyStackDelta(GetStackDelta(opCode));
 }
 

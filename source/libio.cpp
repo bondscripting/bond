@@ -104,7 +104,7 @@ void InputStream__GetFlags(Bond::CalleeStackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t flags = int32_t(stream->GetFlags());
-	frame.SetReturnValue(stream);
+	frame.SetReturnValue(flags);
 }
 
 
@@ -278,7 +278,7 @@ void OutputStream__GetFlags(Bond::CalleeStackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t flags = int32_t(stream->GetFlags());
-	frame.SetReturnValue(stream);
+	frame.SetReturnValue(flags);
 }
 
 
@@ -312,7 +312,7 @@ void OutputStream__GetPrecision(Bond::CalleeStackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t precision = int32_t(stream->GetPrecision());
-	frame.SetReturnValue(stream);
+	frame.SetReturnValue(precision);
 }
 
 
@@ -329,7 +329,7 @@ void OutputStream__GetWidth(Bond::CalleeStackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t width = int32_t(stream->GetWidth());
-	frame.SetReturnValue(stream);
+	frame.SetReturnValue(width);
 }
 
 

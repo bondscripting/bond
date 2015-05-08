@@ -37,6 +37,8 @@ public:
 
 	bool HasErrors() const;
 
+	FrontEnd &operator=(const FrontEnd &other) = delete;
+
 private:
 	typedef List<SimpleString> StringList;
 

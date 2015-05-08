@@ -181,13 +181,13 @@ int main(int argc, const char *argv[])
 					Bond::StdioOutputStream cboStream(cboFile);
 					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
 					generator.Generate(parser.GetTranslationUnitList(), cboStream);
+					fclose(cboFile);
 				}
 				else
 				{
 					fprintf(stderr, "Failed to open '%s'.\n", cboFileName);
 					error = true;
 				}
-				fclose(cboFile);
 			}
 			if (generateBindings)
 			{

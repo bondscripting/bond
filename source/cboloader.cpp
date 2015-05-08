@@ -82,6 +82,8 @@ public:
 
 	void Load();
 
+	CboLoaderCore &operator=(const CboLoaderCore &other) = delete;
+
 private:
 	void LoadBlob();
 	void LoadListBlob();

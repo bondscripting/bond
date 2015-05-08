@@ -209,7 +209,7 @@ LexerCore::Resources LexerCore::CalculateResources(CharStream &stream) const
 	Resources resources;
 
 	Token token;
-	while (true)
+	for (;;)
 	{
 		ScanToken(stream, token);
 

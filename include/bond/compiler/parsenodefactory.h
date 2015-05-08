@@ -120,6 +120,8 @@ public:
 	void DestroyHierarchy(ParseNode *parseNode);
 	void DestroyListHierarchy(ListParseNode *listNode);
 
+	ParseNodeFactory &operator=(const ParseNodeFactory &other) = delete;
+
 private:
 	Allocator &mAllocator;
 };

@@ -21,7 +21,7 @@ struct ConstantTable
 
 struct ParamSignature
 {
-	ParamSignature(int32_t framePointerOffset, uint32_t size, uint32_t type):
+	explicit ParamSignature(int32_t framePointerOffset = 0, uint32_t size = 0, uint32_t type = 0):
 		mFramePointerOffset(framePointerOffset),
 		mSize(size),
 		mType(type)
@@ -35,7 +35,7 @@ struct ParamSignature
 
 struct ParamListSignature
 {
-	ParamListSignature(const ParamSignature *paramSignatures, uint32_t paramCount):
+	explicit ParamListSignature(const ParamSignature *paramSignatures = nullptr, uint32_t paramCount = 0):
 		mParamSignatures(paramSignatures),
 		mParamCount(paramCount)
 	{}
@@ -47,7 +47,7 @@ struct ParamListSignature
 
 struct ReturnSignature
 {
-	ReturnSignature(uint32_t size, uint32_t type):
+	explicit ReturnSignature(uint32_t size = 0, uint32_t type = 0):
 		mSize(size),
 		mType(type)
 	{}

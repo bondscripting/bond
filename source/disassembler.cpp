@@ -35,6 +35,8 @@ public:
 
 	void Disassemble();
 
+	DisassemblerCore &operator=(const DisassemblerCore &other) = delete;
+
 private:
 	typedef Vector<Value32> Value32Table;
 	typedef Vector<Value64> Value64Table;

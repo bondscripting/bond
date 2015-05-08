@@ -24,6 +24,8 @@ public:
 
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
+	SemanticAnalyzer &operator=(const SemanticAnalyzer &other) = delete;
+
 private:
 	SymbolTable mSymbolTable;
 	CompilerErrorBuffer &mErrorBuffer;

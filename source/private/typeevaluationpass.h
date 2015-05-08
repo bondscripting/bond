@@ -22,6 +22,8 @@ public:
 
 	virtual void Analyze(TranslationUnit *translationUnitList) override;
 
+	TypeEvaluationPass &operator=(const TypeEvaluationPass &other) = delete;
+
 protected:
 	using SemanticAnalysisPass::Visit;
 	virtual void Visit(Enumerator *enumerator) override;
@@ -63,6 +65,8 @@ private:
 		virtual ~RecursiveStructAnalyzer() {}
 
 		void Analyze(const StructDeclaration *structDeclaration);
+
+		RecursiveStructAnalyzer &operator=(const RecursiveStructAnalyzer &other) = delete;
 
 	private:
 		virtual void Visit(const StructDeclaration *structDeclaration) override;

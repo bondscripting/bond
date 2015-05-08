@@ -38,6 +38,8 @@ public:
 
 	Handle Load();
 
+	CboLoader &operator=(const CboLoader &other) = delete;
+
 private:
 	typedef Vector<const NativeBindingCollection *> NativeBindingList;
 	typedef Vector<const FileData *> FileDataList;

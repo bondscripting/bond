@@ -47,6 +47,8 @@ public:
 
 	VM &GetVM() const { return mVm; }
 
+	CalleeStackFrame &operator=(const CalleeStackFrame &other) = delete;
+
 private:
 	friend class VM;
 	friend class CallerStackFrame;
@@ -92,6 +94,8 @@ public:
 	void PushArgs(Arg1 arg1, Args... args);
 
 	void Call();
+
+	CallerStackFrame &operator=(const CallerStackFrame &other) = delete;
 
 private:
 	void Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer);
@@ -147,6 +151,8 @@ public:
 
 	template <typename... Args>
 	void CallVoidFunction(const Function &function, Args... args);
+
+	VM &operator=(const VM &other) = delete;
 
 private:
 	friend class CallerStackFrame;
