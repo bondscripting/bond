@@ -64,6 +64,18 @@ void ValidationPass::Visit(Parameter *parameter)
 }
 
 
+void ValidationPass::Visit(NamedInitializer *namedInitializer)
+{
+	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
+	if ((namedInitializer->GetScope() == SCOPE_LOCAL) && tav.IsValueDefined() &&
+	    tav.GetTypeDescriptor()->IsPrimitiveType())
+	{
+		namedInitializer->SetElidable(true);
+	}
+	ParseNodeTraverser::Visit(namedInitializer);
+}
+
+
 void ValidationPass::Visit(IfStatement *ifStatement)
 {
 	AssertReachableCode(ifStatement);
@@ -334,6 +346,25 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 			break;
 	}
 	ParseNodeTraverser::Visit(binaryExpression);
+}
+
+
+void ValidationPass::Visit(UnaryExpression *unaryExpression)
+{
+	const Token *op = unaryExpression->GetOperator();
+	if (op->GetTokenType() == Token::OP_AMP)
+	{
+		IdentifierExpression *identifierExpression = CastNode<IdentifierExpression>(unaryExpression->GetRhs());
+		if (identifierExpression != nullptr)
+		{
+			NamedInitializer *namedInitializer = CastNode<NamedInitializer>(identifierExpression->GetDefinition());
+			if (namedInitializer != nullptr)
+			{
+				namedInitializer->SetElidable(false);
+			}
+		}
+	}
+	ParseNodeTraverser::Visit(unaryExpression);
 }
 
 

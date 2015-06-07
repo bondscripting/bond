@@ -212,6 +212,7 @@ public:
 
 	SignatureType GetSignatureType() const;
 	Token::TokenType GetPrimitiveType() const;
+	bool IsPrimitiveType() const { return GetPrimitiveType() != Token::INVALID; }
 	bool IsBooleanType() const;
 	bool IsCharType() const;
 	bool IsIntegerType() const;
@@ -778,6 +779,7 @@ public:
 
 	bool IsNativeStructMember() const { return (mScope == SCOPE_STRUCT_MEMBER) && (mOffset < 0); }
 	bool IsElidable() const { return mIsElidable; }
+	void SetElidable(bool isElidable) { mIsElidable = isElidable; }
 
 private:
 	TypeAndValue mTypeAndValue;
@@ -1512,12 +1514,13 @@ public:
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
 
+	Symbol *GetDefinition() { return mDefinition; }
 	const Symbol *GetDefinition() const { return mDefinition; }
-	void SetDefinition(const Symbol *symbol) { mDefinition = symbol; }
+	void SetDefinition(Symbol *symbol) { mDefinition = symbol; }
 
 private:
 	QualifiedIdentifier *mIdentifier;
-	const Symbol *mDefinition;
+	Symbol *mDefinition;
 };
 
 

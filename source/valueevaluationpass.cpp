@@ -287,7 +287,7 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 			Resolve(tav);
 
 			// TODO: Handle non-primitive types (e.g. arrays of primitive types or string literals).
-			if ((typeDescriptor->GetPrimitiveType() != Token::INVALID) && typeDescriptor->IsConst())
+			if (typeDescriptor->IsPrimitiveType() && typeDescriptor->IsConst())
 			{
 				const TypeAndValue initializerTav = initializer->GetExpression()->GetTypeAndValue();
 				if (initializerTav.IsValueDefined())

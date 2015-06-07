@@ -22,6 +22,7 @@ protected:
 	virtual void Visit(FunctionDefinition *functionDefinition) override;
 	virtual void Visit(FunctionPrototype *functionPrototype) override;
 	virtual void Visit(Parameter *parameter) override;
+	virtual void Visit(NamedInitializer *namedInitializer) override;
 	virtual void Visit(IfStatement *ifStatement) override;
 	virtual void Visit(SwitchStatement *switchStatement) override;
 	virtual void Visit(SwitchSection *switchSection) override;
@@ -32,6 +33,7 @@ protected:
 	virtual void Visit(DeclarativeStatement *declarativeStatement) override;
 	virtual void Visit(ExpressionStatement *expressionStatement) override;
 	virtual void Visit(BinaryExpression *binaryExpression) override;
+	virtual void Visit(UnaryExpression *unaryExpression) override;
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
 
 private:

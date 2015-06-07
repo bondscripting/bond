@@ -2024,7 +2024,7 @@ void GeneratorCore::EmitPushStackValue(const TypeDescriptor *typeDescriptor, int
 void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor *destType)
 {
 	const TypeDescriptor *sourceType = typeAndValue.GetTypeDescriptor();
-	if (sourceType->GetPrimitiveType() != Token::INVALID)
+	if (sourceType->IsPrimitiveType())
 	{
 		const Value resultValue = CastValue(typeAndValue, destType);
 		TypeDescriptor nonConstDestType = *destType;

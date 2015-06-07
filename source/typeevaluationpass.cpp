@@ -435,7 +435,9 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 		{
 			AssertAssignableType(lhDescriptor, op);
 			AssertNonConstExpression(op);
-			postfixExpression->SetTypeDescriptor(*lhDescriptor);
+			TypeDescriptor resultType = *lhDescriptor;
+			resultType.ClearLValue();
+			postfixExpression->SetTypeDescriptor(resultType);
 		}
 	}
 }
@@ -680,7 +682,7 @@ void TypeEvaluationPass::Visit(ConstantLiteralExpression *constantExpression)
 void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 {
 	const QualifiedIdentifier *identifier = identifierExpression->GetIdentifier();
-	const Symbol *symbol = GetSymbol(identifier);
+	Symbol *symbol = GetSymbol(identifier);
 
 	if (symbol == nullptr)
 	{
