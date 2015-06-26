@@ -338,6 +338,7 @@ private:
 	virtual void Traverse(const ParseNode *parseNode);
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
 	bool TraverseCollapseNotOperators(const Expression *expression);
+	void TraverseOmitConstantFolding(const Expression *expression);
 
 	virtual void Visit(const TranslationUnit *translationUnit);
 	virtual void Visit(const FunctionDefinition *functionDefinition);
@@ -465,6 +466,9 @@ private:
 	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
 	CompiledFunction &GetFunction() { return *mFunction.GetTop(); }
 	ByteCode::Type &GetByteCode() { return GetFunction().mByteCode; }
+	bool GetEmitOptionalTemporaries() const { return (mFlags.GetTop() & FLAG_OMIT_OPTIONAL_TEMPORARIES) == 0; }
+	bool GetCollapseNotOperators() const { return (mFlags.GetTop() & FLAG_COLLAPSE_NOT_OPERATORS) != 0; }
+	bool GetOmitConstantFolding() const { return (mFlags.GetTop() & FLAG_OMIT_CONSTANT_FOLDING) != 0; }
 	void ApplyStackDelta(int32_t delta);
 	int32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
 	size_t CreateLabel();
@@ -476,6 +480,10 @@ private:
 
 	void AssertStackEmpty();
 	void PushError(CompilerError::Type type);
+
+	static const uint32_t FLAG_OMIT_OPTIONAL_TEMPORARIES = 1 << 0;
+	static const uint32_t FLAG_COLLAPSE_NOT_OPERATORS = 1 << 1;
+	static const uint32_t FLAG_OMIT_CONSTANT_FOLDING = 1 << 2;
 
 	QualifiedNameIndexMap::Type mQualifiedNameIndexMap;
 	QualifiedNameList::Type mQualifiedNameList;
@@ -494,8 +502,7 @@ private:
 	LabelStack mBreakLabel;
 	UIntStack mLocalOffset;
 	UIntStack mStackTop;
-	BoolStack mEmitOptionalTemporaries;
-	BoolStack mCollapseNotOperators;
+	UIntStack mFlags;
 	BoolStack mExpressionIsNegated;
 	Allocator &mAllocator;
 	OutputStream &mStream;
@@ -520,6 +527,7 @@ void GeneratorCore::Generate()
 	FunctionStack::Element functionElement(mFunction, &function);
 	UIntStack::Element localOffsetElement(mLocalOffset, 0);
 	UIntStack::Element stackTopElement(mStackTop, 0);
+	UIntStack::Element flagsElement(mFlags, 0);
 	TraverseList(mTranslationUnitList);
 
 	if (!function.mByteCode.empty())
@@ -534,16 +542,14 @@ void GeneratorCore::Generate()
 
 void GeneratorCore::Traverse(const ParseNode *parseNode)
 {
-	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, true);
-	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, false);
+	UIntStack::Element flagsElement(mFlags, 0);
 	ParseNodeTraverser::Traverse(parseNode);
 }
 
 
 void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression)
 {
-	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, false);
-	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, false);
+	UIntStack::Element flagsElement(mFlags, FLAG_OMIT_OPTIONAL_TEMPORARIES);
 	ParseNodeTraverser::Traverse(expression);
 
 	// Remove any temporaries that may have been left on the stack.
@@ -558,11 +564,17 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 
 bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
 {
-	BoolStack::Element emitOptionalTemporariesElement(mEmitOptionalTemporaries, true);
-	BoolStack::Element collapseNotOperatorsElement(mCollapseNotOperators, true);
 	BoolStack::Element expressionIsNegatedElement(mExpressionIsNegated, false);
+	UIntStack::Element flagsElement(mFlags, FLAG_COLLAPSE_NOT_OPERATORS);
 	ParseNodeTraverser::Traverse(expression);
 	return expressionIsNegatedElement.GetValue();
+}
+
+
+void GeneratorCore::TraverseOmitConstantFolding(const Expression *expression)
+{
+	UIntStack::Element flagsElement(mFlags, FLAG_OMIT_CONSTANT_FOLDING);
+	ParseNodeTraverser::Traverse(expression);
 }
 
 
@@ -1548,7 +1560,7 @@ void GeneratorCore::Visit(const ThisExpression *thisExpression)
 bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 {
 	const TypeAndValue &tav = expression->GetTypeAndValue();
-	if (tav.IsValueDefined())
+	if (tav.IsValueDefined() && !GetOmitConstantFolding())
 	{
 		mResult.SetTop(Result(&tav));
 		return true;
@@ -2921,7 +2933,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			Traverse(rhs);
 			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 
-			if (mEmitOptionalTemporaries.GetTop() && !lhDescriptor->IsStructType())
+			if (GetEmitOptionalTemporaries() && !lhDescriptor->IsStructType())
 			{
 				EmitOpCode(OPCODE_DUP);
 				stackDelta += GetStackDelta(OPCODE_DUP);
@@ -2944,7 +2956,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 		Traverse(lhs);
 		EmitPushAddressOfResult(lhResult);
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			if (lhResult.GetValue().mContext == Result::CONTEXT_ADDRESS_INDIRECT)
 			{
@@ -2974,7 +2986,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 			EmitOpCode(valueDupOpCode);
@@ -3021,7 +3033,7 @@ void GeneratorCore::EmitLogicalOperator(
 	const size_t opCodePos = GetByteCode().size();
 	EmitJump(lhsNegated ? negatedOpCode : branchOpCode, endLabel);
 
-	if (mCollapseNotOperators.GetTop())
+	if (GetCollapseNotOperators())
 	{
 		ResultStack::Element rhResult(mResult);
 		const bool rhsNegated = TraverseCollapseNotOperators(rhs);
@@ -3080,7 +3092,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		byteCode.push_back(uint8_t(slotIndex));
 		byteCode.push_back(uint8_t(rhValue));
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			EmitPushResult(lhResult, lhDescriptor);
 		}
@@ -3103,7 +3115,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
 		EmitCast(&intermediateDescriptor, lhDescriptor);
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3132,7 +3144,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 
 		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			EmitCast(&intermediateDescriptor, lhDescriptor);
 			EmitOpCode(valueDupOpCode);
@@ -3144,7 +3156,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		}
 	}
 
-	return Result(mEmitOptionalTemporaries.GetTop() ?
+	return Result(GetEmitOptionalTemporaries() ?
 		Result::CONTEXT_STACK_VALUE :
 		Result::CONTEXT_NONE);
 }
@@ -3174,7 +3186,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 		byteCode.push_back(uint8_t(slotIndex));
 		byteCode.push_back(uint8_t(offset));
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			if (Is64BitPointer())
 			{
@@ -3197,7 +3209,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), pointerResult.GetValue().mNativeMember);
 		EmitPointerOffset(offsetExpression, elementSize);
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3221,7 +3233,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 		EmitPushResult(pointerResult, pointerDescriptor);
 		EmitPointerOffset(offsetExpression, elementSize);
 
-		if (mEmitOptionalTemporaries.GetTop())
+		if (GetEmitOptionalTemporaries())
 		{
 			EmitOpCode(valueDupOpCode);
 		}
@@ -3229,7 +3241,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 		EmitPopResult(pointerResult, pointerDescriptor);
 	}
 
-	return Result(mEmitOptionalTemporaries.GetTop() ?
+	return Result(GetEmitOptionalTemporaries() ?
 		Result::CONTEXT_STACK_VALUE :
 		Result::CONTEXT_NONE);
 }
@@ -3395,7 +3407,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 		ByteCode::Type &byteCode = GetByteCode();
 		if (Is64BitPointer())
 		{
-			if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+			if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 			{
 				EmitPushFramePointerIndirectValue64(frameOffset);
 			}
@@ -3404,14 +3416,14 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			byteCode.push_back(uint8_t(slotIndex));
 			byteCode.push_back(uint8_t(pointerOffset));
 
-			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+			if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 			{
 				EmitPushFramePointerIndirectValue64(frameOffset);
 			}
 		}
 		else
 		{
-			if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+			if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 			{
 				EmitPushFramePointerIndirectValue32(frameOffset);
 			}
@@ -3420,7 +3432,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			byteCode.push_back(uint8_t(slotIndex));
 			byteCode.push_back(uint8_t(pointerOffset));
 
-			if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+			if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 			{
 				EmitPushFramePointerIndirectValue32(frameOffset);
 			}
@@ -3436,7 +3448,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), operandResult.GetValue().mNativeMember);
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3453,7 +3465,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			EmitOpCode(OPCODE_ADDI);
 		}
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3476,7 +3488,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 		EmitPushResult(operandResult, operandDescriptor);
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
 			EmitOpCode(valueDupOpCode);
 		}
@@ -3492,7 +3504,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 			EmitOpCode(OPCODE_ADDI);
 		}
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
 			EmitOpCode(valueDupOpCode);
 		}
@@ -3500,7 +3512,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 		EmitPopResult(operandResult, operandDescriptor);
 	}
 
-	return Result(mEmitOptionalTemporaries.GetTop() ?
+	return Result(GetEmitOptionalTemporaries() ?
 		Result::CONTEXT_STACK_VALUE :
 		Result::CONTEXT_NONE);
 }
@@ -3523,7 +3535,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    operandDescriptor->IsLeast32IntegerType())
 	{
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
 			EmitPushResult(operandResult, operandDescriptor);
 		}
@@ -3532,7 +3544,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 		GetByteCode().push_back(uint8_t(slotIndex));
 		GetByteCode().push_back(uint8_t(sign));
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
 			EmitPushResult(operandResult, operandDescriptor);
 		}
@@ -3547,7 +3559,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), operandResult.GetValue().mNativeMember);
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3557,7 +3569,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 		EmitOpCode(ADD_OPCODES.GetOpCode(intermediateDescriptor));
 		EmitCast(&intermediateDescriptor, operandDescriptor);
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
 			stackTop += GetStackDelta(OPCODE_DUPINS);
 			EmitOpCode(OPCODE_DUPINS);
@@ -3580,7 +3592,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 
 		EmitPushResultAs(operandResult, operandDescriptor, &intermediateDescriptor);
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == POSTFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
 			EmitOpCode(valueDupOpCode);
 		}
@@ -3588,7 +3600,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 		EmitOpCode(constOpCodeSet.GetOpCode(intermediateDescriptor));
 		EmitOpCode(ADD_OPCODES.GetOpCode(intermediateDescriptor));
 
-		if (mEmitOptionalTemporaries.GetTop() && (fixedness == PREFIX))
+		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
 			EmitCast(&intermediateDescriptor, operandDescriptor);
 			EmitOpCode(valueDupOpCode);
@@ -3600,7 +3612,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 		}
 	}
 
-	return Result(mEmitOptionalTemporaries.GetTop() ?
+	return Result(GetEmitOptionalTemporaries() ?
 		Result::CONTEXT_STACK_VALUE :
 		Result::CONTEXT_NONE);
 }
@@ -3649,7 +3661,7 @@ GeneratorCore::Result GeneratorCore::EmitNotOperator(const UnaryExpression *unar
 	const bool negated = TraverseCollapseNotOperators(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	if (mCollapseNotOperators.GetTop())
+	if (GetCollapseNotOperators())
 	{
 		mExpressionIsNegated.SetTop(!negated);
 	}
@@ -3711,7 +3723,7 @@ GeneratorCore::Result GeneratorCore::EmitAddressOfOperator(const UnaryExpression
 	// TODO: Non-literal constants must not be resolved to constants. Must be FP indirect, for example.
 	const Expression *rhs = unaryExpression->GetRhs();
 	ResultStack::Element rhResult(mResult);
-	Traverse(rhs);
+	TraverseOmitConstantFolding(rhs);
 	Result result = EmitAddressOfResult(rhResult);
 	return result;
 }

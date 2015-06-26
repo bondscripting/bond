@@ -198,8 +198,8 @@ public:
 	bool IsAddressable() const { return (mFlags & FLAG_ADDRESSABLE) != 0; }
 	void SetAddressable() { mFlags |= FLAG_ADDRESSABLE; }
 
-	bool IsLimitedLValue() const { return (mFlags & FLAG_LIMITED_LVALUE) != 0; }
-	void SetLimitedLValue() { mFlags |= FLAG_LIMITED_LVALUE; }
+	bool IsUnaddressableLValue() const { return (mFlags & FLAG_UNADDRESSABLE_LVALUE) != 0; }
+	void SetUnaddressableLValue() { mFlags |= FLAG_UNADDRESSABLE_LVALUE; }
 
 	bool IsLValue() const { return (mFlags & FLAG_ANY_LVALUE) != 0; }
 	void ClearLValue() { mFlags &= ~FLAG_ANY_LVALUE; }
@@ -259,9 +259,9 @@ private:
 	static const uint32_t FLAG_NULL = 1 << 3;
 	static const uint32_t FLAG_CONST = 1 << 4;
 	static const uint32_t FLAG_ADDRESSABLE = 1 << 5;
-	static const uint32_t FLAG_LIMITED_LVALUE = 1 << 6;
+	static const uint32_t FLAG_UNADDRESSABLE_LVALUE = 1 << 6;
 	static const uint32_t FLAG_ANY_POINTER = FLAG_POINTER | FLAG_ARRAY | FLAG_NULL;
-	static const uint32_t FLAG_ANY_LVALUE = FLAG_ADDRESSABLE | FLAG_LIMITED_LVALUE;
+	static const uint32_t FLAG_ANY_LVALUE = FLAG_ADDRESSABLE | FLAG_UNADDRESSABLE_LVALUE;
 	static const uint32_t PARENT_SHIFT = 8;
 	static const uint32_t STORAGE_MASK = FLAG_VALUE | FLAG_ANY_POINTER;
 	static const uint32_t FLAG_MASK = (1 << PARENT_SHIFT) - 1;

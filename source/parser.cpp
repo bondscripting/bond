@@ -580,7 +580,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					AssertNonVoidType(descriptor);
 					if ((structDeclaration != nullptr) && (structDeclaration->IsNative()))
 					{
-						descriptor->SetLimitedLValue();
+						descriptor->SetUnaddressableLValue();
 					}
 					else
 					{
