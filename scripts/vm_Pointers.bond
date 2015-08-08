@@ -125,3 +125,26 @@ bool LocalOverlap()
 
 	return (a1Ptr == a2Ptr) && (b1Ptr == b2Ptr) && (c1Ptr == c2Ptr) && (b1Ptr == c2Ptr);
 }
+
+
+bool PointersAndConstantFolding()
+{
+	int a = 1;
+
+	// Expect b to be elided. a and c should be adjacent in memory.
+	const int b = 2;
+
+	int c = 3;
+
+	// Expect d not to be elided because we take its address. It should be sandwiched between c and e.
+	const int d = 4;
+
+	int e = 5;
+
+	const int *aPtr = &a;
+	const int *cPtr = &c;
+	const int *dPtr = &d;
+	const int *ePtr = &e;
+
+	return ((cPtr - aPtr) == 8) && (ePtr > dPtr) && (dPtr > cPtr);
+}

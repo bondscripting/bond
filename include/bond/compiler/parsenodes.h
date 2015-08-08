@@ -788,8 +788,6 @@ private:
 	Scope mScope;
 	// Ew. Became mutable after population of this field was moved to the code generator.
 	mutable int32_t mOffset;
-
-	// TODO: populate this field.
 	bool mIsElidable;
 };
 

@@ -1159,16 +1159,44 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				result = EmitSimpleBinaryOperator(binaryExpression, RSH_OPCODES);
 				break;
 			case Token::OP_LT:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPLT_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPLT_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPLT_OPCODES);
+				}
 				break;
 			case Token::OP_LTE:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPLE_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPLE_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPLE_OPCODES);
+				}
 				break;
 			case Token::OP_GT:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPGT_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPGT_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPGT_OPCODES);
+				}
 				break;
 			case Token::OP_GTE:
-				result = EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
+				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				{
+					result = EmitPointerComparison(lhs, rhs, CMPGE_OPCODES);
+				}
+				else
+				{
+					result = EmitSimpleBinaryOperator(binaryExpression, CMPGE_OPCODES);
+				}
 				break;
 			case Token::OP_EQUAL:
 				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
@@ -3720,7 +3748,6 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 
 GeneratorCore::Result GeneratorCore::EmitAddressOfOperator(const UnaryExpression *unaryExpression)
 {
-	// TODO: Non-literal constants must not be resolved to constants. Must be FP indirect, for example.
 	const Expression *rhs = unaryExpression->GetRhs();
 	ResultStack::Element rhResult(mResult);
 	TraverseOmitConstantFolding(rhs);
@@ -3760,7 +3787,6 @@ GeneratorCore::Result GeneratorCore::EmitAddressOfResult(const Result &result)
 
 GeneratorCore::Result GeneratorCore::EmitDereferenceOperator(const UnaryExpression *unaryExpression)
 {
-	// TODO: Non-literal constants must not be resolved to constants. Must be FP indirect, for example.
 	const Expression *rhs = unaryExpression->GetRhs();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
