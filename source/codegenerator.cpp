@@ -1650,38 +1650,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			EmitZero(index, offset, numElements * elementSize);
 		}
 	}
-	else if (typeDescriptor->IsStructType() && (initializerList != nullptr))
-	{
-		// TODO: Can't initialize native structs via initializer list.
-		const TypeSpecifier *structSpecifier = typeDescriptor->GetTypeSpecifier();
-		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
-		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
-		while (memberDeclarationList != nullptr)
-		{
-			const DeclarativeStatement *nextMemberDeclaration = NextNode(memberDeclarationList);
-			const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
-			const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
-			const uint32_t memberSize = memberDescriptor->GetSize(mPointerSize);
-			while (nameList != nullptr)
-			{
-				const NamedInitializer *nextName = NextNode(nameList);
-				const uint32_t memberOffset = offset + uint32_t(nameList->GetOffset());
-
-				if (initializerList != nullptr)
-				{
-					EmitInitializer(initializerList, index, memberOffset, isLast && (nextMemberDeclaration == nullptr) && (nextName == nullptr));
-					initializerList = NextNode(initializerList);
-				}
-				else
-				{
-					EmitZero(index, memberOffset, memberSize);
-				}
-				nameList = nextName;
-			}
-			memberDeclarationList = nextMemberDeclaration;
-		}
-	}
-	else
+	else if (expression != nullptr)
 	{
 		FlushZero(index, false);
 		AdvancePointer(index, offset);
@@ -1716,6 +1685,44 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 				Result(Result::CONTEXT_ADDRESS_INDIRECT, 0);
 			EmitPopResultAs(lhResult, rhDescriptor, typeDescriptor);
 		}
+	}
+	else if (typeDescriptor->IsStructType())
+	{
+		const TypeSpecifier *structSpecifier = typeDescriptor->GetTypeSpecifier();
+		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
+		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
+
+		if (!structDeclaration->IsNative())
+		{
+			while (memberDeclarationList != nullptr)
+			{
+				const DeclarativeStatement *nextMemberDeclaration = NextNode(memberDeclarationList);
+				const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
+				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
+				const uint32_t memberSize = memberDescriptor->GetSize(mPointerSize);
+				while (nameList != nullptr)
+				{
+					const NamedInitializer *nextName = NextNode(nameList);
+					const uint32_t memberOffset = offset + uint32_t(nameList->GetOffset());
+
+					if (initializerList != nullptr)
+					{
+						EmitInitializer(initializerList, index, memberOffset, isLast && (nextMemberDeclaration == nullptr) && (nextName == nullptr));
+						initializerList = NextNode(initializerList);
+					}
+					else
+					{
+						EmitZero(index, memberOffset, memberSize);
+					}
+					nameList = nextName;
+				}
+				memberDeclarationList = nextMemberDeclaration;
+			}
+		}
+	}
+	else
+	{
+		PushError(CompilerError::INTERNAL_ERROR);
 	}
 }
 

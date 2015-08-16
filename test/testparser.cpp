@@ -247,7 +247,8 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::KEY_INT, 26},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::SEMICOLON, 32},
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::COMMA, 34},
-		{Bond::CompilerError::NATIVE_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 41},
+		{Bond::CompilerError::SIZE_AND_ALIGNMENT_NOT_ALLOWED, Bond::Token::CONST_INT, 37},
+		{Bond::CompilerError::NATIVE_FUNCTION_DEFINITION, Bond::Token::IDENTIFIER, 43},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -258,7 +259,7 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mDeclarativeStatement = 6;
-	expectedCount.mStructDeclaration = 5;
+	expectedCount.mStructDeclaration = 6;
 	expectedCount.mFunctionPrototype = 4;
 
 	ASSERT_PARSE_NODE_COUNT(root, expectedCount);

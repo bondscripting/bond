@@ -34,6 +34,8 @@ struct Struct4
 	int Function(int , ) {}
 };
 
+struct NonNativeStubbedStruct<8>; // Cannot stub a struct that is not native.
+
 native
 {
 	struct ReferenceStruct

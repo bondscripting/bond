@@ -796,11 +796,13 @@ class Initializer: public ListParseNode
 {
 public:
 	explicit Initializer(Expression *expression):
+		mOpenBrace(nullptr),
 		mExpression(expression),
 		mInitializerList(nullptr)
 	{}
 
-	explicit Initializer(Initializer *initializerList):
+	explicit Initializer(const Token *openBrace, Initializer *initializerList):
+		mOpenBrace(openBrace),
 		mExpression(nullptr),
 		mInitializerList(initializerList)
 	{}
@@ -825,6 +827,7 @@ public:
 
 private:
 	TypeDescriptor mTypeDescriptor;
+	const Token *mOpenBrace;
 	Expression *mExpression;
 	Initializer *mInitializerList;
 };

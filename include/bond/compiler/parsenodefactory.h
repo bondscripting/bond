@@ -60,7 +60,7 @@ public:
 	 bool isNative);
 
 	Initializer *CreateInitializer(Expression *expression);
-	Initializer *CreateInitializer(Initializer *initializerList);
+	Initializer *CreateInitializer(const Token *openBrace, Initializer *initializerList);
 	QualifiedIdentifier *CreateQualifiedIdentifier(const Token *name);
 	CompoundStatement *CreateCompoundStatement(ListParseNode *statementList);
 

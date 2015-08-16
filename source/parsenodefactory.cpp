@@ -168,9 +168,9 @@ Initializer *ParseNodeFactory::CreateInitializer(Expression *expression)
 }
 
 
-Initializer *ParseNodeFactory::CreateInitializer(Initializer *initializerList)
+Initializer *ParseNodeFactory::CreateInitializer(const Token *openBrace, Initializer *initializerList)
 {
-	return new (mAllocator.Alloc<Initializer>()) Initializer(initializerList);
+	return new (mAllocator.Alloc<Initializer>()) Initializer(openBrace, initializerList);
 }
 
 

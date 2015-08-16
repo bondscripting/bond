@@ -20,6 +20,17 @@ struct B { C[2] c; }; // Indirectly recursive.
 struct C { B b; };
 struct D { D *d; };   // This is valid.
 
+native { struct NativeStruct<8> { int x; }; }
+
+struct Point { int x; int y; };
+
+
+
+
+
+
+
+
 void DummyFunction()
 {
 	int i1 = 1;
@@ -42,7 +53,11 @@ void DummyFunction()
 	const int [2][1] array2 = {1, 2};
 	const int [2] array3 = {{1, 2}};
 	const int [2] array4 = {false};
+	const int i2 = {};
 	this;
+	NativeStruct ns = { 4 };
+
+	Point p1 = { 123, 456, 789 };
 
 	// Valid statements.
 	switch (i1)
@@ -56,4 +71,6 @@ void DummyFunction()
 	if (f1 < 2.0f) {}
 	while ((i1 -= 1) != 0) {}
 	for (int j = 0; j < Two; ++j) {}
+
+	Point p2 = { 123, 456 };
 }

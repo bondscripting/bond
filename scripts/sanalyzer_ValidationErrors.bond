@@ -201,3 +201,25 @@ NativePoint UseTypeOfUndefinedSize(NativePoint p1)
 	p2[0] = p1;
 	return *(p2 + 1);
  }
+
+void DuplicateDefaultInSwitch(int x)
+{
+	switch (x)
+	{
+		case 1: break;
+		default: break;
+		case 2: break;
+		default: break;
+	}
+}
+
+void DuplicateCaseInSwitch(int x)
+{
+	switch (x)
+	{
+		case 1: break;
+		default: break;
+		case 2: break;
+		case 1: break;
+	}
+}

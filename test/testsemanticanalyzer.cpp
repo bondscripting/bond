@@ -139,6 +139,8 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 	{
 		{Bond::CompilerError::SYMBOL_IS_NOT_A_TYPE, Bond::Token::IDENTIFIER, 5},
 		{Bond::CompilerError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 6},
+		{Bond::CompilerError::DUPLICATE_NATIVE_STRUCT_STUB, Bond::Token::IDENTIFIER, 14},
+		{Bond::CompilerError::NATIVE_STRUCT_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 15},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -217,20 +219,23 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 18},
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 19},
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 20},
-		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 31},
-		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 33},
-		{Bond::CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 29},
-		{Bond::CompilerError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 37},
-		{Bond::CompilerError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 38},
-		{Bond::CompilerError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 39},
-		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 41},
-		{Bond::CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 41},
-		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::COMMA, 41},
-		{Bond::CompilerError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 42},
-		{Bond::CompilerError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 42},
-		{Bond::CompilerError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::CONST_INT, 43},
-		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_BOOL, 44},
-		{Bond::CompilerError::THIS_IN_NON_MEMBER_FUNCTION, Bond::Token::KEY_THIS, 45},
+		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 42},
+		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 44},
+		{Bond::CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 40},
+		{Bond::CompilerError::IF_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 48},
+		{Bond::CompilerError::WHILE_CONDITION_IS_NOT_BOOLEAN, Bond::Token::ASSIGN_MINUS, 49},
+		{Bond::CompilerError::FOR_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 50},
+		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::OP_INC, 52},
+		{Bond::CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, Bond::Token::OPAREN, 52},
+		{Bond::CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, Bond::Token::COMMA, 52},
+		{Bond::CompilerError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 53},
+		{Bond::CompilerError::MISSING_BRACES_IN_INITIALIZER, Bond::Token::CONST_INT, 53},
+		{Bond::CompilerError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::OBRACE, 54},
+		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_BOOL, 55},
+		{Bond::CompilerError::BRACES_AROUND_SCALAR_INITIALIZER, Bond::Token::OBRACE, 56},
+		{Bond::CompilerError::THIS_IN_NON_MEMBER_FUNCTION, Bond::Token::KEY_THIS, 57},
+		{Bond::CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST, Bond::Token::OBRACE, 58},
+		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 60},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -300,8 +305,9 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN, 201},
 		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OBRACKET, 201},
 		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 202},
+		{Bond::CompilerError::DUPLICATE_DEFAULT_IN_SWITCH, Bond::Token::KEY_SWITCH, 207},
+		{Bond::CompilerError::DUPLICATE_CASE_IN_SWITCH, Bond::Token::KEY_SWITCH, 218},
 	};
-
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);

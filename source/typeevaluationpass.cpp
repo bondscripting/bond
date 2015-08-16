@@ -923,52 +923,60 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 			}
 		}
 	}
-	else if (descriptor->IsStructType() && (initializerList != nullptr))
+	else if (expression != nullptr)
+	{
+		const TypeAndValue &tav = expression->GetTypeAndValue();
+		if (tav.IsTypeDefined())
+		{
+			AssertConvertibleTypes(
+				expression->GetTypeAndValue().GetTypeDescriptor(),
+				descriptor,
+				expression->GetContextToken(),
+				CompilerError::INVALID_TYPE_CONVERSION);
+		}
+	}
+	else if (descriptor->IsStructType())
 	{
 		const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
-		while ((memberDeclarationList != nullptr) && (initializerList != nullptr))
-		{
-			const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
-			const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
-			while ((nameList != nullptr) && (initializerList != nullptr))
-			{
-				ValidateInitializer(initializerList, memberDescriptor);
-				nameList = NextNode(nameList);
-				initializerList = NextNode(initializerList);
-			}
-			memberDeclarationList = NextNode(memberDeclarationList);
-		}
-		if (initializerList != nullptr)
+
+		if (structDeclaration->IsNative())
 		{
 			mErrorBuffer.PushError(
-				CompilerError::TOO_MANY_INITIALIZERS,
-				initializerList->GetContextToken(),
+				CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST,
+				initializer->GetContextToken(),
 				descriptor);
+		}
+		else
+		{
+			while ((memberDeclarationList != nullptr) && (initializerList != nullptr))
+			{
+				const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
+				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
+				while ((nameList != nullptr) && (initializerList != nullptr))
+				{
+					ValidateInitializer(initializerList, memberDescriptor);
+					nameList = NextNode(nameList);
+					initializerList = NextNode(initializerList);
+				}
+				memberDeclarationList = NextNode(memberDeclarationList);
+			}
+			if (initializerList != nullptr)
+			{
+				mErrorBuffer.PushError(
+					CompilerError::TOO_MANY_INITIALIZERS,
+					initializerList->GetContextToken(),
+					descriptor);
+			}
 		}
 	}
 	else
 	{
-		if (expression != nullptr)
-		{
-			const TypeAndValue &tav = expression->GetTypeAndValue();
-			if (tav.IsTypeDefined())
-			{
-				AssertConvertibleTypes(
-					expression->GetTypeAndValue().GetTypeDescriptor(),
-					descriptor,
-					expression->GetContextToken(),
-					CompilerError::INVALID_TYPE_CONVERSION);
-			}
-		}
-		else if (initializerList != nullptr)
-		{
-			mErrorBuffer.PushError(
-				CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
-				initializerList->GetContextToken(),
-				descriptor);
-		}
+		mErrorBuffer.PushError(
+			CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
+			initializer->GetContextToken(),
+			descriptor);
 	}
 }
 

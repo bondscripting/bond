@@ -409,15 +409,13 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		if (mStream.NextIf(Token::OP_LT) != nullptr)
 		{
-			size = mStream.PeekIf(INTEGER_CONSTANTS_TYPESET);;
+			size = mStream.PeekIf(INTEGER_CONSTANTS_TYPESET);
 			if (!isNative && (size != nullptr))
 			{
 				PushError(CompilerError::SIZE_AND_ALIGNMENT_NOT_ALLOWED, size);
 			}
-			else
-			{
-				ExpectToken(INTEGER_CONSTANTS_TYPESET);
-			}
+
+			ExpectToken(INTEGER_CONSTANTS_TYPESET);
 
 			if (mStream.NextIf(Token::COMMA))
 			{
@@ -841,8 +839,9 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 Initializer *ParserCore::ParseInitializer()
 {
 	Initializer *initializer = nullptr;
+	const Token *openBrace = mStream.NextIf(Token::OBRACE);
 
-	if (mStream.NextIf(Token::OBRACE))
+	if (openBrace != nullptr)
 	{
 		ParseNodeList<Initializer> initializerList;
 
@@ -862,7 +861,7 @@ Initializer *ParserCore::ParseInitializer()
 		}
 
 		ExpectToken(Token::CBRACE);
-		initializer = mFactory.CreateInitializer(initializerList.GetHead());
+		initializer = mFactory.CreateInitializer(openBrace, initializerList.GetHead());
 	}
 	else
 	{

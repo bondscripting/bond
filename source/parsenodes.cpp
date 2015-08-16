@@ -762,6 +762,10 @@ const Token *Initializer::GetContextToken() const
 	{
 		return mExpression->GetContextToken();
 	}
+	else if (mOpenBrace != nullptr)
+	{
+		return mOpenBrace;
+	}
 	else if (mInitializerList != nullptr)
 	{
 		return mInitializerList->GetContextToken();

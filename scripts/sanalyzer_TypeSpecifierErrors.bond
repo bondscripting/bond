@@ -5,3 +5,13 @@ void Dummy()
 	NotATypeName a;
 	NotATypeName2 b;
 }
+
+native
+{
+
+struct DuplicateStub { int x; };
+struct DuplicateStub<8>;
+struct DuplicateStub<8>; // Previously defined native struct stub.
+struct UndefinedNativeStruct<8>; // Stub with no proper struct declaration.
+
+}

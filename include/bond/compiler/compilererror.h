@@ -142,6 +142,8 @@
     "Operator '%c' cannot compare type '%0n' with type '%1n'.")                            \
   BOND_COMPILER_ERROR(TOO_MANY_INITIALIZERS,                                               \
     "Too many initializers for type '%n'.")                                                \
+  BOND_COMPILER_ERROR(CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST,                 \
+    "Cannot initialize native type '%n' with initializer list. Must call a function that returns an instance of that type.") \
   BOND_COMPILER_ERROR(MISSING_BRACES_IN_INITIALIZER,                                       \
     "Missing braces in initializer for type '%n'.")                                        \
   BOND_COMPILER_ERROR(BRACES_AROUND_SCALAR_INITIALIZER,                                    \

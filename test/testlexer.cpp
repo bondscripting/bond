@@ -278,6 +278,10 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 		{Bond::CompilerError::INVALID_ESCAPE, Bond::Token::INVALID, 3},
 		{Bond::CompilerError::MULTI_CHARACTER_CONSTANT, Bond::Token::INVALID, 3},
 		{Bond::CompilerError::INVALID_ESCAPE, Bond::Token::INVALID, 3},
+		{Bond::CompilerError::MISSING_HEX_ESCAPE, Bond::Token::INVALID, 4},
+		{Bond::CompilerError::MISSING_HEX_ESCAPE, Bond::Token::INVALID, 4},
+		{Bond::CompilerError::OCTAL_ESCAPE_RANGE, Bond::Token::INVALID, 5},
+		{Bond::CompilerError::HEX_ESCAPE_RANGE, Bond::Token::INVALID, 5},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
