@@ -72,6 +72,15 @@ void ValidationPass::Visit(NamedInitializer *namedInitializer)
 	{
 		namedInitializer->SetElidable(true);
 	}
+
+	Initializer *initializer = namedInitializer->GetInitializer();
+
+	if (initializer != nullptr)
+	{
+		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		ValidateInitializer(initializer, typeDescriptor);
+	}
+
 	ParseNodeTraverser::Visit(namedInitializer);
 }
 
@@ -380,6 +389,80 @@ void ValidationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 	}
 	ParseNodeTraverser::Visit(arraySubscriptExpression);
 }
+
+
+void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescriptor)
+{
+	const TypeDescriptor *descriptor = initializer->GetTypeDescriptor();
+	const Expression *expression = initializer->GetExpression();
+	Initializer *initializerList = initializer->GetInitializerList();
+
+	if (descriptor->IsArrayType())
+	{
+		uint32_t numElements = typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
+		if (initializerList != nullptr)
+		{
+			while ((numElements > 0) && (initializerList != nullptr))
+			{
+				--numElements;
+				ValidateInitializer(initializerList, &elementDescriptor);
+				initializerList = NextNode(initializerList);
+			}
+
+			if (initializerList != nullptr)
+			{
+				mErrorBuffer.PushError(
+					CompilerError::TOO_MANY_INITIALIZERS,
+					initializerList->GetContextToken(),
+					descriptor);
+			}
+		}
+		else if (expression != nullptr)
+		{
+			const ConstantLiteralExpression *constantExpression = CastNode<ConstantLiteralExpression>(expression);
+			const bool isStringInitializer =
+				elementDescriptor.IsCharType() &&
+				(constantExpression != nullptr) &&
+				constantExpression->GetTypeDescriptor()->IsStringType();
+
+			if (isStringInitializer)
+			{
+				const uint32_t stringLength = uint32_t(constantExpression->GetValueToken()->GetStringLength() + 1);
+				if (stringLength > numElements)
+				{
+					mErrorBuffer.PushError(
+						CompilerError::TOO_MANY_INITIALIZERS,
+						expression->GetContextToken(),
+						descriptor);
+				}
+			}
+		}
+	}
+	else if ((expression != nullptr) && (descriptor->IsStructType()))
+	{
+		const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
+		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
+		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
+
+		if (!structDeclaration->IsNative())
+		{
+			while ((memberDeclarationList != nullptr) && (initializerList != nullptr))
+			{
+				const TypeDescriptor *memberDescriptor = memberDeclarationList->GetTypeDescriptor();
+				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
+				while ((nameList != nullptr) && (initializerList != nullptr))
+				{
+					ValidateInitializer(initializerList, memberDescriptor);
+					nameList = NextNode(nameList);
+					initializerList = NextNode(initializerList);
+				}
+				memberDeclarationList = NextNode(memberDeclarationList);
+			}
+		}
+	}
+}
+
 
 void ValidationPass::AssertReachableCode(const ParseNode *node)
 {

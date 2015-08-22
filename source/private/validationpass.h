@@ -41,6 +41,7 @@ private:
 	typedef AutoStack<const FunctionDefinition *> FunctionStack;
 	typedef AutoStack<ResolvedSwitchLabel *> SwitchLabelStack;
 
+	void ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescrioptor);
 	void AssertReachableCode(const ParseNode *node);
 	size_t GetJumpTargetId();
 

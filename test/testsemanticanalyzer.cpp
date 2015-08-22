@@ -307,6 +307,8 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 202},
 		{Bond::CompilerError::DUPLICATE_DEFAULT_IN_SWITCH, Bond::Token::KEY_SWITCH, 207},
 		{Bond::CompilerError::DUPLICATE_CASE_IN_SWITCH, Bond::Token::KEY_SWITCH, 218},
+		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 229},
+		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_STRING, 234},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 

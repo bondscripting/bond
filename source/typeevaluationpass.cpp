@@ -899,7 +899,6 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
 		if (initializerList != nullptr)
 		{
-			// TODO: Assert if too many initializers. Should be done after ValueEvaluationPass.
 			while (initializerList != nullptr)
 			{
 				ValidateInitializer(initializerList, &elementDescriptor);

@@ -223,3 +223,13 @@ void DuplicateCaseInSwitch(int x)
 		case 1: break;
 	}
 }
+
+void TooManyArrayInitializers(int x)
+{
+	int[3] array = {1, 2, 3, 4};
+}
+
+void StringInitializerTooLong(int x)
+{
+	char[4] array = "1234";
+}
