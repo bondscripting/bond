@@ -549,7 +549,7 @@ void GeneratorCore::Traverse(const ParseNode *parseNode)
 
 void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression)
 {
-	UIntStack::Element flagsElement(mFlags, FLAG_OMIT_OPTIONAL_TEMPORARIES);
+	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_OMIT_OPTIONAL_TEMPORARIES));
 	ParseNodeTraverser::Traverse(expression);
 
 	// Remove any temporaries that may have been left on the stack.
@@ -565,7 +565,7 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
 {
 	BoolStack::Element expressionIsNegatedElement(mExpressionIsNegated, false);
-	UIntStack::Element flagsElement(mFlags, FLAG_COLLAPSE_NOT_OPERATORS);
+	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_COLLAPSE_NOT_OPERATORS));
 	ParseNodeTraverser::Traverse(expression);
 	return expressionIsNegatedElement.GetValue();
 }
@@ -573,7 +573,7 @@ bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
 
 void GeneratorCore::TraverseOmitConstantFolding(const Expression *expression)
 {
-	UIntStack::Element flagsElement(mFlags, FLAG_OMIT_CONSTANT_FOLDING);
+	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_OMIT_CONSTANT_FOLDING));
 	ParseNodeTraverser::Traverse(expression);
 }
 
