@@ -143,6 +143,13 @@ void Parser::Dispose()
 }
 
 
+TranslationUnit *Parser::Parse(TokenCollection &collection)
+{
+	TokenStream stream = collection.GetTokenStream();
+	return Parse(stream);
+}
+
+
 TranslationUnit *Parser::Parse(TokenStream &stream)
 {
 	ParserCore parser(mErrorBuffer, mFactory, stream);
