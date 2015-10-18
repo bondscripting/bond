@@ -115,6 +115,9 @@
 namespace Bond
 {
 
+/// \addtogroup compiler
+/// @{
+
 class Token
 {
 public:
@@ -309,6 +312,8 @@ extern const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET;
 extern const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET;
 extern const TokenTypeSet STATEMENT_DELIMITERS_TYPESET;
 extern const TokenTypeSet LABEL_DELIMITERS_TYPESET;
+
+/// @}
 
 }
 

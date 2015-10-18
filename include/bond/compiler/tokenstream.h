@@ -6,6 +6,9 @@
 namespace Bond
 {
 
+/// \addtogroup compiler
+/// @{
+
 /// \brief An iterator over the contents of a TokenCollection.
 ///
 /// TokenStream has methods to return the next available Token, test whether the next Token is of
@@ -124,6 +127,8 @@ private:
 	const Token *mTokens;
 	int mNumTokens;
 };
+
+/// @}
 
 }
 

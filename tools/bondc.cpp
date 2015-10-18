@@ -16,17 +16,6 @@
 
 typedef Bond::List<Bond::DiskFileLoader> FileLoaderList;
 
-void PrintErrors(Bond::OutputStream &stream, const Bond::CompilerErrorBuffer &errorBuffer)
-{
-	for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
-	{
-		const Bond::CompilerError &error = errorBuffer.GetError(i);
-		error.Print(stream);
-		stream.Print("\n");
-	}
-}
-
-
 int main(int argc, const char *argv[])
 {
 	bool error = false;
@@ -216,7 +205,7 @@ int main(int argc, const char *argv[])
 		}
 
 		Bond::StdErrOutputStream errorStream;
-		PrintErrors(errorStream, errorBuffer);
+		errorBuffer.Print(errorStream);
 		error = error || errorBuffer.HasErrors();
 	}
 	catch (const Bond::Exception &e)

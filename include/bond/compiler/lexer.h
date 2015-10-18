@@ -25,6 +25,7 @@ class StringAllocator;
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, TokenCollection
+/// \ingroup compiler
 class Lexer
 {
 public:

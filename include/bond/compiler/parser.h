@@ -27,7 +27,9 @@ class TokenStream;
 /// When writing a tool that requires a compiler front end, the interactions between the front end
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
-/// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TokenCollection, TokenStream
+/// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TokenCollection, TokenStream,
+/// TranslationUnit
+/// \ingroup compiler
 class Parser
 {
 public:

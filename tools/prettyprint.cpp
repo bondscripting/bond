@@ -12,20 +12,6 @@
 #include <cstring>
 
 
-void PrintErrors(Bond::OutputStream &stream, const Bond::CompilerErrorBuffer &errorBuffer)
-{
-	if (errorBuffer.HasErrors())
-	{
-		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
-		{
-			const Bond::CompilerError &error = errorBuffer.GetError(i);
-			error.Print(stream);
-			stream.Print("\n");
-		}
-	}
-}
-
-
 void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConstants, bool printParseTree)
 {
 	try
@@ -63,7 +49,7 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		}
 
 		Bond::StdErrOutputStream errorStream;
-		PrintErrors(errorStream, errorBuffer);
+		errorBuffer.Print(errorStream);
 	}
 	catch (const Bond::Exception &e)
 	{

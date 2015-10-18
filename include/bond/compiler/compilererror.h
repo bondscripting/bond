@@ -248,6 +248,8 @@ public:
 
 	void CopyFrom(const CompilerErrorBuffer &other);
 
+	void Print(OutputStream &stream) const;
+
 private:
 	static const size_t MAX_ERRORS = 64;
 

@@ -213,4 +213,15 @@ void CompilerErrorBuffer::CopyFrom(const CompilerErrorBuffer &other)
 	}
 }
 
+
+void CompilerErrorBuffer::Print(OutputStream &stream) const
+{
+	for (size_t i = 0; i < mNumErrors; ++i)
+	{
+		const Bond::CompilerError &error = mErrors[i];
+		error.Print(stream);
+		stream.Print("\n");
+	}
+}
+
 }

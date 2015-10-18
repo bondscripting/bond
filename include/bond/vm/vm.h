@@ -15,6 +15,9 @@ class CalleeStackFrame;
 class CallerStackFrame;
 class VM;
 
+/// \addtogroup vm
+/// @{
+
 class CalleeStackFrame
 {
 public:
@@ -171,6 +174,8 @@ private:
 	Allocator::Handle<uint8_t> mStack;
 	size_t mStackSize;
 };
+
+/// @}
 
 }
 

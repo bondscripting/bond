@@ -1,0 +1,5 @@
+/**
+\defgroup IO I/O
+These interfaces and their default implementations are used by Bond for performing I/O operations
+without making assumptions about what underlying I/O library is used.
+*/

@@ -1,0 +1,4 @@
+/**
+\defgroup compiler Compiler
+These classes form the parts of the Bond compiler.
+*/
