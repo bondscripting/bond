@@ -1398,7 +1398,7 @@ void LexerCore::EvaluateStringToken(Token &token)
 	}
 
 	*dest = '\0';
-	token.SetStringValue(buffer, usedLength);
+	token.SetStringValue(SimpleString(buffer, usedLength));
 	PushError(error, token);
 }
 

@@ -247,10 +247,10 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_STRING == token->GetTokenType(),
-			("Expected %s but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_STRING), token->GetTokenName()));
+			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_STRING), token->GetTokenName()));
 
 		const Bond::SimpleString &expected = EXPECTED_STRINGS[i];
-		const Bond::SimpleString actual(token->GetStringValue(), token->GetStringLength());
+		const Bond::SimpleString actual = token->GetStringValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected \"%s\", but was \"%s\".", expected.GetString(), actual.GetString()));
 	}

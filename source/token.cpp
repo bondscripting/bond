@@ -3,10 +3,10 @@
 namespace Bond
 {
 
-void Token::SetStringValue(const char *buffer, size_t length)
+void Token::SetStringValue(const SimpleString &str)
 {
-	mValue.mString.buffer = buffer;
-	mValue.mString.length = length;
+	mValue.mString.buffer = str.GetString();
+	mValue.mString.length = str.GetLength();
 }
 
 
@@ -49,22 +49,22 @@ TokenTypeSet::TokenTypeSet(
 		Token::TokenType t15):
 	mTypeName(typeName)
 {
-	Set(t0);
-	Set(t1);
-	Set(t2);
-	Set(t3);
-	Set(t4);
-	Set(t5);
-	Set(t6);
-	Set(t7);
-	Set(t8);
-	Set(t9);
-	Set(t10);
-	Set(t11);
-	Set(t12);
-	Set(t13);
-	Set(t14);
-	Set(t15);
+	Add(t0);
+	Add(t1);
+	Add(t2);
+	Add(t3);
+	Add(t4);
+	Add(t5);
+	Add(t6);
+	Add(t7);
+	Add(t8);
+	Add(t9);
+	Add(t10);
+	Add(t11);
+	Add(t12);
+	Add(t13);
+	Add(t14);
+	Add(t15);
 }
 
 
@@ -319,10 +319,9 @@ const TokenTypeSet BLOCK_DELIMITERS_TYPESET(
 );
 
 
-const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET(
-	"INCLUDE_AND_DECLARATION_DELIMITER",
+const TokenTypeSet DECLARATION_DELIMITERS_TYPESET(
+	"DECLARATION_DELIMITER",
 	Token::KEY_ENUM,
-	Token::KEY_INCLUDE,
 	Token::KEY_NAMESPACE,
 	Token::KEY_NATIVE,
 	Token::KEY_STRUCT,
@@ -332,9 +331,10 @@ const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET(
 );
 
 
-const TokenTypeSet DECLARATION_DELIMITERS_TYPESET(
-	"DECLARATION_DELIMITER",
+const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET(
+	"INCLUDE_AND_DECLARATION_DELIMITER",
 	Token::KEY_ENUM,
+	Token::KEY_INCLUDE,
 	Token::KEY_NAMESPACE,
 	Token::KEY_NATIVE,
 	Token::KEY_STRUCT,
