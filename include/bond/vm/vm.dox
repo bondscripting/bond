@@ -1,4 +1,4 @@
 /**
 \defgroup vm Virtual Machine
-These classes form the parts of the Bond virtual machine.
+\brief These classes form the parts of the Bond virtual machine.
 */

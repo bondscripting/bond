@@ -9,6 +9,9 @@
 namespace Bond
 {
 
+/// \addtogroup nodes
+/// @{
+
 enum Scope
 {
 	SCOPE_GLOBAL,
@@ -1562,6 +1565,8 @@ extern const TypeSpecifier LONG_TYPE_SPECIFIER;
 extern const TypeSpecifier ULONG_TYPE_SPECIFIER;
 extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
 extern const TypeSpecifier DOUBLE_TYPE_SPECIFIER;
+
+/// @}
 
 }
 

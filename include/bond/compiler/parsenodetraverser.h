@@ -6,15 +6,42 @@
 namespace Bond
 {
 
+/// \brief A concrete implementation of ParseNodeVisitor that, in addition to visiting a ParseNode,
+/// does a depth-first traversal its children and visits them too.
+///
+/// Since the traversal of a ParseNode's children is invoked from the Visit methods, if any of them
+/// are overridden, traversal of the node's children will not occur unless an overridden method
+/// calls the corresponding ParseNodeTraverser::Visit method. Traversal can be pre or post-order
+/// depending on whether the ParseNodeTraverser::Visit method is called at the beginning or end
+/// of the body of an overridden Visit method. For more complex traversal orders (e.g. in-order),
+/// traversal of the children may need to be reimplemented in the overridden Visit method instead
+/// of calling the base method.
+///
+/// \sa ParseNode, ParseNodeVisitorAdapter, ParseNodeTraverser
+/// \ingroup compiler
 class ParseNodeTraverser: public ParseNodeVisitor
 {
 public:
 	virtual ~ParseNodeTraverser() {}
 
+	/// \brief Checks if the given ParseNode is not null and calls its Accept method with `this`
+	/// as the argument.
+	/// \param parseNode The node whose Accept method is called.
 	virtual void Traverse(ParseNode *parseNode);
+
+	/// \brief Checks if the given ParseNode is not null and calls its Accept method with `this`
+	/// as the argument.
+	/// \param parseNode The node whose Accept method is called.
 	virtual void Traverse(const ParseNode *parseNode);
 
+	/// \brief Iterates over the given list of ListParseNodes and calls the Accept method of each
+	/// one with `this` as the argument.
+	/// \param listNode The node whose Accept method is called.
 	virtual void TraverseList(ListParseNode *listNode);
+
+	/// \brief Iterates over the given list of ListParseNodes and calls the Accept method of each
+	/// one with `this` as the argument.
+	/// \param listNode The node whose Accept method is called.
 	virtual void TraverseList(const ListParseNode *listNode);
 
 	virtual void Visit(TranslationUnit *translationUnit) override;

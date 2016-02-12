@@ -6,6 +6,18 @@
 namespace Bond
 {
 
+/// \addtogroup compiler
+/// @{
+
+/// \brief An abstract interface that implements the Visitor pattern over all concrete types
+/// that derive from ParseNode.
+///
+/// Any of the ParseNodeVisitor::Visit methods can be called directly if the concrete type of the
+/// ParseNode is known at compile time. If the node's concrete type is not known, its
+/// ParseNode::Accept method can be called with the visitor passed in as an argument, which will
+/// in turn call the appropriate Visit method.
+///
+/// \sa ParseNode, ParseNodeVisitorAdapter, ParseNodeTraverser
 class ParseNodeVisitor
 {
 public:
@@ -127,6 +139,13 @@ public:
 };
 
 
+/// \brief A concrete implementation of ParseNodeVisitor with methods that do nothing.
+///
+/// It is useful to extend from ParseNodeVisitorAdapter when implementing a visitor that is
+/// interested in visiting only a select few types of ParseNodes, that way only the few Visit
+/// methods of interest need to be overridden.
+///
+/// \sa ParseNode, ParseNodeVisitor, ParseNodeTraverser
 class ParseNodeVisitorAdapter: public ParseNodeVisitor
 {
 public:
@@ -246,6 +265,8 @@ public:
 	virtual void Visit(EmptyExpression *emptyExpression) override {}
 	virtual void Visit(const EmptyExpression *emptyExpression) override {}
 };
+
+/// @}
 
 }
 
