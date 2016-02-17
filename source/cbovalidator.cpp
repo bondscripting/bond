@@ -67,7 +67,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	const size_t qualifiedNameCount = ReadValue16().mUShort;
 
 	BOND_ASSERT_FORMAT(magicNumber == MAGIC_NUMBER, ("CBO file contains invalid magic number: 0x%" BOND_PRIx32 ".", magicNumber));
-	BOND_ASSERT_FORMAT(IsCBOFormatLoadable(majorVersion, minorVersion), ("Unsupported CBO file format version: %" BOND_PRIu32 ".%02" BOND_PRIu32 ". Only CBO file format versions in the range %" BOND_PRIu32 ".%02" BOND_PRIu32 " through %" BOND_PRIu32 ".XX are supported.", majorVersion, minorVersion, CBO_MIN_SUPPORTED_MAJOR_VERSION, CBO_MIN_SUPPORTED_MINOR_VERSION, CBO_MAX_SUPPORTED_MAJOR_VERSION));
+	BOND_ASSERT_FORMAT(IsCBOFormatLoadable(majorVersion, minorVersion), ("Unsupported CBO file format version: %" BOND_PRIu32 ".%" BOND_PRIu32 ". Only CBO file format versions in the range %" BOND_PRIu32 ".%" BOND_PRIu32 " through %" BOND_PRIu32 ".XX are supported.", majorVersion, minorVersion, CBO_MIN_SUPPORTED_MAJOR_VERSION, CBO_MIN_SUPPORTED_MINOR_VERSION, CBO_MAX_SUPPORTED_MAJOR_VERSION));
 
 	mResult.mMajorVersion = majorVersion;
 	mResult.mMinorVersion = minorVersion;

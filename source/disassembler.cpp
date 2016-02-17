@@ -82,7 +82,7 @@ void DisassemblerCore::Disassemble()
 	// Skip some header information that is already included in the validation result.
 	mIndex += (2 * sizeof(Value32)) + (7 * sizeof(Value16));
 
-	mStream.Print("Version %d.%02d\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
+	mStream.Print("Version %" BOND_PRIu32 ".%" BOND_PRIu32 "\n", mValidationResult.mMajorVersion, mValidationResult.mMinorVersion);
 	mStream.Print("Pointer size: %d bits\n", (mValidationResult.mPointerSize == POINTER_64BIT) ? 64 : 32);
 
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
