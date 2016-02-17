@@ -2,6 +2,7 @@
 #define BOND_TOOLS_CBOUTIL_H
 
 #include "bond/types/types.h"
+#include "bond/version.h"
 
 namespace Bond
 {
@@ -33,6 +34,26 @@ inline PointerSize DecodePointerSize(uint16_t flags)
 inline uint16_t EncodePointerSize(uint16_t flags, PointerSize pointerSize)
 {
 	return flags | ((pointerSize == POINTER_64BIT) ? 1 : 0);
+}
+
+
+inline bool IsCBOFormatLoadable(uint32_t majorVersion, uint32_t minorVersion)
+{
+	return
+		(majorVersion >= CBO_MIN_SUPPORTED_MAJOR_VERSION) &&
+		(majorVersion <= CBO_MAX_SUPPORTED_MAJOR_VERSION);
+}
+
+
+inline bool IsCBOFormatSupported(uint32_t majorVersion, uint32_t minorVersion)
+{
+	return
+		((majorVersion > CBO_MIN_SUPPORTED_MAJOR_VERSION) ||
+		 ((majorVersion == CBO_MIN_SUPPORTED_MAJOR_VERSION) &&
+			(minorVersion >= CBO_MIN_SUPPORTED_MINOR_VERSION))) &&
+		((majorVersion < CBO_MAX_SUPPORTED_MAJOR_VERSION) ||
+		 ((majorVersion == CBO_MAX_SUPPORTED_MAJOR_VERSION) &&
+			(minorVersion <= CBO_MAX_SUPPORTED_MINOR_VERSION)));
 }
 
 }

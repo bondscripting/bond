@@ -77,3 +77,5 @@ ushort nameIndex;
 SizeAndType type;
 32bit payload;     // value, index of value or alignment
 (Blob metadata;)
+
+// TODO Define a LineNumberTableBlob to add to FunctionBlob metadata.

@@ -4118,8 +4118,8 @@ const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Typ
 void GeneratorCore::WriteCbo()
 {
 	WriteValue32(Value32(MAGIC_NUMBER));
-	WriteValue16(Value16(MAJOR_VERSION));
-	WriteValue16(Value16(MINOR_VERSION));
+	WriteValue16(Value16(CBO_MAJOR_VERSION));
+	WriteValue16(Value16(CBO_MINOR_VERSION));
 	WriteValue16(Value16(EncodePointerSize(0, mPointerSize)));
 
 	const uint16_t listIndex = MapString(BOND_LIST_BLOB_ID);
