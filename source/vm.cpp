@@ -458,7 +458,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_LOADC:
 			{
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
-				CopyValue<char, int32_t>(address, sp - BOND_SLOT_SIZE);
+				CopyValue<int8_t, int32_t>(address, sp - BOND_SLOT_SIZE);
 			}
 			break;
 
@@ -511,7 +511,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_STOREC:
 			{
 				void *address = *reinterpret_cast<void **>(sp - (2 * BOND_SLOT_SIZE));
-				CopyValue<int32_t, char>(sp - BOND_SLOT_SIZE, address);
+				CopyValue<int32_t, int8_t>(sp - BOND_SLOT_SIZE, address);
 				sp -= 2 * BOND_SLOT_SIZE;
 			}
 			break;
@@ -543,7 +543,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_PUSHC:
 			{
 				const Value16 offset(code + pc);
-				CopyValue<char, int32_t>(fp + offset.mShort, sp);
+				CopyValue<int8_t, int32_t>(fp + offset.mShort, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -552,7 +552,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_PUSHCW:
 			{
 				const Value16 offsetIndex(code + pc);
-				CopyValue<char, int32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
+				CopyValue<int8_t, int32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -769,7 +769,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_POPC:
 			{
 				const Value16 offset(code + pc);
-				CopyValue<int32_t, char>(sp - BOND_SLOT_SIZE, fp + offset.mShort);
+				CopyValue<int32_t, int8_t>(sp - BOND_SLOT_SIZE, fp + offset.mShort);
 				pc += sizeof(Value16);
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -778,7 +778,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_POPCW:
 			{
 				const Value16 offsetIndex(code + pc);
-				CopyValue<int32_t, char>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
+				CopyValue<int32_t, int8_t>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
 				pc += sizeof(Value16);
 				sp -= BOND_SLOT_SIZE;
 			}
