@@ -162,7 +162,7 @@ void VM::ExecuteScriptFunction()
 		{
 			case OPCODE_CONSTC:
 			{
-				*reinterpret_cast<int32_t *>(sp) = static_cast<int32_t>(static_cast<char>(code[pc++]));
+				*reinterpret_cast<int32_t *>(sp) = static_cast<int32_t>(static_cast<int8_t>(code[pc++]));
 				sp += BOND_SLOT_SIZE;
 			}
 			break;
@@ -998,7 +998,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_ITOC:
 			{
 				int32_t *a = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*a = static_cast<char>(*a);
+				*a = static_cast<int8_t>(*a);
 			}
 			break;
 
@@ -1216,7 +1216,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_INCI:
 			{
 				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
-				const int32_t value = static_cast<int32_t>(static_cast<char>(code[pc + 1]));
+				const int32_t value = static_cast<int32_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
 				*reinterpret_cast<int32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}
@@ -1225,7 +1225,7 @@ void VM::ExecuteScriptFunction()
 			case OPCODE_INCL:
 			{
 				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
-				const int64_t value = static_cast<int64_t>(static_cast<char>(code[pc + 1]));
+				const int64_t value = static_cast<int64_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
 				*reinterpret_cast<int64_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}

@@ -198,13 +198,13 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 			case OC_PARAM_NONE:
 				break;
 			case OC_PARAM_CHAR:
-				mStream.Print("%" BOND_PRId32, int32_t(char(mByteCode[mIndex++])));
+				mStream.Print("%" BOND_PRId32, int32_t(int8_t(mByteCode[mIndex++])));
 				break;
 			case OC_PARAM_UCHAR:
 				mStream.Print("%" BOND_PRIu32, uint32_t(mByteCode[mIndex++]));
 				break;
 			case OC_PARAM_UCHAR_CHAR:
-				mStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, uint32_t(mByteCode[mIndex]), int32_t(char(mByteCode[mIndex + 1])));
+				mStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, uint32_t(mByteCode[mIndex]), int32_t(int8_t(mByteCode[mIndex + 1])));
 				mIndex += 2;
 				break;
 			case OC_PARAM_SHORT:
