@@ -23,7 +23,7 @@ class SymbolTable;
 /// When writing a tool that requires a compiler front end, the interactions between the front end
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
-/// \sa CompilerErrorBuffer, FrontEnd, Lexer, Parser, TranslationUnit
+/// \sa CompilerErrorBuffer, FrontEnd, Lexer, Parser, SymbolTable, TranslationUnit
 /// \ingroup compiler
 class SemanticAnalyzer
 {

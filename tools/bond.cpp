@@ -116,8 +116,25 @@ int main(int argc, const char *argv[])
 		Bond::StdOutOutputStream outStream;
 		Bond::StdErrOutputStream errStream;
 		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &inStream, &outStream, &errStream);
-		codeSegmentHandle.get()->CallStaticInitializers(vm);
-		vm.CallFunction(entryPoint, &exitCode, numArgs, args);
+		codeSegmentHandle->CallStaticInitializers(vm);
+
+		const Bond::Function *entryFunction = codeSegmentHandle->GetFunction(entryPoint);
+		if (entryFunction != nullptr)
+		{
+			if (entryFunction->mParamListSignature.mParamCount == 0)
+			{
+				vm.CallFunction(*entryFunction, &exitCode);
+			}
+			else
+			{
+				vm.CallFunction(*entryFunction, &exitCode, numArgs, args);
+			}
+		}
+		else
+		{
+			error = true;
+			fprintf(stderr, "Failed to find entry point function: %s\n", entryPoint);
+		}
 	}
 	catch (const Bond::Exception &e)
 	{

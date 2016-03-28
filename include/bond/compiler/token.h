@@ -435,7 +435,7 @@ extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all integral literal constants representable as an int or uint,
 /// namely: ???
-/// \todo Figure out why this type set is defined as it is.
+// TODO Figure out why this type set is defined as it is.
 extern const TokenTypeSet INTEGER_CONSTANTS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords used for jumps in Bond source code, namely:
