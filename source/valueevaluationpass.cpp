@@ -320,7 +320,7 @@ void ValueEvaluationPass::Visit(SwitchLabel *switchLabel)
 void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 {
 	TypeDescriptor *typeDescriptor = declarativeStatement->GetTypeDescriptor();
-	if ((typeDescriptor->IsArrayType()) &&
+	if (typeDescriptor->IsArrayType() &&
 	    (CastNode<EmptyExpression>(typeDescriptor->GetLengthExpressionList()) != nullptr) &&
 	    !typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().IsValueDefined())
 	{

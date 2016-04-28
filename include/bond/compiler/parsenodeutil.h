@@ -9,6 +9,8 @@ namespace Bond
 
 class Symbol;
 
+/// \brief Counts and returns the length of a list of ListParseNodes.
+/// \param list Pointer to the list of nodes to be counted.
 uint32_t GetLength(const ListParseNode *list);
 
 

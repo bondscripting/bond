@@ -1,0 +1,40 @@
+# Makefile suitable for POSIXy 32 bit platforms having clang.
+
+# Folders
+BLDDIR := build
+LIBDIR := $(BLDDIR)/lib
+
+# File name manipulations.
+DEP_SUFFIX := .d
+OBJ_SUFFIX := .o
+LIB_PREFIX :=
+LIB_SUFFIX := .a
+EXE_SUFFIX :=
+
+# Tools
+AR := ar
+CXX := clang++
+CHECK := cppcheck
+ETAGS := etags
+MKDIR := mkdir
+RM := rm
+
+# Command line options
+CXXFLAGS := -DBOND_USE_32BIT_POINTERS=1 -std=c++11 -stdlib=libc++ -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-overflow=5 -Wundef -Wno-unused -O3
+INCLUDE_CXXFLAGS := -I
+DEP_CXXFLAGS := -MMD -MP
+COMP_CXXFLAGS := -c
+OUT_CXXFLAGS := -o
+LDFLAGS :=
+LDLIBS := -lm -lc++abi
+
+-include Makefile.common
+
+# Clang's optimizer gets into an infinite loop while compiling parsenodeutil.cpp.
+# See the bug report at  http://llvm.org/bugs/show_bug.cgi?id=20370
+# So we'll work around it by compiling it with less aggressive optimizations.
+CXXFLAGS_WORKAROUND := $(patsubst -O3,-O1,$(LIB_CXXFLAGS))
+
+$(OBJDIR)/parsenodeutil$(OBJ_SUFFIX): $(SRCDIR)/parsenodeutil.cpp Makefile.common
+	@$(MKDIR) -p $(OBJDIR)
+	$(CXX) $(CXXFLAGS_WORKAROUND) $(DEP_CXXFLAGS) $(COMP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@

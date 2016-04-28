@@ -236,8 +236,9 @@ bool TypeDescriptor::IsResolved() const
 		lengthExpressionList = NextNode(lengthExpressionList);
 	}
 	return
-		((mParent == nullptr) || mParent->IsResolved()) &&
-		((mTypeSpecifier == nullptr) || (mTypeSpecifier->IsResolved()));
+		IsPointerIntrinsicType() ||
+		(((mParent == nullptr) || mParent->IsResolved()) &&
+		 ((mTypeSpecifier == nullptr) || (mTypeSpecifier->IsResolved())));
 }
 
 

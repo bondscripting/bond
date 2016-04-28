@@ -1628,7 +1628,7 @@ Expression *ParserCore::ParseMultiplicativeExpression()
 
 // cast_expression
 //   : unary_expression
-//   | CAST '<' type_descriptor '>' '(' cast_expression ')'
+//   | CAST '<' type_descriptor '>' '(' expression ')'
 Expression *ParserCore::ParseCastExpression()
 {
 	Expression *expression = nullptr;
@@ -1642,7 +1642,7 @@ Expression *ParserCore::ParseCastExpression()
 		AssertNonVoidType(descriptor);
 		ExpectToken(Token::OP_GT);
 		ExpectToken(Token::OPAREN);
-		Expression *rhs = ParseCastExpression();
+		Expression *rhs = ParseExpression();
 		AssertNode(rhs);
 		ExpectToken(Token::CPAREN);
 		expression = mFactory.CreateCastExpression(token, descriptor, rhs);
