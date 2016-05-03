@@ -14,8 +14,8 @@
 #include <new>
 
 const size_t MIN_STACK_SIZE = 1;
-const size_t DEFAULT_STACK_SIZE = 32;
-const char * const DEFAULT_ENTRY_POINT = "main";
+const size_t DEFAULT_STACK_SIZE = 64;
+const char *const DEFAULT_ENTRY_POINT = "main";
 typedef Bond::Vector<const char *> StringList;
 typedef Bond::Vector<Bond::FileLoader::Handle> FileHandleList;
 

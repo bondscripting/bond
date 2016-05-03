@@ -161,29 +161,30 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 			{
 				bool hasError = false;
 				const Token *sizeToken = structDeclaration->GetSizeSpecifier()->GetSizeToken();
-				const int32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_INT).mInt;
-				if (size <= 0)
+				const uint32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_UINT).mUInt;
+
+				if (IsNegativeIntegerConstant(sizeToken) || (size < 1))
 				{
 					hasError = true;
 					mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_SIZE, sizeToken);
 				}
 				else
 				{
-					structDeclaration->SetSize(uint32_t(size));
+					structDeclaration->SetSize(size);
 				}
 
 				const Token *alignToken = structDeclaration->GetSizeSpecifier()->GetAlignmentToken();
 				if (alignToken != nullptr)
 				{
-					const int32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_INT).mInt;
-					if ((align <= 1) || !IsPowerOfTwo(align))
+					const uint32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_UINT).mUInt;
+					if (IsNegativeIntegerConstant(alignToken) || (align <= 1) || !IsPowerOfTwo(align))
 					{
 						hasError = true;
 						mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_ALIGNMENT, alignToken);
 					}
 					else
 					{
-						structDeclaration->SetAlignment(uint32_t(align));
+						structDeclaration->SetAlignment(align);
 					}
 				}
 

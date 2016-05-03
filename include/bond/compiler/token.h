@@ -433,10 +433,13 @@ extern const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
 /// indirection in type descriptors, namely: `OP_STAR` and `OBRACKET`.
 extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
 
-/// \brief Constant TokenTypeSet of all integral literal constants representable as an int or uint,
-/// namely: ???
-// TODO Figure out why this type set is defined as it is.
-extern const TokenTypeSet INTEGER_CONSTANTS_TYPESET;
+/// \brief Constant TokenTypeSet of all integral literal constants having at most 32 bits,
+/// namely: CONST_CHAR, CONST_INT and CONST_UINT.
+extern const TokenTypeSet MOST32_INTEGER_CONSTANTS_TYPESET;
+
+/// \brief Constant TokenTypeSet of all signed integral literal constants, namely:
+/// CONST_CHAR, CONST_INT and CONST_LONG.
+extern const TokenTypeSet SIGNED_INTEGER_CONSTANTS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords used for jumps in Bond source code, namely:
 /// `KEY_BREAK`, `KEY_CONTINUE` and `KEY_RETURN`.

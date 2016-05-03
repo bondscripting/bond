@@ -113,6 +113,8 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenType destType);
 Value CastValue(const TypeAndValue &value, const TypeDescriptor *type);
 
+bool IsNegativeIntegerConstant(const Token *token);
+
 
 template <typename Operator>
 Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)

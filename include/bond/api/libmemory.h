@@ -14,6 +14,7 @@ void Allocate(Bond::CalleeStackFrame &frame);
 void AllocateAligned(Bond::CalleeStackFrame &frame);
 void Free(Bond::CalleeStackFrame &frame);
 void FreeAligned(Bond::CalleeStackFrame &frame);
+void Memcpy(Bond::CalleeStackFrame &frame);
 }
 
 #endif

@@ -416,17 +416,17 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 		if (mStream.NextIf(Token::OP_LT) != nullptr)
 		{
-			size = mStream.PeekIf(INTEGER_CONSTANTS_TYPESET);
+			size = mStream.PeekIf(MOST32_INTEGER_CONSTANTS_TYPESET);
 			if (!isNative && (size != nullptr))
 			{
 				PushError(CompilerError::SIZE_AND_ALIGNMENT_NOT_ALLOWED, size);
 			}
 
-			ExpectToken(INTEGER_CONSTANTS_TYPESET);
+			ExpectToken(MOST32_INTEGER_CONSTANTS_TYPESET);
 
 			if (mStream.NextIf(Token::COMMA))
 			{
-				alignment = ExpectToken(INTEGER_CONSTANTS_TYPESET);
+				alignment = ExpectToken(MOST32_INTEGER_CONSTANTS_TYPESET);
 			}
 
 			ExpectToken(Token::OP_GT);

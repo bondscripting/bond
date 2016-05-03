@@ -558,6 +558,14 @@ Value CastValue(const TypeAndValue &value, const TypeDescriptor *destType)
 }
 
 
+bool IsNegativeIntegerConstant(const Token *token)
+{
+	return
+		SIGNED_INTEGER_CONSTANTS_TYPESET.Contains(token->GetTokenType()) &&
+		(CastValue(token->GetValue(), token->GetTokenType(), Token::CONST_INT).mInt < 0);
+}
+
+
 Value UnaryMinus(const TypeAndValue &value)
 {
 	const TypeDescriptor *type = value.GetTypeDescriptor();
