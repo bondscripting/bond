@@ -143,8 +143,8 @@ public:
 	virtual void Visit(CastExpression *castExpression) override;
 	virtual void Visit(const CastExpression *castExpression) override;
 
-	virtual void Visit(SizeofExpression *sizeofExpression) override;
-	virtual void Visit(const SizeofExpression *sizeofExpression) override;
+	virtual void Visit(PropertyofExpression *propertyofExpression) override;
+	virtual void Visit(const PropertyofExpression *propertyofExpression) override;
 
 	virtual void Visit(ConstantLiteralExpression *constantExpression) override {}
 	virtual void Visit(const ConstantLiteralExpression *constantExpression) override {}

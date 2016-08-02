@@ -1447,33 +1447,38 @@ private:
 };
 
 
-class SizeofExpression: public Expression
+class PropertyofExpression: public Expression
 {
 public:
-	SizeofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor):
+	PropertyofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor):
 		mOperator(op),
 		mTargetTypeDescriptor(targetTypeDescriptor),
 		mRhs(nullptr)
 	{}
 
-	SizeofExpression(const Token *op, Expression *rhs):
+	PropertyofExpression(const Token *op, Expression *rhs):
 		mOperator(op),
 		mTargetTypeDescriptor(nullptr),
 		mRhs(rhs)
 	{}
 
-	virtual ~SizeofExpression() {}
+	virtual ~PropertyofExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
 	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
 
 	virtual const Token *GetContextToken() const { return mOperator; }
 
+	const Token *GetOperator() const { return mOperator; }
+
 	const TypeDescriptor *GetTargetTypeDescriptor() const { return mTargetTypeDescriptor; }
 	TypeDescriptor *GetTargetTypeDescriptor() { return mTargetTypeDescriptor; }
 
 	Expression *GetRhs() { return mRhs; }
 	const Expression *GetRhs() const { return mRhs; }
+
+	bool IsAlignof() const { return mOperator->GetTokenType() == Token::KEY_ALIGNOF; }
+	bool IsSizeof() const { return mOperator->GetTokenType() == Token::KEY_SIZEOF; }
 
 private:
 	const Token *mOperator;

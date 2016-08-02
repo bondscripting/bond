@@ -58,7 +58,7 @@ private:
 	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression);
 	virtual void Visit(const FunctionCallExpression *functionCallExpression);
 	virtual void Visit(const CastExpression *castExpression);
-	virtual void Visit(const SizeofExpression *sizeofExpression);
+	virtual void Visit(const PropertyofExpression *propertyofExpression);
 	virtual void Visit(const ConstantLiteralExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 	virtual void Visit(const ThisExpression *thisExpression);
@@ -615,21 +615,21 @@ void PrettyPrinterCore::Visit(const CastExpression *castExpression)
 }
 
 
-void PrettyPrinterCore::Visit(const SizeofExpression *sizeofExpression)
+void PrettyPrinterCore::Visit(const PropertyofExpression *propertyofExpression)
 {
-	if (!PrintFoldedConstant(sizeofExpression))
+	if (!PrintFoldedConstant(propertyofExpression))
 	{
-		mStream.Print("sizeof");
-		if (sizeofExpression->GetTypeDescriptor() != nullptr)
+		Print(propertyofExpression->GetOperator());
+		if (propertyofExpression->GetTypeDescriptor() != nullptr)
 		{
 			mStream.Print("<");
-			Print(sizeofExpression->GetTargetTypeDescriptor());
+			Print(propertyofExpression->GetTargetTypeDescriptor());
 			mStream.Print(">");
 		}
 		else
 		{
 			mStream.Print("(");
-			PrintTopLevelExpression(sizeofExpression->GetRhs());
+			PrintTopLevelExpression(propertyofExpression->GetRhs());
 			mStream.Print(")");
 		}
 	}

@@ -57,7 +57,7 @@ private:
 	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression);
 	virtual void Visit(const FunctionCallExpression *functionCallExpression);
 	virtual void Visit(const CastExpression *castExpression);
-	virtual void Visit(const SizeofExpression *sizeofExpression);
+	virtual void Visit(const PropertyofExpression *propertyofExpression);
 	virtual void Visit(const ConstantLiteralExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 	virtual void Visit(const ThisExpression *thisExpression);
@@ -611,13 +611,15 @@ void ParseTreePrinterCore::Visit(const CastExpression *castExpression)
 }
 
 
-void ParseTreePrinterCore::Visit(const SizeofExpression *sizeofExpression)
+void ParseTreePrinterCore::Visit(const PropertyofExpression *propertyofExpression)
 {
 	Tab();
-	mStream.Print("SizeofExpression\n");
+	mStream.Print("PropertyofExpression: ");
+	Print(propertyofExpression->GetOperator());
+	Newline();
 	IncrementTab();
-	Print(sizeofExpression->GetTargetTypeDescriptor());
-	Print(sizeofExpression->GetRhs());
+	Print(propertyofExpression->GetTargetTypeDescriptor());
+	Print(propertyofExpression->GetRhs());
 	DecrementTab();
 }
 

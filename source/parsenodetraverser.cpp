@@ -462,17 +462,17 @@ void ParseNodeTraverser::Visit(const CastExpression *castExpression)
 }
 
 
-void ParseNodeTraverser::Visit(SizeofExpression *sizeofExpression)
+void ParseNodeTraverser::Visit(PropertyofExpression *propertyofExpression)
 {
-	Traverse(sizeofExpression->GetTargetTypeDescriptor());
-	Traverse(sizeofExpression->GetRhs());
+	Traverse(propertyofExpression->GetTargetTypeDescriptor());
+	Traverse(propertyofExpression->GetRhs());
 }
 
 
-void ParseNodeTraverser::Visit(const SizeofExpression *sizeofExpression)
+void ParseNodeTraverser::Visit(const PropertyofExpression *propertyofExpression)
 {
-	Traverse(sizeofExpression->GetTargetTypeDescriptor());
-	Traverse(sizeofExpression->GetRhs());
+	Traverse(propertyofExpression->GetTargetTypeDescriptor());
+	Traverse(propertyofExpression->GetRhs());
 }
 
 

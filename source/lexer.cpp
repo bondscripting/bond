@@ -1229,6 +1229,7 @@ void LexerCore::EvaluateToken(Token &token)
 void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 {
 #define KEYWORD_LIST \
+	KEYWORD_ITEM(KEY_ALIGNOF,   "alignof")   \
 	KEYWORD_ITEM(KEY_BOOL,      "bool")      \
 	KEYWORD_ITEM(KEY_BREAK,     "break")     \
 	KEYWORD_ITEM(KEY_CASE,      "case")      \

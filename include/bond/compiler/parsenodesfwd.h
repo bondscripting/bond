@@ -43,7 +43,7 @@ namespace Bond
 	class ArraySubscriptExpression;
 	class FunctionCallExpression;
 	class CastExpression;
-	class SizeofExpression;
+	class PropertyofExpression;
 	class ConstantLiteralExpression;
 	class IdentifierExpression;
 	class ThisExpression;

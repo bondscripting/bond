@@ -212,6 +212,8 @@ unary_expression
   | '-' cast_expression
   | '~' cast_expression
   | '!' cast_expression
+  | ALIGNOF unary_expression
+  | ALIGNOF '<' type_descriptor '>'
   | SIZEOF unary_expression
   | SIZEOF '<' type_descriptor '>'
 

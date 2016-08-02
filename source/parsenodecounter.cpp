@@ -235,10 +235,10 @@ void ParseNodeCounter::Visit(const CastExpression *castExpression)
 }
 
 
-void ParseNodeCounter::Visit(const SizeofExpression *sizeofExpression)
+void ParseNodeCounter::Visit(const PropertyofExpression *propertyofExpression)
 {
-	++mCount.mSizeofExpression;
-	ParseNodeTraverser::Visit(sizeofExpression);
+	++mCount.mPropertyofExpression;
+	ParseNodeTraverser::Visit(propertyofExpression);
 }
 
 

@@ -109,8 +109,8 @@ public:
 		Expression *argumentList);
 
 	CastExpression *CreateCastExpression(const Token *op, TypeDescriptor *targetTypeDescriptor, Expression *rhs);
-	SizeofExpression *CreateSizeofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor);
-	SizeofExpression *CreateSizeofExpression(const Token *op, Expression *rhs);
+	PropertyofExpression *CreatePropertyofExpression(const Token *op, TypeDescriptor *targetTypeDescriptor);
+	PropertyofExpression *CreatePropertyofExpression(const Token *op, Expression *rhs);
 	ConstantLiteralExpression *CreateConstantLiteralExpression(const Token *value);
 	IdentifierExpression *CreateIdentifierExpression(QualifiedIdentifier *identifier);
 	ThisExpression *CreateThisExpression(const Token *token);

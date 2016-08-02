@@ -645,6 +645,32 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 }
 
 
+DEFINE_VM_TEST(PropertyofOperators, "scripts/vm_PropertyofOperators.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofType_12_4", uint32_t(4));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofExpression_12_4", uint32_t(4));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofType_12_4", uint32_t(12));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofExpression_12_4", uint32_t(12));
+
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofType_32_16", uint32_t(16));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofExpression_32_16", uint32_t(16));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofType_32_16", uint32_t(32));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofExpression_32_16", uint32_t(32));
+
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofType_48_16", uint32_t(16));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofExpression_48_16", uint32_t(16));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofType_48_16", uint32_t(48));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofExpression_48_16", uint32_t(48));
+
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetAlignofArray_48_16", uint32_t(16));
+	VALIDATE_FUNCTION_CALL_0(UINT, "GetSizeofArray_48_16", uint32_t(192));
+
+	return true;
+}
+
+
 DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 {
 	using namespace Bond;
@@ -1133,6 +1159,7 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
   TEST_ITEM(BinaryOperators)                    \
   TEST_ITEM(UnaryOperators)                     \
   TEST_ITEM(ComparisonOperators)                \
+  TEST_ITEM(PropertyofOperators)                \
   TEST_ITEM(Branches)                           \
   TEST_ITEM(Pointers)                           \
   TEST_ITEM(CompoundAssignmentOperators)        \

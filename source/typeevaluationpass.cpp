@@ -625,10 +625,10 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 }
 
 
-void TypeEvaluationPass::Visit(SizeofExpression *sizeofExpression)
+void TypeEvaluationPass::Visit(PropertyofExpression *propertyofExpression)
 {
-	ParseNodeTraverser::Visit(sizeofExpression);
-	sizeofExpression->SetTypeDescriptor(TypeDescriptor::GetUIntType());
+	ParseNodeTraverser::Visit(propertyofExpression);
+	propertyofExpression->SetTypeDescriptor(TypeDescriptor::GetUIntType());
 }
 
 

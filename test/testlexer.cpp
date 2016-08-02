@@ -8,6 +8,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 
 	const Bond::Token::TokenType EXPECTED_TYPES[] =
 	{
+		Bond::Token::KEY_ALIGNOF,
 		Bond::Token::KEY_BOOL,
 		Bond::Token::KEY_BREAK,
 		Bond::Token::KEY_CASE,

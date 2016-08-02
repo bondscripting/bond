@@ -360,7 +360,7 @@ private:
 	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression);
 	virtual void Visit(const FunctionCallExpression *functionCallExpression);
 	virtual void Visit(const CastExpression *castExpression);
-	virtual void Visit(const SizeofExpression *sizeofExpression);
+	virtual void Visit(const PropertyofExpression *propertyofExpression);
 	virtual void Visit(const ConstantLiteralExpression *constantExpression);
 	virtual void Visit(const IdentifierExpression *identifierExpression);
 	virtual void Visit(const ThisExpression *thisExpression);
@@ -1505,9 +1505,9 @@ void GeneratorCore::Visit(const CastExpression *castExpression)
 }
 
 
-void GeneratorCore::Visit(const SizeofExpression *sizeofExpression)
+void GeneratorCore::Visit(const PropertyofExpression *propertyofExpression)
 {
-	ProcessConstantExpression(sizeofExpression);
+	ProcessConstantExpression(propertyofExpression);
 }
 
 

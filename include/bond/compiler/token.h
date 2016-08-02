@@ -7,6 +7,7 @@
 
 #define BOND_TOKEN_LIST \
 	/* Keywords */												    \
+	BOND_TOKEN_ITEM(KEY_ALIGNOF)              \
 	BOND_TOKEN_ITEM(KEY_BOOL)                 \
 	BOND_TOKEN_ITEM(KEY_BREAK)                \
 	BOND_TOKEN_ITEM(KEY_CASE)                 \
@@ -479,6 +480,10 @@ extern const TokenTypeSet UNARY_OPERATORS_TYPESET;
 /// \brief Constant TokenTypeSet of all Bond postfix unary operators, namely: `OP_INC`, `OP_DEC`,
 /// `OP_ARROW`, `OPAREN`, `OBRACKET` and `PERIOD`.
 extern const TokenTypeSet POSTFIX_OPERATORS_TYPESET;
+
+/// \brief Constant TokenTypeSet of all Bond operators for retrieving type properties, namely:
+/// `KEY_ALIGNOF`and `KEY_SIZEOF`.
+extern const TokenTypeSet PROPERTYOF_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond constant literals, namely: `CONST_BOOL`, `CONST_CHAR`,
 /// `CONST_INT`, `CONST_UINT`, `CONST_LONG`, `CONST_ULONG`, `CONST_FLOAT`, `CONST_DOUBLE`,

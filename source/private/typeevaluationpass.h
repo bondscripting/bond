@@ -45,7 +45,7 @@ protected:
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
 	virtual void Visit(FunctionCallExpression *functionCallExpression) override;
 	virtual void Visit(CastExpression *castExpression) override;
-	virtual void Visit(SizeofExpression *sizeofExpression) override;
+	virtual void Visit(PropertyofExpression *propertyofExpression) override;
 	virtual void Visit(ConstantLiteralExpression *constantExpression) override;
 	virtual void Visit(IdentifierExpression *identifierExpression) override;
 	virtual void Visit(ThisExpression *thisExpression) override;

@@ -1666,6 +1666,8 @@ Expression *ParserCore::ParseCastExpression()
 //   | '-' cast_expression
 //   | '~' cast_expression
 //   | '!' cast_expression
+//   | ALIGNOF unary_expression
+//   | ALIGNOF '<' type_descriptor '>'
 //   | SIZEOF unary_expression
 //   | SIZEOF '<' type_descriptor '>'
 Expression *ParserCore::ParseUnaryExpression()
@@ -1694,7 +1696,7 @@ Expression *ParserCore::ParseUnaryExpression()
 		expression = mFactory.CreateUnaryExpression(op, rhs);
 	}
 
-	else if ((op = mStream.NextIf(Token::KEY_SIZEOF)) != nullptr)
+	else if ((op = mStream.NextIf(PROPERTYOF_OPERATORS_TYPESET)) != nullptr)
 	{
 		if (mStream.NextIf(Token::OP_LT) != nullptr)
 		{
@@ -1702,13 +1704,13 @@ Expression *ParserCore::ParseUnaryExpression()
 			AssertNode(descriptor);
 			AssertNonVoidType(descriptor);
 			ExpectToken(Token::OP_GT);
-			expression = mFactory.CreateSizeofExpression(op, descriptor);
+			expression = mFactory.CreatePropertyofExpression(op, descriptor);
 		}
 		else
 		{
 			Expression *unary = ParseUnaryExpression();
 			AssertNode(unary);
-			expression = mFactory.CreateSizeofExpression(op, unary);
+			expression = mFactory.CreatePropertyofExpression(op, unary);
 		}
 	}
 	else

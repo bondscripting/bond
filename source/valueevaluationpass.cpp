@@ -673,17 +673,17 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 }
 
 
-void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
+void ValueEvaluationPass::Visit(PropertyofExpression *propertyofExpression)
 {
-	TypeAndValue &tav = sizeofExpression->GetTypeAndValue();
+	TypeAndValue &tav = propertyofExpression->GetTypeAndValue();
 	if (!tav.IsResolved())
 	{
-		ParseNodeTraverser::Visit(sizeofExpression);
+		ParseNodeTraverser::Visit(propertyofExpression);
 		const TypeDescriptor *typeDescriptor = nullptr;
 
-		if (sizeofExpression->GetRhs() != nullptr)
+		if (propertyofExpression->GetRhs() != nullptr)
 		{
-			const TypeAndValue &rhs = sizeofExpression->GetRhs()->GetTypeAndValue();
+			const TypeAndValue &rhs = propertyofExpression->GetRhs()->GetTypeAndValue();
 			if (rhs.IsResolved())
 			{
 				typeDescriptor = rhs.GetTypeDescriptor();
@@ -691,13 +691,20 @@ void ValueEvaluationPass::Visit(SizeofExpression *sizeofExpression)
 		}
 		else
 		{
-			typeDescriptor = sizeofExpression->GetTargetTypeDescriptor();
+			typeDescriptor = propertyofExpression->GetTargetTypeDescriptor();
 		}
 
 		if ((typeDescriptor != nullptr) && typeDescriptor->IsResolved())
 		{
 			Resolve(tav);
-			tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));
+			if (propertyofExpression->IsAlignof())
+			{
+				tav.SetUIntValue(typeDescriptor->GetAlignment(mPointerSize));
+			}
+			else
+			{
+				tav.SetUIntValue(typeDescriptor->GetSize(mPointerSize));
+			}
 		}
 		CheckUnresolved(tav);
 	}

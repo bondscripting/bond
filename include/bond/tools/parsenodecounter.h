@@ -42,7 +42,7 @@ struct ParseNodeCount
 		mArraySubscriptExpression(defaultValue),
 		mFunctionCallExpression(defaultValue),
 		mCastExpression(defaultValue),
-		mSizeofExpression(defaultValue),
+		mPropertyofExpression(defaultValue),
 		mConstantLiteralExpression(defaultValue),
 		mIdentifierExpression(defaultValue),
 		mThisExpression(defaultValue),
@@ -82,7 +82,7 @@ struct ParseNodeCount
 	int mArraySubscriptExpression;
 	int mFunctionCallExpression;
 	int mCastExpression;
-	int mSizeofExpression;
+	int mPropertyofExpression;
 	int mConstantLiteralExpression;
 	int mIdentifierExpression;
 	int mThisExpression;
@@ -134,7 +134,7 @@ private:
 	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression) override;
 	virtual void Visit(const FunctionCallExpression *functionCallExpression) override;
 	virtual void Visit(const CastExpression *castExpression) override;
-	virtual void Visit(const SizeofExpression *sizeofExpression) override;
+	virtual void Visit(const PropertyofExpression *propertyofExpression) override;
 	virtual void Visit(const ConstantLiteralExpression *constantExpression) override;
 	virtual void Visit(const IdentifierExpression *identifierExpression) override;
 	virtual void Visit(const ThisExpression *thisExpression) override;
