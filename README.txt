@@ -77,5 +77,5 @@ make test
 Building Bond (Visual Studio)
 -----------------------------
 
-Bond also offers a Visual Studio solution that is known to work with Visual Studio Express 2013
-for Desktop. Open up the bond.sln solution with Visual Studio and build.
+Bond also offers a Visual Studio solution that is known to work with Visual Studio 2015. Open up
+the bond.sln solution with Visual Studio and build.

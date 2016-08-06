@@ -124,7 +124,7 @@ namespace Bond
 ///
 /// A Token is typically created by a Lexer as it scans Bond source code. It contains the text from
 /// which the token is formed as it appears in the Bond source, the position at which it appears in
-/// the Bond souce, a type and a value for tokens which are literal constants.
+/// the Bond source, a type and a value for tokens which are literal constants.
 ///
 /// \sa Lexer
 class Token
