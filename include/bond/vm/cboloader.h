@@ -14,11 +14,11 @@ struct CboLoaderResources;
 struct FileData;
 struct Function;
 
+typedef Allocator::AlignedHandle<const CodeSegment> CodeSegmentHandle;
+
 class CboLoader
 {
 public:
-	typedef Allocator::AlignedHandle<const CodeSegment> Handle;
-
 	CboLoader(Allocator &allocator):
 		mNativeBindingList(NativeBindingList::Allocator(&allocator)),
 		mFileDataList(FileDataList::Allocator(&allocator)),
@@ -36,7 +36,7 @@ public:
 	void AddNativeBinding(const NativeBindingCollection &nativeBinding) { mNativeBindingList.push_back(&nativeBinding); }
 	void AddCboFile(const FileData &cboFile) { mFileDataList.push_back(&cboFile); }
 
-	Handle Load();
+	CodeSegmentHandle Load();
 
 	CboLoader &operator=(const CboLoader &other) = delete;
 

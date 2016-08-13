@@ -1,7 +1,7 @@
 #ifndef BOND_PRIVATE_STLALLOCATOR_H
 #define BOND_PRIVATE_STLALLOCATOR_H
 
-#include <utility>
+#include "bond/stl/utility.h"
 
 namespace Bond
 {
@@ -55,7 +55,7 @@ public:
 	template<class U, class... Args>
 	void construct(U* p, Args&&... args)
 	{
-		new (static_cast<void *>(p)) U(std::forward<Args>(args)...);
+		new (static_cast<void *>(p)) U(forward<Args>(args)...);
 	}
 
 	void destroy(pointer p)

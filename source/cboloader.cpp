@@ -104,7 +104,7 @@ private:
 };
 
 
-CboLoader::Handle CboLoader::Load()
+CodeSegmentHandle CboLoader::Load()
 {
 	typedef Vector<CboValidator::Result> ResultList;
 	ResultList::Type resultList(mFileDataList.size(), CboValidator::Result(), ResultList::Allocator(&mTempAllocator));
@@ -166,7 +166,7 @@ CboLoader::Handle CboLoader::Load()
 	const size_t DEFAULT_ALIGNMENT = 256;
 	const size_t alignment = Max(DEFAULT_ALIGNMENT, dataAlignment);
 
-	Allocator::AlignedHandle<uint8_t> memHandle(mPermAllocator, mPermAllocator.AllocAligned<uint8_t>(memSize, alignment));
+	auto memHandle = mPermAllocator.AllocOwnedAligned<uint8_t>(memSize, alignment);
 	memset(memHandle.get(), 0, memSize);
 
 	CboLoaderResources resources(
@@ -227,7 +227,7 @@ CboLoader::Handle CboLoader::Load()
 	}
 
 	memHandle.release();
-	return Handle(mPermAllocator, codeSegment);
+	return CodeSegmentHandle(mPermAllocator, codeSegment);
 }
 
 

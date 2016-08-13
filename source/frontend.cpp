@@ -33,13 +33,14 @@ void FrontEnd::Analyze()
 	while ((it != mInputFileNameList.end()) && !HasErrors())
 	{
 		const char *fileName = it->GetString();
-		FileLoader::Handle scriptHandle = mFileLoader.LoadFile(fileName);
+		auto scriptHandle = mFileLoader.LoadFile(fileName);
 		const char *script = reinterpret_cast<const char *>(scriptHandle.Get().mData);
 		const size_t length = scriptHandle.Get().mLength;
-		TokenStream stream = mLexer.Lex(fileName, script, length)->GetTokenStream();
+		mTokenCollectionList.push_back(mLexer.Lex(fileName, script, length));
 
 		if (!HasErrors())
 		{
+			TokenStream stream = mTokenCollectionList.back()->GetTokenStream();
 			TranslationUnit *translationUnit = mParser.Parse(stream);
 			if (!HasErrors())
 			{

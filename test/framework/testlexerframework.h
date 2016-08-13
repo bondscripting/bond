@@ -9,7 +9,7 @@
   bool __Validate ## testName ## __(                                          \
     Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
-    Bond::Lexer &lexer);                                                      \
+    const Bond::TokenCollection &tokenCollection);                            \
                                                                               \
   bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
   {                                                                           \
@@ -20,7 +20,7 @@
   bool __Validate ## testName ## __(                                          \
     Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
-    Bond::Lexer &lexer)                                                       \
+    const Bond::TokenCollection &tokenCollection)                             \
 
 
 namespace TestFramework
@@ -29,7 +29,7 @@ namespace TestFramework
 typedef bool LexerValidationFunction(
 	Bond::OutputStream &logger,
 	Bond::CompilerErrorBuffer &errorBuffer,
-	Bond::Lexer &lexer);
+	const Bond::TokenCollection &tokenCollection);
 
 bool RunLexerTest(
 	Bond::OutputStream &logger,

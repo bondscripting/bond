@@ -1,15 +1,14 @@
 #ifndef BOND_COMPILER_FRONTEND_H
 #define BOND_COMPILER_FRONTEND_H
 
+#include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
 #include "bond/types/simplestring.h"
 
 namespace Bond
 {
 
-class Allocator;
 class FileLoader;
-class Lexer;
 class Parser;
 class SemanticAnalyzer;
 
@@ -50,6 +49,7 @@ public:
 			SemanticAnalyzer &semanticAnalyzer,
 			FileLoader &fileLoader):
 		mInputFileNameList(StringList::Allocator(&allocator)),
+		mTokenCollectionList(TokenCollectionHandleList::Allocator(&allocator)),
 		mLexer(lexer),
 		mParser(parser),
 		mSemanticAnalyzer(semanticAnalyzer),
@@ -77,8 +77,10 @@ private:
 	FrontEnd &operator=(const FrontEnd &other) = delete;
 
 	typedef List<SimpleString> StringList;
+	typedef List<TokenCollectionHandle> TokenCollectionHandleList;
 
 	StringList::Type mInputFileNameList;
+	TokenCollectionHandleList::Type mTokenCollectionList;
 	Lexer &mLexer;
 	Parser &mParser;
 	SemanticAnalyzer &mSemanticAnalyzer;

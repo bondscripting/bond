@@ -18,15 +18,15 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	{
 		Bond::DefaultAllocator allocator;
 		Bond::DiskFileLoader fileLoader(allocator);
-		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
+		auto scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
 		Bond::Parser parser(allocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
 		{
-			Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+			Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
 			parser.Parse(stream);
 		}
 
@@ -57,6 +57,7 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	}
 }
 
+class Boogup;
 
 int main(int argc, const char *argv[])
 {

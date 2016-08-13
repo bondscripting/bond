@@ -1,8 +1,8 @@
 #ifndef BOND_STL_AUTOSTACK_H
 #define BOND_STL_AUTOSTACK_H
 
+#include "bond/stl/utility.h"
 #include "bond/types/types.h"
-#include <utility>
 
 namespace Bond
 {
@@ -24,9 +24,9 @@ public:
 			mStack.Push(this);
 		}
 
-		template<class... Args>
+		template<typename... Args>
 		Element(AutoStack &stack, Args&&... args):
-			mValue(std::forward<Args>(args)...),
+			mValue(forward<Args>(args)...),
 			mStack(stack),
 			mNext(nullptr)
 		{

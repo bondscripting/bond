@@ -23,11 +23,11 @@ bool RunLexerTest(
 	try
 	{
 		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
-		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
+		auto scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
-		result = validationFunction(logger, errorBuffer, lexer);
+		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		result = validationFunction(logger, errorBuffer, *tokenCollectionHandle);
 	}
 	catch (const Bond::Exception &e)
 	{

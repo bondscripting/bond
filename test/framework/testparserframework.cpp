@@ -25,14 +25,14 @@ bool RunParserTest(
 	try
 	{
 		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
-		Bond::FileLoader::Handle scriptHandle = fileLoader.LoadFile(scriptName);
+		auto scriptHandle = fileLoader.LoadFile(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
-		Bond::TokenStream stream = lexer.GetTokenCollectionList()->GetTokenStream();
+		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 		Bond::Parser parser(parserAllocator, errorBuffer);
 		if (!errorBuffer.HasErrors())
 		{
+			Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
 			parser.Parse(stream);
 		}
 		result = validationFunction(logger, errorBuffer, parser);

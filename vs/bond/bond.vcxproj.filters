@@ -315,6 +315,18 @@
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\memory.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\utility.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\memory.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\utility.h">
+      <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\cboloader.cpp">

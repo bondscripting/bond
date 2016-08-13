@@ -29,7 +29,7 @@ public:
 		mStringBuffer(nullptr)
 	{}
 
-	TokenCollection *Lex();
+	TokenCollectionHandle Lex();
 
 private:
 	//integral-digits[.[fractional-digits]][e[sign]exponential-digits]
@@ -146,37 +146,14 @@ private:
 };
 
 
-Lexer::~Lexer()
-{
-	Dispose();
-}
-
-
-void Lexer::Dispose()
-{
-	TokenCollection *list = mTokenCollectionList;
-	mTokenCollectionList = nullptr;
-
-	while (list != nullptr)
-	{
-		TokenCollection *next = list->GetNextCollection();
-		mAllocator.Free(list);
-		list = next;
-	}
-}
-
-
-TokenCollection *Lexer::Lex(const char *fileName, const char *text, size_t length)
+TokenCollectionHandle Lexer::Lex(const char *fileName, const char *text, size_t length)
 {
 	LexerCore lexer(mAllocator, mErrorBuffer, fileName, text, length);
-	TokenCollection *tokenCollection = lexer.Lex();
-	tokenCollection->SetNextCollection(mTokenCollectionList);
-	mTokenCollectionList = tokenCollection;
-	return tokenCollection;
+	return lexer.Lex();
 }
 
 
-TokenCollection *LexerCore::Lex()
+TokenCollectionHandle LexerCore::Lex()
 {
 	CharStream stream(mText, mTextLength);
 	Resources resources = CalculateResources(stream);
@@ -189,7 +166,7 @@ TokenCollection *LexerCore::Lex()
 	const size_t tokensStart = TallyMemoryRequirements<Token>(memSize, resources.numTokens);
 	const size_t stringBufferStart = TallyMemoryRequirements<Token>(memSize, resources.stringBufferLength);
 
-	Allocator::Handle<char> memHandle(mAllocator, mAllocator.Alloc<char>(memSize));
+	auto memHandle = mAllocator.AllocOwned<char>(memSize);
 	mTokens = reinterpret_cast<Token *>(memHandle.get() + tokensStart);
 	mStringBuffer = memHandle.get() + stringBufferStart;
 	mFileName = AllocString(mFileName, fileNameLength);
@@ -200,7 +177,7 @@ TokenCollection *LexerCore::Lex()
 	TokenCollection *tokenCollection = new (memHandle.get() + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
 	memHandle.release();
 
-	return tokenCollection;
+	return TokenCollectionHandle(mAllocator, tokenCollection);
 }
 
 

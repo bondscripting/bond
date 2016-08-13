@@ -2,6 +2,7 @@
 #define BOND_COMPILER_LEXER_H
 
 #include "bond/compiler/tokenstream.h"
+#include "bond/systems/allocator.h"
 
 namespace Bond
 {
@@ -11,15 +12,14 @@ class CharStream;
 class CompilerErrorBuffer;
 class StringAllocator;
 
+/// \brief A smart pointer to a TokenCollection.
+typedef Allocator::Handle<const TokenCollection> TokenCollectionHandle;
+
 /// \brief A lexer for the Bond scripting language.
 ///
 /// The Lexer tokenizes Bond source code passed in as a C-style string. Its output is a
-/// TokenCollection that can be used as input to a Parser.
-///
-/// A single Lexer can be used to tokenize many strings of Bond source code; each invocation
-/// generates a new TokenCollection. The Lexer retains an owning pointer to all of the generated
-/// TokenCollections, all of which are destroyed when the Lexer is destroyed, or when its Dispose
-/// method is called.
+/// TokenCollection that can be used as input to a Parser. A single Lexer can be used to tokenize
+/// many strings of Bond source code; each invocation generates a new TokenCollection.
 ///
 /// When writing a tool that requires a compiler front end, the interactions between the front end
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
@@ -34,14 +34,8 @@ public:
 	/// \param errorBuffer Buffer where error messages are pushed when invalid tokens are encountered.
 	Lexer(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
 		mAllocator(allocator),
-		mErrorBuffer(errorBuffer),
-		mTokenCollectionList(nullptr)
+		mErrorBuffer(errorBuffer)
 	{}
-
-	~Lexer();
-
-	/// \brief Destroys all generated TokenCollections.
-	void Dispose();
 
 	/// \brief Scans the given string of Bond source and breaks it up into a sequence of Tokens.
 	/// \param fileName Name to associate with the string of Bond source code, ideally the name of the
@@ -54,13 +48,10 @@ public:
 	///        this function returns.
 	/// \param length The number of characters in the Bond source code. Required since the source
 	///        code may contain null characters and may not be null terminated.
-	/// \returns A TokenCollection containing all of the Tokens generated from the source code. The
-	///        Lexer retains an owning pointer to the TokenCollection, so client code is not
-	///        responsible for destroying it.
-	TokenCollection *Lex(const char *fileName, const char *text, size_t length);
-
-	/// \brief Returns a linked list of all generated TokenCollections.
-	const TokenCollection *GetTokenCollectionList() const { return mTokenCollectionList; }
+	/// \returns A TokenCollectionHandle, which is an owning pointer to a dynamically allocated
+	///        TokenCollection. The TokenCollection is automatically destroyed when the handle
+	///        is destroyed.
+	TokenCollectionHandle Lex(const char *fileName, const char *text, size_t length);
 
 	/// \brief Returns the buffer where error messages are pushed.
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
@@ -72,7 +63,6 @@ private:
 
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
-	TokenCollection *mTokenCollectionList;
 };
 
 }

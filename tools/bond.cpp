@@ -91,7 +91,7 @@ int main(int argc, const char *argv[])
 
 	try
 	{
-		Bond::CboLoader::Handle codeSegmentHandle;
+		Bond::CodeSegmentHandle codeSegmentHandle;
 		{
 			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
