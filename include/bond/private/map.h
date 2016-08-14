@@ -8,7 +8,7 @@ namespace Bond
 {
 
 template <typename KeyType, typename ValueType, typename CompareType = std::less<KeyType> >
-using Map = std::map<KeyType, ValueType, CompareType, StlAllocator<ValueType> >;
+using Map = std::map<KeyType, ValueType, CompareType, StlAllocator<std::pair<const KeyType, ValueType> > >;
 
 }
 
