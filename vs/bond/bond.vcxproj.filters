@@ -72,9 +72,6 @@
     <ClInclude Include="..\..\include\bond\compiler\lexer.h">
       <Filter>Header Files\include\bond\compiler</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\compiler\parsenodefactory.h">
-      <Filter>Header Files\include\bond\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\compiler\parsenodes.h">
       <Filter>Header Files\include\bond\compiler</Filter>
     </ClInclude>
@@ -417,9 +414,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsenodecounter.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\parsenodefactory.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsenodes.cpp">

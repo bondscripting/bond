@@ -26,9 +26,10 @@ int main(int argc, const char *argv[])
 		Bond::DefaultAllocator allocator;
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		Bond::Parser parser(allocator, errorBuffer);
+		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&allocator)));
+		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
-		FileLoaderList::Type loaderList((FileLoaderList::Allocator(&allocator)));
+		FileLoaderList loaderList((FileLoaderList::allocator_type(&allocator)));
 		loaderList.push_back(Bond::DiskFileLoader(allocator));
 		Bond::MemoryFileLoader stdIncludeLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
 		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdIncludeLoader);
@@ -158,7 +159,7 @@ int main(int argc, const char *argv[])
 			return 1;
 		}
 
-		frontEnd.Analyze();
+		Bond::TranslationUnit *translationUnitList = frontEnd.Analyze();
 
 		if (!errorBuffer.HasErrors())
 		{
@@ -169,7 +170,7 @@ int main(int argc, const char *argv[])
 				{
 					Bond::StdioOutputStream cboStream(cboFile);
 					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
-					generator.Generate(parser.GetTranslationUnitList(), cboStream);
+					generator.Generate(translationUnitList, cboStream);
 					fclose(cboFile);
 				}
 				else
@@ -187,7 +188,7 @@ int main(int argc, const char *argv[])
 					Bond::StdioOutputStream cppStream(cppFile);
 					Bond::StdioOutputStream hStream(hFile);
 					Bond::NativeBindingGenerator generator;
-					generator.Generate(parser.GetTranslationUnitList(), cppStream, hStream, bindingCollectionName, includeName);
+					generator.Generate(translationUnitList, cppStream, hStream, bindingCollectionName, includeName);
 				}
 				if (cppFile == nullptr)
 				{

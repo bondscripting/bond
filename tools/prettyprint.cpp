@@ -23,29 +23,34 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 		Bond::Lexer lexer(allocator, errorBuffer);
 		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
 
-		Bond::Parser parser(allocator, errorBuffer);
+		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&allocator)));
+		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
+		Bond::TranslationUnit *translationUnit = nullptr;
 		if (!errorBuffer.HasErrors())
 		{
 			Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
-			parser.Parse(stream);
+			translationUnit = parser.Parse(stream);
 		}
 
-		if (!errorBuffer.HasErrors() && (doSemanticAnalysis || foldConstants))
+		if (!errorBuffer.HasErrors() && (translationUnit != nullptr))
 		{
-			Bond::SemanticAnalyzer analyzer(errorBuffer);
-			analyzer.Analyze(parser.GetTranslationUnitList());
-		}
+			if (doSemanticAnalysis || foldConstants)
+			{
+				Bond::SemanticAnalyzer analyzer(errorBuffer);
+				analyzer.Analyze(translationUnit);
+			}
 
-		Bond::StdOutOutputStream outputStream;
-		if (printParseTree)
-		{
-			Bond::ParseTreePrinter printer;
-			printer.PrintList(parser.GetTranslationUnitList(), outputStream);
-		}
-		else
-		{
-			Bond::PrettyPrinter printer;
-			printer.PrintList(parser.GetTranslationUnitList(), outputStream, foldConstants);
+			Bond::StdOutOutputStream outputStream;
+			if (printParseTree)
+			{
+				Bond::ParseTreePrinter printer;
+				printer.PrintList(translationUnit, outputStream);
+			}
+			else
+			{
+				Bond::PrettyPrinter printer;
+				printer.PrintList(translationUnit, outputStream, foldConstants);
+			}
 		}
 
 		Bond::StdErrOutputStream errorStream;

@@ -107,7 +107,7 @@ private:
 CodeSegmentHandle CboLoader::Load()
 {
 	typedef Vector<CboValidator::Result> ResultList;
-	ResultList::Type resultList(mFileDataList.size(), CboValidator::Result(), ResultList::Allocator(&mTempAllocator));
+	ResultList resultList(mFileDataList.size(), CboValidator::Result(), ResultList::allocator_type(&mTempAllocator));
 
 	size_t value32Count = 0;
 	size_t value64Count = 0;
@@ -124,7 +124,7 @@ CodeSegmentHandle CboLoader::Load()
 	size_t dataAlignment = size_t(BOND_SLOT_SIZE);
 
 	CboValidator validator;
-	FileDataList::Type::const_iterator fdit = mFileDataList.begin();
+	FileDataList::const_iterator fdit = mFileDataList.begin();
 	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
 	{
 		const FileData &file = **fdit;

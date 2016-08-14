@@ -131,17 +131,17 @@ public:
 			CompilerErrorBuffer &errorBuffer,
 			const TranslationUnit *translationUnitList,
 			PointerSize pointerSize):
-		mQualifiedNameIndexMap(QualifiedNameIndexMap::Compare(), QualifiedNameIndexMap::Allocator(&allocator)),
-		mQualifiedNameList(QualifiedNameList::Allocator(&allocator)),
-		mStringIndexMap(StringIndexMap::Compare(), StringIndexMap::Allocator(&allocator)),
-		mStringList(StringList::Allocator(&allocator)),
-		mValue32IndexMap(Value32IndexMap::Compare(), Value32IndexMap::Allocator(&allocator)),
-		mValue32List(Value32List::Allocator(&allocator)),
-		mValue64IndexMap(Value64IndexMap::Compare(), Value64IndexMap::Allocator(&allocator)),
-		mValue64List(Value64List::Allocator(&allocator)),
-		mFunctionList(FunctionList::Allocator(&allocator)),
-		mNativeMemberList(NativeMemberList::Allocator(&allocator)),
-		mDataList(DataList::Allocator(&allocator)),
+		mQualifiedNameIndexMap(QualifiedNameIndexMap::allocator_type(&allocator)),
+		mQualifiedNameList(QualifiedNameList::allocator_type(&allocator)),
+		mStringIndexMap(StringIndexMap::allocator_type(&allocator)),
+		mStringList(StringList::allocator_type(&allocator)),
+		mValue32IndexMap(Value32IndexMap::allocator_type(&allocator)),
+		mValue32List(Value32List::allocator_type(&allocator)),
+		mValue64IndexMap(Value64IndexMap::allocator_type(&allocator)),
+		mValue64List(Value64List::allocator_type(&allocator)),
+		mFunctionList(FunctionList::allocator_type(&allocator)),
+		mNativeMemberList(NativeMemberList::allocator_type(&allocator)),
+		mDataList(DataList::allocator_type(&allocator)),
 		mAllocator(allocator),
 		mStream(stream),
 		mErrorBuffer(errorBuffer),
@@ -250,9 +250,9 @@ private:
 				uint32_t framePointerAlignment,
 				uint16_t nameIndex):
 			mDefinition(definition),
-			mByteCode(ByteCode::Allocator(&allocator)),
-			mLabelList(LabelList::Allocator(&allocator)),
-			mJumpList(JumpList::Allocator(&allocator)),
+			mByteCode(ByteCode::allocator_type(&allocator)),
+			mLabelList(LabelList::allocator_type(&allocator)),
+			mJumpList(JumpList::allocator_type(&allocator)),
 			mArgSize(argSize),
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
@@ -261,9 +261,9 @@ private:
 			mNameIndex(nameIndex)
 		{}
 		const FunctionDefinition *mDefinition;
-		ByteCode::Type mByteCode;
-		LabelList::Type mLabelList;
-		JumpList::Type mJumpList;
+		ByteCode mByteCode;
+		LabelList mLabelList;
+		JumpList mJumpList;
 
 		uint32_t mArgSize;
 		uint32_t mPackedArgSize;
@@ -447,7 +447,7 @@ private:
 	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
 
 	void ResolveJumps();
-	const JumpEntry *FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const;
+	const JumpEntry *FindJumpEntry(const JumpList &jumpList, size_t opCodePos) const;
 
 	void WriteCbo();
 	void WriteConstantTable();
@@ -465,7 +465,7 @@ private:
 
 	bool Is64BitPointer() const { return mPointerSize == POINTER_64BIT; }
 	CompiledFunction &GetFunction() { return *mFunction.GetTop(); }
-	ByteCode::Type &GetByteCode() { return GetFunction().mByteCode; }
+	ByteCode &GetByteCode() { return GetFunction().mByteCode; }
 	bool GetEmitOptionalTemporaries() const { return (mFlags.GetTop() & FLAG_OMIT_OPTIONAL_TEMPORARIES) == 0; }
 	bool GetCollapseNotOperators() const { return (mFlags.GetTop() & FLAG_COLLAPSE_NOT_OPERATORS) != 0; }
 	bool GetOmitConstantFolding() const { return (mFlags.GetTop() & FLAG_OMIT_CONSTANT_FOLDING) != 0; }
@@ -485,17 +485,17 @@ private:
 	static const uint32_t FLAG_COLLAPSE_NOT_OPERATORS = 1 << 1;
 	static const uint32_t FLAG_OMIT_CONSTANT_FOLDING = 1 << 2;
 
-	QualifiedNameIndexMap::Type mQualifiedNameIndexMap;
-	QualifiedNameList::Type mQualifiedNameList;
-	StringIndexMap::Type mStringIndexMap;
-	StringList::Type mStringList;
-	Value32IndexMap::Type mValue32IndexMap;
-	Value32List::Type mValue32List;
-	Value64IndexMap::Type mValue64IndexMap;
-	Value64List::Type mValue64List;
-	FunctionList::Type mFunctionList;
-	NativeMemberList::Type mNativeMemberList;
-	DataList::Type mDataList;
+	QualifiedNameIndexMap mQualifiedNameIndexMap;
+	QualifiedNameList mQualifiedNameList;
+	StringIndexMap mStringIndexMap;
+	StringList mStringList;
+	Value32IndexMap mValue32IndexMap;
+	Value32List mValue32List;
+	Value64IndexMap mValue64IndexMap;
+	Value64List mValue64List;
+	FunctionList mFunctionList;
+	NativeMemberList mNativeMemberList;
+	DataList mDataList;
 	ResultStack mResult;
 	FunctionStack mFunction;
 	LabelStack mContinueLabel;
@@ -783,7 +783,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 		jumpTableSize = (4 + range) * sizeof(Value32);
 	}
 
-	ByteCode::Type &byteCode = GetByteCode();
+	ByteCode &byteCode = GetByteCode();
 	const size_t jumpTableStart = AlignUp(byteCode.size(), sizeof(Value32));
 	const size_t jumpTableEnd = jumpTableStart + jumpTableSize;
 
@@ -794,7 +794,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	SetLabelValue(endLabel, endPos);
 
 	// Now that the switch sections have been generated, the jump table can be resolved.
-	const LabelList::Type &labelList = GetFunction().mLabelList;
+	const LabelList &labelList = GetFunction().mLabelList;
 	const ResolvedSwitchLabel *resolvedLabels = switchStatement->GetResolvedLabelList();
 
 	int32_t defaultOffset = 0;
@@ -3123,7 +3123,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	    IsInRange<int8_t>(rhValue))
 	{
 		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
-		ByteCode::Type &byteCode = GetByteCode();
+		ByteCode &byteCode = GetByteCode();
 		byteCode.push_back(uint8_t(slotIndex));
 		byteCode.push_back(uint8_t(rhValue));
 
@@ -3217,7 +3217,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	    IsInRange<int8_t>(offset))
 	{
 		EmitOpCode(INC_OPCODES.GetPointerOpCode(mPointerSize));
-		ByteCode::Type &byteCode = GetByteCode();
+		ByteCode &byteCode = GetByteCode();
 		byteCode.push_back(uint8_t(slotIndex));
 		byteCode.push_back(uint8_t(offset));
 
@@ -3439,7 +3439,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    IsInRange<int8_t>(pointerOffset))
 	{
-		ByteCode::Type &byteCode = GetByteCode();
+		ByteCode &byteCode = GetByteCode();
 		if (Is64BitPointer())
 		{
 			if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
@@ -3850,7 +3850,7 @@ void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter 
 
 void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 {
-	ByteCode::Type &byteCode = GetByteCode();
+	ByteCode &byteCode = GetByteCode();
 	const size_t opCodePos = byteCode.size();
 	EmitOpCode(opCode);
 	byteCode.push_back(0);
@@ -3891,7 +3891,7 @@ void GeneratorCore::EmitQualifiedName(const Symbol *symbol, const char *suffix)
 void GeneratorCore::EmitValue16(Value16 value)
 {
 	ConvertBigEndian16(value.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
+	ByteCode &byteCode = GetByteCode();
 	byteCode.push_back(value.mBytes[0]);
 	byteCode.push_back(value.mBytes[1]);
 }
@@ -3900,7 +3900,7 @@ void GeneratorCore::EmitValue16(Value16 value)
 void GeneratorCore::EmitValue32At(Value32 value, size_t pos)
 {
 	ConvertBigEndian32(value.mBytes);
-	ByteCode::Type &byteCode = GetByteCode();
+	ByteCode &byteCode = GetByteCode();
 	byteCode[pos + 0] = value.mBytes[0];
 	byteCode[pos + 1] = value.mBytes[1];
 	byteCode[pos + 2] = value.mBytes[2];
@@ -3946,9 +3946,9 @@ void GeneratorCore::ResolveJumps()
 {
 	for (CompiledFunction &compiledFunction: mFunctionList)
 	{
-		ByteCode::Type &byteCode = compiledFunction.mByteCode;
-		JumpList::Type &jumpList = compiledFunction.mJumpList;
-		const LabelList::Type &labelList = compiledFunction.mLabelList;
+		ByteCode &byteCode = compiledFunction.mByteCode;
+		JumpList &jumpList = compiledFunction.mJumpList;
+		const LabelList &labelList = compiledFunction.mLabelList;
 
 		// Resolve jump targets.
 		for (JumpEntry &jumpEntry: jumpList)
@@ -4103,7 +4103,7 @@ void GeneratorCore::ResolveJumps()
 }
 
 
-const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList::Type &jumpList, size_t opCodePos) const
+const GeneratorCore::JumpEntry *GeneratorCore::FindJumpEntry(const JumpList &jumpList, size_t opCodePos) const
 {
 	auto opCodePosComparator = [](const GeneratorCore::JumpEntry &entry, size_t pos)
 		{
@@ -4197,7 +4197,7 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 	for (const CompiledFunction &compiledFunction: mFunctionList)
 	{
 		const FunctionDefinition *function = compiledFunction.mDefinition;
-		const ByteCode::Type &byteCode = compiledFunction.mByteCode;
+		const ByteCode &byteCode = compiledFunction.mByteCode;
 		const bool isStaticInitializer = function == nullptr;
 
 		// Skip empty static initializers.
@@ -4237,7 +4237,7 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		mStream.AddOffset(sizeof(Value32));
 		const int codeStartPos = mStream.GetPosition();
 
-		const JumpList::Type &jumpList = compiledFunction.mJumpList;
+		const JumpList &jumpList = compiledFunction.mJumpList;
 
 		size_t byteCodeIndex = 0;
 		for (const JumpEntry &jumpEntry: jumpList)
@@ -4387,7 +4387,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 				case SIG_ULONG:
 				case SIG_DOUBLE:
 				{
-					const Value64IndexMap::Type::const_iterator index = mValue64IndexMap.find(Value64(typeAndValue->GetULongValue()));
+					const Value64IndexMap::const_iterator index = mValue64IndexMap.find(Value64(typeAndValue->GetULongValue()));
 					if (index != mValue64IndexMap.end())
 					{
 						payload.mUInt = uint32_t(index->second);
@@ -4585,7 +4585,7 @@ int32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
 
 size_t GeneratorCore::CreateLabel()
 {
-	LabelList::Type &labelList = GetFunction().mLabelList;
+	LabelList &labelList = GetFunction().mLabelList;
 	size_t label = labelList.size();
 	labelList.push_back(0);
 	return label;
@@ -4608,7 +4608,7 @@ uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffi
 	const uint16_t index = uint16_t(mQualifiedNameList.size());
 	const SimpleString simpleSuffix(suffix);
 	QualifiedNameEntry entry(symbol, simpleSuffix);
-	QualifiedNameIndexMap::InsertResult insertResult = mQualifiedNameIndexMap.emplace(entry, index);
+	auto insertResult = mQualifiedNameIndexMap.emplace(entry, index);
 	if (insertResult.second)
 	{
 		mQualifiedNameList.push_back(entry);
@@ -4645,7 +4645,7 @@ uint16_t GeneratorCore::MapString(const SimpleString &str)
 		PushError(CompilerError::STRING_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mStringList.size());
-	StringIndexMap::InsertResult insertResult = mStringIndexMap.emplace(str, index);
+	auto insertResult = mStringIndexMap.emplace(str, index);
 	if (insertResult.second)
 	{
 		mStringList.push_back(str);
@@ -4661,7 +4661,7 @@ uint16_t GeneratorCore::MapValue32(const Value32 &value)
 		PushError(CompilerError::VALUE32_TABLE_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mValue32List.size());
-	Value32IndexMap::InsertResult insertResult = mValue32IndexMap.emplace(value, index);
+	auto insertResult = mValue32IndexMap.emplace(value, index);
 	if (insertResult.second)
 	{
 		mValue32List.push_back(value);
@@ -4677,7 +4677,7 @@ uint16_t GeneratorCore::MapValue64(const Value64 &value)
 		PushError(CompilerError::VALUE64_TABLE_OVERFLOW);
 	}
 	const uint16_t index = uint16_t(mValue64List.size());
-	Value64IndexMap::InsertResult insertResult = mValue64IndexMap.emplace(value, index);
+	auto insertResult = mValue64IndexMap.emplace(value, index);
 	if (insertResult.second)
 	{
 		mValue64List.push_back(value);

@@ -3,6 +3,7 @@
 #include "bond/compiler/parser.h"
 #include "bond/compiler/tokenstream.h"
 #include "bond/stl/autostack.h"
+#include "bond/systems/allocator.h"
 
 namespace Bond
 {
@@ -10,23 +11,22 @@ namespace Bond
 class ParserCore
 {
 public:
-	ParserCore(CompilerErrorBuffer &errorBuffer, ParseNodeFactory &factory, TokenStream &stream):
+	ParserCore(Allocator &allocator, CompilerErrorBuffer &errorBuffer, ParseNodeStore &store, TokenStream &stream):
+		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),
-		mFactory(factory),
+		mStore(store),
 		mStream(stream),
 		mHasUnrecoveredError(false)
 	{}
 
 	~ParserCore() {}
+	ParserCore(const ParserCore &other) = delete;
+	ParserCore &operator=(const ParserCore &other) = delete;
 
 	TranslationUnit *Parse();
 
 private:
 	typedef AutoStack<Scope> ScopeStack;
-
-	// Copying disallowed.
-	ParserCore(const ParserCore &other);
-	ParserCore &operator=(const ParserCore &other);
 
 	TranslationUnit *ParseTranslationUnit();
 
@@ -111,8 +111,17 @@ private:
 	void PushUnrecoveredError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
 	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
 
+	template<typename T, typename... Args>
+	T *CreateNode(Args&&... args)
+	{
+		T *node = mAllocator.AllocObject<T>(forward<Args>(args)...);
+		mStore.emplace_back(ParseNodeHandle(mAllocator, node));
+		return node;
+	}
+
+	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
-	ParseNodeFactory &mFactory;
+	ParseNodeStore &mStore;
 	TokenStream &mStream;
 
 	ScopeStack mScope;
@@ -121,26 +130,6 @@ private:
 
 	bool mHasUnrecoveredError;
 };
-
-
-Parser::Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer):
-	mFactory(allocator),
-	mErrorBuffer(errorBuffer),
-	mTranslationUnitList(nullptr)
-{}
-
-
-Parser::~Parser()
-{
-	Dispose();
-}
-
-
-void Parser::Dispose()
-{
-	mFactory.DestroyListHierarchy(mTranslationUnitList);
-	mTranslationUnitList = nullptr;
-}
 
 
 TranslationUnit *Parser::Parse(TokenCollection &collection)
@@ -152,11 +141,8 @@ TranslationUnit *Parser::Parse(TokenCollection &collection)
 
 TranslationUnit *Parser::Parse(TokenStream &stream)
 {
-	ParserCore parser(mErrorBuffer, mFactory, stream);
-	TranslationUnit *translationUnit = parser.Parse();
-	translationUnit->SetNextNode(mTranslationUnitList);
-	mTranslationUnitList = translationUnit;
-	return translationUnit;
+	ParserCore parser(mAllocator, mErrorBuffer, mStore, stream);
+	return parser.Parse();
 }
 
 
@@ -176,7 +162,7 @@ TranslationUnit *ParserCore::ParseTranslationUnit()
 	IncludeDirective *includeDirectives = nullptr;
 	ListParseNode *declarations = nullptr;
 	ParseIncludeDirectiveAndExternalDeclarationLists(&includeDirectives, &declarations);
-	TranslationUnit *unit = mFactory.CreateTranslationUnit(includeDirectives, declarations);
+	TranslationUnit *unit = CreateNode<TranslationUnit>(includeDirectives, declarations);
 	ExpectToken(Token::END);
 	return unit;
 }
@@ -230,7 +216,7 @@ IncludeDirective *ParserCore::ParseIncludeDirective()
 	{
 		const Token *includePath = ExpectToken(Token::CONST_STRING);
 		ExpectToken(Token::SEMICOLON);
-		includeDirective = mFactory.CreateIncludeDirective(includePath);
+		includeDirective = CreateNode<IncludeDirective>(includePath);
 	}
 
 	return includeDirective;
@@ -307,7 +293,7 @@ NamespaceDefinition *ParserCore::ParseNamespaceDefinition()
 		ExpectToken(Token::OBRACE);
 		ListParseNode *declarations = ParseExternalDeclarationList();
 		ExpectToken(Token::CBRACE);
-		space = mFactory.CreateNamespaceDefinition(name, declarations);
+		space = CreateNode<NamespaceDefinition>(name, declarations);
 	}
 
 	return space;
@@ -325,7 +311,7 @@ NativeBlock *ParserCore::ParseNativeBlock()
 		BoolStack::Element inNativeBlockElement(mInNativeBlock, true);
 		ListParseNode *declarations = ParseExternalDeclarationList();
 		ExpectToken(Token::CBRACE);
-		block = mFactory.CreateNativeBlock(keyword, declarations);
+		block = CreateNode<NativeBlock>(keyword, declarations);
 	}
 
 	return block;
@@ -345,7 +331,7 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 	if (mStream.NextIf(Token::KEY_ENUM) != nullptr)
 	{
 		const Token *name = ExpectToken(Token::IDENTIFIER);
-		enumeration = mFactory.CreateEnumDeclaration(name);
+		enumeration = CreateNode<EnumDeclaration>(name);
 		ExpectToken(Token::OBRACE);
 		ParseNodeList<Enumerator> enumeratorList;
 
@@ -388,7 +374,7 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
 			value = ParseConstExpression();
 			AssertNode(value);
 		}
-		enumerator = mFactory.CreateEnumerator(name, typeDescriptor, value);
+		enumerator = CreateNode<Enumerator>(name, typeDescriptor, value);
 	}
 
 	return enumerator;
@@ -433,7 +419,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 			isStub = mStream.NextIf(Token::SEMICOLON) != nullptr;
 		}
 
-		declaration = mFactory.CreateStructDeclaration(
+		declaration = CreateNode<StructDeclaration>(
 			name,
 			size,
 			alignment,
@@ -514,13 +500,14 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 {
 	*functionDefinition = nullptr;
 	*declarativeStatement = nullptr;
-	const int startPos = mStream.GetPosition();
+	const auto streamPos = mStream.GetPosition();
+	const auto storePos = mStore.size();
 	TypeDescriptor *descriptor = ParseTypeDescriptor();
 
 	// Could be a function declaration, function definition or a constant declarative statement.
 	if (descriptor != nullptr)
 	{
-		const int namePos = mStream.GetPosition();
+		const auto namePos = mStream.GetPosition();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 
 		if (name != nullptr)
@@ -551,7 +538,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					PushError(CompilerError::FUNCTION_RETURNS_ARRAY, name);
 				}
 
-				FunctionPrototype *prototype = mFactory.CreateFunctionPrototype(name, descriptor, parameterList, isConst);
+				FunctionPrototype *prototype = CreateNode<FunctionPrototype>(name, descriptor, parameterList, isConst);
 				CompoundStatement *body = nullptr;
 				const Token *obrace = mStream.PeekIf(Token::OBRACE);
 
@@ -573,7 +560,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					}
 				}
 
-				*functionDefinition = mFactory.CreateFunctionDefinition(prototype, body, thisTypeDescriptor, mScope.GetTop());
+				*functionDefinition = CreateNode<FunctionDefinition>(prototype, body, thisTypeDescriptor, mScope.GetTop());
 			}
 			else
 			{
@@ -591,7 +578,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 					{
 						descriptor->SetAddressable();
 					}
-					*declarativeStatement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
+					*declarativeStatement = CreateNode<DeclarativeStatement>(descriptor, initializerList);
 					ExpectDeclarationTerminator();
 				}
 			}
@@ -599,8 +586,8 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 		else
 		{
 			// We can't tell what this is. Undo everything and bail.
-			mStream.SetPosition(startPos);
-			mFactory.DestroyHierarchy(descriptor);
+			mStream.SetPosition(streamPos);
+			mStore.resize(storePos);
 		}
 	}
 }
@@ -642,7 +629,7 @@ Parameter *ParserCore::ParseParameter()
 		AssertNonVoidType(descriptor);
 		descriptor->SetAddressable();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
-		parameter = mFactory.CreateParameter(name, descriptor);
+		parameter = CreateNode<Parameter>(name, descriptor);
 	}
 
 	return parameter;
@@ -661,7 +648,7 @@ TypeDescriptor *ParserCore::ParseRelaxedTypeDescriptor()
 TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 {
 	TypeDescriptor *descriptor = nullptr;
-	const int pos = mStream.GetPosition();
+	const auto pos = mStream.GetPosition();
 	const bool isConst1 = mStream.NextIf(Token::KEY_CONST) != nullptr;
 	TypeSpecifier *specifier = ParseTypeSpecifier();
 
@@ -674,7 +661,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			PushError(CompilerError::DUPLICATE_CONST, const2);
 		}
 
-		descriptor = mFactory.CreateTypeDescriptor(specifier, isConst1 || isConst2);
+		descriptor = CreateNode<TypeDescriptor>(specifier, isConst1 || isConst2);
 		Expression *lengthTail = nullptr;
 
 		const Token *token = mStream.NextIf(TYPE_DESCRIPTORS_TYPESET);
@@ -696,7 +683,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 			{
 				const bool isConst = mStream.NextIf(Token::KEY_CONST) != nullptr;
 				descriptor->SetAddressable();
-				descriptor = mFactory.CreateTypeDescriptor(descriptor, isConst);
+				descriptor = CreateNode<TypeDescriptor>(descriptor, isConst);
 				lengthTail = nullptr;
 			}
 			else
@@ -706,7 +693,7 @@ TypeDescriptor *ParserCore::ParseTypeDescriptor(bool isRelaxedTypeDescriptor)
 				const bool lengthAbsent = length == nullptr;
 				if (lengthAbsent)
 				{
-					length = mFactory.CreateEmptyExpression();
+					length = CreateNode<EmptyExpression>();
 				}
 
 				ExpectToken(Token::CBRACKET);
@@ -752,7 +739,7 @@ TypeSpecifier *ParserCore::ParseTypeSpecifier()
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier();
 		if (identifier != nullptr)
 		{
-			specifier = mFactory.CreateTypeSpecifier(identifier);
+			specifier = CreateNode<TypeSpecifier>(identifier);
 		}
 	}
 
@@ -780,7 +767,7 @@ TypeSpecifier *ParserCore::ParsePrimitiveTypeSpecifier()
 
 	if (primitiveType != nullptr)
 	{
-		specifier = mFactory.CreateTypeSpecifier(primitiveType);
+		specifier = CreateNode<TypeSpecifier>(primitiveType);
 	}
 
 	return specifier;
@@ -829,7 +816,7 @@ NamedInitializer *ParserCore::ParseNamedInitializer(TypeDescriptor *typeDescript
 			AssertNode(initializer);
 		}
 
-		namedInitializer = mFactory.CreateNamedInitializer(name, initializer, typeDescriptor, mScope.GetTop(), mInNativeBlock.GetTop());
+		namedInitializer = CreateNode<NamedInitializer>(name, initializer, typeDescriptor, mScope.GetTop(), mInNativeBlock.GetTop());
 	}
 
 	return namedInitializer;
@@ -868,14 +855,14 @@ Initializer *ParserCore::ParseInitializer()
 		}
 
 		ExpectToken(Token::CBRACE);
-		initializer = mFactory.CreateInitializer(openBrace, initializerList.GetHead());
+		initializer = CreateNode<Initializer>(openBrace, initializerList.GetHead());
 	}
 	else
 	{
 		Expression *expression = ParseAssignmentExpression();
 		if (expression != nullptr)
 		{
-			initializer = mFactory.CreateInitializer(expression);
+			initializer = CreateNode<Initializer>(expression);
 		}
 	}
 
@@ -893,13 +880,13 @@ QualifiedIdentifier *ParserCore::ParseQualifiedIdentifier()
 
 	if (name != nullptr)
 	{
-		head = mFactory.CreateQualifiedIdentifier(name);
+		head = CreateNode<QualifiedIdentifier>(name);
 		QualifiedIdentifier *current = head;
 
 		while ((current != nullptr) && mStream.NextIf(Token::SCOPE))
 		{
 			name = ExpectToken(Token::IDENTIFIER);
-			QualifiedIdentifier *next = mFactory.CreateQualifiedIdentifier(name);
+			QualifiedIdentifier *next = CreateNode<QualifiedIdentifier>(name);
 			current->SetNextNode(next);
 			current = next;
 		}
@@ -984,7 +971,7 @@ CompoundStatement *ParserCore::ParseCompoundStatement()
 		}
 
 		ExpectToken(Token::CBRACE);
-		compoundStatement = mFactory.CreateCompoundStatement(statementList.GetHead());
+		compoundStatement = CreateNode<CompoundStatement>(statementList.GetHead());
 	}
 
 	return compoundStatement;
@@ -1014,7 +1001,7 @@ IfStatement *ParserCore::ParseIfStatement()
 			AssertNode(elseStatement);
 		}
 
-		ifStatement = mFactory.CreateIfStatement(keyword, condition, thenStatement, elseStatement);
+		ifStatement = CreateNode<IfStatement>(keyword, condition, thenStatement, elseStatement);
 	}
 
 	return ifStatement;
@@ -1050,7 +1037,7 @@ SwitchStatement *ParserCore::ParseSwitchStatement()
 			PushError(CompilerError::EMPTY_SWITCH_STATEMENT, keyword);
 		}
 
-		switchStatement = mFactory.CreateSwitchStatement(keyword, control, sectionList.GetHead());
+		switchStatement = CreateNode<SwitchStatement>(keyword, control, sectionList.GetHead());
 	}
 
 	return switchStatement;
@@ -1085,7 +1072,7 @@ SwitchSection *ParserCore::ParseSwitchSection()
 		statementList.Append(next);
 	}
 
-	section = mFactory.CreateSwitchSection(labelList, statementList.GetHead());
+	section = CreateNode<SwitchSection>(labelList, statementList.GetHead());
 
 	return section;
 }
@@ -1105,11 +1092,11 @@ SwitchLabel *ParserCore::ParseSwitchLabel()
 		{
 			Expression *expression = ParseConstExpression();
 			AssertNode(expression);
-			label = mFactory.CreateSwitchLabel(labelToken, expression);
+			label = CreateNode<SwitchLabel>(labelToken, expression);
 		}
 		else
 		{
-			label = mFactory.CreateDefaultLabel(labelToken);
+			label = CreateNode<SwitchLabel>(labelToken);
 		}
 
 		ExpectLabelTerminator();
@@ -1134,7 +1121,7 @@ WhileStatement *ParserCore::ParseWhileStatement()
 		ExpectToken(Token::CPAREN);
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
-		whileStatement = mFactory.CreateWhileStatement(keyword, condition, body);
+		whileStatement = CreateNode<WhileStatement>(keyword, condition, body);
 	}
 
 	return whileStatement;
@@ -1158,7 +1145,7 @@ WhileStatement *ParserCore::ParseDoWhileStatement()
 		AssertNode(condition);
 		ExpectToken(Token::CPAREN);
 		ExpectToken(Token::SEMICOLON);
-		whileStatement = mFactory.CreateWhileStatement(keyword, condition, body);
+		whileStatement = CreateNode<WhileStatement>(keyword, condition, body);
 	}
 
 	return whileStatement;
@@ -1187,7 +1174,7 @@ ForStatement *ParserCore::ParseForStatement()
 		ExpectToken(Token::CPAREN);
 		ParseNode *body = ParseStatement();
 		AssertNode(body);
-		forStatement = mFactory.CreateForStatement(keyword, initializer, condition, countingExpression, body);
+		forStatement = CreateNode<ForStatement>(keyword, initializer, condition, countingExpression, body);
 	}
 
 	return forStatement;
@@ -1211,7 +1198,7 @@ JumpStatement *ParserCore::ParseJumpStatement()
 			rhs = ParseExpression();
 		}
 		ExpectStatementTerminator();
-		jumpStatement = mFactory.CreateJumpStatement(keyword, rhs);
+		jumpStatement = CreateNode<JumpStatement>(keyword, rhs);
 	}
 
 	return jumpStatement;
@@ -1223,7 +1210,8 @@ JumpStatement *ParserCore::ParseJumpStatement()
 ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 {
 	ListParseNode *statement = nullptr;
-	const int startPos = mStream.GetPosition();
+	const auto streamPos = mStream.GetPosition();
+	const auto storePos = mStore.size();
 
 	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
 	// index operators can appear like a type descriptor as well as an expression, we'll treat anything
@@ -1237,16 +1225,16 @@ ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
 		{
 			AssertNonVoidType(descriptor);
 			descriptor->SetAddressable();
-			statement = mFactory.CreateDeclarativeStatement(descriptor, initializerList);
+			statement = CreateNode<DeclarativeStatement>(descriptor, initializerList);
 			ExpectStatementTerminator();
 		}
 		else
 		{
-			// The tokens that looked like a type descriptor, might actually be part of an expression.
-			const int descriptorPos = mStream.GetPosition();
-			mFactory.DestroyHierarchy(descriptor);
+			// The tokens that looked like a type descriptor might actually be part of an expression.
+			const auto descriptorPos = mStream.GetPosition();
 			descriptor = nullptr;
-			mStream.SetPosition(startPos);
+			mStream.SetPosition(streamPos);
+			mStore.resize(storePos);
 
 			statement = ParseExpressionStatement();
 
@@ -1279,11 +1267,11 @@ ExpressionStatement *ParserCore::ParseExpressionStatement()
 	if (expression != nullptr)
 	{
 		ExpectStatementTerminator();
-		expressionStatement = mFactory.CreateExpressionStatement(expression);
+		expressionStatement = CreateNode<ExpressionStatement>(expression);
 	}
 	else if (mStream.NextIf(Token::SEMICOLON))
 	{
-		expressionStatement = mFactory.CreateExpressionStatement(nullptr);
+		expressionStatement = CreateNode<ExpressionStatement>(nullptr);
 	}
 
 	return expressionStatement;
@@ -1320,7 +1308,7 @@ Expression *ParserCore::ParseExpression()
 			{
 				Expression *rhs = ParseAssignmentExpression();
 				AssertNode(rhs);
-				expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+				expression = CreateNode<BinaryExpression>(token, expression, rhs);
 				token = mStream.NextIf(Token::COMMA);
 			}
  		}
@@ -1355,7 +1343,7 @@ Expression *ParserCore::ParseAssignmentExpression()
 			AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 			Expression *rhs = ParseAssignmentExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 		}
 	}
 
@@ -1380,7 +1368,7 @@ Expression *ParserCore::ParseConditionalExpression()
 			ExpectToken(Token::COLON);
 			Expression *falseExpression = ParseConditionalExpression();
 			AssertNode(falseExpression);
-			expression = mFactory.CreateConditionalExpression(token, expression, trueExpression, falseExpression);
+			expression = CreateNode<ConditionalExpression>(token, expression, trueExpression, falseExpression);
 		}
 	}
 
@@ -1402,7 +1390,7 @@ Expression *ParserCore::ParseLogicalOrExpression()
 		{
 			Expression *rhs = ParseLogicalAndExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(Token::OP_OR);
 		}
 	}
@@ -1425,7 +1413,7 @@ Expression *ParserCore::ParseLogicalAndExpression()
 		{
 			Expression *rhs = ParseInclusiveOrExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(Token::OP_AND);
 		}
 	}
@@ -1448,7 +1436,7 @@ Expression *ParserCore::ParseInclusiveOrExpression()
 		{
 			Expression *rhs = ParseExclusiveOrExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(Token::OP_BIT_OR);
 		}
 	}
@@ -1471,7 +1459,7 @@ Expression *ParserCore::ParseExclusiveOrExpression()
 		{
 			Expression *rhs = ParseAndExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(Token::OP_BIT_XOR);
 		}
 	}
@@ -1494,7 +1482,7 @@ Expression *ParserCore::ParseAndExpression()
 		{
 			Expression *rhs = ParseEqualityExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(Token::OP_AMP);
 		}
 	}
@@ -1518,7 +1506,7 @@ Expression *ParserCore::ParseEqualityExpression()
 		{
 			Expression *rhs = ParseRelationalExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(EQUALITY_OPERATORS_TYPESET);
 		}
 	}
@@ -1544,7 +1532,7 @@ Expression *ParserCore::ParseRelationalExpression()
 		{
 			Expression *rhs = ParseShiftExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(RELATIONAL_OPERATORS_TYPESET);
 		}
 	}
@@ -1568,7 +1556,7 @@ Expression *ParserCore::ParseShiftExpression()
 		{
 			Expression *rhs = ParseAdditiveExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(SHIFT_OPERATORS_TYPESET);
 		}
 	}
@@ -1592,7 +1580,7 @@ Expression *ParserCore::ParseAdditiveExpression()
 		{
 			Expression *rhs = ParseMultiplicativeExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(ADDITIVE_OPERATORS_TYPESET);
 		}
 	}
@@ -1617,7 +1605,7 @@ Expression *ParserCore::ParseMultiplicativeExpression()
 		{
 			Expression *rhs = ParseCastExpression();
 			AssertNode(rhs);
-			expression = mFactory.CreateBinaryExpression(token, expression, rhs);
+			expression = CreateNode<BinaryExpression>(token, expression, rhs);
 			token = mStream.NextIf(MULTIPLICATIVE_OPERATORS_TYPESET);
 		}
 	}
@@ -1645,7 +1633,7 @@ Expression *ParserCore::ParseCastExpression()
 		Expression *rhs = ParseExpression();
 		AssertNode(rhs);
 		ExpectToken(Token::CPAREN);
-		expression = mFactory.CreateCastExpression(token, descriptor, rhs);
+		expression = CreateNode<CastExpression>(token, descriptor, rhs);
 	}
 	else
 	{
@@ -1693,7 +1681,7 @@ Expression *ParserCore::ParseUnaryExpression()
 		}
 
 		AssertNode(rhs);
-		expression = mFactory.CreateUnaryExpression(op, rhs);
+		expression = CreateNode<UnaryExpression>(op, rhs);
 	}
 
 	else if ((op = mStream.NextIf(PROPERTYOF_OPERATORS_TYPESET)) != nullptr)
@@ -1704,13 +1692,13 @@ Expression *ParserCore::ParseUnaryExpression()
 			AssertNode(descriptor);
 			AssertNonVoidType(descriptor);
 			ExpectToken(Token::OP_GT);
-			expression = mFactory.CreatePropertyofExpression(op, descriptor);
+			expression = CreateNode<PropertyofExpression>(op, descriptor);
 		}
 		else
 		{
 			Expression *unary = ParseUnaryExpression();
 			AssertNode(unary);
-			expression = mFactory.CreatePropertyofExpression(op, unary);
+			expression = CreateNode<PropertyofExpression>(op, unary);
 		}
 	}
 	else
@@ -1744,7 +1732,7 @@ Expression *ParserCore::ParsePostfixExpression()
 				case Token::OBRACKET:
 				{
 					Expression *index = ParseExpression();
-					expression = mFactory.CreateArraySubscriptExpression(token, expression, index);
+					expression = CreateNode<ArraySubscriptExpression>(token, expression, index);
 					ExpectToken(Token::CBRACKET);
 				}
 				break;
@@ -1752,7 +1740,7 @@ Expression *ParserCore::ParsePostfixExpression()
 				case Token::OPAREN:
 				{
 					Expression *argumentList = ParseArgumentList();
-					expression = mFactory.CreateFunctionCallExpression(token, expression, argumentList);
+					expression = CreateNode<FunctionCallExpression>(token, expression, argumentList);
 					AssertNonConstExpression(CompilerError::FUNCTION_CALL_IN_CONST_EXPRESSION, token);
 					ExpectToken(Token::CPAREN);
 				}
@@ -1762,13 +1750,13 @@ Expression *ParserCore::ParsePostfixExpression()
 				case Token::PERIOD:
 				{
 					const Token *memberName = ExpectToken(Token::IDENTIFIER);
-					expression = mFactory.CreateMemberExpression(token, memberName, expression);
+					expression = CreateNode<MemberExpression>(token, memberName, expression);
 				}
 				break;
 
 				default:
 				{
-					expression = mFactory.CreatePostfixExpression(token, expression);
+					expression = CreateNode<PostfixExpression>(token, expression);
 					AssertNonConstExpression(CompilerError::INVALID_OPERATOR_IN_CONST_EXPRESSION, token);
 				}
 				break;
@@ -1793,11 +1781,11 @@ Expression *ParserCore::ParsePrimaryExpression()
 
 	if (token != nullptr)
 	{
-		expression = mFactory.CreateConstantLiteralExpression(token);
+		expression = CreateNode<ConstantLiteralExpression>(token);
 	}
 	else if ((token = mStream.NextIf(Token::KEY_THIS)) != nullptr)
 	{
-		expression = mFactory.CreateThisExpression(token);
+		expression = CreateNode<ThisExpression>(token);
 	}
 	else if (mStream.NextIf(Token::OPAREN) != nullptr)
 	{
@@ -1810,7 +1798,7 @@ Expression *ParserCore::ParsePrimaryExpression()
 		QualifiedIdentifier *identifier = ParseQualifiedIdentifier();
 		if (identifier != nullptr)
 		{
-			expression = mFactory.CreateIdentifierExpression(identifier);
+			expression = CreateNode<IdentifierExpression>(identifier);
 		}
 	}
 

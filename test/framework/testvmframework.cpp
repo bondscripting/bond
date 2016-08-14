@@ -43,14 +43,15 @@ bool RunVMTest(
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		Bond::Parser parser(parserAllocator, errorBuffer);
+		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&parserAllocator)));
+		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
 		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &fileLoader);
 		Bond::FrontEnd frontEnd(frontEndAllocator, lexer, parser, analyzer, stdLibLoader);
 
 		frontEnd.AddInputFile(scriptName);
-		frontEnd.Analyze();
+		Bond::TranslationUnit *translationUnitList = frontEnd.Analyze();
 
 		if (!errorBuffer.HasErrors())
 		{
@@ -58,7 +59,7 @@ bool RunVMTest(
 			uint8_t cboBuffer[MAX_CBO_SIZE];
 			Bond::MemoryOutputStream cboStream(cboBuffer, MAX_CBO_SIZE);
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);
-			generator.Generate(parser.GetTranslationUnitList(), cboStream);
+			generator.Generate(translationUnitList, cboStream);
 
 			if (!errorBuffer.HasErrors())
 			{

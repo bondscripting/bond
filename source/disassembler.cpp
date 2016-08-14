@@ -22,11 +22,11 @@ public:
 			Allocator &allocator,
 			OutputStream &stream,
 			const uint8_t *byteCode):
-		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::Allocator(&allocator)),
-		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::Allocator(&allocator)),
-		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::Allocator(&allocator)),
-		mQualifiedNameTable(validationResult.mQualifiedNameCount, QualifiedName(), QualifiedNameTable::Allocator(&allocator)),
-		mQualifiedNameElementTable(validationResult.mQualifiedNameElementCount + validationResult.mQualifiedNameCount, nullptr, QualifiedNameElementTable::Allocator(&allocator)),
+		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::allocator_type(&allocator)),
+		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::allocator_type(&allocator)),
+		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::allocator_type(&allocator)),
+		mQualifiedNameTable(validationResult.mQualifiedNameCount, QualifiedName(), QualifiedNameTable::allocator_type(&allocator)),
+		mQualifiedNameElementTable(validationResult.mQualifiedNameElementCount + validationResult.mQualifiedNameCount, nullptr, QualifiedNameElementTable::allocator_type(&allocator)),
 		mValidationResult(validationResult),
 		mStream(stream),
 		mByteCode(byteCode),
@@ -56,11 +56,11 @@ private:
 	Value32 ReadValue32();
 	Value64 ReadValue64();
 
-	Value32Table::Type mValue32Table;
-	Value64Table::Type mValue64Table;
-	StringTable::Type mStringTable;
-	QualifiedNameTable::Type mQualifiedNameTable;
-	QualifiedNameElementTable::Type mQualifiedNameElementTable;
+	Value32Table mValue32Table;
+	Value64Table mValue64Table;
+	StringTable mStringTable;
+	QualifiedNameTable mQualifiedNameTable;
+	QualifiedNameElementTable mQualifiedNameElementTable;
 	CboValidator::Result mValidationResult;
 	OutputStream &mStream;
 	const uint8_t *mByteCode;

@@ -8,14 +8,7 @@ namespace Bond
 {
 
 template <typename KeyType, typename ValueType, typename CompareType = std::less<KeyType> >
-struct Map
-{
-	typedef CompareType Compare;
-	typedef std::pair<KeyType, ValueType> KeyValue;
-	typedef StlAllocator<KeyValue> Allocator;
-	typedef std::map<KeyType, ValueType, CompareType, Allocator> Type;
-	typedef std::pair<typename Type::iterator, bool> InsertResult;
-};
+using Map = std::map<KeyType, ValueType, CompareType, StlAllocator<ValueType> >;
 
 }
 

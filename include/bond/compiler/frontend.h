@@ -3,6 +3,7 @@
 
 #include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
+#include "bond/stl/vector.h"
 #include "bond/types/simplestring.h"
 
 namespace Bond
@@ -11,6 +12,7 @@ namespace Bond
 class FileLoader;
 class Parser;
 class SemanticAnalyzer;
+class TranslationUnit;
 
 /// \brief A compiler front end for the Bond scripting language.
 ///
@@ -33,6 +35,7 @@ class SemanticAnalyzer;
 /// proprietary asset store, etc).
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TranslationUnit
+/// \ingroup compiler
 class FrontEnd
 {
 public:
@@ -48,13 +51,16 @@ public:
 			Parser &parser,
 			SemanticAnalyzer &semanticAnalyzer,
 			FileLoader &fileLoader):
-		mInputFileNameList(StringList::Allocator(&allocator)),
-		mTokenCollectionList(TokenCollectionHandleList::Allocator(&allocator)),
+		mInputFileNameList(StringList::allocator_type(&allocator)),
+		mTokenCollectionStore(TokenCollectionStore::allocator_type(&allocator)),
 		mLexer(lexer),
 		mParser(parser),
 		mSemanticAnalyzer(semanticAnalyzer),
 		mFileLoader(fileLoader)
 	{}
+
+	FrontEnd(const FrontEnd &other) = delete;
+	FrontEnd &operator=(const FrontEnd &other) = delete;
 
 	/// \brief Adds the name of a Bond source file to the input file list.
 	/// \param inputFileName The name of the file to be loaded. Since SimpleStrings are not deep
@@ -67,20 +73,18 @@ public:
 
 	/// \brief Performs loading, parsing and semantic analysis of all source files in the input file
 	/// list, as well as those files referenced via include directives.
-	void Analyze();
+	/// returns A parse tree of ParseNodes rooted with a list of TranslationUnits.
+	TranslationUnit *Analyze();
 
 	/// \brief Returns whether any errors occured whilst anylizing the source code.
 	bool HasErrors() const;
 
 private:
-	FrontEnd(const FrontEnd &other) = delete;
-	FrontEnd &operator=(const FrontEnd &other) = delete;
-
 	typedef List<SimpleString> StringList;
-	typedef List<TokenCollectionHandle> TokenCollectionHandleList;
+	typedef Vector<TokenCollectionHandle> TokenCollectionStore;
 
-	StringList::Type mInputFileNameList;
-	TokenCollectionHandleList::Type mTokenCollectionList;
+	StringList mInputFileNameList;
+	TokenCollectionStore mTokenCollectionStore;
 	Lexer &mLexer;
 	Parser &mParser;
 	SemanticAnalyzer &mSemanticAnalyzer;

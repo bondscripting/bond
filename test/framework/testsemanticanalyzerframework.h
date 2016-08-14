@@ -2,7 +2,6 @@
 #define TEST_FRAMEWORK_TESTSEMANTICANALYZERFRAMEWORK_H
 
 #include "framework/testframework.h"
-#include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 
 #define DEFINE_SEMANTICANALYZER_TEST(testName, scriptName)                    \

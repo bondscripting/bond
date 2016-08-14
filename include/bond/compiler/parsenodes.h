@@ -57,6 +57,8 @@ class ParseNodeList
 public:
 	ParseNodeList(): mHead(nullptr), mTail(nullptr) {}
 
+	bool IsEmpty() const { return mHead == nullptr; }
+
 	NodeType *GetHead() const { return mHead; }
 
 	void Append(NodeType *node)

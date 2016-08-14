@@ -3,14 +3,14 @@
 
 #include "framework/testframework.h"
 #include "bond/compiler/compilererror.h"
-#include "bond/compiler/parser.h"
+#include "bond/compiler/parsenodes.h"
 #include "bond/tools/parsenodecounter.h"
 
 #define DEFINE_PARSER_TEST(testName, scriptName)                              \
   bool __Validate ## testName ## __(                                          \
     Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
-    Bond::Parser &parser);                                                    \
+    Bond::TranslationUnit *translationUnit);                                  \
                                                                               \
   bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
   {                                                                           \
@@ -21,10 +21,10 @@
   bool __Validate ## testName ## __(                                          \
     Bond::OutputStream &logger,                                               \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
-    Bond::Parser &parser)                                                     \
+    Bond::TranslationUnit *translationUnit)                                   \
 
-#define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                                                  \
-  if (!TestFramework::AssertParseNodeCount(logger, __FILE__, __LINE__, root, expectedCount)) return false; \
+#define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                                                       \
+  if (!TestFramework::AssertParseNodeCount(logger, __FILE__, __LINE__, parseNode, expectedCount)) return false; \
 
 
 namespace TestFramework
@@ -33,7 +33,7 @@ namespace TestFramework
 typedef bool ParserValidationFunction(
 	Bond::OutputStream &logger,
 	Bond::CompilerErrorBuffer &errorBuffer,
-	Bond::Parser &parser);
+	Bond::TranslationUnit *translationUnit);
 
 bool RunParserTest(
 	Bond::OutputStream &logger,

@@ -3,6 +3,7 @@
 #include "bond/compiler/compilererror.h"
 #include "bond/compiler/frontend.h"
 #include "bond/compiler/lexer.h"
+#include "bond/compiler/parser.h"
 #include "bond/io/diskfileloader.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -30,7 +31,8 @@ bool RunSemanticAnalyzerTest(
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		Bond::Parser parser(parserAllocator, errorBuffer);
+		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&parserAllocator)));
+		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
 		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &fileLoader);

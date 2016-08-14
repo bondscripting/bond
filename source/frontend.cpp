@@ -25,23 +25,25 @@ bool FrontEnd::ContainsInputFile(const SimpleString &inputFileName)
 }
 
 
-void FrontEnd::Analyze()
+TranslationUnit *FrontEnd::Analyze()
 {
+	ParseNodeList<TranslationUnit> translationUnitList;
 	const size_t numFilesToCompile = mInputFileNameList.size();
 	size_t i = 0;
-	StringList::Type::const_iterator it = mInputFileNameList.begin();
+	StringList::const_iterator it = mInputFileNameList.begin();
 	while ((it != mInputFileNameList.end()) && !HasErrors())
 	{
 		const char *fileName = it->GetString();
 		auto scriptHandle = mFileLoader.LoadFile(fileName);
 		const char *script = reinterpret_cast<const char *>(scriptHandle.Get().mData);
 		const size_t length = scriptHandle.Get().mLength;
-		mTokenCollectionList.push_back(mLexer.Lex(fileName, script, length));
+		mTokenCollectionStore.emplace_back(mLexer.Lex(fileName, script, length));
 
 		if (!HasErrors())
 		{
-			TokenStream stream = mTokenCollectionList.back()->GetTokenStream();
+			TokenStream stream = mTokenCollectionStore.back()->GetTokenStream();
 			TranslationUnit *translationUnit = mParser.Parse(stream);
+			translationUnitList.Append(translationUnit);
 			if (!HasErrors())
 			{
 				translationUnit->SetRequiresCodeGeneration(i < numFilesToCompile);
@@ -57,10 +59,12 @@ void FrontEnd::Analyze()
 		++i;
 	}
 
-	if (!HasErrors())
+	if (!HasErrors() && !translationUnitList.IsEmpty())
 	{
-		mSemanticAnalyzer.Analyze(mParser.GetTranslationUnitList());
+		mSemanticAnalyzer.Analyze(translationUnitList.GetHead());
 	}
+
+	return translationUnitList.GetHead();
 }
 
 

@@ -13,6 +13,7 @@ namespace Bond
 ///
 /// CharStream is used internally by Lexer; it is unlikely that someone integrating Bond into
 /// their application will have to make direct use of it.
+/// \ingroup compiler
 class CharStream
 {
 public:

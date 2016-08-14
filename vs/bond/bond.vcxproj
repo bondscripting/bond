@@ -32,7 +32,6 @@
     <ClInclude Include="..\..\include\bond\compiler\compilererror.h" />
     <ClInclude Include="..\..\include\bond\compiler\frontend.h" />
     <ClInclude Include="..\..\include\bond\compiler\lexer.h" />
-    <ClInclude Include="..\..\include\bond\compiler\parsenodefactory.h" />
     <ClInclude Include="..\..\include\bond\compiler\parsenodes.h" />
     <ClInclude Include="..\..\include\bond\compiler\parsenodesfwd.h" />
     <ClInclude Include="..\..\include\bond\compiler\parsenodetraverser.h" />
@@ -144,7 +143,6 @@
     <ClCompile Include="..\..\source\outputstream.cpp" />
     <ClCompile Include="..\..\source\outputstreamadaptor.cpp" />
     <ClCompile Include="..\..\source\parsenodecounter.cpp" />
-    <ClCompile Include="..\..\source\parsenodefactory.cpp" />
     <ClCompile Include="..\..\source\parsenodes.cpp" />
     <ClCompile Include="..\..\source\parsenodetraverser.cpp" />
     <ClCompile Include="..\..\source\parsenodeutil.cpp" />

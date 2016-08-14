@@ -20,15 +20,15 @@ class CboLoader
 {
 public:
 	CboLoader(Allocator &allocator):
-		mNativeBindingList(NativeBindingList::Allocator(&allocator)),
-		mFileDataList(FileDataList::Allocator(&allocator)),
+		mNativeBindingList(NativeBindingList::allocator_type(&allocator)),
+		mFileDataList(FileDataList::allocator_type(&allocator)),
 		mTempAllocator(allocator),
 		mPermAllocator(allocator)
 	{}
 
 	CboLoader(Allocator &tempAllocator, Allocator &permAllocator):
-		mNativeBindingList(NativeBindingList::Allocator(&tempAllocator)),
-		mFileDataList(FileDataList::Allocator(&tempAllocator)),
+		mNativeBindingList(NativeBindingList::allocator_type(&tempAllocator)),
+		mFileDataList(FileDataList::allocator_type(&tempAllocator)),
 		mTempAllocator(tempAllocator),
 		mPermAllocator(permAllocator)
 	{}
@@ -52,8 +52,8 @@ private:
 	void UnresolvedQualifiedName(const QualifiedName &name) const;
 	void UnresolvedQualifiedName(const char *name) const;
 
-	NativeBindingList::Type mNativeBindingList;
-	FileDataList::Type mFileDataList;
+	NativeBindingList mNativeBindingList;
+	FileDataList mFileDataList;
 	Allocator &mTempAllocator;
 	Allocator &mPermAllocator;
 };

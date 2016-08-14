@@ -8,11 +8,7 @@ namespace Bond
 {
 
 template <typename ValueType>
-struct Vector
-{
-	typedef StlAllocator<ValueType> Allocator;
-	typedef std::vector<ValueType, Allocator> Type;
-};
+using Vector = std::vector<ValueType, StlAllocator<ValueType> >;
 
 }
 

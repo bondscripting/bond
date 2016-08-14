@@ -8,11 +8,7 @@ namespace Bond
 {
 
 template <typename ValueType>
-struct List
-{
-	typedef StlAllocator<ValueType> Allocator;
-	typedef std::list<ValueType, Allocator> Type;
-};
+using List = std::list<ValueType, StlAllocator<ValueType> >;
 
 }
 

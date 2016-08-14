@@ -1,5 +1,7 @@
+
 #include "framework/testparserframework.h"
 #include "bond/compiler/lexer.h"
+#include "bond/compiler/parser.h"
 #include "bond/io/diskfileloader.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -29,13 +31,15 @@ bool RunParserTest(
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
-		Bond::Parser parser(parserAllocator, errorBuffer);
+		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&parserAllocator)));
+		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
+		Bond::TranslationUnit *translationUnit = nullptr;
 		if (!errorBuffer.HasErrors())
 		{
 			Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
-			parser.Parse(stream);
+			translationUnit = parser.Parse(stream);
 		}
-		result = validationFunction(logger, errorBuffer, parser);
+		result = validationFunction(logger, errorBuffer, translationUnit);
 	}
 	catch (const Bond::Exception &e)
 	{

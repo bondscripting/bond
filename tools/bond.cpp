@@ -11,7 +11,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <new>
 
 const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 64;
@@ -24,8 +23,8 @@ int main(int argc, const char *argv[])
 	Bond::ValidateConfiguration();
 
 	Bond::DefaultAllocator allocator;
-	StringList::Type cboFileNameList((StringList::Allocator(&allocator)));
-	StringList::Type argList((StringList::Allocator(&allocator)));
+	StringList cboFileNameList((StringList::allocator_type(&allocator)));
+	StringList argList((StringList::allocator_type(&allocator)));
 	size_t stackSize = DEFAULT_STACK_SIZE;
 	const char *entryPoint = DEFAULT_ENTRY_POINT;
 	int32_t exitCode = 0;
@@ -95,12 +94,12 @@ int main(int argc, const char *argv[])
 		{
 			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
-			FileHandleList::Type cboFileHandleList((FileHandleList::Allocator(&allocator)));
+			FileHandleList cboFileHandleList((FileHandleList::allocator_type(&allocator)));
 			cboFileHandleList.reserve(cboFileNameList.size());
 
 			Bond::LoadAllLibs(cboLoader);
 
-			StringList::Type::const_iterator it = cboFileNameList.begin();
+			StringList::const_iterator it = cboFileNameList.begin();
 			for (size_t i = 0; it != cboFileNameList.end(); ++it, ++i)
 			{
 				cboFileHandleList.push_back(fileLoader.LoadFile(*it));

@@ -12,7 +12,10 @@ class CharStream;
 class CompilerErrorBuffer;
 class StringAllocator;
 
-/// \brief A smart pointer to a TokenCollection.
+/// \addtogroup compiler
+/// @{
+
+/// \brief An owning pointer to a dynamically allocated TokenCollection.
 typedef Allocator::Handle<const TokenCollection> TokenCollectionHandle;
 
 /// \brief A lexer for the Bond scripting language.
@@ -25,7 +28,6 @@ typedef Allocator::Handle<const TokenCollection> TokenCollectionHandle;
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, TokenCollection
-/// \ingroup compiler
 class Lexer
 {
 public:
@@ -36,6 +38,9 @@ public:
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer)
 	{}
+
+	Lexer(const Lexer &other) = delete;
+	Lexer &operator=(const Lexer &other) = delete;
 
 	/// \brief Scans the given string of Bond source and breaks it up into a sequence of Tokens.
 	/// \param fileName Name to associate with the string of Bond source code, ideally the name of the
@@ -57,13 +62,12 @@ public:
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
 private:
-	// Copying disallowed.
-	Lexer(const Lexer &other) = delete;
-	Lexer &operator=(const Lexer &other) = delete;
 
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
 };
+
+/// @}
 
 }
 
