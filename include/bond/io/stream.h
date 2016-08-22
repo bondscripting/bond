@@ -17,6 +17,7 @@ public:
 
 	// Stream position.
 	virtual pos_t GetPosition() const = 0;
+	virtual pos_t GetEndPosition() const = 0;
 	virtual void SetPosition(off_t offset) = 0;
 	virtual void SetPositionFromEnd(off_t offset) = 0;
 	virtual void AddOffset(off_t offset) = 0;

@@ -63,14 +63,13 @@ bool RunVMTest(
 
 			if (!errorBuffer.HasErrors())
 			{
-				Bond::FileData cboFile(cboBuffer, size_t(cboStream.GetPosition()));
 				Bond::CboLoader cboLoader(cboLoaderAllocator);
 				Bond::LoadAllLibs(cboLoader);
 				if (nativeBinding != nullptr)
 				{
 					cboLoader.AddNativeBinding(*nativeBinding);
 				}
-				cboLoader.AddCboFile(cboFile);
+				cboLoader.AddCboFile(cboBuffer, size_t(cboStream.GetPosition()));
 				Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
 				Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024);
 				codeSegmentHandle.get()->CallStaticInitializers(vm);

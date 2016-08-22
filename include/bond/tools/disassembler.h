@@ -7,6 +7,7 @@ namespace Bond
 {
 
 class Allocator;
+class InputStream;
 class OutputStream;
 
 class Disassembler
@@ -17,7 +18,8 @@ public:
 	{}
 	~Disassembler() {}
 
-	void Disassemble(OutputStream &stream, const void *byteCode, size_t length);
+	void Disassemble(const void *byteCode, size_t length, OutputStream &outputStream);
+	void Disassemble(InputStream &cboStream, OutputStream &outputStream);
 
 	Disassembler &operator=(const Disassembler &other) = delete;
 

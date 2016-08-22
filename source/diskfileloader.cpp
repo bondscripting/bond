@@ -2,10 +2,6 @@
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#endif
-
 namespace Bond
 {
 

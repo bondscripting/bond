@@ -120,9 +120,6 @@
     <ClInclude Include="..\..\include\bond\stl\map.h">
       <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\stl\set.h">
-      <Filter>Header Files\include\bond\stl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\stl\stlallocator.h">
       <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
@@ -225,9 +222,6 @@
     <ClInclude Include="..\..\include\bond\private\map.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\set.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\private\stlallocator.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
@@ -323,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\bond\stl\utility.h">
       <Filter>Header Files\include\bond\stl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memoryinputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -486,6 +483,15 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\simplestring.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\memoryinputstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stdioinputstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stdiooutputstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

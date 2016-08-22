@@ -7,6 +7,7 @@ namespace Bond
 {
 
 using std::forward;
+using std::move;
 
 }
 

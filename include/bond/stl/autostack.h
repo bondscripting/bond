@@ -38,7 +38,9 @@ public:
 			mStack.Pop();
 		}
 
+		Element(const Element &other) = delete;
 		Element &operator=(const Element &other) = delete;
+
 		Element &operator=(const ElementType &value) { mValue = value; return *this; }
 
 		operator const ElementType&() const { return mValue; }
@@ -54,7 +56,6 @@ public:
 		ElementType mValue;
 
 	private:
-		Element(const Element &other);
 		friend class AutoStack;
 		friend class Iterator;
 		friend class ConstIterator;

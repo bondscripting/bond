@@ -6,6 +6,8 @@
 namespace Bond
 {
 
+class InputStream;
+
 class CboValidator
 {
 public:
@@ -60,6 +62,7 @@ public:
 	};
 
 	Result Validate(const void *byteCode, size_t length);
+	Result Validate(InputStream &stream);
 };
 
 }

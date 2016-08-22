@@ -24,7 +24,7 @@ size_t InputStream::Read(uint8_t *bytes, size_t numBytes)
 		}
 		bytes[i++] = uint8_t(value);
 	}
-	return numBytes;
+	return i;
 }
 
 }

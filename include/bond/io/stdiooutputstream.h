@@ -2,7 +2,8 @@
 #define BOND_IO_STDIOOUTPUTSTREAM_H
 
 #include "bond/io/outputstream.h"
-#include <cstdio>
+#include "bond/io/stdiofilehandle.h"
+#include "bond/stl/utility.h"
 
 namespace Bond
 {
@@ -10,12 +11,37 @@ namespace Bond
 class StdioOutputStream: public OutputStream
 {
 public:
-	StdioOutputStream(FILE *file): mFile(file) {}
+	StdioOutputStream(FILE *file):
+		mFile(file)
+	{}
+
+	StdioOutputStream(StdioFileHandle &&handle):
+		mHandle(move(handle)),
+		mFile(mHandle.GetFile())
+	{}
+
+	StdioOutputStream(StdioOutputStream &&other):
+		mHandle(move(other.mHandle)),
+		mFile(other.mFile)
+	{
+		other.mFile = nullptr;
+	}
+
 	virtual ~StdioOutputStream() {}
+
+	StdioOutputStream(const StdioOutputStream &other) = delete;
+	StdioOutputStream &operator=(const StdioOutputStream &other) = delete;
+
+	StdioOutputStream &operator=(StdioOutputStream &&other);
+
+	bool IsBound() const { return (mFile != nullptr); }
+
 	virtual void VPrint(const char *format, va_list argList) override { vfprintf(mFile, format, argList); }
 	virtual void Write(uint8_t c) override { fputc(c, mFile); }
 	virtual void Write(const uint8_t *bytes, size_t numBytes) override { fwrite(bytes, 1, numBytes, mFile); }
+
 	virtual pos_t GetPosition() const override { return ftell(mFile); }
+	virtual pos_t GetEndPosition() const override;
 	virtual void SetPosition(off_t offset) override { fseek(mFile, offset, SEEK_SET); }
 	virtual void SetPositionFromEnd(off_t offset) override { fseek(mFile, offset, SEEK_END); }
 	virtual void AddOffset(off_t offset) override { fseek(mFile, offset, SEEK_CUR); }
@@ -23,6 +49,7 @@ public:
 	virtual bool IsEof() const override { return feof(mFile) != 0; }
 
 private:
+	StdioFileHandle mHandle;
 	FILE *mFile;
 };
 

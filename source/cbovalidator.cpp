@@ -1,3 +1,4 @@
+#include "bond/io/memoryinputstream.h"
 #include "bond/systems/assert.h"
 #include "bond/systems/endian.h"
 #include "bond/systems/math.h"
@@ -12,11 +13,10 @@ namespace Bond
 class CboValidatorCore
 {
 public:
-	CboValidatorCore(const uint8_t *byteCode, size_t length):
-		mByteCode(reinterpret_cast<const uint8_t *>(byteCode)),
-		mLength(length),
-		mIndex(0),
-		mValue32Table(nullptr)
+	CboValidatorCore(InputStream &stream):
+		mStream(stream),
+		mStreamEnd(stream.GetEndPosition()),
+		mValue32TableOffset(0)
 	{}
 
 	CboValidator::Result Validate();
@@ -32,23 +32,35 @@ private:
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
+	Value32 ReadValue32TableAt(size_t index);
 
 	void AssertBytesRemaining(size_t numBytes) const;
 	void FunctionIsInvalid() const;
 	void CodeIsInvalid() const;
 	void CboIsInvalid() const;
 
+	size_t GetPosition() const { return size_t(mStream.GetPosition()); }
+	void SetPosition(size_t pos) { mStream.SetPosition(Stream::pos_t(pos)); }
+	void Skip(size_t numBytes) { mStream.AddOffset(Stream::off_t(numBytes)); }
+
 	CboValidator::Result mResult;
-	const uint8_t *mByteCode;
-	size_t mLength;
-	size_t mIndex;
-	const Value32 *mValue32Table;
+	InputStream& mStream;
+	size_t mStreamEnd;
+	size_t mValue32TableOffset;
 };
 
 
 CboValidator::Result CboValidator::Validate(const void *byteCode, size_t length)
 {
-	CboValidatorCore validator(static_cast<const uint8_t *>(byteCode), length);
+	MemoryInputStream stream(byteCode, Stream::pos_t(length));
+	CboValidatorCore validator(stream);
+	return validator.Validate();
+}
+
+
+CboValidator::Result CboValidator::Validate(InputStream &stream)
+{
+	CboValidatorCore validator(stream);
 	return validator.Validate();
 }
 
@@ -59,7 +71,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	const uint32_t majorVersion = ReadValue16().mUShort;
 	const uint32_t minorVersion = ReadValue16().mUShort;
 	const uint16_t flags = ReadValue16().mUShort;
-	const size_t tableStart = mIndex;
+	const size_t tableStart = GetPosition();
 	const size_t tableSize = ReadValue32().mUInt;
 	const size_t value32Count = ReadValue16().mUShort;
 	const size_t value64Count = ReadValue16().mUShort;
@@ -78,11 +90,11 @@ CboValidator::Result CboValidatorCore::Validate()
 	mResult.mQualifiedNameCount = qualifiedNameCount;
 
 	const size_t valueSize = (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
-	AssertBytesRemaining(tableSize - (mIndex - tableStart));
+	AssertBytesRemaining(tableSize - (GetPosition() - tableStart));
 	AssertBytesRemaining(valueSize);
 
-	mValue32Table = reinterpret_cast<const Value32 *>(mByteCode + mIndex);
-	mIndex += (value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64));
+	mValue32TableOffset = GetPosition();
+	Skip((value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64)));
 
 	size_t stringByteCount = 0;
 	for (size_t i = 0; i < stringCount; ++i)
@@ -92,20 +104,27 @@ CboValidator::Result CboValidatorCore::Validate()
 		stringByteCount += stringLength;
 
 		AssertBytesRemaining(stringLength);
-		const char *str = reinterpret_cast<const char *>(mByteCode + mIndex);
-		if (StringEqual(str, stringLength, BOND_LIST_BLOB_ID, BOND_BLOB_ID_LENGTH))
+		if (stringLength == BOND_BLOB_ID_LENGTH)
 		{
-			mResult.mListBlobIdIndex = i;
+			char str[BOND_BLOB_ID_LENGTH];
+			mStream.Read(str, BOND_BLOB_ID_LENGTH);
+			if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_LIST_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			{
+				mResult.mListBlobIdIndex = i;
+			}
+			else if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_FUNCTION_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			{
+				mResult.mFunctionBlobIdIndex = i;
+			}
+			else if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_DATA_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			{
+				mResult.mDataBlobIdIndex = i;
+			}
 		}
-		else if (StringEqual(str, stringLength, BOND_FUNCTION_BLOB_ID, BOND_BLOB_ID_LENGTH))
+		else
 		{
-			mResult.mFunctionBlobIdIndex = i;
+			mStream.AddOffset(Stream::pos_t(stringLength));
 		}
-		else if (StringEqual(str, stringLength, BOND_DATA_BLOB_ID, BOND_BLOB_ID_LENGTH))
-		{
-			mResult.mDataBlobIdIndex = i;
-		}
-		mIndex += stringLength;
 	}
 	mResult.mStringByteCount = stringByteCount;
 
@@ -134,7 +153,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	mResult.mQualifiedNameElementCount = qualifiedNameElementCount;
 
 	const size_t tableEnd = tableStart + tableSize;
-	if (mIndex != tableEnd)
+	if (GetPosition() != tableEnd)
 	{
 		CboIsInvalid();
 		return mResult;
@@ -143,7 +162,7 @@ CboValidator::Result CboValidatorCore::Validate()
 	mResult.mDataAlignment = size_t(BOND_SLOT_SIZE);
 	ValidateBlob();
 
-	if (mIndex != mLength)
+	if (GetPosition() != mStreamEnd)
 	{
 		CboIsInvalid();
 	}
@@ -155,12 +174,12 @@ CboValidator::Result CboValidatorCore::Validate()
 void CboValidatorCore::ValidateBlob()
 {
 	AssertBytesRemaining(sizeof(Value32) + sizeof(Value16));
-	const size_t blobStart = mIndex;
+	const size_t blobStart = GetPosition();
 	const size_t blobSize = ReadValue32().mUInt;
 	const size_t blobEnd = blobStart + blobSize;
 	const size_t idIndex = ReadValue16().mUShort;
 
-	AssertBytesRemaining(blobSize - (mIndex - blobStart));
+	AssertBytesRemaining(blobSize - (GetPosition() - blobStart));
 
 	if (idIndex == mResult.mListBlobIdIndex)
 	{
@@ -176,10 +195,10 @@ void CboValidatorCore::ValidateBlob()
 	}
 	else
 	{
-		mIndex = blobEnd;
+		SetPosition(blobEnd);
 	}
 
-	if (mIndex != blobEnd)
+	if (GetPosition() != blobEnd)
 	{
 		CboIsInvalid();
 	}
@@ -207,7 +226,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	const uint32_t argSize = ReadValue32().mUInt;
 	const uint32_t packedArgSize = ReadValue32().mUInt;
 	const uint32_t localSize = ReadValue32().mUInt;
-	mIndex += sizeof(Value32); // Ignore the stack size.
+	Skip(sizeof(Value32)); // Ignore the stack size.
 	const uint32_t framePointerAlignment = ReadValue32().mUInt;
 	const size_t codeSize = ReadValue32().mUInt;
 
@@ -231,13 +250,13 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 
 	mResult.mCodeByteCount += AlignUp(codeSize, sizeof(Value32));
 	AssertBytesRemaining(codeSize);
-	const size_t codeStart = mIndex;
-	const size_t codeEnd = mIndex + codeSize;
+	const size_t codeStart = GetPosition();
+	const size_t codeEnd = codeStart + codeSize;
 
 	// Do a validation pass on the byte-code and ensure everything is converted to the correct endianness.
-	while (mIndex < codeEnd)
+	while (GetPosition() < codeEnd)
 	{
-		const OpCode opCode = static_cast<OpCode>(mByteCode[mIndex++]);
+		const OpCode opCode = static_cast<OpCode>(mStream.Read());
 		const OpCodeParam param = GetOpCodeParamType(opCode);
 
 		switch (param)
@@ -247,7 +266,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			case OC_PARAM_CHAR:
 			case OC_PARAM_UCHAR:
 				AssertBytesRemaining(1);
-				++mIndex;
+				Skip(1);
 				break;
 			case OC_PARAM_UCHAR_CHAR:
 			case OC_PARAM_SHORT:
@@ -280,7 +299,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			{
 				AssertBytesRemaining(sizeof(Value16));
 				const int32_t offset = ReadValue16().mShort;
-				const int32_t baseAddress = int32_t(mIndex - codeStart);
+				const int32_t baseAddress = int32_t(GetPosition() - codeStart);
 				const int32_t targetAddress = baseAddress + offset;
 				if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 				{
@@ -298,8 +317,8 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				}
 				else
 				{
-					const int32_t offset = ConvertBigEndian32(mValue32Table[offsetIndex]).mInt;
-					const int32_t baseAddress = int32_t(mIndex - codeStart);
+					const int32_t offset = ReadValue32TableAt(offsetIndex).mInt;
+					const int32_t baseAddress = int32_t(GetPosition() - codeStart);
 					const int32_t targetAddress = baseAddress + offset;
 					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
 					{
@@ -330,12 +349,12 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			break;
 			case OC_PARAM_LOOKUPSWITCH:
 			{
-				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
+				Skip(AlignUpDelta(GetPosition() - codeStart, sizeof(Value32)));
 				AssertBytesRemaining(2 * sizeof(Value32));
 				const int32_t defaultOffset = ReadValue32().mInt;
 				const uint32_t numMatches = ReadValue32().mUInt;
 				const size_t tableSize = numMatches * 2 * sizeof(Value32);
-				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
+				const int32_t baseAddress = int32_t(GetPosition() + tableSize - codeStart);
 				const int32_t defaultAddress = baseAddress + defaultOffset;
 
 				AssertBytesRemaining(tableSize);
@@ -347,7 +366,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				for (uint32_t i = 0; i < numMatches; ++i)
 				{
 					// Skip the match.
-					mIndex += sizeof(Value32);
+					Skip(sizeof(Value32));
 					const int32_t offset = ReadValue32().mInt;
 					const int32_t targetAddress = baseAddress + offset;
 					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
@@ -359,14 +378,14 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			break;
 			case OC_PARAM_TABLESWITCH:
 			{
-				mIndex = codeStart + AlignUp(mIndex - codeStart, sizeof(Value32));
+				Skip(AlignUpDelta(GetPosition() - codeStart, sizeof(Value32)));
 				AssertBytesRemaining(3 * sizeof(Value32));
 				const int32_t defaultOffset = ReadValue32().mInt;
 				const int32_t minMatch = ReadValue32().mInt;
 				const int32_t maxMatch = ReadValue32().mInt;
 				const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
 				const size_t tableSize = numMatches * sizeof(Value32);
-				const int32_t baseAddress = int32_t(mIndex + tableSize - codeStart);
+				const int32_t baseAddress = int32_t(GetPosition() + tableSize - codeStart);
 				const int32_t defaultAddress = baseAddress + defaultOffset;
 
 				AssertBytesRemaining(tableSize);
@@ -394,7 +413,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	}
 
 	// Validate the optional metadata blob.
-	if (mIndex < blobEnd)
+	if (GetPosition() < blobEnd)
 	{
 		ValidateBlob();
 	}
@@ -425,7 +444,7 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 	mResult.mDataAlignment = Max(mResult.mDataAlignment, alignment);
 
 	// Validate the optional metadata blob.
-	if (mIndex < blobEnd)
+	if (GetPosition() < blobEnd)
 	{
 		ValidateBlob();
 	}
@@ -480,23 +499,33 @@ void CboValidatorCore::ValidateParamListSignature()
 
 Value16 CboValidatorCore::ReadValue16()
 {
-	const Value16 value(mByteCode + mIndex);
-	mIndex += sizeof(Value16);
+	Value16 value;
+	mStream.Read(value.mBytes, sizeof(Value16));
 	return ConvertBigEndian16(value);
 }
 
 
 Value32 CboValidatorCore::ReadValue32()
 {
-	const Value32 value(mByteCode + mIndex);
-	mIndex += sizeof(Value32);
+	Value32 value;
+	mStream.Read(value.mBytes, sizeof(Value32));
 	return ConvertBigEndian32(value);
+}
+
+
+Value32 CboValidatorCore::ReadValue32TableAt(size_t index)
+{
+	const auto pos = mStream.GetPosition();
+	mStream.SetPosition(Stream::pos_t(mValue32TableOffset + (index * sizeof(Value32))));
+	const Value32 value = ReadValue32();
+	mStream.SetPosition(pos);
+	return value;
 }
 
 
 void CboValidatorCore::AssertBytesRemaining(size_t numBytes) const
 {
-	if ((mIndex + numBytes) > mLength)
+	if ((GetPosition() + numBytes) > mStreamEnd)
 	{
 		CboIsInvalid();
 	}

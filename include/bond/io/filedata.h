@@ -10,6 +10,8 @@ struct FileData
 {
 	FileData(): mData(nullptr), mLength(0) {}
 
+	FileData(const FileData &other): mData(other.mData), mLength(other.mLength) {}
+
 	FileData(const void *data, size_t length):
 		mData(data),
 		mLength(length)

@@ -50,6 +50,7 @@
     <ClInclude Include="..\..\include\bond\io\inputstream.h" />
     <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
+    <ClInclude Include="..\..\include\bond\io\memoryinputstream.h" />
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h" />
@@ -63,7 +64,6 @@
     <ClInclude Include="..\..\include\bond\private\list.h" />
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\memory.h" />
-    <ClInclude Include="..\..\include\bond\private\set.h" />
     <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\private\types.h" />
     <ClInclude Include="..\..\include\bond\private\utility.h" />
@@ -73,7 +73,6 @@
     <ClInclude Include="..\..\include\bond\stl\list.h" />
     <ClInclude Include="..\..\include\bond\stl\map.h" />
     <ClInclude Include="..\..\include\bond\stl\memory.h" />
-    <ClInclude Include="..\..\include\bond\stl\set.h" />
     <ClInclude Include="..\..\include\bond\stl\stlallocator.h" />
     <ClInclude Include="..\..\include\bond\stl\utility.h" />
     <ClInclude Include="..\..\include\bond\stl\vector.h" />
@@ -137,6 +136,7 @@
     <ClCompile Include="..\..\source\libtype.cpp" />
     <ClCompile Include="..\..\source\libtypebindings.cpp" />
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
+    <ClCompile Include="..\..\source\memoryinputstream.cpp" />
     <ClCompile Include="..\..\source\memoryoutputstream.cpp" />
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
@@ -153,6 +153,8 @@
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
     <ClCompile Include="..\..\source\simplestring.cpp" />
+    <ClCompile Include="..\..\source\stdioinputstream.cpp" />
+    <ClCompile Include="..\..\source\stdiooutputstream.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />

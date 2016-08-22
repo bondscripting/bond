@@ -1,5 +1,4 @@
 #include "bond/api/libruntime.h"
-#include "bond/io/diskfileloader.h"
 #include "bond/io/stdioinputstream.h"
 #include "bond/io/stdiooutputstream.h"
 #include "bond/stl/vector.h"
@@ -8,7 +7,6 @@
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
 #include "bond/vm/vm.h"
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -16,7 +14,7 @@ const size_t MIN_STACK_SIZE = 1;
 const size_t DEFAULT_STACK_SIZE = 64;
 const char *const DEFAULT_ENTRY_POINT = "main";
 typedef Bond::Vector<const char *> StringList;
-typedef Bond::Vector<Bond::FileLoader::Handle> FileHandleList;
+typedef Bond::Vector<Bond::StdioInputStream> InputStreamList;
 
 int main(int argc, const char *argv[])
 {
@@ -64,6 +62,7 @@ int main(int argc, const char *argv[])
 				if (stackSize < MIN_STACK_SIZE)
 				{
 					fprintf(stderr, "Stack size must be at least %u kB.\n", unsigned(MIN_STACK_SIZE));
+					error = true;
 				}
 			}
 			else
@@ -92,18 +91,22 @@ int main(int argc, const char *argv[])
 	{
 		Bond::CodeSegmentHandle codeSegmentHandle;
 		{
-			Bond::DiskFileLoader fileLoader(allocator);
 			Bond::CboLoader cboLoader(allocator);
-			FileHandleList cboFileHandleList((FileHandleList::allocator_type(&allocator)));
-			cboFileHandleList.reserve(cboFileNameList.size());
+			InputStreamList cboStreamList((InputStreamList::allocator_type(&allocator)));
+			cboStreamList.reserve(cboFileNameList.size());
 
 			Bond::LoadAllLibs(cboLoader);
 
-			StringList::const_iterator it = cboFileNameList.begin();
-			for (size_t i = 0; it != cboFileNameList.end(); ++it, ++i)
+			for (const auto &cboFileName: cboFileNameList)
 			{
-				cboFileHandleList.push_back(fileLoader.LoadFile(*it));
-				cboLoader.AddCboFile(cboFileHandleList[i].Get());
+				cboStreamList.emplace_back(Bond::StdioFileHandle(cboFileName, "rb"));
+				auto &cboStream = cboStreamList.back();
+				if (!cboStream.IsBound())
+				{
+					fprintf(stderr, "Failed to load file '%s'.\n", cboFileName);
+					return 1;
+				}
+				cboLoader.AddCboFile(cboStream);
 			}
 
 			codeSegmentHandle = cboLoader.Load();

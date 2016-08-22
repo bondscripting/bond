@@ -1,4 +1,3 @@
-#include "bond/io/fileloader.h"
 #include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
 #include "bond/stl/vector.h"
@@ -71,14 +70,12 @@ public:
 	CboLoaderCore(
 			const CboValidator::Result &validationResult,
 			CboLoaderResources &resources,
-			const uint8_t *byteCode):
+			InputStream &stream):
 		mValidationResult(validationResult),
 		mResources(resources),
-		mConstantTable(resources.mConstantTables),
-		mByteCode(static_cast<const uint8_t *>(byteCode)),
-		mIndex(0)
-	{
-	}
+		mConstantTable(nullptr),
+		mStream(stream)
+	{}
 
 	void Load();
 
@@ -96,18 +93,21 @@ private:
 	Value32 ReadValue32();
 	Value64 ReadValue64();
 
+	size_t GetPosition() const { return size_t(mStream.GetPosition()); }
+	void SetPosition(size_t pos) { mStream.SetPosition(Stream::pos_t(pos)); }
+	void Skip(size_t numBytes) { mStream.AddOffset(Stream::off_t(numBytes)); }
+
 	CboValidator::Result mValidationResult;
 	CboLoaderResources &mResources;
 	ConstantTable *mConstantTable;
-	const uint8_t *mByteCode;
-	size_t mIndex;
+	InputStream &mStream;
 };
 
 
 CodeSegmentHandle CboLoader::Load()
 {
 	typedef Vector<CboValidator::Result> ResultList;
-	ResultList resultList(mFileDataList.size(), CboValidator::Result(), ResultList::allocator_type(&mTempAllocator));
+	ResultList resultList(mInputStreamList.size(), CboValidator::Result(), ResultList::allocator_type(&mTempAllocator));
 
 	size_t value32Count = 0;
 	size_t value64Count = 0;
@@ -124,12 +124,14 @@ CodeSegmentHandle CboLoader::Load()
 	size_t dataAlignment = size_t(BOND_SLOT_SIZE);
 
 	CboValidator validator;
-	FileDataList::const_iterator fdit = mFileDataList.begin();
-	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
+	auto isit = mInputStreamList.begin();
+	for (size_t i = 0; isit != mInputStreamList.end(); ++isit, ++i)
 	{
-		const FileData &file = **fdit;
+		InputStream &stream = **isit;
+		const auto pos = stream.GetPosition();
 		CboValidator::Result &result = resultList[i];
-		result = validator.Validate(reinterpret_cast<const uint8_t *>(file.mData), file.mLength);
+		result = validator.Validate(stream);
+		stream.SetPosition(pos);
 		BOND_ASSERT_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, ("CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE)));
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
@@ -149,7 +151,7 @@ CodeSegmentHandle CboLoader::Load()
 
 	size_t memSize = 0;
 	const size_t codeSegmentStart = TallyMemoryRequirements<CodeSegment>(memSize, 1);
-	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, mFileDataList.size());
+	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, mInputStreamList.size());
 	const size_t value32TableStart = TallyMemoryRequirements<Value32>(memSize, value32Count);
 	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
 	const size_t stringTableStart = TallyMemoryRequirements<SimpleString>(memSize, stringCount);
@@ -196,10 +198,10 @@ CodeSegmentHandle CboLoader::Load()
 		dataTable,
 		dataCount);
 
-	fdit = mFileDataList.begin();
-	for (size_t i = 0; fdit != mFileDataList.end(); ++fdit, ++i)
+	isit = mInputStreamList.begin();
+	for (size_t i = 0; isit != mInputStreamList.end(); ++isit, ++i)
 	{
-		CboLoaderCore loader(resultList[i], resources, reinterpret_cast<const uint8_t *>((*fdit)->mData));
+		CboLoaderCore loader(resultList[i], resources, **isit);
 		loader.Load();
 	}
 
@@ -406,14 +408,14 @@ void CboLoader::UnresolvedQualifiedName(const char *name) const
 
 void CboLoaderCore::Load()
 {
+	mConstantTable = mResources.mConstantTables++;
 	mConstantTable->mValue32Table = mResources.mValue32Table;
 	mConstantTable->mValue64Table = mResources.mValue64Table;
 	mConstantTable->mStringTable = mResources.mStringTable;
 	mConstantTable->mQualifiedNameTable = mResources.mQualifiedNameTable;
-	++mResources.mConstantTables;
 
 	// Skip some header information that is already included in the validation result.
-	mIndex += (2 * sizeof(Value32)) + (7 * sizeof(Value16));
+	Skip((2 * sizeof(Value32)) + (7 * sizeof(Value16)));
 
 	Value32 *value32 = mResources.mValue32Table;
 	for (size_t i = 0; i < mValidationResult.mValue32Count; ++i)
@@ -434,10 +436,9 @@ void CboLoaderCore::Load()
 	{
 		const size_t length = ReadValue16().mUShort;
 		char *buffer = mResources.mStringBytes;
-		memcpy(buffer, mByteCode + mIndex, length);
+		mStream.Read(buffer, length);
 		buffer[length] = '\0';
 		mResources.mStringBytes += length + 1;
-		mIndex += length;
 		*str++ = SimpleString(buffer, length);
 	}
 	mResources.mStringTable = str;
@@ -466,7 +467,7 @@ void CboLoaderCore::Load()
 
 void CboLoaderCore::LoadBlob()
 {
-	const size_t blobStart = mIndex;
+	const size_t blobStart = GetPosition();
 	const size_t blobSize = ReadValue32().mUInt;
 	const size_t blobEnd = blobStart + blobSize;
 	const size_t idIndex = ReadValue16().mUShort;
@@ -485,7 +486,7 @@ void CboLoaderCore::LoadBlob()
 	}
 	else
 	{
-		mIndex = blobEnd;
+		SetPosition(blobEnd);
 	}
 }
 
@@ -523,9 +524,8 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 	{
 		uint8_t *code = mResources.mCode;
 		function->mCode = code;
-		memcpy(code, mByteCode + mIndex, codeSize);
+		mStream.Read(code, codeSize);
 		mResources.mCode += AlignUp(codeSize, uint32_t(sizeof(Value32)));
-		mIndex += codeSize;
 	}
 	else
 	{
@@ -546,7 +546,7 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 	function->mUnpackArguments = unpackArguments;
 
 	// Load the optional metadata blob.
-	if (mIndex < blobEnd)
+	if (GetPosition() < blobEnd)
 	{
 		LoadBlob();
 	}
@@ -619,7 +619,7 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 	++mResources.mDataTable;
 
 	// Load the optional metadata blob.
-	if (mIndex < blobEnd)
+	if (GetPosition() < blobEnd)
 	{
 		LoadBlob();
 	}
@@ -657,24 +657,24 @@ ParamListSignature CboLoaderCore::LoadParamListSignature()
 
 Value16 CboLoaderCore::ReadValue16()
 {
-	const Value16 value(mByteCode + mIndex);
-	mIndex += sizeof(Value16);
+	Value16 value;
+	mStream.Read(value.mBytes, sizeof(Value16));
 	return ConvertBigEndian16(value);
 }
 
 
 Value32 CboLoaderCore::ReadValue32()
 {
-	const Value32 value(mByteCode + mIndex);
-	mIndex += sizeof(Value32);
+	Value32 value;
+	mStream.Read(value.mBytes, sizeof(Value32));
 	return ConvertBigEndian32(value);
 }
 
 
 Value64 CboLoaderCore::ReadValue64()
 {
-	const Value64 value(mByteCode + mIndex);
-	mIndex += sizeof(Value64);
+	Value64 value;
+	mStream.Read(value.mBytes, sizeof(Value64));
 	return ConvertBigEndian64(value);
 }
 

@@ -33,12 +33,12 @@ public:
 		{}
 
 		Handle(Handle &&other):
-			unique_ptr<T, Deallocator<T> >(forward<Handle>(other))
+			unique_ptr<T, Deallocator<T> >(move(other))
 		{}
 
 		Handle &operator=(Handle &&other)
 		{
-			unique_ptr<T, Deallocator<T> >::operator=(forward<Handle>(other));
+			unique_ptr<T, Deallocator<T> >::operator=(move(other));
 			return *this;
 		}
 	};
@@ -66,12 +66,12 @@ public:
 		{}
 
 		AlignedHandle(AlignedHandle &&other):
-			unique_ptr<T, AlignedDeallocator<T> >(forward<AlignedHandle>(other))
+			unique_ptr<T, AlignedDeallocator<T> >(move(other))
 		{}
 
 		AlignedHandle &operator=(AlignedHandle &&other)
 		{
-			unique_ptr<T, AlignedDeallocator<T> >::operator=(forward<AlignedHandle>(other));
+			unique_ptr<T, AlignedDeallocator<T> >::operator=(move(other));
 			return *this;
 		}
 	};
@@ -108,12 +108,12 @@ public:
 		{}
 
 		ObjectHandle(ObjectHandle &&other):
-			unique_ptr<T, ObjectDeallocator<T> >(forward<ObjectHandle>(other))
+			unique_ptr<T, ObjectDeallocator<T> >(move(other))
 		{}
 
 		ObjectHandle &operator=(ObjectHandle &&other)
 		{
-			unique_ptr<T, ObjectDeallocator<T> >::operator=(forward<ObjectHandle>(other));
+			unique_ptr<T, ObjectDeallocator<T> >::operator=(move(other));
 			return *this;
 		}
 	};
@@ -150,12 +150,12 @@ public:
 		{}
 
 		AlignedObjectHandle(AlignedObjectHandle &&other):
-			unique_ptr<T, AlignedObjectDeallocator<T> >(forward<AlignedObjectHandle>(other))
+			unique_ptr<T, AlignedObjectDeallocator<T> >(move(other))
 		{}
 
 		AlignedObjectHandle &operator=(AlignedObjectHandle &&other)
 		{
-			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(forward<AlignedObjectHandle>(other));
+			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(move(other));
 			return *this;
 		}
 	};
