@@ -99,14 +99,8 @@ int main(int argc, const char *argv[])
 
 			for (const auto &cboFileName: cboFileNameList)
 			{
-				cboStreamList.emplace_back(Bond::StdioFileHandle(cboFileName, "rb"));
-				auto &cboStream = cboStreamList.back();
-				if (!cboStream.IsBound())
-				{
-					fprintf(stderr, "Failed to load file '%s'.\n", cboFileName);
-					return 1;
-				}
-				cboLoader.AddCboFile(cboStream);
+				cboStreamList.emplace_back(cboFileName, "rb");
+				cboLoader.AddCboFile(cboStreamList.back());
 			}
 
 			codeSegmentHandle = cboLoader.Load();

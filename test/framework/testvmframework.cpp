@@ -42,13 +42,14 @@ bool RunVMTest(
 	try
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
-		Bond::Lexer lexer(lexerAllocator, errorBuffer);
+		Bond::TokenCollectionStore tokenStore((Bond::TokenCollectionStore::allocator_type(&lexerAllocator)));
 		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&parserAllocator)));
+		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
 		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &fileLoader);
-		Bond::FrontEnd frontEnd(frontEndAllocator, lexer, parser, analyzer, stdLibLoader);
+		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibLoader);
 
 		frontEnd.AddInputFile(scriptName);
 		Bond::TranslationUnit *translationUnitList = frontEnd.Analyze();

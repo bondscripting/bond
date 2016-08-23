@@ -8,18 +8,11 @@ void Disassemble(const char *cboFileName)
 {
 	try
 	{
-		Bond::StdioInputStream cboStream(Bond::StdioFileHandle(cboFileName, "rb"));
-		if (cboStream.IsBound())
-		{
-			Bond::DefaultAllocator allocator;
-			Bond::StdOutOutputStream outputStream;
-			Bond::Disassembler disassembler(allocator);
-			disassembler.Disassemble(cboStream, outputStream);
-		}
-		else
-		{
-			fprintf(stderr, "Failed to load file '%s'.\n", cboFileName);
-		}
+		Bond::StdioInputStream cboStream(cboFileName, "rb");
+		Bond::DefaultAllocator allocator;
+		Bond::StdOutOutputStream outputStream;
+		Bond::Disassembler disassembler(allocator);
+		disassembler.Disassemble(cboStream, outputStream);
 	}
 	catch (const Bond::Exception &e)
 	{

@@ -2,6 +2,7 @@
 #define BOND_COMPILER_LEXER_H
 
 #include "bond/compiler/tokenstream.h"
+#include "bond/stl/vector.h"
 #include "bond/systems/allocator.h"
 
 namespace Bond
@@ -17,6 +18,9 @@ class StringAllocator;
 
 /// \brief An owning pointer to a dynamically allocated TokenCollection.
 typedef Allocator::Handle<const TokenCollection> TokenCollectionHandle;
+
+/// \brief A collection of dynamically allocated TokenCollection.
+typedef Vector<TokenCollectionHandle> TokenCollectionStore;
 
 /// \brief A lexer for the Bond scripting language.
 ///

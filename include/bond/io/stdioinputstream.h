@@ -15,6 +15,8 @@ public:
 		mFile(file)
 	{}
 
+	StdioInputStream(const char *fileName, const char *mode);
+
 	StdioInputStream(StdioFileHandle &&handle):
 		mHandle(move(handle)),
 		mFile(mHandle.GetFile())

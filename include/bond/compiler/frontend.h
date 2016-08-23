@@ -3,7 +3,6 @@
 
 #include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
-#include "bond/stl/vector.h"
 #include "bond/types/simplestring.h"
 
 namespace Bond
@@ -28,9 +27,9 @@ class TranslationUnit;
 /// file. Only the TranslationUnits for the files that were explicitly added to the input file
 /// list are flagged as requiring code generation.
 ///
-/// When analysis is complete, the list of TranslationUnits
+/// When analysis is complete, the list of generated TranslationUnits is returned.
 ///
-/// File loading is delegated an object that implements the FileLoader interface so that no
+/// File loading is delegated to an object that implements the FileLoader interface so that no
 /// assumptions about where the source files reside are made (e.g. disk, network, database,
 /// proprietary asset store, etc).
 ///
@@ -47,12 +46,13 @@ public:
 	/// \param fileLoader The FileLoader responsible for loading the Bond source files.
 	FrontEnd(
 			Allocator &allocator,
+			TokenCollectionStore &tokenCollectionStore,
 			Lexer &lexer,
 			Parser &parser,
 			SemanticAnalyzer &semanticAnalyzer,
 			FileLoader &fileLoader):
 		mInputFileNameList(StringList::allocator_type(&allocator)),
-		mTokenCollectionStore(TokenCollectionStore::allocator_type(&allocator)),
+		mTokenCollectionStore(tokenCollectionStore),
 		mLexer(lexer),
 		mParser(parser),
 		mSemanticAnalyzer(semanticAnalyzer),
@@ -81,10 +81,9 @@ public:
 
 private:
 	typedef List<SimpleString> StringList;
-	typedef Vector<TokenCollectionHandle> TokenCollectionStore;
 
 	StringList mInputFileNameList;
-	TokenCollectionStore mTokenCollectionStore;
+	TokenCollectionStore &mTokenCollectionStore;
 	Lexer &mLexer;
 	Parser &mParser;
 	SemanticAnalyzer &mSemanticAnalyzer;

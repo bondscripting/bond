@@ -25,14 +25,15 @@ int main(int argc, const char *argv[])
 		Bond::PointerSize pointerSize = Bond::BOND_NATIVE_POINTER_SIZE;
 		Bond::DefaultAllocator allocator;
 		Bond::CompilerErrorBuffer errorBuffer;
-		Bond::Lexer lexer(allocator, errorBuffer);
+		Bond::TokenCollectionStore tokenStore((Bond::TokenCollectionStore::allocator_type(&allocator)));
 		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&allocator)));
+		Bond::Lexer lexer(allocator, errorBuffer);
 		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		FileLoaderList loaderList((FileLoaderList::allocator_type(&allocator)));
 		loaderList.push_back(Bond::DiskFileLoader(allocator));
 		Bond::MemoryFileLoader stdIncludeLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
-		Bond::FrontEnd frontEnd(allocator, lexer, parser, analyzer, stdIncludeLoader);
+		Bond::FrontEnd frontEnd(allocator, tokenStore, lexer, parser, analyzer, stdIncludeLoader);
 		const char *cboFileName = nullptr;
 		const char *cppFileName = nullptr;
 		const char *hFileName = nullptr;

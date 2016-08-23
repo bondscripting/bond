@@ -1,7 +1,19 @@
 #include "bond/io/stdioinputstream.h"
+#include "bond/systems/assert.h"
 
 namespace Bond
 {
+
+StdioInputStream::StdioInputStream(const char *fileName, const char *mode):
+		mHandle(fileName, mode),
+		mFile(mHandle.GetFile())
+{
+	if (!IsBound())
+	{
+		BOND_FAIL_FORMAT(("Failed to load file '%s'.", fileName));
+	}
+}
+
 
 Stream::pos_t StdioInputStream::GetEndPosition() const
 {
