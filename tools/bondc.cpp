@@ -166,43 +166,16 @@ int main(int argc, const char *argv[])
 		{
 			if (cboFileName != nullptr)
 			{
-				FILE *cboFile = fopen(cboFileName, "wb");
-				if (cboFile != nullptr)
-				{
-					Bond::StdioOutputStream cboStream(cboFile);
-					Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
-					generator.Generate(translationUnitList, cboStream);
-					fclose(cboFile);
-				}
-				else
-				{
-					fprintf(stderr, "Failed to open '%s'.\n", cboFileName);
-					error = true;
-				}
+				Bond::StdioOutputStream cboStream(cboFileName);
+				Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
+				generator.Generate(translationUnitList, cboStream);
 			}
 			if (generateBindings)
 			{
-				FILE *cppFile = fopen(cppFileName, "w");
-				FILE *hFile = fopen(hFileName, "w");
-				if ((cppFile != nullptr) && (hFile != nullptr))
-				{
-					Bond::StdioOutputStream cppStream(cppFile);
-					Bond::StdioOutputStream hStream(hFile);
+					Bond::StdioOutputStream cppStream(cppFileName);
+					Bond::StdioOutputStream hStream(hFileName);
 					Bond::NativeBindingGenerator generator;
 					generator.Generate(translationUnitList, cppStream, hStream, bindingCollectionName, includeName);
-				}
-				if (cppFile == nullptr)
-				{
-					fprintf(stderr, "Failed to open '%s'.\n", cppFileName);
-					error = true;
-				}
-				if (hFile == nullptr)
-				{
-					fprintf(stderr, "Failed to open '%s'.\n", hFileName);
-					error = true;
-				}
-				fclose(cppFile);
-				fclose(hFile);
 			}
 		}
 

@@ -99,7 +99,7 @@ int main(int argc, const char *argv[])
 
 			for (const auto &cboFileName: cboFileNameList)
 			{
-				cboStreamList.emplace_back(cboFileName, "rb");
+				cboStreamList.emplace_back(cboFileName);
 				cboLoader.AddCboFile(cboStreamList.back());
 			}
 

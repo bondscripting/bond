@@ -15,7 +15,7 @@ public:
 		mFile(file)
 	{}
 
-	StdioInputStream(const char *fileName, const char *mode);
+	StdioInputStream(const char *fileName);
 
 	StdioInputStream(StdioFileHandle &&handle):
 		mHandle(move(handle)),

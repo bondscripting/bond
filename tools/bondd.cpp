@@ -8,7 +8,7 @@ void Disassemble(const char *cboFileName)
 {
 	try
 	{
-		Bond::StdioInputStream cboStream(cboFileName, "rb");
+		Bond::StdioInputStream cboStream(cboFileName);
 		Bond::DefaultAllocator allocator;
 		Bond::StdOutOutputStream outputStream;
 		Bond::Disassembler disassembler(allocator);

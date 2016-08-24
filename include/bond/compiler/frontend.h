@@ -40,6 +40,7 @@ class FrontEnd
 public:
 	/// \brief Constructs a FrontEnd object.
 	/// \param allocator The allocator used for the FrontEnd's internal data structures.
+	/// \param tokenCollectionStore Storage for the generated TokenCollections..
 	/// \param lexer The Lexer used to scan the Bond source files.
 	/// \param parser The Parser used to parse the Bond source files.
 	/// \param semanticAnalyzer The SemanticAnalyzer used to analyze the Bond source files.

@@ -4,13 +4,13 @@
 namespace Bond
 {
 
- StdioOutputStream::StdioOutputStream(const char *fileName, const char *mode):
-		mHandle(fileName, mode),
+ StdioOutputStream::StdioOutputStream(const char *fileName):
+		mHandle(fileName, "wb"),
 		mFile(mHandle.GetFile())
 {
 	if (!IsBound())
 	{
-		BOND_FAIL_FORMAT(("Failed to load file '%s'.", fileName));
+		BOND_FAIL_FORMAT(("Failed to open file '%s' for writing.", fileName));
 	}
 }
 
