@@ -34,9 +34,10 @@ public:
 		mOutStream(outputStream)
 	{}
 
-	void Disassemble();
-
+	DisassemblerCore(const DisassemblerCore &other) = delete;
 	DisassemblerCore &operator=(const DisassemblerCore &other) = delete;
+
+	void Disassemble();
 
 private:
 	typedef Vector<Value32> Value32Table;

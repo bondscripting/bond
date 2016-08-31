@@ -7,6 +7,8 @@
 namespace Bond
 {
 
+/// \brief An abstract interface for performing both unformatted and formatted input operations.
+/// \ingroup io
 class InputStream: public Stream
 {
 public:

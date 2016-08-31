@@ -19,7 +19,6 @@ public:
 		mHasUnrecoveredError(false)
 	{}
 
-	~ParserCore() {}
 	ParserCore(const ParserCore &other) = delete;
 	ParserCore &operator=(const ParserCore &other) = delete;
 

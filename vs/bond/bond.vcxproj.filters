@@ -273,9 +273,6 @@
     <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\filedata.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\fileloader.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -319,6 +316,18 @@
       <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\io\memoryinputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\memorystreamfactory.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\streamfactory.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\datachunk.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdiostreamfactory.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
   </ItemGroup>
@@ -492,6 +501,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stdiooutputstream.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\memorystreamfactory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stdiostreamfactory.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>

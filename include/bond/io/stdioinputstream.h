@@ -8,6 +8,9 @@
 namespace Bond
 {
 
+/// \brief A concrete implementation of InputStream that performs input operations from a stdio
+/// FILE*.
+/// \ingroup io
 class StdioInputStream: public InputStream
 {
 public:

@@ -29,6 +29,9 @@ public:
 		mStringBuffer(nullptr)
 	{}
 
+	LexerCore(const LexerCore &other) = delete;
+	LexerCore &operator=(const LexerCore &other) = delete;
+
 	TokenCollectionHandle Lex();
 
 private:
@@ -99,10 +102,6 @@ private:
 		const char *end;
 		char value;
 	};
-
-	// Copying disallowed.
-	LexerCore(const LexerCore &other);
-	LexerCore &operator=(const LexerCore &other);
 
 	Resources CalculateResources(CharStream &stream) const;
 

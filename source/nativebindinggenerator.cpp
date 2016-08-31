@@ -28,9 +28,10 @@ public:
 
 	virtual ~NativeBindingGeneratorCore() {}
 
-	void Generate();
-
+	NativeBindingGeneratorCore(const NativeBindingGeneratorCore &other) = delete;
 	NativeBindingGeneratorCore &operator=(const NativeBindingGeneratorCore &other) = delete;
+
+	void Generate();
 
 private:
 	struct NamespaceItem

@@ -19,6 +19,9 @@ public:
 		mValue32TableOffset(0)
 	{}
 
+	CboValidatorCore(const CboValidatorCore &other) = delete;
+	CboValidatorCore &operator=(const CboValidatorCore &other) = delete;
+
 	CboValidator::Result Validate();
 
 private:

@@ -12,14 +12,14 @@ class MemoryFileLoader: public FileLoader
 public:
 	struct Index
 	{
-		Index(const SimpleString *fileNames, const FileData *files, size_t numFiles):
+		Index(const SimpleString *fileNames, const DataChunk *files, size_t numFiles):
 			mFileNames(fileNames),
 			mFiles(files),
 			mNumFiles(numFiles)
 		{}
 
 		const SimpleString *mFileNames;
-		const FileData *mFiles;
+		const DataChunk *mFiles;
 		size_t mNumFiles;
 	};
 
@@ -31,7 +31,7 @@ public:
 	virtual ~MemoryFileLoader() {}
 
 	virtual Handle LoadFile(const char *fileName) override;
-	virtual void DisposeFile(FileData &fileData) override {}
+	virtual void DisposeFile(DataChunk &fileData) override {}
 
 	void SetDelegateLoader(FileLoader *delegateLoader) { mDelegateLoader = delegateLoader; }
 

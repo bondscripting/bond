@@ -77,9 +77,10 @@ public:
 		mStream(stream)
 	{}
 
-	void Load();
-
+	CboLoaderCore(const CboLoaderCore &other) = delete;
 	CboLoaderCore &operator=(const CboLoaderCore &other) = delete;
+
+	void Load();
 
 private:
 	void LoadBlob();

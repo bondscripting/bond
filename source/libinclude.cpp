@@ -22,7 +22,7 @@ static const SimpleString INCLUDE_FILE_NAMES[] =
 };
 
 
-static const FileData INCLUDE_FILE_DATA[] =
+static const DataChunk INCLUDE_FILE_DATA[] =
 {
 #define INCLUDE_FILE_ITEM(name, fileData) fileData,
 	INCLUDE_FILE_LIST

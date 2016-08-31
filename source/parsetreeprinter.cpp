@@ -18,10 +18,11 @@ public:
 
 	virtual ~ParseTreePrinterCore() {}
 
+	ParseTreePrinterCore(const ParseTreePrinterCore &other) = delete;
+	ParseTreePrinterCore &operator=(const ParseTreePrinterCore &other) = delete;
+
 	void Print(const ParseNode *parseNode);
 	void PrintList(const ListParseNode *listNode);
-
-	ParseTreePrinterCore &operator=(const ParseTreePrinterCore &other) = delete;
 
 private:
 	virtual void Visit(const TranslationUnit *translationUnit);

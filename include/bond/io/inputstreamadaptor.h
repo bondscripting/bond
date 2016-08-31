@@ -5,8 +5,12 @@
 
 namespace Bond
 {
+
 class InputStream;
 
+/// \brief A wrapper around an InputStream that adds formatted input operations used within
+/// the Bond Standard Library.
+/// \ingroup io
 class InputStreamAdaptor
 {
 public:

@@ -6,6 +6,8 @@
 namespace Bond
 {
 
+/// \brief A handle to a stdio FILE* to ensure that the file is properly closed using RAII.
+/// \ingroup io
 class StdioFileHandle
 {
 public:

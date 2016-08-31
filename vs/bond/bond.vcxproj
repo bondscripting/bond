@@ -45,17 +45,19 @@
     <ClInclude Include="..\..\include\bond\compiler\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h" />
     <ClInclude Include="..\..\include\bond\io\diskfileloader.h" />
-    <ClInclude Include="..\..\include\bond\io\filedata.h" />
     <ClInclude Include="..\..\include\bond\io\fileloader.h" />
     <ClInclude Include="..\..\include\bond\io\inputstream.h" />
     <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryinputstream.h" />
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\memorystreamfactory.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h" />
+    <ClInclude Include="..\..\include\bond\io\stdiostreamfactory.h" />
     <ClInclude Include="..\..\include\bond\io\stream.h" />
+    <ClInclude Include="..\..\include\bond\io\streamfactory.h" />
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\assert.h" />
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h" />
@@ -87,6 +89,7 @@
     <ClInclude Include="..\..\include\bond\tools\disassembler.h" />
     <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h" />
+    <ClInclude Include="..\..\include\bond\types\datachunk.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
     <ClInclude Include="..\..\include\bond\types\simplestring.h" />
@@ -138,6 +141,7 @@
     <ClCompile Include="..\..\source\memoryfileloader.cpp" />
     <ClCompile Include="..\..\source\memoryinputstream.cpp" />
     <ClCompile Include="..\..\source\memoryoutputstream.cpp" />
+    <ClCompile Include="..\..\source\memorystreamfactory.cpp" />
     <ClCompile Include="..\..\source\nativebindinggenerator.cpp" />
     <ClCompile Include="..\..\source\opcodes.cpp" />
     <ClCompile Include="..\..\source\outputstream.cpp" />
@@ -155,6 +159,7 @@
     <ClCompile Include="..\..\source\simplestring.cpp" />
     <ClCompile Include="..\..\source\stdioinputstream.cpp" />
     <ClCompile Include="..\..\source\stdiooutputstream.cpp" />
+    <ClCompile Include="..\..\source\stdiostreamfactory.cpp" />
     <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />

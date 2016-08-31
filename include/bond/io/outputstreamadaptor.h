@@ -5,8 +5,12 @@
 
 namespace Bond
 {
+
 class OutputStream;
 
+/// \brief A wrapper around an OuputStream that adds formatted output operations used within
+/// the Bond Standard Library.
+/// \ingroup io
 class OutputStreamAdaptor
 {
 public:

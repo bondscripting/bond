@@ -1,7 +1,7 @@
 #ifndef BOND_IO_FILELOADER_H
 #define BOND_IO_FILELOADER_H
 
-#include "bond/io/filedata.h"
+#include "bond/types/datachunk.h"
 
 namespace Bond
 {
@@ -17,7 +17,7 @@ public:
 			mFileLoader(nullptr)
 		{}
 
-		Handle(const FileData &fileData, FileLoader *fileLoader):
+		Handle(const DataChunk &fileData, FileLoader *fileLoader):
 			mFileData(fileData),
 			mFileLoader(fileLoader)
 		{}
@@ -26,7 +26,7 @@ public:
 			mFileData(other.mFileData),
 			mFileLoader(other.mFileLoader)
 		{
-			other.mFileData = FileData();
+			other.mFileData = DataChunk();
 			other.mFileLoader = nullptr;
 		}
 
@@ -40,7 +40,7 @@ public:
 
 		Handle &operator=(Handle &&other)
 		{
-			FileData tempData = mFileData;
+			DataChunk tempData = mFileData;
 			mFileData = other.mFileData;
 			other.mFileData = tempData;
 			FileLoader *tempLoader = mFileLoader;
@@ -49,14 +49,14 @@ public:
 			return *this;
 		}
 
-		FileData &Get() { return mFileData; }
-		const FileData &Get() const { return mFileData; }
+		DataChunk &Get() { return mFileData; }
+		const DataChunk &Get() const { return mFileData; }
 
 	private:
 		Handle(const Handle &other);
 		Handle &operator=(const Handle &other);
 
-		FileData mFileData;
+		DataChunk mFileData;
 		FileLoader *mFileLoader;
 	};
 
@@ -64,7 +64,7 @@ public:
 	virtual ~FileLoader() {}
 
 	virtual Handle LoadFile(const char *fileName) = 0;
-	virtual void DisposeFile(FileData &fileData) = 0;
+	virtual void DisposeFile(DataChunk &fileData) = 0;
 };
 
 }

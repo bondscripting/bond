@@ -21,7 +21,7 @@ public:
 	virtual ~DiskFileLoader() {}
 
 	virtual Handle LoadFile(const char *fileName) override;
-	virtual void DisposeFile(FileData &fileData) override;
+	virtual void DisposeFile(DataChunk &fileData) override;
 
 	Handle LoadFile(FILE *file);
 

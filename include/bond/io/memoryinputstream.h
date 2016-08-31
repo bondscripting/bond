@@ -7,6 +7,9 @@
 namespace Bond
 {
 
+/// \brief A concrete implementation of InputStream that performs input operations from an
+/// in-memory buffer.
+/// \ingroup io
 class MemoryInputStream: public InputStream
 {
 public:

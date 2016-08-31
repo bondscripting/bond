@@ -124,7 +124,7 @@ extern const uint8_t INCLUDE_IO_BOND_DATA[] =
 	0x72, 0x28, 0x29, 0x3B, 0x0A, 0x0A, 0x7D, 0x0A, 0x7D, 0x0A,
 };
 
-extern const Bond::FileData INCLUDE_IO_BOND(INCLUDE_IO_BOND_DATA, sizeof(INCLUDE_IO_BOND_DATA));
+extern const Bond::DataChunk INCLUDE_IO_BOND(INCLUDE_IO_BOND_DATA, sizeof(INCLUDE_IO_BOND_DATA));
 
 
 extern const uint8_t INCLUDE_MATH_BOND_DATA[] =
@@ -222,7 +222,7 @@ extern const uint8_t INCLUDE_MATH_BOND_DATA[] =
 	0x74, 0x20, 0x79, 0x29, 0x3B, 0x0A, 0x0A, 0x7D, 0x0A, 0x7D, 0x0A,
 };
 
-extern const Bond::FileData INCLUDE_MATH_BOND(INCLUDE_MATH_BOND_DATA, sizeof(INCLUDE_MATH_BOND_DATA));
+extern const Bond::DataChunk INCLUDE_MATH_BOND(INCLUDE_MATH_BOND_DATA, sizeof(INCLUDE_MATH_BOND_DATA));
 
 
 extern const uint8_t INCLUDE_MEMORY_BOND_DATA[] =
@@ -243,7 +243,7 @@ extern const uint8_t INCLUDE_MEMORY_BOND_DATA[] =
 	0x7D, 0x0A, 0x7D, 0x0A,
 };
 
-extern const Bond::FileData INCLUDE_MEMORY_BOND(INCLUDE_MEMORY_BOND_DATA, sizeof(INCLUDE_MEMORY_BOND_DATA));
+extern const Bond::DataChunk INCLUDE_MEMORY_BOND(INCLUDE_MEMORY_BOND_DATA, sizeof(INCLUDE_MEMORY_BOND_DATA));
 
 
 extern const uint8_t INCLUDE_STRING_BOND_DATA[] =
@@ -267,7 +267,7 @@ extern const uint8_t INCLUDE_STRING_BOND_DATA[] =
 	0x0A, 0x0A, 0x7D, 0x0A, 0x7D, 0x0A,
 };
 
-extern const Bond::FileData INCLUDE_STRING_BOND(INCLUDE_STRING_BOND_DATA, sizeof(INCLUDE_STRING_BOND_DATA));
+extern const Bond::DataChunk INCLUDE_STRING_BOND(INCLUDE_STRING_BOND_DATA, sizeof(INCLUDE_STRING_BOND_DATA));
 
 
 extern const uint8_t INCLUDE_TYPE_BOND_DATA[] =
@@ -294,6 +294,6 @@ extern const uint8_t INCLUDE_TYPE_BOND_DATA[] =
 	0x0A,
 };
 
-extern const Bond::FileData INCLUDE_TYPE_BOND(INCLUDE_TYPE_BOND_DATA, sizeof(INCLUDE_TYPE_BOND_DATA));
+extern const Bond::DataChunk INCLUDE_TYPE_BOND(INCLUDE_TYPE_BOND_DATA, sizeof(INCLUDE_TYPE_BOND_DATA));
 
 

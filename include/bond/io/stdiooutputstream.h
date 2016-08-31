@@ -8,6 +8,9 @@
 namespace Bond
 {
 
+/// \brief A concrete implementation of OuputStream that performs input operations to a stdio
+/// FILE*.
+/// \ingroup io
 class StdioOutputStream: public OutputStream
 {
 public:

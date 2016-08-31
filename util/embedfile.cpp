@@ -17,7 +17,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 
 	if (hFile != nullptr)
 	{
-		fprintf(hFile, "extern const Bond::FileData %s;\n", baseName);
+		fprintf(hFile, "extern const Bond::DataChunk %s;\n", baseName);
 	}
 
 	if (cppFile != nullptr)
@@ -43,7 +43,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 				}
 			}
 
-			fprintf(cppFile, "};\n\nextern const Bond::FileData %s(%s_DATA, sizeof(%s_DATA));\n\n\n", baseName, baseName, baseName);
+			fprintf(cppFile, "};\n\nextern const Bond::DataChunk %s(%s_DATA, sizeof(%s_DATA));\n\n\n", baseName, baseName, baseName);
 			fclose(inputFile);
 		}
 	}

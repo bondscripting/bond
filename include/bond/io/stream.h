@@ -6,6 +6,9 @@
 namespace Bond
 {
 
+/// \brief A base interface for performing IO operations.
+/// \sa InputStream, OutputStream
+/// \ingroup io
 class Stream
 {
 public:

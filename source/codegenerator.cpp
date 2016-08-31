@@ -149,9 +149,10 @@ public:
 		mPointerSize(pointerSize)
 	{}
 
-	void Generate();
-
+	GeneratorCore(const GeneratorCore &other) = delete;
 	GeneratorCore &operator=(const GeneratorCore &other) = delete;
+
+	void Generate();
 
 private:
 	enum Fixedness

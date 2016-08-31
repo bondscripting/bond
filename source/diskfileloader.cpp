@@ -61,14 +61,14 @@ FileLoader::Handle DiskFileLoader::LoadFile(FILE *file)
 		}
 	}
 
-	return Handle(FileData(dataHandle.release(), length), this);
+	return Handle(DataChunk(dataHandle.release(), length), this);
 }
 
 
-void DiskFileLoader::DisposeFile(FileData &fileData)
+void DiskFileLoader::DisposeFile(DataChunk &fileData)
 {
 	mAllocator.Free(fileData.mData);
-	fileData = FileData();
+	fileData = DataChunk();
 }
 
 }

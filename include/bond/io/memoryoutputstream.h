@@ -7,6 +7,9 @@
 namespace Bond
 {
 
+/// \brief A concrete implementation of OuputStream that performs ouput operations to an
+/// in-memory buffer.
+/// \ingroup io
 class MemoryOutputStream: public OutputStream
 {
 public:
