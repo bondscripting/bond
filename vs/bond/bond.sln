@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bond", "bond.vcxproj", "{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}"
 EndProject
@@ -13,12 +13,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prettyprint", "..\prettyprint\prettyprint.vcxproj", "{4B420D40-1329-475C-9D79-AC5D9DA0798F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testcharstream", "..\testcharstream\testcharstream.vcxproj", "{EEEC3AD5-2E31-4D33-A864-9273807B6274}"
-	ProjectSection(ProjectDependencies) = postProject
-		{30FDC924-3CEE-40AB-9CE4-BC01B5C781E0} = {30FDC924-3CEE-40AB-9CE4-BC01B5C781E0}
-		{7E525B78-8165-452D-BCA1-6855B3FFD564} = {7E525B78-8165-452D-BCA1-6855B3FFD564}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testlexer", "..\testlexer\testlexer.vcxproj", "{848238C2-D932-4905-9A82-13A93EDDA04D}"
@@ -104,14 +98,6 @@ Global
 		{4B420D40-1329-475C-9D79-AC5D9DA0798F}.Release|Win32.Build.0 = Release|Win32
 		{4B420D40-1329-475C-9D79-AC5D9DA0798F}.Release|x64.ActiveCfg = Release|x64
 		{4B420D40-1329-475C-9D79-AC5D9DA0798F}.Release|x64.Build.0 = Release|x64
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Debug|Win32.Build.0 = Debug|Win32
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Debug|x64.ActiveCfg = Debug|x64
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Debug|x64.Build.0 = Debug|x64
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Release|Win32.ActiveCfg = Release|Win32
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Release|Win32.Build.0 = Release|Win32
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Release|x64.ActiveCfg = Release|x64
-		{EEEC3AD5-2E31-4D33-A864-9273807B6274}.Release|x64.Build.0 = Release|x64
 		{848238C2-D932-4905-9A82-13A93EDDA04D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{848238C2-D932-4905-9A82-13A93EDDA04D}.Debug|Win32.Build.0 = Debug|Win32
 		{848238C2-D932-4905-9A82-13A93EDDA04D}.Debug|x64.ActiveCfg = Debug|x64

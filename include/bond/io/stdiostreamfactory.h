@@ -28,6 +28,9 @@ public:
 	/// \param fileName The name of the file for which an input stream is created.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) override;
 
+	void SetRootPath(const char *rootPath) { mRootPath = rootPath; }
+	void SetDelegateFactory(StreamFactory *delegateFactory) { mDelegateFactory = delegateFactory; }
+
 private:
 	Allocator &mAllocator;
 	const char *mRootPath;

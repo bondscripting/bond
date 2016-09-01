@@ -2,7 +2,7 @@
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/diskfileloader.h"
+#include "bond/io/stdioinputstream.h"
 #include "bond/io/stdiooutputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -17,11 +17,10 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 	try
 	{
 		Bond::DefaultAllocator allocator;
-		Bond::DiskFileLoader fileLoader(allocator);
-		auto scriptHandle = fileLoader.LoadFile(scriptName);
+		Bond::StdioInputStream scriptStream(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(allocator, errorBuffer);
-		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		auto tokenCollectionHandle = lexer.Lex(scriptName, scriptStream);
 
 		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&allocator)));
 		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);

@@ -1,5 +1,5 @@
 #include "framework/testlexerframework.h"
-#include "bond/io/diskfileloader.h"
+#include "bond/io/stdioinputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 
@@ -22,11 +22,10 @@ bool RunLexerTest(
 
 	try
 	{
-		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
-		auto scriptHandle = fileLoader.LoadFile(scriptName);
+		Bond::StdioInputStream scriptStream(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		auto tokenCollectionHandle = lexer.Lex(scriptName, scriptStream);
 		result = validationFunction(logger, errorBuffer, *tokenCollectionHandle);
 	}
 	catch (const Bond::Exception &e)

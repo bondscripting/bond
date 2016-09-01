@@ -5,8 +5,9 @@
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/diskfileloader.h"
+#include "bond/io/memorystreamfactory.h"
 #include "bond/io/stdiooutputstream.h"
+#include "bond/io/stdiostreamfactory.h"
 #include "bond/stl/list.h"
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
@@ -14,7 +15,7 @@
 #include <cstdio>
 #include <cstring>
 
-typedef Bond::List<Bond::DiskFileLoader> FileLoaderList;
+typedef Bond::List<Bond::StdioStreamFactory> StreamFactoryList;
 
 int main(int argc, const char *argv[])
 {
@@ -30,10 +31,10 @@ int main(int argc, const char *argv[])
 		Bond::Lexer lexer(allocator, errorBuffer);
 		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
-		FileLoaderList loaderList((FileLoaderList::allocator_type(&allocator)));
-		loaderList.push_back(Bond::DiskFileLoader(allocator));
-		Bond::MemoryFileLoader stdIncludeLoader(Bond::INCLUDE_FILE_INDEX, &loaderList.back());
-		Bond::FrontEnd frontEnd(allocator, tokenStore, lexer, parser, analyzer, stdIncludeLoader);
+		StreamFactoryList factoryList((StreamFactoryList::allocator_type(&allocator)));
+		factoryList.emplace_back(allocator);
+		Bond::MemoryStreamFactory stdIncludeFactory(allocator, Bond::INCLUDE_FILE_INDEX, &factoryList.back());
+		Bond::FrontEnd frontEnd(allocator, tokenStore, lexer, parser, analyzer, stdIncludeFactory);
 		const char *cboFileName = nullptr;
 		const char *cppFileName = nullptr;
 		const char *hFileName = nullptr;
@@ -95,9 +96,9 @@ int main(int argc, const char *argv[])
 			{
 				if (++i < argc)
 				{
-					Bond::DiskFileLoader &prev = loaderList.back();
-					loaderList.push_back(Bond::DiskFileLoader(allocator, argv[i]));
-					prev.SetDelegateLoader(&loaderList.back());
+					auto &prev = factoryList.back();
+					factoryList.emplace_back(allocator, argv[i]);
+					prev.SetDelegateFactory(&factoryList.back());
 				}
 				else
 				{

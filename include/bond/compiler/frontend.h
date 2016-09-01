@@ -8,9 +8,9 @@
 namespace Bond
 {
 
-class FileLoader;
 class Parser;
 class SemanticAnalyzer;
+class StreamFactory;
 class TranslationUnit;
 
 /// \brief A compiler front end for the Bond scripting language.
@@ -29,7 +29,7 @@ class TranslationUnit;
 ///
 /// When analysis is complete, the list of generated TranslationUnits is returned.
 ///
-/// File loading is delegated to an object that implements the FileLoader interface so that no
+/// File loading is delegated to an object that implements the StreamFactory interface so that no
 /// assumptions about where the source files reside are made (e.g. disk, network, database,
 /// proprietary asset store, etc).
 ///
@@ -44,20 +44,20 @@ public:
 	/// \param lexer The Lexer used to scan the Bond source files.
 	/// \param parser The Parser used to parse the Bond source files.
 	/// \param semanticAnalyzer The SemanticAnalyzer used to analyze the Bond source files.
-	/// \param fileLoader The FileLoader responsible for loading the Bond source files.
+	/// \param StreamFactory The StreamFactory responsible for loading the Bond source files.
 	FrontEnd(
 			Allocator &allocator,
 			TokenCollectionStore &tokenCollectionStore,
 			Lexer &lexer,
 			Parser &parser,
 			SemanticAnalyzer &semanticAnalyzer,
-			FileLoader &fileLoader):
+			StreamFactory &streamFactory):
 		mInputFileNameList(StringList::allocator_type(&allocator)),
 		mTokenCollectionStore(tokenCollectionStore),
 		mLexer(lexer),
 		mParser(parser),
 		mSemanticAnalyzer(semanticAnalyzer),
-		mFileLoader(fileLoader)
+		mStreamFactory(streamFactory)
 	{}
 
 	FrontEnd(const FrontEnd &other) = delete;
@@ -88,7 +88,7 @@ private:
 	Lexer &mLexer;
 	Parser &mParser;
 	SemanticAnalyzer &mSemanticAnalyzer;
-	FileLoader &mFileLoader;
+	StreamFactory &mStreamFactory;
 };
 
 }

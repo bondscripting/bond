@@ -44,11 +44,8 @@
     <ClInclude Include="..\..\include\bond\compiler\token.h" />
     <ClInclude Include="..\..\include\bond\compiler\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h" />
-    <ClInclude Include="..\..\include\bond\io\diskfileloader.h" />
-    <ClInclude Include="..\..\include\bond\io\fileloader.h" />
     <ClInclude Include="..\..\include\bond\io\inputstream.h" />
     <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h" />
-    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h" />
     <ClInclude Include="..\..\include\bond\io\memoryinputstream.h" />
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\memorystreamfactory.h" />
@@ -120,7 +117,6 @@
     <ClCompile Include="..\..\source\compilererror.cpp" />
     <ClCompile Include="..\..\source\defaultallocator.cpp" />
     <ClCompile Include="..\..\source\disassembler.cpp" />
-    <ClCompile Include="..\..\source\diskfileloader.cpp" />
     <ClCompile Include="..\..\source\exception.cpp" />
     <ClCompile Include="..\..\source\frontend.cpp" />
     <ClCompile Include="..\..\source\inputstream.cpp" />
@@ -138,7 +134,6 @@
     <ClCompile Include="..\..\source\libstringbindings.cpp" />
     <ClCompile Include="..\..\source\libtype.cpp" />
     <ClCompile Include="..\..\source\libtypebindings.cpp" />
-    <ClCompile Include="..\..\source\memoryfileloader.cpp" />
     <ClCompile Include="..\..\source\memoryinputstream.cpp" />
     <ClCompile Include="..\..\source\memoryoutputstream.cpp" />
     <ClCompile Include="..\..\source\memorystreamfactory.cpp" />

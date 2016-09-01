@@ -30,6 +30,8 @@ public:
 	/// \param fileName The name of the file for which an input stream is created.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) override;
 
+	void SetDelegateFactory(StreamFactory *delegateFactory) { mDelegateFactory = delegateFactory; }
+
 private:
 	Allocator &mAllocator;
 	const DataChunkIndex &mIndex;

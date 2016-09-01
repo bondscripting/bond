@@ -30,7 +30,7 @@ static const DataChunk INCLUDE_FILE_DATA[] =
 };
 
 
-const MemoryFileLoader::Index INCLUDE_FILE_INDEX(
+const DataChunkIndex INCLUDE_FILE_INDEX(
 	INCLUDE_FILE_NAMES,
 	INCLUDE_FILE_DATA,
 	sizeof(INCLUDE_FILE_NAMES) / sizeof(*INCLUDE_FILE_NAMES));

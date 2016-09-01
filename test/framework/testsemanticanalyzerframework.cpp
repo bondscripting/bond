@@ -4,7 +4,8 @@
 #include "bond/compiler/frontend.h"
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
-#include "bond/io/diskfileloader.h"
+#include "bond/io/memorystreamfactory.h"
+#include "bond/io/stdiostreamfactory.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 
@@ -23,7 +24,7 @@ bool RunSemanticAnalyzerTest(
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
-	Bond::DefaultAllocator fileLoaderAllocator;
+	Bond::DefaultAllocator streamFactoryAllocator;
 	Bond::DefaultAllocator frontEndAllocator;
 	bool result = false;
 
@@ -35,9 +36,9 @@ bool RunSemanticAnalyzerTest(
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
-		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
-		Bond::MemoryFileLoader stdLibLoader(Bond::INCLUDE_FILE_INDEX, &fileLoader);
-		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibLoader);
+		Bond::StdioStreamFactory streamFactory(streamFactoryAllocator);
+		Bond::MemoryStreamFactory stdLibFactory(streamFactoryAllocator, Bond::INCLUDE_FILE_INDEX, &streamFactory);
+		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibFactory);
 
 		frontEnd.AddInputFile(scriptName);
 		frontEnd.Analyze();
@@ -52,8 +53,8 @@ bool RunSemanticAnalyzerTest(
 		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
-	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations()));
+	__ASSERT_FORMAT__(streamFactoryAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
+		("Stream factory leaked %d chunks of memory.", streamFactoryAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(frontEndAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Front end leaked %d chunks of memory.", frontEndAllocator.GetNumAllocations()));
 

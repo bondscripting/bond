@@ -1,8 +1,7 @@
-
 #include "framework/testparserframework.h"
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
-#include "bond/io/diskfileloader.h"
+#include "bond/io/stdioinputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
 
@@ -19,18 +18,16 @@ bool RunParserTest(
 	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, ("Script name is NULL."));
 	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, ("Validation function is NULL."));
 
-	Bond::DefaultAllocator fileLoaderAllocator;
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
 	bool result = false;
 
 	try
 	{
-		Bond::DiskFileLoader fileLoader(fileLoaderAllocator);
-		auto scriptHandle = fileLoader.LoadFile(scriptName);
+		Bond::StdioInputStream scriptStream(scriptName);
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
-		auto tokenCollectionHandle = lexer.Lex(scriptName, reinterpret_cast<const char *>(scriptHandle.Get().mData), scriptHandle.Get().mLength);
+		auto tokenCollectionHandle = lexer.Lex(scriptName, scriptStream);
 		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&parserAllocator)));
 		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::TranslationUnit *translationUnit = nullptr;
@@ -46,8 +43,6 @@ bool RunParserTest(
 		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
 	}
 
-	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
 		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,

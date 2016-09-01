@@ -11,6 +11,7 @@ namespace Bond
 class Allocator;
 class CharStream;
 class CompilerErrorBuffer;
+class InputStream;
 class StringAllocator;
 
 /// \addtogroup compiler
@@ -52,15 +53,27 @@ public:
 	///        Tokens, so that other tools, such as a Parser or SemanticAnalyzer can generate
 	///        meaningful error messages. The name is not copied so the given pointer must remain
 	///        valid for the lifetime of the generated TokenCollection.
-	/// \param text The text for the Bond source code to be tokenized. The tokens contain a copy
-	///        of the original source code, so the given pointer does not need to remain valid once
-	///        this function returns.
+	/// \param text The Bond source code text to be tokenized. The tokens contain a copy of the
+	///        original source code, so the given pointer does not need to remain valid once this
+	///        function returns.
 	/// \param length The number of characters in the Bond source code. Required since the source
 	///        code may contain null characters and may not be null terminated.
 	/// \returns A TokenCollectionHandle, which is an owning pointer to a dynamically allocated
 	///        TokenCollection. The TokenCollection is automatically destroyed when the handle
 	///        is destroyed.
 	TokenCollectionHandle Lex(const char *fileName, const char *text, size_t length);
+
+	/// \brief Scans the given string of Bond source and breaks it up into a sequence of Tokens.
+	/// \param fileName Name to associate with the string of Bond source code, ideally the name of the
+	///        file from which the code was loaded. The name will be accessible via the generated
+	///        Tokens, so that other tools, such as a Parser or SemanticAnalyzer can generate
+	///        meaningful error messages. The name is not copied so the given pointer must remain
+	///        valid for the lifetime of the generated TokenCollection.
+	/// \param stream The stream of Bond source code text to be tokenized.
+	/// \returns A TokenCollectionHandle, which is an owning pointer to a dynamically allocated
+	///        TokenCollection. The TokenCollection is automatically destroyed when the handle
+	///        is destroyed.
+	TokenCollectionHandle Lex(const char *fileName, InputStream &stream);
 
 	/// \brief Returns the buffer where error messages are pushed.
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }

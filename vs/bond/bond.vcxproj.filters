@@ -270,15 +270,6 @@
     <ClInclude Include="..\..\include\bond\api\libio.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\diskfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\fileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\io\memoryfileloader.h">
-      <Filter>Header Files\include\bond\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\memoryoutputstream.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -356,9 +347,6 @@
     <ClCompile Include="..\..\source\disassembler.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\diskfileloader.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\exception.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -402,9 +390,6 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libtypebindings.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\memoryfileloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\memoryoutputstream.cpp">

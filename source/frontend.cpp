@@ -4,7 +4,7 @@
 #include "bond/compiler/parsenodeutil.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
-#include "bond/io/fileloader.h"
+#include "bond/io/streamfactory.h"
 #include "bond/stl/algorithm.h"
 
 namespace Bond
@@ -34,10 +34,8 @@ TranslationUnit *FrontEnd::Analyze()
 	while ((it != mInputFileNameList.end()) && !HasErrors())
 	{
 		const char *fileName = it->GetString();
-		auto scriptHandle = mFileLoader.LoadFile(fileName);
-		const char *script = reinterpret_cast<const char *>(scriptHandle.Get().mData);
-		const size_t length = scriptHandle.Get().mLength;
-		mTokenCollectionStore.emplace_back(mLexer.Lex(fileName, script, length));
+		auto streamHandle = mStreamFactory.CreateInputStream(fileName);
+		mTokenCollectionStore.emplace_back(mLexer.Lex(fileName, *streamHandle));
 
 		if (!HasErrors())
 		{

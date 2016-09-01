@@ -8,26 +8,8 @@ namespace Bond
 
 struct StreamPos
 {
-	StreamPos():
-		index(0),
-		line(1),
-		column(1)
-	{
-	}
-
-	StreamPos(size_t i, size_t l, size_t c):
-		index(i),
-		line(l),
-		column(c)
-	{
-	}
-
-	StreamPos(const StreamPos &other):
-		index(other.index),
-		line(other.line),
-		column(other.column)
-	{
-	}
+	StreamPos(size_t i = 0, size_t l = 1, size_t c = 1): index(i), line(l), column(c) {}
+	StreamPos(const StreamPos &other) = default;
 
 	size_t index;
 	size_t line;

@@ -1,6 +1,7 @@
 #include "bond/compiler/charstream.h"
 #include "bond/compiler/compilererror.h"
 #include "bond/compiler/lexer.h"
+#include "bond/io/memoryinputstream.h"
 #include "bond/stl/algorithm.h"
 #include "bond/systems/allocator.h"
 #include "private/memory.h"
@@ -18,13 +19,11 @@ public:
 			Allocator &allocator,
 			CompilerErrorBuffer &errorBuffer,
 			const char *fileName,
-			const char *text,
-			size_t length):
+			InputStream &stream):
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),
 		mFileName(fileName),
-		mText(text),
-		mTextLength(length),
+		mStream(stream),
 		mTokens(nullptr),
 		mStringBuffer(nullptr)
 	{}
@@ -108,7 +107,7 @@ private:
 	void GenerateTokens(CharStream &stream);
 	void GenerateToken(CharStream &stream, Token &token);
 	CompilerError::Type ScanToken(CharStream &stream, Token &token) const;
-	void ExtractToken(CharStream &stream, Token &token);
+	void ExtractToken(Token &token);
 
 	void EvaluateToken(Token &token);
 	void EvaluateKeywordOrIdentifierToken(Token &token) const;
@@ -138,8 +137,7 @@ private:
 	Allocator &mAllocator;
 	CompilerErrorBuffer &mErrorBuffer;
 	const char *mFileName;
-	const char *mText;
-	size_t mTextLength;
+	InputStream &mStream;
 	Token *mTokens;
 	char *mStringBuffer;
 };
@@ -147,14 +145,22 @@ private:
 
 TokenCollectionHandle Lexer::Lex(const char *fileName, const char *text, size_t length)
 {
-	LexerCore lexer(mAllocator, mErrorBuffer, fileName, text, length);
+	MemoryInputStream stream(text, Stream::pos_t(length));
+	LexerCore lexer(mAllocator, mErrorBuffer, fileName, stream);
+	return lexer.Lex();
+}
+
+
+TokenCollectionHandle Lexer::Lex(const char *fileName, InputStream &stream)
+{
+	LexerCore lexer(mAllocator, mErrorBuffer, fileName, stream);
 	return lexer.Lex();
 }
 
 
 TokenCollectionHandle LexerCore::Lex()
 {
-	CharStream stream(mText, mTextLength);
+	CharStream stream(mStream);
 	Resources resources = CalculateResources(stream);
 
 	const size_t fileNameLength = StringLength(mFileName);
@@ -229,7 +235,7 @@ void LexerCore::GenerateToken(CharStream &stream, Token &token)
 	const CompilerError::Type error = ScanToken(stream, token);
 	token.SetFileName(mFileName);
 	PushError(error, token);
-	ExtractToken(stream, token);
+	ExtractToken(token);
 	EvaluateToken(token);
 }
 
@@ -240,6 +246,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 	token = Token();
 	LexState state = STATE_SPACE;
 
+	stream.Sync();
 	while (stream.HasNext() && (state != STATE_DONE))
 	{
 		const StreamPos pos = stream.GetStreamPos();
@@ -395,7 +402,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_PLUS);
 					state = STATE_DONE;
 				}
@@ -419,7 +426,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_MINUS);
 					state = STATE_DONE;
 				}
@@ -433,7 +440,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_STAR);
 					state = STATE_DONE;
 				}
@@ -455,7 +462,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_DIV);
 					state = STATE_DONE;
 				}
@@ -469,7 +476,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_MOD);
 					state = STATE_DONE;
 				}
@@ -487,7 +494,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_LT);
 					state = STATE_DONE;
 				}
@@ -505,7 +512,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_GT);
 					state = STATE_DONE;
 				}
@@ -519,7 +526,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_LEFT);
 					state = STATE_DONE;
 				}
@@ -533,7 +540,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_RIGHT);
 					state = STATE_DONE;
 				}
@@ -547,7 +554,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::ASSIGN);
 					state = STATE_DONE;
 				}
@@ -561,7 +568,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_NOT);
 					state = STATE_DONE;
 				}
@@ -580,7 +587,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_AMP);
 					state = STATE_DONE;
 				}
@@ -599,7 +606,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_BIT_OR);
 					state = STATE_DONE;
 				}
@@ -613,7 +620,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::OP_BIT_XOR);
 					state = STATE_DONE;
 				}
@@ -627,7 +634,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::COLON);
 					state = STATE_DONE;
 				}
@@ -671,7 +678,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
@@ -697,7 +704,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
@@ -723,7 +730,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
@@ -761,7 +768,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_INT);
 					state = STATE_DONE;
 				}
@@ -787,7 +794,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_DOUBLE);
 					state = STATE_DONE;
 				}
@@ -809,7 +816,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_DOUBLE);
 					state = STATE_DONE;
 				}
@@ -822,7 +829,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::PERIOD);
 					state = STATE_DONE;
 				}
@@ -844,7 +851,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					error = CompilerError::INVALID_FLOAT;
 					state = STATE_DONE;
 				}
@@ -862,7 +869,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					error = CompilerError::INVALID_FLOAT;
 					state = STATE_DONE;
 				}
@@ -876,7 +883,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_FLOAT);
 					state = STATE_DONE;
 				}
@@ -894,7 +901,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_UINT);
 					state = STATE_DONE;
 				}
@@ -912,7 +919,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_LONG);
 					state = STATE_DONE;
 				}
@@ -926,7 +933,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::CONST_ULONG);
 					state = STATE_DONE;
 				}
@@ -935,7 +942,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_BAD_NUMBER:
 				if (!IsBadNumberChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					state = STATE_DONE;
 				}
 				break;
@@ -943,7 +950,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_IDENTIFIER:
 				if (!IsIdentifierChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					token.SetTokenType(Token::IDENTIFIER);
 					state = STATE_DONE;
 				}
@@ -988,7 +995,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_CHAR_OCTAL_ESCAPE:
 				if (!IsOctalChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					state = STATE_CHAR_END;
 				}
 				break;
@@ -1000,7 +1007,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					error = CompilerError::MISSING_HEX_ESCAPE;
 					state = STATE_CHAR_END;
 				}
@@ -1009,7 +1016,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_CHAR_HEX_ESCAPE:
 				if (!IsHexChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					state = STATE_CHAR_END;
 				}
 				break;
@@ -1066,7 +1073,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_STRING_OCTAL_ESCAPE:
 				if (!IsOctalChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					state = STATE_STRING;
 				}
 				break;
@@ -1078,7 +1085,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					error = CompilerError::MISSING_HEX_ESCAPE;
 					state = STATE_STRING;
 				}
@@ -1087,7 +1094,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 			case STATE_STRING_HEX_ESCAPE:
 				if (!IsHexChar(c))
 				{
-					stream.Unget();
+					stream.Reset(pos);
 					state = STATE_STRING;
 				}
 				break;
@@ -1145,7 +1152,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 }
 
 
-void LexerCore::ExtractToken(CharStream &stream, Token &token)
+void LexerCore::ExtractToken(Token &token)
 {
 	if (token.GetTokenType() == Token::END)
 	{
@@ -1155,7 +1162,10 @@ void LexerCore::ExtractToken(CharStream &stream, Token &token)
 	{
 		const size_t startIndex = token.GetStartPos().index;
 		const size_t length = token.GetEndIndex() - startIndex;
-		const char *tokenString = AllocString(stream.GetBuffer() + startIndex, length);
+		char *tokenString = AllocString(length);
+		mStream.SetPosition(Stream::pos_t(startIndex));
+		mStream.Read(tokenString, length);
+		tokenString[length] = '\0';
 		token.SetText(tokenString, length);
 	}
 }
