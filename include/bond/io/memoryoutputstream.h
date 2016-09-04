@@ -17,7 +17,7 @@ public:
 	virtual ~MemoryOutputStream() {}
 
 	virtual void VPrint(const char *format, va_list argList) override;
-	virtual void Write(const uint8_t *bytes, size_t numBytes);
+	virtual void Write(const uint8_t *bytes, size_t numBytes) override;
 	virtual void Write(uint8_t c) override;
 
 	virtual pos_t GetPosition() const override { return mCurrent; }

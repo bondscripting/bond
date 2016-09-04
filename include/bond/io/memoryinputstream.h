@@ -17,7 +17,7 @@ public:
 	virtual ~MemoryInputStream() {}
 
 	virtual void VScan(const char *format, va_list argList) override;
-	virtual size_t Read(uint8_t *bytes, size_t numBytes);
+	virtual size_t Read(uint8_t *bytes, size_t numBytes) override;
 	virtual int Read() override;
 
 	virtual pos_t GetPosition() const override { return mCurrent; }
