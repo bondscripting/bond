@@ -3,8 +3,17 @@ namespace Bond
 native
 {
 
+struct Collector {};
+
+Collector *GetCollector();
+
 void *Allocate(ulong size);
+void *AllocateCollected(ulong size);
+void *AllocateWithCollector(Collector *collector, ulong size);
+
 void *AllocateAligned(ulong size, uint alignment);
+void *AllocateAlignedCollected(ulong size, uint alignment);
+void *AllocateAlignedWithCollector(Collector *collector, ulong size, uint alignment);
 
 void Free(void *ptr);
 void FreeAligned(void *ptr);

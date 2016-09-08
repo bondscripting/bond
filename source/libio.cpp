@@ -9,7 +9,7 @@
 namespace Bond
 {
 
-void InputStream__ScanStr(Bond::CalleeStackFrame &frame)
+void InputStream__ScanStr(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	char *str = (frame.GetArg<char *>(1));
@@ -18,7 +18,7 @@ void InputStream__ScanStr(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanB(Bond::CalleeStackFrame &frame)
+void InputStream__ScanB(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const bool value = stream->ScanBool();
@@ -26,7 +26,7 @@ void InputStream__ScanB(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanC(Bond::CalleeStackFrame &frame)
+void InputStream__ScanC(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int8_t value = stream->ScanChar();
@@ -34,7 +34,7 @@ void InputStream__ScanC(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanI(Bond::CalleeStackFrame &frame)
+void InputStream__ScanI(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t value = stream->ScanInt();
@@ -42,7 +42,7 @@ void InputStream__ScanI(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanUI(Bond::CalleeStackFrame &frame)
+void InputStream__ScanUI(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const uint32_t value = stream->ScanUInt();
@@ -50,7 +50,7 @@ void InputStream__ScanUI(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanL(Bond::CalleeStackFrame &frame)
+void InputStream__ScanL(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int64_t value = stream->ScanLong();
@@ -58,7 +58,7 @@ void InputStream__ScanL(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanUL(Bond::CalleeStackFrame &frame)
+void InputStream__ScanUL(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const uint64_t value = stream->ScanULong();
@@ -66,7 +66,7 @@ void InputStream__ScanUL(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanF(Bond::CalleeStackFrame &frame)
+void InputStream__ScanF(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const double value = stream->ScanDouble();
@@ -74,7 +74,7 @@ void InputStream__ScanF(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ScanD(Bond::CalleeStackFrame &frame)
+void InputStream__ScanD(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const double value = stream->ScanDouble();
@@ -82,7 +82,7 @@ void InputStream__ScanD(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__Get(Bond::CalleeStackFrame &frame)
+void InputStream__Get(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int value = stream->GetStream()->Read();
@@ -90,7 +90,7 @@ void InputStream__Get(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__Read(Bond::CalleeStackFrame &frame)
+void InputStream__Read(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	uint8_t *bytes = (frame.GetArg<uint8_t *>(1));
@@ -100,7 +100,7 @@ void InputStream__Read(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__GetFlags(Bond::CalleeStackFrame &frame)
+void InputStream__GetFlags(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t flags = int32_t(stream->GetFlags());
@@ -108,7 +108,7 @@ void InputStream__GetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__SetFlags(Bond::CalleeStackFrame &frame)
+void InputStream__SetFlags(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int flags = int(frame.GetArg<int32_t>(1));
@@ -117,7 +117,7 @@ void InputStream__SetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__UnsetFlags(Bond::CalleeStackFrame &frame)
+void InputStream__UnsetFlags(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int flags = int(frame.GetArg<int32_t>(1));
@@ -126,7 +126,7 @@ void InputStream__UnsetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__ClearFlags(Bond::CalleeStackFrame &frame)
+void InputStream__ClearFlags(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	stream->ClearFlags();
@@ -134,7 +134,7 @@ void InputStream__ClearFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__GetPosition(Bond::CalleeStackFrame &frame)
+void InputStream__GetPosition(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	int32_t pos = int32_t(stream->GetStream()->GetPosition());
@@ -142,7 +142,7 @@ void InputStream__GetPosition(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__SetPosition(Bond::CalleeStackFrame &frame)
+void InputStream__SetPosition(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t offset = frame.GetArg<int32_t>(1);
@@ -150,7 +150,7 @@ void InputStream__SetPosition(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
+void InputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t offset = frame.GetArg<int32_t>(1);
@@ -158,7 +158,7 @@ void InputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__AddOffset(Bond::CalleeStackFrame &frame)
+void InputStream__AddOffset(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const int32_t value = frame.GetArg<int32_t>(1);
@@ -166,7 +166,7 @@ void InputStream__AddOffset(Bond::CalleeStackFrame &frame)
 }
 
 
-void InputStream__IsEof(Bond::CalleeStackFrame &frame)
+void InputStream__IsEof(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
 	const bool isEof = stream->GetStream()->IsEof();
@@ -174,7 +174,7 @@ void InputStream__IsEof(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintStr(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintStr(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const char *str = frame.GetArg<const char *>(1);
@@ -183,7 +183,7 @@ void OutputStream__PrintStr(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintB(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintB(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const bool value = frame.GetArg<bool>(1);
@@ -192,7 +192,7 @@ void OutputStream__PrintB(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintC(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintC(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const char value = char(frame.GetArg<int8_t>(1));
@@ -201,7 +201,7 @@ void OutputStream__PrintC(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintI(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintI(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t value = frame.GetArg<int32_t>(1);
@@ -210,7 +210,7 @@ void OutputStream__PrintI(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintUI(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintUI(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const uint32_t value = frame.GetArg<uint32_t>(1);
@@ -219,7 +219,7 @@ void OutputStream__PrintUI(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintL(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintL(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int64_t value = frame.GetArg<int64_t>(1);
@@ -228,7 +228,7 @@ void OutputStream__PrintL(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintUL(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintUL(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const uint64_t value = frame.GetArg<uint64_t>(1);
@@ -237,7 +237,7 @@ void OutputStream__PrintUL(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintF(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintF(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const float value = frame.GetArg<float>(1);
@@ -246,7 +246,7 @@ void OutputStream__PrintF(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__PrintD(Bond::CalleeStackFrame &frame)
+void OutputStream__PrintD(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const double value = frame.GetArg<double>(1);
@@ -255,7 +255,7 @@ void OutputStream__PrintD(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__Put(Bond::CalleeStackFrame &frame)
+void OutputStream__Put(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const char byte = char(frame.GetArg<int8_t>(1));
@@ -264,7 +264,7 @@ void OutputStream__Put(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__Write(Bond::CalleeStackFrame &frame)
+void OutputStream__Write(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const uint8_t *bytes = (frame.GetArg<const uint8_t *>(1));
@@ -274,7 +274,7 @@ void OutputStream__Write(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__GetFlags(Bond::CalleeStackFrame &frame)
+void OutputStream__GetFlags(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t flags = int32_t(stream->GetFlags());
@@ -282,7 +282,7 @@ void OutputStream__GetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__SetFlags(Bond::CalleeStackFrame &frame)
+void OutputStream__SetFlags(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int flags = int(frame.GetArg<int32_t>(1));
@@ -291,7 +291,7 @@ void OutputStream__SetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__UnsetFlags(Bond::CalleeStackFrame &frame)
+void OutputStream__UnsetFlags(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int flags = int(frame.GetArg<int32_t>(1));
@@ -300,7 +300,7 @@ void OutputStream__UnsetFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__ClearFlags(Bond::CalleeStackFrame &frame)
+void OutputStream__ClearFlags(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	stream->ClearFlags();
@@ -308,7 +308,7 @@ void OutputStream__ClearFlags(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__GetPrecision(Bond::CalleeStackFrame &frame)
+void OutputStream__GetPrecision(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t precision = int32_t(stream->GetPrecision());
@@ -316,7 +316,7 @@ void OutputStream__GetPrecision(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__SetPrecision(Bond::CalleeStackFrame &frame)
+void OutputStream__SetPrecision(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int precision = int(frame.GetArg<int32_t>(1));
@@ -325,7 +325,7 @@ void OutputStream__SetPrecision(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__GetWidth(Bond::CalleeStackFrame &frame)
+void OutputStream__GetWidth(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t width = int32_t(stream->GetWidth());
@@ -333,7 +333,7 @@ void OutputStream__GetWidth(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__SetWidth(Bond::CalleeStackFrame &frame)
+void OutputStream__SetWidth(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int width = int(frame.GetArg<int32_t>(1));
@@ -342,7 +342,7 @@ void OutputStream__SetWidth(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__GetPosition(Bond::CalleeStackFrame &frame)
+void OutputStream__GetPosition(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	int32_t pos = int32_t(stream->GetStream()->GetPosition());
@@ -350,7 +350,7 @@ void OutputStream__GetPosition(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__SetPosition(Bond::CalleeStackFrame &frame)
+void OutputStream__SetPosition(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t offset = frame.GetArg<int32_t>(1);
@@ -358,7 +358,7 @@ void OutputStream__SetPosition(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
+void OutputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t offset = frame.GetArg<int32_t>(1);
@@ -366,7 +366,7 @@ void OutputStream__SetPositionFromEnd(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__AddOffset(Bond::CalleeStackFrame &frame)
+void OutputStream__AddOffset(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const int32_t value = frame.GetArg<int32_t>(1);
@@ -374,7 +374,7 @@ void OutputStream__AddOffset(Bond::CalleeStackFrame &frame)
 }
 
 
-void OutputStream__IsEof(Bond::CalleeStackFrame &frame)
+void OutputStream__IsEof(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const bool isEof = stream->GetStream()->IsEof();
@@ -382,21 +382,21 @@ void OutputStream__IsEof(Bond::CalleeStackFrame &frame)
 }
 
 
-void StdIn(Bond::CalleeStackFrame &frame)
+void StdIn(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor &inStream = frame.GetVM().GetStdIn();
 	frame.SetReturnValue(&inStream);
 }
 
 
-void StdOut(Bond::CalleeStackFrame &frame)
+void StdOut(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor &outStream = frame.GetVM().GetStdOut();
 	frame.SetReturnValue(&outStream);
 }
 
 
-void StdErr(Bond::CalleeStackFrame &frame)
+void StdErr(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor &errStream = frame.GetVM().GetStdErr();
 	frame.SetReturnValue(&errStream);

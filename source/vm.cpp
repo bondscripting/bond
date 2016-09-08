@@ -53,7 +53,7 @@ inline void SwapValue64(void *a, void *b)
 }
 
 
-void CallerStackFrame::Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer)
+void InvocationStackFrame::Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer)
 {
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
@@ -70,7 +70,7 @@ void CallerStackFrame::Initialize(VM &vm, const QualifiedName &functionName, voi
 }
 
 
-void CallerStackFrame::Initialize(VM &vm, const char *functionName, void *returnPointer)
+void InvocationStackFrame::Initialize(VM &vm, const char *functionName, void *returnPointer)
 {
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
@@ -79,7 +79,7 @@ void CallerStackFrame::Initialize(VM &vm, const char *functionName, void *return
 }
 
 
-void CallerStackFrame::Initialize(VM &vm, const Function &function, void *returnPointer)
+void InvocationStackFrame::Initialize(VM &vm, const Function &function, void *returnPointer)
 {
 	uint8_t *prevStackPointer = GetNext()->GetValue().mStackPointer;
 	uint8_t *framePointer = AlignPointerUp(prevStackPointer + function.mArgSize, function.mFramePointerAlignment);
@@ -92,9 +92,9 @@ void CallerStackFrame::Initialize(VM &vm, const Function &function, void *return
 }
 
 
-void CallerStackFrame::Call()
+void InvocationStackFrame::Call()
 {
-	CalleeStackFrame &frame = GetValue();
+	StackFrame &frame = GetValue();
 	const Function *function = frame.mFunction;
 
 #if BOND_RUNTIME_CHECKS_ENABLED
@@ -110,7 +110,7 @@ void CallerStackFrame::Call()
 	}
 	else
 	{
-		frame.mVm.ExecuteScriptFunction();
+		frame.mVm.ExecuteScriptFunction(frame);
 	}
 }
 
@@ -123,7 +123,7 @@ VM::VM(
 		OutputStream *stdOut,
 		OutputStream *stdErr):
 	mStackFrames(),
-	mDummyFrame(mStackFrames, CalleeStackFrame(*this)),
+	mDummyFrame(mStackFrames, *this),
 	mAllocator(allocator),
 	mCodeSegment(codeSegment),
 	mStdIn(stdIn),
@@ -132,7 +132,7 @@ VM::VM(
 	mStack(allocator, mAllocator.Alloc<uint8_t>(stackSize)),
 	mStackSize(stackSize)
 {
-	CalleeStackFrame &top = mDummyFrame.GetValue();
+	StackFrame &top = mDummyFrame.GetValue();
 	top.mFunction = nullptr;
 	top.mStackPointer = mStack.get();
 	top.mFramePointer = mStack.get();
@@ -145,9 +145,8 @@ VM::~VM()
 }
 
 
-void VM::ExecuteScriptFunction()
+void VM::ExecuteScriptFunction(StackFrame &frame)
 {
-	CalleeStackFrame &frame = GetTopStackFrame();
 	const ConstantTable *constantTable = frame.mFunction->mConstantTable;
 	const Value32 *value32Table = constantTable->mValue32Table;
 	const uint8_t *code = frame.mFunction->mCode;
@@ -2218,7 +2217,7 @@ uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 	}
 	else
 	{
-		ExecuteScriptFunction();
+		ExecuteScriptFunction(stackFrameElement.GetValue());
 	}
 
 	return finalStackPointer;
@@ -2234,16 +2233,40 @@ void VM::ValidateStackPointer(uint8_t *stackPointer) const
 }
 
 
+StackFrame &VM::GetCallerStackFrame()
+{
+	auto it = mStackFrames.begin();
+	auto end = mStackFrames.end();
+	if ((it == end) || (++it == end))
+	{
+		RaiseError("%s", "VM::GetCallerStackFrame(): No caller stack frame exists.");
+	}
+	return *it;
+}
+
+
+const StackFrame &VM::GetCallerStackFrame() const
+{
+	auto it = mStackFrames.cbegin();
+	auto end = mStackFrames.cend();
+	if ((it == end) || (++it == end))
+	{
+		RaiseError("%s", "VM::GetCallerStackFrame(): No caller stack frame exists.");
+	}
+	return *it;
+}
+
+
 void VM::DumpCallStack(OutputStream &stream) const
 {
-	for (const CalleeStackFrame &frame: mStackFrames)
+	for (const StackFrame &frame: mStackFrames)
 	{
 		DumpStackFrame(stream, frame);
 	}
 }
 
 
-void VM::DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) const
+void VM::DumpStackFrame(OutputStream &stream, const StackFrame &frame) const
 {
 	const Function *function = frame.mFunction;
 	if (function != nullptr)

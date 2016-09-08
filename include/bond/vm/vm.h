@@ -7,21 +7,22 @@
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
 #include "bond/vm/codesegment.h"
+#include "bond/vm/collector.h"
 
 namespace Bond
 {
 
-class CalleeStackFrame;
-class CallerStackFrame;
+class StackFrame;
+class InvocationStackFrame;
 class VM;
 
 /// \addtogroup vm
 /// @{
 
-class CalleeStackFrame
+class StackFrame
 {
 public:
-	CalleeStackFrame(VM &vm):
+	StackFrame(VM &vm):
 		mVm(vm),
 		mFunction(nullptr),
 		mFramePointer(nullptr),
@@ -29,7 +30,7 @@ public:
 		mReturnPointer(nullptr)
 	{}
 
-	CalleeStackFrame(
+	StackFrame(
 			VM &vm,
 			const Function &function,
 			uint8_t *framePointer,
@@ -42,19 +43,24 @@ public:
 		mReturnPointer(returnPointer)
 	{}
 
+	StackFrame(const StackFrame &other) = delete;
+	StackFrame &operator=(const StackFrame &other) = delete;
+
 	template <typename ArgType>
 	const ArgType &GetArg(size_t index) const;
 
 	template <typename ReturnType>
 	void SetReturnValue(const ReturnType &returnValue);
 
-	VM &GetVM() const { return mVm; }
+	VM &GetVM() { return mVm; }
+	const VM &GetVM() const { return mVm; }
 
-	CalleeStackFrame &operator=(const CalleeStackFrame &other) = delete;
+	Collector &GetCollector() { return mCollector; }
+	const Collector &GetCollector() const { return mCollector; }
 
 private:
 	friend class VM;
-	friend class CallerStackFrame;
+	friend class InvocationStackFrame;
 
 	template <typename ArgType>
 	ArgType &GetArgRef(size_t index) const;
@@ -62,6 +68,7 @@ private:
 	template <typename ReturnType>
 	void AssertValidReturnAssignmentType() const;
 
+	Collector mCollector;
 	VM &mVm;
 	const Function *mFunction;
 	uint8_t *mFramePointer;
@@ -69,24 +76,24 @@ private:
 	uint8_t *mReturnPointer;
 };
 
-typedef AutoStack<CalleeStackFrame> StackFrames;
+typedef AutoStack<StackFrame> StackFrames;
 
 
-class CallerStackFrame: private StackFrames::Element
+class InvocationStackFrame: private StackFrames::Element
 {
 public:
-	CallerStackFrame(VM &vm, const QualifiedName &functionName);
-	CallerStackFrame(VM &vm, const char *functionName);
-	CallerStackFrame(VM &vm, const Function &function);
+	InvocationStackFrame(VM &vm, const QualifiedName &functionName);
+	InvocationStackFrame(VM &vm, const char *functionName);
+	InvocationStackFrame(VM &vm, const Function &function);
 
 	template <typename ReturnType>
-	CallerStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer);
+	InvocationStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer);
 
 	template <typename ReturnType>
-	CallerStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer);
+	InvocationStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer);
 
 	template <typename ReturnType>
-	CallerStackFrame(VM &vm, const Function &function, ReturnType *returnPointer);
+	InvocationStackFrame(VM &vm, const Function &function, ReturnType *returnPointer);
 
 	template <typename ArgType>
 	void PushArg(const ArgType &arg);
@@ -98,7 +105,7 @@ public:
 
 	void Call();
 
-	CallerStackFrame &operator=(const CallerStackFrame &other) = delete;
+	InvocationStackFrame &operator=(const InvocationStackFrame &other) = delete;
 
 private:
 	void Initialize(VM &vm, const QualifiedName &functionName, void *returnPointer);
@@ -125,15 +132,18 @@ public:
 
 	const CodeSegment &GetCodeSegment() const { return mCodeSegment; }
 
-	CalleeStackFrame &GetTopStackFrame() { return mStackFrames.GetTop(); }
-	const CalleeStackFrame &GetTopStackFrame() const { return mStackFrames.GetTop(); }
+	StackFrame *GetStackFrame() { return &mStackFrames.GetTop(); }
+	const StackFrame &GetStackFrame() const { return mStackFrames.GetTop(); }
+
+	StackFrame &GetCallerStackFrame();
+	const StackFrame &GetCallerStackFrame() const;
 
 	InputStreamAdaptor &GetStdIn() { return mStdIn; }
 	OutputStreamAdaptor &GetStdOut() { return mStdOut; }
 	OutputStreamAdaptor &GetStdErr() { return mStdErr; }
 
 	void DumpCallStack(OutputStream &stream) const;
-	void DumpStackFrame(OutputStream &stream, const CalleeStackFrame &frame) const;
+	void DumpStackFrame(OutputStream &stream, const StackFrame &frame) const;
 
 	void RaiseError(const char *format, ...) const;
 
@@ -158,9 +168,9 @@ public:
 	VM &operator=(const VM &other) = delete;
 
 private:
-	friend class CallerStackFrame;
+	friend class InvocationStackFrame;
 
-	void ExecuteScriptFunction();
+	void ExecuteScriptFunction(StackFrame &frame);
 	uint8_t *InvokeFunction(const Function &function, uint8_t *stackTop);
 	void ValidateStackPointer(uint8_t *stackPointer) const;
 

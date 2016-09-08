@@ -10,11 +10,11 @@ extern const Bond::NativeBindingCollection STRING_BINDING_COLLECTION;
 
 namespace Bond
 {
-void Strlen(Bond::CalleeStackFrame &frame);
-void TryParseInt(Bond::CalleeStackFrame &frame);
-void TryParseLong(Bond::CalleeStackFrame &frame);
-void TryParseFloat(Bond::CalleeStackFrame &frame);
-void TryParseDouble(Bond::CalleeStackFrame &frame);
+void Strlen(Bond::StackFrame &frame);
+void TryParseInt(Bond::StackFrame &frame);
+void TryParseLong(Bond::StackFrame &frame);
+void TryParseFloat(Bond::StackFrame &frame);
+void TryParseDouble(Bond::StackFrame &frame);
 }
 
 #endif

@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-void Strlen(Bond::CalleeStackFrame &frame)
+void Strlen(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
 	const uint32_t length = uint32_t(strlen(str));
@@ -14,7 +14,7 @@ void Strlen(Bond::CalleeStackFrame &frame)
 }
 
 
-void TryParseInt(Bond::CalleeStackFrame &frame)
+void TryParseInt(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
 	int32_t *result = frame.GetArg<int32_t *>(1);
@@ -27,7 +27,7 @@ void TryParseInt(Bond::CalleeStackFrame &frame)
 }
 
 
-void TryParseLong(Bond::CalleeStackFrame &frame)
+void TryParseLong(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
 	int64_t *result = frame.GetArg<int64_t *>(1);
@@ -40,7 +40,7 @@ void TryParseLong(Bond::CalleeStackFrame &frame)
 }
 
 
-void TryParseFloat(Bond::CalleeStackFrame &frame)
+void TryParseFloat(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
 	float *result = frame.GetArg<float *>(1);
@@ -53,7 +53,7 @@ void TryParseFloat(Bond::CalleeStackFrame &frame)
 }
 
 
-void TryParseDouble(Bond::CalleeStackFrame &frame)
+void TryParseDouble(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);
 	double *result = frame.GetArg<double *>(1);

@@ -96,6 +96,7 @@
     <ClInclude Include="..\..\include\bond\types\value.h" />
     <ClInclude Include="..\..\include\bond\vm\cboloader.h" />
     <ClInclude Include="..\..\include\bond\vm\codesegment.h" />
+    <ClInclude Include="..\..\include\bond\vm\collector.h" />
     <ClInclude Include="..\..\include\bond\vm\vm.h" />
     <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h" />
     <ClInclude Include="..\..\source\private\libruntime32_embedded.h" />

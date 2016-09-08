@@ -10,19 +10,19 @@ extern const Bond::NativeBindingCollection TYPE_BINDING_COLLECTION;
 
 namespace Bond
 {
-void IsAlnum(Bond::CalleeStackFrame &frame);
-void IsAlpha(Bond::CalleeStackFrame &frame);
-void IsCntrl(Bond::CalleeStackFrame &frame);
-void IsDigit(Bond::CalleeStackFrame &frame);
-void IsGraph(Bond::CalleeStackFrame &frame);
-void IsLower(Bond::CalleeStackFrame &frame);
-void IsPrint(Bond::CalleeStackFrame &frame);
-void IsPunct(Bond::CalleeStackFrame &frame);
-void IsSpace(Bond::CalleeStackFrame &frame);
-void IsUpper(Bond::CalleeStackFrame &frame);
-void IsXDigit(Bond::CalleeStackFrame &frame);
-void ToLower(Bond::CalleeStackFrame &frame);
-void ToUpper(Bond::CalleeStackFrame &frame);
+void IsAlnum(Bond::StackFrame &frame);
+void IsAlpha(Bond::StackFrame &frame);
+void IsCntrl(Bond::StackFrame &frame);
+void IsDigit(Bond::StackFrame &frame);
+void IsGraph(Bond::StackFrame &frame);
+void IsLower(Bond::StackFrame &frame);
+void IsPrint(Bond::StackFrame &frame);
+void IsPunct(Bond::StackFrame &frame);
+void IsSpace(Bond::StackFrame &frame);
+void IsUpper(Bond::StackFrame &frame);
+void IsXDigit(Bond::StackFrame &frame);
+void ToLower(Bond::StackFrame &frame);
+void ToUpper(Bond::StackFrame &frame);
 }
 
 #endif

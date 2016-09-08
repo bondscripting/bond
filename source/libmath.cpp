@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-void Sin(Bond::CalleeStackFrame &frame)
+void Sin(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = sin(x);
@@ -13,7 +13,7 @@ void Sin(Bond::CalleeStackFrame &frame)
 }
 
 
-void Sinf(Bond::CalleeStackFrame &frame)
+void Sinf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = sin(x);
@@ -21,7 +21,7 @@ void Sinf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Cos(Bond::CalleeStackFrame &frame)
+void Cos(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = cos(x);
@@ -29,7 +29,7 @@ void Cos(Bond::CalleeStackFrame &frame)
 }
 
 
-void Cosf(Bond::CalleeStackFrame &frame)
+void Cosf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = cos(x);
@@ -37,7 +37,7 @@ void Cosf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Tan(Bond::CalleeStackFrame &frame)
+void Tan(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = tan(x);
@@ -45,7 +45,7 @@ void Tan(Bond::CalleeStackFrame &frame)
 }
 
 
-void Tanf(Bond::CalleeStackFrame &frame)
+void Tanf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = tan(x);
@@ -53,7 +53,7 @@ void Tanf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Asin(Bond::CalleeStackFrame &frame)
+void Asin(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = asin(x);
@@ -61,7 +61,7 @@ void Asin(Bond::CalleeStackFrame &frame)
 }
 
 
-void Asinf(Bond::CalleeStackFrame &frame)
+void Asinf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = asin(x);
@@ -69,7 +69,7 @@ void Asinf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Acos(Bond::CalleeStackFrame &frame)
+void Acos(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = acos(x);
@@ -77,7 +77,7 @@ void Acos(Bond::CalleeStackFrame &frame)
 }
 
 
-void Acosf(Bond::CalleeStackFrame &frame)
+void Acosf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = acos(x);
@@ -85,7 +85,7 @@ void Acosf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Atan(Bond::CalleeStackFrame &frame)
+void Atan(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = atan(x);
@@ -93,7 +93,7 @@ void Atan(Bond::CalleeStackFrame &frame)
 }
 
 
-void Atanf(Bond::CalleeStackFrame &frame)
+void Atanf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = atan(x);
@@ -101,7 +101,7 @@ void Atanf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Atan2(Bond::CalleeStackFrame &frame)
+void Atan2(Bond::StackFrame &frame)
 {
 	const double y = double(frame.GetArg<double>(0));
 	const double x = double(frame.GetArg<double>(1));
@@ -110,7 +110,7 @@ void Atan2(Bond::CalleeStackFrame &frame)
 }
 
 
-void Atan2f(Bond::CalleeStackFrame &frame)
+void Atan2f(Bond::StackFrame &frame)
 {
 	const double y = double(frame.GetArg<float>(0));
 	const double x = double(frame.GetArg<float>(1));
@@ -119,7 +119,7 @@ void Atan2f(Bond::CalleeStackFrame &frame)
 }
 
 
-void Sinh(Bond::CalleeStackFrame &frame)
+void Sinh(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = sinh(x);
@@ -127,7 +127,7 @@ void Sinh(Bond::CalleeStackFrame &frame)
 }
 
 
-void Sinhf(Bond::CalleeStackFrame &frame)
+void Sinhf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = sinh(x);
@@ -135,7 +135,7 @@ void Sinhf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Cosh(Bond::CalleeStackFrame &frame)
+void Cosh(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = cosh(x);
@@ -143,7 +143,7 @@ void Cosh(Bond::CalleeStackFrame &frame)
 }
 
 
-void Coshf(Bond::CalleeStackFrame &frame)
+void Coshf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = cosh(x);
@@ -151,7 +151,7 @@ void Coshf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Tanh(Bond::CalleeStackFrame &frame)
+void Tanh(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = tanh(x);
@@ -159,7 +159,7 @@ void Tanh(Bond::CalleeStackFrame &frame)
 }
 
 
-void Tanhf(Bond::CalleeStackFrame &frame)
+void Tanhf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = tanh(x);
@@ -167,7 +167,7 @@ void Tanhf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Exp(Bond::CalleeStackFrame &frame)
+void Exp(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = exp(x);
@@ -175,7 +175,7 @@ void Exp(Bond::CalleeStackFrame &frame)
 }
 
 
-void Expf(Bond::CalleeStackFrame &frame)
+void Expf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = exp(x);
@@ -183,7 +183,7 @@ void Expf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Log(Bond::CalleeStackFrame &frame)
+void Log(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = log(x);
@@ -191,7 +191,7 @@ void Log(Bond::CalleeStackFrame &frame)
 }
 
 
-void Logf(Bond::CalleeStackFrame &frame)
+void Logf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = log(x);
@@ -199,7 +199,7 @@ void Logf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Log10(Bond::CalleeStackFrame &frame)
+void Log10(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = log10(x);
@@ -207,7 +207,7 @@ void Log10(Bond::CalleeStackFrame &frame)
 }
 
 
-void Log10f(Bond::CalleeStackFrame &frame)
+void Log10f(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = log10(x);
@@ -215,7 +215,7 @@ void Log10f(Bond::CalleeStackFrame &frame)
 }
 
 
-void Pow(Bond::CalleeStackFrame &frame)
+void Pow(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = double(frame.GetArg<double>(1));
@@ -224,7 +224,7 @@ void Pow(Bond::CalleeStackFrame &frame)
 }
 
 
-void Powf(Bond::CalleeStackFrame &frame)
+void Powf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = double(frame.GetArg<float>(1));
@@ -233,7 +233,7 @@ void Powf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Sqrt(Bond::CalleeStackFrame &frame)
+void Sqrt(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = sqrt(x);
@@ -241,7 +241,7 @@ void Sqrt(Bond::CalleeStackFrame &frame)
 }
 
 
-void Sqrtf(Bond::CalleeStackFrame &frame)
+void Sqrtf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = sqrt(x);
@@ -249,7 +249,7 @@ void Sqrtf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Ceil(Bond::CalleeStackFrame &frame)
+void Ceil(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = ceil(x);
@@ -257,7 +257,7 @@ void Ceil(Bond::CalleeStackFrame &frame)
 }
 
 
-void Ceilf(Bond::CalleeStackFrame &frame)
+void Ceilf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = ceil(x);
@@ -265,7 +265,7 @@ void Ceilf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Floor(Bond::CalleeStackFrame &frame)
+void Floor(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = floor(x);
@@ -273,7 +273,7 @@ void Floor(Bond::CalleeStackFrame &frame)
 }
 
 
-void Floorf(Bond::CalleeStackFrame &frame)
+void Floorf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = floor(x);
@@ -281,7 +281,7 @@ void Floorf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Fabs(Bond::CalleeStackFrame &frame)
+void Fabs(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = fabs(x);
@@ -289,7 +289,7 @@ void Fabs(Bond::CalleeStackFrame &frame)
 }
 
 
-void Fabsf(Bond::CalleeStackFrame &frame)
+void Fabsf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = fabs(x);
@@ -297,7 +297,7 @@ void Fabsf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Ldexp(Bond::CalleeStackFrame &frame)
+void Ldexp(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const int n = int(frame.GetArg<int32_t>(1));
@@ -306,7 +306,7 @@ void Ldexp(Bond::CalleeStackFrame &frame)
 }
 
 
-void Ldexpf(Bond::CalleeStackFrame &frame)
+void Ldexpf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const int n = int(frame.GetArg<int32_t>(1));
@@ -315,7 +315,7 @@ void Ldexpf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Frexp(Bond::CalleeStackFrame &frame)
+void Frexp(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	int exp;
@@ -325,7 +325,7 @@ void Frexp(Bond::CalleeStackFrame &frame)
 }
 
 
-void Frexpf(Bond::CalleeStackFrame &frame)
+void Frexpf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	int exp;
@@ -335,7 +335,7 @@ void Frexpf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Modf(Bond::CalleeStackFrame &frame)
+void Modf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	double ip;
@@ -345,7 +345,7 @@ void Modf(Bond::CalleeStackFrame &frame)
 }
 
 
-void Modff(Bond::CalleeStackFrame &frame)
+void Modff(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	double ip;
@@ -355,7 +355,7 @@ void Modff(Bond::CalleeStackFrame &frame)
 }
 
 
-void Fmod(Bond::CalleeStackFrame &frame)
+void Fmod(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<double>(0));
 	const double y = double(frame.GetArg<double>(1));
@@ -364,7 +364,7 @@ void Fmod(Bond::CalleeStackFrame &frame)
 }
 
 
-void Fmodf(Bond::CalleeStackFrame &frame)
+void Fmodf(Bond::StackFrame &frame)
 {
 	const double x = double(frame.GetArg<float>(0));
 	const double y = double(frame.GetArg<float>(1));

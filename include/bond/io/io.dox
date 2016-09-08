@@ -1,5 +1,5 @@
 /**
-\defgroup IO I/O
+\defgroup io I/O
 \brief These interfaces and their default implementations are used by Bond for performing I/O operations
 without making assumptions about what underlying I/O library is used.
 */

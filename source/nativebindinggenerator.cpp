@@ -197,7 +197,7 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 		{
 			mHStream.Print("%s__", functionDefinition->GetParentSymbol()->GetName()->GetRawText());
 		}
-		mHStream.Print("%s(Bond::CalleeStackFrame &frame);\n", functionDefinition->GetName()->GetRawText());
+		mHStream.Print("%s(Bond::StackFrame &frame);\n", functionDefinition->GetName()->GetRawText());
 
 		// Generate the function binding.
 		mCppStream.Print("\t{\"");
@@ -220,8 +220,8 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		// Generate the getter and setter function prototypes.
 		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetRawText();
 		const char *memberName = namedInitializer->GetName()->GetRawText();
-		mHStream.Print("void %s__%s__get(Bond::CalleeStackFrame &frame);\n", structName, memberName);
-		mHStream.Print("void %s__%s__set(Bond::CalleeStackFrame &frame);\n", structName, memberName);
+		mHStream.Print("void %s__%s__get(Bond::StackFrame &frame);\n", structName, memberName);
+		mHStream.Print("void %s__%s__set(Bond::StackFrame &frame);\n", structName, memberName);
 
 		// Generate the function bindings.
 		mCppStream.Print("\t{\"");

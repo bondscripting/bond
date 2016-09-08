@@ -218,14 +218,14 @@ inline bool ValidateReturnType<double>(size_t size, SignatureType signatureType)
 
 
 template <typename ArgType>
-inline const ArgType &CalleeStackFrame::GetArg(size_t index) const
+inline const ArgType &StackFrame::GetArg(size_t index) const
 {
 	return GetArgRef<ArgType>(index);
 }
 
 
 template <typename ReturnType>
-inline void CalleeStackFrame::SetReturnValue(const ReturnType &returnValue)
+inline void StackFrame::SetReturnValue(const ReturnType &returnValue)
 {
 	AssertValidReturnAssignmentType<ReturnType>();
 	*reinterpret_cast<ReturnType*>(mReturnPointer) = returnValue;
@@ -233,7 +233,7 @@ inline void CalleeStackFrame::SetReturnValue(const ReturnType &returnValue)
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
+inline void StackFrame::SetReturnValue<bool>(const bool &returnValue)
 {
 	AssertValidReturnAssignmentType<bool>();
 	*reinterpret_cast<int32_t*>(mReturnPointer) = returnValue ? int32_t(1) : int32_t(0);
@@ -241,7 +241,7 @@ inline void CalleeStackFrame::SetReturnValue<bool>(const bool &returnValue)
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<int8_t>(const int8_t &returnValue)
+inline void StackFrame::SetReturnValue<int8_t>(const int8_t &returnValue)
 {
 	AssertValidReturnAssignmentType<int8_t>();
 	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
@@ -249,7 +249,7 @@ inline void CalleeStackFrame::SetReturnValue<int8_t>(const int8_t &returnValue)
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<uint8_t>(const uint8_t &returnValue)
+inline void StackFrame::SetReturnValue<uint8_t>(const uint8_t &returnValue)
 {
 	AssertValidReturnAssignmentType<uint8_t>();
 	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
@@ -257,7 +257,7 @@ inline void CalleeStackFrame::SetReturnValue<uint8_t>(const uint8_t &returnValue
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<int16_t>(const int16_t &returnValue)
+inline void StackFrame::SetReturnValue<int16_t>(const int16_t &returnValue)
 {
 	AssertValidReturnAssignmentType<int16_t>();
 	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
@@ -265,7 +265,7 @@ inline void CalleeStackFrame::SetReturnValue<int16_t>(const int16_t &returnValue
 
 
 template <>
-inline void CalleeStackFrame::SetReturnValue<uint16_t>(const uint16_t &returnValue)
+inline void StackFrame::SetReturnValue<uint16_t>(const uint16_t &returnValue)
 {
 	AssertValidReturnAssignmentType<uint16_t>();
 	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
@@ -273,7 +273,7 @@ inline void CalleeStackFrame::SetReturnValue<uint16_t>(const uint16_t &returnVal
 
 
 template <typename ArgType>
-inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
+inline ArgType &StackFrame::GetArgRef(size_t index) const
 {
 	const ParamListSignature &paramListSignature = mFunction->mParamListSignature;
 
@@ -302,7 +302,7 @@ inline ArgType &CalleeStackFrame::GetArgRef(size_t index) const
 
 
 template <typename ReturnType>
-inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
+inline void StackFrame::AssertValidReturnAssignmentType() const
 {
 #if BOND_RUNTIME_CHECKS_ENABLED
 	const ReturnSignature &ret = mFunction->mReturnSignature;
@@ -316,8 +316,8 @@ inline void CalleeStackFrame::AssertValidReturnAssignmentType() const
 }
 
 
-inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionName):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const QualifiedName &functionName):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, functionName, nullptr);
@@ -331,8 +331,8 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionN
 }
 
 
-inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const char *functionName):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, functionName, nullptr);
@@ -346,8 +346,8 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName):
 }
 
 
-inline CallerStackFrame::CallerStackFrame(VM &vm, const Function &function):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const Function &function):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, function, nullptr);
@@ -362,8 +362,8 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const Function &function):
 
 
 template <typename ReturnType>
-inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const QualifiedName &functionName, ReturnType *returnPointer):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, functionName, returnPointer);
@@ -380,8 +380,8 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const QualifiedName &functionN
 
 
 template <typename ReturnType>
-inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const char *functionName, ReturnType *returnPointer):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, functionName, returnPointer);
@@ -398,8 +398,8 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const char *functionName, Retu
 
 
 template <typename ReturnType>
-inline CallerStackFrame::CallerStackFrame(VM &vm, const Function &function, ReturnType *returnPointer):
-	StackFrames::Element(vm.mStackFrames, CalleeStackFrame(vm)),
+inline InvocationStackFrame::InvocationStackFrame(VM &vm, const Function &function, ReturnType *returnPointer):
+	StackFrames::Element(vm.mStackFrames, vm),
 	mNextArg(0)
 {
 	Initialize(vm, function, returnPointer);
@@ -416,7 +416,7 @@ inline CallerStackFrame::CallerStackFrame(VM &vm, const Function &function, Retu
 
 
 template <typename ArgType>
-inline void CallerStackFrame::PushArg(const ArgType &arg)
+inline void InvocationStackFrame::PushArg(const ArgType &arg)
 {
 	GetValue().GetArgRef<ArgType>(mNextArg) = arg;
 	++mNextArg;
@@ -424,7 +424,7 @@ inline void CallerStackFrame::PushArg(const ArgType &arg)
 
 
 template <typename Arg1, typename... Args>
-inline void CallerStackFrame::PushArgs(Arg1 arg1, Args... args)
+inline void InvocationStackFrame::PushArgs(Arg1 arg1, Args... args)
 {
 	PushArg(arg1);
 	PushArgs(args...);
@@ -434,7 +434,7 @@ inline void CallerStackFrame::PushArgs(Arg1 arg1, Args... args)
 template <typename ReturnType, typename... Args>
 inline void VM::CallFunction(const QualifiedName &functionName, ReturnType *returnAddress, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	Bond::InvocationStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }
@@ -443,7 +443,7 @@ inline void VM::CallFunction(const QualifiedName &functionName, ReturnType *retu
 template <typename ReturnType, typename... Args>
 inline void VM::CallFunction(const char *functionName, ReturnType *returnAddress, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, functionName, returnAddress);
+	Bond::InvocationStackFrame stackFrame(*this, functionName, returnAddress);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }
@@ -452,7 +452,7 @@ inline void VM::CallFunction(const char *functionName, ReturnType *returnAddress
 template <typename ReturnType, typename... Args>
 inline void VM::CallFunction(const Function &function, ReturnType *returnAddress, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, function, returnAddress);
+	Bond::InvocationStackFrame stackFrame(*this, function, returnAddress);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }
@@ -461,7 +461,7 @@ inline void VM::CallFunction(const Function &function, ReturnType *returnAddress
 template <typename... Args>
 inline void VM::CallVoidFunction(const QualifiedName &functionName, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, functionName);
+	Bond::InvocationStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }
@@ -470,7 +470,7 @@ inline void VM::CallVoidFunction(const QualifiedName &functionName, Args... args
 template <typename... Args>
 inline void VM::CallVoidFunction(const char *functionName, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, functionName);
+	Bond::InvocationStackFrame stackFrame(*this, functionName);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }
@@ -479,7 +479,7 @@ inline void VM::CallVoidFunction(const char *functionName, Args... args)
 template <typename... Args>
 inline void VM::CallVoidFunction(const Function &function, Args... args)
 {
-	Bond::CallerStackFrame stackFrame(*this, function);
+	Bond::InvocationStackFrame stackFrame(*this, function);
 	stackFrame.PushArgs(args...);
 	stackFrame.Call();
 }

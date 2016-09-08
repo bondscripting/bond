@@ -66,6 +66,7 @@ public:
 		Element *mNext;
 	};
 
+
 	class Iterator
 	{
 	public:
@@ -176,8 +177,10 @@ public:
 
 	Iterator begin() { return Iterator(mTop); }
 	ConstIterator begin() const { return ConstIterator(mTop); }
+	ConstIterator cbegin() const { return ConstIterator(mTop); }
 	Iterator end() { return Iterator(nullptr); }
 	ConstIterator end() const { return ConstIterator(nullptr); }
+	ConstIterator cend() const { return ConstIterator(nullptr); }
 
 private:
 	Element *mTop;

@@ -25,7 +25,7 @@ private:
 };
 
 
-void Vector3__Dot(Bond::CalleeStackFrame &frame)
+void Vector3__Dot(Bond::StackFrame &frame)
 {
 	const Vector3 &v1 = *frame.GetArg<const Vector3 *>(0);
 	const Vector3 &v2 = *frame.GetArg<const Vector3 *>(1);
@@ -34,14 +34,14 @@ void Vector3__Dot(Bond::CalleeStackFrame &frame)
 }
 
 
-void Vector3__X__get(Bond::CalleeStackFrame &frame)
+void Vector3__X__get(Bond::StackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
 	frame.SetReturnValue(int32_t(v.GetX()));
 }
 
 
-void Vector3__X__set(Bond::CalleeStackFrame &frame)
+void Vector3__X__set(Bond::StackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
 	const int x = int(frame.GetArg<int32_t>(1));
@@ -49,14 +49,14 @@ void Vector3__X__set(Bond::CalleeStackFrame &frame)
 }
 
 
-void Vector3__Y__get(Bond::CalleeStackFrame &frame)
+void Vector3__Y__get(Bond::StackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
 	frame.SetReturnValue(int32_t(v.GetY()));
 }
 
 
-void Vector3__Y__set(Bond::CalleeStackFrame &frame)
+void Vector3__Y__set(Bond::StackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
 	const int y = int(frame.GetArg<int32_t>(1));
@@ -64,14 +64,14 @@ void Vector3__Y__set(Bond::CalleeStackFrame &frame)
 }
 
 
-void Vector3__Z__get(Bond::CalleeStackFrame &frame)
+void Vector3__Z__get(Bond::StackFrame &frame)
 {
 	const Vector3 &v = *frame.GetArg<const Vector3 *>(0);
 	frame.SetReturnValue(int32_t(v.GetZ()));
 }
 
 
-void Vector3__Z__set(Bond::CalleeStackFrame &frame)
+void Vector3__Z__set(Bond::StackFrame &frame)
 {
 	Vector3 &v = *frame.GetArg<Vector3 *>(0);
 	const int z = int(frame.GetArg<int32_t>(1));

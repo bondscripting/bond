@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-void IsAlnum(Bond::CalleeStackFrame &frame)
+void IsAlnum(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isalnum(c) != 0;
@@ -13,7 +13,7 @@ void IsAlnum(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsAlpha(Bond::CalleeStackFrame &frame)
+void IsAlpha(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isalpha(c) != 0;
@@ -21,7 +21,7 @@ void IsAlpha(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsCntrl(Bond::CalleeStackFrame &frame)
+void IsCntrl(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = iscntrl(c) != 0;
@@ -29,7 +29,7 @@ void IsCntrl(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsDigit(Bond::CalleeStackFrame &frame)
+void IsDigit(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isdigit(c) != 0;
@@ -37,7 +37,7 @@ void IsDigit(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsGraph(Bond::CalleeStackFrame &frame)
+void IsGraph(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isgraph(c) != 0;
@@ -45,7 +45,7 @@ void IsGraph(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsLower(Bond::CalleeStackFrame &frame)
+void IsLower(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = islower(c) != 0;
@@ -53,7 +53,7 @@ void IsLower(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsPrint(Bond::CalleeStackFrame &frame)
+void IsPrint(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isprint(c) != 0;
@@ -61,7 +61,7 @@ void IsPrint(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsPunct(Bond::CalleeStackFrame &frame)
+void IsPunct(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = ispunct(c) != 0;
@@ -69,7 +69,7 @@ void IsPunct(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsSpace(Bond::CalleeStackFrame &frame)
+void IsSpace(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isspace(c) != 0;
@@ -77,7 +77,7 @@ void IsSpace(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsUpper(Bond::CalleeStackFrame &frame)
+void IsUpper(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isupper(c) != 0;
@@ -85,7 +85,7 @@ void IsUpper(Bond::CalleeStackFrame &frame)
 }
 
 
-void IsXDigit(Bond::CalleeStackFrame &frame)
+void IsXDigit(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const bool result = isxdigit(c) != 0;
@@ -93,7 +93,7 @@ void IsXDigit(Bond::CalleeStackFrame &frame)
 }
 
 
-void ToLower(Bond::CalleeStackFrame &frame)
+void ToLower(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const int result = tolower(c);
@@ -101,7 +101,7 @@ void ToLower(Bond::CalleeStackFrame &frame)
 }
 
 
-void ToUpper(Bond::CalleeStackFrame &frame)
+void ToUpper(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
 	const int result = toupper(c);
