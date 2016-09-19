@@ -36,7 +36,7 @@ public:
 		mAllocator(other.GetAllocator())
 	{}
 
-  ~StlAllocator() {}
+	~StlAllocator() {}
 
 	pointer address(reference t) const { return &t; }
 

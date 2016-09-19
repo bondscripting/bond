@@ -5,6 +5,7 @@ namespace Bond
 
 const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 {
+	{"Bond.InputStream.Close", Bond::InputStream__Close},
 	{"Bond.InputStream.ScanStr", Bond::InputStream__ScanStr},
 	{"Bond.InputStream.ScanB", Bond::InputStream__ScanB},
 	{"Bond.InputStream.ScanC", Bond::InputStream__ScanC},
@@ -21,10 +22,13 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.InputStream.UnsetFlags", Bond::InputStream__UnsetFlags},
 	{"Bond.InputStream.ClearFlags", Bond::InputStream__ClearFlags},
 	{"Bond.InputStream.GetPosition", Bond::InputStream__GetPosition},
+	{"Bond.InputStream.GetEndPosition", Bond::InputStream__GetEndPosition},
 	{"Bond.InputStream.SetPosition", Bond::InputStream__SetPosition},
 	{"Bond.InputStream.SetPositionFromEnd", Bond::InputStream__SetPositionFromEnd},
 	{"Bond.InputStream.AddOffset", Bond::InputStream__AddOffset},
 	{"Bond.InputStream.IsEof", Bond::InputStream__IsEof},
+	{"Bond.OutputStream.Close", Bond::OutputStream__Close},
+	{"Bond.OutputStream.Flush", Bond::OutputStream__Flush},
 	{"Bond.OutputStream.PrintStr", Bond::OutputStream__PrintStr},
 	{"Bond.OutputStream.PrintB", Bond::OutputStream__PrintB},
 	{"Bond.OutputStream.PrintC", Bond::OutputStream__PrintC},
@@ -45,6 +49,7 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.OutputStream.GetWidth", Bond::OutputStream__GetWidth},
 	{"Bond.OutputStream.SetWidth", Bond::OutputStream__SetWidth},
 	{"Bond.OutputStream.GetPosition", Bond::OutputStream__GetPosition},
+	{"Bond.OutputStream.GetEndPosition", Bond::OutputStream__GetEndPosition},
 	{"Bond.OutputStream.SetPosition", Bond::OutputStream__SetPosition},
 	{"Bond.OutputStream.SetPositionFromEnd", Bond::OutputStream__SetPositionFromEnd},
 	{"Bond.OutputStream.AddOffset", Bond::OutputStream__AddOffset},
@@ -52,13 +57,21 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.StdIn", Bond::StdIn},
 	{"Bond.StdOut", Bond::StdOut},
 	{"Bond.StdErr", Bond::StdErr},
+	{"Bond.CreateInputStream", Bond::CreateInputStream},
+	{"Bond.CreateInputStreamCollected", Bond::CreateInputStreamCollected},
+	{"Bond.CreateInputStreamWithCollector", Bond::CreateInputStreamWithCollector},
+	{"Bond.FreeInputStream", Bond::FreeInputStream},
+	{"Bond.CreateOutputStream", Bond::CreateOutputStream},
+	{"Bond.CreateOutputStreamCollected", Bond::CreateOutputStreamCollected},
+	{"Bond.CreateOutputStreamWithCollector", Bond::CreateOutputStreamWithCollector},
+	{"Bond.FreeOutputStream", Bond::FreeOutputStream},
 	{nullptr, nullptr}
 };
 
 const Bond::NativeBindingCollection IO_BINDING_COLLECTION =
 {
 	IO_BINDING_COLLECTION_FUNCTIONS,
-	47
+	60
 };
 
 }

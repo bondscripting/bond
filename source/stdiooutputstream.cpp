@@ -15,6 +15,18 @@ namespace Bond
 }
 
 
+void StdioOutputStream::Close()
+{
+	// If we have a file, but not handle, close it explicitly, otherwise let the handle take care of it.
+	if (IsBound() && !mHandle.IsBound())
+	{
+		fclose(mFile);
+	}
+	mHandle = nullptr;
+	mFile = nullptr;
+}
+
+
 Stream::pos_t StdioOutputStream::GetEndPosition() const
 {
 	const auto pos = ftell(mFile);

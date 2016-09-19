@@ -101,8 +101,19 @@ DEFINE_VM_TEST(Type, "scripts/sanalyzer_IncludeLibraries.bond")
 }
 
 
+DEFINE_VM_TEST(Collector, "scripts/vm_Collector.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL_0(BOOL, "RunCollectorTest", int32_t(1));
+
+	return true;
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Math)                               \
   TEST_ITEM(Type)                               \
+  TEST_ITEM(Collector)                          \
 
 RUN_TESTS(Libraries, TEST_ITEMS)

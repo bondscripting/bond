@@ -18,6 +18,8 @@ public:
 
 	virtual ~Stream() {}
 
+	virtual void Close() {}
+
 	// Stream position.
 	virtual pos_t GetPosition() const = 0;
 	virtual pos_t GetEndPosition() const = 0;

@@ -20,15 +20,33 @@ InputStreamHandle MemoryStreamFactory::CreateInputStream(const char *fileName)
 		const auto chunk = mIndex.mChunks[result - firstName];
 		const auto data = chunk.mData;
 		const auto size = Stream::pos_t(chunk.mLength);
-		handle = InputStreamHandle(mAllocator, mAllocator.AllocObject<MemoryInputStream>(data, size));
+		handle = mAllocator.AllocOwnedObject<MemoryInputStream>(data, size);
 	}
 	else if (mDelegateFactory != nullptr)
 	{
 		handle = mDelegateFactory->CreateInputStream(fileName);
 	}
-	else
+
+	if (!handle && mThrowOnFailure)
 	{
 		BOND_FAIL_FORMAT(("Failed to open file '%s' for reading.", fileName));
+	}
+
+	return handle;
+}
+
+
+OutputStreamHandle MemoryStreamFactory::CreateOutputStream(const char *fileName, bool append)
+{
+	OutputStreamHandle handle;
+	if (mDelegateFactory != nullptr)
+	{
+		handle = mDelegateFactory->CreateOutputStream(fileName, append);
+	}
+
+	if (!handle && mThrowOnFailure)
+	{
+		BOND_FAIL_FORMAT(("Failed to open file '%s' for writing.", fileName));
 	}
 
 	return handle;

@@ -41,6 +41,8 @@ public:
 
 	bool IsBound() const { return (mFile != nullptr); }
 
+	virtual void Close() override;
+
 	virtual void VScan(const char *format, va_list argList) override { vfscanf(mFile, format, argList); }
 	virtual size_t Read(uint8_t *bytes, size_t numBytes) override { return fread(bytes, 1, numBytes, mFile); }
 	virtual int Read() override { const int value = fgetc(mFile); return (value == EOF) ? Eof : value; }

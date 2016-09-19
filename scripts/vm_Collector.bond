@@ -1,0 +1,40 @@
+include "io.bond";
+include "string.bond";
+include "memory.bond";
+
+const char *LoadFile(Bond::Collector *collector, const char *fileName, int *length)
+{
+	char *buffer = null;
+	*length = 0;
+
+	Bond::InputStream *stream = Bond::CreateInputStreamCollected(fileName);
+	if (stream != null)
+	{
+		const int len = stream->GetEndPosition();
+		if (len > 0)
+		{
+			buffer = Bond::AllocateWithCollector(collector, cast<ulong>(len + 1));
+			if (buffer != null)
+			{
+				stream->Read(buffer, cast<uint>(len));
+				buffer[len] = '\0';
+				*length = len;
+			}
+		}
+	}
+
+	return buffer;
+}
+
+bool RunCollectorTest()
+{
+	Bond::Collector *collector = Bond::GetCollector();
+	bool result = false;
+	int length = 0;
+	const char *str = LoadFile(collector, "scripts/vm_Collector_Input.txt", &length);
+	if (str != null)
+	{
+		result = (length == 15) && (Bond::Strcmp(str, "Collector Test.") == 0);
+	}
+	return result;
+}

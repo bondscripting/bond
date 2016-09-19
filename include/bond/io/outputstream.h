@@ -13,6 +13,7 @@ class OutputStream: public Stream
 {
 public:
 	virtual ~OutputStream() {}
+	virtual void Flush() {}
 	virtual void Print(const char *format, ...);
 	virtual void VPrint(const char *format, va_list argList) = 0;
 	virtual void Write(const uint8_t *bytes, size_t numBytes);

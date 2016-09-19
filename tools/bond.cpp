@@ -1,6 +1,7 @@
 #include "bond/api/libruntime.h"
 #include "bond/io/stdioinputstream.h"
 #include "bond/io/stdiooutputstream.h"
+#include "bond/io/stdiostreamfactory.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -111,7 +112,8 @@ int main(int argc, const char *argv[])
 		Bond::StdInInputStream inStream;
 		Bond::StdOutOutputStream outStream;
 		Bond::StdErrOutputStream errStream;
-		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &inStream, &outStream, &errStream);
+		Bond::StdioStreamFactory streamFactory(allocator, nullptr, nullptr, false);
+		Bond::VM vm(allocator, *codeSegmentHandle.get(), stackSize * 1024, &inStream, &outStream, &errStream, &streamFactory);
 		codeSegmentHandle->CallStaticInitializers(vm);
 
 		const Bond::Function *entryFunction = codeSegmentHandle->GetFunction(entryPoint);

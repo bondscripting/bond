@@ -18,10 +18,11 @@ class MemoryInputStream;
 class MemoryStreamFactory: public StreamFactory
 {
 public:
-	MemoryStreamFactory(Allocator &allocator, const DataChunkIndex &index, StreamFactory *delegateFactory = nullptr):
+	MemoryStreamFactory(Allocator &allocator, const DataChunkIndex &index, StreamFactory *delegateFactory = nullptr, bool throwOnFailure = true):
 		mAllocator(allocator),
 		mIndex(index),
-		mDelegateFactory(delegateFactory)
+		mDelegateFactory(delegateFactory),
+		mThrowOnFailure(throwOnFailure)
 	{}
 
 	virtual ~MemoryStreamFactory() {}
@@ -30,12 +31,15 @@ public:
 	/// \param fileName The name of the file for which an input stream is created.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) override;
 
+	virtual OutputStreamHandle CreateOutputStream(const char *fileName, bool append) override;
+
 	void SetDelegateFactory(StreamFactory *delegateFactory) { mDelegateFactory = delegateFactory; }
 
 private:
 	Allocator &mAllocator;
 	const DataChunkIndex &mIndex;
 	StreamFactory *mDelegateFactory;
+	bool mThrowOnFailure;
 };
 
 /// @}

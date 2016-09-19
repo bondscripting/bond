@@ -44,7 +44,7 @@ public:
 	/// \param lexer The Lexer used to scan the Bond source files.
 	/// \param parser The Parser used to parse the Bond source files.
 	/// \param semanticAnalyzer The SemanticAnalyzer used to analyze the Bond source files.
-	/// \param StreamFactory The StreamFactory responsible for loading the Bond source files.
+	/// \param streamFactory The StreamFactory responsible for loading the Bond source files.
 	FrontEnd(
 			Allocator &allocator,
 			TokenCollectionStore &tokenCollectionStore,

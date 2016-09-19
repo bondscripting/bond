@@ -6,6 +6,7 @@ namespace Bond
 const Bond::NativeFunctionBinding STRING_BINDING_COLLECTION_FUNCTIONS[] =
 {
 	{"Bond.Strlen", Bond::Strlen},
+	{"Bond.Strcmp", Bond::Strcmp},
 	{"Bond.TryParseInt", Bond::TryParseInt},
 	{"Bond.TryParseLong", Bond::TryParseLong},
 	{"Bond.TryParseFloat", Bond::TryParseFloat},
@@ -16,7 +17,7 @@ const Bond::NativeFunctionBinding STRING_BINDING_COLLECTION_FUNCTIONS[] =
 const Bond::NativeBindingCollection STRING_BINDING_COLLECTION =
 {
 	STRING_BINDING_COLLECTION_FUNCTIONS,
-	5
+	6
 };
 
 }

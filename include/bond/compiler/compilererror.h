@@ -99,7 +99,7 @@
   BOND_COMPILER_ERROR(INVALID_TYPE_FOR_POINTER_OPERATOR,                                   \
     "Operator '%c' cannot be applied to non-pointer type '%n'.")                           \
   BOND_COMPILER_ERROR(INVALID_TYPE_FOR_INDEX_OPERATOR,                                     \
-    "Index operator cannot be applied to non-integer type '%n'.")                          \
+    "Index operator cannot be applied with non-integer operand '%n'.")                     \
   BOND_COMPILER_ERROR(INVALID_TYPE_CONVERSION,                                             \
     "Cannot convert type '%0n' to '%1n'.")                                                 \
   BOND_COMPILER_ERROR(INVALID_RETURN_TYPE_CONVERSION,                                      \

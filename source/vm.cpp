@@ -121,7 +121,8 @@ VM::VM(
 		size_t stackSize,
 		InputStream *stdIn,
 		OutputStream *stdOut,
-		OutputStream *stdErr):
+		OutputStream *stdErr,
+		StreamFactory *streamFactory):
 	mStackFrames(),
 	mDummyFrame(mStackFrames, *this),
 	mAllocator(allocator),
@@ -129,7 +130,8 @@ VM::VM(
 	mStdIn(stdIn),
 	mStdOut(stdOut),
 	mStdErr(stdErr),
-	mStack(allocator, mAllocator.Alloc<uint8_t>(stackSize)),
+	mStreamFactory(streamFactory),
+	mStack(allocator.AllocOwned<uint8_t>(stackSize)),
 	mStackSize(stackSize)
 {
 	StackFrame &top = mDummyFrame.GetValue();

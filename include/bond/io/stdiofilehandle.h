@@ -41,13 +41,23 @@ public:
 	{
 		if (this != &other)
 		{
-			if (mFile != nullptr)
+			if ((mFile != nullptr) && (mFile != other.mFile))
 			{
 				fclose(mFile);
-				mFile = other.mFile;
-				other.mFile = nullptr;
 			}
+			mFile = other.mFile;
+			other.mFile = nullptr;
 		}
+		return *this;
+	}
+
+	StdioFileHandle &operator=(FILE *file)
+	{
+		if ((mFile != nullptr) && (mFile != file))
+		{
+			fclose(mFile);
+		}
+		mFile = file;
 		return *this;
 	}
 

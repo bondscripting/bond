@@ -11,6 +11,7 @@ extern const Bond::NativeBindingCollection STRING_BINDING_COLLECTION;
 namespace Bond
 {
 void Strlen(Bond::StackFrame &frame);
+void Strcmp(Bond::StackFrame &frame);
 void TryParseInt(Bond::StackFrame &frame);
 void TryParseLong(Bond::StackFrame &frame);
 void TryParseFloat(Bond::StackFrame &frame);

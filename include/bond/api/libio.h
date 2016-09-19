@@ -31,6 +31,7 @@ enum Constants
 	Eof = -1,
 };
 }
+void InputStream__Close(Bond::StackFrame &frame);
 void InputStream__ScanStr(Bond::StackFrame &frame);
 void InputStream__ScanB(Bond::StackFrame &frame);
 void InputStream__ScanC(Bond::StackFrame &frame);
@@ -47,10 +48,13 @@ void InputStream__SetFlags(Bond::StackFrame &frame);
 void InputStream__UnsetFlags(Bond::StackFrame &frame);
 void InputStream__ClearFlags(Bond::StackFrame &frame);
 void InputStream__GetPosition(Bond::StackFrame &frame);
+void InputStream__GetEndPosition(Bond::StackFrame &frame);
 void InputStream__SetPosition(Bond::StackFrame &frame);
 void InputStream__SetPositionFromEnd(Bond::StackFrame &frame);
 void InputStream__AddOffset(Bond::StackFrame &frame);
 void InputStream__IsEof(Bond::StackFrame &frame);
+void OutputStream__Close(Bond::StackFrame &frame);
+void OutputStream__Flush(Bond::StackFrame &frame);
 void OutputStream__PrintStr(Bond::StackFrame &frame);
 void OutputStream__PrintB(Bond::StackFrame &frame);
 void OutputStream__PrintC(Bond::StackFrame &frame);
@@ -71,6 +75,7 @@ void OutputStream__SetPrecision(Bond::StackFrame &frame);
 void OutputStream__GetWidth(Bond::StackFrame &frame);
 void OutputStream__SetWidth(Bond::StackFrame &frame);
 void OutputStream__GetPosition(Bond::StackFrame &frame);
+void OutputStream__GetEndPosition(Bond::StackFrame &frame);
 void OutputStream__SetPosition(Bond::StackFrame &frame);
 void OutputStream__SetPositionFromEnd(Bond::StackFrame &frame);
 void OutputStream__AddOffset(Bond::StackFrame &frame);
@@ -78,6 +83,14 @@ void OutputStream__IsEof(Bond::StackFrame &frame);
 void StdIn(Bond::StackFrame &frame);
 void StdOut(Bond::StackFrame &frame);
 void StdErr(Bond::StackFrame &frame);
+void CreateInputStream(Bond::StackFrame &frame);
+void CreateInputStreamCollected(Bond::StackFrame &frame);
+void CreateInputStreamWithCollector(Bond::StackFrame &frame);
+void FreeInputStream(Bond::StackFrame &frame);
+void CreateOutputStream(Bond::StackFrame &frame);
+void CreateOutputStreamCollected(Bond::StackFrame &frame);
+void CreateOutputStreamWithCollector(Bond::StackFrame &frame);
+void FreeOutputStream(Bond::StackFrame &frame);
 }
 
 #endif

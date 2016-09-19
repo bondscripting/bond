@@ -1,3 +1,5 @@
+include "memory.bond";
+
 namespace Bond
 {
 native
@@ -28,7 +30,9 @@ namespace IO
 
 struct InputStream
 {
-	// Formatted input.
+	void Close();
+
+	// Formatted output.
 	void ScanStr(char *str, uint bufferSize);
 	bool ScanB();
 	char ScanC();
@@ -51,6 +55,7 @@ struct InputStream
 
 	// Stream position.
 	int GetPosition() const;
+	int GetEndPosition() const;
 	void SetPosition(int offset);
 	void SetPositionFromEnd(int offset);
 	void AddOffset(int offset);
@@ -59,6 +64,9 @@ struct InputStream
 
 struct OutputStream
 {
+	void Close();
+	void Flush();
+
 	// Formatted output.
 	OutputStream *PrintStr(const char *str);
 	OutputStream *PrintB(bool value);
@@ -88,6 +96,7 @@ struct OutputStream
 
 	// Stream position.
 	int GetPosition() const;
+	int GetEndPosition() const;
 	void SetPosition(int offset);
 	void SetPositionFromEnd(int offset);
 	void AddOffset(int offset);
@@ -97,6 +106,16 @@ struct OutputStream
 InputStream *StdIn();
 OutputStream *StdOut();
 OutputStream *StdErr();
+
+InputStream *CreateInputStream(const char *fileName);
+InputStream *CreateInputStreamCollected(const char *fileName);
+InputStream *CreateInputStreamWithCollector(Collector *collector, const char *fileName);
+void FreeInputStream(InputStream *stream);
+
+OutputStream *CreateOutputStream(const char *fileName);
+OutputStream *CreateOutputStreamCollected(const char *fileName);
+OutputStream *CreateOutputStreamWithCollector(Collector *collector, const char *fileName);
+void FreeOutputStream(OutputStream *stream);
 
 }
 }

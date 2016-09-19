@@ -41,6 +41,9 @@ public:
 
 	bool IsBound() const { return (mFile != nullptr); }
 
+	virtual void Close() override;
+	virtual void Flush() override { fflush(mFile); }
+
 	virtual void VPrint(const char *format, va_list argList) override { vfprintf(mFile, format, argList); }
 	virtual void Write(uint8_t c) override { fputc(c, mFile); }
 	virtual void Write(const uint8_t *bytes, size_t numBytes) override { fwrite(bytes, 1, numBytes, mFile); }

@@ -24,8 +24,8 @@ public:
 	class Handle: public unique_ptr<T, Deallocator<T> >
 	{
 	public:
-		Handle():
-			unique_ptr<T, Deallocator<T> >(nullptr, Deallocator<T>(nullptr))
+		Handle(Allocator *allocator = nullptr, T *ptr = nullptr):
+			unique_ptr<T, Deallocator<T> >(ptr, Deallocator<T>(allocator))
 		{}
 
 		Handle(Allocator &allocator, T *ptr = nullptr):
@@ -40,6 +40,12 @@ public:
 		{
 			unique_ptr<T, Deallocator<T> >::operator=(move(other));
 			return *this;
+		}
+
+		template <typename U>
+		operator Handle<U>() &&
+		{
+			return Handle<U>(this->get_deleter().mAllocator, this->release());
 		}
 	};
 
@@ -57,8 +63,8 @@ public:
 	class AlignedHandle: public unique_ptr<T, AlignedDeallocator<T> >
 	{
 	public:
-		AlignedHandle():
-			unique_ptr<T, AlignedDeallocator<T> >(nullptr, AlignedDeallocator<T>(nullptr))
+		AlignedHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
+			unique_ptr<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(allocator))
 		{}
 
 		AlignedHandle(Allocator &allocator, T *ptr = nullptr):
@@ -73,6 +79,12 @@ public:
 		{
 			unique_ptr<T, AlignedDeallocator<T> >::operator=(move(other));
 			return *this;
+		}
+
+		template <typename U>
+		operator AlignedHandle<U>() &&
+		{
+			return AlignedHandle<U>(this->get_deleter().mAllocator, this->release());
 		}
 	};
 
@@ -99,8 +111,8 @@ public:
 	class ObjectHandle: public unique_ptr<T, ObjectDeallocator<T> >
 	{
 	public:
-		ObjectHandle():
-			unique_ptr<T, ObjectDeallocator<T> >(nullptr, ObjectDeallocator<T>(nullptr))
+		ObjectHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
+			unique_ptr<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(allocator))
 		{}
 
 		ObjectHandle(Allocator &allocator, T *ptr = nullptr):
@@ -115,6 +127,12 @@ public:
 		{
 			unique_ptr<T, ObjectDeallocator<T> >::operator=(move(other));
 			return *this;
+		}
+
+		template <typename U>
+		operator ObjectHandle<U>() &&
+		{
+			return ObjectHandle<U>(this->get_deleter().mAllocator, this->release());
 		}
 	};
 
@@ -141,8 +159,8 @@ public:
 	class AlignedObjectHandle: public unique_ptr<T, AlignedObjectDeallocator<T> >
 	{
 	public:
-		AlignedObjectHandle():
-			unique_ptr<T, AlignedObjectDeallocator<T> >(nullptr, AlignedObjectDeallocator<T>(nullptr))
+		AlignedObjectHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
+			unique_ptr<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(allocator))
 		{}
 
 		AlignedObjectHandle(Allocator &allocator, T *ptr = nullptr):
@@ -157,6 +175,12 @@ public:
 		{
 			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(move(other));
 			return *this;
+		}
+
+		template <typename U>
+		operator AlignedObjectHandle<U>() &&
+		{
+			return AlignedObjectHandle<U>(this->get_deleter().mAllocator, this->release());
 		}
 	};
 
@@ -301,13 +325,13 @@ public:
 	template <typename T>
 	Handle<T> AllocOwned()
 	{
-		return Handle<T>(*this, Alloc<T>());
+		return Handle<T>(this, Alloc<T>());
 	}
 
 	template <typename T>
 	Handle<T> AllocOwned(size_t numElements)
 	{
-		return Handle<T>(*this, Alloc<T>(numElements));
+		return Handle<T>(this, Alloc<T>(numElements));
 	}
 
 	template <typename T>
@@ -325,13 +349,13 @@ public:
 	template <typename T>
 	AlignedHandle<T> AllocOwnedAligned(size_t align)
 	{
-		return AlignedHandle<T>(*this, AllocAligned<T>(align));
+		return AlignedHandle<T>(this, AllocAligned<T>(align));
 	}
 
 	template <typename T>
 	AlignedHandle<T> AllocOwnedAligned(size_t numElements, size_t align)
 	{
-		return AlignedHandle<T>(*this, AllocAligned<T>(numElements, align));
+		return AlignedHandle<T>(this, AllocAligned<T>(numElements, align));
 	}
 
 	template<typename T, typename... Args>
@@ -345,7 +369,7 @@ public:
 	template<typename T, typename... Args>
 	ObjectHandle<T> AllocOwnedObject(Args&&... args)
 	{
-		return ObjectHandle<T>(*this, AllocObject<T>(forward<Args>(args)...));
+		return ObjectHandle<T>(this, AllocObject<T>(forward<Args>(args)...));
 	}
 
 	template<typename T, typename... Args>
@@ -359,7 +383,7 @@ public:
 	template<typename T, typename... Args>
 	AlignedObjectHandle<T> AllocOwnedAlignedObject(size_t align, Args&&... args)
 	{
-		return AlignedObjectHandle<T>(*this, AllocAlignedObject<T>(align, forward<Args>(args)...));
+		return AlignedObjectHandle<T>(this, AllocAlignedObject<T>(align, forward<Args>(args)...));
 	}
 };
 

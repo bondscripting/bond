@@ -14,6 +14,15 @@ void Strlen(Bond::StackFrame &frame)
 }
 
 
+void Strcmp(Bond::StackFrame &frame)
+{
+	const char *str1 = frame.GetArg<const char *>(0);
+	const char *str2 = frame.GetArg<const char *>(1);
+	const uint32_t result = uint32_t(strcmp(str1, str2));
+	frame.SetReturnValue(result);
+}
+
+
 void TryParseInt(Bond::StackFrame &frame)
 {
 	const char *str = frame.GetArg<const char *>(0);

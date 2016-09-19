@@ -13,6 +13,7 @@ namespace Bond
 {
 
 class StackFrame;
+class StreamFactory;
 class InvocationStackFrame;
 class VM;
 
@@ -125,7 +126,8 @@ public:
 			size_t stackSize,
 			InputStream *stdIn = nullptr,
 			OutputStream *stdOut = nullptr,
-			OutputStream *stdErr = nullptr);
+			OutputStream *stdErr = nullptr,
+			StreamFactory *streamFactory = nullptr);
 	~VM();
 
 	Allocator &GetAllocator() const { return mAllocator; }
@@ -141,6 +143,7 @@ public:
 	InputStreamAdaptor &GetStdIn() { return mStdIn; }
 	OutputStreamAdaptor &GetStdOut() { return mStdOut; }
 	OutputStreamAdaptor &GetStdErr() { return mStdErr; }
+	StreamFactory *GetStreamFactory() { return mStreamFactory; }
 
 	void DumpCallStack(OutputStream &stream) const;
 	void DumpStackFrame(OutputStream &stream, const StackFrame &frame) const;
@@ -181,6 +184,7 @@ private:
 	InputStreamAdaptor mStdIn;
 	OutputStreamAdaptor mStdOut;
 	OutputStreamAdaptor mStdErr;
+	StreamFactory *mStreamFactory;
 	Allocator::Handle<uint8_t> mStack;
 	size_t mStackSize;
 };
