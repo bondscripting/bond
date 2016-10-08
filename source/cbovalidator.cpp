@@ -256,7 +256,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	const size_t codeStart = GetPosition();
 	const size_t codeEnd = codeStart + codeSize;
 
-	// Do a validation pass on the byte-code and ensure everything is converted to the correct endianness.
+	// Do a validation pass on the bytecode and ensure everything is converted to the correct endianness.
 	while (GetPosition() < codeEnd)
 	{
 		const OpCode opCode = static_cast<OpCode>(mStream.Read());
@@ -543,7 +543,7 @@ void CboValidatorCore::FunctionIsInvalid() const
 
 void CboValidatorCore::CodeIsInvalid() const
 {
-	BOND_FAIL_MESSAGE("CBO file contains invalid byte-code");
+	BOND_FAIL_MESSAGE("CBO file contains invalid bytecode");
 }
 
 

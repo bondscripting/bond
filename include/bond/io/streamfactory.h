@@ -30,6 +30,7 @@ public:
 
 	/// \brief Returns an owning pointer to a dynamically allocated OutputStream.
 	/// \param fileName The name of the file for which an Output stream is created.
+	/// \param append Whether bytes are written to the end of an existing file.
 	virtual OutputStreamHandle CreateOutputStream(const char *fileName, bool append) = 0;
 };
 

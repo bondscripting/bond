@@ -12,7 +12,7 @@ class MemoryInputStream;
 /// \addtogroup io
 /// @{
 
-/// \brief A concreate implementation of StreamFactory that instantiates MemoryInputStreams
+/// \brief A concrete implementation of StreamFactory that instantiates MemoryInputStreams
 /// for a collection of DataChunks.
 /// \ingroup io
 class MemoryStreamFactory: public StreamFactory
@@ -27,10 +27,7 @@ public:
 
 	virtual ~MemoryStreamFactory() {}
 
-	/// \brief Returns an owning pointer to a dynamically allocated MemoryInputStream.
-	/// \param fileName The name of the file for which an input stream is created.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) override;
-
 	virtual OutputStreamHandle CreateOutputStream(const char *fileName, bool append) override;
 
 	void SetDelegateFactory(StreamFactory *delegateFactory) { mDelegateFactory = delegateFactory; }

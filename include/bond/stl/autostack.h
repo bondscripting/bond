@@ -7,7 +7,7 @@
 namespace Bond
 {
 
-template <typename ElementType>
+template <typename ValueType>
 class AutoStack
 {
 public:
@@ -41,19 +41,23 @@ public:
 		Element(const Element &other) = delete;
 		Element &operator=(const Element &other) = delete;
 
-		Element &operator=(const ElementType &value) { mValue = value; return *this; }
+		Element &operator=(const ValueType &value) { mValue = value; return *this; }
+		Element &operator=(ValueType &&value) { mValue = move(value); return *this; }
 
-		operator const ElementType&() const { return mValue; }
+		operator const ValueType&() const { return mValue; }
+		operator ValueType&() { return mValue; }
 
-		ElementType &GetValue() { return mValue; }
-		const ElementType &GetValue() const  { return mValue; }
-		void SetValue(const ElementType &value) { mValue = value; }
+		const ValueType &GetValue() const  { return mValue; }
+		ValueType &GetValue() { return mValue; }
+
+		void SetValue(const ValueType &value) { mValue = value; }
+		void SetValue(ValueType &&value) { mValue = move(value); }
 
 	protected:
 		Element *GetNext() { return mNext; }
 		const Element *GetNext() const { return mNext; }
 
-		ElementType mValue;
+		ValueType mValue;
 
 	private:
 		friend class AutoStack;
@@ -75,8 +79,8 @@ public:
 
 		bool operator==(const Iterator& other) const { return mElement == other.mElement; }
 		bool operator!=(const Iterator& other) const { return mElement != other.mElement; }
-		ElementType &operator*() const { return mElement->GetValue(); }
-		ElementType *operator->() const { return &mElement->GetValue(); }
+		ValueType &operator*() const { return mElement->GetValue(); }
+		ValueType *operator->() const { return &mElement->GetValue(); }
 
 		Iterator& operator++()
 		{
@@ -105,8 +109,8 @@ public:
 
 		bool operator==(const ConstIterator& other) const { return mElement == other.mElement; }
 		bool operator!=(const ConstIterator& other) const { return mElement != other.mElement; }
-		const ElementType &operator*() const { return mElement->GetValue(); }
-		const ElementType *operator->() const { return &mElement->GetValue(); }
+		const ValueType &operator*() const { return mElement->GetValue(); }
+		const ValueType *operator->() const { return &mElement->GetValue(); }
 
 		ConstIterator& operator++()
 		{
@@ -145,11 +149,11 @@ public:
 	}
 
 
-	ElementType &GetTop() { return mTop->GetValue(); }
-	const ElementType &GetTop() const { return mTop->GetValue(); }
+	ValueType &GetTop() { return mTop->GetValue(); }
+	const ValueType &GetTop() const { return mTop->GetValue(); }
 
 
-	void SetTop(const ElementType &value)
+	void SetTop(const ValueType &value)
 	{
 		if (mTop != nullptr)
 		{
@@ -158,10 +162,19 @@ public:
 	}
 
 
+	void SetTop(ValueType &&value)
+	{
+		if (mTop != nullptr)
+		{
+			mTop->SetValue(move(value));
+		}
+	}
+
+
 	bool IsEmpty() const { return mTop == nullptr; }
 
 
-	bool Contains(const ElementType &value) const
+	bool Contains(const ValueType &value) const
 	{
 		const Element *element = mTop;
 		while (element != nullptr)

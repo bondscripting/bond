@@ -12,7 +12,7 @@ class StdioInputStream;
 /// \addtogroup io
 /// @{
 
-/// \brief A concreate implementation of StreamFactory that instantiates StdioInputStreams.
+/// \brief A concrete implementation of StreamFactory that creates instances of StdioInputStream and StdioOutputStream.
 /// \ingroup io
 class StdioStreamFactory: public StreamFactory
 {
@@ -26,10 +26,7 @@ public:
 
 	virtual ~StdioStreamFactory() {}
 
-	/// \brief Returns an owning pointer to a dynamically allocated StdioInputStream.
-	/// \param fileName The name of the file for which an input stream is created.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) override;
-
 	virtual OutputStreamHandle CreateOutputStream(const char *fileName, bool append = false) override;
 
 	void SetRootPath(const char *rootPath) { mRootPath = rootPath; }

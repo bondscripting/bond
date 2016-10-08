@@ -9,6 +9,10 @@ namespace Bond
 
 class TypeDescriptor;
 
+/// \brief Contains the information regarding the type and value of an expression as it is
+/// evaluated by the compiler.
+///
+/// \ingroup compiler
 class TypeAndValue
 {
 public:
