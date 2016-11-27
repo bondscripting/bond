@@ -29,12 +29,3 @@ LDFLAGS :=
 LDLIBS := -lm -lc++abi
 
 -include Makefile.common
-
-# Clang's optimizer gets into an infinite loop while compiling parsenodeutil.cpp.
-# See the bug report at  http://llvm.org/bugs/show_bug.cgi?id=20370
-# So we'll work around it by compiling it with less aggressive optimizations.
-CXXFLAGS_WORKAROUND := $(patsubst -O3,-O1,$(LIB_CXXFLAGS))
-
-$(OBJDIR)/parsenodeutil$(OBJ_SUFFIX): $(SRCDIR)/parsenodeutil.cpp Makefile.common
-	@$(MKDIR) -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS_WORKAROUND) $(DEP_CXXFLAGS) $(COMP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@
