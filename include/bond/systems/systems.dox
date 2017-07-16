@@ -1,0 +1,21 @@
+/**
+\defgroup systems Systems
+\brief These classes implement low-level utilities.
+
+@{
+\defgroup endian Endian
+\brief These functions provide functionality for manipulating byte order.
+
+\code
+#include "bond/systems/endian.h"
+\endcode
+
+
+\defgroup math Math
+\brief Useful math functions.
+
+\code
+#include "bond/systems/math.h"
+\endcode
+@}
+*/

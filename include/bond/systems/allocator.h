@@ -8,9 +8,24 @@
 namespace Bond
 {
 
+/// \brief Abstract base class defining the interface through which all components of Bond perform
+/// memory and object allocations.
+///
+/// The Allocator provides a variety of methods to allocate memory and to allocate and construct
+/// objects, all of which can either be unaligned or aligned. Additionally, it provides methods to
+/// destroy objects and free memory, as well as handles that derive from the standard C++ unique_ptr
+/// to ensure that resources are released reliably.
+///
+/// Concrete derived classes need to provide implementations for the Allocator::Allocate,
+/// Allocator::AllocateAligned, Allocator::Free and Allocator::FreeAligned methods. All other
+/// functionality provided by this class is built on top of those four methods.
+///
+/// \ingroup systems
 class Allocator
 {
 public:
+	/// \brief A custom unique_ptr deleter that deallocates memory by calling Allocator::Free rather
+	/// than the delete operator. The memory is only freed; no object destruction is performed.
 	template <typename T>
 	struct Deallocator
 	{
@@ -19,7 +34,8 @@ public:
 		Allocator *mAllocator;
 	};
 
-	// Stores a pointer to memory.
+	/// \brief An owning memory handle that derives from unique_ptr that deallocates memory using a
+	/// Deallocator rather than std::default_delete when it goes out of scope.
 	template <typename T>
 	class Handle: public unique_ptr<T, Deallocator<T> >
 	{
@@ -50,6 +66,8 @@ public:
 	};
 
 
+	/// \brief A custom unique_ptr deleter that deallocates aligned memory by calling Allocator::FreeAligned,
+	/// rather than the delete operator. The memory is only freed; no object destruction is performed.
 	template <typename T>
 	struct AlignedDeallocator
 	{
@@ -58,7 +76,8 @@ public:
 		Allocator *mAllocator;
 	};
 
-	// Stores a pointer to aligned memory.
+	/// \brief An owning memory handle that derives from unique_ptr that deallocates memory using an
+	/// AlignedDeallocator rather than std::default_delete when it goes out of scope.
 	template <typename T>
 	class AlignedHandle: public unique_ptr<T, AlignedDeallocator<T> >
 	{
@@ -89,6 +108,8 @@ public:
 	};
 
 
+	/// \brief A custom unique_ptr deleter that destroys an object by calling its destructor then freeing
+	/// its memory by calling Allocator::Free rather than the delete operator.
 	template <typename T>
 	struct ObjectDeallocator
 	{
@@ -106,7 +127,8 @@ public:
 		Allocator *mAllocator;
 	};
 
-	// Stores a pointer to an object which is destroyed when deallocated.
+	/// \brief An owning object handle that derives from unique_ptr that destroys an object using an
+	/// ObjectDeallocator rather than std::default_delete when it goes out of scope.
 	template <typename T>
 	class ObjectHandle: public unique_ptr<T, ObjectDeallocator<T> >
 	{
@@ -137,6 +159,8 @@ public:
 	};
 
 
+	/// \brief A custom unique_ptr deleter that destroys an aligned object by calling its destructor then
+	/// freeing its memory by calling Allocator::FreeAligned rather than the delete operator.
 	template <typename T>
 	struct AlignedObjectDeallocator
 	{
@@ -154,7 +178,8 @@ public:
 		Allocator *mAllocator;
 	};
 
-	// Stores a pointer to an aligned object which is destroyed when deallocated.
+	/// \brief An owning object handle that derives from unique_ptr that destroys an aligned object using
+	/// an AlignedObjectDeallocator rather than std::default_delete when it goes out of scope.
 	template <typename T>
 	class AlignedObjectHandle: public unique_ptr<T, AlignedObjectDeallocator<T> >
 	{
@@ -302,62 +327,101 @@ public:
 */
 
 	virtual ~Allocator() {}
+
+	/// \brief Allocates and returns a pointer to a block of uninitialized memory of the given size.
 	virtual void *Allocate(size_t size) = 0;
+
+	/// \brief Allocates and returns a pointer to a block of uninitialized memory with the given size and alignment.
 	virtual void *AllocateAligned(size_t size, size_t align) = 0;
+
+	/// \brief Frees the memory pointed to by the given pointer. The memory must have been allocated by
+	/// this allocator's Allocate method.
 	virtual void Free(void *buffer) = 0;
+
+	/// \brief Frees the aligned memory pointed to by the given pointer. The memory must have been
+	/// allocated by this allocator's Allocate method.
 	virtual void FreeAligned(void *buffer) = 0;
 
+	/// \brief Calls the non-const form of Free after casting away the constness of the given pointer.
 	void Free(const void *buffer) { Free(const_cast<void *>(buffer)); }
+
+	/// \brief Calls the non-const form of FreeAligned after casting away the constness of the given pointer.
 	void FreeAligned(const void *buffer) { FreeAligned(const_cast<void *>(buffer)); }
 
+	/// \brief Allocates and returns a pointer to a block of uninitialized memory large enough to
+	/// accomodate an object of type T.
 	template <typename T>
 	T *Alloc()
 	{
 		return static_cast<T *>(Allocate(sizeof(T)));
 	}
 
+	/// \brief Allocates and returns a pointer to a block of uninitialized memory large enough to
+	/// accomodate an array of objects of type T.
+	/// \param numElements The number of elements in the allocated array.
 	template <typename T>
 	T *Alloc(size_t numElements)
 	{
 		return static_cast<T *>(Allocate(sizeof(T) * numElements));
 	}
 
+	/// \brief Allocates and returns an owning handle to a block of uninitialized memory large enough
+	/// to accomodate an object of type T.
 	template <typename T>
 	Handle<T> AllocOwned()
 	{
 		return Handle<T>(this, Alloc<T>());
 	}
 
+	/// \brief Allocates and returns an owning handle to a block of uninitialized memory large enough
+	/// to accomodate an array of objects of type T.
+	/// \param numElements The number of elements in the allocated array.
 	template <typename T>
 	Handle<T> AllocOwned(size_t numElements)
 	{
 		return Handle<T>(this, Alloc<T>(numElements));
 	}
 
+	/// \brief Allocates and returns a pointer to a block of uninitialized aligned memory large enough
+	/// to accomodate an object of type T.
+	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	T *AllocAligned(size_t align)
 	{
 		return static_cast<T *>(AllocateAligned(sizeof(T), align));
 	}
 
+	/// \brief Allocates and returns a pointer to a block of uninitialized aligned  memory large enough
+	/// to accomodate an array of objects of type T.
+	/// \param numElements The number of elements in the allocated array.
+	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	T *AllocAligned(size_t numElements, size_t align)
 	{
 		return static_cast<T *>(AllocateAligned(sizeof(T) * numElements, align));
 	}
 
+	/// \brief Allocates and returns an owning handle to a block of uninitialized aligned memory large
+	/// enough to accomodate an object of type T.
+	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	AlignedHandle<T> AllocOwnedAligned(size_t align)
 	{
 		return AlignedHandle<T>(this, AllocAligned<T>(align));
 	}
 
+	/// \brief Allocates and returns an owning handle to a block of uninitialized aligned memory large
+	/// enough to accomodate an array of objects of type T.
+	/// \param numElements The number of elements in the allocated array.
+	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	AlignedHandle<T> AllocOwnedAligned(size_t numElements, size_t align)
 	{
 		return AlignedHandle<T>(this, AllocAligned<T>(numElements, align));
 	}
 
+	/// \brief Allocates, constructs and returns a pointer to an instance of type T.
+	/// \param args A list of arguments forwarded to the constructor of the instance of type T.
 	template<typename T, typename... Args>
 	T *AllocObject(Args&&... args)
 	{
@@ -366,12 +430,17 @@ public:
 		return memHandle.release();
 	}
 
+	/// \brief Allocates, constructs and returns an owning handle to an instance of type T.
+	/// \param args A list of arguments forwarded to the constructor of the instance of type T.
 	template<typename T, typename... Args>
 	ObjectHandle<T> AllocOwnedObject(Args&&... args)
 	{
 		return ObjectHandle<T>(this, AllocObject<T>(forward<Args>(args)...));
 	}
 
+	/// \brief Allocates, constructs and returns a pointer to an aligned instance of type T.
+	/// \param align The alignment requirements for the allocated memory.
+	/// \param args A list of arguments forwarded to the constructor of the instance of type T.
 	template<typename T, typename... Args>
 	T *AllocAlignedObject(size_t align, Args&&... args)
 	{
@@ -380,6 +449,9 @@ public:
 		return memHandle.release();
 	}
 
+	/// \brief Allocates, constructs and returns an owning handle to an aligned instance of type T.
+	/// \param align The alignment requirements for the allocated memory.
+	/// \param args A list of arguments forwarded to the constructor of the instance of type T.
 	template<typename T, typename... Args>
 	AlignedObjectHandle<T> AllocOwnedAlignedObject(size_t align, Args&&... args)
 	{
