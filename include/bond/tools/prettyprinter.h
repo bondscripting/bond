@@ -14,8 +14,23 @@ class Token;
 class PrettyPrinter
 {
 public:
-	void Print(const ParseNode *parseNode, OutputStream &stream, bool printFoldedConstants = false);
-	void PrintList(const ListParseNode *listNode, OutputStream &stream, bool printFoldedConstants = false);
+	enum Verbosity
+	{
+		VERBOSITY_NORMAL,
+		VERBOSITY_MINIMAL
+	};
+
+	enum ConstantFolding
+	{
+		CONSTANT_FOLDING_OFF,
+		CONSTANT_FOLDING_ON
+	};
+
+	void Print(const ParseNode *parseNode, OutputStream &stream, Verbosity verbosity = VERBOSITY_NORMAL,
+		ConstantFolding folding = CONSTANT_FOLDING_OFF) const;
+
+	void PrintList(const ListParseNode *listNode, OutputStream &stream, Verbosity verbosity = VERBOSITY_NORMAL,
+		ConstantFolding folding = CONSTANT_FOLDING_OFF) const;
 };
 
 }

@@ -12,7 +12,8 @@
 #include <cstring>
 
 
-void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConstants, bool printParseTree)
+void PrintScript(const char *scriptName, Bond::PrettyPrinter::Verbosity verbosity,
+	Bond::PrettyPrinter::ConstantFolding folding, bool doSemanticAnalysis, bool printParseTree)
 {
 	try
 	{
@@ -33,7 +34,7 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 
 		if (!errorBuffer.HasErrors() && (translationUnit != nullptr))
 		{
-			if (doSemanticAnalysis || foldConstants)
+			if (doSemanticAnalysis || (folding == Bond::PrettyPrinter::CONSTANT_FOLDING_ON))
 			{
 				Bond::SemanticAnalyzer analyzer(errorBuffer);
 				analyzer.Analyze(translationUnit);
@@ -48,7 +49,7 @@ void PrintScript(const char *scriptName, bool doSemanticAnalysis, bool foldConst
 			else
 			{
 				Bond::PrettyPrinter printer;
-				printer.PrintList(translationUnit, outputStream, foldConstants);
+				printer.PrintList(translationUnit, outputStream, verbosity, folding);
 			}
 		}
 
@@ -65,7 +66,8 @@ class Boogup;
 
 int main(int argc, const char *argv[])
 {
-	bool foldConstants = false;
+	auto verbosity = Bond::PrettyPrinter::VERBOSITY_NORMAL;
+	auto folding = Bond::PrettyPrinter::CONSTANT_FOLDING_OFF;
 	bool doSemanticAnalysis = false;
 	bool printParseTree = false;
 
@@ -73,7 +75,11 @@ int main(int argc, const char *argv[])
 	{
 		if (strcmp(argv[i], "-f") == 0)
 		{
-			foldConstants = true;
+			folding = Bond::PrettyPrinter::CONSTANT_FOLDING_ON;
+		}
+		else if (strcmp(argv[i], "-m") == 0)
+		{
+			verbosity = Bond::PrettyPrinter::VERBOSITY_MINIMAL;
 		}
 		else if (strcmp(argv[i], "-p") == 0)
 		{
@@ -85,7 +91,7 @@ int main(int argc, const char *argv[])
 		}
 		else
 		{
-			PrintScript(argv[i], doSemanticAnalysis, foldConstants, printParseTree);
+			PrintScript(argv[i], verbosity, folding, doSemanticAnalysis, printParseTree);
 		}
 	}
 

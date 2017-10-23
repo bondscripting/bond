@@ -11,10 +11,12 @@ namespace Bond
 class PrettyPrinterCore: private ParseNodeVisitorAdapter
 {
 public:
-	PrettyPrinterCore(OutputStream &stream, bool printFoldedConstants):
+	PrettyPrinterCore(OutputStream &stream, PrettyPrinter::Verbosity verbosity, PrettyPrinter::ConstantFolding folding):
 		mStream(stream),
 		mTabLevel(0),
-		mPrintFoldedConstants(printFoldedConstants)
+		mVerbosity(verbosity),
+		mConstantFolding(folding),
+		mSpace((verbosity == PrettyPrinter::VERBOSITY_MINIMAL) ? "" : " ")
 	{}
 
 	virtual ~PrettyPrinterCore() {}
@@ -75,6 +77,8 @@ private:
 	void Newline();
 	bool IsTopLevelExpression() const { return mIsTopLevelExpression.IsEmpty() || mIsTopLevelExpression.GetTop(); }
 	bool IsTopLevelId() const { return mIsTopLevelId.IsEmpty() || mIsTopLevelId.GetTop(); }
+	bool IsVerbosityMinimal() const { return mVerbosity == PrettyPrinter::VERBOSITY_MINIMAL; }
+	bool ShouldFoldConstants() const { return mConstantFolding == PrettyPrinter::CONSTANT_FOLDING_ON; }
 	bool ShouldPrintTabsAndNewlines() const { return mShouldPrintTabsAndNewlines.IsEmpty() || mShouldPrintTabsAndNewlines.GetTop(); }
 
 	BoolStack mIsTopLevelExpression;
@@ -82,20 +86,24 @@ private:
 	BoolStack mShouldPrintTabsAndNewlines;
 	OutputStream &mStream;
 	int mTabLevel;
-	bool mPrintFoldedConstants;
+	PrettyPrinter::Verbosity mVerbosity;
+	PrettyPrinter::ConstantFolding mConstantFolding;
+	const char *mSpace;
 };
 
 
-void PrettyPrinter::Print(const ParseNode *parseNode, OutputStream &stream, bool printFoldedConstants)
+void PrettyPrinter::Print(const ParseNode *parseNode, OutputStream &stream, Verbosity verbosity,
+	ConstantFolding folding) const
 {
-	PrettyPrinterCore printer(stream, printFoldedConstants);
+	PrettyPrinterCore printer(stream, verbosity, folding);
 	printer.Print(parseNode);
 }
 
 
-void PrettyPrinter::PrintList(const ListParseNode *listNode, OutputStream &stream, bool printFoldedConstants)
+void PrettyPrinter::PrintList(const ListParseNode *listNode, OutputStream &stream, Verbosity verbosity,
+	ConstantFolding folding) const
 {
-	PrettyPrinterCore printer(stream, printFoldedConstants);
+	PrettyPrinterCore printer(stream, verbosity, folding);
 	printer.PrintList(listNode);
 }
 
@@ -187,13 +195,13 @@ void PrettyPrinterCore::Visit(const Enumerator *enumerator)
 {
 	Tab();
 	Print(enumerator->GetName());
-	if (mPrintFoldedConstants && enumerator->GetTypeAndValue()->IsValueDefined())
+	if (ShouldFoldConstants() && enumerator->GetTypeAndValue()->IsValueDefined())
 	{
-		mStream.Print(" = %" BOND_PRId32, enumerator->GetTypeAndValue()->GetIntValue());
+		mStream.Print("%s=%s%" BOND_PRId32, mSpace, enumerator->GetTypeAndValue()->GetIntValue(), mSpace);
 	}
 	else if (enumerator->GetValue() != nullptr)
 	{
-		mStream.Print(" = ");
+		mStream.Print("%s=%s", mSpace, mSpace);
 		Print(enumerator->GetValue());
 	}
 	mStream.Print(",\n");
@@ -259,7 +267,7 @@ void PrettyPrinterCore::Visit(const FunctionPrototype *functionPrototype)
 	mStream.Print(" ");
 	Print(functionPrototype->GetName());
 	mStream.Print("(");
-	PrintList(functionPrototype->GetParameterList(), ", ");
+	PrintList(functionPrototype->GetParameterList(), IsVerbosityMinimal() ? "," : ", ");
 	mStream.Print(")");
 
 	if (functionPrototype->IsConst())
@@ -331,7 +339,7 @@ void PrettyPrinterCore::Visit(const NamedInitializer *namedInitializer)
 
 	if (namedInitializer->GetInitializer() != nullptr)
 	{
-		mStream.Print(" = ");
+		mStream.Print("%s=%s", mSpace, mSpace);
 		Print(namedInitializer->GetInitializer());
 	}
 }
@@ -345,9 +353,9 @@ void PrettyPrinterCore::Visit(const Initializer *initializer)
 	}
 	else
 	{
-		mStream.Print("{ ");
-		PrintList(initializer->GetInitializerList(), ", ");
-		mStream.Print(" }");
+		mStream.Print("{%s", mSpace);
+		PrintList(initializer->GetInitializerList(), IsVerbosityMinimal() ? "," : ", ");
+		mStream.Print("%s}", mSpace);
 	}
 }
 
@@ -481,7 +489,7 @@ void PrettyPrinterCore::Visit(const JumpStatement *jumpStatement)
 	Tab();
 	Print(jumpStatement->GetKeyword());
 
-	const Expression *rhs = jumpStatement->GetRhs(); 
+	const Expression *rhs = jumpStatement->GetRhs();
 	if (jumpStatement->IsReturn() && (rhs != nullptr))
 	{
 		mStream.Print(" ");
@@ -525,9 +533,9 @@ void PrettyPrinterCore::Visit(const ConditionalExpression *conditionalExpression
 			mStream.Print("(");
 		}
 		PrintExpression(conditionalExpression->GetCondition());
-		mStream.Print(" ? ");
+		mStream.Print("%s?%s", mSpace, mSpace);
 		PrintExpression(conditionalExpression->GetTrueExpression());
-		mStream.Print(" : ");
+		mStream.Print("%s:%s", mSpace, mSpace);
 		PrintExpression(conditionalExpression->GetFalseExpression());
 		if (!IsTopLevelExpression())
 		{
@@ -546,9 +554,9 @@ void PrettyPrinterCore::Visit(const BinaryExpression *binaryExpression)
 			mStream.Print("(");
 		}
 		PrintExpression(binaryExpression->GetLhs());
-		mStream.Print(" ");
+		mStream.Print(mSpace);
 		Print(binaryExpression->GetOperator());
-		mStream.Print(" ");
+		mStream.Print(mSpace);
 		PrintExpression(binaryExpression->GetRhs());
 		if (!IsTopLevelExpression())
 		{
@@ -717,7 +725,7 @@ void PrettyPrinterCore::PrintTopLevelExpression(const Expression *expression)
 bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 {
 	const TypeAndValue &tav = expression->GetTypeAndValue();
-	if (mPrintFoldedConstants && tav.IsValueDefined())
+	if (ShouldFoldConstants() && tav.IsValueDefined())
 	{
 		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
 		switch (typeDescriptor->GetPrimitiveType())
@@ -759,7 +767,7 @@ bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 
 void PrettyPrinterCore::Tab()
 {
-	if (ShouldPrintTabsAndNewlines())
+	if (ShouldPrintTabsAndNewlines() && !IsVerbosityMinimal())
 	{
 		for (int i = 0; i < mTabLevel; ++i)
 		{

@@ -130,7 +130,7 @@ void CompilerError::Print(OutputStream &stream) const
 				{
 					const ParseNode *node = reinterpret_cast<const ParseNode *>(arg);
 					PrettyPrinter printer;
-					printer.Print(node, stream, true);
+					printer.Print(node, stream, PrettyPrinter::VERBOSITY_NORMAL, PrettyPrinter::CONSTANT_FOLDING_ON);
 					state = STATE_NORMAL;
 				}
 				break;
