@@ -1,7 +1,18 @@
-namespace Bond
-{
+// begin ignore
 native
 {
+// end ignore
+namespace Bond
+{
+
+/// \defgroup type type.bond
+/// \brief Functions for testing the values of types.
+
+/// \code
+/// include "type.bond";
+/// \endcode
+
+/// @{
 
 bool IsAlnum(int c);
 bool IsAlpha(int c);
@@ -18,5 +29,9 @@ bool IsXDigit(int c);
 int ToLower(int c);
 int ToUpper(int c);
 
+/// @}
+
 }
+// begin ignore
 }
+// end ignore

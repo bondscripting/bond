@@ -1,9 +1,21 @@
+// begin ignore
 include "memory.bond";
+
+native
+{
+// end ignore
 
 namespace Bond
 {
-native
-{
+
+/// \defgroup io io.bond
+/// \brief API for performing I/O operations.
+
+/// \code
+/// include "io.bond";
+/// \endcode
+
+/// @{
 
 namespace IO
 {
@@ -28,11 +40,13 @@ namespace IO
 	};
 }
 
+/// \struct InputStream
+/// \brief An abstract interface for performing both unformatted and formatted input operations.
 struct InputStream
 {
 	void Close();
 
-	// Formatted output.
+	// Formatted input.
 	void ScanStr(char *str, uint bufferSize);
 	bool ScanB();
 	char ScanC();
@@ -45,6 +59,12 @@ struct InputStream
 
 	// Unformatted input.
 	int Get();
+
+	/// \brief Attempts to read the specified number of bytes into the given buffer. Fewer bytes may be
+	/// read if the end of the stream is reached or the stream is closed.
+	/// \param bytes The buffer into which the read bytes are stored.
+	/// \param numBytes The requested number of bytes to be read.
+	/// \returns The number of bytes read.
 	uint Read(uchar *bytes, uint numBytes);
 
 	// Flags and formatting options.
@@ -117,5 +137,9 @@ OutputStream *CreateOutputStreamCollected(const char *fileName);
 OutputStream *CreateOutputStreamWithCollector(Collector *collector, const char *fileName);
 void FreeOutputStream(OutputStream *stream);
 
+/// @}
+
 }
+// begin ignore
 }
+// end ignore

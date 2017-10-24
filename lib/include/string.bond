@@ -1,8 +1,21 @@
-namespace Bond
-{
+// begin ignore
 native
 {
+// end ignore
+namespace Bond
+{
 
+/// \defgroup string string.bond
+/// \brief A collection of functions for manipulating strings of characters.
+
+/// \code
+/// include "string.bond";
+/// \endcode
+
+/// @{
+
+/// \brief Returns the length of a string.
+/// \param str The string whose length is returned.
 uint Strlen(const char *str);
 int Strcmp(const char *str1, const char *str2);
 
@@ -11,5 +24,9 @@ bool TryParseLong(const char *str, long *result);
 bool TryParseFloat(const char *str, int *result);
 bool TryParseDouble(const char *str, int *result);
 
+/// @}
+
 }
+// begin ignore
 }
+// end ignore

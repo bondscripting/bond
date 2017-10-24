@@ -1,7 +1,18 @@
-namespace Bond
-{
+// begin ignore
 native
 {
+// end ignore
+namespace Bond
+{
+
+/// \defgroup math math.bond
+/// \brief A collection of functions and constants for performing math operations.
+
+/// \code
+/// include "math.bond";
+/// \endcode
+
+/// @{
 
 const double PI = 3.14159265358979323846;
 const float PI_F = cast<float>(PI);
@@ -81,5 +92,9 @@ float Modff(float x, float *ip);
 double Fmod(double x, double y);
 float Fmodf(float x, float y);
 
+/// @}
+
 }
+//begin ignore
 }
+//end ignore

@@ -1,7 +1,18 @@
-namespace Bond
-{
+// begin ignore
 native
 {
+// end ignore
+namespace Bond
+{
+
+/// \defgroup memory memory.bond
+/// \brief API for scope-based and manual dynamic memory management, as well as other memory related functions.
+
+/// \code
+/// include "memory.bond";
+/// \endcode
+
+/// @{
 
 struct Collector {};
 
@@ -21,4 +32,6 @@ void FreeAligned(void *ptr);
 void Memcpy(void *dest, void *src, ulong size);
 
 }
+// begin ignore
 }
+// end ignore
