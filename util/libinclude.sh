@@ -17,5 +17,5 @@ do
 	"$prettyprint" -m "$file" > "$buildDir/include_"$(basename "$file")
 done
 
-cd
-"$embedfile" -h ../include/bond/private/libinclude_embedded.h -c ../source/private/libinclude_embedded_cpp.h "$buildDir"/*.bond
+cd "$buildDir"
+"$embedfile" -h ../../include/bond/private/libinclude_embedded.h -c ../../source/private/libinclude_embedded_cpp.h *.bond
