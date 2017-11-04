@@ -25,6 +25,12 @@ const Bond::NativeFunctionBinding MATH_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.Coshf", Bond::Coshf},
 	{"Bond.Tanh", Bond::Tanh},
 	{"Bond.Tanhf", Bond::Tanhf},
+	{"Bond.Asinh", Bond::Asinh},
+	{"Bond.Asinhf", Bond::Asinhf},
+	{"Bond.Acosh", Bond::Acosh},
+	{"Bond.Acoshf", Bond::Acoshf},
+	{"Bond.Atanh", Bond::Atanh},
+	{"Bond.Atanhf", Bond::Atanhf},
 	{"Bond.Exp", Bond::Exp},
 	{"Bond.Expf", Bond::Expf},
 	{"Bond.Log", Bond::Log},
@@ -55,7 +61,7 @@ const Bond::NativeFunctionBinding MATH_BINDING_COLLECTION_FUNCTIONS[] =
 const Bond::NativeBindingCollection MATH_BINDING_COLLECTION =
 {
 	MATH_BINDING_COLLECTION_FUNCTIONS,
-	44
+	50
 };
 
 }

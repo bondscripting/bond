@@ -7,7 +7,7 @@ namespace Bond
 
 /// \defgroup string string.bond
 /// \brief A collection of functions for manipulating strings of characters.
-
+///
 /// \code
 /// include "string.bond";
 /// \endcode

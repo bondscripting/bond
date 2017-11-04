@@ -10,7 +10,7 @@ namespace Bond
 
 /// \defgroup io io.bond
 /// \brief API for performing I/O operations.
-
+///
 /// \code
 /// include "io.bond";
 /// \endcode

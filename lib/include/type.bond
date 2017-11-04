@@ -7,7 +7,7 @@ namespace Bond
 
 /// \defgroup type type.bond
 /// \brief Functions for testing the values of types.
-
+///
 /// \code
 /// include "type.bond";
 /// \endcode

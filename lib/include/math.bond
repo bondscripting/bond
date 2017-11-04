@@ -7,77 +7,207 @@ namespace Bond
 
 /// \defgroup math math.bond
 /// \brief A collection of functions and constants for performing math operations.
-
+///
 /// \code
 /// include "math.bond";
 /// \endcode
 
 /// @{
 
+/// \brief The value of pi as a double.
 const double PI = 3.14159265358979323846;
+
+/// \brief The value of pi as a float.
 const float PI_F = cast<float>(PI);
 
+/// \brief The value of pi/2 as a double.
 const double HALF_PI = PI / 2.0;
+
+/// \brief The value of pi/2 as a float.
 const float HALF_PI_F = cast<float>(HALF_PI);
 
+/// \brief The value of 2pi as a double.
 const double TWO_PI = PI * 2.0;
+
+/// \brief The value of 2pi as a float.
 const float TWO_PI_F = cast<float>(TWO_PI);
 
+/// \brief Not-A-Number of type double.
 const double NAN = 0.0 / 0.0;
+
+/// \brief Not-A-Number of type float.
 const double NAN_F = 0.0f / 0.0f;
 
+/// \brief Returns the sine of an angle in radians.
+/// \param x An angle expressed in radians.
 double Sin(double x);
+
+/// \brief Returns the sine of an angle in radians.
+/// \param x An angle expressed in radians.
 float Sinf(float x);
 
+/// \brief Returns the cosine of an angle in radians.
+/// \param x An angle expressed in radians.
 double Cos(double x);
+
+/// \brief Returns the cosine of an angle in radians.
+/// \param x An angle expressed in radians.
 float Cosf(float x);
 
+/// \brief Returns the tangent of an angle in radians.
+/// \param x An angle expressed in radians.
 double Tan(double x);
+
+/// \brief Returns the tangent of an angle in radians.
+/// \param x An angle expressed in radians.
 float Tanf(float x);
 
+/// \brief Returns the arcsine in radians of a value.
+/// \param x A value in the range [-1, +1] whose arcsine is calculated.
 double Asin(double x);
+
+/// \brief Returns the arcsine in radians of a value.
+/// \param x A value in the range [-1, +1] whose arcsine is calculated.
 float Asinf(float x);
 
+/// \brief Returns the arccosine in radians of a value.
+/// \param x A value in the range [-1, +1] whose arccosine is calculated.
 double Acos(double x);
+
+/// \brief Returns the arccosine in radians of a value.
+/// \param x A value in the range [-1, +1] whose arccosine is calculated.
 float Acosf(float x);
 
+/// \brief Returns the arctangent in radians of a value.
+/// \param x A value in the range [-1, +1] whose arctangent is calculated.
 double Atan(double x);
+
+/// \brief Returns the arctangent in radians of a value.
+/// \param x A value in the range [-1, +1] whose arctangent is calculated.
 float Atanf(float x);
 
+/// \brief Returns the arctangent in radians of y/x.
+/// \param y The coordinate on the Y axis.
+/// \param x The coordinate on the X axis.
 double Atan2(double y, double x);
+
+/// \brief Returns the arctangent in radians of y/x.
+/// \param y The coordinate on the Y axis.
+/// \param x The coordinate on the X axis.
 float Atan2f(float y, float x);
 
+/// \brief Returns the hyperbolic sine of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic sine is calculated.
 double Sinh(double x);
+
+/// \brief Returns the hyperbolic sine of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic sine is calculated.
 float Sinhf(float x);
 
+/// \brief Returns the hyperbolic cosine of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic cosine is calculated.
 double Cosh(double x);
+
+/// \brief Returns the hyperbolic cosine of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic cosine is calculated.
 double Coshf(float x);
 
+/// \brief Returns the hyperbolic tangent of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic tangent is calculated.
 double Tanh(double x);
+
+/// \brief Returns the hyperbolic tangent of a hyperbolic angle.
+/// \param x A hyperbolic angle whose hyperbolic tangent is calculated.
 float Tanhf(float x);
 
+/// \brief Returns the inverse hyperbolic sine of a value.
+/// \param x The value whose inverse hyperbolic sine is calculated.
+double Asinh(double x);
+
+/// \brief Returns the inverse hyperbolic sine of a value.
+/// \param x The value whose inverse hyperbolic sine is calculated.
+float Asinhf(float x);
+
+/// \brief Returns the inverse hyperbolic cosine of a value.
+/// \param x The value whose inverse hyperbolic cosine is calculated.
+double Acosh(double x);
+
+/// \brief Returns the inverse hyperbolic cosine of a value.
+/// \param x The value whose inverse hyperbolic cosine is calculated.
+float Acoshf(float x);
+
+/// \brief Returns the inverse hyperbolic tangent of a value.
+/// \param x The value whose inverse hyperbolic tangent is calculated.
+double Atanh(double x);
+
+/// \brief Returns the inverse hyperbolic tangent of a value.
+/// \param x The value whose inverse hyperbolic tangent is calculated.
+float Atanhf(float x);
+
+/// \brief Returns e raised to an exponent.
+/// \param x The value of the exponent.
 double Exp(double x);
+
+/// \brief Returns e raised to an exponent.
+/// \param x The value of the exponent.
 float Expf(float x);
 
+/// \brief Returns the natural logarithm of a value.
+/// \param x The value whose natural logarithm is calculated.
 double Log(double x);
+
+/// \brief Returns the natural logarithm of a value.
+/// \param x The value whose natural logarithm is calculated.
 float Logf(float x);
 
+/// \brief Returns the base-10 logarithm of a value.
+/// \param x The value whose logarithm is calculated.
 double Log10(double x);
+
+/// \brief Returns the base-10 logarithm of a value.
+/// \param x The value whose logarithm is calculated.
 float Log10f(float x);
 
-double Pow(double x, double y);
-float Powf(float x, float y);
+/// \brief Returns a base value raised to an exponent.
+/// \param base The value of the base.
+/// \param exponent The value of the exponent.
+double Pow(double base, double exponent);
 
+/// \brief Returns a base value raised to an exponent.
+/// \param base The value of the base.
+/// \param exponent The value of the exponent.
+float Powf(float base, float exponent);
+
+/// \brief Returns the square root of a value.
+/// \param x The value whose square root is calculated.
 double Sqrt(double x);
+
+/// \brief Returns the square root of a value.
+/// \param x The value whose square root is calculated.
 float Sqrtf(float x);
 
+/// \brief Returns a value rounded upward.
+/// \param x The value to be rounded.
 double Ceil(double x);
+
+/// \brief Returns a value rounded upward.
+/// \param x The value to be rounded.
 float Ceilf(float x);
 
+/// \brief Returns a value rounded downward.
+/// \param x The value to be rounded.
 double Floor(double x);
+
+/// \brief Returns a value rounded downward.
+/// \param x The value to be rounded.
 float Floorf(float x);
 
+/// \brief Returns the absolute value of a value.
+/// \param x The value whose absolute value is calculated.
 double Fabs(double x);
+
+/// \brief Returns the absolute value of a value.
+/// \param x The value whose absolute value is calculated.
 float Fabsf(float x);
 
 double Ldexp(double x, int n);

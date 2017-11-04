@@ -7,7 +7,7 @@ namespace Bond
 
 /// \defgroup memory memory.bond
 /// \brief API for scope-based and manual dynamic memory management, as well as other memory related functions.
-
+///
 /// \code
 /// include "memory.bond";
 /// \endcode
