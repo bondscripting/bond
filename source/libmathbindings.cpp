@@ -33,18 +33,28 @@ const Bond::NativeFunctionBinding MATH_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.Atanhf", Bond::Atanhf},
 	{"Bond.Exp", Bond::Exp},
 	{"Bond.Expf", Bond::Expf},
+	{"Bond.Exp2", Bond::Exp2},
+	{"Bond.Exp2f", Bond::Exp2f},
 	{"Bond.Log", Bond::Log},
 	{"Bond.Logf", Bond::Logf},
+	{"Bond.Log2", Bond::Log2},
+	{"Bond.Log2f", Bond::Log2f},
 	{"Bond.Log10", Bond::Log10},
 	{"Bond.Log10f", Bond::Log10f},
 	{"Bond.Pow", Bond::Pow},
 	{"Bond.Powf", Bond::Powf},
 	{"Bond.Sqrt", Bond::Sqrt},
 	{"Bond.Sqrtf", Bond::Sqrtf},
+	{"Bond.Cbrt", Bond::Cbrt},
+	{"Bond.Cbrtf", Bond::Cbrtf},
+	{"Bond.Hypot", Bond::Hypot},
+	{"Bond.Hypotf", Bond::Hypotf},
 	{"Bond.Ceil", Bond::Ceil},
 	{"Bond.Ceilf", Bond::Ceilf},
 	{"Bond.Floor", Bond::Floor},
 	{"Bond.Floorf", Bond::Floorf},
+	{"Bond.Trunc", Bond::Trunc},
+	{"Bond.Truncf", Bond::Truncf},
 	{"Bond.Fabs", Bond::Fabs},
 	{"Bond.Fabsf", Bond::Fabsf},
 	{"Bond.Ldexp", Bond::Ldexp},
@@ -55,13 +65,17 @@ const Bond::NativeFunctionBinding MATH_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.Modff", Bond::Modff},
 	{"Bond.Fmod", Bond::Fmod},
 	{"Bond.Fmodf", Bond::Fmodf},
+	{"Bond.CopySign", Bond::CopySign},
+	{"Bond.CopySignf", Bond::CopySignf},
+	{"Bond.NaN", Bond::NaN},
+	{"Bond.NaNf", Bond::NaNf},
 	{nullptr, nullptr}
 };
 
 const Bond::NativeBindingCollection MATH_BINDING_COLLECTION =
 {
 	MATH_BINDING_COLLECTION_FUNCTIONS,
-	50
+	64
 };
 
 }

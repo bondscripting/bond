@@ -1,4 +1,4 @@
-#!bash
+#!/bin/bash
 
 inputDir="lib/include"
 buildDir="build/libdoc"

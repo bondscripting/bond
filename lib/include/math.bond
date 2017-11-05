@@ -32,12 +32,6 @@ const double TWO_PI = PI * 2.0;
 /// \brief The value of 2pi as a float.
 const float TWO_PI_F = cast<float>(TWO_PI);
 
-/// \brief Not-A-Number of type double.
-const double NAN = 0.0 / 0.0;
-
-/// \brief Not-A-Number of type float.
-const double NAN_F = 0.0f / 0.0f;
-
 /// \brief Returns the sine of an angle in radians.
 /// \param x An angle expressed in radians.
 double Sin(double x);
@@ -152,6 +146,14 @@ double Exp(double x);
 /// \param x The value of the exponent.
 float Expf(float x);
 
+/// \brief Returns 2 raised to an exponent.
+/// \param x The value of the exponent.
+double Exp2(double x);
+
+/// \brief Returns 2 raised to an exponent.
+/// \param x The value of the exponent.
+float Exp2f(float x);
+
 /// \brief Returns the natural logarithm of a value.
 /// \param x The value whose natural logarithm is calculated.
 double Log(double x);
@@ -159,6 +161,14 @@ double Log(double x);
 /// \brief Returns the natural logarithm of a value.
 /// \param x The value whose natural logarithm is calculated.
 float Logf(float x);
+
+/// \brief Returns the base-2 logarithm of a value.
+/// \param x The value whose logarithm is calculated.
+double Log2(double x);
+
+/// \brief Returns the base-2 logarithm of a value.
+/// \param x The value whose logarithm is calculated.
+float Log2f(float x);
 
 /// \brief Returns the base-10 logarithm of a value.
 /// \param x The value whose logarithm is calculated.
@@ -186,6 +196,24 @@ double Sqrt(double x);
 /// \param x The value whose square root is calculated.
 float Sqrtf(float x);
 
+/// \brief Returns the cube root of a value.
+/// \param x The value whose square root is calculated.
+double Cbrt(double x);
+
+/// \brief Returns the cube root of a value.
+/// \param x The value whose square root is calculated.
+float Cbrtf(float x);
+
+/// \brief Returns the hypotenuse of a right-angled triangle with sides of the given lengths.
+/// \param x The length of the first side of the triangle.
+/// \param y The length of the second side of the triangle.
+double Hypot(double x, double y);
+
+/// \brief Returns the hypotenuse of a right-angled triangle with sides of the given lengths.
+/// \param x The length of the first side of the triangle.
+/// \param y The length of the second side of the triangle.
+float Hypotf(float x, float y);
+
 /// \brief Returns a value rounded upward.
 /// \param x The value to be rounded.
 double Ceil(double x);
@@ -202,6 +230,14 @@ double Floor(double x);
 /// \param x The value to be rounded.
 float Floorf(float x);
 
+/// \brief Returns a value rounded toward zero.
+/// \param x The value to be rounded.
+double Trunc(double x);
+
+/// \brief Returns a value rounded toward zero.
+/// \param x The value to be rounded.
+float Truncf(float x);
+
 /// \brief Returns the absolute value of a value.
 /// \param x The value whose absolute value is calculated.
 double Fabs(double x);
@@ -210,8 +246,15 @@ double Fabs(double x);
 /// \param x The value whose absolute value is calculated.
 float Fabsf(float x);
 
-double Ldexp(double x, int n);
-float Ldexpf(float x, int n);
+/// \brief Returns a value multiplied by 2 raised to an exponent.
+/// \param x The value that is multiplied by 2 raised to an exponent.
+/// \param exp The exponent.
+double Ldexp(double x, int exp);
+
+/// \brief Returns a value multiplied by 2 raised to an exponent.
+/// \param x The value that is multiplied by 2 raised to an exponent.
+/// \param exp The exponent.
+float Ldexpf(float x, int exp);
 
 double Frexp(double x, int n);
 float Frexpf(float x, int n);
@@ -221,6 +264,22 @@ float Modff(float x, float *ip);
 
 double Fmod(double x, double y);
 float Fmodf(float x, float y);
+
+/// \brief Returns a value with the magnitude of one and the sign of another.
+/// \param x The value whose magnitude is returned.
+/// \param y The value whose sign is returned.
+double CopySign(double x, double y);
+
+/// \brief Returns a value with the magnitude of one and the sign of another.
+/// \param x The value whose magnitude is returned.
+/// \param y The value whose sign is returned.
+float CopySignf(float x, float y);
+
+/// \brief Returns a value representing Not-a-Number.
+double NaN();
+
+/// \brief Returns a value representing Not-a-Number.
+float NaNf();
 
 /// @}
 

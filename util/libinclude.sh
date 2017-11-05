@@ -1,4 +1,4 @@
-#!bash
+#!/bin/bash
 
 prettyprint="$PWD/build/bin/prettyprint"
 embedfile="$PWD/build/util/embedfile"

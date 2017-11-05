@@ -1,4 +1,4 @@
-#!bash
+#!/bin/bash
 
 bondc="$PWD/build/bin/bondc"
 embedfile="$PWD/build/util/embedfile"

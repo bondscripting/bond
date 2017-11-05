@@ -119,8 +119,14 @@ int main(int argc, const char *argv[])
 		EmbedFile(cppFile, hFile, inputFileNames[i]);
 	}
 
-	fclose(cppFile);
-	fclose(hFile);
+	if (cppFile != nullptr)
+	{
+		fclose(cppFile);
+	}
 
+	if (hFile != nullptr)
+	{
+		fclose(hFile);
+	}
 	return 0;
 }

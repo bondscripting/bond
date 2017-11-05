@@ -231,6 +231,22 @@ void Expf(Bond::StackFrame &frame)
 }
 
 
+void Exp2(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = exp2(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Exp2f(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = exp2f(x);
+	frame.SetReturnValue(y);
+}
+
+
 void Log(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
@@ -243,6 +259,22 @@ void Logf(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const auto y = logf(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Log2(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = log2(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Log2f(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = log2f(x);
 	frame.SetReturnValue(y);
 }
 
@@ -297,6 +329,40 @@ void Sqrtf(Bond::StackFrame &frame)
 }
 
 
+void Cbrt(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = cbrt(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Cbrtf(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = cbrtf(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Hypot(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto h = hypot(x, y);
+	frame.SetReturnValue(h);
+}
+
+
+void Hypotf(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto h = hypotf(x, y);
+	frame.SetReturnValue(h);
+}
+
+
 void Ceil(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
@@ -325,6 +391,22 @@ void Floorf(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const auto y = floorf(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Trunc(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = trunc(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Truncf(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = truncf(x);
 	frame.SetReturnValue(y);
 }
 
@@ -418,6 +500,35 @@ void Fmodf(Bond::StackFrame &frame)
 	const double y = double(frame.GetArg<float>(1));
 	const double result = fmod(x, y);
 	frame.SetReturnValue(float(result));
+}
+
+void CopySign(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = copysign(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void CopySignf(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = copysignf(x, y);
+	frame.SetReturnValue(result);
+}
+
+void NaN(Bond::StackFrame &frame)
+{
+	const auto result = nan("");
+	frame.SetReturnValue(result);
+}
+
+void NaNf(Bond::StackFrame &frame)
+{
+	const auto result = nanf("");
+	frame.SetReturnValue(result);
 }
 
 }
