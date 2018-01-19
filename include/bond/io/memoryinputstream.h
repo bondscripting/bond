@@ -27,6 +27,8 @@ public:
 	virtual void AddOffset(off_t offset) override;
 
 	virtual bool IsEof() const override { return mCurrent >= mSize; }
+	virtual bool HasError() const override { return false; }
+	virtual void ClearError() override {}
 
 private:
 	const uint8_t *mBuffer;

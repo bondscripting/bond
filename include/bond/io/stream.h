@@ -29,6 +29,8 @@ public:
 
 	// Status
 	virtual bool IsEof() const = 0;
+	virtual bool HasError() const = 0;
+	virtual void ClearError() = 0;
 };
 
 }

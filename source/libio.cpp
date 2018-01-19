@@ -208,6 +208,21 @@ void InputStream__IsEof(Bond::StackFrame &frame)
 }
 
 
+void InputStream__HasError(Bond::StackFrame &frame)
+{
+	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	const bool isEof = stream->GetStream()->HasError();
+	frame.SetReturnValue(isEof);
+}
+
+
+void InputStream__ClearError(Bond::StackFrame &frame)
+{
+	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	stream->GetStream()->ClearError();
+}
+
+
 void OutputStream__Close(Bond::StackFrame &frame)
 {
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
@@ -435,6 +450,21 @@ void OutputStream__IsEof(Bond::StackFrame &frame)
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
 	const bool isEof = stream->GetStream()->IsEof();
 	frame.SetReturnValue(isEof);
+}
+
+
+void OutputStream__HasError(Bond::StackFrame &frame)
+{
+	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	const bool isEof = stream->GetStream()->HasError();
+	frame.SetReturnValue(isEof);
+}
+
+
+void OutputStream__ClearError(Bond::StackFrame &frame)
+{
+	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	stream->GetStream()->ClearError();
 }
 
 

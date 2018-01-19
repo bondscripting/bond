@@ -27,6 +27,8 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.InputStream.SetPositionFromEnd", Bond::InputStream__SetPositionFromEnd},
 	{"Bond.InputStream.AddOffset", Bond::InputStream__AddOffset},
 	{"Bond.InputStream.IsEof", Bond::InputStream__IsEof},
+	{"Bond.InputStream.HasError", Bond::InputStream__HasError},
+	{"Bond.InputStream.ClearError", Bond::InputStream__ClearError},
 	{"Bond.OutputStream.Close", Bond::OutputStream__Close},
 	{"Bond.OutputStream.Flush", Bond::OutputStream__Flush},
 	{"Bond.OutputStream.PrintStr", Bond::OutputStream__PrintStr},
@@ -54,6 +56,8 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 	{"Bond.OutputStream.SetPositionFromEnd", Bond::OutputStream__SetPositionFromEnd},
 	{"Bond.OutputStream.AddOffset", Bond::OutputStream__AddOffset},
 	{"Bond.OutputStream.IsEof", Bond::OutputStream__IsEof},
+	{"Bond.OutputStream.HasError", Bond::OutputStream__HasError},
+	{"Bond.OutputStream.ClearError", Bond::OutputStream__ClearError},
 	{"Bond.StdIn", Bond::StdIn},
 	{"Bond.StdOut", Bond::StdOut},
 	{"Bond.StdErr", Bond::StdErr},
@@ -71,7 +75,7 @@ const Bond::NativeFunctionBinding IO_BINDING_COLLECTION_FUNCTIONS[] =
 const Bond::NativeBindingCollection IO_BINDING_COLLECTION =
 {
 	IO_BINDING_COLLECTION_FUNCTIONS,
-	60
+	64
 };
 
 }

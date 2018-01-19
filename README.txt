@@ -29,7 +29,7 @@ Usage: bond <vm options> - <application options>
   -e <func>   Fully qualified function name to be called as the Bond application's entry point.
               Defaults to "main" if omitted. The function signature must be:
               int <func>(int argc, const char **argv)
-  -s <int>    Stack size in kilobytes. Defaults to 32 if omitted.
+  -s <int>    Stack size in kilobytes. Defaults to 64 if omitted.
   -           All remaining command line arguments are passed through to the Bond application.
 
 

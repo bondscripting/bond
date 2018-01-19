@@ -256,13 +256,38 @@ double Ldexp(double x, int exp);
 /// \param exp The exponent.
 float Ldexpf(float x, int exp);
 
-double Frexp(double x, int n);
-float Frexpf(float x, int n);
+/// \brief Decomposes a value into a fraction and an integral power of two.
+/// \param x The value that is decomposed.
+/// \param exp A pointer to an int where the exponent is stored.
+/// \returns A value whose absolute value is in the range [0.5, 1.0), which, when multiplied by 2 to the power of exp, results in x.
+double Frexp(double x, int *exp);
 
+/// \brief Decomposes a value into a fraction and an integral power of two.
+/// \param x The value that is decomposed.
+/// \param exp A pointer to an int where the exponent is stored.
+/// \returns A value whose absolute value is in the range [0.5, 1.0), which, when multiplied by 2 to the power of exp, results in x.
+float Frexpf(float x, int *exp);
+
+/// \brief Decomposes a value into its integral and fractional parts.
+/// \param x The value that is decomposed.
+/// \param ip A pointer to a double where the integral part is stored.
+/// \returns The fractional part, which, when added to ip, results in x.
 double Modf(double x, double *ip);
+
+/// \brief Decomposes a value into its integral and fractional parts.
+/// \param x The value that is decomposed.
+/// \param ip A pointer to a float where the integral part is stored.
+/// \returns The fractional part, which, when added to ip, results in x.
 float Modff(float x, float *ip);
 
+/// \brief Returns the remainder of x/y rounded toward zero.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
 double Fmod(double x, double y);
+
+/// \brief Returns the remainder of x/y rounded toward zero.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
 float Fmodf(float x, float y);
 
 /// \brief Returns a value with the magnitude of one and the sign of another.

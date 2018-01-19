@@ -55,6 +55,8 @@ public:
 	virtual void AddOffset(off_t offset) override { fseek(mFile, offset, SEEK_CUR); }
 
 	virtual bool IsEof() const override { return feof(mFile) != 0; }
+	virtual bool HasError() const override { return ferror(mFile) != 0; }
+	virtual void ClearError() override { clearerr(mFile); }
 
 private:
 	StdioFileHandle mHandle;
