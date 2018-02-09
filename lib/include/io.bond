@@ -23,18 +23,25 @@ namespace IO
 	{
 		/// \brief Read and write bool values as the strings "true" and "false".
 		BoolAlpha = 1 << 0,
+		/// \brief Write base 16 and base 8 integers with a "0x" or "0" prefix.
 		ShowBase = 1 << 1,
+		/// \brief Always write a decimal point in floating-point values.
 		ShowPoint = 1 << 2,
+		/// \brief Skip whitespace before consuming other characters in a formatted read.
 		SkipWhite = 1 << 3,
+		/// \brief Write numbers padded to the left with zeros instead of spaces.
 		Zero = 1 << 4,
-		/// \brief Read and write integral values in base 10.
+		/// \brief Read and write integers in base 10.
 		Dec = 1 << 5,
-		/// \brief Read and write integral values in base 16.
+		/// \brief Read and write integers in base 16.
 		Hex = 1 << 6,
-		/// \brief Read and write integral values in base 8.
+		/// \brief Read and write integers in base 8.
 		Oct = 1 << 7,
+		/// \brief Write floating-point values in decimal notation.
 		Fixed = 1 << 8,
+		/// \brief Write floating-point values in scientific notation.
 		Scientific = 1 << 9,
+		/// \brief Write output with left justification.
 		Left = 1 << 10,
 	};
 
@@ -58,7 +65,7 @@ struct InputStream
 	/// \param bufferSize Length of the buffer pointed to by str.
 	void ScanStr(char *str, uint bufferSize);
 
-	/// \brief Reads and returns a Boolean value from the input stream.
+	/// \brief Reads and returns a formatted Boolean value from the input stream.
 	///
 	/// If the IO::BoolAlpha flag is set, an attempt is made to read the strings "true" or "false",
 	/// otherwise an integer is read. If a non-zero value, or the string "true" is read, the value true is
@@ -68,7 +75,7 @@ struct InputStream
 	/// \brief Reads and returns a single character from the input stream.
 	char ScanC();
 
-	/// \brief Reads and returns an integer as an int from the input stream.
+	/// \brief Reads and returns a formatted integer as an int from the input stream.
 	///
 	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
 	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
@@ -76,7 +83,7 @@ struct InputStream
 	/// read, HasError() returns true.
 	int ScanI();
 
-	/// \brief Reads and returns an unsigned integer as a uint from the input stream.
+	/// \brief Reads and returns a formatted unsigned integer as a uint from the input stream.
 	///
 	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
 	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
@@ -84,7 +91,7 @@ struct InputStream
 	/// read, HasError() returns true.
 	uint ScanUI();
 
-	/// \brief Reads and returns an integer as a long from the input stream.
+	/// \brief Reads and returns a formatted integer as a long from the input stream.
 	///
 	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
 	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
@@ -92,7 +99,7 @@ struct InputStream
 	/// read, HasError() returns true.
 	long ScanL();
 
-	/// \brief Reads and returns an integer as a ulong from the input stream.
+	/// \brief Reads and returns a formatted unsigned integer as a ulong from the input stream.
 	///
 	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
 	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
@@ -100,23 +107,23 @@ struct InputStream
 	/// read, HasError() returns true.
 	ulong ScanUL();
 
-	/// \brief Reads and returns a floating-point number as a float from the input stream.
+	/// \brief Reads and returns a formatted floating-point number as a float from the input stream.
 	///
 	/// If no input that could be interpreted as a floating-point number is read, HasError() returns true.
 	float ScanF();
 
-	/// \brief Reads and returns a floating-point number as a double from the input stream.
+	/// \brief Reads and returns a formatted floating-point number as a double from the input stream.
 	///
 	/// If no input that could be interpreted as a floating-point number is read, HasError() returns true.
 	double ScanD();
 
-	/// \brief Reads and returns a single byte from the input stream.
+	/// \brief Reads and returns a single unformatted byte from the input stream.
 	///
 	/// If the end of the stream has been reached and there is no data to return, the value IO::Eof
 	/// is returned.
 	int Get();
 
-	/// \brief Attempts to read the specified number of bytes into the given buffer.
+	/// \brief Attempts to read the specified number of unformatted bytes into the given buffer.
 	/// 
 	/// Fewer bytes may be read if the end of the stream is reached or the stream is closed.
 	/// \param bytes The buffer into which the read bytes are stored.
@@ -151,16 +158,31 @@ struct InputStream
 	/// \returns The stream on which this function was called.
 	InputStream *ClearFlags();
 
-	// Stream position.
+	/// \brief Returns the stream's current position measured in bytes.
 	int GetPosition() const;
+
+	/// \brief Returns the position of the stream's end measured in bytes.
 	int GetEndPosition() const;
+
+	/// \brief Sets the stream's position relative to its beginning measured in bytes.
+	/// \param offset The number of bytes from the beginning to which the stream is repositioned.
 	void SetPosition(int offset);
+
+	/// \brief Sets the stream's position relative to its end measured in bytes.
+	/// \param offset The number of bytes from the end to which the stream is repositioned.
 	void SetPositionFromEnd(int offset);
+
+	/// \brief Moves the stream by the specified number of bytes relative to its current position.
+	/// \param offset The number of bytes by which the stream is repositioned.
 	void AddOffset(int offset);
 
-	// Status.
+	/// \brief Returns whether the end of the stream has been reached.
 	bool IsEof() const;
+
+	/// \brief Returns whether an error has occured during an input operation.
 	bool HasError() const;
+
+	/// \brief Clears the error flag.
 	void ClearError();
 };
 
@@ -272,33 +294,88 @@ struct OutputStream
 	/// \returns The stream on which this function was called.
 	OutputStream *Write(uchar *bytes, uint numBytes);
 
-	// Flags and formatting options.
+	/// \brief Returns the stream's current format flags as a bitmask of values from the IO::Flags enum.
+	///
+	/// The format flags modify how the stream formats output.
 	int GetFlags() const;
+
+	/// \brief Enables the format format flags in the given bitmask of values from the IO::Flags enum
+	/// if they are not already enabled.
+	///
+	/// All other flags are left untouched. The format flags modify how the stream formats output.
+	/// \param flags The bitmask of flags from the IO::Flags enum to enable.
+	/// \returns The stream on which this function was called.
 	OutputStream *SetFlags(int flags);
+
+	/// \brief Disables the format format flags in the given bitmask of values from the IO::Flags enum
+	/// if they are not already disabled.
+	///
+	/// All other flags are left untouched. The format flags modify how the stream formats output.
+	/// \param flags The bitmask of flags from the IO::Flags enum to disable.
+	/// \returns The stream on which this function was called.
 	OutputStream *UnsetFlags(int flags);
+
+	/// \brief Disables all of the format flags.
+	///
+	/// The format flags modify how the stream formats output.
+	/// \returns The stream on which this function was called.
 	OutputStream *ClearFlags(int flags);
 
 	int GetPrecision() const;
 	OutputStream *SetPrecision(int flags);
 
+	/// \brief Returns the current minimum field width.
 	int GetWidth() const;
+
+	/// \brief Assigns the minimum field width.
+	///
+	/// The minimum field width specifies the minimum number of characters to be written in
+	/// a formatted output operation. If the number of characters in the written value is less
+	/// than the field width, it will be padded to the left with spaces, or padded to the right
+	/// if the IO::Left flag is set.
 	OutputStream *SetWidth(int flags);
 
-	// Stream position.
+	/// \brief Returns the stream's current position measured in bytes.
 	int GetPosition() const;
+
+	/// \brief Returns the position of the stream's end measured in bytes.
 	int GetEndPosition() const;
+
+	/// \brief Sets the stream's position relative to its beginning measured in bytes.
+	/// \param offset The number of bytes from the beginning to which the stream is repositioned.
 	void SetPosition(int offset);
+
+	/// \brief Sets the stream's position relative to its end measured in bytes.
+	/// \param offset The number of bytes from the end to which the stream is repositioned.
 	void SetPositionFromEnd(int offset);
+
+	/// \brief Moves the stream by the specified number of bytes relative to its current position.
+	/// \param offset The number of bytes by which the stream is repositioned.
 	void AddOffset(int offset);
 
-	// Status.
+	/// \brief Returns whether the end of the stream has been reached.
 	bool IsEof() const;
+
+	/// \brief Returns whether an error has occured during an output operation.
 	bool HasError() const;
+
+	/// \brief Clears the error flag.
 	void ClearError();
 };
 
+/// \brief Returns the virtual machine's standard input stream.
+///
+/// This stream must not be passed to the FreeInputStream function.
 InputStream *StdIn();
+
+/// \brief Returns the virtual machine's standard output stream.
+///
+/// This stream must not be passed to the FreeOuputStream function.
 OutputStream *StdOut();
+
+/// \brief Returns the virtual machine's standard error stream.
+///
+/// This stream must not be passed to the FreeOuputStream function.
 OutputStream *StdErr();
 
 InputStream *CreateInputStream(const char *fileName);

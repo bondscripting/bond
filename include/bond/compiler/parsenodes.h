@@ -199,6 +199,7 @@ public:
 
 	bool IsConst() const { return (mFlags & FLAG_CONST) != 0; }
 	void SetConst() { mFlags |= FLAG_CONST; }
+	void ClearConst() { mFlags &= ~FLAG_CONST; }
 
 	bool IsAddressable() const { return (mFlags & FLAG_ADDRESSABLE) != 0; }
 	void SetAddressable() { mFlags |= FLAG_ADDRESSABLE; }
@@ -229,6 +230,8 @@ public:
 	bool IsNullType() const { return (mFlags & FLAG_NULL) != 0; }
 	bool IsPointerIntrinsicType() const { return (mFlags & FLAG_POINTER) != 0; }
 	bool IsPointerType() const { return  (mFlags & FLAG_ANY_POINTER) != 0; }
+	bool IsImplicitlyConvertiblePointerType() const { return IsNullType() || IsVoidPointerType(); }
+	bool IsVoidPointerType() const;
 	bool IsVoidType() const;
 	bool IsStructType() const;
 	bool IsStringType() const;

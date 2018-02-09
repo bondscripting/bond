@@ -35,6 +35,7 @@ protected:
 	virtual void Visit(BinaryExpression *binaryExpression) override;
 	virtual void Visit(UnaryExpression *unaryExpression) override;
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
+	virtual void Visit(FunctionCallExpression *functionCallExpression) override;
 
 private:
 	typedef AutoStack<const TypeDescriptor *> TypeStack;
@@ -44,6 +45,12 @@ private:
 	void ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescrioptor);
 	void AssertReachableCode(const ParseNode *node);
 	size_t GetJumpTargetId();
+
+	bool AssertAssignableTypes(
+		const TypeDescriptor *fromType,
+		const TypeDescriptor *toType,
+		const Token *context,
+		CompilerError::Type errorType);
 
 	BoolStack mHasDefaultLabel;
 	BoolStack mEndsWithJump;

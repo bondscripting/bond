@@ -108,6 +108,8 @@ NodeType *SortNodes(NodeType *list, Comparator compare)
 
 bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);
 bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
+bool AreSameTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
+bool AreAssignableTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType);
 
 TypeDescriptor PromoteType(const TypeDescriptor *type);
 TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB);

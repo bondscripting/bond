@@ -318,6 +318,10 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 void ValidationPass::Visit(BinaryExpression *binaryExpression)
 {
 	const Token *op = binaryExpression->GetOperator();
+	const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
+	const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
+	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
 	switch (op->GetTokenType())
 	{
 		case Token::ASSIGN:
@@ -330,6 +334,7 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 					binaryExpression->GetContextToken(),
 					typeDescriptor);
 			}
+			AssertAssignableTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT);
 		}
 		break;
 		case Token::ASSIGN_PLUS:
@@ -337,7 +342,6 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 		case Token::OP_PLUS:
 		case Token::OP_MINUS:
 		{
-			const TypeDescriptor *lhDescriptor = binaryExpression->GetLhs()->GetTypeDescriptor();
 			if (lhDescriptor->IsPointerType())
 			{
 				const TypeDescriptor parentType = lhDescriptor->GetDereferencedType();
@@ -388,6 +392,35 @@ void ValidationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 			arraySubscriptExpression->GetLhs()->GetTypeDescriptor());
 	}
 	ParseNodeTraverser::Visit(arraySubscriptExpression);
+}
+
+
+void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
+{
+	ParseNodeTraverser::Visit(functionCallExpression);
+
+	const TypeAndValue &lhTav = functionCallExpression->GetLhs()->GetTypeAndValue();
+	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
+	const FunctionPrototype *prototype = function->GetPrototype();
+	const Parameter *paramList = prototype->GetParameterList();
+	const Expression *argList = functionCallExpression->GetArgumentList();
+
+	while ((paramList != nullptr) && (argList != nullptr))
+	{
+		const TypeAndValue &argTav = argList->GetTypeAndValue();
+		TypeDescriptor paramDescriptor = *paramList->GetTypeDescriptor();
+		paramDescriptor.ClearConst();
+		const TypeDescriptor *argDescriptor = argTav.GetTypeDescriptor();
+		AssertAssignableTypes(
+			argDescriptor,
+			&paramDescriptor,
+			argList->GetContextToken(),
+			CompilerError::INVALID_TYPE_ASSIGNMENT);
+		paramList = NextNode(paramList);
+		argList = NextNode(argList);
+	}
 }
 
 
@@ -478,6 +511,20 @@ size_t ValidationPass::GetJumpTargetId()
 	const size_t targetId = mNextJumpTargetId.GetTop();
 	mNextJumpTargetId.SetTop(targetId + 1);
 	return targetId;
+}
+
+bool ValidationPass::AssertAssignableTypes(
+	const TypeDescriptor *fromType,
+	const TypeDescriptor *toType,
+	const Token *context,
+	CompilerError::Type errorType)
+{
+	if (!AreAssignableTypes(fromType, toType))
+	{
+		mErrorBuffer.PushError(errorType, context, fromType, toType);
+		return false;
+	}
+	return true;
 }
 
 }

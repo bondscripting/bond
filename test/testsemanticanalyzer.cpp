@@ -198,6 +198,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors, "scripts/sanalyzer_TypeEvalua
 		{Bond::CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST, Bond::Token::IDENTIFIER, 81},
 		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::IDENTIFIER, 84},
 		{Bond::CompilerError::NON_LVALUE_TYPE, Bond::Token::OP_AMP, 86},
+		{Bond::CompilerError::UNASSIGNABLE_TYPE, Bond::Token::ASSIGN, 88},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

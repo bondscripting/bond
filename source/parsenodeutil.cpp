@@ -38,6 +38,64 @@ bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *t
 }
 
 
+bool AreSameTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+{
+	if (fromType->IsConst() != toType->IsConst())
+	{
+		return false;
+	}
+	else if (fromType->IsPointerType() && toType->IsPointerType())
+	{
+		if (fromType->IsArrayType() && toType->IsArrayType())
+		{
+			const uint32_t fromLength = fromType->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+			const uint32_t toLength = toType->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+			if (fromLength != toLength)
+			{
+				return false;
+			}
+		}
+		const TypeDescriptor fromParent = fromType->GetDereferencedType();
+		const TypeDescriptor toParent = toType->GetDereferencedType();
+		return AreSameTypes(&fromParent, &toParent);
+	}
+	else if (fromType->IsValueType() && toType->IsValueType())
+	{
+		return
+			(fromType->GetPrimitiveType() == toType->GetPrimitiveType()) &&
+			(fromType->GetTypeSpecifier()->GetDefinition() == toType->GetTypeSpecifier()->GetDefinition());
+	}
+	return false;
+}
+
+
+bool AreAssignableTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+{
+	if (!toType->IsAssignable())
+	{
+		return false;
+	}
+	if (fromType->IsPointerType() && toType->IsPointerType())
+	{
+		if (fromType->IsImplicitlyConvertiblePointerType() || toType->IsVoidPointerType())
+		{
+			return true;
+		}
+		else
+		{
+			const TypeDescriptor fromParent = fromType->GetDereferencedType();
+			const TypeDescriptor toParent = toType->GetDereferencedType();
+			return AreSameTypes(&fromParent, &toParent);
+		}
+	}
+	else if (fromType->IsValueType() && toType->IsValueType())
+	{
+		return AreConvertibleTypes(fromType, toType);
+	}
+	return false;
+}
+
+
 TypeDescriptor PromoteType(const TypeDescriptor *type)
 {
 	const Token::TokenType t = type->GetPrimitiveType();

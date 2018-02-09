@@ -154,7 +154,7 @@ void TypeDescriptor::ConvertToPointerIntrinsic()
 {
 	if (IsArrayType())
 	{
-		mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER;
+		mFlags = (mFlags << PARENT_SHIFT) | FLAG_POINTER | FLAG_CONST;
 	}
 }
 
@@ -236,7 +236,6 @@ bool TypeDescriptor::IsResolved() const
 		lengthExpressionList = NextNode(lengthExpressionList);
 	}
 	return
-		IsPointerIntrinsicType() ||
 		(((mParent == nullptr) || mParent->IsResolved()) &&
 		 ((mTypeSpecifier == nullptr) || (mTypeSpecifier->IsResolved())));
 }
@@ -400,6 +399,17 @@ bool TypeDescriptor::IsVoidType() const
 	if (IsValueType())
 	{
 		return mTypeSpecifier->IsVoidType();
+	}
+	return false;
+}
+
+
+bool TypeDescriptor::IsVoidPointerType() const
+{
+	if (IsPointerIntrinsicType())
+	{
+		const TypeDescriptor parent = GetDereferencedType();
+		return parent.IsVoidType();
 	}
 	return false;
 }

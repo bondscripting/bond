@@ -21,7 +21,7 @@ struct DummyStruct
 
 native { int [2]* FunnyReturnType(); struct OtherDummyStruct { int x; }; struct OtherDummyStruct<4>; }
 
-void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
+void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr, int[] arr)
 {
 	int[2] array1;
 	int[2] array2;
@@ -81,9 +81,11 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	ds1.Mutator(3);
 
 	OtherDummyStruct ods;
-	DummyFunction(ods, ds2, ptr);
+	DummyFunction(ods, ds2, ptr, arr);
 
 	&ods.x;
+
+	arr = ptr1;
 
 	// Valid statements.
 	(*FunnyReturnType())[0] = 1;
@@ -109,5 +111,5 @@ void DummyFunction(const DummyStruct ds1, DummyStruct ds2, void *ptr)
 	i1 = OuterSpace::InnerSpace::Number;
 	i1 = *(ptr1 + 1);
 	i1 = *(array1 + 1);
-	DummyFunction(ds1, ds2, ptr);
+	DummyFunction(ds1, ds2, ptr, arr);
 }
