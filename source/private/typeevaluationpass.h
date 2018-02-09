@@ -91,12 +91,12 @@ private:
 	bool AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op);
 
 	bool AssertConvertibleTypes(
-		const TypeDescriptor *fromType,
-		const TypeDescriptor *toType,
+		const TypeDescriptor &fromType,
+		const TypeDescriptor &toType,
 		const Token *context,
 		CompilerError::Type errorType);
 
-	bool AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op);
+	bool AssertComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB, const Token *op);
 
 	void ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescrioptor);
 

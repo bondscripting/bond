@@ -17,78 +17,78 @@ uint32_t GetLength(const ListParseNode *list)
 }
 
 
-bool AreComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
+bool AreComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB)
 {
 	return
-		(typeA->IsPointerType() && typeB->IsPointerType()) ||
-		(typeA->IsNumericType() && typeB->IsNumericType()) ||
-		(typeA->IsBooleanType() && typeB->IsBooleanType());
+		(typeA.IsPointerType() && typeB.IsPointerType()) ||
+		(typeA.IsNumericType() && typeB.IsNumericType()) ||
+		(typeA.IsBooleanType() && typeB.IsBooleanType());
 }
 
 
-bool AreConvertibleTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+bool AreConvertibleTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType)
 {
 	return
 		AreComparableTypes(fromType, toType) ||
-		(fromType->IsValueType() &&
-		 toType->IsValueType() &&
-		 (fromType->GetTypeSpecifier()->GetDefinition() != nullptr) &&
-		 (toType->GetTypeSpecifier()->GetDefinition() != nullptr) &&
-		 (fromType->GetTypeSpecifier()->GetDefinition() == toType->GetTypeSpecifier()->GetDefinition()));
+		(fromType.IsValueType() &&
+		 toType.IsValueType() &&
+		 (fromType.GetTypeSpecifier()->GetDefinition() != nullptr) &&
+		 (toType.GetTypeSpecifier()->GetDefinition() != nullptr) &&
+		 (fromType.GetTypeSpecifier()->GetDefinition() == toType.GetTypeSpecifier()->GetDefinition()));
 }
 
 
-bool AreSameTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+bool AreSameTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType)
 {
-	if (fromType->IsConst() != toType->IsConst())
+	if (fromType.IsConst() != toType.IsConst())
 	{
 		return false;
 	}
-	else if (fromType->IsPointerType() && toType->IsPointerType())
+	else if (fromType.IsPointerType() && toType.IsPointerType())
 	{
-		if (fromType->IsArrayType() && toType->IsArrayType())
+		if (fromType.IsArrayType() && toType.IsArrayType())
 		{
-			const uint32_t fromLength = fromType->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
-			const uint32_t toLength = toType->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+			const uint32_t fromLength = fromType.GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+			const uint32_t toLength = toType.GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
 			if (fromLength != toLength)
 			{
 				return false;
 			}
 		}
-		const TypeDescriptor fromParent = fromType->GetDereferencedType();
-		const TypeDescriptor toParent = toType->GetDereferencedType();
-		return AreSameTypes(&fromParent, &toParent);
+		const TypeDescriptor fromParent = fromType.GetDereferencedType();
+		const TypeDescriptor toParent = toType.GetDereferencedType();
+		return AreSameTypes(fromParent, toParent);
 	}
-	else if (fromType->IsValueType() && toType->IsValueType())
+	else if (fromType.IsValueType() && toType.IsValueType())
 	{
 		return
-			(fromType->GetPrimitiveType() == toType->GetPrimitiveType()) &&
-			(fromType->GetTypeSpecifier()->GetDefinition() == toType->GetTypeSpecifier()->GetDefinition());
+			(fromType.GetPrimitiveType() == toType.GetPrimitiveType()) &&
+			(fromType.GetTypeSpecifier()->GetDefinition() == toType.GetTypeSpecifier()->GetDefinition());
 	}
 	return false;
 }
 
 
-bool AreAssignableTypes(const TypeDescriptor *fromType, const TypeDescriptor *toType)
+bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType)
 {
-	if (!toType->IsAssignable())
+	if (!toType.IsAssignable())
 	{
 		return false;
 	}
-	if (fromType->IsPointerType() && toType->IsPointerType())
+	if (fromType.IsPointerType() && toType.IsPointerType())
 	{
-		if (fromType->IsImplicitlyConvertiblePointerType() || toType->IsVoidPointerType())
+		if (fromType.IsImplicitlyConvertiblePointerType() || toType.IsVoidPointerType())
 		{
 			return true;
 		}
 		else
 		{
-			const TypeDescriptor fromParent = fromType->GetDereferencedType();
-			const TypeDescriptor toParent = toType->GetDereferencedType();
-			return AreSameTypes(&fromParent, &toParent);
+			const TypeDescriptor fromParent = fromType.GetDereferencedType();
+			const TypeDescriptor toParent = toType.GetDereferencedType();
+			return AreSameTypes(fromParent, toParent);
 		}
 	}
-	else if (fromType->IsValueType() && toType->IsValueType())
+	else if (fromType.IsValueType() && toType.IsValueType())
 	{
 		return AreConvertibleTypes(fromType, toType);
 	}
@@ -96,14 +96,14 @@ bool AreAssignableTypes(const TypeDescriptor *fromType, const TypeDescriptor *to
 }
 
 
-TypeDescriptor PromoteType(const TypeDescriptor *type)
+TypeDescriptor PromoteType(const TypeDescriptor &type)
 {
-	const Token::TokenType t = type->GetPrimitiveType();
+	const Token::TokenType t = type.GetPrimitiveType();
 	TypeDescriptor result = TypeDescriptor::GetIntType();
 
-	if (type->IsPointerType())
+	if (type.IsPointerType())
 	{
-		result = *type;
+		result = type;
 		result.ConvertToPointerIntrinsic();
 		result.ClearLValue();
 	}
@@ -140,21 +140,21 @@ TypeDescriptor PromoteType(const TypeDescriptor *type)
 }
 
 
-TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB)
+TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB)
 {
- 	const Token::TokenType a = typeA->GetPrimitiveType();
-	const Token::TokenType b = typeB->GetPrimitiveType();
+ 	const Token::TokenType a = typeA.GetPrimitiveType();
+	const Token::TokenType b = typeB.GetPrimitiveType();
 	TypeDescriptor result = TypeDescriptor::GetIntType();
 
-	if (typeA->IsPointerType())
+	if (typeA.IsPointerType())
 	{
-		result = *typeA;
+		result = typeA;
 		result.ConvertToPointerIntrinsic();
 		result.ClearLValue();
 	}
-	else if (typeB->IsPointerType())
+	else if (typeB.IsPointerType())
 	{
-		result = *typeB;
+		result = typeB;
 		result.ConvertToPointerIntrinsic();
 		result.ClearLValue();
 	}
@@ -198,7 +198,7 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor *typeA, const TypeDescri
 	}
 	else if (AreConvertibleTypes(typeA, typeB))
 	{
-		result = *typeA;
+		result = typeA;
 	}
 
 	return result;
@@ -608,19 +608,19 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 }
 
 
-Value CastValue(const TypeAndValue &value, const TypeDescriptor *destType)
+Value CastValue(const TypeAndValue &value, const TypeDescriptor &destType)
 {
 	// This function assumes that it is only called for valid casts on defined values.
 	const Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
-	return CastValue(value.GetValue(), sourceType, destType->GetPrimitiveType());
+	return CastValue(value.GetValue(), sourceType, destType.GetPrimitiveType());
 }
 
 
-bool IsNegativeIntegerConstant(const Token *token)
+bool IsNegativeIntegerConstant(const Token &token)
 {
 	return
-		SIGNED_INTEGER_CONSTANTS_TYPESET.Contains(token->GetTokenType()) &&
-		(CastValue(token->GetValue(), token->GetTokenType(), Token::CONST_INT).mInt < 0);
+		SIGNED_INTEGER_CONSTANTS_TYPESET.Contains(token.GetTokenType()) &&
+		(CastValue(token.GetValue(), token.GetTokenType(), Token::CONST_INT).mInt < 0);
 }
 
 }

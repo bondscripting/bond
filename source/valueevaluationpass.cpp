@@ -13,8 +13,8 @@ namespace Operators
 template <typename Operator>
 Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
 {
-	const Value l = CastValue(lhs, type);
-	const Value r = CastValue(rhs, type);
+	const Value l = CastValue(lhs, *type);
+	const Value r = CastValue(rhs, *type);
 	Value resultValue;
 
 	switch (type->GetPrimitiveType())
@@ -48,8 +48,8 @@ Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 template <typename Operator>
 Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
 {
-	const Value l = CastValue(lhs, type);
-	const Value r = CastValue(rhs, type);
+	const Value l = CastValue(lhs, *type);
+	const Value r = CastValue(rhs, *type);
 	Value resultValue;
 
 	switch (type->GetPrimitiveType())
@@ -77,9 +77,9 @@ Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 template <typename Operator>
 Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, Operator op)
 {
-	TypeDescriptor type = CombineOperandTypes(lhs.GetTypeDescriptor(), rhs.GetTypeDescriptor());
-	const Value l = CastValue(lhs, &type);
-	const Value r = CastValue(rhs, &type);
+	TypeDescriptor type = CombineOperandTypes(*lhs.GetTypeDescriptor(), *rhs.GetTypeDescriptor());
+	const Value l = CastValue(lhs, type);
+	const Value r = CastValue(rhs, type);
 	Value resultValue;
 
 	switch (type.GetPrimitiveType())
@@ -354,7 +354,7 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 			{
 				Resolve(tav);
 				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(valueTav, resultType));
+				tav.SetValue(CastValue(valueTav, *resultType));
 			}
 		}
 		else
@@ -445,7 +445,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				const Token *sizeToken = structDeclaration->GetSizeSpecifier()->GetSizeToken();
 				const uint32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_UINT).mUInt;
 
-				if (IsNegativeIntegerConstant(sizeToken) || (size < 1))
+				if (IsNegativeIntegerConstant(*sizeToken) || (size < 1))
 				{
 					hasError = true;
 					mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_SIZE, sizeToken);
@@ -459,7 +459,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				if (alignToken != nullptr)
 				{
 					const uint32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_UINT).mUInt;
-					if (IsNegativeIntegerConstant(alignToken) || (align <= 1) || !IsPowerOfTwo(align))
+					if (IsNegativeIntegerConstant(*alignToken) || (align <= 1) || !IsPowerOfTwo(align))
 					{
 						hasError = true;
 						mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_ALIGNMENT, alignToken);
@@ -526,7 +526,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 					if (!isUInt)
 					{
 						const TypeDescriptor uintType = TypeDescriptor::GetUIntType();
-						const Value length = CastValue(tav, &uintType);
+						const Value length = CastValue(tav, uintType);
 						tav.SetValue(length);
 					}
 
@@ -575,7 +575,7 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 				const TypeAndValue initializerTav = initializer->GetExpression()->GetTypeAndValue();
 				if (initializerTav.IsValueDefined())
 				{
-					tav.SetValue(CastValue(initializerTav, typeDescriptor));
+					tav.SetValue(CastValue(initializerTav, *typeDescriptor));
 				}
 			}
 		}
@@ -670,7 +670,7 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 			{
 				const bool cond = condTav.GetBoolValue();
 				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(cond ? trueTav : falseTav, resultType));
+				tav.SetValue(CastValue(cond ? trueTav : falseTav, *resultType));
 			}
 		}
 		CheckUnresolved(tav);
@@ -951,7 +951,7 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 			if (rhs.IsValueDefined())
 			{
 				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(rhs, resultType));
+				tav.SetValue(CastValue(rhs, *resultType));
 			}
 		}
 		CheckUnresolved(tav);

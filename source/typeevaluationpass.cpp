@@ -163,7 +163,7 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 		const TypeDescriptor *trueDescriptor = trueTav.GetTypeDescriptor();
 		const TypeDescriptor *falseDescriptor = falseTav.GetTypeDescriptor();
 
-		if (!AreConvertibleTypes(trueDescriptor, falseDescriptor))
+		if (!AreConvertibleTypes(*trueDescriptor, *falseDescriptor))
 		{
 			mErrorBuffer.PushError(
 				CompilerError::TERNARY_OPERAND_TYPE_MISMATCH,
@@ -172,7 +172,7 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 				falseDescriptor);
 		}
 
-		TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
+		TypeDescriptor resultType = CombineOperandTypes(*trueDescriptor, *falseDescriptor);
 		conditionalExpression->SetTypeDescriptor(resultType);
 	}
 }
@@ -202,7 +202,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 			case Token::ASSIGN:
 				AssertAssignableType(lhDescriptor, op);
-				AssertConvertibleTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT) &&
+				AssertConvertibleTypes(*rhDescriptor, *lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT) &&
 				AssertNonConstExpression(op);
 				resultType = *lhDescriptor;
 				break;
@@ -262,7 +262,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable =
 					AssertIntegerOperand(lhDescriptor, op) &&
 					AssertIntegerOperand(rhDescriptor, op);
-				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 				break;
 
 			case Token::OP_LT:
@@ -271,7 +271,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_GTE:
 			case Token::OP_EQUAL:
 			case Token::OP_NOT_EQUAL:
-				AssertComparableTypes(lhDescriptor, rhDescriptor, op);
+				AssertComparableTypes(*lhDescriptor, *rhDescriptor, op);
 				resultType = TypeDescriptor::GetBoolType();
 				break;
 
@@ -290,7 +290,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 						AssertNumericOperand(lhDescriptor, op) &&
 						AssertNumericOperand(rhDescriptor, op);
 				}
-				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 				break;
 
 			case Token::OP_MINUS:
@@ -322,7 +322,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 							AssertNumericOperand(lhDescriptor, op) &&
 							AssertNumericOperand(rhDescriptor, op);
 					}
-					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+					resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 				}
 				break;
 
@@ -330,7 +330,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_DIV:
 				isResolvable = AssertNumericOperand(lhDescriptor, op) &&
 					AssertNumericOperand(rhDescriptor, op);
-				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
+				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 				break;
 
 			default:
@@ -378,7 +378,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 			case Token::OP_NOT:
 				isResolvable = AssertBooleanOperand(rhDescriptor, op);
-				resultType = PromoteType(rhDescriptor);
+				resultType = PromoteType(*rhDescriptor);
 				break;
 
 			case Token::OP_AMP:
@@ -388,7 +388,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 			case Token::OP_BIT_NOT:
 				isResolvable = AssertIntegerOperand(rhDescriptor, op);
-				resultType = PromoteType(rhDescriptor);
+				resultType = PromoteType(*rhDescriptor);
 				break;
 
 			case Token::OP_STAR:
@@ -582,8 +582,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 						const TypeDescriptor *paramDescriptor = paramList->GetTypeDescriptor();
 						const TypeDescriptor *argDescriptor = argTav.GetTypeDescriptor();
 						AssertConvertibleTypes(
-							argDescriptor,
-							paramDescriptor,
+							*argDescriptor,
+							*paramDescriptor,
 							argList->GetContextToken(),
 							CompilerError::INVALID_TYPE_CONVERSION);
 					}
@@ -615,8 +615,8 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 		TypeDescriptor *lhDescriptor = castExpression->GetTargetTypeDescriptor();
 
 		AssertConvertibleTypes(
-			rhDescriptor,
-			lhDescriptor,
+			*rhDescriptor,
+			*lhDescriptor,
 			lhDescriptor->GetContextToken(),
 			CompilerError::INVALID_TYPE_CONVERSION);
 
@@ -795,7 +795,7 @@ bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *typeDescript
 	if (!typeDescriptor->IsBooleanType())
 	{
 		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
-		return false;		
+		return false;
 	}
 	return true;
 }
@@ -862,25 +862,25 @@ bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *typeDescript
 
 
 bool TypeEvaluationPass::AssertConvertibleTypes(
-	const TypeDescriptor *fromType,
-	const TypeDescriptor *toType,
+	const TypeDescriptor &fromType,
+	const TypeDescriptor &toType,
 	const Token *context,
 	CompilerError::Type errorType)
 {
 	if (!AreConvertibleTypes(fromType, toType))
 	{
-		mErrorBuffer.PushError(errorType, context, fromType, toType);
+		mErrorBuffer.PushError(errorType, context, &fromType, &toType);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor *typeA, const TypeDescriptor *typeB, const Token *op)
+bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB, const Token *op)
 {
 	if (!AreComparableTypes(typeA, typeB))
 	{
-		mErrorBuffer.PushError(CompilerError::INVALID_COMPARISON, op, typeA, typeB);
+		mErrorBuffer.PushError(CompilerError::INVALID_COMPARISON, op, &typeA, &typeB);
 		return false;
 	}
 	return true;
@@ -928,8 +928,8 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		if (tav.IsTypeDefined())
 		{
 			AssertConvertibleTypes(
-				expression->GetTypeAndValue().GetTypeDescriptor(),
-				descriptor,
+				*expression->GetTypeAndValue().GetTypeDescriptor(),
+				*descriptor,
 				expression->GetContextToken(),
 				CompilerError::INVALID_TYPE_CONVERSION);
 		}

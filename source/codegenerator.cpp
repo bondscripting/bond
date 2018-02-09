@@ -2074,7 +2074,7 @@ void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const T
 	const TypeDescriptor *sourceType = typeAndValue.GetTypeDescriptor();
 	if (sourceType->IsPrimitiveType())
 	{
-		const Value resultValue = CastValue(typeAndValue, destType);
+		const Value resultValue = CastValue(typeAndValue, *destType);
 		TypeDescriptor nonConstDestType = *destType;
 		const TypeAndValue resultTav(&nonConstDestType, resultValue);
 		EmitPushConstant(resultTav);
@@ -2932,7 +2932,7 @@ GeneratorCore::Result GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpres
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor resultDescriptor = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
@@ -3031,7 +3031,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 		}
 		else
 		{
-			TypeDescriptor intermediateDescriptor = PromoteType(lhDescriptor);
+			TypeDescriptor intermediateDescriptor = PromoteType(*lhDescriptor);
 			EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
 			EmitPopResultAs(lhResult, &intermediateDescriptor, lhDescriptor);
 		}
@@ -3105,7 +3105,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 	uint32_t stackTop = mStackTop.GetTop();
@@ -3557,7 +3557,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
 	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const TypeDescriptor intermediateDescriptor = PromoteType(operandDescriptor);
+	const TypeDescriptor intermediateDescriptor = PromoteType(*operandDescriptor);
 	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
 	uint32_t stackTop = mStackTop.GetTop();
 
