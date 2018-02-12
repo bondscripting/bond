@@ -484,8 +484,8 @@ public:
 	virtual SymbolType GetSymbolType() const { return TYPE_ENUM; }
 	virtual const Token *GetName() const { return mIdentifier.GetName(); }
 
-	TypeDescriptor *GetTypeDescriptor() { return &mTypeDescriptor; }
-	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	TypeDescriptor &GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
 
 	Enumerator *GetEnumeratorList() { return mEnumeratorList; }
 	const Enumerator *GetEnumeratorList() const { return mEnumeratorList; }
@@ -502,7 +502,7 @@ private:
 class Enumerator: public Symbol
 {
 public:
-	Enumerator(const Token *name, TypeDescriptor *typeDescriptor, Expression *value):
+	Enumerator(const Token *name, TypeDescriptor &typeDescriptor, Expression *value):
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mValue(value) {}
@@ -661,7 +661,7 @@ public:
 		mIdentifier(prototype->GetName()),
 		mTypeSpecifier(nullptr, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, false),
-		mTypeAndValue(&mTypeDescriptor),
+		mTypeAndValue(mTypeDescriptor),
 		mPrototype(prototype),
 		mBody(body),
 		mThisTypeDescriptor(thisTypeDescriptor),
@@ -713,7 +713,7 @@ class Parameter: public Symbol
 {
 public:
 	Parameter(const Token *name, TypeDescriptor *typeDescriptor):
-		mTypeAndValue(typeDescriptor),
+		mTypeAndValue(*typeDescriptor),
 		mName(name),
 		mTypeDescriptor(typeDescriptor),
 		mOffset(0)
@@ -722,7 +722,7 @@ public:
 	// Used by the code generator to create a temporary Parameter object when writing
 	// the signature for native member accessors.
 	Parameter(const TypeDescriptor *typeDescriptor, int32_t offset):
-		mTypeAndValue(const_cast<TypeDescriptor *>(typeDescriptor)),
+		mTypeAndValue(*const_cast<TypeDescriptor *>(typeDescriptor)),
 		mName(nullptr),
 		mTypeDescriptor(const_cast<TypeDescriptor *>(typeDescriptor)),
 		mOffset(offset)
@@ -758,7 +758,7 @@ class NamedInitializer: public Symbol
 {
 public:
 	NamedInitializer(const Token *name, Initializer *initializer, TypeDescriptor *typeDescriptor, Scope scope, bool isNative):
-		mTypeAndValue(typeDescriptor),
+		mTypeAndValue(*typeDescriptor),
 		mName(name),
 		mInitializer(initializer),
 		mScope(scope),
@@ -822,7 +822,7 @@ public:
 
 	virtual const Token *GetContextToken() const;
 
-	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
 	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
 
 	Expression *GetExpression() { return mExpression; }
@@ -1182,14 +1182,14 @@ class Expression: public ListParseNode
 public:
 	virtual ~Expression() {}
 
-	const TypeDescriptor *GetTypeDescriptor() const { return &mTypeDescriptor; }
+	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
 	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
 
 	const TypeAndValue &GetTypeAndValue() const { return mTypeAndValue; }
 	TypeAndValue &GetTypeAndValue() { return mTypeAndValue; }
 
 protected:
-	Expression(): mTypeAndValue(&mTypeDescriptor) {}
+	Expression(): mTypeAndValue(mTypeDescriptor) {}
 
 private:
 	TypeDescriptor mTypeDescriptor;

@@ -39,7 +39,7 @@ private:
 	NamespaceDefinition *ParseNamespaceDefinition();
 	NativeBlock *ParseNativeBlock();
 	EnumDeclaration *ParseEnumDeclaration();
-	Enumerator *ParseEnumerator(TypeDescriptor *typeDescriptor);
+	Enumerator *ParseEnumerator(TypeDescriptor &typeDescriptor);
 	StructDeclaration *ParseStructDeclaration();
 
 	ListParseNode *ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration = nullptr);
@@ -361,7 +361,7 @@ EnumDeclaration *ParserCore::ParseEnumDeclaration()
 
 // enumerator
 //   : IDENTIFIER ['=' const_expression]
-Enumerator *ParserCore::ParseEnumerator(TypeDescriptor *typeDescriptor)
+Enumerator *ParserCore::ParseEnumerator(TypeDescriptor &typeDescriptor)
 {
 	Enumerator *enumerator = nullptr;
 	const Token *name = mStream.NextIf(Token::IDENTIFIER);
@@ -478,7 +478,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 //   : type_descriptor IDENTIFIER '(' [parameter_list] ')'
 //
 // const_declarative_statement
-//   : declarative_statement 
+//   : declarative_statement
 //   With restrictions regarding constness enforced by the semantic analyser, not the grammar of the language.
 ListParseNode *ParserCore::ParseFunctionOrDeclarativeStatement(StructDeclaration *structDeclaration)
 {
@@ -1300,7 +1300,7 @@ Expression *ParserCore::ParseExpression()
 	else
 	{
 		expression = ParseAssignmentExpression();
- 
+
 		if (expression != nullptr)
  		{
 			const Token *token = mStream.NextIf(Token::COMMA);
@@ -1313,7 +1313,7 @@ Expression *ParserCore::ParseExpression()
 			}
  		}
  	}
- 
+
  	return expression;
 }
 

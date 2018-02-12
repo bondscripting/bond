@@ -16,35 +16,23 @@ class TypeDescriptor;
 class TypeAndValue
 {
 public:
-	TypeAndValue(): mTypeDescriptor(nullptr), mValueDefined(false), mResolved(false) {}
-
-	TypeAndValue(TypeDescriptor *descriptor):
+	TypeAndValue(TypeDescriptor &descriptor):
 		mTypeDescriptor(descriptor),
 		mValueDefined(false),
 		mResolved(false)
 	{}
 
-	TypeAndValue(TypeDescriptor *descriptor, const Value &value):
+	TypeAndValue(TypeDescriptor &descriptor, const Value &value):
 		mValue(value),
 		mTypeDescriptor(descriptor),
 		mValueDefined(true),
 		mResolved(true)
 	{}
 
-	TypeAndValue &operator=(const TypeAndValue &other)
-	{
-		mValue = other.mValue;
-		mTypeDescriptor = other.mTypeDescriptor;
-		mValueDefined = other.mValueDefined;
-		mResolved = other.mResolved;
-		return *this;
-	}
-
 	bool IsTypeDefined() const;
 
-	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
-	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
-	void SetTypeDescriptor(TypeDescriptor *descriptor) { mTypeDescriptor = descriptor; }
+	TypeDescriptor &GetTypeDescriptor() { return mTypeDescriptor; }
+	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
 
 	bool IsValueDefined() const { return mValueDefined; }
 
@@ -81,7 +69,7 @@ public:
 
 private:
 	Value mValue;
-	TypeDescriptor *mTypeDescriptor;
+	TypeDescriptor &mTypeDescriptor;
 	bool mValueDefined;
 	bool mResolved;
 };

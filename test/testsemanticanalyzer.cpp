@@ -44,7 +44,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	ASSERT_MESSAGE(enumerator != nullptr, "Expected 'EIGHTH' to be an enumerator.");
 
 	const Bond::TypeAndValue *tav = enumerator->GetTypeAndValue();
-	ASSERT_MESSAGE(tav->GetTypeDescriptor()->GetPrimitiveType() == Bond::Token::KEY_INT,
+	ASSERT_MESSAGE(tav->GetTypeDescriptor().GetPrimitiveType() == Bond::Token::KEY_INT,
 		"Expected 'EIGHTH' to have an integer value.");
 	ASSERT_MESSAGE(tav->GetIntValue() == 5, "Expected 'EIGHTH' to have the value 5");
 

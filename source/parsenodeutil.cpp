@@ -611,7 +611,7 @@ Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenTyp
 Value CastValue(const TypeAndValue &value, const TypeDescriptor &destType)
 {
 	// This function assumes that it is only called for valid casts on defined values.
-	const Token::TokenType sourceType = value.GetTypeDescriptor()->GetPrimitiveType();
+	const Token::TokenType sourceType = value.GetTypeDescriptor().GetPrimitiveType();
 	return CastValue(value.GetValue(), sourceType, destType.GetPrimitiveType());
 }
 

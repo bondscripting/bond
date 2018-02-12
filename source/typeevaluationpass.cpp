@@ -84,19 +84,19 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
 	if (tav.IsTypeDefined())
 	{
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
 		Initializer *initializer = namedInitializer->GetInitializer();
 
 		if (initializer != nullptr)
 		{
 			ValidateInitializer(initializer, typeDescriptor);
 		}
-		else if (typeDescriptor->IsConst())
+		else if (typeDescriptor.IsConst())
 		{
 			mErrorBuffer.PushError(CompilerError::UNINITIALIZED_CONST, namedInitializer->GetName());
 		}
 
-		if ((namedInitializer->GetScope() == SCOPE_GLOBAL) && !typeDescriptor->IsConst())
+		if ((namedInitializer->GetScope() == SCOPE_GLOBAL) && !typeDescriptor.IsConst())
 		{
 			mErrorBuffer.PushError(CompilerError::NON_CONST_DECLARATION, namedInitializer->GetName());
 		}
@@ -160,19 +160,19 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 
 	if (trueTav.IsTypeDefined() && falseTav.IsTypeDefined())
 	{
-		const TypeDescriptor *trueDescriptor = trueTav.GetTypeDescriptor();
-		const TypeDescriptor *falseDescriptor = falseTav.GetTypeDescriptor();
+		const TypeDescriptor &trueDescriptor = trueTav.GetTypeDescriptor();
+		const TypeDescriptor &falseDescriptor = falseTav.GetTypeDescriptor();
 
-		if (!AreConvertibleTypes(*trueDescriptor, *falseDescriptor))
+		if (!AreConvertibleTypes(trueDescriptor, falseDescriptor))
 		{
 			mErrorBuffer.PushError(
 				CompilerError::TERNARY_OPERAND_TYPE_MISMATCH,
 				conditionalExpression->GetContextToken(),
-				trueDescriptor,
-				falseDescriptor);
+				&trueDescriptor,
+				&falseDescriptor);
 		}
 
-		TypeDescriptor resultType = CombineOperandTypes(*trueDescriptor, *falseDescriptor);
+		TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
 		conditionalExpression->SetTypeDescriptor(resultType);
 	}
 }
@@ -187,9 +187,9 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 	if (lhTav.IsTypeDefined() && rhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		TypeDescriptor resultType = *lhDescriptor;
+		const TypeDescriptor &lhDescriptor = lhTav.GetTypeDescriptor();
+		const TypeDescriptor &rhDescriptor = rhTav.GetTypeDescriptor();
+		TypeDescriptor resultType = lhDescriptor;
 		const Token *op = binaryExpression->GetOperator();
 		bool isResolvable = true;
 
@@ -197,14 +197,14 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 		{
 			case Token::COMMA:
 				AssertNonConstExpression(op);
-				resultType = *rhDescriptor;
+				resultType = rhDescriptor;
 				break;
 
 			case Token::ASSIGN:
 				AssertAssignableType(lhDescriptor, op);
-				AssertConvertibleTypes(*rhDescriptor, *lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT) &&
+				AssertConvertibleTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT) &&
 				AssertNonConstExpression(op);
-				resultType = *lhDescriptor;
+				resultType = lhDescriptor;
 				break;
 
 			case Token::ASSIGN_LEFT:
@@ -216,12 +216,12 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable = AssertIntegerOperand(lhDescriptor, op) && AssertIntegerOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
 				AssertNonConstExpression(op);
-				resultType = *lhDescriptor;
+				resultType = lhDescriptor;
 				break;
 
 			case Token::ASSIGN_PLUS:
 			case Token::ASSIGN_MINUS:
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType())
 				{
 					isResolvable = AssertIntegerOperand(rhDescriptor, op);
 				}
@@ -234,7 +234,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 				AssertAssignableType(lhDescriptor, op);
 				AssertNonConstExpression(op);
-				resultType = *lhDescriptor;
+				resultType = lhDescriptor;
 				break;
 
 			case Token::ASSIGN_MULT:
@@ -242,7 +242,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable = AssertNumericOperand(lhDescriptor, op) && AssertNumericOperand(rhDescriptor, op);
 				AssertAssignableType(lhDescriptor, op);
 				AssertNonConstExpression(op);
-				resultType = *lhDescriptor;
+				resultType = lhDescriptor;
 				break;
 
 			case Token::OP_AND:
@@ -250,7 +250,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable =
 					AssertBooleanOperand(lhDescriptor, op) &&
 					AssertBooleanOperand(rhDescriptor, op);
-				resultType = *lhDescriptor;
+				resultType = lhDescriptor;
 				break;
 
 			case Token::OP_AMP:
@@ -262,7 +262,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable =
 					AssertIntegerOperand(lhDescriptor, op) &&
 					AssertIntegerOperand(rhDescriptor, op);
-				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			case Token::OP_LT:
@@ -271,16 +271,16 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_GTE:
 			case Token::OP_EQUAL:
 			case Token::OP_NOT_EQUAL:
-				AssertComparableTypes(*lhDescriptor, *rhDescriptor, op);
+				AssertComparableTypes(lhDescriptor, rhDescriptor, op);
 				resultType = TypeDescriptor::GetBoolType();
 				break;
 
 			case Token::OP_PLUS:
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType())
 				{
 					isResolvable = AssertIntegerOperand(rhDescriptor, op);
 				}
-				else if (rhDescriptor->IsPointerType())
+				else if (rhDescriptor.IsPointerType())
 				{
 					isResolvable = AssertIntegerOperand(lhDescriptor, op);
 				}
@@ -290,11 +290,11 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 						AssertNumericOperand(lhDescriptor, op) &&
 						AssertNumericOperand(rhDescriptor, op);
 				}
-				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			case Token::OP_MINUS:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					if (mPointerSize == POINTER_64BIT)
 					{
@@ -308,11 +308,11 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				}
 				else
 				{
-					if (lhDescriptor->IsPointerType())
+					if (lhDescriptor.IsPointerType())
 					{
 						isResolvable = AssertIntegerOperand(rhDescriptor, op);
 					}
-					else if (rhDescriptor->IsPointerType())
+					else if (rhDescriptor.IsPointerType())
 					{
 						isResolvable = AssertIntegerOperand(lhDescriptor, op);
 					}
@@ -322,7 +322,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 							AssertNumericOperand(lhDescriptor, op) &&
 							AssertNumericOperand(rhDescriptor, op);
 					}
-					resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+					resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				}
 				break;
 
@@ -330,7 +330,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 			case Token::OP_DIV:
 				isResolvable = AssertNumericOperand(lhDescriptor, op) &&
 					AssertNumericOperand(rhDescriptor, op);
-				resultType = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+				resultType = CombineOperandTypes(lhDescriptor, rhDescriptor);
 				break;
 
 			default:
@@ -354,8 +354,8 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 
 	if (rhTav.IsTypeDefined())
 	{
-		TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
-		TypeDescriptor resultType = *rhDescriptor;
+		TypeDescriptor &rhDescriptor = rhTav.GetTypeDescriptor();
+		TypeDescriptor resultType = rhDescriptor;
 		resultType.ClearLValue();
 		const Token *op = unaryExpression->GetOperator();
 		bool isResolvable = true;
@@ -371,34 +371,34 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			case Token::OP_INC:
 			case Token::OP_DEC:
 				isResolvable =
-					(rhDescriptor->IsPointerType() || AssertNumericOperand(rhDescriptor, op)) &&
+					(rhDescriptor.IsPointerType() || AssertNumericOperand(rhDescriptor, op)) &&
 					AssertAssignableType(rhDescriptor, op);
 				AssertNonConstExpression(op);
 				break;
 
 			case Token::OP_NOT:
 				isResolvable = AssertBooleanOperand(rhDescriptor, op);
-				resultType = PromoteType(*rhDescriptor);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_AMP:
 				AssertAddressableType(rhDescriptor, op);
-				resultType = TypeDescriptor(rhDescriptor, false);
+				resultType = TypeDescriptor(&rhDescriptor, false);
 				break;
 
 			case Token::OP_BIT_NOT:
 				isResolvable = AssertIntegerOperand(rhDescriptor, op);
-				resultType = PromoteType(*rhDescriptor);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_STAR:
 				isResolvable = AssertPointerOperand(rhDescriptor, op);
-				if (rhDescriptor->IsPointerType())
+				if (rhDescriptor.IsPointerType())
 				{
-					resultType = rhDescriptor->GetDereferencedType();
+					resultType = rhDescriptor.GetDereferencedType();
 					if (resultType.IsVoidType())
 					{
-						mErrorBuffer.PushError(CompilerError::VOID_POINTER_DEREFERENCE, op, rhDescriptor);
+						mErrorBuffer.PushError(CompilerError::VOID_POINTER_DEREFERENCE, op, &rhDescriptor);
 					}
 				}
 				isRValue = false;
@@ -429,13 +429,13 @@ void TypeEvaluationPass::Visit(PostfixExpression *postfixExpression)
 
 	if (lhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+		const TypeDescriptor &lhDescriptor = lhTav.GetTypeDescriptor();
 		const Token *op = postfixExpression->GetOperator();
-		if (lhDescriptor->IsPointerType() || AssertNumericOperand(lhDescriptor, op))
+		if (lhDescriptor.IsPointerType() || AssertNumericOperand(lhDescriptor, op))
 		{
 			AssertAssignableType(lhDescriptor, op);
 			AssertNonConstExpression(op);
-			TypeDescriptor resultType = *lhDescriptor;
+			TypeDescriptor resultType = lhDescriptor;
 			resultType.ClearLValue();
 			postfixExpression->SetTypeDescriptor(resultType);
 		}
@@ -451,23 +451,23 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 
 	if (lhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-		TypeDescriptor structDescriptor = *lhDescriptor;
+		const TypeDescriptor &lhDescriptor = lhTav.GetTypeDescriptor();
+		TypeDescriptor structDescriptor = lhDescriptor;
 		const Token *op = memberExpression->GetOperator();
 		const Token *memberName = memberExpression->GetMemberName();
 
 		if (op->GetTokenType() == Token::OP_ARROW)
 		{
 			AssertPointerOperand(lhDescriptor, op);
-			if (lhDescriptor->IsPointerType())
+			if (lhDescriptor.IsPointerType())
 			{
-				structDescriptor = lhDescriptor->GetDereferencedType();
+				structDescriptor = lhDescriptor.GetDereferencedType();
 			}
 		}
 
 		if (!structDescriptor.IsStructType())
 		{
-			mErrorBuffer.PushError(CompilerError::NON_STRUCT_MEMBER_REQUEST, memberName, lhDescriptor);
+			mErrorBuffer.PushError(CompilerError::NON_STRUCT_MEMBER_REQUEST, memberName, &lhDescriptor);
 		}
 		else
 		{
@@ -476,12 +476,12 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 			const Symbol *member = structDeclaration->FindSymbol(memberName);
 			if (member == nullptr)
 			{
-				mErrorBuffer.PushError(CompilerError::INVALID_MEMBER_REQUEST, memberName, lhDescriptor);
+				mErrorBuffer.PushError(CompilerError::INVALID_MEMBER_REQUEST, memberName, &lhDescriptor);
 			}
 			else
 			{
 				memberExpression->SetDefinition(member);
-				TypeDescriptor memberDescriptor = *member->GetTypeAndValue()->GetTypeDescriptor();
+				TypeDescriptor memberDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
 				if (structDescriptor.IsConst())
 				{
 					const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(member);
@@ -498,7 +498,7 @@ void TypeEvaluationPass::Visit(MemberExpression *memberExpression)
 								CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 								memberName,
 								functionDefinition->GetPrototype(),
-								lhDescriptor);
+								&lhDescriptor);
 						}
 					}
 				}
@@ -518,10 +518,10 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 
 	if (indexTav.IsTypeDefined())
 	{
-		const TypeDescriptor *indexDescriptor = indexTav.GetTypeDescriptor();
-		if (!indexDescriptor->IsIntegerType())
+		const TypeDescriptor &indexDescriptor = indexTav.GetTypeDescriptor();
+		if (!indexDescriptor.IsIntegerType())
 		{
-			mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, indexDescriptor);
+			mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_INDEX_OPERATOR, op, &indexDescriptor);
 		}
 	}
 
@@ -529,12 +529,12 @@ void TypeEvaluationPass::Visit(ArraySubscriptExpression *arraySubscriptExpressio
 
 	if (lhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
+		const TypeDescriptor &lhDescriptor = lhTav.GetTypeDescriptor();
 
 		AssertPointerOperand(lhDescriptor, op);
-		if (lhDescriptor->IsPointerType())
+		if (lhDescriptor.IsPointerType())
 		{
-			arraySubscriptExpression->SetTypeDescriptor(lhDescriptor->GetDereferencedType());
+			arraySubscriptExpression->SetTypeDescriptor(lhDescriptor.GetDereferencedType());
 		}
 	}
 }
@@ -548,8 +548,8 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 	if (lhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-		const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+		const TypeDescriptor &lhDescriptor = lhTav.GetTypeDescriptor();
+		const TypeSpecifier *lhSpecifier = lhDescriptor.GetTypeSpecifier();
 		const Token *context = functionCallExpression->GetContextToken();
 
 		if ((lhSpecifier == nullptr) ||
@@ -580,9 +580,9 @@ void TypeEvaluationPass::Visit(FunctionCallExpression *functionCallExpression)
 					if (argTav.IsTypeDefined())
 					{
 						const TypeDescriptor *paramDescriptor = paramList->GetTypeDescriptor();
-						const TypeDescriptor *argDescriptor = argTav.GetTypeDescriptor();
+						const TypeDescriptor &argDescriptor = argTav.GetTypeDescriptor();
 						AssertConvertibleTypes(
-							*argDescriptor,
+							argDescriptor,
 							*paramDescriptor,
 							argList->GetContextToken(),
 							CompilerError::INVALID_TYPE_CONVERSION);
@@ -611,11 +611,11 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 
 	if (rhTav.IsTypeDefined())
 	{
-		const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+		const TypeDescriptor &rhDescriptor = rhTav.GetTypeDescriptor();
 		TypeDescriptor *lhDescriptor = castExpression->GetTargetTypeDescriptor();
 
 		AssertConvertibleTypes(
-			*rhDescriptor,
+			rhDescriptor,
 			*lhDescriptor,
 			lhDescriptor->GetContextToken(),
 			CompilerError::INVALID_TYPE_CONVERSION);
@@ -699,7 +699,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		}
 		else if (symbolTav->IsTypeDefined())
 		{
-			TypeDescriptor typeDescriptor = *symbolTav->GetTypeDescriptor();
+			TypeDescriptor typeDescriptor = symbolTav->GetTypeDescriptor();
 
 			// Verify if the symbol was reached by implicitly dereferencing a const 'this' pointer.
 			if ((symbol->GetParentSymbol() == mStruct.GetTop()) &&
@@ -749,8 +749,8 @@ bool TypeEvaluationPass::AssertBooleanExpression(const Expression *expression, C
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsTypeDefined())
 	{
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		if (!typeDescriptor->IsBooleanType())
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
+		if (!typeDescriptor.IsBooleanType())
 		{
 			mErrorBuffer.PushError(errorType, expression->GetContextToken());
 			return false;
@@ -768,8 +768,8 @@ bool TypeEvaluationPass::AssertMost32IntegerExpression(
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (tav.IsTypeDefined())
 	{
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		if (!typeDescriptor->IsMost32IntegerType())
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
+		if (!typeDescriptor.IsMost32IntegerType())
 		{
 			mErrorBuffer.PushError(errorType, expression->GetContextToken(), arg);
 			return false;
@@ -790,71 +790,71 @@ bool TypeEvaluationPass::AssertNonConstExpression(const Token *op)
 }
 
 
-bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertBooleanOperand(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsBooleanType())
+	if (!typeDescriptor.IsBooleanType())
 	{
-		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, &typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertIntegerOperand(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsIntegerType())
+	if (!typeDescriptor.IsIntegerType())
 	{
-		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, &typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertNumericOperand(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsNumericType())
+	if (!typeDescriptor.IsNumericType())
 	{
-		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_OPERATOR, op, &typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertPointerOperand(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsPointerType())
+	if (!typeDescriptor.IsPointerType())
 	{
-		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::INVALID_TYPE_FOR_POINTER_OPERATOR, op, &typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertAddressableType(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertAddressableType(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsAddressable())
+	if (!typeDescriptor.IsAddressable())
 	{
-		mErrorBuffer.PushError(CompilerError::NON_LVALUE_TYPE, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::NON_LVALUE_TYPE, op, &typeDescriptor);
 		return false;
 	}
 	return true;
 }
 
 
-bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op)
+bool TypeEvaluationPass::AssertAssignableType(const TypeDescriptor &typeDescriptor, const Token *op)
 {
-	if (!typeDescriptor->IsLValue())
+	if (!typeDescriptor.IsLValue())
 	{
 		mErrorBuffer.PushError(CompilerError::NON_LVALUE_ASSIGNMENT, op);
 		return false;
 	}
-	else if (!typeDescriptor->IsAssignable())
+	else if (!typeDescriptor.IsAssignable())
 	{
-		mErrorBuffer.PushError(CompilerError::UNASSIGNABLE_TYPE, op, typeDescriptor);
+		mErrorBuffer.PushError(CompilerError::UNASSIGNABLE_TYPE, op, &typeDescriptor);
 		return false;
 	}
 	return true;
@@ -887,21 +887,21 @@ bool TypeEvaluationPass::AssertComparableTypes(const TypeDescriptor &typeA, cons
 }
 
 
-void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescriptor)
+void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor &typeDescriptor)
 {
-	initializer->SetTypeDescriptor(*typeDescriptor);
-	const TypeDescriptor *descriptor = initializer->GetTypeDescriptor();
+	initializer->SetTypeDescriptor(typeDescriptor);
+	const TypeDescriptor &descriptor = initializer->GetTypeDescriptor();
 	const Expression *expression = initializer->GetExpression();
 	Initializer *initializerList = initializer->GetInitializerList();
 
-	if (descriptor->IsArrayType())
+	if (descriptor.IsArrayType())
 	{
-		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
+		const TypeDescriptor elementDescriptor = descriptor.GetDereferencedType();
 		if (initializerList != nullptr)
 		{
 			while (initializerList != nullptr)
 			{
-				ValidateInitializer(initializerList, &elementDescriptor);
+				ValidateInitializer(initializerList, elementDescriptor);
 				initializerList = NextNode(initializerList);
 			}
 		}
@@ -911,14 +911,14 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 			const bool isStringInitializer =
 				elementDescriptor.IsCharType() &&
 				(constantExpression != nullptr) &&
-				constantExpression->GetTypeDescriptor()->IsStringType();
+				constantExpression->GetTypeDescriptor().IsStringType();
 
 			if (!isStringInitializer)
 			{
 				mErrorBuffer.PushError(
 					CompilerError::MISSING_BRACES_IN_INITIALIZER,
 					initializer->GetContextToken(),
-					descriptor);
+					&descriptor);
 			}
 		}
 	}
@@ -928,15 +928,15 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		if (tav.IsTypeDefined())
 		{
 			AssertConvertibleTypes(
-				*expression->GetTypeAndValue().GetTypeDescriptor(),
-				*descriptor,
+				expression->GetTypeAndValue().GetTypeDescriptor(),
+				descriptor,
 				expression->GetContextToken(),
 				CompilerError::INVALID_TYPE_CONVERSION);
 		}
 	}
-	else if (descriptor->IsStructType())
+	else if (descriptor.IsStructType())
 	{
-		const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
+		const TypeSpecifier *structSpecifier = descriptor.GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
 
@@ -945,7 +945,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 			mErrorBuffer.PushError(
 				CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST,
 				initializer->GetContextToken(),
-				descriptor);
+				&descriptor);
 		}
 		else
 		{
@@ -955,7 +955,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
 				while ((nameList != nullptr) && (initializerList != nullptr))
 				{
-					ValidateInitializer(initializerList, memberDescriptor);
+					ValidateInitializer(initializerList, *memberDescriptor);
 					nameList = NextNode(nameList);
 					initializerList = NextNode(initializerList);
 				}
@@ -966,7 +966,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 				mErrorBuffer.PushError(
 					CompilerError::TOO_MANY_INITIALIZERS,
 					initializerList->GetContextToken(),
-					descriptor);
+					&descriptor);
 			}
 		}
 	}
@@ -975,7 +975,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 		mErrorBuffer.PushError(
 			CompilerError::BRACES_AROUND_SCALAR_INITIALIZER,
 			initializer->GetContextToken(),
-			descriptor);
+			&descriptor);
 	}
 }
 

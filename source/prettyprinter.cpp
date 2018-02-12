@@ -628,7 +628,7 @@ void PrettyPrinterCore::Visit(const PropertyofExpression *propertyofExpression)
 	if (!PrintFoldedConstant(propertyofExpression))
 	{
 		Print(propertyofExpression->GetOperator());
-		if (propertyofExpression->GetTypeDescriptor() != nullptr)
+		if (propertyofExpression->GetTargetTypeDescriptor() != nullptr)
 		{
 			mStream.Print("<");
 			Print(propertyofExpression->GetTargetTypeDescriptor());
@@ -727,8 +727,8 @@ bool PrettyPrinterCore::PrintFoldedConstant(const Expression *expression)
 	const TypeAndValue &tav = expression->GetTypeAndValue();
 	if (ShouldFoldConstants() && tav.IsValueDefined())
 	{
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
-		switch (typeDescriptor->GetPrimitiveType())
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
+		switch (typeDescriptor.GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
 				mStream.Print("%s", tav.GetBoolValue() ? "true" : "false");

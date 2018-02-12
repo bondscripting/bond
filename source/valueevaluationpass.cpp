@@ -11,13 +11,13 @@ namespace Operators
 {
 
 template <typename Operator>
-Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
+Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type, Operator op)
 {
-	const Value l = CastValue(lhs, *type);
-	const Value r = CastValue(rhs, *type);
+	const Value l = CastValue(lhs, type);
+	const Value r = CastValue(rhs, type);
 	Value resultValue;
 
-	switch (type->GetPrimitiveType())
+	switch (type.GetPrimitiveType())
 	{
 		case Token::KEY_INT:
 			resultValue.mInt = op(l.mInt, r.mInt);
@@ -46,13 +46,13 @@ Value NumericBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 
 
 template <typename Operator>
-Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type, Operator op)
+Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type, Operator op)
 {
-	const Value l = CastValue(lhs, *type);
-	const Value r = CastValue(rhs, *type);
+	const Value l = CastValue(lhs, type);
+	const Value r = CastValue(rhs, type);
 	Value resultValue;
 
-	switch (type->GetPrimitiveType())
+	switch (type.GetPrimitiveType())
 	{
 		case Token::KEY_INT:
 			resultValue.mInt = op(l.mInt, r.mInt);
@@ -77,7 +77,7 @@ Value IntegerBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, co
 template <typename Operator>
 Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs, Operator op)
 {
-	TypeDescriptor type = CombineOperandTypes(*lhs.GetTypeDescriptor(), *rhs.GetTypeDescriptor());
+	TypeDescriptor type = CombineOperandTypes(lhs.GetTypeDescriptor(), rhs.GetTypeDescriptor());
 	const Value l = CastValue(lhs, type);
 	const Value r = CastValue(rhs, type);
 	Value resultValue;
@@ -114,70 +114,70 @@ Value ComparisonBinaryOperator(const TypeAndValue &lhs, const TypeAndValue &rhs,
 
 
 struct BinaryAddOperator { template <typename T> T operator()(T a, T b) { return a + b; } };
-inline Value BinaryAdd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryAdd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryAddOperator());
 }
 
 
 struct BinarySubOperator { template <typename T> T operator()(T a, T b) { return a - b; } };
-inline Value BinarySub(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinarySub(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinarySubOperator());
 }
 
 
 struct BinaryMultOperator { template <typename T> T operator()(T a, T b) { return a * b; } };
-inline Value BinaryMult(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryMult(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryMultOperator());
 }
 
 
 struct BinaryDivOperator { template <typename T> T operator()(T a, T b) { return a / b; } };
-inline Value BinaryDiv(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryDiv(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return NumericBinaryOperator(lhs, rhs, type, BinaryDivOperator());
 }
 
 
 struct BinaryModOperator { template <typename T> T operator()(T a, T b) { return a % b; } };
-inline Value BinaryMod(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryMod(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryModOperator());
 }
 
 
 struct BinaryLeftOperator { template <typename T> T operator()(T a, T b) { return a << b; } };
-inline Value BinaryLeft(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryLeft(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryLeftOperator());
 }
 
 
 struct BinaryRightOperator { template <typename T> T operator()(T a, T b) { return a >> b; } };
-inline Value BinaryRight(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryRight(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryRightOperator());
 }
 
 
 struct BinaryBitAndOperator { template <typename T> T operator()(T a, T b) { return a & b; } };
-inline Value BinaryBitAnd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryBitAnd(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitAndOperator());
 }
 
 
 struct BinaryBitOrOperator { template <typename T> T operator()(T a, T b) { return a | b; } };
-inline Value BinaryBitOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryBitOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitOrOperator());
 }
 
 
 struct BinaryBitXOrOperator { template <typename T> T operator()(T a, T b) { return a ^ b; } };
-inline Value BinaryBitXOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor *type)
+inline Value BinaryBitXOr(const TypeAndValue &lhs, const TypeAndValue &rhs, const TypeDescriptor &type)
 {
 	return IntegerBinaryOperator(lhs, rhs, type, BinaryBitXOrOperator());
 }
@@ -227,10 +227,10 @@ inline Value BinaryNotEqual(const TypeAndValue &lhs, const TypeAndValue &rhs)
 
 Value UnaryMinus(const TypeAndValue &value)
 {
-	const TypeDescriptor *type = value.GetTypeDescriptor();
+	const TypeDescriptor &type = value.GetTypeDescriptor();
 	Value resultValue;
 
-	switch (type->GetPrimitiveType())
+	switch (type.GetPrimitiveType())
 	{
 		case Token::KEY_INT:
 			resultValue.mInt = -value.GetIntValue();
@@ -260,12 +260,12 @@ Value UnaryMinus(const TypeAndValue &value)
 
 Value UnaryBitNot(const TypeAndValue &value)
 {
-	const TypeDescriptor *type = value.GetTypeDescriptor();
+	const TypeDescriptor &type = value.GetTypeDescriptor();
 	Value resultValue;
 
 	if (value.IsValueDefined())
 	{
-		switch (type->GetPrimitiveType())
+		switch (type.GetPrimitiveType())
 		{
 			case Token::KEY_INT:
 				resultValue.mInt = ~value.GetIntValue();
@@ -353,8 +353,8 @@ void ValueEvaluationPass::Visit(Enumerator *enumerator)
 			if (valueTav.IsValueDefined())
 			{
 				Resolve(tav);
-				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(valueTav, *resultType));
+				const TypeDescriptor &resultType = tav.GetTypeDescriptor();
+				tav.SetValue(CastValue(valueTav, resultType));
 			}
 		}
 		else
@@ -519,7 +519,7 @@ void ValueEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 			TypeAndValue &tav = expressionList->GetTypeAndValue();
 			if (tav.IsResolved())
 			{
-				const bool isUInt = tav.GetTypeDescriptor()->GetPrimitiveType() == Token::KEY_UINT;
+				const bool isUInt = tav.GetTypeDescriptor().GetPrimitiveType() == Token::KEY_UINT;
 
 				if (tav.IsValueDefined())
 				{
@@ -558,24 +558,24 @@ void ValueEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	if (!tav.IsResolved())
 	{
 		ParseNodeTraverser::Visit(namedInitializer);
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
 		const Initializer *initializer = namedInitializer->GetInitializer();
 
 		if (initializer == nullptr)
 		{
 			Resolve(tav);
 		}
-		else if (initializer->IsResolved() && typeDescriptor->IsResolved())
+		else if (initializer->IsResolved() && typeDescriptor.IsResolved())
 		{
 			Resolve(tav);
 
 			// TODO: Handle non-primitive types (e.g. arrays of primitive types or string literals).
-			if (typeDescriptor->IsPrimitiveType() && typeDescriptor->IsConst())
+			if (typeDescriptor.IsPrimitiveType() && typeDescriptor.IsConst())
 			{
 				const TypeAndValue initializerTav = initializer->GetExpression()->GetTypeAndValue();
 				if (initializerTav.IsValueDefined())
 				{
-					tav.SetValue(CastValue(initializerTav, *typeDescriptor));
+					tav.SetValue(CastValue(initializerTav, typeDescriptor));
 				}
 			}
 		}
@@ -630,7 +630,7 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 					const bool isStringInitializer =
 						isCharArray &&
 						(constantExpression != nullptr) &&
-						constantExpression->GetTypeDescriptor()->IsStringType();
+						constantExpression->GetTypeDescriptor().IsStringType();
 
 					if (isStringInitializer)
 					{
@@ -669,8 +669,8 @@ void ValueEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 			if (condTav.IsValueDefined() && trueTav.IsValueDefined() && falseTav.IsValueDefined())
 			{
 				const bool cond = condTav.GetBoolValue();
-				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(cond ? trueTav : falseTav, *resultType));
+				const TypeDescriptor &resultType = tav.GetTypeDescriptor();
+				tav.SetValue(CastValue(cond ? trueTav : falseTav, resultType));
 			}
 		}
 		CheckUnresolved(tav);
@@ -701,7 +701,7 @@ void ValueEvaluationPass::Visit(BinaryExpression *binaryExpression)
 
 			if (lhs.IsValueDefined() && rhs.IsValueDefined())
 			{
-				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
+				const TypeDescriptor &resultType = tav.GetTypeDescriptor();
 
 				switch (op->GetTokenType())
 				{
@@ -950,8 +950,8 @@ void ValueEvaluationPass::Visit(CastExpression *castExpression)
 			Resolve(tav);
 			if (rhs.IsValueDefined())
 			{
-				const TypeDescriptor *resultType = tav.GetTypeDescriptor();
-				tav.SetValue(CastValue(rhs, *resultType));
+				const TypeDescriptor &resultType = tav.GetTypeDescriptor();
+				tav.SetValue(CastValue(rhs, resultType));
 			}
 		}
 		CheckUnresolved(tav);
@@ -969,10 +969,10 @@ void ValueEvaluationPass::Visit(PropertyofExpression *propertyofExpression)
 
 		if (propertyofExpression->GetRhs() != nullptr)
 		{
-			const TypeAndValue &rhs = propertyofExpression->GetRhs()->GetTypeAndValue();
-			if (rhs.IsResolved())
+			const TypeAndValue &rhTav = propertyofExpression->GetRhs()->GetTypeAndValue();
+			if (rhTav.IsResolved())
 			{
-				typeDescriptor = rhs.GetTypeDescriptor();
+				typeDescriptor = &rhTav.GetTypeDescriptor();
 			}
 		}
 		else

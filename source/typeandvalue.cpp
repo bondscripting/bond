@@ -5,7 +5,7 @@
 namespace Bond
 {
 
-bool TypeAndValue::IsTypeDefined() const { return (mTypeDescriptor != nullptr) && mTypeDescriptor->IsDefined(); }
+bool TypeAndValue::IsTypeDefined() const { return mTypeDescriptor.IsDefined(); }
 
 
 int64_t TypeAndValue::AsLongValue() const

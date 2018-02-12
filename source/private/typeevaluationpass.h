@@ -83,12 +83,12 @@ private:
 	bool AssertBooleanExpression(const Expression *expression, CompilerError::Type errorType) const;
 	bool AssertMost32IntegerExpression(const Expression *expression, CompilerError::Type errorType, const void *arg = nullptr) const;
 	bool AssertNonConstExpression(const Token *op);
-	bool AssertBooleanOperand(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertIntegerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertNumericOperand(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertPointerOperand(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertAddressableType(const TypeDescriptor *typeDescriptor, const Token *op);
-	bool AssertAssignableType(const TypeDescriptor *typeDescriptor, const Token *op);
+	bool AssertBooleanOperand(const TypeDescriptor &typeDescriptor, const Token *op);
+	bool AssertIntegerOperand(const TypeDescriptor &typeDescriptor, const Token *op);
+	bool AssertNumericOperand(const TypeDescriptor &typeDescriptor, const Token *op);
+	bool AssertPointerOperand(const TypeDescriptor &typeDescriptor, const Token *op);
+	bool AssertAddressableType(const TypeDescriptor &typeDescriptor, const Token *op);
+	bool AssertAssignableType(const TypeDescriptor &typeDescriptor, const Token *op);
 
 	bool AssertConvertibleTypes(
 		const TypeDescriptor &fromType,
@@ -98,7 +98,7 @@ private:
 
 	bool AssertComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB, const Token *op);
 
-	void ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescrioptor);
+	void ValidateInitializer(Initializer *initializer, const TypeDescriptor &typeDescrioptor);
 
 	BoolStack mEnforceConstExpressions;
 	StructStack mStruct;

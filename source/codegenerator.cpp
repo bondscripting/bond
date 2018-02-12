@@ -375,15 +375,15 @@ private:
 
 	Result EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member);
 
-	void EmitPushResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType);
-	void EmitPushResult(const Result &result, const TypeDescriptor *typeDescriptor);
-	void EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPushResultAs(const Result &result, const TypeDescriptor &sourceType, const TypeDescriptor &destType);
+	void EmitPushResult(const Result &result, const TypeDescriptor &typeDescriptor);
+	void EmitPushFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 	void EmitPushFramePointerIndirectValue32(int32_t offset);
 	void EmitPushFramePointerIndirectValue64(int32_t offset);
-	void EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
-	void EmitPushStackValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPushAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
+	void EmitPushStackValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 
-	void EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor *resultType);
+	void EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor &resultType);
 	void EmitPushConstant(const TypeAndValue &typeAndValue);
 	void EmitPushConstantInt(int32_t value);
 	void EmitPushConstantUInt(uint32_t value);
@@ -392,17 +392,17 @@ private:
 	void EmitPushConstantFloat(float value);
 	void EmitPushConstantDouble(double value);
 
-	void EmitPopResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType);
-	void EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor);
-	void EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPopResultAs(const Result &result, const TypeDescriptor &sourceType, const TypeDescriptor &destType);
+	void EmitPopResult(const Result &result, const TypeDescriptor &typeDescriptor);
+	void EmitPopFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 	void EmitPopFramePointerIndirectValue32(int32_t offset);
 	void EmitPopFramePointerIndirectValue64(int32_t offset);
-	void EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset);
+	void EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 	Result EmitAccumulateAddressOffset(const Result &result);
 	void EmitAccumulateAddressOffset(int32_t offset);
 
-	void EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
-	void EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType, const TypeDescriptor *destType);
+	void EmitCast(const TypeDescriptor &sourceType, const TypeDescriptor &destType);
+	void EmitCastWithoutNarrowing32(const TypeDescriptor &sourceType, const TypeDescriptor &destType);
 
 	Result EmitCommaOperator(const BinaryExpression *binaryExpression);
 	Result EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
@@ -445,7 +445,7 @@ private:
 	void EmitIndexedValue32(Value32 value);
 	void EmitIndexedValue64(Value64 value);
 
-	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const;
+	Result::Context TransformContext(Result::Context targetContext, const TypeDescriptor &typeDescriptor) const;
 
 	void ResolveJumps();
 	const JumpEntry *FindJumpEntry(const JumpList &jumpList, size_t opCodePos) const;
@@ -458,7 +458,7 @@ private:
 	void WriteQualifiedName(const QualifiedNameEntry &entry);
 	void WriteQualifiedNameIndices(const Symbol *symbol);
 	void WriteString(const SimpleString &simpleString);
-	void WriteSizeAndType(const TypeDescriptor *type);
+	void WriteSizeAndType(const TypeDescriptor &type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
 	void WriteValue16(Value16 value);
 	void WriteValue32(Value32 value);
@@ -471,7 +471,7 @@ private:
 	bool GetCollapseNotOperators() const { return (mFlags.GetTop() & FLAG_COLLAPSE_NOT_OPERATORS) != 0; }
 	bool GetOmitConstantFolding() const { return (mFlags.GetTop() & FLAG_OMIT_CONSTANT_FOLDING) != 0; }
 	void ApplyStackDelta(int32_t delta);
-	int32_t AllocateLocal(const TypeDescriptor* typeDescriptor);
+	int32_t AllocateLocal(const TypeDescriptor &typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	uint16_t MapQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
@@ -643,7 +643,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 			const uint16_t nameIndex = MapQualifiedName(namedInitializer);
 			if (typeAndValue->IsValueDefined())
 			{
-				switch (typeAndValue->GetTypeDescriptor()->GetSignatureType())
+				switch (typeAndValue->GetTypeDescriptor().GetSignatureType())
 				{
 					case SIG_LONG:
 					case SIG_ULONG:
@@ -674,7 +674,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		{
 			if (!namedInitializer->IsElidable())
 			{
-				const TypeDescriptor *lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+				const TypeDescriptor &lhDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 				const int32_t offset = AllocateLocal(lhDescriptor);
 				namedInitializer->SetOffset(offset);
 				const Initializer *initializer = namedInitializer->GetInitializer();
@@ -712,7 +712,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
+	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 
 	const TypeAndValue &conditionTav = ifStatement->GetCondition()->GetTypeAndValue();
 	if (conditionTav.IsValueDefined())
@@ -761,7 +761,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
 
 	const Expression *control = switchStatement->GetControl();
-	const TypeDescriptor *controlDescriptor = control->GetTypeDescriptor();
+	const TypeDescriptor &controlDescriptor = control->GetTypeDescriptor();
 	ResultStack::Element controlResult(mResult);
 	Traverse(control);
 	EmitPushResult(controlResult, controlDescriptor);
@@ -872,7 +872,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
+	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 
 	if (whileStatement->IsDoLoop())
 	{
@@ -916,7 +916,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != nullptr)
 	{
-		const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
+		const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 		ResultStack::Element conditionResult(mResult);
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
@@ -953,13 +953,13 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 		if (!returnDescriptor->IsVoidType())
 		{
 			const Expression *rhs = jumpStatement->GetRhs();
-			const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+			const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 			ResultStack::Element rhResult(mResult);
 			Traverse(rhs);
 
 			if (returnDescriptor->IsPointerType())
 			{
-				EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+				EmitPushResultAs(rhResult, rhDescriptor, *returnDescriptor);
 				EmitOpCode(RETURN_OPCODES.GetPointerOpCode(mPointerSize));
 			}
 			else
@@ -974,14 +974,14 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 					case Token::KEY_INT:
 					case Token::KEY_UINT:
 					case Token::KEY_FLOAT:
-						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+						EmitPushResultAs(rhResult, rhDescriptor, *returnDescriptor);
 						EmitOpCode(OPCODE_RETURN32);
 						break;
 
 					case Token::KEY_LONG:
 					case Token::KEY_ULONG:
 					case Token::KEY_DOUBLE:
-						EmitPushResultAs(rhResult, rhDescriptor, returnDescriptor);
+						EmitPushResultAs(rhResult, rhDescriptor, *returnDescriptor);
 						EmitOpCode(OPCODE_RETURN64);
 						break;
 
@@ -1016,11 +1016,11 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	const Expression *condition = conditionalExpression->GetCondition();
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
-	const TypeDescriptor *conditionDescriptor = condition->GetTypeDescriptor();
-	const TypeDescriptor *trueDescriptor = trueExpression->GetTypeDescriptor();
-	const TypeDescriptor *falseDescriptor = falseExpression->GetTypeDescriptor();
-	const TypeDescriptor *resultDescriptor = conditionalExpression->GetTypeDescriptor();
-	const bool isStruct = resultDescriptor->IsStructType();
+	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
+	const TypeDescriptor &trueDescriptor = trueExpression->GetTypeDescriptor();
+	const TypeDescriptor &falseDescriptor = falseExpression->GetTypeDescriptor();
+	const TypeDescriptor &resultDescriptor = conditionalExpression->GetTypeDescriptor();
+	const bool isStruct = resultDescriptor.IsStructType();
 
 	{
 		ResultStack::Element conditionResult(mResult);
@@ -1074,8 +1074,8 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 	{
 		const Expression *lhs = binaryExpression->GetLhs();
 		const Expression *rhs = binaryExpression->GetRhs();
-		const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-		const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+		const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+		const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 		const Token *op = binaryExpression->GetOperator();
 
 		Result result = Result(Result::CONTEXT_STACK_VALUE);
@@ -1108,7 +1108,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 
 			case Token::ASSIGN_PLUS:
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType())
 				{
 					result = EmitPointerCompoundAssignmentOperator(lhs, rhs, 1);
 				}
@@ -1119,7 +1119,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				break;
 
 			case Token::ASSIGN_MINUS:
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType())
 				{
 					result = EmitPointerCompoundAssignmentOperator(lhs, rhs, -1);
 				}
@@ -1160,7 +1160,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				result = EmitSimpleBinaryOperator(binaryExpression, RSH_OPCODES);
 				break;
 			case Token::OP_LT:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPLT_OPCODES);
 				}
@@ -1170,7 +1170,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				break;
 			case Token::OP_LTE:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPLE_OPCODES);
 				}
@@ -1180,7 +1180,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				break;
 			case Token::OP_GT:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPGT_OPCODES);
 				}
@@ -1190,7 +1190,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				break;
 			case Token::OP_GTE:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPGE_OPCODES);
 				}
@@ -1200,7 +1200,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				break;
 			case Token::OP_EQUAL:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPEQ_OPCODES);
 				}
@@ -1210,7 +1210,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 				}
 				break;
 			case Token::OP_NOT_EQUAL:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerComparison(lhs, rhs, CMPNEQ_OPCODES);
 				}
@@ -1222,11 +1222,11 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 
 			case Token::OP_PLUS:
 			{
-				if (lhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType())
 				{
 					result = EmitPointerArithmetic(lhs, rhs, 1);
 				}
-				else if (rhDescriptor->IsPointerType())
+				else if (rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerArithmetic(rhs, lhs, 1);
 				}
@@ -1238,15 +1238,15 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			break;
 
 			case Token::OP_MINUS:
-				if (lhDescriptor->IsPointerType() && rhDescriptor->IsPointerType())
+				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerDifference(lhs, rhs);
 				}
-				else if (lhDescriptor->IsPointerType())
+				else if (lhDescriptor.IsPointerType())
 				{
 					result = EmitPointerArithmetic(lhs, rhs, -1);
 				}
-				else if (rhDescriptor->IsPointerType())
+				else if (rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerArithmetic(rhs, lhs, -1);
 				}
@@ -1277,7 +1277,7 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 	if (!ProcessConstantExpression(unaryExpression))
 	{
 		const Expression *rhs = unaryExpression->GetRhs();
-		const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+		const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 		const Token *op = unaryExpression->GetOperator();
 		Result result;
 
@@ -1289,7 +1289,7 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_INC:
-				if (rhDescriptor->IsPointerType())
+				if (rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerIncrementOperator(unaryExpression, unaryExpression->GetRhs(), PREFIX, 1);
 				}
@@ -1300,7 +1300,7 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 				break;
 
 			case Token::OP_DEC:
-				if (rhDescriptor->IsPointerType())
+				if (rhDescriptor.IsPointerType())
 				{
 					result = EmitPointerIncrementOperator(unaryExpression, unaryExpression->GetRhs(), PREFIX, -1);
 				}
@@ -1338,14 +1338,14 @@ void GeneratorCore::Visit(const UnaryExpression *unaryExpression)
 void GeneratorCore::Visit(const PostfixExpression *postfixExpression)
 {
 	const Expression *lhs = postfixExpression->GetLhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const Token *op = postfixExpression->GetOperator();
 	Result result;
 
 	switch (op->GetTokenType())
 	{
 		case Token::OP_INC:
-			if (lhDescriptor->IsPointerType())
+			if (lhDescriptor.IsPointerType())
 			{
 				result = EmitPointerIncrementOperator(postfixExpression, postfixExpression->GetLhs(), POSTFIX, 1);
 			}
@@ -1356,7 +1356,7 @@ void GeneratorCore::Visit(const PostfixExpression *postfixExpression)
 			break;
 
 		case Token::OP_DEC:
-			if (lhDescriptor->IsPointerType())
+			if (lhDescriptor.IsPointerType())
 			{
 				result = EmitPointerIncrementOperator(postfixExpression, postfixExpression->GetLhs(), POSTFIX, -1);
 			}
@@ -1397,10 +1397,10 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 			}
 			else
 			{
-				const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+				const TypeDescriptor &typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 				if (op->GetTokenType() == Token::OP_ARROW)
 				{
-					result = EmitDereferenceResult(lhResult, lhs->GetTypeDescriptor());
+					result = EmitDereferenceResult(lhResult, &lhs->GetTypeDescriptor());
 				}
 
 				result.mContext = TransformContext(result.mContext, typeDescriptor);
@@ -1428,9 +1428,9 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 		const Expression *lhs = arraySubscriptExpression->GetLhs();
 		const Expression *index = arraySubscriptExpression->GetIndex();
 		Result result = EmitPointerArithmetic(lhs, index, 1);
-		if (!arraySubscriptExpression->GetTypeDescriptor()->IsArrayType())
+		if (!arraySubscriptExpression->GetTypeDescriptor().IsArrayType())
 		{
-			result = EmitDereferenceResult(result, lhs->GetTypeDescriptor());
+			result = EmitDereferenceResult(result, &lhs->GetTypeDescriptor());
 		}
 		mResult.SetTop(result);
 	}
@@ -1440,13 +1440,13 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
 	const Expression *lhs = functionCallExpression->GetLhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeSpecifier *lhSpecifier = lhDescriptor.GetTypeSpecifier();
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
 	const SignatureType returnType = returnDescriptor->GetSignatureType();
-	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(returnDescriptor) : 0;
+	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(*returnDescriptor) : 0;
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1461,7 +1461,7 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 		if (lhResult.GetValue().mContext == Result::CONTEXT_MEMBER_FUNCTION)
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), voidStar);
 		}
 
 		if (returnType == SIG_AGGREGATE)
@@ -1495,8 +1495,8 @@ void GeneratorCore::Visit(const CastExpression *castExpression)
 	{
 		{
 			const Expression *rhs = castExpression->GetRhs();
-			const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-			const TypeDescriptor *resultDescriptor = castExpression->GetTypeDescriptor();
+			const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
+			const TypeDescriptor &resultDescriptor = castExpression->GetTypeDescriptor();
 			ResultStack::Element rhResult(mResult);
 			Traverse(rhs);
 			EmitPushResultAs(rhResult, rhDescriptor, resultDescriptor);
@@ -1528,7 +1528,7 @@ void GeneratorCore::Visit(const IdentifierExpression *identifierExpression)
 		const FunctionDefinition *functionDefinition = nullptr;
 		if ((namedInitializer = CastNode<NamedInitializer>(symbol)) != nullptr)
 		{
-			const TypeDescriptor *typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
+			const TypeDescriptor &typeDescriptor = namedInitializer->GetTypeAndValue()->GetTypeDescriptor();
 			Result::Context context = Result::CONTEXT_NONE;
 			int32_t offset = namedInitializer->GetOffset();
 
@@ -1600,14 +1600,14 @@ bool GeneratorCore::ProcessConstantExpression(const Expression *expression)
 
 void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerIndex &index, int32_t offset, bool isLast)
 {
-	const TypeDescriptor *typeDescriptor = initializer->GetTypeDescriptor();
+	const TypeDescriptor &typeDescriptor = initializer->GetTypeDescriptor();
 	const Expression *expression = initializer->GetExpression();
 	const Initializer *initializerList = initializer->GetInitializerList();
 
-	if (typeDescriptor->IsArrayType())
+	if (typeDescriptor.IsArrayType())
 	{
-		uint32_t numElements = typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
-		const TypeDescriptor elementDescriptor = typeDescriptor->GetDereferencedType();
+		uint32_t numElements = typeDescriptor.GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+		const TypeDescriptor elementDescriptor = typeDescriptor.GetDereferencedType();
 		const uint32_t elementSize = elementDescriptor.GetSize(mPointerSize);
 
 		if (initializerList != nullptr)
@@ -1626,7 +1626,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			const bool isStringInitializer =
 				elementDescriptor.IsCharType() &&
 				(constantExpression != nullptr) &&
-				constantExpression->GetTypeDescriptor()->IsStringType();
+				constantExpression->GetTypeDescriptor().IsStringType();
 
 			if (isStringInitializer)
 			{
@@ -1662,7 +1662,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			EmitOpCode(OPCODE_DUP);
 		}
 
-		if (typeDescriptor->IsStructType())
+		if (typeDescriptor.IsStructType())
 		{
 			// TODO: Initialize the struct in-place without copying it.
 			if (index.mIsLocal)
@@ -1673,11 +1673,11 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			Traverse(initializer);
 			EmitPushAddressOfResult(rhResult);
 			EmitOpCode(OPCODE_MEMCOPYW);
-			EmitIndexedValue32(Value32(typeDescriptor->GetSize(mPointerSize)));
+			EmitIndexedValue32(Value32(typeDescriptor.GetSize(mPointerSize)));
 		}
 		else
 		{
-			const TypeDescriptor *rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
+			const TypeDescriptor &rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
 			ResultStack::Element rhResult(mResult);
 			Traverse(initializer);
 			EmitPushResult(rhResult, rhDescriptor);
@@ -1687,9 +1687,9 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			EmitPopResultAs(lhResult, rhDescriptor, typeDescriptor);
 		}
 	}
-	else if (typeDescriptor->IsStructType())
+	else if (typeDescriptor.IsStructType())
 	{
-		const TypeSpecifier *structSpecifier = typeDescriptor->GetTypeSpecifier();
+		const TypeSpecifier *structSpecifier = typeDescriptor.GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
 
@@ -1778,13 +1778,13 @@ void GeneratorCore::AdvancePointer(InitializerIndex &index, int32_t offset)
 
 GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPointerResult, const NamedInitializer *member)
 {
-	const TypeDescriptor *returnDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
-	const SignatureType returnType = returnDescriptor->GetSignatureType();
+	const TypeDescriptor &returnDescriptor = member->GetTypeAndValue()->GetTypeDescriptor();
+	const SignatureType returnType = returnDescriptor.GetSignatureType();
 	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(returnDescriptor) : 0;
 
 	{
 		const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-		EmitPushResult(thisPointerResult, &voidStar);
+		EmitPushResult(thisPointerResult, voidStar);
 	}
 
 	if (returnType == SIG_AGGREGATE)
@@ -1812,7 +1812,7 @@ GeneratorCore::Result GeneratorCore::EmitCallNativeGetter(const Result &thisPoin
 }
 
 
-void GeneratorCore::EmitPushResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+void GeneratorCore::EmitPushResultAs(const Result &result, const TypeDescriptor &sourceType, const TypeDescriptor &destType)
 {
 	switch (result.mContext)
 	{
@@ -1855,7 +1855,7 @@ void GeneratorCore::EmitPushResultAs(const Result &result, const TypeDescriptor 
 }
 
 
-void GeneratorCore::EmitPushResult(const Result &result, const TypeDescriptor *typeDescriptor)
+void GeneratorCore::EmitPushResult(const Result &result, const TypeDescriptor &typeDescriptor)
 {
 	switch (result.mContext)
 	{
@@ -1894,11 +1894,11 @@ void GeneratorCore::EmitPushResult(const Result &result, const TypeDescriptor *t
 }
 
 
-void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
+void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	if (typeDescriptor->IsValueType())
+	if (typeDescriptor.IsValueType())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
+		switch (typeDescriptor.GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_UCHAR:
@@ -1926,11 +1926,11 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor *type
 			default:
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
 				EmitOpCode(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor->GetStackSize(mPointerSize)));
+				EmitIndexedValue32(Value32(typeDescriptor.GetStackSize(mPointerSize)));
 				break;
 		}
 	}
-	else if (typeDescriptor->IsPointerType())
+	else if (typeDescriptor.IsPointerType())
 	{
 		if (Is64BitPointer())
 		{
@@ -2014,15 +2014,15 @@ void GeneratorCore::EmitPushFramePointerIndirectValue64(int32_t offset)
 }
 
 
-void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
+void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address.
 	EmitAccumulateAddressOffset(offset);
 
-	if (typeDescriptor->IsValueType())
+	if (typeDescriptor.IsValueType())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
+		switch (typeDescriptor.GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_UCHAR:
@@ -2049,34 +2049,34 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor *typeDescr
 				break;
 			default:
 				EmitOpCode(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor->GetStackSize(mPointerSize)));
+				EmitIndexedValue32(Value32(typeDescriptor.GetStackSize(mPointerSize)));
 			break;
 		}
 	}
-	else if (typeDescriptor->IsPointerType())
+	else if (typeDescriptor.IsPointerType())
 	{
 		EmitOpCode(LOAD_OPCODES.GetPointerOpCode(mPointerSize));
 	}
 }
 
 
-void GeneratorCore::EmitPushStackValue(const TypeDescriptor *typeDescriptor, int32_t offset)
+void GeneratorCore::EmitPushStackValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	if (typeDescriptor->IsPointerType())
+	if (typeDescriptor.IsPointerType())
 	{
 		EmitAccumulateAddressOffset(offset);
 	}
 }
 
 
-void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor *destType)
+void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const TypeDescriptor &destType)
 {
-	const TypeDescriptor *sourceType = typeAndValue.GetTypeDescriptor();
-	if (sourceType->IsPrimitiveType())
+	const TypeDescriptor &sourceType = typeAndValue.GetTypeDescriptor();
+	if (sourceType.IsPrimitiveType())
 	{
-		const Value resultValue = CastValue(typeAndValue, *destType);
-		TypeDescriptor nonConstDestType = *destType;
-		const TypeAndValue resultTav(&nonConstDestType, resultValue);
+		const Value resultValue = CastValue(typeAndValue, destType);
+		TypeDescriptor nonConstDestType = destType;
+		const TypeAndValue resultTav(nonConstDestType, resultValue);
 		EmitPushConstant(resultTav);
 	}
 	else
@@ -2089,8 +2089,8 @@ void GeneratorCore::EmitPushConstantAs(const TypeAndValue &typeAndValue, const T
 
 void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 {
-	const TypeDescriptor *typeDescriptor = typeAndValue.GetTypeDescriptor();
-	switch (typeDescriptor->GetPrimitiveType())
+	const TypeDescriptor &typeDescriptor = typeAndValue.GetTypeDescriptor();
+	switch (typeDescriptor.GetPrimitiveType())
 	{
 		case Token::KEY_BOOL:
 			EmitOpCode(typeAndValue.GetBoolValue() ? OPCODE_CONSTI_1 : OPCODE_CONSTI_0);
@@ -2118,11 +2118,11 @@ void GeneratorCore::EmitPushConstant(const TypeAndValue &typeAndValue)
 			EmitPushConstantDouble(typeAndValue.GetDoubleValue());
 			break;
 		default:
-			if (typeDescriptor->IsNullType())
+			if (typeDescriptor.IsNullType())
 			{
 				EmitOpCode(Is64BitPointer() ? OPCODE_CONSTL_0 : OPCODE_CONSTI_0);
 			}
-			else if (typeDescriptor->IsStringType())
+			else if (typeDescriptor.IsStringType())
 			{
 				EmitOpCode(OPCODE_LOADSTR);
 				const uint16_t stringIndex = MapString(typeAndValue.GetStringValue());
@@ -2381,14 +2381,14 @@ void GeneratorCore::EmitPushConstantDouble(double value)
 }
 
 
-void GeneratorCore::EmitPopResultAs(const Result &result, const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+void GeneratorCore::EmitPopResultAs(const Result &result, const TypeDescriptor &sourceType, const TypeDescriptor &destType)
 {
 	EmitCastWithoutNarrowing32(sourceType, destType);
 	EmitPopResult(result, destType);
 }
 
 
-void GeneratorCore::EmitPopResult(const Result &result, const TypeDescriptor *typeDescriptor)
+void GeneratorCore::EmitPopResult(const Result &result, const TypeDescriptor &typeDescriptor)
 {
 	switch (result.mContext)
 	{
@@ -2407,11 +2407,11 @@ void GeneratorCore::EmitPopResult(const Result &result, const TypeDescriptor *ty
 }
 
 
-void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
+void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	if (typeDescriptor->IsValueType())
+	if (typeDescriptor.IsValueType())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
+		switch (typeDescriptor.GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_CHAR:
@@ -2436,7 +2436,7 @@ void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor *typeD
 				break;
 		}
 	}
-	else if (typeDescriptor->IsPointerType())
+	else if (typeDescriptor.IsPointerType())
 	{
 		if (Is64BitPointer())
 		{
@@ -2520,13 +2520,13 @@ void GeneratorCore::EmitPopFramePointerIndirectValue64(int32_t offset)
 }
 
 
-void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescriptor, int32_t offset)
+void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
 	EmitAccumulateAddressOffset(offset);
 
-	if (typeDescriptor->IsValueType())
+	if (typeDescriptor.IsValueType())
 	{
-		switch (typeDescriptor->GetPrimitiveType())
+		switch (typeDescriptor.GetPrimitiveType())
 		{
 			case Token::KEY_BOOL:
 			case Token::KEY_CHAR:
@@ -2551,7 +2551,7 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor *typeDescri
 				break;
 		}
 	}
-	else if (typeDescriptor->IsPointerType())
+	else if (typeDescriptor.IsPointerType())
 	{
 		EmitOpCode(STORE_OPCODES.GetPointerOpCode(mPointerSize));
 	}
@@ -2588,12 +2588,12 @@ void GeneratorCore::EmitAccumulateAddressOffset(int32_t offset)
 }
 
 
-void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescriptor &destType)
 {
-	switch (destType->GetPrimitiveType())
+	switch (destType.GetPrimitiveType())
 	{
 		case Token::KEY_CHAR:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_SHORT:
 				case Token::KEY_USHORT:
@@ -2621,7 +2621,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 
 		case Token::KEY_BOOL:
 		case Token::KEY_UCHAR:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_SHORT:
 				case Token::KEY_USHORT:
@@ -2648,7 +2648,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_SHORT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
@@ -2673,7 +2673,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_USHORT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
@@ -2698,7 +2698,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_INT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2716,7 +2716,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_UINT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2734,7 +2734,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_LONG:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
@@ -2758,7 +2758,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_ULONG:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
@@ -2782,7 +2782,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_FLOAT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
@@ -2809,7 +2809,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_DOUBLE:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
@@ -2841,12 +2841,12 @@ void GeneratorCore::EmitCast(const TypeDescriptor *sourceType, const TypeDescrip
 }
 
 
-void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType, const TypeDescriptor *destType)
+void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor &sourceType, const TypeDescriptor &destType)
 {
-	switch (destType->GetPrimitiveType())
+	switch (destType.GetPrimitiveType())
 	{
 		case Token::KEY_CHAR:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2865,7 +2865,7 @@ void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType,
 
 		case Token::KEY_BOOL:
 		case Token::KEY_UCHAR:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2883,7 +2883,7 @@ void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType,
 			break;
 
 		case Token::KEY_SHORT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2901,7 +2901,7 @@ void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor *sourceType,
 			break;
 
 		case Token::KEY_USHORT:
-			switch (sourceType->GetPrimitiveType())
+			switch (sourceType.GetPrimitiveType())
 			{
 				case Token::KEY_LONG:
 				case Token::KEY_ULONG:
@@ -2930,17 +2930,17 @@ GeneratorCore::Result GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpres
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor resultDescriptor = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
-	EmitPushResultAs(lhResult, lhDescriptor, &resultDescriptor);
+	EmitPushResultAs(lhResult, lhDescriptor, resultDescriptor);
 
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
-	EmitPushResultAs(rhResult, rhDescriptor, &resultDescriptor);
+	EmitPushResultAs(rhResult, rhDescriptor, resultDescriptor);
 
 	EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
 
@@ -2952,8 +2952,8 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	Result result;
 
 	const MemberExpression *memberExpression = nullptr;
@@ -2969,7 +2969,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			Traverse(rhs);
 			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 
-			if (GetEmitOptionalTemporaries() && !lhDescriptor->IsStructType())
+			if (GetEmitOptionalTemporaries() && !lhDescriptor.IsStructType())
 			{
 				EmitOpCode(OPCODE_DUP);
 				stackDelta += GetStackDelta(OPCODE_DUP);
@@ -2979,14 +2979,14 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			ResultStack::Element lhResult(mResult);
 			Traverse(lhs);
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), voidStar);
 
 			EmitOpCode(OPCODE_INVOKE);
 			EmitQualifiedName(lhResult.GetValue().mNativeMember, BOND_NATIVE_SETTER_SUFFIX);
 		}
 		ApplyStackDelta(stackDelta);
 	}
-	else if (lhDescriptor->IsStructType())
+	else if (lhDescriptor.IsStructType())
 	{
 		ResultStack::Element lhResult(mResult);
 		Traverse(lhs);
@@ -3005,7 +3005,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 		Traverse(rhs);
 		EmitPushAddressOfResult(rhResult);
 		EmitOpCode(OPCODE_MEMCOPYW);
-		EmitIndexedValue32(Value32(lhDescriptor->GetSize(mPointerSize)));
+		EmitIndexedValue32(Value32(lhDescriptor.GetSize(mPointerSize)));
 	}
 	else
 	{
@@ -3031,9 +3031,9 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 		}
 		else
 		{
-			TypeDescriptor intermediateDescriptor = PromoteType(*lhDescriptor);
-			EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
-			EmitPopResultAs(lhResult, &intermediateDescriptor, lhDescriptor);
+			TypeDescriptor intermediateDescriptor = PromoteType(lhDescriptor);
+			EmitPushResultAs(rhResult, rhDescriptor, intermediateDescriptor);
+			EmitPopResultAs(lhResult, intermediateDescriptor, lhDescriptor);
 		}
 	}
 	return result;
@@ -3057,8 +3057,8 @@ void GeneratorCore::EmitLogicalOperator(
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 
 	ResultStack::Element lhResult(mResult);
 	const bool lhsNegated = TraverseCollapseNotOperators(lhs);
@@ -3103,9 +3103,9 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 {
 	const Expression *lhs = binaryExpression->GetLhs();
 	const Expression *rhs = binaryExpression->GetRhs();
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(*lhDescriptor, *rhDescriptor);
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 	uint32_t stackTop = mStackTop.GetTop();
@@ -3119,11 +3119,11 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	    (lhResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    lhDescriptor->IsLeast32IntegerType() &&
+	    lhDescriptor.IsLeast32IntegerType() &&
 	    rhTav.IsValueDefined() &&
 	    IsInRange<int8_t>(rhValue))
 	{
-		EmitOpCode(INC_OPCODES.GetOpCode(*lhDescriptor));
+		EmitOpCode(INC_OPCODES.GetOpCode(lhDescriptor));
 		ByteCode &byteCode = GetByteCode();
 		byteCode.push_back(uint8_t(slotIndex));
 		byteCode.push_back(uint8_t(rhValue));
@@ -3137,19 +3137,19 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	{
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), voidStar);
 			EmitOpCode(OPCODE_DUP);
 		}
 
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), lhResult.GetValue().mNativeMember);
-		EmitCast(lhDescriptor, &intermediateDescriptor);
+		EmitCast(lhDescriptor, intermediateDescriptor);
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
+		EmitPushResultAs(rhResult, rhDescriptor, intermediateDescriptor);
 
 		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
-		EmitCast(&intermediateDescriptor, lhDescriptor);
+		EmitCast(intermediateDescriptor, lhDescriptor);
 
 		if (GetEmitOptionalTemporaries())
 		{
@@ -3172,23 +3172,23 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
-		EmitPushResultAs(lhResult, lhDescriptor, &intermediateDescriptor);
+		EmitPushResultAs(lhResult, lhDescriptor, intermediateDescriptor);
 
 		ResultStack::Element rhResult(mResult);
 		Traverse(rhs);
-		EmitPushResultAs(rhResult, rhDescriptor, &intermediateDescriptor);
+		EmitPushResultAs(rhResult, rhDescriptor, intermediateDescriptor);
 
 		EmitOpCode(opCodeSet.GetOpCode(intermediateDescriptor));
 
 		if (GetEmitOptionalTemporaries())
 		{
-			EmitCast(&intermediateDescriptor, lhDescriptor);
+			EmitCast(intermediateDescriptor, lhDescriptor);
 			EmitOpCode(valueDupOpCode);
 			EmitPopResult(lhResult, lhDescriptor);
 		}
 		else
 		{
-			EmitPopResultAs(lhResult, &intermediateDescriptor, lhDescriptor);
+			EmitPopResultAs(lhResult, intermediateDescriptor, lhDescriptor);
 		}
 	}
 
@@ -3200,8 +3200,8 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 
 GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
-	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const int32_t elementSize = int32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const TypeDescriptor &pointerDescriptor = pointerExpression->GetTypeDescriptor();
+	const int32_t elementSize = int32_t(sign * pointerDescriptor.GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const int64_t offset = offsetTav.AsLongValue() * elementSize;
 	uint32_t stackTop = mStackTop.GetTop();
@@ -3238,7 +3238,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	{
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(pointerResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(pointerResult.GetValue().GetThisPointerResult(), voidStar);
 			EmitOpCode(OPCODE_DUP);
 		}
 
@@ -3285,8 +3285,8 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 
 GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign)
 {
-	const TypeDescriptor *pointerDescriptor = pointerExpression->GetTypeDescriptor();
-	const int32_t elementSize = int32_t(sign * pointerDescriptor->GetDereferencedType().GetSize(mPointerSize));
+	const TypeDescriptor &pointerDescriptor = pointerExpression->GetTypeDescriptor();
+	const int32_t elementSize = int32_t(sign * pointerDescriptor.GetDereferencedType().GetSize(mPointerSize));
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const int64_t offset = offsetTav.AsLongValue() * elementSize;
 
@@ -3322,12 +3322,12 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 
 GeneratorCore::Result GeneratorCore::EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet)
 {
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 
-	const TypeDescriptor *rhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
@@ -3340,17 +3340,17 @@ GeneratorCore::Result GeneratorCore::EmitPointerComparison(const Expression *lhs
 
 GeneratorCore::Result GeneratorCore::EmitPointerDifference(const Expression *lhs, const Expression *rhs)
 {
-	const TypeDescriptor *lhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	ResultStack::Element lhResult(mResult);
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 
-	const TypeDescriptor *rhDescriptor = lhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
-	const uint32_t elementSize = lhDescriptor->GetDereferencedType().GetSize(mPointerSize);
+	const uint32_t elementSize = lhDescriptor.GetDereferencedType().GetSize(mPointerSize);
 	if (IsInRange<int16_t>(elementSize))
 	{
 		EmitOpCode(OPCODE_PTRDIFF);
@@ -3396,18 +3396,18 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 		ResultStack::Element offsetResult(mResult);
 		Traverse(offsetExpression);
 
-		const TypeDescriptor *offsetDescriptor = offsetTav.GetTypeDescriptor();
+		const TypeDescriptor &offsetDescriptor = offsetTav.GetTypeDescriptor();
 		if (IsInRange<int16_t>(elementSize))
 		{
 			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
-			EmitPushResultAs(offsetResult, offsetDescriptor, &intTypeDescriptor);
+			EmitPushResultAs(offsetResult, offsetDescriptor, intTypeDescriptor);
 			EmitOpCode(OPCODE_PTROFF);
 			EmitValue16(Value16(elementSize));
 		}
 		else if (Is64BitPointer())
 		{
 			const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
-			EmitPushResultAs(offsetResult, offsetDescriptor, &longTypeDescriptor);
+			EmitPushResultAs(offsetResult, offsetDescriptor, longTypeDescriptor);
 			EmitPushConstantLong(uint64_t(elementSize));
 			EmitOpCode(OPCODE_MULL);
 			EmitOpCode(OPCODE_ADDL);
@@ -3415,7 +3415,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 		else
 		{
 			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
-			EmitPushResultAs(offsetResult, offsetDescriptor, &intTypeDescriptor);
+			EmitPushResultAs(offsetResult, offsetDescriptor, intTypeDescriptor);
 			EmitPushConstantInt(elementSize);
 			EmitOpCode(OPCODE_MULI);
 			EmitOpCode(OPCODE_ADDI);
@@ -3426,8 +3426,8 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 
 GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
-	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const int32_t pointerOffset = int32_t(sign * operandDescriptor->GetDereferencedType().GetSize(mPointerSize)) * sign;
+	const TypeDescriptor &operandDescriptor = operand->GetTypeDescriptor();
+	const int32_t pointerOffset = int32_t(sign * operandDescriptor.GetDereferencedType().GetSize(mPointerSize)) * sign;
 	uint32_t stackTop = mStackTop.GetTop();
 
 	ResultStack::Element operandResult(mResult);
@@ -3478,7 +3478,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 	{
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), voidStar);
 			EmitOpCode(OPCODE_DUP);
 		}
 
@@ -3556,8 +3556,8 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 
 GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
-	const TypeDescriptor *operandDescriptor = operand->GetTypeDescriptor();
-	const TypeDescriptor intermediateDescriptor = PromoteType(*operandDescriptor);
+	const TypeDescriptor &operandDescriptor = operand->GetTypeDescriptor();
+	const TypeDescriptor intermediateDescriptor = PromoteType(operandDescriptor);
 	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
 	uint32_t stackTop = mStackTop.GetTop();
 
@@ -3569,7 +3569,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	if ((operandResult.GetValue().mContext == Result::CONTEXT_FP_INDIRECT) &&
 	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    operandDescriptor->IsLeast32IntegerType())
+	    operandDescriptor.IsLeast32IntegerType())
 	{
 		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
@@ -3589,7 +3589,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	{
 		{
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), &voidStar);
+			EmitPushResult(operandResult.GetValue().GetThisPointerResult(), voidStar);
 			EmitOpCode(OPCODE_DUP);
 		}
 
@@ -3603,7 +3603,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 
 		EmitOpCode(constOpCodeSet.GetOpCode(intermediateDescriptor));
 		EmitOpCode(ADD_OPCODES.GetOpCode(intermediateDescriptor));
-		EmitCast(&intermediateDescriptor, operandDescriptor);
+		EmitCast(intermediateDescriptor, operandDescriptor);
 
 		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
@@ -3626,7 +3626,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
-		EmitPushResultAs(operandResult, operandDescriptor, &intermediateDescriptor);
+		EmitPushResultAs(operandResult, operandDescriptor, intermediateDescriptor);
 
 		if (GetEmitOptionalTemporaries() && (fixedness == POSTFIX))
 		{
@@ -3638,13 +3638,13 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 
 		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
-			EmitCast(&intermediateDescriptor, operandDescriptor);
+			EmitCast(intermediateDescriptor, operandDescriptor);
 			EmitOpCode(valueDupOpCode);
 			EmitPopResult(operandResult, operandDescriptor);
 		}
 		else
 		{
-			EmitPopResultAs(operandResult, &intermediateDescriptor, operandDescriptor);
+			EmitPopResultAs(operandResult, intermediateDescriptor, operandDescriptor);
 		}
 	}
 
@@ -3658,7 +3658,7 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 {
 	const UnaryExpression *unary = unaryExpression;
 	const Expression *rhs = unaryExpression;
-	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+	const TypeDescriptor &resultDescriptor = unaryExpression->GetTypeDescriptor();
 	bool negated = false;
 	while (unary != nullptr)
 	{
@@ -3675,14 +3675,14 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 		unary = CastNode<UnaryExpression>(rhs);
 	}
 
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
 	if (negated)
 	{
-		EmitOpCode(NEG_OPCODES.GetOpCode(*resultDescriptor));
+		EmitOpCode(NEG_OPCODES.GetOpCode(resultDescriptor));
 	}
 
 	return Result(Result::CONTEXT_STACK_VALUE);
@@ -3692,7 +3692,7 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 GeneratorCore::Result GeneratorCore::EmitNotOperator(const UnaryExpression *unaryExpression)
 {
 	const Expression *rhs = unaryExpression->GetRhs();
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	const bool negated = TraverseCollapseNotOperators(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
@@ -3714,7 +3714,7 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 {
 	const UnaryExpression *unary = unaryExpression;
 	const Expression *rhs = unaryExpression;
-	const TypeDescriptor *resultDescriptor = unaryExpression->GetTypeDescriptor();
+	const TypeDescriptor &resultDescriptor = unaryExpression->GetTypeDescriptor();
 	bool negated = false;
 	while (unary != nullptr)
 	{
@@ -3731,14 +3731,14 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 		unary = CastNode<UnaryExpression>(rhs);
 	}
 
-	const TypeDescriptor *rhDescriptor = rhs->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
 	if (negated)
 	{
-		if (resultDescriptor->GetPrimitiveType() == Token::KEY_LONG)
+		if (resultDescriptor.GetPrimitiveType() == Token::KEY_LONG)
 		{
 			EmitOpCode(OPCODE_CONSTL_1);
 			EmitOpCode(OPCODE_XORL);
@@ -3768,7 +3768,7 @@ void GeneratorCore::EmitPushAddressOfResult(const Result &result)
 {
 	const Result destinationResult = EmitAddressOfResult(result);
 	const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
-	EmitPushResult(destinationResult, &voidStar);
+	EmitPushResult(destinationResult, voidStar);
 }
 
 
@@ -3799,9 +3799,9 @@ GeneratorCore::Result GeneratorCore::EmitDereferenceOperator(const UnaryExpressi
 	ResultStack::Element rhResult(mResult);
 	Traverse(rhs);
 	Result result = rhResult;
-	if (!unaryExpression->GetTypeDescriptor()->IsArrayType())
+	if (!unaryExpression->GetTypeDescriptor().IsArrayType())
 	{
-		result = EmitDereferenceResult(rhResult, rhs->GetTypeDescriptor());
+		result = EmitDereferenceResult(rhResult, &rhs->GetTypeDescriptor());
 	}
 	return result;
 }
@@ -3822,7 +3822,7 @@ GeneratorCore::Result GeneratorCore::EmitDereferenceResult(const Result &result,
 
 		case Result::CONTEXT_FP_INDIRECT:
 		case Result::CONTEXT_ADDRESS_INDIRECT:
-			EmitPushResult(result, typeDescriptor);
+			EmitPushResult(result, *typeDescriptor);
 			outputResult = Result(Result::CONTEXT_ADDRESS_INDIRECT);
 			break;
 
@@ -3840,11 +3840,11 @@ void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter 
 	{
 		EmitArgumentList(NextNode(argList), NextNode(paramList));
 
-		const TypeDescriptor *argDescriptor = argList->GetTypeDescriptor();
+		const TypeDescriptor &argDescriptor = argList->GetTypeDescriptor();
 		const TypeDescriptor *paramDescriptor = paramList->GetTypeDescriptor();
 		ResultStack::Element argResult(mResult);
 		Traverse(argList);
-		EmitPushResultAs(argResult, argDescriptor, paramDescriptor);
+		EmitPushResultAs(argResult, argDescriptor, *paramDescriptor);
 	}
 }
 
@@ -3922,13 +3922,13 @@ void GeneratorCore::EmitIndexedValue64(Value64 value)
 }
 
 
-GeneratorCore::Result::Context GeneratorCore::TransformContext(Result::Context targetContext, const TypeDescriptor *typeDescriptor) const
+GeneratorCore::Result::Context GeneratorCore::TransformContext(Result::Context targetContext, const TypeDescriptor &typeDescriptor) const
 {
 	// Handles special cases for the outcome of the evaluation of an expression.
 	// Normally an identifier in code refers to the value stored at the location represented
 	// by the identifier, with the exception of arrays that evaluate to an address.
 	Result::Context context = targetContext;
-	if (typeDescriptor->IsArrayType())
+	if (typeDescriptor.IsArrayType())
 	{
 		if (targetContext == Result::CONTEXT_FP_INDIRECT)
 		{
@@ -4218,12 +4218,12 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		if (isStaticInitializer)
 		{
 			const TypeDescriptor voidTypeDescriptor = TypeDescriptor::GetVoidType();
-			WriteSizeAndType(&voidTypeDescriptor);
+			WriteSizeAndType(voidTypeDescriptor);
 			WriteParamListSignature(nullptr, false);
 		}
 		else
 		{
-			WriteSizeAndType(function->GetPrototype()->GetReturnType());
+			WriteSizeAndType(*function->GetPrototype()->GetReturnType());
 			WriteParamListSignature(function->GetPrototype()->GetParameterList(), function->GetScope() == SCOPE_STRUCT_MEMBER);
 		}
 
@@ -4289,7 +4289,7 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 {
 	for (const NativeMemberEntry &entry: mNativeMemberList)
 	{
-		const TypeDescriptor *typeDescriptor = entry.mNativeMember->GetTypeAndValue()->GetTypeDescriptor();
+		const TypeDescriptor &typeDescriptor = entry.mNativeMember->GetTypeAndValue()->GetTypeDescriptor();
 
 		// Write the getter function.
 		{
@@ -4316,18 +4316,18 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 
 		// Write the setter function.
 		{
-			const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
-			const uint32_t offset = AlignUp(uint32_t(BOND_SLOT_SIZE) + typeDescriptor->GetSize(mPointerSize), alignment);
-			const uint32_t packedOffset = uint32_t(BOND_SLOT_SIZE) + typeDescriptor->GetStackSize(mPointerSize);
+			const uint32_t alignment = Max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+			const uint32_t offset = AlignUp(uint32_t(BOND_SLOT_SIZE) + typeDescriptor.GetSize(mPointerSize), alignment);
+			const uint32_t packedOffset = uint32_t(BOND_SLOT_SIZE) + typeDescriptor.GetStackSize(mPointerSize);
 			const TypeDescriptor voidDescriptor = TypeDescriptor::GetVoidType();
-			const Parameter parameter(typeDescriptor, -int32_t(offset));
+			const Parameter parameter(&typeDescriptor, -int32_t(offset));
 
 			// Cache the blob start position and skip 4 bytes for the blob size.
 			const int blobStartPos = mStream.GetPosition();
 			mStream.AddOffset(sizeof(Value32));
 			WriteValue16(Value16(functionIndex));
 			WriteValue16(Value16(entry.mSetterNameIndex));
-			WriteSizeAndType(&voidDescriptor);
+			WriteSizeAndType(voidDescriptor);
 			WriteParamListSignature(&parameter, true);
 			WriteValue32(Value32(offset));         // Frame size
 			WriteValue32(Value32(packedOffset));   // Packed frame size
@@ -4353,7 +4353,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 	for (const DataEntry &entry: mDataList)
 	{
 		const TypeAndValue *typeAndValue = entry.mData->GetTypeAndValue();
-		const TypeDescriptor *typeDescriptor = typeAndValue->GetTypeDescriptor();
+		const TypeDescriptor &typeDescriptor = typeAndValue->GetTypeDescriptor();
 
 		// Cache the blob start position and skip 4 bytes for the blob size.
 		const int blobStartPos = mStream.GetPosition();
@@ -4366,7 +4366,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 		Value32 payload(uint32_t(0));
 		if (typeAndValue->IsValueDefined())
 		{
-			switch (typeDescriptor->GetSignatureType())
+			switch (typeDescriptor.GetSignatureType())
 			{
 				case SIG_BOOL:
 					payload.mUInt = typeAndValue->GetBoolValue() ? uint32_t(1) : uint32_t(0);
@@ -4405,7 +4405,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 		}
 		else
 		{
-			switch (typeDescriptor->GetSignatureType())
+			switch (typeDescriptor.GetSignatureType())
 			{
 				case SIG_LONG:
 				case SIG_ULONG:
@@ -4414,7 +4414,7 @@ uint32_t GeneratorCore::WriteDataList(uint16_t dataIndex)
 				break;
 				case SIG_POINTER:
 				case SIG_AGGREGATE:
-					payload.mUInt = typeDescriptor->GetAlignment(mPointerSize);
+					payload.mUInt = typeDescriptor.GetAlignment(mPointerSize);
 					break;
 				default:
 					break;
@@ -4483,9 +4483,9 @@ void GeneratorCore::WriteString(const SimpleString &simpleString)
 }
 
 
-void GeneratorCore::WriteSizeAndType(const TypeDescriptor *type)
+void GeneratorCore::WriteSizeAndType(const TypeDescriptor &type)
 {
-	const uint32_t sizeAndType = EncodeSizeAndType(type->GetSize(mPointerSize), type->GetSignatureType());
+	const uint32_t sizeAndType = EncodeSizeAndType(type.GetSize(mPointerSize), type.GetSignatureType());
 	WriteValue32(Value32(sizeAndType));
 }
 
@@ -4570,11 +4570,11 @@ void GeneratorCore::ApplyStackDelta(int32_t delta)
 }
 
 
-int32_t GeneratorCore::AllocateLocal(const TypeDescriptor* typeDescriptor)
+int32_t GeneratorCore::AllocateLocal(const TypeDescriptor &typeDescriptor)
 {
 	CompiledFunction &function = GetFunction();
-	const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
-	const uint32_t size = typeDescriptor->GetSize(mPointerSize);
+	const uint32_t alignment = Max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+	const uint32_t size = typeDescriptor.GetSize(mPointerSize);
 	const uint32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
 	const uint32_t nextOffset = AlignUp(offset + size, uint32_t(BOND_SLOT_SIZE));
 	mLocalOffset.SetTop(nextOffset);

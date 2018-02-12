@@ -68,7 +68,7 @@ void ValidationPass::Visit(NamedInitializer *namedInitializer)
 {
 	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
 	if ((namedInitializer->GetScope() == SCOPE_LOCAL) && tav.IsValueDefined() &&
-	    tav.GetTypeDescriptor()->IsPrimitiveType())
+	    tav.GetTypeDescriptor().IsPrimitiveType())
 	{
 		namedInitializer->SetElidable(true);
 	}
@@ -77,7 +77,7 @@ void ValidationPass::Visit(NamedInitializer *namedInitializer)
 
 	if (initializer != nullptr)
 	{
-		const TypeDescriptor *typeDescriptor = tav.GetTypeDescriptor();
+		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
 		ValidateInitializer(initializer, typeDescriptor);
 	}
 
@@ -274,13 +274,13 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	else if (jumpStatement->IsReturn())
 	{
 		mHasReturn.SetTop(true);
-		const TypeDescriptor *returnType = jumpStatement->GetRhs()->GetTypeDescriptor();
-		if (!AreConvertibleTypes(*returnType, *mReturnType.GetTop()))
+		const TypeDescriptor &returnType = jumpStatement->GetRhs()->GetTypeDescriptor();
+		if (!AreConvertibleTypes(returnType, *mReturnType.GetTop()))
 		{
 			mErrorBuffer.PushError(
 				CompilerError::INVALID_RETURN_TYPE_CONVERSION,
 				jumpStatement->GetContextToken(),
-				returnType,
+				&returnType,
 				mReturnType.GetTop());
 		}
 	}
@@ -318,23 +318,21 @@ void ValidationPass::Visit(ExpressionStatement *expressionStatement)
 void ValidationPass::Visit(BinaryExpression *binaryExpression)
 {
 	const Token *op = binaryExpression->GetOperator();
-	const TypeAndValue &lhTav = binaryExpression->GetLhs()->GetTypeAndValue();
-	const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
-	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-	const TypeDescriptor *rhDescriptor = rhTav.GetTypeDescriptor();
+	const TypeDescriptor &lhDescriptor = binaryExpression->GetLhs()->GetTypeDescriptor();
+	const TypeDescriptor &rhDescriptor = binaryExpression->GetRhs()->GetTypeDescriptor();
 	switch (op->GetTokenType())
 	{
 		case Token::ASSIGN:
 		{
-			const TypeDescriptor *typeDescriptor = binaryExpression->GetTypeDescriptor();
-			if (!typeDescriptor->IsInstantiable())
+			const TypeDescriptor &typeDescriptor = binaryExpression->GetTypeDescriptor();
+			if (!typeDescriptor.IsInstantiable())
 			{
 				mErrorBuffer.PushError(
 					CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE,
 					binaryExpression->GetContextToken(),
-					typeDescriptor);
+					&typeDescriptor);
 			}
-			AssertAssignableTypes(*rhDescriptor, *lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT);
+			AssertAssignableTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT);
 		}
 		break;
 		case Token::ASSIGN_PLUS:
@@ -342,15 +340,15 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 		case Token::OP_PLUS:
 		case Token::OP_MINUS:
 		{
-			if (lhDescriptor->IsPointerType())
+			if (lhDescriptor.IsPointerType())
 			{
-				const TypeDescriptor parentType = lhDescriptor->GetDereferencedType();
+				const TypeDescriptor parentType = lhDescriptor.GetDereferencedType();
 				if (!parentType.IsInstantiable())
 				{
 					mErrorBuffer.PushError(
 						CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
 						binaryExpression->GetContextToken(),
-						lhDescriptor);
+						&lhDescriptor);
 				}
 			}
 		}
@@ -383,13 +381,13 @@ void ValidationPass::Visit(UnaryExpression *unaryExpression)
 
 void ValidationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 {
-	const TypeDescriptor *typeDescriptor = arraySubscriptExpression->GetTypeDescriptor();
-	if (!typeDescriptor->IsInstantiable())
+	const TypeDescriptor &typeDescriptor = arraySubscriptExpression->GetTypeDescriptor();
+	if (!typeDescriptor.IsInstantiable())
 	{
 		mErrorBuffer.PushError(
 			CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
 			arraySubscriptExpression->GetContextToken(),
-			arraySubscriptExpression->GetLhs()->GetTypeDescriptor());
+			&arraySubscriptExpression->GetLhs()->GetTypeDescriptor());
 	}
 	ParseNodeTraverser::Visit(arraySubscriptExpression);
 }
@@ -399,9 +397,8 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 {
 	ParseNodeTraverser::Visit(functionCallExpression);
 
-	const TypeAndValue &lhTav = functionCallExpression->GetLhs()->GetTypeAndValue();
-	const TypeDescriptor *lhDescriptor = lhTav.GetTypeDescriptor();
-	const TypeSpecifier *lhSpecifier = lhDescriptor->GetTypeSpecifier();
+	const TypeDescriptor &lhDescriptor = functionCallExpression->GetLhs()->GetTypeDescriptor();
+	const TypeSpecifier *lhSpecifier = lhDescriptor.GetTypeSpecifier();
 	const FunctionDefinition *function = CastNode<FunctionDefinition>(lhSpecifier->GetDefinition());
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const Parameter *paramList = prototype->GetParameterList();
@@ -409,12 +406,11 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 	while ((paramList != nullptr) && (argList != nullptr))
 	{
-		const TypeAndValue &argTav = argList->GetTypeAndValue();
 		TypeDescriptor paramDescriptor = *paramList->GetTypeDescriptor();
 		paramDescriptor.ClearConst();
-		const TypeDescriptor *argDescriptor = argTav.GetTypeDescriptor();
+		const TypeDescriptor &argDescriptor = argList->GetTypeDescriptor();
 		AssertAssignableTypes(
-			*argDescriptor,
+			argDescriptor,
 			paramDescriptor,
 			argList->GetContextToken(),
 			CompilerError::INVALID_TYPE_ASSIGNMENT);
@@ -424,22 +420,22 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 }
 
 
-void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor *typeDescriptor)
+void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDescriptor &typeDescriptor)
 {
-	const TypeDescriptor *descriptor = initializer->GetTypeDescriptor();
+	const TypeDescriptor &descriptor = initializer->GetTypeDescriptor();
 	const Expression *expression = initializer->GetExpression();
 	Initializer *initializerList = initializer->GetInitializerList();
 
-	if (descriptor->IsArrayType())
+	if (descriptor.IsArrayType())
 	{
-		uint32_t numElements = typeDescriptor->GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
-		const TypeDescriptor elementDescriptor = descriptor->GetDereferencedType();
+		uint32_t numElements = typeDescriptor.GetLengthExpressionList()->GetTypeAndValue().GetUIntValue();
+		const TypeDescriptor elementDescriptor = descriptor.GetDereferencedType();
 		if (initializerList != nullptr)
 		{
 			while ((numElements > 0) && (initializerList != nullptr))
 			{
 				--numElements;
-				ValidateInitializer(initializerList, &elementDescriptor);
+				ValidateInitializer(initializerList, elementDescriptor);
 				initializerList = NextNode(initializerList);
 			}
 
@@ -448,7 +444,7 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 				mErrorBuffer.PushError(
 					CompilerError::TOO_MANY_INITIALIZERS,
 					initializerList->GetContextToken(),
-					descriptor);
+					&descriptor);
 			}
 		}
 		else if (expression != nullptr)
@@ -457,7 +453,7 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 			const bool isStringInitializer =
 				elementDescriptor.IsCharType() &&
 				(constantExpression != nullptr) &&
-				constantExpression->GetTypeDescriptor()->IsStringType();
+				constantExpression->GetTypeDescriptor().IsStringType();
 
 			if (isStringInitializer)
 			{
@@ -467,14 +463,14 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 					mErrorBuffer.PushError(
 						CompilerError::TOO_MANY_INITIALIZERS,
 						expression->GetContextToken(),
-						descriptor);
+						&descriptor);
 				}
 			}
 		}
 	}
-	else if ((expression != nullptr) && (descriptor->IsStructType()))
+	else if ((expression != nullptr) && (descriptor.IsStructType()))
 	{
-		const TypeSpecifier *structSpecifier = descriptor->GetTypeSpecifier();
+		const TypeSpecifier *structSpecifier = descriptor.GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
 		const DeclarativeStatement *memberDeclarationList = structDeclaration->GetMemberVariableList();
 
@@ -486,7 +482,7 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 				const NamedInitializer *nameList = memberDeclarationList->GetNamedInitializerList();
 				while ((nameList != nullptr) && (initializerList != nullptr))
 				{
-					ValidateInitializer(initializerList, memberDescriptor);
+					ValidateInitializer(initializerList, *memberDescriptor);
 					nameList = NextNode(nameList);
 					initializerList = NextNode(initializerList);
 				}
