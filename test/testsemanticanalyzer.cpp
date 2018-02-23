@@ -310,6 +310,7 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::DUPLICATE_CASE_IN_SWITCH, Bond::Token::KEY_SWITCH, 218},
 		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 229},
 		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_STRING, 234},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 240},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 

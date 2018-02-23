@@ -720,7 +720,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 							CompilerError::NON_CONST_MEMBER_FUNCTION_REQUEST,
 							identifier->GetContextToken(),
 							functionDefinition->GetPrototype(),
-							mStruct.GetTop()->GetConstThisTypeDescriptor());
+							&mStruct.GetTop()->GetConstThisTypeDescriptor());
 					}
 				}
 			}

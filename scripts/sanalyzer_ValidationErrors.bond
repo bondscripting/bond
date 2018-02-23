@@ -233,3 +233,9 @@ void StringInitializerTooLong(int x)
 {
 	char[4] array = "1234";
 }
+
+void PointerToConst(int *p)
+{
+	const int *ptr = p; // bad
+	p = ptr;            // good
+}

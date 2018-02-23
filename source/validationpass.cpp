@@ -406,14 +406,14 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 
 	while ((paramList != nullptr) && (argList != nullptr))
 	{
-		TypeDescriptor paramDescriptor = *paramList->GetTypeDescriptor();
-		paramDescriptor.ClearConst();
+		const TypeDescriptor &paramDescriptor = *paramList->GetTypeDescriptor();
 		const TypeDescriptor &argDescriptor = argList->GetTypeDescriptor();
 		AssertAssignableTypes(
 			argDescriptor,
 			paramDescriptor,
 			argList->GetContextToken(),
-			CompilerError::INVALID_TYPE_ASSIGNMENT);
+			CompilerError::INVALID_TYPE_ASSIGNMENT,
+			true);
 		paramList = NextNode(paramList);
 		argList = NextNode(argList);
 	}
@@ -468,7 +468,16 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 			}
 		}
 	}
-	else if ((expression != nullptr) && (descriptor.IsStructType()))
+	else if (expression != nullptr)
+	{
+		AssertAssignableTypes(
+			expression->GetTypeAndValue().GetTypeDescriptor(),
+			descriptor,
+			expression->GetContextToken(),
+			CompilerError::INVALID_TYPE_ASSIGNMENT,
+			true);
+	}
+	else if (descriptor.IsStructType())
 	{
 		const TypeSpecifier *structSpecifier = descriptor.GetTypeSpecifier();
 		const StructDeclaration *structDeclaration = CastNode<StructDeclaration>(structSpecifier->GetDefinition());
@@ -513,12 +522,26 @@ bool ValidationPass::AssertAssignableTypes(
 	const TypeDescriptor &fromType,
 	const TypeDescriptor &toType,
 	const Token *context,
-	CompilerError::Type errorType)
+	CompilerError::Type errorType,
+	bool ignoreConst)
 {
-	if (!AreAssignableTypes(fromType, toType))
+	if (ignoreConst)
 	{
-		mErrorBuffer.PushError(errorType, context, &fromType, &toType);
-		return false;
+		TypeDescriptor nonConstToType = toType;
+		nonConstToType.ClearConst();
+		if (!AreAssignableTypes(fromType, nonConstToType))
+		{
+			mErrorBuffer.PushError(errorType, context, &fromType, &toType);
+			return false;
+		}
+	}
+	else
+	{
+		if (!AreAssignableTypes(fromType, toType))
+		{
+			mErrorBuffer.PushError(errorType, context, &fromType, &toType);
+			return false;
+		}
 	}
 	return true;
 }

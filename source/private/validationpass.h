@@ -50,7 +50,8 @@ private:
 		const TypeDescriptor &fromType,
 		const TypeDescriptor &toType,
 		const Token *context,
-		CompilerError::Type errorType);
+		CompilerError::Type errorType,
+		bool ignoreConst = false);
 
 	BoolStack mHasDefaultLabel;
 	BoolStack mEndsWithJump;

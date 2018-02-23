@@ -40,7 +40,7 @@ bool AreConvertibleTypes(const TypeDescriptor &fromType, const TypeDescriptor &t
 
 bool AreSameTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType)
 {
-	if (fromType.IsConst() != toType.IsConst())
+	if (fromType.IsConst() && !toType.IsConst())
 	{
 		return false;
 	}

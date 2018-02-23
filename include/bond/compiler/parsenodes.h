@@ -568,11 +568,11 @@ public:
 
 	virtual bool IsResolved() const;
 
-	TypeDescriptor *GetThisTypeDescriptor() { return &mThisTypeDescriptor; }
-	const TypeDescriptor *GetThisTypeDescriptor() const { return &mThisTypeDescriptor; }
+	TypeDescriptor &GetThisTypeDescriptor() { return mThisTypeDescriptor; }
+	const TypeDescriptor &GetThisTypeDescriptor() const { return mThisTypeDescriptor; }
 
-	TypeDescriptor *GetConstThisTypeDescriptor() { return &mConstThisTypeDescriptor; }
-	const TypeDescriptor *GetConstThisTypeDescriptor() const { return &mConstThisTypeDescriptor; }
+	TypeDescriptor &GetConstThisTypeDescriptor() { return mConstThisTypeDescriptor; }
+	const TypeDescriptor &GetConstThisTypeDescriptor() const { return mConstThisTypeDescriptor; }
 
 	const Token *GetSizeToken() const { return mSizeToken; }
 	const Token *GetAlignmentToken() const { return mAlignmentToken; }

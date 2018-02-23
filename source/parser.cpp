@@ -524,8 +524,8 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 				if (structDeclaration != nullptr)
 				{
 					thisTypeDescriptor = isConst ?
-						structDeclaration->GetConstThisTypeDescriptor() :
-						structDeclaration->GetThisTypeDescriptor();
+						&structDeclaration->GetConstThisTypeDescriptor() :
+						&structDeclaration->GetThisTypeDescriptor();
 				}
 				else if (isConst)
 				{
