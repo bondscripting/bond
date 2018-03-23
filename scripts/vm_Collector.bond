@@ -4,7 +4,7 @@ include "memory.bond";
 
 const char *LoadFile(Bond::Collector *collector, const char *fileName, int *length)
 {
-	uchar *buffer = null;
+	char *buffer = null;
 	*length = 0;
 
 	Bond::InputStream *stream = Bond::CreateInputStreamCollected(fileName);

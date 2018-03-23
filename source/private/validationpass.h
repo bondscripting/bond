@@ -47,7 +47,7 @@ private:
 	size_t GetJumpTargetId();
 
 	bool AssertAssignableTypes(
-		const TypeDescriptor &fromType,
+		const TypeAndValue &fromTav,
 		const TypeDescriptor &toType,
 		const Token *context,
 		CompilerError::Type errorType,

@@ -284,6 +284,111 @@ DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors2, "scripts/sanalyzer_ValueEva
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(LossyConversions1, "scripts/sanalyzer_LossyConversions1.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 4},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 5},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 7},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 8},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 9},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 11},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 12},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 13},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 15},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 16},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 17},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 19},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 20},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 22},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 26},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 27},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 28},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 30},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 31},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 32},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 34},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 35},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 37},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 38},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 39},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 41},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 42},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 44},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 45},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 47},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 48},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 50},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 51},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 52},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 54},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 55},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 57},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 58},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_UINT, 60},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 62},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 63},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 64},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 66},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 67},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 68},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 70},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 71},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 72},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 74},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 76},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 77},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 78},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 80},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 81},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 83},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 84},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(LossyConversions2, "scripts/sanalyzer_LossyConversions2.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_ULONG, 4},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 6},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 7},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 8},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 10},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 11},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 12},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 14},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 16},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 17},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 19},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 20},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_UINT, 22},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 23},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 24},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 25},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 27},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 28},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_LONG, 30},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 31},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 32},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
+
+
 DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
@@ -342,6 +447,8 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(TypeEvaluationErrors2)              \
   TEST_ITEM(ValueEvaluationErrors)              \
   TEST_ITEM(ValueEvaluationErrors2)             \
+  TEST_ITEM(LossyConversions1)                  \
+  TEST_ITEM(LossyConversions2)                  \
   TEST_ITEM(ValidationErrors)                   \
   TEST_ITEM(IncludeLibraries)                   \
 

@@ -174,6 +174,8 @@
     "Continue statement not within a loop.")                                               \
   BOND_COMPILER_ERROR(UNREACHABLE_CODE,                                                    \
     "Unreachable code.")                                                                   \
+  BOND_COMPILER_ERROR(LOSSY_CONVERSION,                                                    \
+    "Possible loss of data in conversion from '%0n' to '%1n'.")                            \
   BOND_COMPILER_ERROR(VALUE32_TABLE_OVERFLOW,                                              \
     "32-bit constant table overflow.")                                                     \
   BOND_COMPILER_ERROR(VALUE64_TABLE_OVERFLOW,                                              \

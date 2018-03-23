@@ -120,5 +120,5 @@ ulong Dtoul(double a)
 
 float Dtof(double a)
 {
-	return cast<double>(a);
+	return cast<float>(a);
 }

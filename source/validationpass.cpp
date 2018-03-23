@@ -274,15 +274,12 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	else if (jumpStatement->IsReturn())
 	{
 		mHasReturn.SetTop(true);
-		const TypeDescriptor &returnType = jumpStatement->GetRhs()->GetTypeDescriptor();
-		if (!AreConvertibleTypes(returnType, *mReturnType.GetTop()))
-		{
-			mErrorBuffer.PushError(
-				CompilerError::INVALID_RETURN_TYPE_CONVERSION,
-				jumpStatement->GetContextToken(),
-				&returnType,
-				mReturnType.GetTop());
-		}
+		AssertAssignableTypes(
+			jumpStatement->GetRhs()->GetTypeAndValue(),
+			*mReturnType.GetTop(),
+			jumpStatement->GetContextToken(),
+			CompilerError::INVALID_RETURN_TYPE_CONVERSION,
+			true);
 	}
 	mEndsWithJump.SetTop(mEndsWithJump.GetTop() || endsWithJump);
 }
@@ -319,7 +316,6 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 {
 	const Token *op = binaryExpression->GetOperator();
 	const TypeDescriptor &lhDescriptor = binaryExpression->GetLhs()->GetTypeDescriptor();
-	const TypeDescriptor &rhDescriptor = binaryExpression->GetRhs()->GetTypeDescriptor();
 	switch (op->GetTokenType())
 	{
 		case Token::ASSIGN:
@@ -332,7 +328,8 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 					binaryExpression->GetContextToken(),
 					&typeDescriptor);
 			}
-			AssertAssignableTypes(rhDescriptor, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT);
+			const TypeAndValue &rhTav = binaryExpression->GetRhs()->GetTypeAndValue();
+			AssertAssignableTypes(rhTav, lhDescriptor, op, CompilerError::INVALID_TYPE_ASSIGNMENT);
 		}
 		break;
 		case Token::ASSIGN_PLUS:
@@ -407,9 +404,9 @@ void ValidationPass::Visit(FunctionCallExpression *functionCallExpression)
 	while ((paramList != nullptr) && (argList != nullptr))
 	{
 		const TypeDescriptor &paramDescriptor = *paramList->GetTypeDescriptor();
-		const TypeDescriptor &argDescriptor = argList->GetTypeDescriptor();
+		const TypeAndValue &argTav = argList->GetTypeAndValue();
 		AssertAssignableTypes(
-			argDescriptor,
+			argTav,
 			paramDescriptor,
 			argList->GetContextToken(),
 			CompilerError::INVALID_TYPE_ASSIGNMENT,
@@ -471,7 +468,7 @@ void ValidationPass::ValidateInitializer(Initializer *initializer, const TypeDes
 	else if (expression != nullptr)
 	{
 		AssertAssignableTypes(
-			expression->GetTypeAndValue().GetTypeDescriptor(),
+			expression->GetTypeAndValue(),
 			descriptor,
 			expression->GetContextToken(),
 			CompilerError::INVALID_TYPE_ASSIGNMENT,
@@ -518,18 +515,21 @@ size_t ValidationPass::GetJumpTargetId()
 	return targetId;
 }
 
+
 bool ValidationPass::AssertAssignableTypes(
-	const TypeDescriptor &fromType,
+	const TypeAndValue &fromTav,
 	const TypeDescriptor &toType,
 	const Token *context,
 	CompilerError::Type errorType,
 	bool ignoreConst)
 {
+	const TypeDescriptor &fromType = fromTav.GetTypeDescriptor();
 	if (ignoreConst)
 	{
-		TypeDescriptor nonConstToType = toType;
-		nonConstToType.ClearConst();
-		if (!AreAssignableTypes(fromType, nonConstToType))
+		TypeDescriptor nonConstType = toType;
+		nonConstType.ClearConst();
+		nonConstType.SetUnaddressableLValue();
+		if (!AreAssignableTypes(fromType, nonConstType))
 		{
 			mErrorBuffer.PushError(errorType, context, &fromType, &toType);
 			return false;
@@ -542,6 +542,11 @@ bool ValidationPass::AssertAssignableTypes(
 			mErrorBuffer.PushError(errorType, context, &fromType, &toType);
 			return false;
 		}
+	}
+	if (IsLossyConversion(fromTav, toType))
+	{
+		mErrorBuffer.PushError(CompilerError::LOSSY_CONVERSION, context, &fromType, &toType);
+		return false;
 	}
 	return true;
 }

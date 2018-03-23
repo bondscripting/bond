@@ -443,7 +443,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 			{
 				bool hasError = false;
 				const Token *sizeToken = structDeclaration->GetSizeSpecifier()->GetSizeToken();
-				const uint32_t size = CastValue(sizeToken->GetValue(), sizeToken->GetTokenType(), Token::CONST_UINT).mUInt;
+				const uint32_t size = CastValue(*sizeToken, Token::KEY_UINT).mUInt;
 
 				if (IsNegativeIntegerConstant(*sizeToken) || (size < 1))
 				{
@@ -458,7 +458,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				const Token *alignToken = structDeclaration->GetSizeSpecifier()->GetAlignmentToken();
 				if (alignToken != nullptr)
 				{
-					const uint32_t align = CastValue(alignToken->GetValue(), alignToken->GetTokenType(), Token::CONST_UINT).mUInt;
+					const uint32_t align = CastValue(*alignToken, Token::KEY_UINT).mUInt;
 					if (IsNegativeIntegerConstant(*alignToken) || (align <= 1) || !IsPowerOfTwo(align))
 					{
 						hasError = true;

@@ -110,12 +110,13 @@ bool AreComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB
 bool AreConvertibleTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
 bool AreSameTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
 bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
+bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
 TypeDescriptor PromoteType(const TypeDescriptor &type);
 TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
 
-Value CastValue(const Value &value, Token::TokenType sourceType, Token::TokenType destType);
-Value CastValue(const TypeAndValue &value, const TypeDescriptor &type);
+Value CastValue(const Token &fromValue, Token::TokenType toType);
+Value CastValue(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
 bool IsNegativeIntegerConstant(const Token &token);
 

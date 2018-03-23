@@ -46,12 +46,12 @@ const int *PointerOffset(const int *a, int b)
 int LocalPointerDifference()
 {
 	int [8] a;
-	return &a[4] - &a[0];
+	return cast<int>(&a[4] - &a[0]);
 }
 
 int PointerDifference(const int *a, const int *b)
 {
-	return a - b;
+	return cast<int>(a - b);
 }
 
 native { struct SmallStruct<32, 32> {}; }
@@ -62,7 +62,7 @@ const SmallStruct *SmallStructPointerOffset(const SmallStruct *a, int b)
 
 int SmallStructPointerDifference(const SmallStruct *a, const SmallStruct *b)
 {
-	return a - b;
+	return cast<int>(a - b);
 }
 
 native { struct LargeStruct {}; struct LargeStruct<100000>; }
@@ -73,7 +73,7 @@ const LargeStruct *LargeStructPointerOffset(const LargeStruct *a, int b)
 
 int LargeStructPointerDifference(const LargeStruct *a, const LargeStruct *b)
 {
-	return a - b;
+	return cast<int>(a - b);
 }
 
 int LocalAlignment()
@@ -81,7 +81,7 @@ int LocalAlignment()
 	SmallStruct a;
 	int b;
 	SmallStruct c;
-	return cast<char *>(&c) - cast<char *>(&a);
+	return cast<int>(cast<char *>(&c) - cast<char *>(&a));
 }
 
 bool LocalOverlap()
