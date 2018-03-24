@@ -12,6 +12,7 @@ namespace Bond
 {
 void IsAlnum(Bond::StackFrame &frame);
 void IsAlpha(Bond::StackFrame &frame);
+void IsBlank(Bond::StackFrame &frame);
 void IsCntrl(Bond::StackFrame &frame);
 void IsDigit(Bond::StackFrame &frame);
 void IsGraph(Bond::StackFrame &frame);

@@ -14,19 +14,49 @@ namespace Bond
 
 /// @{
 
+/// \brief Returns whether a character is alphanumeric (i.e. a decimal digit or an upper or lower case letter).
 bool IsAlnum(int c);
+
+/// \brief Returns whether a character is alphabetic (.i.e. an upper or lower case letter).
 bool IsAlpha(int c);
+
+/// \brief Returns whether a character is a whitespace character used for separating words in a sentence.
+bool IsBlank(int c);
+
+/// \brief Returns whether a character is a control character (i.e. a non-printable character).
 bool IsCntrl(int c);
+
+/// \brief Returns whether a character is a decimal digit.
 bool IsDigit(int c);
+
+/// \brief Returns whether a character has a graphical representation (i.e. it is printable and is not a space).
 bool IsGraph(int c);
+
+/// \brief Returns whether a character is a lower case letter.
 bool IsLower(int c);
+
+/// \brief Returns whether a character is a printable character (i.e. it occupies space on a display).
 bool IsPrint(int c);
+
+/// \brief Returns whether a character is a punctuation character.
 bool IsPunct(int c);
+
+/// \brief Returns whether a character is a whitespace character.
 bool IsSpace(int c);
+
+/// \brief Returns whether a character is an upper case letter.
 bool IsUpper(int c);
+
+/// \brief Returns whether a character is a hexadecimal digit character. (i.e. the digits 0 through 9 and
+/// upper and lower case letters A through F).
 bool IsXDigit(int c);
 
+/// \brief Returns an upper case letter converted to lower case. If the given character is not an upper case
+/// letter, it is returned unchanged.
 int ToLower(int c);
+
+/// \brief Returns lower case letter converted to upper case. If the given character is not a lower case
+/// letter, it is returned unchanged.
 int ToUpper(int c);
 
 /// @}

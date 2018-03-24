@@ -1,0 +1,159 @@
+void LossyConversions1()
+{
+	// Bad
+	char c = -129;
+	c = 128;
+
+	c = -129L;
+	c = 128L;
+	c = 128LU;
+
+	c = -129.0f;
+	c = 128.0f;
+	c = 1.1f;
+
+	c = -129.0;
+	c = 128.0;
+	c = 1.1;
+
+	uchar uc = -1;
+	uc = 256;
+
+	uc = -1L;
+	uc = 128L;
+	uc = 128LU;
+
+	uc = -1.0f;
+	uc = 256.0f;
+	uc = 1.1f;
+
+	uc = -1.0;
+	uc = 256.0;
+	uc = 1.1;
+
+	short s = -32769;
+	s = 32768;
+
+	s = -32769L;
+	s = 32768L;
+	s = 32768LU;
+
+	s = -32769.0f;
+	s = 32768.0f;
+
+	s = -32769.0;
+	s = 32768.0;
+
+	ushort us = -1;
+	us = 65536;
+
+	us = -1L;
+	us = 65536L;
+	us = 65536LU;
+
+	us = -1.0f;
+	us = 65536.0f;
+
+	us = -1.0;
+	us = 65536.0;
+
+	int i = 0x80000000U;
+
+	i = 0x80000000L;
+	i = -0x80000001L;
+	i = 0x80000000LU;
+
+	i = cast<float>(0x80000000U);
+	i = -cast<float>(0x81000000U);
+	i = 1.1f;
+
+	i = cast<double>(0x80000000U);
+	i = -cast<double>(0x81000000U);
+	i = 1.1;
+
+	uint ui = -1;
+
+	ui = -1L;
+	ui = 0x100000000L;
+	ui = 0x100000000LU;
+
+	ui = -1.0f;
+	ui = cast<float>(0x100000000L);
+
+	ui = -1.0;
+	ui = cast<double>(0x100000000L);
+
+	// Good
+	c = -128;
+	c = 127;
+
+	c = -128L;
+	c = 127L;
+	c = 127LU;
+
+	c = -128.0f;
+	c = 127.0f;
+
+	c = -128.0;
+	c = 127.0;
+
+	uc = 0;
+	uc = 255;
+
+	uc = 0L;
+	uc = 255L;
+	uc = 255LU;
+
+	uc = 0.0f;
+	uc = 255.0f;
+
+	uc = 0.0;
+	uc = 255.0;
+
+	s = -32768;
+	s = 32767;
+
+	s = -32768L;
+	s = 32767L;
+	s = 32767LU;
+
+	s = -32768.0f;
+	s = 32767.0f;
+
+	s = -32768.0;
+	s = 32767.0;
+
+	us = 0;
+	us = 65535;
+
+	us = 0L;
+	us = 65535L;
+	us = 65535LU;
+
+	us = 0.0f;
+	us = 65535.0f;
+
+	us = 0.0;
+	us = 65535.0;
+
+	i = 0x7fffffffU;
+	i = 0x7fffffffL;
+	i = -0x80000000L;
+	i = 0x7fffffffLU;
+
+	i = cast<float>(0x7fffff00U);
+	i = -cast<float>(0x7fffff00U);
+
+	i = cast<double>(0x7fffffffU);
+	i = -cast<double>(0x7fffffffU);
+
+	ui = 0L;
+	ui = 0xffffffffL;
+	ui = 0xffffffffLU;
+
+	ui = 0.0f;
+	ui = cast<float>(0xffffff00U);
+
+	ui = 0.0;
+	ui = cast<double>(0xffffff00U);
+}

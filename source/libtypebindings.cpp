@@ -7,6 +7,7 @@ const Bond::NativeFunctionBinding TYPE_BINDING_COLLECTION_FUNCTIONS[] =
 {
 	{"Bond.IsAlnum", Bond::IsAlnum},
 	{"Bond.IsAlpha", Bond::IsAlpha},
+	{"Bond.IsBlank", Bond::IsBlank},
 	{"Bond.IsCntrl", Bond::IsCntrl},
 	{"Bond.IsDigit", Bond::IsDigit},
 	{"Bond.IsGraph", Bond::IsGraph},
@@ -24,7 +25,7 @@ const Bond::NativeFunctionBinding TYPE_BINDING_COLLECTION_FUNCTIONS[] =
 const Bond::NativeBindingCollection TYPE_BINDING_COLLECTION =
 {
 	TYPE_BINDING_COLLECTION_FUNCTIONS,
-	13
+	14
 };
 
 }

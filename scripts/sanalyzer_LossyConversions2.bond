@@ -1,0 +1,54 @@
+void LossyConversions2()
+{
+	// Bad
+	long l = 0x8000000000000000LU;
+
+	l = cast<float>(0x8000000000000000LU);
+	l = -cast<float>(0x8100000000000000LU);
+	l = 1.1f;
+
+	l = cast<double>(0x8000000000000000LU);
+	l = -cast<double>(0x8100000000000000LU);
+	l = 1.1;
+
+	ulong ul = -1;
+
+	ul = -1.0f;
+	ul = cast<float>(0x8000000000000000LU) * 2.0f;
+
+	ul = -1.0;
+	ul = cast<double>(0x8000000000000000LU) * 2.0;
+
+	float f = 0xffffffd0U;
+	f = 0xffffffd0L;
+	f = -0xffffffd0L;
+	f = 0xffffffd0LU;
+
+	f = 1e39;
+	f = -1e39;
+
+	double d = 0x7ffffffffffffe00L;
+	d = -0x7ffffffffffffe00L;
+	d = 0xfffffffffffffd00LU;
+
+	// Good
+	l = 0x7fffffffffffffffLU;
+
+	l = cast<float>(0x7fffff0000000000LU);
+	l = -cast<float>(0x7fffff0000000000LU);
+
+	l = cast<double>(0x7ffffffffffff000LU);
+	l = -cast<double>(0x7ffffffffffff000LU);
+
+	ul = 0.0f;
+	ul = cast<float>(0xffffff0000000000LU);
+
+	ul = 0.0;
+	ul = cast<double>(0xfffffffffffff000LU);
+
+	f = cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
+	f = -cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
+
+	d = cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
+	d = -cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
+}

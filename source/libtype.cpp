@@ -21,6 +21,14 @@ void IsAlpha(Bond::StackFrame &frame)
 }
 
 
+void IsBlank(Bond::StackFrame &frame)
+{
+	const int c = frame.GetArg<int>(0);
+	const bool result = isblank(c) != 0;
+	frame.SetReturnValue(result);
+}
+
+
 void IsCntrl(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
