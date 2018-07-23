@@ -98,7 +98,7 @@ public:
 
 	virtual ~Symbol() {}
 
-	virtual const Token *GetContextToken() const { return GetName(); }
+	virtual const Token *GetContextToken() const override { return GetName(); }
 
 	virtual SymbolType GetSymbolType() const = 0;
 	virtual const Token *GetName() const { return nullptr; }
@@ -172,10 +172,10 @@ public:
 
 	virtual ~TypeDescriptor() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const;
+	virtual const Token *GetContextToken() const override;
 
 	TypeSpecifier *GetTypeSpecifier() { return const_cast<TypeSpecifier *>(mTypeSpecifier); }
 	const TypeSpecifier *GetTypeSpecifier() const { return mTypeSpecifier; }
@@ -305,10 +305,10 @@ public:
 
 	virtual ~TypeSpecifier() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const;
+	virtual const Token *GetContextToken() const override;
 
 	const Token *GetPrimitiveTypeToken() const { return mPrimitiveType; }
 
@@ -348,10 +348,10 @@ public:
 	explicit QualifiedIdentifier(const Token *name): mName(name) {}
 	virtual ~QualifiedIdentifier() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
+	virtual const Token *GetContextToken() const override { return mName; }
 
 	const Token *GetName() const { return mName; }
 
@@ -376,17 +376,17 @@ public:
 
 	virtual ~TranslationUnit() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return nullptr; }
+	virtual const Token *GetContextToken() const override { return nullptr; }
 
 	IncludeDirective *GetIncludeDirectiveList() { return mIncludeDirectiveList; }
 	const IncludeDirective *GetIncludeDirectiveList() const { return mIncludeDirectiveList; }
 
+
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
-
 	bool RequiresCodeGeneration() const { return mRequiresCodeGeneration; }
 	void SetRequiresCodeGeneration(bool required) { mRequiresCodeGeneration = required; }
 
@@ -403,10 +403,10 @@ public:
 	explicit IncludeDirective(const Token *includePath): mIncludePath(includePath) {}
 	virtual ~IncludeDirective() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mIncludePath; }
+	virtual const Token *GetContextToken() const override { return mIncludePath; }
 
 	const Token *GetIncludePath() const { return mIncludePath; }
 
@@ -425,11 +425,11 @@ public:
 
 	virtual ~NamespaceDefinition() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_NAMESPACE; }
-	virtual const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_NAMESPACE; }
+	virtual const Token *GetName() const override { return mName; }
 
 	ListParseNode *GetExternalDeclarationList() { return mDeclarationList; }
 	const ListParseNode *GetExternalDeclarationList() const { return mDeclarationList; }
@@ -450,10 +450,10 @@ public:
 
 	virtual ~NativeBlock() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -469,7 +469,7 @@ private:
 class EnumDeclaration: public Symbol
 {
 public:
-	EnumDeclaration(const Token *name):
+	explicit EnumDeclaration(const Token *name):
 		mIdentifier(name),
 		mTypeSpecifier(&INT_TOKEN, &mIdentifier, this),
 		mTypeDescriptor(&mTypeSpecifier, true),
@@ -478,11 +478,11 @@ public:
 
 	virtual ~EnumDeclaration() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_ENUM; }
-	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+	virtual SymbolType GetSymbolType() const override { return TYPE_ENUM; }
+	virtual const Token *GetName() const override { return mIdentifier.GetName(); }
 
 	TypeDescriptor &GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
@@ -508,14 +508,14 @@ public:
 		mValue(value) {}
 	virtual ~Enumerator() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
-	virtual const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_VALUE; }
+	virtual const Token *GetName() const override { return mName; }
 
-	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
+	virtual TypeAndValue *GetTypeAndValue() override { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const override { return &mTypeAndValue; }
 
 	Expression *GetValue() { return mValue; }
 	const Expression *GetValue() const { return mValue; }
@@ -560,13 +560,13 @@ public:
 
 	virtual ~StructDeclaration() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_STRUCT; }
-	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+	virtual SymbolType GetSymbolType() const override { return TYPE_STRUCT; }
+	virtual const Token *GetName() const override { return mIdentifier.GetName(); }
 
-	virtual bool IsResolved() const;
+	virtual bool IsResolved() const override;
 
 	TypeDescriptor &GetThisTypeDescriptor() { return mThisTypeDescriptor; }
 	const TypeDescriptor &GetThisTypeDescriptor() const { return mThisTypeDescriptor; }
@@ -627,10 +627,10 @@ public:
 
 	virtual ~FunctionPrototype() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mName; }
+	virtual const Token *GetContextToken() const override { return mName; }
 
 	const Token *GetName() const { return mName; }
 
@@ -671,14 +671,14 @@ public:
 
 	virtual ~FunctionDefinition() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_FUNCTION; }
-	virtual const Token *GetName() const { return mIdentifier.GetName(); }
+	virtual SymbolType GetSymbolType() const override { return TYPE_FUNCTION; }
+	virtual const Token *GetName() const override { return mIdentifier.GetName(); }
 
-	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
+	virtual TypeAndValue *GetTypeAndValue() override { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const override { return &mTypeAndValue; }
 
 	FunctionPrototype *GetPrototype() { return mPrototype; }
 	const FunctionPrototype *GetPrototype() const { return mPrototype; }
@@ -730,14 +730,14 @@ public:
 
 	virtual ~Parameter() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
-	virtual const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_VALUE; }
+	virtual const Token *GetName() const override { return mName; }
 
-	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
+	virtual TypeAndValue *GetTypeAndValue() override { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const override { return &mTypeAndValue; }
 
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
@@ -768,14 +768,14 @@ public:
 
 	virtual ~NamedInitializer() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_VALUE; }
-	virtual const Token *GetName() const { return mName; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_VALUE; }
+	virtual const Token *GetName() const override { return mName; }
 
-	virtual TypeAndValue *GetTypeAndValue() { return &mTypeAndValue; }
-	virtual const TypeAndValue *GetTypeAndValue() const { return &mTypeAndValue; }
+	virtual TypeAndValue *GetTypeAndValue() override { return &mTypeAndValue; }
+	virtual const TypeAndValue *GetTypeAndValue() const override { return &mTypeAndValue; }
 
 	Initializer *GetInitializer() { return mInitializer; }
 	const Initializer *GetInitializer() const { return mInitializer; }
@@ -817,10 +817,10 @@ public:
 
 	virtual ~Initializer() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const;
+	virtual const Token *GetContextToken() const override;
 
 	const TypeDescriptor &GetTypeDescriptor() const { return mTypeDescriptor; }
 	void SetTypeDescriptor(const TypeDescriptor &descriptor) { mTypeDescriptor = descriptor; }
@@ -847,10 +847,10 @@ public:
 	explicit CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
 	virtual ~CompoundStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_LOCALSCOPE; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_LOCALSCOPE; }
 
 	ListParseNode *GetStatementList() { return mStatementList; }
 	const ListParseNode *GetStatementList() const { return mStatementList; }
@@ -872,10 +872,10 @@ public:
 
 	virtual ~IfStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -911,10 +911,10 @@ public:
 
 	virtual ~SwitchStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -958,10 +958,10 @@ public:
 
 	virtual ~SwitchSection() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_LOCALSCOPE; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_LOCALSCOPE; }
 
 	SwitchLabel *GetLabelList() { return mLabelList; }
 	const SwitchLabel *GetLabelList() const { return mLabelList; }
@@ -984,9 +984,9 @@ class ResolvedSwitchLabel: public ListParseNode
 public:
 	ResolvedSwitchLabel(): mMatch(0), mJumpTargetId(0), mIsDefault(false) {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) {}
-	virtual void Accept(ParseNodeVisitor &visitor) const {}
-	virtual const Token *GetContextToken() const { return nullptr; }
+	virtual void Accept(ParseNodeVisitor &visitor) override {}
+	virtual void Accept(ParseNodeVisitor &visitor) const override {}
+	virtual const Token *GetContextToken() const override { return nullptr; }
 
 	int32_t GetMatch() const { return mMatch; }
 	void SetMatch(int32_t match) { mMatch = match; }
@@ -1021,10 +1021,10 @@ public:
 
 	virtual ~SwitchLabel() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mLabel; }
+	virtual const Token *GetContextToken() const override { return mLabel; }
 
 	const Token *GetLabel() const { return mLabel; }
 
@@ -1054,10 +1054,10 @@ public:
 
 	virtual ~WhileStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -1094,12 +1094,12 @@ public:
 
 	virtual ~ForStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual SymbolType GetSymbolType() const { return TYPE_LOCALSCOPE; }
+	virtual SymbolType GetSymbolType() const override { return TYPE_LOCALSCOPE; }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -1130,10 +1130,10 @@ public:
 	JumpStatement(const Token *keyword, Expression *rhs): mKeyword(keyword), mRhs(rhs) {}
 	virtual ~JumpStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mKeyword; }
+	virtual const Token *GetContextToken() const override { return mKeyword; }
 
 	const Token *GetKeyword() const { return mKeyword; }
 
@@ -1160,10 +1160,10 @@ public:
 
 	virtual ~DeclarativeStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mTypeDescriptor->GetContextToken(); }
+	virtual const Token *GetContextToken() const override { return mTypeDescriptor->GetContextToken(); }
 
 	const TypeDescriptor *GetTypeDescriptor() const { return mTypeDescriptor; }
 	TypeDescriptor *GetTypeDescriptor() { return mTypeDescriptor; }
@@ -1203,10 +1203,10 @@ public:
 	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
 	virtual ~ExpressionStatement() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return (mExpression == nullptr) ? nullptr : mExpression->GetContextToken(); }
+	virtual const Token *GetContextToken() const override { return (mExpression == nullptr) ? nullptr : mExpression->GetContextToken(); }
 
 	Expression *GetExpression() { return mExpression; }
 	const Expression *GetExpression() const { return mExpression; }
@@ -1232,10 +1232,10 @@ public:
 
 	virtual ~ConditionalExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	Expression *GetCondition() { return mCondition; }
 	const Expression *GetCondition() const { return mCondition; }
@@ -1265,10 +1265,10 @@ public:
 
 	virtual ~BinaryExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -1291,10 +1291,10 @@ public:
 	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
 	virtual ~UnaryExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -1313,10 +1313,10 @@ public:
 	PostfixExpression(const Token *op, Expression *lhs): mOperator(op), mLhs(lhs) {}
 	virtual ~PostfixExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -1341,10 +1341,10 @@ public:
 
 	virtual ~MemberExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 	const Token *GetMemberName() const { return mMemberName; }
@@ -1374,10 +1374,10 @@ public:
 
 	virtual ~ArraySubscriptExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -1405,10 +1405,10 @@ public:
 
 	virtual ~FunctionCallExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mContext; }
+	virtual const Token *GetContextToken() const override { return mContext; }
 
 	Expression *GetLhs() { return mLhs; }
 	const Expression *GetLhs() const { return mLhs; }
@@ -1434,10 +1434,10 @@ public:
 
 	virtual ~CastExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const TypeDescriptor *GetTargetTypeDescriptor() const { return mTargetTypeDescriptor; }
 	TypeDescriptor *GetTargetTypeDescriptor() { return mTargetTypeDescriptor; }
@@ -1469,10 +1469,10 @@ public:
 
 	virtual ~PropertyofExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mOperator; }
+	virtual const Token *GetContextToken() const override { return mOperator; }
 
 	const Token *GetOperator() const { return mOperator; }
 
@@ -1495,13 +1495,13 @@ private:
 class ConstantLiteralExpression: public Expression
 {
 public:
-	ConstantLiteralExpression(const Token *value): mValue(value) {}
+	explicit ConstantLiteralExpression(const Token *value): mValue(value) {}
 	virtual ~ConstantLiteralExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mValue; }
+	virtual const Token *GetContextToken() const override { return mValue; }
 
 	const Token *GetValueToken() const { return mValue; }
 
@@ -1520,10 +1520,10 @@ public:
 
 	virtual ~IdentifierExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mIdentifier->GetContextToken(); }
+	virtual const Token *GetContextToken() const override { return mIdentifier->GetContextToken(); }
 
 	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
 	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
@@ -1541,13 +1541,13 @@ private:
 class ThisExpression: public Expression
 {
 public:
-	ThisExpression(const Token *token): mToken(token) {}
+	explicit ThisExpression(const Token *token): mToken(token) {}
 	virtual ~ThisExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return mToken; }
+	virtual const Token *GetContextToken() const override { return mToken; }
 
 private:
 	const Token *mToken;
@@ -1559,10 +1559,10 @@ class EmptyExpression: public Expression
 public:
 	virtual ~EmptyExpression() {}
 
-	virtual void Accept(ParseNodeVisitor &visitor) { visitor.Visit(this); }
-	virtual void Accept(ParseNodeVisitor &visitor) const { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
 
-	virtual const Token *GetContextToken() const { return nullptr; }
+	virtual const Token *GetContextToken() const override { return nullptr; }
 };
 
 

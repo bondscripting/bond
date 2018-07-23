@@ -13,7 +13,7 @@ namespace Bond
 class CboValidatorCore
 {
 public:
-	CboValidatorCore(InputStream &stream):
+	explicit CboValidatorCore(InputStream &stream):
 		mStream(stream),
 		mStreamEnd(stream.GetEndPosition()),
 		mValue32TableOffset(0)

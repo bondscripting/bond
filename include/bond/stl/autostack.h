@@ -105,7 +105,7 @@ public:
 	public:
 		ConstIterator(): mElement(nullptr) {}
 		explicit ConstIterator(const Element *element): mElement(element) {}
-		ConstIterator(const Iterator &iterator): mElement(iterator.mElement) {}
+		explicit ConstIterator(const Iterator &iterator): mElement(iterator.mElement) {}
 
 		bool operator==(const ConstIterator& other) const { return mElement == other.mElement; }
 		bool operator!=(const ConstIterator& other) const { return mElement != other.mElement; }

@@ -16,7 +16,7 @@ class OutputStreamAdaptor
 public:
 	static const int DEFAULT_PRECISION = 6;
 
-	OutputStreamAdaptor(OutputStream *stream):
+	explicit OutputStreamAdaptor(OutputStream *stream):
 		mStream(stream),
 		mFlags(0),
 		mPrecision(DEFAULT_PRECISION),

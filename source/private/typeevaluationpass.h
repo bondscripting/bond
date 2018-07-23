@@ -57,7 +57,7 @@ private:
 	class RecursiveStructAnalyzer: private ParseNodeTraverser
 	{
 	public:
-		RecursiveStructAnalyzer(CompilerErrorBuffer &errorBuffer):
+		explicit RecursiveStructAnalyzer(CompilerErrorBuffer &errorBuffer):
 			mErrorBuffer(errorBuffer),
 			mTopLevelStruct(nullptr)
 		{}

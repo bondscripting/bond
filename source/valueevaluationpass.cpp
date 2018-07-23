@@ -291,7 +291,7 @@ Value UnaryBitNot(const TypeAndValue &value)
 
 struct AlignmentComparator
 {
-	AlignmentComparator(PointerSize pointerSize): mPointerSize(pointerSize) {}
+	explicit AlignmentComparator(PointerSize pointerSize): mPointerSize(pointerSize) {}
 	bool operator()(const DeclarativeStatement &a, const DeclarativeStatement &b) const;
 	PointerSize mPointerSize;
 };

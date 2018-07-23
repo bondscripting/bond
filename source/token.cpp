@@ -49,6 +49,11 @@ TokenTypeSet::TokenTypeSet(
 		Token::TokenType t15):
 	mTypeName(typeName)
 {
+	for (auto &element: mBitField)
+	{
+		element = 0;
+	}
+
 	Add(t0);
 	Add(t1);
 	Add(t2);

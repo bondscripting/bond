@@ -20,7 +20,7 @@ typedef Allocator::AlignedHandle<const CodeSegment> CodeSegmentHandle;
 class CboLoader
 {
 public:
-	CboLoader(Allocator &allocator):
+	explicit CboLoader(Allocator &allocator):
 		mNativeBindingList(NativeBindingList::allocator_type(&allocator)),
 		mOwnedInputStreamList(OwnedInputStreamList::allocator_type(&allocator)),
 		mInputStreamList(InputStreamList::allocator_type(&allocator)),

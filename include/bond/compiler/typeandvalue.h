@@ -16,7 +16,7 @@ class TypeDescriptor;
 class TypeAndValue
 {
 public:
-	TypeAndValue(TypeDescriptor &descriptor):
+	explicit TypeAndValue(TypeDescriptor &descriptor):
 		mTypeDescriptor(descriptor),
 		mValueDefined(false),
 		mResolved(false)

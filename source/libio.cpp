@@ -12,7 +12,7 @@ namespace Bond
 
 struct InputStreamPair
 {
-	InputStreamPair(InputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
+	explicit InputStreamPair(InputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
 	InputStreamAdaptor mAdaptor;
 	InputStreamHandle mHandle;
 };
@@ -21,7 +21,7 @@ typedef WrapperCollectable<InputStreamPair> InputStreamCollectable;
 
 struct OutputStreamPair
 {
-	OutputStreamPair(OutputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
+	explicit OutputStreamPair(OutputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
 	OutputStreamAdaptor mAdaptor;
 	OutputStreamHandle mHandle;
 };

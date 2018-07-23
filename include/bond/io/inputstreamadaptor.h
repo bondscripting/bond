@@ -14,7 +14,7 @@ class InputStream;
 class InputStreamAdaptor
 {
 public:
-	InputStreamAdaptor(InputStream *stream): mStream(stream), mFlags() {}
+	explicit InputStreamAdaptor(InputStream *stream): mStream(stream), mFlags() {}
 
 	InputStream *GetStream() const { return mStream; }
 

@@ -96,8 +96,8 @@ $(OBJFILE): $(SRCFILE) Makefile.common
 	@$(MKDIR) -p $(OBJDIR)
 	$(CXX) $(LIB_CXXFLAGS) $(DEP_CXXFLAGS) $(COMP_CXXFLAGS) $< $(OUT_CXXFLAGS) $@
 
-check: $(SRCFILES)
-	$(CHECK) -DBOGUS_CONFIG --enable=all -I $(INCLUDEDIR) -I $(SOURCEDIR) $^
+check: $(SRCFILES) $(TOOL_SRCFILES)
+	$(CHECK) -DBOGUS_CONFIG --enable=all -I $(INCLUDEDIR) -I $(SRCDIR) $^
 
 
 # Tool targets.

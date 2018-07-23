@@ -13,7 +13,7 @@ class OutputStream;
 class Disassembler
 {
 public:
-	Disassembler(Allocator &allocator):
+	explicit Disassembler(Allocator &allocator):
 		mAllocator(allocator)
 	{}
 	~Disassembler() {}

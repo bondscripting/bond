@@ -14,13 +14,13 @@ namespace Bond
 class StdioOutputStream: public OutputStream
 {
 public:
-	StdioOutputStream(FILE *file):
+	explicit StdioOutputStream(FILE *file):
 		mFile(file)
 	{}
 
-	StdioOutputStream(const char *fileName);
+	explicit StdioOutputStream(const char *fileName);
 
-	StdioOutputStream(StdioFileHandle &&handle):
+	explicit StdioOutputStream(StdioFileHandle &&handle):
 		mHandle(move(handle)),
 		mFile(mHandle.GetFile())
 	{}

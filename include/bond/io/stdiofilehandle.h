@@ -15,7 +15,7 @@ public:
 		mFile(nullptr)
 	{}
 
-	StdioFileHandle(FILE *file):
+	explicit StdioFileHandle(FILE *file):
 		mFile(file)
 	{}
 

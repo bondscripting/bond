@@ -108,7 +108,6 @@ public:
 	/// \param tokens A pointer to an array of Token objects that form the contents of the collection.
 	/// \param numTokens The number of Tokens contained in the collection.
 	TokenCollection(const Token *tokens, int numTokens):
-		mNextCollection(nullptr),
 		mTokens(tokens),
 		mNumTokens(numTokens)
 	{}
@@ -116,14 +115,7 @@ public:
 	/// Returns a TokenStream object to iterate over the contents of the collection.
 	TokenStream GetTokenStream() const { return TokenStream(mTokens, mNumTokens); }
 
-	/// Returns the next daisy-chained TokenCollection.
-	TokenCollection *GetNextCollection() const { return mNextCollection; }
-
-	/// Sets the next daisy-chained TokenCollection.
-	void SetNextCollection(TokenCollection *tokenCollection) { mNextCollection = tokenCollection; }
-
 private:
-	TokenCollection *mNextCollection;
 	const Token *mTokens;
 	int mNumTokens;
 };

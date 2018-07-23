@@ -11,7 +11,7 @@ namespace Bond
 struct MatchOffsetPair
 {
 	MatchOffsetPair(): match(0), offset(0) {}
-	MatchOffsetPair(int32_t m): match(m), offset(0) {}
+	explicit MatchOffsetPair(int32_t m): match(m), offset(0) {}
 	int32_t match;
 	int32_t offset;
 

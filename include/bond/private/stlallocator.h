@@ -63,7 +63,7 @@ public:
 		p->~T();
 	}
 
-	size_type max_size() const { return size_type(-1) / sizeof(T); }
+	size_type max_size() const { return BOND_SIZE_MAX / sizeof(T); }
 
 	Allocator *GetAllocator() const { return mAllocator; }
 

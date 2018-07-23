@@ -23,7 +23,7 @@ class VM;
 class StackFrame
 {
 public:
-	StackFrame(VM &vm):
+	explicit StackFrame(VM &vm):
 		mVm(vm),
 		mFunction(nullptr),
 		mFramePointer(nullptr),

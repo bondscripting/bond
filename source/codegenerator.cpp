@@ -183,7 +183,7 @@ private:
 			mOffset(0)
 		{}
 
-		Result(Context context):
+		explicit Result(Context context):
 			mContext(context),
 			mThisPointerContext(CONTEXT_NONE),
 			mConstantValue(nullptr),
@@ -207,7 +207,7 @@ private:
 			mOffset(thisPointerResult.mOffset)
 		{}
 
-		Result(const TypeAndValue *constantValue):
+		explicit Result(const TypeAndValue *constantValue):
 			mContext(CONTEXT_CONSTANT_VALUE),
 			mThisPointerContext(CONTEXT_NONE),
 			mConstantValue(constantValue),
@@ -276,7 +276,7 @@ private:
 
 	struct InitializerIndex
 	{
-		InitializerIndex(bool isLocal): mCurrentOffset(0), mZeroSize(0), mIsLocal(isLocal) {}
+		explicit InitializerIndex(bool isLocal): mCurrentOffset(0), mZeroSize(0), mIsLocal(isLocal) {}
 		int32_t mCurrentOffset;
 		int32_t mZeroSize;
 		bool mIsLocal;
@@ -336,35 +336,35 @@ private:
 	typedef AutoStack<Result> ResultStack;
 	typedef SizeStack LabelStack;
 
-	virtual void Traverse(const ParseNode *parseNode);
+	virtual void Traverse(const ParseNode *parseNode) override;
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
 	bool TraverseCollapseNotOperators(const Expression *expression);
 	void TraverseOmitConstantFolding(const Expression *expression);
 
-	virtual void Visit(const TranslationUnit *translationUnit);
-	virtual void Visit(const FunctionDefinition *functionDefinition);
-	virtual void Visit(const TypeDescriptor *typeDescriptor) {}
-	virtual void Visit(const NamedInitializer *namedInitializer);
-	virtual void Visit(const CompoundStatement *compoundStatement);
-	virtual void Visit(const IfStatement *ifStatement);
-	virtual void Visit(const SwitchStatement *switchStatement);
-	virtual void Visit(const SwitchSection *switchSection);
-	virtual void Visit(const WhileStatement *whileStatement);
-	virtual void Visit(const ForStatement *forStatement);
-	virtual void Visit(const JumpStatement *jumpStatement);
-	virtual void Visit(const ExpressionStatement *expressionStatement);
-	virtual void Visit(const ConditionalExpression *conditionalExpression);
-	virtual void Visit(const BinaryExpression *binaryExpression);
-	virtual void Visit(const UnaryExpression *unaryExpression);
-	virtual void Visit(const PostfixExpression *postfixExpression);
-	virtual void Visit(const MemberExpression *memberExpression);
-	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression);
-	virtual void Visit(const FunctionCallExpression *functionCallExpression);
-	virtual void Visit(const CastExpression *castExpression);
-	virtual void Visit(const PropertyofExpression *propertyofExpression);
-	virtual void Visit(const ConstantLiteralExpression *constantExpression);
-	virtual void Visit(const IdentifierExpression *identifierExpression);
-	virtual void Visit(const ThisExpression *thisExpression);
+	virtual void Visit(const TranslationUnit *translationUnit) override;
+	virtual void Visit(const FunctionDefinition *functionDefinition) override;
+	virtual void Visit(const TypeDescriptor *typeDescriptor) override {}
+	virtual void Visit(const NamedInitializer *namedInitializer) override;
+	virtual void Visit(const CompoundStatement *compoundStatement) override;
+	virtual void Visit(const IfStatement *ifStatement) override;
+	virtual void Visit(const SwitchStatement *switchStatement) override;
+	virtual void Visit(const SwitchSection *switchSection) override;
+	virtual void Visit(const WhileStatement *whileStatement) override;
+	virtual void Visit(const ForStatement *forStatement) override;
+	virtual void Visit(const JumpStatement *jumpStatement) override;
+	virtual void Visit(const ExpressionStatement *expressionStatement) override;
+	virtual void Visit(const ConditionalExpression *conditionalExpression) override;
+	virtual void Visit(const BinaryExpression *binaryExpression) override;
+	virtual void Visit(const UnaryExpression *unaryExpression) override;
+	virtual void Visit(const PostfixExpression *postfixExpression) override;
+	virtual void Visit(const MemberExpression *memberExpression) override;
+	virtual void Visit(const ArraySubscriptExpression *arraySubscriptExpression) override;
+	virtual void Visit(const FunctionCallExpression *functionCallExpression) override;
+	virtual void Visit(const CastExpression *castExpression) override;
+	virtual void Visit(const PropertyofExpression *propertyofExpression) override;
+	virtual void Visit(const ConstantLiteralExpression *constantExpression) override;
+	virtual void Visit(const IdentifierExpression *identifierExpression) override;
+	virtual void Visit(const ThisExpression *thisExpression) override;
 
 	bool ProcessConstantExpression(const Expression *expression);
 

@@ -29,7 +29,7 @@ public:
 	template <typename T>
 	struct Deallocator
 	{
-		Deallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		explicit Deallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->Free(ptr); }
 		Allocator *mAllocator;
 	};
@@ -71,7 +71,7 @@ public:
 	template <typename T>
 	struct AlignedDeallocator
 	{
-		AlignedDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		explicit AlignedDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->FreeAligned(ptr); }
 		Allocator *mAllocator;
 	};
@@ -113,7 +113,7 @@ public:
 	template <typename T>
 	struct ObjectDeallocator
 	{
-		ObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		explicit ObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{
@@ -164,7 +164,7 @@ public:
 	template <typename T>
 	struct AlignedObjectDeallocator
 	{
-		AlignedObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+		explicit AlignedObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
 		void operator()(T *ptr)
 		{

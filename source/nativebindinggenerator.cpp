@@ -36,7 +36,7 @@ public:
 private:
 	struct NamespaceItem
 	{
-		NamespaceItem(const char *name): mName(name), mPrinted(false) {}
+		explicit NamespaceItem(const char *name): mName(name), mPrinted(false) {}
 		const char *mName;
 		bool mPrinted;
 	};
@@ -70,12 +70,12 @@ private:
 
 void NativeBindingGenerator::Generate(
 	const TranslationUnit *translationUnitList,
-	OutputStream &hStream,
 	OutputStream &cppStream,
+	OutputStream &hStream,
 	const char *collectionName,
 	const char *includeName)
 {
-	NativeBindingGeneratorCore generator(translationUnitList, hStream, cppStream, collectionName, includeName);
+	NativeBindingGeneratorCore generator(translationUnitList, cppStream, hStream, collectionName, includeName);
 	generator.Generate();
 }
 

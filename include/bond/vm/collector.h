@@ -38,7 +38,7 @@ public:
 	typedef T ContentType;
 
 	template<typename... Args>
-	WrapperCollectable(Args&&... args):
+	explicit WrapperCollectable(Args&&... args):
 		mContent(forward<Args>(args)...)
 	{}
 

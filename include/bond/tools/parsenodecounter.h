@@ -8,7 +8,7 @@ namespace Bond
 
 struct ParseNodeCount
 {
-	ParseNodeCount(int defaultValue = 0):
+	explicit ParseNodeCount(int defaultValue = 0):
 		mTranslationUnit(defaultValue),
 		mIncludeDirective(defaultValue),
 		mNamespaceDefinition(defaultValue),
