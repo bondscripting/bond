@@ -152,7 +152,7 @@
     <ClCompile Include="..\..\source\qualifiedname.cpp" />
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
-    <ClCompile Include="..\..\source\simplestring.cpp" />
+    <ClCompile Include="..\..\source\stringview.cpp" />
     <ClCompile Include="..\..\source\stdioinputstream.cpp" />
     <ClCompile Include="..\..\source\stdiooutputstream.cpp" />
     <ClCompile Include="..\..\source\stdiostreamfactory.cpp" />

@@ -479,9 +479,6 @@
     <ClCompile Include="..\..\source\qualifiedname.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\simplestring.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\memoryinputstream.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -495,6 +492,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stdiostreamfactory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stringview.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
   </ItemGroup>
