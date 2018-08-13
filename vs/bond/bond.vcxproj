@@ -89,7 +89,7 @@
     <ClInclude Include="..\..\include\bond\types\datachunk.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
-    <ClInclude Include="..\..\include\bond\types\simplestring.h" />
+    <ClInclude Include="..\..\include\bond\types\stringview.h" />
     <ClInclude Include="..\..\include\bond\types\stringutil.h" />
     <ClInclude Include="..\..\include\bond\types\types.h" />
     <ClInclude Include="..\..\include\bond\types\typeutil.h" />

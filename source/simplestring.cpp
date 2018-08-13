@@ -1,5 +1,5 @@
 #include "bond/io/outputstream.h"
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 
 namespace Bond
 {

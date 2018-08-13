@@ -1,6 +1,6 @@
 #include "framework/asserts.h"
 #include "framework/testlexerframework.h"
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {

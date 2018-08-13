@@ -8,7 +8,7 @@
 #include "bond/tools/disassembler.h"
 #include "bond/types/opcodes.h"
 #include "bond/types/qualifiedname.h"
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 #include "bond/types/value.h"
 #include "bond/version.h"
 

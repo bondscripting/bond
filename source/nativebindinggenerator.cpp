@@ -3,7 +3,7 @@
 #include "bond/io/outputstream.h"
 #include "bond/stl/autostack.h"
 #include "bond/tools/nativebindinggenerator.h"
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 #include <cctype>
 
 namespace Bond

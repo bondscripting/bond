@@ -1,7 +1,7 @@
 #ifndef BOND_COMPILER_TYPEANDVALUE_H
 #define BOND_COMPILER_TYPEANDVALUE_H
 
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 #include "bond/types/value.h"
 
 namespace Bond

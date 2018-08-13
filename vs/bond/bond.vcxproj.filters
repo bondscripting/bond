@@ -162,9 +162,6 @@
     <ClInclude Include="..\..\include\bond\types\opcodes.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\types\simplestring.h">
-      <Filter>Header Files\include\bond\types</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\types\stringutil.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
@@ -323,6 +320,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\bond\vm\collector.h">
       <Filter>Header Files\include\bond\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\stringview.h">
+      <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

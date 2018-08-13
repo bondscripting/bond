@@ -1,7 +1,7 @@
 #ifndef BOND_TYPES_DATACHUNK_H
 #define BOND_TYPES_DATACHUNK_H
 
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 
 namespace Bond
 {

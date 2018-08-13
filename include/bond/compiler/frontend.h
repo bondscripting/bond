@@ -3,7 +3,7 @@
 
 #include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
-#include "bond/types/simplestring.h"
+#include "bond/types/stringview.h"
 
 namespace Bond
 {
