@@ -37,7 +37,7 @@ struct CboLoaderResources
 		mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
 		mValue32Table(reinterpret_cast<Value32 *>(memory + value32TableStart)),
 		mValue64Table(reinterpret_cast<Value64 *>(memory + value64TableStart)),
-		mStringTable(reinterpret_cast<SimpleString *>(memory + stringTableStart)),
+		mStringTable(reinterpret_cast<StringView *>(memory + stringTableStart)),
 		mStringBytes(reinterpret_cast<char *>(memory + stringBytesStart)),
 		mQualifiedNameTable(reinterpret_cast<QualifiedName *>(memory + qualifiedNameTableStart)),
 		mQualifiedNameElementTable(reinterpret_cast<const char **>(memory + qualifiedNameElementTableStart)),
@@ -51,7 +51,7 @@ struct CboLoaderResources
 	ConstantTable *mConstantTables;
 	Value32 *mValue32Table;
 	Value64 *mValue64Table;
-	SimpleString *mStringTable;
+	StringView *mStringTable;
 	char *mStringBytes;
 	QualifiedName *mQualifiedNameTable;
 	const char **mQualifiedNameElementTable;
@@ -155,7 +155,7 @@ CodeSegmentHandle CboLoader::Load()
 	const size_t constantTablesStart = TallyMemoryRequirements<ConstantTable>(memSize, mInputStreamList.size());
 	const size_t value32TableStart = TallyMemoryRequirements<Value32>(memSize, value32Count);
 	const size_t value64TableStart = TallyMemoryRequirements<Value64>(memSize, value64Count);
-	const size_t stringTableStart = TallyMemoryRequirements<SimpleString>(memSize, stringCount);
+	const size_t stringTableStart = TallyMemoryRequirements<StringView>(memSize, stringCount);
 	const size_t stringBytesStart = TallyMemoryRequirements<char>(memSize, stringByteCount);
 	const size_t qualifiedNameTableStart = TallyMemoryRequirements<QualifiedName>(memSize, qualifiedNameCount);
 	const size_t qualifiedNameElementTableStart = TallyMemoryRequirements<const char *>(memSize, qualifiedNameElementCount);
@@ -432,7 +432,7 @@ void CboLoaderCore::Load()
 	}
 	mResources.mValue64Table = value64;
 
-	SimpleString *str = mResources.mStringTable;
+	StringView *str = mResources.mStringTable;
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
 		const size_t length = ReadValue16().mUShort;
@@ -440,7 +440,7 @@ void CboLoaderCore::Load()
 		mStream.Read(buffer, length);
 		buffer[length] = '\0';
 		mResources.mStringBytes += length + 1;
-		*str++ = SimpleString(buffer, length);
+		*str++ = StringView(buffer, length);
 	}
 	mResources.mStringTable = str;
 

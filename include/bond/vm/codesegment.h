@@ -14,7 +14,7 @@ struct ConstantTable
 {
 	const Value32 *mValue32Table;
 	const Value64 *mValue64Table;
-	const SimpleString *mStringTable;
+	const StringView *mStringTable;
 	const QualifiedName *mQualifiedNameTable;
 };
 

@@ -14,9 +14,9 @@ namespace Bond
 	INCLUDE_FILE_ITEM("type.bond",   INCLUDE_TYPE_BOND)   \
 
 
-static const SimpleString INCLUDE_FILE_NAMES[] =
+static const StringView INCLUDE_FILE_NAMES[] =
 {
-#define INCLUDE_FILE_ITEM(name, fileData) SimpleString(name),
+#define INCLUDE_FILE_ITEM(name, fileData) StringView(name),
 	INCLUDE_FILE_LIST
 #undef INCLUDE_FILE_ITEM
 };

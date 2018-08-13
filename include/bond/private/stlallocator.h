@@ -10,60 +10,25 @@ template <typename T>
 class StlAllocator
 {
 public:
-	typedef size_t size_type;
-	typedef ptrdiff_t difference_type;
-	typedef T *pointer;
-	typedef const T *const_pointer;
-	typedef T &reference;
-	typedef const T &const_reference;
-	typedef T &&rval_reference;
-	typedef T value_type;
-	template <typename U> struct rebind { typedef StlAllocator<U> other; };
+	using value_type = T;
 
-	StlAllocator():
-		mAllocator(nullptr)
-	{}
-
-	StlAllocator(Allocator *allocator):
+	StlAllocator(Allocator *allocator) noexcept:
 		mAllocator(allocator)
 	{}
 
-	StlAllocator(const StlAllocator<T> &other):
+	template <typename U> StlAllocator(const StlAllocator<U> &other) noexcept:
 		mAllocator(other.GetAllocator())
 	{}
 
-	template <typename U> StlAllocator(const StlAllocator<U> &other):
-		mAllocator(other.GetAllocator())
-	{}
-
-	~StlAllocator() {}
-
-	pointer address(reference t) const { return &t; }
-
-	const_pointer address(const_reference t) const { return &t; }
-
-	pointer allocate(size_type numElements, const void* = nullptr)
+	value_type *allocate(size_t numElements)
 	{
 		return mAllocator->Alloc<T>(numElements);
 	}
 
-	void deallocate(pointer p, size_type)
+	void deallocate(value_type *p, size_t) noexcept
 	{
 		mAllocator->Free(p);
 	}
-
-	template<class U, class... Args>
-	void construct(U* p, Args&&... args)
-	{
-		new (static_cast<void *>(p)) U(forward<Args>(args)...);
-	}
-
-	void destroy(pointer p)
-	{
-		p->~T();
-	}
-
-	size_type max_size() const { return BOND_SIZE_MAX / sizeof(T); }
 
 	Allocator *GetAllocator() const { return mAllocator; }
 

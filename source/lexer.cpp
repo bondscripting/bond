@@ -179,7 +179,7 @@ TokenCollectionHandle LexerCore::Lex()
 	stream.Reset();
 	GenerateTokens(stream);
 
-	TokenCollection *tokenCollection = new (memHandle.get() + tokenCollectionStart) TokenCollection(mTokens, resources.numTokens);
+	TokenCollection *tokenCollection = new (memHandle.get() + tokenCollectionStart) TokenCollection(mTokens, static_cast<int>(resources.numTokens));
 	memHandle.release();
 
 	return TokenCollectionHandle(mAllocator, tokenCollection);
@@ -559,7 +559,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 					state = STATE_DONE;
 				}
 				break;
-				
+
 			case STATE_NOT:
 				if (c == '=')
 				{
@@ -1252,9 +1252,9 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 	KEYWORD_ITEM(KEY_VOID,      "void")      \
 	KEYWORD_ITEM(KEY_WHILE,     "while")     \
 
-	static const SimpleString KEYWORD_NAMES[] =
+	static const StringView KEYWORD_NAMES[] =
 	{
-#define KEYWORD_ITEM(type, name) SimpleString(name),
+#define KEYWORD_ITEM(type, name) StringView(name),
 		KEYWORD_LIST
 #undef KEYWORD_ITEM
 	};
@@ -1267,8 +1267,8 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 	};
 
 	const size_t numKeywords = sizeof(KEYWORD_NAMES) / sizeof(*KEYWORD_NAMES);
-	const SimpleString *lastKeyword = KEYWORD_NAMES + numKeywords;
-	const SimpleString *keyword = lower_bound(KEYWORD_NAMES, lastKeyword, token.GetText());
+	const StringView *lastKeyword = KEYWORD_NAMES + numKeywords;
+	const StringView *keyword = lower_bound(KEYWORD_NAMES, lastKeyword, token.GetText());
 
 	if ((keyword != lastKeyword) && (*keyword == token.GetText()))
 	{
@@ -1385,7 +1385,7 @@ void LexerCore::EvaluateStringToken(Token &token)
 	}
 
 	*dest = '\0';
-	token.SetStringValue(SimpleString(buffer, usedLength));
+	token.SetStringValue(StringView(buffer, usedLength));
 	PushError(error, token);
 }
 

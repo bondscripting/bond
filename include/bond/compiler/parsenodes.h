@@ -114,8 +114,8 @@ public:
 	const Symbol *GetParentSymbol() const { return mParentSymbol; }
 	void SetParentSymbol(Symbol *parent);
 
-	Symbol *FindSymbol(const SimpleString &name);
-	const Symbol *FindSymbol(const SimpleString &name) const;
+	Symbol *FindSymbol(const StringView &name);
+	const Symbol *FindSymbol(const StringView &name) const;
 
 	Symbol *FindSymbol(const Token *name) { return FindSymbol(name->GetText()); }
 	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetText()); }
@@ -127,7 +127,7 @@ public:
 
 	bool IsAnonymous() const { return GetName() == nullptr; }
 
-	bool Matches(const SimpleString &name) const;
+	bool Matches(const StringView &name) const;
 
 protected:
 	Symbol():

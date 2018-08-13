@@ -10,7 +10,7 @@
 namespace Bond
 {
 
-void FrontEnd::AddInputFile(const SimpleString &inputFileName)
+void FrontEnd::AddInputFile(const StringView &inputFileName)
 {
 	if (!ContainsInputFile(inputFileName))
 	{
@@ -19,7 +19,7 @@ void FrontEnd::AddInputFile(const SimpleString &inputFileName)
 }
 
 
-bool FrontEnd::ContainsInputFile(const SimpleString &inputFileName)
+bool FrontEnd::ContainsInputFile(const StringView &inputFileName)
 {
 	return find(mInputFileNameList.begin(), mInputFileNameList.end(), inputFileName) != mInputFileNameList.end();
 }

@@ -62,7 +62,7 @@ public:
 	void SetULongValue(uint64_t value) { mValue.mULong = value; mValueDefined = true; }
 	uint64_t AsULongValue() const;
 
-	const SimpleString GetStringValue() const { return SimpleString(mValue.mString.buffer, mValue.mString.length); }
+	const StringView GetStringValue() const { return StringView(mValue.mString.buffer, mValue.mString.length); }
 
 	bool IsResolved() const { return mResolved; }
 	void Resolve() { mResolved = true; }

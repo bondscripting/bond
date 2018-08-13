@@ -50,8 +50,8 @@ private:
 	virtual void Visit(const FunctionDefinition *functionDefinition) override;
 	virtual void Visit(const NamedInitializer *namedInitializer) override;
 
-	size_t SplitIdentifiers(const char *str, SimpleString *identifiers, size_t maxIdentifiers) const;
-	void OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers);
+	size_t SplitIdentifiers(const char *str, StringView *identifiers, size_t maxIdentifiers) const;
+	void OpenNamespaces(OutputStream &stream, const StringView *identifiers, size_t numIdentifiers);
 	void CloseNamespaces(OutputStream &stream, size_t numIdentifiers);
 	void PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it);
 	void PrintQualifiedBondName(OutputStream &stream, const Symbol *symbol);
@@ -85,12 +85,12 @@ void NativeBindingGeneratorCore::Generate()
 	BoolStack::Element inNativeBlockElement(mInNativeBlockStack, true);
 
 	const size_t MAX_IDENTIFIER_DEPTH = 128;
-	SimpleString identifiers[MAX_IDENTIFIER_DEPTH];
+	StringView identifiers[MAX_IDENTIFIER_DEPTH];
 	const size_t numIdentifiers = SplitIdentifiers(mCollectionName, identifiers, MAX_IDENTIFIER_DEPTH);
 
 	if (numIdentifiers > 0)
 	{
-		const SimpleString &collectionName = identifiers[numIdentifiers - 1];
+		const StringView &collectionName = identifiers[numIdentifiers - 1];
 
 		// Top of the .h file.
 		const size_t BUFFER_SIZE = 1024;
@@ -241,7 +241,7 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 }
 
 
-size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, SimpleString *identifiers, size_t maxIdentifiers) const
+size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, StringView *identifiers, size_t maxIdentifiers) const
 {
 	bool inIdentifier = false;
 	const char *start = str;
@@ -255,7 +255,7 @@ size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, SimpleStrin
 		{
 			if (!isIdentifierChar)
 			{
-				identifiers[numIdentifiers++] = SimpleString(start, next - start);
+				identifiers[numIdentifiers++] = StringView(start, next - start);
 				inIdentifier = false;
 			}
 		}
@@ -272,14 +272,14 @@ size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, SimpleStrin
 
 	if (inIdentifier)
 	{
-		identifiers[numIdentifiers++] = SimpleString(start, next - start);
+		identifiers[numIdentifiers++] = StringView(start, next - start);
 	}
 
 	return numIdentifiers;
 }
 
 
-void NativeBindingGeneratorCore::OpenNamespaces(OutputStream &stream, const SimpleString *identifiers, size_t numIdentifiers)
+void NativeBindingGeneratorCore::OpenNamespaces(OutputStream &stream, const StringView *identifiers, size_t numIdentifiers)
 {
 	if (numIdentifiers > 1)
 	{

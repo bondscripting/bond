@@ -1,5 +1,5 @@
-#ifndef BOND_TYPES_SIMPLESTRING_H
-#define BOND_TYPES_SIMPLESTRING_H
+#ifndef BOND_TYPES_STRINGVIEW_H
+#define BOND_TYPES_STRINGVIEW_H
 
 #include "bond/types/stringutil.h"
 
@@ -11,21 +11,21 @@ class OutputStream;
 // Wrapper around an externally allocated C string that handles embeded null characters
 // and non-null terminated strings. Also provides some comparison operators, making it
 // useful for storing in containers.
-class SimpleString
+class StringView
 {
 public:
-	SimpleString():
+	StringView():
 		mStr(nullptr),
 		mLength(0)
 	{}
 
-	SimpleString(const char *str):
+	StringView(const char *str):
 		mStr(str)
 	{
 		mLength = StringLength(str);
 	}
 
-	SimpleString(const char *str, size_t length):
+	StringView(const char *str, size_t length):
 		mStr(str),
 		mLength(length)
 	{}
@@ -36,12 +36,12 @@ public:
 
 	void PrintTo(OutputStream &stream) const;
 
-	bool operator==(const SimpleString &other) const
+	bool operator==(const StringView &other) const
 	{
 		return StringEqual(mStr, mLength, other.mStr, other.mLength);
 	}
 
-	bool operator<(const SimpleString &other) const
+	bool operator<(const StringView &other) const
 	{
 		return StringCompare(mStr, mLength, other.mStr, other.mLength) < 0;
 	}

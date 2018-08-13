@@ -4,7 +4,7 @@
 namespace Bond
 {
 
-void SimpleString::PrintTo(Bond::OutputStream &stream) const
+void StringView::PrintTo(Bond::OutputStream &stream) const
 {
 	for (size_t i = 0; i < mLength; ++i)
 	{

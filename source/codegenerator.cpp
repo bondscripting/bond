@@ -284,7 +284,7 @@ private:
 
 	struct QualifiedNameEntry
 	{
-		QualifiedNameEntry(const Symbol *symbol, const SimpleString &suffix): mSymbol(symbol), mSuffix(suffix) {}
+		QualifiedNameEntry(const Symbol *symbol, const StringView &suffix): mSymbol(symbol), mSuffix(suffix) {}
 
 		bool operator<(const QualifiedNameEntry &other) const
 		{
@@ -292,7 +292,7 @@ private:
 		}
 
 		const Symbol *mSymbol;
-		SimpleString mSuffix;
+		StringView mSuffix;
 	};
 
 	struct NativeMemberEntry
@@ -322,11 +322,11 @@ private:
 	};
 
 	typedef Map<QualifiedNameEntry, uint16_t> QualifiedNameIndexMap;
-	typedef Map<SimpleString, uint16_t> StringIndexMap;
+	typedef Map<StringView, uint16_t> StringIndexMap;
 	typedef Map<Value32, uint16_t> Value32IndexMap;
 	typedef Map<Value64, uint16_t> Value64IndexMap;
 	typedef Vector<QualifiedNameEntry> QualifiedNameList;
-	typedef Vector<SimpleString> StringList;
+	typedef Vector<StringView> StringList;
 	typedef Vector<Value32> Value32List;
 	typedef Vector<Value64> Value64List;
 	typedef List<CompiledFunction> FunctionList;
@@ -457,7 +457,7 @@ private:
 	uint32_t WriteDataList(uint16_t dataIndex);
 	void WriteQualifiedName(const QualifiedNameEntry &entry);
 	void WriteQualifiedNameIndices(const Symbol *symbol);
-	void WriteString(const SimpleString &simpleString);
+	void WriteString(const StringView &stringView);
 	void WriteSizeAndType(const TypeDescriptor &type);
 	void WriteParamListSignature(const Parameter *parameterList, bool includeThis);
 	void WriteValue16(Value16 value);
@@ -475,7 +475,7 @@ private:
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
 	uint16_t MapQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
-	uint16_t MapString(const SimpleString &str);
+	uint16_t MapString(const StringView &str);
 	uint16_t MapValue32(const Value32 &value32);
 	uint16_t MapValue64(const Value64 &value32);
 
@@ -4173,9 +4173,9 @@ void GeneratorCore::WriteConstantTable()
 		WriteValue64(value);
 	}
 
-	for (const SimpleString &simpleString: mStringList)
+	for (const StringView &stringView: mStringList)
 	{
-		WriteString(simpleString);
+		WriteString(stringView);
 	}
 
 	for (const QualifiedNameEntry &qualifiedName: mQualifiedNameList)
@@ -4471,10 +4471,10 @@ void GeneratorCore::WriteQualifiedNameIndices(const Symbol *symbol)
 }
 
 
-void GeneratorCore::WriteString(const SimpleString &simpleString)
+void GeneratorCore::WriteString(const StringView &stringView)
 {
-	const size_t length = simpleString.GetLength();
-	const char *str = simpleString.GetString();
+	const size_t length = stringView.GetLength();
+	const char *str = stringView.GetString();
 	WriteValue16(Value16(uint16_t(length)));
 	for (size_t i = 0; i < length; ++i)
 	{
@@ -4607,7 +4607,7 @@ uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffi
 	}
 
 	const uint16_t index = uint16_t(mQualifiedNameList.size());
-	const SimpleString simpleSuffix(suffix);
+	const StringView simpleSuffix(suffix);
 	QualifiedNameEntry entry(symbol, simpleSuffix);
 	auto insertResult = mQualifiedNameIndexMap.emplace(entry, index);
 	if (insertResult.second)
@@ -4635,7 +4635,7 @@ uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffi
 }
 
 
-uint16_t GeneratorCore::MapString(const SimpleString &str)
+uint16_t GeneratorCore::MapString(const StringView &str)
 {
 	if (!IsInRange<uint16_t>(mStringList.size()))
 	{

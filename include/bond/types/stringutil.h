@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-class SimpleString;
+class StringView;
 class OutputStream;
 
 size_t StringLength(const char *str);

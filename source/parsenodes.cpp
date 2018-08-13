@@ -20,7 +20,7 @@ void Symbol::SetParentSymbol(Symbol *parent)
 }
 
 
-Symbol *Symbol::FindSymbol(const SimpleString &name)
+Symbol *Symbol::FindSymbol(const StringView &name)
 {
 	Symbol *symbol = mSymbolList;
 
@@ -33,7 +33,7 @@ Symbol *Symbol::FindSymbol(const SimpleString &name)
 }
 
 
-const Symbol *Symbol::FindSymbol(const SimpleString &name) const
+const Symbol *Symbol::FindSymbol(const StringView &name) const
 {
 	const Symbol *symbol = mSymbolList;
 
@@ -121,7 +121,7 @@ void Symbol::InsertSymbol(Symbol *symbol)
 }
 
 
-bool Symbol::Matches(const SimpleString &name) const
+bool Symbol::Matches(const StringView &name) const
 {
 	const Token *n = GetName();
 	return !IsAnonymous() && (n->GetText() == name);

@@ -133,12 +133,12 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
 
-	const Bond::SimpleString EXPECTED_STRINGS[] = {
-		Bond::SimpleString("string"),
-		Bond::SimpleString("\""),
-		Bond::SimpleString("\'"),
-		Bond::SimpleString("\\"),
-		Bond::SimpleString("\x7e \0 \176", 5)
+	const Bond::StringView EXPECTED_STRINGS[] = {
+		Bond::StringView("string"),
+		Bond::StringView("\""),
+		Bond::StringView("\'"),
+		Bond::StringView("\\"),
+		Bond::StringView("\x7e \0 \176", 5)
 	};
 	const int NUM_STRINGS = sizeof(EXPECTED_STRINGS) / sizeof(*EXPECTED_STRINGS);
 
@@ -250,8 +250,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		ASSERT_FORMAT(Bond::Token::CONST_STRING == token->GetTokenType(),
 			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_STRING), token->GetTokenName()));
 
-		const Bond::SimpleString &expected = EXPECTED_STRINGS[i];
-		const Bond::SimpleString actual = token->GetStringValue();
+		const Bond::StringView &expected = EXPECTED_STRINGS[i];
+		const Bond::StringView actual = token->GetStringValue();
 		ASSERT_FORMAT(expected == actual,
 			("Expected \"%s\", but was \"%s\".", expected.GetString(), actual.GetString()));
 	}

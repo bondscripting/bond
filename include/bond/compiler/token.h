@@ -195,19 +195,19 @@ public:
 	{}
 
 	/// \brief Returns the text that forms the token as it appears in the Bond source.
-	const SimpleString &GetText() const { return mText; }
+	const StringView &GetText() const { return mText; }
 
 	/// \brief Like GetText, but returns the text as a C-style string. The text may be truncated
 	/// if it contains a null character.
 	const char *GetRawText() const { return mText.GetString(); }
 
 	/// \brief Assigns the text that forms the token. The text is assumed to be null terminated.
-	void SetText(const char *text) { mText = SimpleString(text); }
+	void SetText(const char *text) { mText = StringView(text); }
 
 	/// \brief Assigns the text that forms the token. The text may contain null characters..
 	/// \param text The pointer to the string of text.
 	/// \param length The number of characters in the text.
-	void SetText(const char *text, size_t length) { mText = SimpleString(text, length); }
+	void SetText(const char *text, size_t length) { mText = StringView(text, length); }
 
 	/// \brief Returns the name of the Bond source file from which the Token was generated.
 	const char *GetFileName() const { return mFileName; }
@@ -286,13 +286,13 @@ public:
 	void SetDoubleValue(double value) { mValue.mDouble = value; }
 
 	/// \brief Returns the string value of the Token. Valid only for Tokens of type `CONST_STRING`.
-	const SimpleString GetStringValue() const { return SimpleString(mValue.mString.buffer, mValue.mString.length); }
+	const StringView GetStringValue() const { return StringView(mValue.mString.buffer, mValue.mString.length); }
 
 	/// \brief A short-hand for GetStringValue().GetLength().
 	size_t GetStringLength() const { return mValue.mString.length; }
 
 	/// \brief Assigns the string value of the Token. Valid only for Tokens of type `CONST_STRING`.
-	void SetStringValue(const SimpleString &str);
+	void SetStringValue(const StringView &str);
 
 	/// \brief Returns a descriptive name for the token's type.
 	const char *GetTokenName() const;
@@ -301,7 +301,7 @@ public:
 	static const char *GetTokenName(TokenType type);
 
 private:
-	SimpleString mText;
+	StringView mText;
 	Value mValue;
 	StreamPos mStartPos;
 	size_t mEndIndex;

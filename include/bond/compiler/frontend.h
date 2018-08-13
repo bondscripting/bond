@@ -64,13 +64,13 @@ public:
 	FrontEnd &operator=(const FrontEnd &other) = delete;
 
 	/// \brief Adds the name of a Bond source file to the input file list.
-	/// \param inputFileName The name of the file to be loaded. Since SimpleStrings are not deep
-	/// copied, the lifetime of the string must at last span the lifetime of the FrontEnd.
-	void AddInputFile(const SimpleString &inputFileName);
+	/// \param inputFileName The name of the file to be loaded. Since StringViews are not deep
+	/// copied, the lifetime of the string must at least span the lifetime of the FrontEnd.
+	void AddInputFile(const StringView &inputFileName);
 
 	/// \brief Returns whether the given file name exists in the input file list..
 	/// \param inputFileName The name of the file to be tested.
-	bool ContainsInputFile(const SimpleString &inputFileName);
+	bool ContainsInputFile(const StringView &inputFileName);
 
 	/// \brief Performs loading, parsing and semantic analysis of all source files in the input file
 	/// list, as well as those files referenced via include directives.
@@ -81,7 +81,7 @@ public:
 	bool HasErrors() const;
 
 private:
-	typedef List<SimpleString> StringList;
+	typedef List<StringView> StringList;
 
 	StringList mInputFileNameList;
 	TokenCollectionStore &mTokenCollectionStore;

@@ -10,10 +10,10 @@ namespace Bond
 InputStreamHandle MemoryStreamFactory::CreateInputStream(const char *fileName)
 {
 	InputStreamHandle handle;
-	const SimpleString name(fileName);
-	const SimpleString *firstName = mIndex.mChunkNames;
-	const SimpleString *lastName = firstName + mIndex.mNumChunks;
-	const SimpleString *result = lower_bound(firstName, lastName, name);
+	const StringView name(fileName);
+	const StringView *firstName = mIndex.mChunkNames;
+	const StringView *lastName = firstName + mIndex.mNumChunks;
+	const StringView *result = lower_bound(firstName, lastName, name);
 
 	if ((result != lastName) && (*result == name))
 	{

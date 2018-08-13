@@ -25,7 +25,7 @@ public:
 			OutputStream &outputStream):
 		mValue32Table(validationResult.mValue32Count, Value32(), Value32Table::allocator_type(&allocator)),
 		mValue64Table(validationResult.mValue64Count, Value64(), Value64Table::allocator_type(&allocator)),
-		mStringTable(validationResult.mStringCount, SimpleString(), StringTable::allocator_type(&allocator)),
+		mStringTable(validationResult.mStringCount, StringView(), StringTable::allocator_type(&allocator)),
 		mStringBytes(validationResult.mStringByteCount + validationResult.mStringCount, char(), StringBytes::allocator_type(&allocator)),
 		mQualifiedNameTable(validationResult.mQualifiedNameCount, QualifiedName(), QualifiedNameTable::allocator_type(&allocator)),
 		mQualifiedNameElementTable(validationResult.mQualifiedNameElementCount + validationResult.mQualifiedNameCount, nullptr, QualifiedNameElementTable::allocator_type(&allocator)),
@@ -42,7 +42,7 @@ public:
 private:
 	typedef Vector<Value32> Value32Table;
 	typedef Vector<Value64> Value64Table;
-	typedef Vector<SimpleString> StringTable;
+	typedef Vector<StringView> StringTable;
 	typedef Vector<char> StringBytes;
 	typedef Vector<QualifiedName> QualifiedNameTable;
 	typedef Vector<const char *> QualifiedNameElementTable;
@@ -53,7 +53,7 @@ private:
 	void DisassembleDataBlob(size_t blobEnd);
 	void DisassembleParamListSignature();
 	SignatureType DisassembleSizeAndType();
-	void WriteAbbreviatedString(const SimpleString &str);
+	void WriteAbbreviatedString(const StringView &str);
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -115,7 +115,7 @@ void DisassemblerCore::Disassemble()
 	for (size_t i = 0; i < mValidationResult.mStringCount; ++i)
 	{
 		const size_t length = ReadValue16().mUShort;
-		mStringTable[i] = SimpleString(stringBytes, length);
+		mStringTable[i] = StringView(stringBytes, length);
 		mCboStream.Read(stringBytes, length);
 		stringBytes += length;
 		*stringBytes++ = '\0';
@@ -439,7 +439,7 @@ SignatureType DisassemblerCore::DisassembleSizeAndType()
 }
 
 
-void DisassemblerCore::WriteAbbreviatedString(const SimpleString &str)
+void DisassemblerCore::WriteAbbreviatedString(const StringView &str)
 {
 	const size_t length = str.GetLength();
 	const char *s = str.GetString();

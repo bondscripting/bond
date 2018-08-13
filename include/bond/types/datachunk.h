@@ -29,13 +29,13 @@ struct DataChunk
 
 struct DataChunkIndex
 {
-	DataChunkIndex(const SimpleString *chunkNames, const DataChunk *chunks, size_t numChunks):
+	DataChunkIndex(const StringView *chunkNames, const DataChunk *chunks, size_t numChunks):
 		mChunkNames(chunkNames),
 		mChunks(chunks),
 		mNumChunks(numChunks)
 	{}
 
-	const SimpleString *mChunkNames;
+	const StringView *mChunkNames;
 	const DataChunk *mChunks;
 	size_t mNumChunks;
 };

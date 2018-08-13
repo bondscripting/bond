@@ -3,7 +3,7 @@
 namespace Bond
 {
 
-void Token::SetStringValue(const SimpleString &str)
+void Token::SetStringValue(const StringView &str)
 {
 	mValue.mString.buffer = str.GetString();
 	mValue.mString.length = str.GetLength();
