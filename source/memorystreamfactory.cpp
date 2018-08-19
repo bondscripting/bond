@@ -11,15 +11,15 @@ InputStreamHandle MemoryStreamFactory::CreateInputStream(const char *fileName)
 {
 	InputStreamHandle handle;
 	const StringView name(fileName);
-	const StringView *firstName = mIndex.mChunkNames;
-	const StringView *lastName = firstName + mIndex.mNumChunks;
+	const StringView *firstName = mIndex.mDataViewNames;
+	const StringView *lastName = firstName + mIndex.mNumDataViews;
 	const StringView *result = lower_bound(firstName, lastName, name);
 
 	if ((result != lastName) && (*result == name))
 	{
-		const auto chunk = mIndex.mChunks[result - firstName];
-		const auto data = chunk.mData;
-		const auto size = Stream::pos_t(chunk.mLength);
+		const auto dataView = mIndex.mDataViews[result - firstName];
+		const auto data = dataView.mData;
+		const auto size = Stream::pos_t(dataView.mLength);
 		handle = mAllocator.AllocOwnedObject<MemoryInputStream>(data, size);
 	}
 	else if (mDelegateFactory != nullptr)

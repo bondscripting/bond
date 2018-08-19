@@ -1,0 +1,4 @@
+/**
+\defgroup types Types
+\brief Various basic types used throughout the Bond Runtime Library.
+*/

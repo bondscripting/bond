@@ -6,19 +6,19 @@
 namespace Bond
 {
 
-struct DataChunkIndex;
+struct DataViewIndex;
 class MemoryInputStream;
 
 /// \addtogroup io
 /// @{
 
 /// \brief A concrete implementation of StreamFactory that instantiates MemoryInputStreams
-/// for a collection of DataChunks.
+/// for a fixed collection of DataViews.
 /// \ingroup io
 class MemoryStreamFactory: public StreamFactory
 {
 public:
-	MemoryStreamFactory(Allocator &allocator, const DataChunkIndex &index, StreamFactory *delegateFactory = nullptr, bool throwOnFailure = true):
+	MemoryStreamFactory(Allocator &allocator, const DataViewIndex &index, StreamFactory *delegateFactory = nullptr, bool throwOnFailure = true):
 		mAllocator(allocator),
 		mIndex(index),
 		mDelegateFactory(delegateFactory),
@@ -34,7 +34,7 @@ public:
 
 private:
 	Allocator &mAllocator;
-	const DataChunkIndex &mIndex;
+	const DataViewIndex &mIndex;
 	StreamFactory *mDelegateFactory;
 	bool mThrowOnFailure;
 };

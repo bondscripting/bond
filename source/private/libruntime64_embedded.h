@@ -273,7 +273,7 @@ extern const uint8_t IO_CBO_DATA[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
 };
 
-extern const Bond::DataChunk IO_CBO(IO_CBO_DATA, sizeof(IO_CBO_DATA));
+extern const Bond::DataView IO_CBO(IO_CBO_DATA, sizeof(IO_CBO_DATA));
 
 
 extern const uint8_t MATH_CBO_DATA[] =
@@ -539,7 +539,7 @@ extern const uint8_t MATH_CBO_DATA[] =
 	0x40, 0xC9, 0x0F, 0xDB,
 };
 
-extern const Bond::DataChunk MATH_CBO(MATH_CBO_DATA, sizeof(MATH_CBO_DATA));
+extern const Bond::DataView MATH_CBO(MATH_CBO_DATA, sizeof(MATH_CBO_DATA));
 
 
 extern const uint8_t MEMORY_CBO_DATA[] =
@@ -596,7 +596,7 @@ extern const uint8_t MEMORY_CBO_DATA[] =
 	0x00, 0x00,
 };
 
-extern const Bond::DataChunk MEMORY_CBO(MEMORY_CBO_DATA, sizeof(MEMORY_CBO_DATA));
+extern const Bond::DataView MEMORY_CBO(MEMORY_CBO_DATA, sizeof(MEMORY_CBO_DATA));
 
 
 extern const uint8_t STRING_CBO_DATA[] =
@@ -633,7 +633,7 @@ extern const uint8_t STRING_CBO_DATA[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
 };
 
-extern const Bond::DataChunk STRING_CBO(STRING_CBO_DATA, sizeof(STRING_CBO_DATA));
+extern const Bond::DataView STRING_CBO(STRING_CBO_DATA, sizeof(STRING_CBO_DATA));
 
 
 extern const uint8_t TYPE_CBO_DATA[] =
@@ -697,6 +697,6 @@ extern const uint8_t TYPE_CBO_DATA[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
 };
 
-extern const Bond::DataChunk TYPE_CBO(TYPE_CBO_DATA, sizeof(TYPE_CBO_DATA));
+extern const Bond::DataView TYPE_CBO(TYPE_CBO_DATA, sizeof(TYPE_CBO_DATA));
 
 

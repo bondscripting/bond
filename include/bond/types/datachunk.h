@@ -1,23 +1,23 @@
-#ifndef BOND_TYPES_DATACHUNK_H
-#define BOND_TYPES_DATACHUNK_H
+#ifndef BOND_TYPES_DATAVIEW_H
+#define BOND_TYPES_DATAVIEW_H
 
 #include "bond/types/stringview.h"
 
 namespace Bond
 {
 
-struct DataChunk
+struct DataView
 {
-	DataChunk(): mData(nullptr), mLength(0) {}
+	DataView(): mData(nullptr), mLength(0) {}
 
-	DataChunk(const void *data, size_t length):
+	DataView(const void *data, size_t length):
 		mData(data),
 		mLength(length)
 	{}
 
-	DataChunk(const DataChunk &other) = default;
+	DataView(const DataView &other) = default;
 
-	bool operator==(const DataChunk &other) const
+	bool operator==(const DataView &other) const
 	{
 		return (mData == other.mData) && (mLength == other.mLength);
 	}
@@ -27,17 +27,17 @@ struct DataChunk
 };
 
 
-struct DataChunkIndex
+struct DataViewIndex
 {
-	DataChunkIndex(const StringView *chunkNames, const DataChunk *chunks, size_t numChunks):
-		mChunkNames(chunkNames),
-		mChunks(chunks),
-		mNumChunks(numChunks)
+	DataViewIndex(const StringView *dataViewNames, const DataView *dataViews, size_t numDataViews):
+		mDataViewNames(dataViewNames),
+		mDataViews(dataViews),
+		mNumDataViews(numDataViews)
 	{}
 
-	const StringView *mChunkNames;
-	const DataChunk *mChunks;
-	size_t mNumChunks;
+	const StringView *mDataViewNames;
+	const DataView *mDataViews;
+	size_t mNumDataViews;
 };
 
 }

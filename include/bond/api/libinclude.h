@@ -8,7 +8,7 @@ namespace Bond
 
 #include "bond/private/libinclude_embedded.h"
 
-extern const DataChunkIndex INCLUDE_FILE_INDEX;
+extern const DataViewIndex INCLUDE_FILE_INDEX;
 
 }
 

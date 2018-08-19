@@ -22,7 +22,7 @@ static const StringView INCLUDE_FILE_NAMES[] =
 };
 
 
-static const DataChunk INCLUDE_FILE_DATA[] =
+static const DataView INCLUDE_FILE_DATA[] =
 {
 #define INCLUDE_FILE_ITEM(name, fileData) fileData,
 	INCLUDE_FILE_LIST
@@ -30,7 +30,7 @@ static const DataChunk INCLUDE_FILE_DATA[] =
 };
 
 
-const DataChunkIndex INCLUDE_FILE_INDEX(
+const DataViewIndex INCLUDE_FILE_INDEX(
 	INCLUDE_FILE_NAMES,
 	INCLUDE_FILE_DATA,
 	sizeof(INCLUDE_FILE_NAMES) / sizeof(*INCLUDE_FILE_NAMES));
