@@ -2,7 +2,7 @@
 #include "bond/io/memorystreamfactory.h"
 #include "bond/stl/algorithm.h"
 #include "bond/systems/assert.h"
-#include "bond/types/datachunk.h"
+#include "bond/types/dataview.h"
 
 namespace Bond
 {

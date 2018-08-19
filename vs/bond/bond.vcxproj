@@ -86,7 +86,7 @@
     <ClInclude Include="..\..\include\bond\tools\disassembler.h" />
     <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h" />
-    <ClInclude Include="..\..\include\bond\types\datachunk.h" />
+    <ClInclude Include="..\..\include\bond\types\dataview.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
     <ClInclude Include="..\..\include\bond\types\stringview.h" />

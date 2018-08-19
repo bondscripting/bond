@@ -312,9 +312,6 @@
     <ClInclude Include="..\..\include\bond\io\streamfactory.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\types\datachunk.h">
-      <Filter>Header Files\include\bond\types</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\stdiostreamfactory.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -322,6 +319,9 @@
       <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\types\stringview.h">
+      <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\types\dataview.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
   </ItemGroup>

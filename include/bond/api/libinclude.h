@@ -1,7 +1,7 @@
 #ifndef BOND_API_LIBINCLUDE_H
 #define BOND_API_LIBINCLUDE_H
 
-#include "bond/types/datachunk.h"
+#include "bond/types/dataview.h"
 
 namespace Bond
 {

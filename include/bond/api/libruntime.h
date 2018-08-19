@@ -6,7 +6,7 @@
 #include "bond/api/libmemory.h"
 #include "bond/api/libstring.h"
 #include "bond/api/libtype.h"
-#include "bond/types/datachunk.h"
+#include "bond/types/dataview.h"
 
 namespace Bond
 {
