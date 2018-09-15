@@ -23,35 +23,35 @@ void LoadAllLibs(CboLoader &cboLoader)
 void LoadLibIo(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(IO_BINDING_COLLECTION);
-	cboLoader.AddCboFile(IO_CBO.mData, IO_CBO.mLength);
+	cboLoader.AddCboFile(IO_CBO.GetData(), IO_CBO.GetLength());
 }
 
 
 void LoadLibMath(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(MATH_BINDING_COLLECTION);
-	cboLoader.AddCboFile(MATH_CBO.mData, MATH_CBO.mLength);
+	cboLoader.AddCboFile(MATH_CBO.GetData(), MATH_CBO.GetLength());
 }
 
 
 void LoadLibMemory(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(MEMORY_BINDING_COLLECTION);
-	cboLoader.AddCboFile(MEMORY_CBO.mData, MEMORY_CBO.mLength);
+	cboLoader.AddCboFile(MEMORY_CBO.GetData(), MEMORY_CBO.GetLength());
 }
 
 
 void LoadLibString(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(STRING_BINDING_COLLECTION);
-	cboLoader.AddCboFile(STRING_CBO.mData, STRING_CBO.mLength);
+	cboLoader.AddCboFile(STRING_CBO.GetData(), STRING_CBO.GetLength());
 }
 
 
 void LoadLibType(CboLoader &cboLoader)
 {
 	cboLoader.AddNativeBinding(TYPE_BINDING_COLLECTION);
-	cboLoader.AddCboFile(TYPE_CBO.mData, TYPE_CBO.mLength);
+	cboLoader.AddCboFile(TYPE_CBO.GetData(), TYPE_CBO.GetLength());
 }
 
 }

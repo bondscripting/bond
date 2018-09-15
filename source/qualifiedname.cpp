@@ -5,6 +5,8 @@
 namespace Bond
 {
 
+const char *const QualifiedName::EMPTY_NAME[1] = {nullptr};
+
 void QualifiedName::PrintTo(OutputStream &stream) const
 {
 	const char *const *elements = mElements;

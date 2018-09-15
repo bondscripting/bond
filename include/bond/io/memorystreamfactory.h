@@ -6,7 +6,7 @@
 namespace Bond
 {
 
-struct DataViewIndex;
+class DataViewIndex;
 class MemoryInputStream;
 
 /// \addtogroup io

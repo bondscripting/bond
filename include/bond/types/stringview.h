@@ -8,7 +8,7 @@ namespace Bond
 
 class OutputStream;
 
-/// \brief A wrapper around a constant array of chars (a.k.a. a constant C-style string).
+/// \brief An immutable wrapper around a constant array of chars (a.k.a. a constant C-style string).
 ///
 /// StringView can handle strings with embeded null characters as well as non-null terminated
 /// strings. It also provides some comparison operators, making it useful for storing in
