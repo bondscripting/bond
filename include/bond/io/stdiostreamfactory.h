@@ -12,12 +12,14 @@ class StdioInputStream;
 /// \addtogroup io
 /// @{
 
-/// \brief A concrete implementation of StreamFactory that creates instances of StdioInputStream and StdioOutputStream.
+/// \brief A concrete implementation of StreamFactory that creates instances of StdioInputStream
+/// and StdioOutputStream.
 /// \ingroup io
 class StdioStreamFactory: public StreamFactory
 {
 public:
-	explicit StdioStreamFactory(Allocator &allocator, const char *rootPath = nullptr, StreamFactory *delegateFactory = nullptr, bool throwOnFailure = true):
+	explicit StdioStreamFactory(Allocator &allocator, const char *rootPath = nullptr,
+			StreamFactory *delegateFactory = nullptr, bool throwOnFailure = true):
 		mAllocator(allocator),
 		mRootPath(rootPath),
 		mDelegateFactory(delegateFactory),

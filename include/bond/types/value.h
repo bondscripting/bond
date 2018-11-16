@@ -6,6 +6,10 @@
 namespace Bond
 {
 
+/// \addtogroup types
+/// @{
+
+/// \brief Union of all value types representable by a Token in the Bond compiler.
 union Value
 {
 	Value(): mInt(0) {}
@@ -33,6 +37,8 @@ union Value
 };
 
 
+/// \brief Union of all 16 bit value types used within the Bond compiler, the CBO file format,
+/// and the Bond Virtual Machine.
 union Value16
 {
 	Value16(): mShort(0) {}
@@ -53,6 +59,8 @@ union Value16
 };
 
 
+/// \brief Union of all 32 bit value types used within the Bond compiler, the CBO file format,
+/// and the Bond Virtual Machine.
 union Value32
 {
 	Value32(): mInt(0) {}
@@ -75,6 +83,8 @@ union Value32
 };
 
 
+/// \brief Union of all 64 bit value types used within the Bond compiler, the CBO file format,
+/// and the Bond Virtual Machine.
 union Value64
 {
 	Value64(): mLong(0) {}
@@ -101,9 +111,16 @@ union Value64
 };
 
 
+/// \brief Returns the result of the expression: <code>a.mUShort < b.mUShort</code>.
 inline bool operator <(const Value16 &a, const Value16 &b) { return a.mUShort < b.mUShort; }
+
+/// \brief Returns the result of the expression: <code>a.mUInt < b.mUInt</code>.
 inline bool operator <(const Value32 &a, const Value32 &b) { return a.mUInt < b.mUInt; }
+
+/// \brief Returns the result of the expression: <code>a.mULong < b.mULong</code>.
 inline bool operator <(const Value64 &a, const Value64 &b) { return a.mULong < b.mULong; }
+
+/// @}
 
 }
 

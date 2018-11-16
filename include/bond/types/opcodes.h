@@ -6,6 +6,9 @@
 namespace Bond
 {
 
+/// \addtogroup types
+/// @{
+
 #define BOND_OPCODE_LIST \
 	/*               Opcode,       mnemonic,     parameter,    stack delta */ \
 	BOND_OPCODE_ITEM(NOP,          nop,          NONE,         0)  \
@@ -270,6 +273,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(RETURNMEMW,   returnmemw,   INT,          -1) \
 
 
+/// \brief Enumeration of all opcodes in the Bond Virtual Machine instruction set.
 enum OpCode
 {
 #define BOND_OPCODE_ITEM(opCode, mnemonic, param, stackDelta) OPCODE_ ## opCode,
@@ -279,6 +283,8 @@ enum OpCode
 };
 
 
+/// \brief Enumeration describing all combinations of parameter types for the instructions
+/// in the Bond Virtual Machine instruction set.
 enum OpCodeParam
 {
 	OC_PARAM_NONE,
@@ -299,9 +305,18 @@ enum OpCodeParam
 };
 
 
+/// \brief Returns a string representation of the given opcode.
 const char *GetOpCodeMnemonic(OpCode opCode);
+
+/// \brief Returns a value of the OpCodeParam enumeration describing the parameter types
+/// for the given opcode.
 OpCodeParam GetOpCodeParamType(OpCode opCode);
+
+/// \brief Returns the how much the given opcode moves the stack pointer in multiples of
+/// BOND_SLOT_SIZE bytes.
 int32_t GetStackDelta(OpCode opCode);
+
+/// @}
 
 }
 
