@@ -2,8 +2,9 @@
 #include <cctype>
 #include <climits>
 #include <cstring>
+#include <vector>
 
-void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
+void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName, const char *linkage)
 {
 	char baseName[LINE_MAX];
 	const char *n = inputFileName;
@@ -17,7 +18,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 
 	if (hFile != nullptr)
 	{
-		fprintf(hFile, "extern const Bond::DataView %s;\n", baseName);
+		fprintf(hFile, "%s const Bond::DataView %s;\n", linkage, baseName);
 	}
 
 	if (cppFile != nullptr)
@@ -27,7 +28,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 		FILE *inputFile = fopen(inputFileName, "rb");
 		if (inputFile != nullptr)
 		{
-			fprintf(cppFile, "extern const uint8_t %s_DATA[] =\n{\n", baseName);
+			fprintf(cppFile, "%s const uint8_t %s_DATA[] =\n{\n", linkage, baseName);
 
 			while (!feof(inputFile))
 			{
@@ -43,7 +44,7 @@ void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName)
 				}
 			}
 
-			fprintf(cppFile, "};\n\nextern const Bond::DataView %s(%s_DATA, sizeof(%s_DATA));\n\n\n", baseName, baseName, baseName);
+			fprintf(cppFile, "};\n\n%s const Bond::DataView %s(%s_DATA, sizeof(%s_DATA));\n\n\n", linkage, baseName, baseName, baseName);
 			fclose(inputFile);
 		}
 	}
@@ -55,8 +56,8 @@ int main(int argc, const char *argv[])
 	const size_t MAX_ENTRIES = 256;
 	const char *cppFileName = nullptr;
 	const char *hFileName = nullptr;
-	const char *inputFileNames[MAX_ENTRIES];
-	size_t numInputFiles = 0;
+	const char *linkage = "extern";
+	std::vector<const char *> inputFileNames;
 
 	bool error = false;
 	for (int i = 1; i < argc; ++i)
@@ -85,14 +86,18 @@ int main(int argc, const char *argv[])
 				error = true;
 			}
 		}
+		else if (strcmp(argv[i], "-s") == 0)
+		{
+			linkage = "static";
+		}
 		else if (argv[i][0] == '-')
 		{
 			fprintf(stderr, "Unknown option '%s'\n", argv[i]);
 			error = true;
 		}
-		else if (numInputFiles < MAX_ENTRIES)
+		else
 		{
-			inputFileNames[numInputFiles++] = argv[i];
+			inputFileNames.push_back(argv[i]);
 		}
 	}
 
@@ -114,9 +119,9 @@ int main(int argc, const char *argv[])
 		hFile = fopen(hFileName, "w");
 	}
 
-	for (size_t i = 0; i < numInputFiles; ++i)
+	for (auto fileName : inputFileNames)
 	{
-		EmbedFile(cppFile, hFile, inputFileNames[i]);
+		EmbedFile(cppFile, hFile, fileName, linkage);
 	}
 
 	if (cppFile != nullptr)

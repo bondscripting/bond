@@ -1,4 +1,4 @@
-# Makefile suitable for POSIXy 64 bit platforms having clang.
+# Makefile suitable for POSIXy platforms having clang.
 
 # Folders
 BLDDIR := build

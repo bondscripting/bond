@@ -16,10 +16,6 @@
 #define BOND_LITTLE_ENDIAN
 #endif
 
-#if !defined(BOND_USE_32BIT_POINTERS) && !defined(BOND_USE_64BIT_POINTERS)
-#define BOND_USE_32BIT_POINTERS
-#endif
-
 #ifndef BOND_PATH_SEPARATOR
 #ifdef _WIN32
 

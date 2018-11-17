@@ -42,6 +42,7 @@ namespace Bond
 using std::false_type;
 using std::true_type;
 
+using std::enable_if;
 using std::integral_constant;
 using std::numeric_limits;
 

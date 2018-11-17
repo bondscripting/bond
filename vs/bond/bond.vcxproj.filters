@@ -207,12 +207,6 @@
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\libruntime32_embedded.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\bond\private\libruntime64_embedded.h">
-      <Filter>Header Files\include\bond\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\private\list.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
@@ -229,12 +223,6 @@
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\libruntime32_embedded.h">
-      <Filter>Header Files\source\private</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\source\private\libruntime64_embedded.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\private\memory.h">
@@ -323,6 +311,36 @@
     </ClInclude>
     <ClInclude Include="..\..\include\bond\types\dataview.h">
       <Filter>Header Files\include\bond\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_io_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_math_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_memory_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_string_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime32_type_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_io_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_math_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_memory_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_string_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\private\libruntime64_type_cbo_embedded.h">
+      <Filter>Header Files\source\private</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

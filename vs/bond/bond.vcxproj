@@ -58,8 +58,6 @@
     <ClInclude Include="..\..\include\bond\private\algorithm.h" />
     <ClInclude Include="..\..\include\bond\private\assert.h" />
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h" />
-    <ClInclude Include="..\..\include\bond\private\libruntime32_embedded.h" />
-    <ClInclude Include="..\..\include\bond\private\libruntime64_embedded.h" />
     <ClInclude Include="..\..\include\bond\private\list.h" />
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\memory.h" />
@@ -99,8 +97,16 @@
     <ClInclude Include="..\..\include\bond\vm\collector.h" />
     <ClInclude Include="..\..\include\bond\vm\vm.h" />
     <ClInclude Include="..\..\source\private\libinclude_embedded_cpp.h" />
-    <ClInclude Include="..\..\source\private\libruntime32_embedded.h" />
-    <ClInclude Include="..\..\source\private\libruntime64_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_io_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_math_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_memory_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_string_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime32_type_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_io_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_math_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_memory_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_string_cbo_embedded.h" />
+    <ClInclude Include="..\..\source\private\libruntime64_type_cbo_embedded.h" />
     <ClInclude Include="..\..\source\private\memory.h" />
     <ClInclude Include="..\..\source\private\semanticanalysispass.h" />
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
@@ -255,7 +261,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BOND_USE_64BIT_POINTERS;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4100;4355</DisableSpecificWarnings>
     </ClCompile>
@@ -291,7 +297,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BOND_USE_64BIT_POINTERS;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4100;4355</DisableSpecificWarnings>
     </ClCompile>

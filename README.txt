@@ -56,7 +56,7 @@ Building Bond (make)
 Bond offers a few Makefiles for common platforms. First create a symbolic link to an appropriate
 Makefile. Do not use Makefile.common, it is included by the other Makefiles. For example:
 
-ln -s Makefile.gcc64 Makefile
+ln -s Makefile.gcc Makefile
 
 
 To build the Bond static library, type:

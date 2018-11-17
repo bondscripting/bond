@@ -20,15 +20,10 @@ void ValidateConfiguration()
 	static_assert(sizeof(Value32) == 4, "sizeof(Value32) is not 4");
 	static_assert(sizeof(Value64) == 8, "sizeof(Value64) is not 8");
 
-#if defined(BOND_USE_32BIT_POINTERS)
-	static_assert(sizeof(void *) == 4, "sizeof(void *) is not 4");
-	static_assert(BOND_NATIVE_POINTER_SIZE == POINTER_32BIT, "BOND_NATIVE_POINTER_SIZE is not defined as POINTER_32BIT even though BOND_USE_32BIT_POINTERS is defined");
-#elif defined(BOND_USE_64BIT_POINTERS)
-	static_assert(sizeof(void *) == 8, "sizeof(void *) is not 8");
-	static_assert(BOND_NATIVE_POINTER_SIZE == POINTER_64BIT, "BOND_NATIVE_POINTER_SIZE is not defined as POINTER_64BIT even though BOND_USE_64BIT_POINTERS is defined");
-#else
-#error Neither BOND_USE_32BIT_POINTERS nor BOND_USE_64BIT_POINTERS is defined.
-#endif
+	static_assert(
+		((BOND_NATIVE_POINTER_SIZE == POINTER_32BIT) && sizeof(void *) == 4) ||
+		((BOND_NATIVE_POINTER_SIZE == POINTER_64BIT) && sizeof(void *) == 8),
+		"BOND_NATIVE_POINTER_SIZE is not properly defined");
 
 	union EndianTest
 	{
