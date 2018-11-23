@@ -259,20 +259,6 @@ bool IsLossyConversion(Token::TokenType fromType, Token::TokenType toType)
 
 bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::TokenType toType)
 {
-	if (fromType == Token::KEY_FLOAT)
-	{
-		const Value convertedValue = CastValue(value, fromType, toType);
-		const Value restoredValue = CastValue(convertedValue, toType, fromType);
-		return restoredValue.mFloat != value.mFloat;
-	}
-
-	if (fromType == Token::KEY_DOUBLE)
-	{
-		const Value convertedValue = CastValue(value, fromType, toType);
-		const Value restoredValue = CastValue(convertedValue, toType, fromType);
-		return restoredValue.mDouble != value.mDouble;
-	}
-
 	switch (toType)
 	{
 		case Token::KEY_CHAR:
@@ -290,6 +276,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<int8_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<int8_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<int8_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<int8_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -310,6 +300,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<uint8_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<uint8_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<uint8_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<uint8_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -330,6 +324,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<int16_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<int16_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<int16_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<int16_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -350,6 +348,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<uint16_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<uint16_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<uint16_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<uint16_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -366,6 +368,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<int32_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<int32_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<int32_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<int32_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -382,6 +388,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<uint32_t>(value.mLong);
 				case Token::KEY_ULONG:
 					return !IsInRange<uint32_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<uint32_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<uint32_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -392,6 +402,10 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 			{
 				case Token::KEY_ULONG:
 					return !IsInRange<int64_t>(value.mULong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<int64_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<int64_t>(value.mDouble);
 				default:
 					break;
 			}
@@ -406,35 +420,48 @@ bool IsLossyConversion(const Value &value, Token::TokenType fromType, Token::Tok
 					return !IsInRange<uint64_t>(value.mInt);
 				case Token::KEY_LONG:
 					return !IsInRange<uint64_t>(value.mLong);
+				case Token::KEY_FLOAT:
+					return !IsInRange<uint64_t>(value.mFloat);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<uint64_t>(value.mDouble);
 				default:
 					break;
 			}
 			break;
 
 		case Token::KEY_FLOAT:
-		case Token::KEY_DOUBLE:
-		{
-			const Value convertedValue = CastValue(value, fromType, toType);
-			const Value restoredValue = CastValue(convertedValue, toType, fromType);
-
 			switch (fromType)
 			{
 				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_INT:
-					return restoredValue.mInt != value.mInt;
+					return !IsInRange<float>(value.mInt);
 				case Token::KEY_UCHAR:
 				case Token::KEY_USHORT:
 				case Token::KEY_UINT:
-					return restoredValue.mUInt != value.mUInt;
+					return !IsInRange<float>(value.mUInt);
 				case Token::KEY_LONG:
-					return restoredValue.mLong != value.mLong;
+					return !IsInRange<float>(value.mLong);
 				case Token::KEY_ULONG:
-					return restoredValue.mULong != value.mULong;
+					return !IsInRange<float>(value.mULong);
+				case Token::KEY_DOUBLE:
+					return !IsInRange<float>(value.mDouble);
 				default:
 					break;
 			}
-		}
+			break;
+
+		case Token::KEY_DOUBLE:
+			switch (fromType)
+			{
+				case Token::KEY_LONG:
+					return !IsInRange<double>(value.mLong);
+				case Token::KEY_ULONG:
+					return !IsInRange<double>(value.mULong);
+				default:
+					break;
+			}
+			break;
 
 		default:
 			break;
