@@ -82,7 +82,7 @@ void NativeBindingGenerator::Generate(
 
 void NativeBindingGeneratorCore::Generate()
 {
-	BoolStack::Element inNativeBlockElement(mInNativeBlockStack, true);
+	auto inNativeBlockElement = mInNativeBlockStack.Push(true);
 
 	const size_t MAX_IDENTIFIER_DEPTH = 128;
 	StringView identifiers[MAX_IDENTIFIER_DEPTH];
@@ -147,7 +147,7 @@ void NativeBindingGeneratorCore::Visit(const TranslationUnit *translationUnit)
 void NativeBindingGeneratorCore::Visit(const NamespaceDefinition *namespaceDefinition)
 {
 	const char *name = namespaceDefinition->GetName()->GetRawText();
-	NamespaceStack::Element namespaceItem(mNamespaceStack, NamespaceItem(name));
+	auto namespaceItem = mNamespaceStack.Push(NamespaceItem(name));
 	ParseNodeTraverser::Visit(namespaceDefinition);
 
 	if (namespaceItem.GetValue().mPrinted)
@@ -159,7 +159,7 @@ void NativeBindingGeneratorCore::Visit(const NamespaceDefinition *namespaceDefin
 
 void NativeBindingGeneratorCore::Visit(const NativeBlock *nativeBlock)
 {
-	BoolStack::Element inNativeBlockElement(mInNativeBlockStack, true);
+	auto inNativeBlockElement = mInNativeBlockStack.Push(true);
 	ParseNodeTraverser::Visit(nativeBlock);
 }
 

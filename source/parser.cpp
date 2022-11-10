@@ -156,9 +156,9 @@ TranslationUnit *ParserCore::Parse()
 //   : include_directive_or_external_declaration*
 TranslationUnit *ParserCore::ParseTranslationUnit()
 {
-	ScopeStack::Element scopeElement(mScope, SCOPE_GLOBAL);
-	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, false);
-	BoolStack::Element inNativeBlockElement(mInNativeBlock, false);
+	auto scopeElement = mScope.Push(SCOPE_GLOBAL);
+	auto parseConstExpressionsElement = mParseConstExpressions.Push(false);
+	auto inNativeBlockElement = mInNativeBlock.Push(false);
 	IncludeDirective *includeDirectives = nullptr;
 	ListParseNode *declarations = nullptr;
 	ParseIncludeDirectiveAndExternalDeclarationLists(&includeDirectives, &declarations);
@@ -308,7 +308,7 @@ NativeBlock *ParserCore::ParseNativeBlock()
 	if (keyword != nullptr)
 	{
 		ExpectToken(Token::OBRACE);
-		BoolStack::Element inNativeBlockElement(mInNativeBlock, true);
+		auto inNativeBlockElement = mInNativeBlock.Push(true);
 		ListParseNode *declarations = ParseExternalDeclarationList();
 		ExpectToken(Token::CBRACE);
 		block = CreateNode<NativeBlock>(keyword, declarations);
@@ -393,7 +393,7 @@ StructDeclaration *ParserCore::ParseStructDeclaration()
 
 	if (mStream.NextIf(Token::KEY_STRUCT) != nullptr)
 	{
-		ScopeStack::Element scopeElement(mScope, SCOPE_STRUCT_MEMBER);
+		auto scopeElement = mScope.Push(SCOPE_STRUCT_MEMBER);
 		const bool isNative = mInNativeBlock.GetTop();
 		const Token *name = ExpectToken(Token::IDENTIFIER);
 		const Token *size = nullptr;
@@ -544,7 +544,7 @@ void ParserCore::ParseFunctionOrDeclarativeStatement(
 
 				if (obrace != nullptr)
 				{
-					ScopeStack::Element scopeElement(mScope, SCOPE_LOCAL);
+					auto scopeElement = mScope.Push(SCOPE_LOCAL);
 					body = ParseCompoundStatement();
 					if (isNative)
 					{
@@ -1286,7 +1286,7 @@ ExpressionStatement *ParserCore::ParseExpressionStatement()
 //   | expression ',' assignment_expression
 Expression *ParserCore::ParseConstExpression()
 {
-	BoolStack::Element parseConstExpressionsElement(mParseConstExpressions, true);
+	auto parseConstExpressionsElement = mParseConstExpressions.Push(true);
 	return ParseExpression();
 }
 Expression *ParserCore::ParseExpression()

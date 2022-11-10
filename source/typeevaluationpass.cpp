@@ -7,16 +7,16 @@ namespace Bond
 
 void TypeEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
-	BoolStack::Element constExpressionElement(mEnforceConstExpressions, false);
-	StructStack::Element structElement(mStruct, nullptr);
-	FunctionStack::Element functionElement(mFunction, nullptr);
+	auto constExpressionElement = mEnforceConstExpressions.Push(false);
+	auto structElement = mStruct.Push(nullptr);
+	auto functionElement = mFunction.Push(nullptr);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
 
 void TypeEvaluationPass::Visit(Enumerator *enumerator)
 {
-	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
+	auto constExpressionElement = mEnforceConstExpressions.Push(true);
 	ParseNodeTraverser::Visit(enumerator);
 	const Expression *value = enumerator->GetValue();
 	if (value != nullptr)
@@ -28,7 +28,7 @@ void TypeEvaluationPass::Visit(Enumerator *enumerator)
 
 void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 {
-	StructStack::Element structElement(mStruct, structDeclaration);
+	auto structElement = mStruct.Push(structDeclaration);
 	SemanticAnalysisPass::Visit(structDeclaration);
 	RecursiveStructAnalyzer analyzer(mErrorBuffer);
 	analyzer.Analyze(structDeclaration);
@@ -37,7 +37,7 @@ void TypeEvaluationPass::Visit(StructDeclaration *structDeclaration)
 
 void TypeEvaluationPass::Visit(FunctionDefinition *functionDefinition)
 {
-	FunctionStack::Element functionElement(mFunction, functionDefinition);
+	auto functionElement = mFunction.Push(functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 }
 
@@ -51,7 +51,7 @@ void TypeEvaluationPass::Visit(Parameter *parameter)
 
 void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 {
-	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
+	auto constExpressionElement = mEnforceConstExpressions.Push(true);
 	ParseNodeTraverser::Visit(typeDescriptor);
 	Expression *expressionList = typeDescriptor->GetLengthExpressionList();
 	while (expressionList != nullptr)
@@ -122,7 +122,7 @@ void TypeEvaluationPass::Visit(SwitchStatement *switchStatement)
 
 void TypeEvaluationPass::Visit(SwitchLabel *switchLabel)
 {
-	BoolStack::Element constExpressionElement(mEnforceConstExpressions, true);
+	auto constExpressionElement = mEnforceConstExpressions.Push(true);
 	ParseNodeTraverser::Visit(switchLabel);
 	const Expression *expression = switchLabel->GetExpression();
 	if (expression != nullptr)
@@ -983,7 +983,7 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 void TypeEvaluationPass::RecursiveStructAnalyzer::Analyze(const StructDeclaration *structDeclaration)
 {
 	mTopLevelStruct = structDeclaration;
-	StructStack::Element structElement(mStruct, structDeclaration);
+	auto structElement = mStruct.Push(structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
 	mTopLevelStruct = nullptr;
 }
@@ -998,7 +998,7 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const StructDeclaration 
 
 	if (!mStruct.Contains(structDeclaration))
 	{
-		StructStack::Element structElement(mStruct, structDeclaration);
+		auto structElement = mStruct.Push(structDeclaration);
 		ParseNodeTraverser::Visit(structDeclaration);
 	}
 }

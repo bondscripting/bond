@@ -20,7 +20,7 @@ MKDIR := mkdir
 RM := rm
 
 # Command line options
-CXXFLAGS := -std=c++11 -stdlib=libc++ -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-overflow=5 -Wundef -Wno-unused -O3
+CXXFLAGS := -std=c++17 -stdlib=libc++ -Wall -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wold-style-cast -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-overflow=5 -Wundef -Wno-unused -O3
 INCLUDE_CXXFLAGS := -I
 DEP_CXXFLAGS := -MMD -MP
 COMP_CXXFLAGS := -c

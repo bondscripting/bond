@@ -525,10 +525,10 @@ void GeneratorCore::Generate()
 	const uint16_t nameIndex = MapQualifiedName(nullptr);
 	mFunctionList.emplace_back(nullptr, mAllocator, 0, 0, uint32_t(BOND_SLOT_SIZE), nameIndex);
 	CompiledFunction &function = mFunctionList.back();
-	FunctionStack::Element functionElement(mFunction, &function);
-	UIntStack::Element localOffsetElement(mLocalOffset, 0);
-	UIntStack::Element stackTopElement(mStackTop, 0);
-	UIntStack::Element flagsElement(mFlags, 0);
+	auto functionElement = mFunction.Push(&function);
+	auto localOffsetElement = mLocalOffset.Push(0);
+	auto stackTopElement = mStackTop.Push(0);
+	auto flagsElement = mFlags.Push(0);
 	TraverseList(mTranslationUnitList);
 
 	if (!function.mByteCode.empty())
@@ -543,14 +543,14 @@ void GeneratorCore::Generate()
 
 void GeneratorCore::Traverse(const ParseNode *parseNode)
 {
-	UIntStack::Element flagsElement(mFlags, 0);
+	auto flagsElement = mFlags.Push(0);
 	ParseNodeTraverser::Traverse(parseNode);
 }
 
 
 void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression)
 {
-	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_OMIT_OPTIONAL_TEMPORARIES));
+	auto flagsElement = mFlags.Push(uint32_t(FLAG_OMIT_OPTIONAL_TEMPORARIES));
 	ParseNodeTraverser::Traverse(expression);
 
 	// Remove any temporaries that may have been left on the stack.
@@ -565,8 +565,8 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 
 bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
 {
-	BoolStack::Element expressionIsNegatedElement(mExpressionIsNegated, false);
-	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_COLLAPSE_NOT_OPERATORS));
+	auto expressionIsNegatedElement = mExpressionIsNegated.Push(false);
+	auto flagsElement = mFlags.Push(uint32_t(FLAG_COLLAPSE_NOT_OPERATORS));
 	ParseNodeTraverser::Traverse(expression);
 	return expressionIsNegatedElement.GetValue();
 }
@@ -574,7 +574,7 @@ bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
 
 void GeneratorCore::TraverseOmitConstantFolding(const Expression *expression)
 {
-	UIntStack::Element flagsElement(mFlags, uint32_t(FLAG_OMIT_CONSTANT_FOLDING));
+	auto flagsElement = mFlags.Push(uint32_t(FLAG_OMIT_CONSTANT_FOLDING));
 	ParseNodeTraverser::Traverse(expression);
 }
 
@@ -620,9 +620,9 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 
 	if (!functionDefinition->IsNative())
 	{
-		FunctionStack::Element functionElement(mFunction, &function);
-		UIntStack::Element localOffsetElement(mLocalOffset, 0);
-		UIntStack::Element stackTopElement(mStackTop, 0);
+		auto functionElement = mFunction.Push(&function);
+		auto localOffsetElement = mLocalOffset.Push(0);
+		auto stackTopElement = mStackTop.Push(0);
 		Traverse(functionDefinition->GetBody());
 
 		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
@@ -702,7 +702,7 @@ void GeneratorCore::Visit(const NamedInitializer *namedInitializer)
 
 void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	ParseNodeTraverser::Visit(compoundStatement);
 	AssertStackEmpty();
 }
@@ -710,7 +710,7 @@ void GeneratorCore::Visit(const CompoundStatement *compoundStatement)
 
 void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
 	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 
@@ -728,7 +728,7 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 	}
 	else
 	{
-		ResultStack::Element conditionResult(mResult);
+		auto conditionResult = mResult.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 
@@ -757,12 +757,12 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 {
 	const size_t endLabel = CreateLabel();
-	LabelStack::Element breakElement(mBreakLabel, endLabel);
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto breakElement = mBreakLabel.Push(endLabel);
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 
 	const Expression *control = switchStatement->GetControl();
 	const TypeDescriptor &controlDescriptor = control->GetTypeDescriptor();
-	ResultStack::Element controlResult(mResult);
+	auto controlResult = mResult.Push();
 	Traverse(control);
 	EmitPushResult(controlResult, controlDescriptor);
 
@@ -853,7 +853,7 @@ void GeneratorCore::Visit(const SwitchStatement *switchStatement)
 
 void GeneratorCore::Visit(const SwitchSection *switchSection)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	const size_t sectionStartPos = GetByteCode().size();
 	SetLabelValue(switchSection->GetJumpTargetId(), sectionStartPos);
 	TraverseList(switchSection->GetStatementList());
@@ -863,13 +863,13 @@ void GeneratorCore::Visit(const SwitchSection *switchSection)
 
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	const size_t loopStartLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, GetByteCode().size());
 
-	LabelStack::Element continueElement(mContinueLabel, loopStartLabel);
-	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
+	auto continueElement = mContinueLabel.Push(loopStartLabel);
+	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
 	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
@@ -878,14 +878,14 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	{
 		Traverse(whileStatement->GetBody());
 
-		ResultStack::Element conditionResult(mResult);
+		auto conditionResult = mResult.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFZ : OPCODE_IFNZ, loopStartLabel);
 	}
 	else
 	{
-		ResultStack::Element conditionResult(mResult);
+		auto conditionResult = mResult.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
@@ -902,7 +902,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 
 void GeneratorCore::Visit(const ForStatement *forStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	Traverse(forStatement->GetInitializer());
 
 	const size_t loopStartLabel = CreateLabel();
@@ -910,14 +910,14 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, GetByteCode().size());
 
-	LabelStack::Element continueElement(mContinueLabel, countingLabel);
-	LabelStack::Element breakElement(mBreakLabel, loopEndLabel);
+	auto continueElement = mContinueLabel.Push(countingLabel);
+	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
 	const Expression *condition = forStatement->GetCondition();
 	if (condition != nullptr)
 	{
 		const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
-		ResultStack::Element conditionResult(mResult);
+		auto conditionResult = mResult.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
@@ -926,7 +926,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	Traverse(forStatement->GetBody());
 	SetLabelValue(countingLabel, GetByteCode().size());
 
-	ResultStack::Element countingResult(mResult);
+	auto countingResult = mResult.Push();
 	TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
 
 	EmitJump(OPCODE_GOTO, loopStartLabel);
@@ -937,7 +937,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 
 void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 
 	if (jumpStatement->IsBreak())
 	{
@@ -954,7 +954,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 		{
 			const Expression *rhs = jumpStatement->GetRhs();
 			const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-			ResultStack::Element rhResult(mResult);
+			auto rhResult = mResult.Push();
 			Traverse(rhs);
 
 			if (returnDescriptor->IsPointerType())
@@ -1004,8 +1004,8 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 
 void GeneratorCore::Visit(const ExpressionStatement *expressionStatement)
 {
-	UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
-	ResultStack::Element expressionResult(mResult);
+	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
+	auto expressionResult = mResult.Push();
 	TraverseOmitOptionalTemporaries(expressionStatement->GetExpression());
 	AssertStackEmpty();
 }
@@ -1023,7 +1023,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	const bool isStruct = resultDescriptor.IsStructType();
 
 	{
-		ResultStack::Element conditionResult(mResult);
+		auto conditionResult = mResult.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
 		EmitPushResult(conditionResult, conditionDescriptor);
 
@@ -1031,8 +1031,8 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, trueEndLabel);
 
 		{
-			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
-			ResultStack::Element trueResult(mResult);
+			auto stackTopElement = mStackTop.Push(mStackTop.GetTop());
+			auto trueResult = mResult.Push();
 			Traverse(trueExpression);
 			if (isStruct)
 			{
@@ -1048,7 +1048,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 		EmitJump(OPCODE_GOTO, falseEndLabel);
 		SetLabelValue(trueEndLabel, GetByteCode().size());
 
-		ResultStack::Element falseResult(mResult);
+		auto falseResult = mResult.Push();
 		Traverse(falseExpression);
 		if (isStruct)
 		{
@@ -1379,7 +1379,7 @@ void GeneratorCore::Visit(const MemberExpression *memberExpression)
 	{
 		const Expression *lhs = memberExpression->GetLhs();
 		const Token *op = memberExpression->GetOperator();
-		ResultStack::Element lhResult(mResult);
+		auto lhResult = mResult.Push();
 		Traverse(lhs);
 		result = lhResult;
 
@@ -1451,10 +1451,10 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
 	{
-		UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
+		auto stackTopElement = mStackTop.Push(mStackTop.GetTop());
 		EmitArgumentList(argList, paramList);
 
-		ResultStack::Element lhResult(mResult);
+		auto lhResult = mResult.Push();
 		Traverse(lhs);
 
 		// Push the 'this' pointer, if needed.
@@ -1497,7 +1497,7 @@ void GeneratorCore::Visit(const CastExpression *castExpression)
 			const Expression *rhs = castExpression->GetRhs();
 			const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 			const TypeDescriptor &resultDescriptor = castExpression->GetTypeDescriptor();
-			ResultStack::Element rhResult(mResult);
+			auto rhResult = mResult.Push();
 			Traverse(rhs);
 			EmitPushResultAs(rhResult, rhDescriptor, resultDescriptor);
 		}
@@ -1655,7 +1655,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 	{
 		FlushZero(index, false);
 		AdvancePointer(index, offset);
-		UIntStack::Element localOffsetElement(mLocalOffset, mLocalOffset.GetTop());
+		auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 
 		if (!index.mIsLocal && !isLast)
 		{
@@ -1669,7 +1669,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			{
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
 			}
-			ResultStack::Element rhResult(mResult);
+			auto rhResult = mResult.Push();
 			Traverse(initializer);
 			EmitPushAddressOfResult(rhResult);
 			EmitOpCode(OPCODE_MEMCOPYW);
@@ -1678,7 +1678,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 		else
 		{
 			const TypeDescriptor &rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
-			ResultStack::Element rhResult(mResult);
+			auto rhResult = mResult.Push();
 			Traverse(initializer);
 			EmitPushResult(rhResult, rhDescriptor);
 			const Result lhResult = index.mIsLocal ?
@@ -2934,11 +2934,11 @@ GeneratorCore::Result GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpres
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
 
-	ResultStack::Element lhResult(mResult);
+	auto lhResult = mResult.Push();
 	Traverse(lhs);
 	EmitPushResultAs(lhResult, lhDescriptor, resultDescriptor);
 
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	EmitPushResultAs(rhResult, rhDescriptor, resultDescriptor);
 
@@ -2964,8 +2964,8 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	{
 		int32_t stackDelta = 0;
 		{
-			UIntStack::Element stackTopElement(mStackTop, mStackTop.GetTop());
-			ResultStack::Element rhResult(mResult);
+			auto stackTopElement = mStackTop.Push(mStackTop.GetTop());
+			auto rhResult = mResult.Push();
 			Traverse(rhs);
 			EmitPushResultAs(rhResult, rhDescriptor, lhDescriptor);
 
@@ -2976,7 +2976,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 				result.mContext = Result::CONTEXT_STACK_VALUE;
 			}
 
-			ResultStack::Element lhResult(mResult);
+			auto lhResult = mResult.Push();
 			Traverse(lhs);
 			const TypeDescriptor voidStar = TypeDescriptor::GetVoidPointerType();
 			EmitPushResult(lhResult.GetValue().GetThisPointerResult(), voidStar);
@@ -2988,7 +2988,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	}
 	else if (lhDescriptor.IsStructType())
 	{
-		ResultStack::Element lhResult(mResult);
+		auto lhResult = mResult.Push();
 		Traverse(lhs);
 		EmitPushAddressOfResult(lhResult);
 
@@ -3001,7 +3001,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			result = lhResult;
 		}
 
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		Traverse(rhs);
 		EmitPushAddressOfResult(rhResult);
 		EmitOpCode(OPCODE_MEMCOPYW);
@@ -3009,7 +3009,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 	}
 	else
 	{
-		ResultStack::Element lhResult(mResult);
+		auto lhResult = mResult.Push();
 		Traverse(lhs);
 
 		OpCode valueDupOpCode = OPCODE_DUP;
@@ -3019,7 +3019,7 @@ GeneratorCore::Result GeneratorCore::EmitAssignmentOperator(const BinaryExpressi
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		Traverse(rhs);
 
 		if (GetEmitOptionalTemporaries())
@@ -3060,7 +3060,7 @@ void GeneratorCore::EmitLogicalOperator(
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 
-	ResultStack::Element lhResult(mResult);
+	auto lhResult = mResult.Push();
 	const bool lhsNegated = TraverseCollapseNotOperators(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 	const uint32_t stackTop = mStackTop.GetTop();
@@ -3071,7 +3071,7 @@ void GeneratorCore::EmitLogicalOperator(
 
 	if (GetCollapseNotOperators())
 	{
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		const bool rhsNegated = TraverseCollapseNotOperators(rhs);
 		EmitPushResult(rhResult, rhDescriptor);
 
@@ -3085,7 +3085,7 @@ void GeneratorCore::EmitLogicalOperator(
 	}
 	else
 	{
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		Traverse(rhs);
 		EmitPushResult(rhResult, rhDescriptor);
 	}
@@ -3110,7 +3110,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 	uint32_t stackTop = mStackTop.GetTop();
 
-	ResultStack::Element lhResult(mResult);
+	auto lhResult = mResult.Push();
 	Traverse(lhs);
 	const int32_t frameOffset = lhResult.GetValue().mOffset;
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
@@ -3144,7 +3144,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 		EmitCallNativeGetter(Result(Result::CONTEXT_STACK_VALUE), lhResult.GetValue().mNativeMember);
 		EmitCast(lhDescriptor, intermediateDescriptor);
 
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		Traverse(rhs);
 		EmitPushResultAs(rhResult, rhDescriptor, intermediateDescriptor);
 
@@ -3174,7 +3174,7 @@ GeneratorCore::Result GeneratorCore::EmitCompoundAssignmentOperator(const Binary
 
 		EmitPushResultAs(lhResult, lhDescriptor, intermediateDescriptor);
 
-		ResultStack::Element rhResult(mResult);
+		auto rhResult = mResult.Push();
 		Traverse(rhs);
 		EmitPushResultAs(rhResult, rhDescriptor, intermediateDescriptor);
 
@@ -3206,7 +3206,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerCompoundAssignmentOperator(const
 	const int64_t offset = offsetTav.AsLongValue() * elementSize;
 	uint32_t stackTop = mStackTop.GetTop();
 
-	ResultStack::Element pointerResult(mResult);
+	auto pointerResult = mResult.Push();
 	Traverse(pointerExpression);
 	const int32_t frameOffset = pointerResult.GetValue().mOffset;
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
@@ -3290,7 +3290,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
 	const int64_t offset = offsetTav.AsLongValue() * elementSize;
 
-	ResultStack::Element pointerResult(mResult);
+	auto pointerResult = mResult.Push();
 	Traverse(pointerExpression);
 
 	Result result(Result::CONTEXT_STACK_VALUE);
@@ -3323,12 +3323,12 @@ GeneratorCore::Result GeneratorCore::EmitPointerArithmetic(const Expression *poi
 GeneratorCore::Result GeneratorCore::EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet)
 {
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
-	ResultStack::Element lhResult(mResult);
+	auto lhResult = mResult.Push();
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
@@ -3341,12 +3341,12 @@ GeneratorCore::Result GeneratorCore::EmitPointerComparison(const Expression *lhs
 GeneratorCore::Result GeneratorCore::EmitPointerDifference(const Expression *lhs, const Expression *rhs)
 {
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
-	ResultStack::Element lhResult(mResult);
+	auto lhResult = mResult.Push();
 	Traverse(lhs);
 	EmitPushResult(lhResult, lhDescriptor);
 
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
@@ -3393,7 +3393,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 	}
 	else
 	{
-		ResultStack::Element offsetResult(mResult);
+		auto offsetResult = mResult.Push();
 		Traverse(offsetExpression);
 
 		const TypeDescriptor &offsetDescriptor = offsetTav.GetTypeDescriptor();
@@ -3430,7 +3430,7 @@ GeneratorCore::Result GeneratorCore::EmitPointerIncrementOperator(const Expressi
 	const int32_t pointerOffset = int32_t(sign * operandDescriptor.GetDereferencedType().GetSize(mPointerSize)) * sign;
 	uint32_t stackTop = mStackTop.GetTop();
 
-	ResultStack::Element operandResult(mResult);
+	auto operandResult = mResult.Push();
 	Traverse(operand);
 	const int32_t frameOffset = operandResult.GetValue().mOffset;
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
@@ -3561,7 +3561,7 @@ GeneratorCore::Result GeneratorCore::EmitIncrementOperator(const Expression *exp
 	const OpCodeSet &constOpCodeSet = (sign > 0) ? CONST1_OPCODES : CONSTN1_OPCODES;
 	uint32_t stackTop = mStackTop.GetTop();
 
-	ResultStack::Element operandResult(mResult);
+	auto operandResult = mResult.Push();
 	Traverse(operand);
 	const int32_t frameOffset = operandResult.GetValue().mOffset;
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
@@ -3676,7 +3676,7 @@ GeneratorCore::Result GeneratorCore::EmitSignOperator(const UnaryExpression *una
 	}
 
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
@@ -3693,7 +3693,7 @@ GeneratorCore::Result GeneratorCore::EmitNotOperator(const UnaryExpression *unar
 {
 	const Expression *rhs = unaryExpression->GetRhs();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	const bool negated = TraverseCollapseNotOperators(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
@@ -3732,7 +3732,7 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 	}
 
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	EmitPushResult(rhResult, rhDescriptor);
 
@@ -3757,7 +3757,7 @@ GeneratorCore::Result GeneratorCore::EmitBitwiseNotOperator(const UnaryExpressio
 GeneratorCore::Result GeneratorCore::EmitAddressOfOperator(const UnaryExpression *unaryExpression)
 {
 	const Expression *rhs = unaryExpression->GetRhs();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	TraverseOmitConstantFolding(rhs);
 	Result result = EmitAddressOfResult(rhResult);
 	return result;
@@ -3796,7 +3796,7 @@ GeneratorCore::Result GeneratorCore::EmitAddressOfResult(const Result &result)
 GeneratorCore::Result GeneratorCore::EmitDereferenceOperator(const UnaryExpression *unaryExpression)
 {
 	const Expression *rhs = unaryExpression->GetRhs();
-	ResultStack::Element rhResult(mResult);
+	auto rhResult = mResult.Push();
 	Traverse(rhs);
 	Result result = rhResult;
 	if (!unaryExpression->GetTypeDescriptor().IsArrayType())
@@ -3842,7 +3842,7 @@ void GeneratorCore::EmitArgumentList(const Expression *argList, const Parameter 
 
 		const TypeDescriptor &argDescriptor = argList->GetTypeDescriptor();
 		const TypeDescriptor *paramDescriptor = paramList->GetTypeDescriptor();
-		ResultStack::Element argResult(mResult);
+		auto argResult = mResult.Push();
 		Traverse(argList);
 		EmitPushResultAs(argResult, argDescriptor, *paramDescriptor);
 	}

@@ -21,7 +21,7 @@ public:
 			mStack(stack),
 			mNext(nullptr)
 		{
-			mStack.Push(this);
+			mStack.PushElement(this);
 		}
 
 		template<typename... Args>
@@ -30,12 +30,12 @@ public:
 			mStack(stack),
 			mNext(nullptr)
 		{
-			mStack.Push(this);
+			mStack.PushElement(this);
 		}
 
 		~Element()
 		{
-			mStack.Pop();
+			mStack.PopElement();
 		}
 
 		Element(const Element &other) = delete;
@@ -133,19 +133,10 @@ public:
 	AutoStack(): mTop(nullptr) {}
 
 
-	void Push(Element *element)
+	template<typename... Args>
+	Element Push(Args&&... args)
 	{
-		element->SetNext(mTop);
-		mTop = element;
-	}
-
-
-	void Pop()
-	{
-		if (mTop != nullptr)
-		{
-			mTop = mTop->GetNext();
-		}
+		return Element(*this, forward<Args>(args)...);
 	}
 
 
@@ -196,6 +187,22 @@ public:
 	ConstIterator cend() const { return ConstIterator(nullptr); }
 
 private:
+	void PushElement(Element *element)
+	{
+		element->SetNext(mTop);
+		mTop = element;
+	}
+
+
+	void PopElement()
+	{
+		if (mTop != nullptr)
+		{
+			mTop = mTop->GetNext();
+		}
+	}
+
+
 	Element *mTop;
 };
 

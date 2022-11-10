@@ -332,7 +332,7 @@ void ParseTreePrinterCore::Visit(const QualifiedIdentifier *identifier)
 {
 	if (IsTopLevelId())
 	{
-		BoolStack::Element topLevelIdElement(mIsTopLevelId, false);
+		auto topLevelIdElement = mIsTopLevelId.Push(false);
 		PrintList(identifier, "::");
 	}
 	else

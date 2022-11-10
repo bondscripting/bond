@@ -13,7 +13,7 @@ void SemanticAnalysisPass::Analyze(TranslationUnit *translationUnitList)
 
 void SemanticAnalysisPass::Visit(TranslationUnit *translationUnit)
 {
-	ScopeStack::Element globalScopeElement(mScopeStack, mSymbolTable.GetGlobalScope());
+	auto globalScopeElement = mScopeStack.Push(mSymbolTable.GetGlobalScope());
 	ParseNodeTraverser::Visit(translationUnit);
 }
 
@@ -21,42 +21,42 @@ void SemanticAnalysisPass::Visit(TranslationUnit *translationUnit)
 void SemanticAnalysisPass::Visit(NamespaceDefinition *namespaceDefinition)
 {
 	Symbol *scope = GetOrInsertSymbol(namespaceDefinition);
-	ScopeStack::Element stackElement(mScopeStack, scope);
+	auto stackElement = mScopeStack.Push(scope);
 	ParseNodeTraverser::Visit(namespaceDefinition);
 }
 
 
 void SemanticAnalysisPass::Visit(StructDeclaration *structDeclaration)
 {
-	ScopeStack::Element stackElement(mScopeStack, structDeclaration);
+	auto stackElement = mScopeStack.Push(structDeclaration);
 	ParseNodeTraverser::Visit(structDeclaration);
 }
 
 
 void SemanticAnalysisPass::Visit(FunctionDefinition *functionDefinition)
 {
-	ScopeStack::Element stackElement(mScopeStack, functionDefinition);
+	auto stackElement = mScopeStack.Push(functionDefinition);
 	ParseNodeTraverser::Visit(functionDefinition);
 }
 
 
 void SemanticAnalysisPass::Visit(CompoundStatement *compoundStatement)
 {
-	ScopeStack::Element stackElement(mScopeStack, compoundStatement);
+	auto stackElement = mScopeStack.Push(compoundStatement);
 	ParseNodeTraverser::Visit(compoundStatement);
 }
 
 
 void SemanticAnalysisPass::Visit(SwitchSection *switchSection)
 {
-	ScopeStack::Element stackElement(mScopeStack, switchSection);
+	auto stackElement = mScopeStack.Push(switchSection);
 	ParseNodeTraverser::Visit(switchSection);
 }
 
 
 void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 {
-	ScopeStack::Element stackElement(mScopeStack, forStatement);
+	auto stackElement = mScopeStack.Push(forStatement);
 	ParseNodeTraverser::Visit(forStatement);
 }
 

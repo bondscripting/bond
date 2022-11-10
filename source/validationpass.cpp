@@ -9,16 +9,16 @@ namespace Bond
 
 void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 {
-	BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
-	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
-	BoolStack::Element hasReturnElement(mHasReturn, false);
-	BoolStack::Element isInLoopElement(mIsInLoop, false);
-	BoolStack::Element isInSwitchElement(mIsInSwitch, false);
-	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
-	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
-	TypeStack::Element returnTypeElement(mReturnType, nullptr);
-	FunctionStack::Element functionElement(mFunction, nullptr);
-	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, nullptr);
+	auto hasDefaultLabelElement = mHasDefaultLabel.Push(false);
+	auto endsWithJumpElement = mEndsWithJump.Push(false);
+	auto hasReturnElement = mHasReturn.Push(false);
+	auto isInLoopElement = mIsInLoop.Push(false);
+	auto isInSwitchElement = mIsInSwitch.Push(false);
+	auto nextJumpTargetIdElement = mNextJumpTargetId.Push(0);
+	auto switchJumpTargetIdElement = mSwitchJumpTargetId.Push(0);
+	auto returnTypeElement = mReturnType.Push(nullptr);
+	auto functionElement = mFunction.Push(nullptr);
+	auto switchLabelListElement = mSwitchLabelList.Push(nullptr);
 	SemanticAnalysisPass::Analyze(translationUnitList);
 }
 
@@ -26,15 +26,15 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 {
 	const TypeDescriptor *returnType = functionDefinition->GetPrototype()->GetReturnType();
-	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
-	BoolStack::Element hasReturnElement(mHasReturn, false);
-	SizeStack::Element nextJumpTargetIdElement(mNextJumpTargetId, 0);
-	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, 0);
-	TypeStack::Element returnTypeElement(mReturnType, returnType);
-	FunctionStack::Element functionElement(mFunction, functionDefinition);
+	auto endsWithJumpElement = mEndsWithJump.Push(false);
+	auto hasReturnElement = mHasReturn.Push(false);
+	auto nextJumpTargetIdElement = mNextJumpTargetId.Push(0);
+	auto switchJumpTargetIdElement = mSwitchJumpTargetId.Push(0);
+	auto returnTypeElement = mReturnType.Push(returnType);
+	auto functionElement = mFunction.Push(functionDefinition);
 	SemanticAnalysisPass::Visit(functionDefinition);
 
-	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement.GetValue());
+	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement);
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
@@ -94,16 +94,16 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 	bool hasReturn = ifStatement->GetElseStatement() != nullptr;
 	bool endsWithJump = hasReturn;
 	{
-		BoolStack::Element hasReturnElement(mHasReturn, false);
-		BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+		auto hasReturnElement = mHasReturn.Push(false);
+		auto endsWithJumpElement = mEndsWithJump.Push(false);
 		Traverse(ifStatement->GetThenStatement());
 		hasReturn = hasReturn && hasReturnElement;
 		endsWithJump = endsWithJump && endsWithJumpElement;
 	}
 
 	{
-		BoolStack::Element hasReturnElement(mHasReturn, false);
-		BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+		auto hasReturnElement = mHasReturn.Push(false);
+		auto endsWithJumpElement = mEndsWithJump.Push(false);
 		Traverse(ifStatement->GetElseStatement());
 		hasReturn = hasReturn && hasReturnElement;
 		endsWithJump = endsWithJump && endsWithJumpElement;
@@ -116,8 +116,8 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 void ValidationPass::Visit(SwitchStatement *switchStatement)
 {
 	AssertReachableCode(switchStatement);
-	BoolStack::Element isInSwitchElement(mIsInSwitch, true);
-	SwitchLabelStack::Element switchLabelListElement(mSwitchLabelList, nullptr);
+	auto isInSwitchElement = mIsInSwitch.Push(true);
+	auto switchLabelListElement = mSwitchLabelList.Push(nullptr);
 	mEndsWithJump.SetTop(false);
 	Traverse(switchStatement->GetControl());
 
@@ -125,10 +125,10 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	SwitchSection *sectionList = switchStatement->GetSectionList();
 	if (sectionList != nullptr)
 	{
-		BoolStack::Element hasDefaultLabelElement(mHasDefaultLabel, false);
+		auto hasDefaultLabelElement = mHasDefaultLabel.Push(false);
 		while (sectionList != nullptr)
 		{
-			BoolStack::Element hasReturnElement(mHasReturn, false);
+			auto hasReturnElement = mHasReturn.Push(false);
 			Traverse(sectionList);
 			hasReturn = hasReturn && hasReturnElement;
 			sectionList = NextNode(sectionList);
@@ -184,11 +184,11 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 
 void ValidationPass::Visit(SwitchSection *switchSection)
 {
-	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	auto endsWithJumpElement = mEndsWithJump.Push(false);
 
 	const size_t jumpTargetId = GetJumpTargetId();
 	switchSection->SetJumpTargetId(jumpTargetId);
-	SizeStack::Element switchJumpTargetIdElement(mSwitchJumpTargetId, jumpTargetId);
+	auto switchJumpTargetIdElement = mSwitchJumpTargetId.Push(jumpTargetId);
 
 	SemanticAnalysisPass::Visit(switchSection);
 
@@ -232,9 +232,9 @@ void ValidationPass::Visit(SwitchLabel *switchLabel)
 void ValidationPass::Visit(WhileStatement *whileStatement)
 {
 	AssertReachableCode(whileStatement);
-	BoolStack::Element isInLoopElement(mIsInLoop, true);
+	auto isInLoopElement = mIsInLoop.Push(true);
 	mEndsWithJump.SetTop(false);
-	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	auto endsWithJumpElement = mEndsWithJump.Push(false);
 	ParseNodeTraverser::Visit(whileStatement);
 }
 
@@ -242,9 +242,9 @@ void ValidationPass::Visit(WhileStatement *whileStatement)
 void ValidationPass::Visit(ForStatement *forStatement)
 {
 	AssertReachableCode(forStatement);
-	BoolStack::Element isInLoopElement(mIsInLoop, true);
+	auto isInLoopElement = mIsInLoop.Push(true);
 	mEndsWithJump.SetTop(false);
-	BoolStack::Element endsWithJumpElement(mEndsWithJump, false);
+	auto endsWithJumpElement = mEndsWithJump.Push(false);
 	SemanticAnalysisPass::Visit(forStatement);
 }
 
