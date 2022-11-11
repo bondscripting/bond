@@ -1,5 +1,6 @@
 #include "bond/io/memoryinputstream.h"
 #include "bond/io/outputstream.h"
+#include "bond/stl/stringview.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/endian.h"
 #include "bond/systems/math.h"
@@ -8,7 +9,6 @@
 #include "bond/tools/disassembler.h"
 #include "bond/types/opcodes.h"
 #include "bond/types/qualifiedname.h"
-#include "bond/types/stringview.h"
 #include "bond/types/value.h"
 #include "bond/version.h"
 

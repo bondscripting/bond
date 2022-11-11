@@ -2,6 +2,7 @@
 #define BOND_VM_CODESEGMENT_H
 
 #include "bond/api/nativebinding.h"
+#include "bond/stl/stringview.h"
 #include "bond/types/qualifiedname.h"
 #include "bond/types/value.h"
 

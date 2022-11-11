@@ -3,7 +3,7 @@
 
 #include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
-#include "bond/types/stringview.h"
+#include "bond/stl/stringview.h"
 
 namespace Bond
 {
@@ -22,7 +22,7 @@ class TranslationUnit;
 /// be loaded, parsed and analyzed. Files can be explicitly added to the input file list via the
 /// AddInputFile method. Files are also implicitly added to the list when include directives in
 /// the Bond source files are parsed. A source file is never added to the input file list more
-/// than once, so encoutering an include directive for a file that already exists in the list has
+/// than once, so encountering an include directive for a file that already exists in the list has
 /// no effect. One parse tree, rooted with a TranslationUnit, is generated for each Bond source
 /// file. Only the TranslationUnits for the files that were explicitly added to the input file
 /// list are flagged as requiring code generation.
@@ -77,7 +77,7 @@ public:
 	/// returns A parse tree of ParseNodes rooted with a list of TranslationUnits.
 	TranslationUnit *Analyze();
 
-	/// \brief Returns whether any errors occured whilst anylizing the source code.
+	/// \brief Returns whether any errors occurred whilst analyzing the source code.
 	bool HasErrors() const;
 
 private:

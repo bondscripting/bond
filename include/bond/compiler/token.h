@@ -2,7 +2,7 @@
 #define BOND_COMPILER_TOKEN_H
 
 #include "bond/compiler/streampos.h"
-#include "bond/types/stringview.h"
+#include "bond/stl/stringview.h"
 #include "bond/types/value.h"
 
 #define BOND_TOKEN_LIST \

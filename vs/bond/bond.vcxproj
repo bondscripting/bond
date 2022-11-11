@@ -71,6 +71,7 @@
     <ClInclude Include="..\..\include\bond\stl\map.h" />
     <ClInclude Include="..\..\include\bond\stl\memory.h" />
     <ClInclude Include="..\..\include\bond\stl\stlallocator.h" />
+    <ClInclude Include="..\..\include\bond\stl\stringview.h" />
     <ClInclude Include="..\..\include\bond\stl\utility.h" />
     <ClInclude Include="..\..\include\bond\stl\vector.h" />
     <ClInclude Include="..\..\include\bond\systems\allocator.h" />
@@ -87,7 +88,6 @@
     <ClInclude Include="..\..\include\bond\types\dataview.h" />
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
-    <ClInclude Include="..\..\include\bond\types\stringview.h" />
     <ClInclude Include="..\..\include\bond\types\types.h" />
     <ClInclude Include="..\..\include\bond\types\typeutil.h" />
     <ClInclude Include="..\..\include\bond\types\value.h" />

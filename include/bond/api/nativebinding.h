@@ -1,7 +1,7 @@
 #ifndef BOND_API_NATIVEBINDING_H
 #define BOND_API_NATIVEBINDING_H
 
-#include "bond/types/stringview.h"
+#include "bond/types/types.h"
 
 namespace Bond
 {

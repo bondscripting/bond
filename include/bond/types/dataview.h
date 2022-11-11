@@ -1,7 +1,7 @@
 #ifndef BOND_TYPES_DATAVIEW_H
 #define BOND_TYPES_DATAVIEW_H
 
-#include "bond/types/stringview.h"
+#include "bond/stl/stringview.h"
 
 namespace Bond
 {
@@ -13,7 +13,7 @@ namespace Bond
 /// memory representing arbitrary binary data and a count of the number of bytes of data.
 ///
 /// DataView does not perform any allocations; it contains a pointer to an existing block of
-/// memory whose lifetime must superseed that of the DataView.
+/// memory whose lifetime must supersede that of the DataView.
 class DataView
 {
 public:
@@ -55,7 +55,7 @@ private:
 ///
 /// DataViewIndex does not perform any allocations; it contains a pointer to an existing array
 /// of DataView objects and an existing array of StringView objects whose lifetimes must
-/// superseed that of the DataView.
+/// supersede that of the DataView.
 class DataViewIndex
 {
 public:

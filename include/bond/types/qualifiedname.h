@@ -13,7 +13,7 @@ class OutputStream;
 ///
 /// The number of elements in the wrapped array is not stored; instead, the array must be
 /// terminated with a nullptr. QualifiedName does not perform any allocations; it contains a
-/// pointer to an existing array of strings whose lifetime must superseed that of the
+/// pointer to an existing array of strings whose lifetime must supersede that of the
 /// QualifiedName.
 ///
 /// \ingroup types

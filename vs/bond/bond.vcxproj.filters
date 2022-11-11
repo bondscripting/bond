@@ -303,9 +303,6 @@
     <ClInclude Include="..\..\include\bond\vm\collector.h">
       <Filter>Header Files\include\bond\vm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\types\stringview.h">
-      <Filter>Header Files\include\bond\types</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\types\dataview.h">
       <Filter>Header Files\include\bond\types</Filter>
     </ClInclude>
@@ -338,6 +335,9 @@
     </ClInclude>
     <ClInclude Include="..\..\source\private\libruntime64_type_cbo_embedded.h">
       <Filter>Header Files\source\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\stl\stringview.h">
+      <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
