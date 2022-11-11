@@ -5,7 +5,6 @@
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
 #include "bond/types/opcodes.h"
-#include "bond/types/stringutil.h"
 
 namespace Bond
 {
@@ -111,15 +110,16 @@ CboValidator::Result CboValidatorCore::Validate()
 		{
 			char str[BOND_BLOB_ID_LENGTH];
 			mStream.Read(str, BOND_BLOB_ID_LENGTH);
-			if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_LIST_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			const StringView sv(str, BOND_BLOB_ID_LENGTH);
+			if (sv == BOND_LIST_BLOB_ID)
 			{
 				mResult.mListBlobIdIndex = i;
 			}
-			else if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_FUNCTION_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			else if (sv == BOND_FUNCTION_BLOB_ID)
 			{
 				mResult.mFunctionBlobIdIndex = i;
 			}
-			else if (StringEqual(str, BOND_BLOB_ID_LENGTH, BOND_DATA_BLOB_ID, BOND_BLOB_ID_LENGTH))
+			else if (sv == BOND_DATA_BLOB_ID)
 			{
 				mResult.mDataBlobIdIndex = i;
 			}

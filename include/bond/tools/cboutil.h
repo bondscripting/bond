@@ -1,16 +1,18 @@
 #ifndef BOND_TOOLS_CBOUTIL_H
 #define BOND_TOOLS_CBOUTIL_H
 
+#include "bond/types/stringview.h"
 #include "bond/types/types.h"
 #include "bond/version.h"
 
 namespace Bond
 {
 
-#define BOND_LIST_BLOB_ID "List"
-#define BOND_FUNCTION_BLOB_ID "Func"
-#define BOND_DATA_BLOB_ID "Data"
-const size_t BOND_BLOB_ID_LENGTH = 4;
+constexpr StringView BOND_LIST_BLOB_ID {"List"};
+constexpr StringView BOND_FUNCTION_BLOB_ID {"Func"};
+constexpr StringView BOND_DATA_BLOB_ID {"Data"};
+constexpr size_t BOND_BLOB_ID_LENGTH = 4;
+
 
 inline uint32_t EncodeSizeAndType(uint32_t size, SignatureType type)
 {

@@ -88,7 +88,6 @@
     <ClInclude Include="..\..\include\bond\types\opcodes.h" />
     <ClInclude Include="..\..\include\bond\types\qualifiedname.h" />
     <ClInclude Include="..\..\include\bond\types\stringview.h" />
-    <ClInclude Include="..\..\include\bond\types\stringutil.h" />
     <ClInclude Include="..\..\include\bond\types\types.h" />
     <ClInclude Include="..\..\include\bond\types\typeutil.h" />
     <ClInclude Include="..\..\include\bond\types\value.h" />
@@ -162,7 +161,6 @@
     <ClCompile Include="..\..\source\stdioinputstream.cpp" />
     <ClCompile Include="..\..\source\stdiooutputstream.cpp" />
     <ClCompile Include="..\..\source\stdiostreamfactory.cpp" />
-    <ClCompile Include="..\..\source\stringutil.cpp" />
     <ClCompile Include="..\..\source\token.cpp" />
     <ClCompile Include="..\..\source\tokenstream.cpp" />
     <ClCompile Include="..\..\source\toplevelsymbolpass.cpp" />

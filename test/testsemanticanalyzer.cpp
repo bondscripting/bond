@@ -2,7 +2,6 @@
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
 #include "bond/compiler/parsenodeutil.h"
-#include "bond/types/stringutil.h"
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {

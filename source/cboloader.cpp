@@ -7,7 +7,6 @@
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
 #include "bond/types/opcodes.h"
-#include "bond/types/stringutil.h"
 #include "bond/types/value.h"
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"

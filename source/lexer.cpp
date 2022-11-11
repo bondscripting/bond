@@ -163,7 +163,7 @@ TokenCollectionHandle LexerCore::Lex()
 	CharStream stream(mStream);
 	Resources resources = CalculateResources(stream);
 
-	const size_t fileNameLength = StringLength(mFileName);
+	const size_t fileNameLength = strlen(mFileName);
 	resources.stringBufferLength += fileNameLength + 1;
 
 	size_t memSize = 0;

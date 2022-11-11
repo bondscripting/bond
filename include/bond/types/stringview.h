@@ -1,8 +1,6 @@
 #ifndef BOND_TYPES_STRINGVIEW_H
 #define BOND_TYPES_STRINGVIEW_H
 
-#include "bond/types/stringutil.h"
-
 #include "bond/conf.h"
 
 #ifdef USER_BOND_STRINGVIEW_HEADER

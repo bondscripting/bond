@@ -2,7 +2,6 @@
 #include "bond/compiler/parsenodeutil.h"
 #include "bond/systems/math.h"
 #include "bond/types/opcodes.h"
-#include "bond/types/stringutil.h"
 
 namespace Bond
 {
