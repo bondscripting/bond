@@ -51,6 +51,8 @@
     <ClInclude Include="..\..\include\bond\io\memorystreamfactory.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h" />
+    <ClInclude Include="..\..\include\bond\io\stdiofilehandle.h" />
+    <ClInclude Include="..\..\include\bond\io\stdioinputstream.h" />
     <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h" />
     <ClInclude Include="..\..\include\bond\io\stdiostreamfactory.h" />
     <ClInclude Include="..\..\include\bond\io\stream.h" />
@@ -62,9 +64,11 @@
     <ClInclude Include="..\..\include\bond\private\map.h" />
     <ClInclude Include="..\..\include\bond\private\memory.h" />
     <ClInclude Include="..\..\include\bond\private\stlallocator.h" />
+    <ClInclude Include="..\..\include\bond\private\stringview.h" />
     <ClInclude Include="..\..\include\bond\private\types.h" />
     <ClInclude Include="..\..\include\bond\private\utility.h" />
     <ClInclude Include="..\..\include\bond\private\vector.h" />
+    <ClInclude Include="..\..\include\bond\private\vm.h" />
     <ClInclude Include="..\..\include\bond\stl\algorithm.h" />
     <ClInclude Include="..\..\include\bond\stl\autostack.h" />
     <ClInclude Include="..\..\include\bond\stl\list.h" />

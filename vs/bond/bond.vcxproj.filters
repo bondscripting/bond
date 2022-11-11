@@ -339,6 +339,18 @@
     <ClInclude Include="..\..\include\bond\stl\stringview.h">
       <Filter>Header Files\include\bond\stl</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\stringview.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\vm.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdiofilehandle.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\stdioinputstream.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\cboloader.cpp">
