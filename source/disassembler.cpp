@@ -130,7 +130,7 @@ void DisassemblerCore::Disassemble()
 		for (size_t j = 0; j < numElements; ++j)
 		{
 			const size_t elementIndex = ReadValue16().mUShort;
-			*element++ = mStringTable[elementIndex].GetString();
+			*element++ = mStringTable[elementIndex].data();
 		}
 		*element++ = nullptr;
 	}
@@ -441,8 +441,8 @@ SignatureType DisassemblerCore::DisassembleSizeAndType()
 
 void DisassemblerCore::WriteAbbreviatedString(const StringView &str)
 {
-	const size_t length = str.GetLength();
-	const char *s = str.GetString();
+	const size_t length = str.length();
+	const char *s = str.data();
 
 	mOutStream.Print("%c", '"');
 	if (length < 28)

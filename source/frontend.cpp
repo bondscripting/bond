@@ -33,7 +33,7 @@ TranslationUnit *FrontEnd::Analyze()
 	StringList::const_iterator it = mInputFileNameList.begin();
 	while ((it != mInputFileNameList.end()) && !HasErrors())
 	{
-		const char *fileName = it->GetString();
+		const char *fileName = it->data();
 		auto streamHandle = mStreamFactory.CreateInputStream(fileName);
 		mTokenCollectionStore.emplace_back(mLexer.Lex(fileName, *streamHandle));
 

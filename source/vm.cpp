@@ -450,7 +450,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_LOADSTR:
 			{
 				const Value16 stringIndex(code + pc);
-				*reinterpret_cast<const char **>(sp) = constantTable->mStringTable[stringIndex.mUShort].GetString();
+				*reinterpret_cast<const char **>(sp) = constantTable->mStringTable[stringIndex.mUShort].data();
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}

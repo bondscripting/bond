@@ -673,7 +673,7 @@ void ParseTreePrinterCore::Print(const Token *token)
 {
 	if (token != nullptr)
 	{
-		token->GetText().PrintTo(mStream);
+		PrintTo(token->GetText(), mStream);
 	}
 }
 

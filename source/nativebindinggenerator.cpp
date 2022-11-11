@@ -106,7 +106,7 @@ void NativeBindingGeneratorCore::Generate()
 		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
 		OpenNamespaces(mHStream, identifiers, numIdentifiers);
 		mHStream.Print("extern const Bond::NativeBindingCollection ");
-		collectionName.PrintTo(mHStream);
+		PrintTo(collectionName, mHStream);
 		mHStream.Print(";\n");
 		CloseNamespaces(mHStream, numIdentifiers);
 		mHStream.Print("\n");
@@ -115,7 +115,7 @@ void NativeBindingGeneratorCore::Generate()
 		mCppStream.Print("#include \"%s\"\n\n", mIncludeName);
 		OpenNamespaces(mCppStream, identifiers, numIdentifiers);
 		mCppStream.Print("\nconst Bond::NativeFunctionBinding ");
-		collectionName.PrintTo(mCppStream);
+		PrintTo(collectionName, mCppStream);
 		mCppStream.Print("_FUNCTIONS[] =\n{\n");
 
 		// Spit out the function bindings.
@@ -126,9 +126,9 @@ void NativeBindingGeneratorCore::Generate()
 
 		// Bottom of the .cpp file.
 		mCppStream.Print("\t{nullptr, nullptr}\n};\n\nconst Bond::NativeBindingCollection ");
-		collectionName.PrintTo(mCppStream);
+		PrintTo(collectionName, mCppStream);
 		mCppStream.Print(" =\n{\n\t");
-		collectionName.PrintTo(mCppStream);
+		PrintTo(collectionName, mCppStream);
 		mCppStream.Print("_FUNCTIONS,\n\t%" BOND_PRIu32 "\n};\n\n", mNumFunctions);
 		CloseNamespaces(mCppStream, numIdentifiers);
 	}
@@ -286,7 +286,7 @@ void NativeBindingGeneratorCore::OpenNamespaces(OutputStream &stream, const Stri
 		for (size_t i = 0; i < (numIdentifiers - 1); ++i)
 		{
 			stream.Print("namespace ");
-			identifiers[i].PrintTo(stream);
+			PrintTo(identifiers[i], stream);
 			stream.Print("\n{\n");
 		}
 	}

@@ -453,7 +453,7 @@ void CboLoaderCore::Load()
 		for (size_t j = 0; j < numElements; ++j)
 		{
 			const size_t elementIndex = ReadValue16().mUShort;
-			*element++ = mConstantTable->mStringTable[elementIndex].GetString();
+			*element++ = mConstantTable->mStringTable[elementIndex].data();
 		}
 		*element++ = nullptr;
 	}

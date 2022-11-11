@@ -253,7 +253,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		const Bond::StringView &expected = EXPECTED_STRINGS[i];
 		const Bond::StringView actual = token->GetStringValue();
 		ASSERT_FORMAT(expected == actual,
-			("Expected \"%s\", but was \"%s\".", expected.GetString(), actual.GetString()));
+			("Expected \"%s\", but was \"%s\".", expected.data(), actual.data()));
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");

@@ -6,7 +6,7 @@
 #include "bond/types/value.h"
 
 #define BOND_TOKEN_LIST \
-	/* Keywords */												    \
+	/* Keywords */                            \
 	BOND_TOKEN_ITEM(KEY_ALIGNOF)              \
 	BOND_TOKEN_ITEM(KEY_BOOL)                 \
 	BOND_TOKEN_ITEM(KEY_BREAK)                \
@@ -148,7 +148,7 @@ public:
 
 	/// \brief Default constructs an empty Token object.
 	Token():
-		mText(nullptr),
+		mText(),
 		mStartPos(0, 0, 0),
 		mEndIndex(0),
 		mFileName(nullptr),
@@ -199,7 +199,7 @@ public:
 
 	/// \brief Like GetText, but returns the text as a C-style string. The text may be truncated
 	/// if it contains a null character.
-	const char *GetRawText() const { return mText.GetString(); }
+	const char *GetRawText() const { return mText.data(); }
 
 	/// \brief Assigns the text that forms the token. The text is assumed to be null terminated.
 	void SetText(const char *text) { mText = StringView(text); }
@@ -288,7 +288,7 @@ public:
 	/// \brief Returns the string value of the Token. Valid only for Tokens of type `CONST_STRING`.
 	const StringView GetStringValue() const { return StringView(mValue.mString.buffer, mValue.mString.length); }
 
-	/// \brief A short-hand for GetStringValue().GetLength().
+	/// \brief A short-hand for GetStringValue().length().
 	size_t GetStringLength() const { return mValue.mString.length; }
 
 	/// \brief Assigns the string value of the Token. Valid only for Tokens of type `CONST_STRING`.

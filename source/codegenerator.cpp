@@ -439,7 +439,7 @@ private:
 
 	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
 	void EmitOpCode(OpCode opCode);
-	void EmitQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
+	void EmitQualifiedName(const Symbol *symbol, const char *suffix = "");
 	void EmitValue16(Value16 value);
 	void EmitValue32At(Value32 value, size_t pos);
 	void EmitIndexedValue32(Value32 value);
@@ -474,7 +474,7 @@ private:
 	int32_t AllocateLocal(const TypeDescriptor &typeDescriptor);
 	size_t CreateLabel();
 	void SetLabelValue(size_t label, size_t value);
-	uint16_t MapQualifiedName(const Symbol *symbol, const char *suffix = nullptr);
+	uint16_t MapQualifiedName(const Symbol *symbol, const char *suffix = "");
 	uint16_t MapString(const StringView &str);
 	uint16_t MapValue32(const Value32 &value32);
 	uint16_t MapValue64(const Value64 &value32);
@@ -4442,7 +4442,7 @@ void GeneratorCore::WriteQualifiedName(const QualifiedNameEntry &entry)
 
 	WriteQualifiedNameIndices(entry.mSymbol);
 
-	if (!entry.mSuffix.IsEmpty())
+	if (!entry.mSuffix.empty())
 	{
 			const uint16_t suffixIndex = MapString(entry.mSuffix);
 			WriteValue16(Value16(suffixIndex));
@@ -4473,8 +4473,8 @@ void GeneratorCore::WriteQualifiedNameIndices(const Symbol *symbol)
 
 void GeneratorCore::WriteString(const StringView &stringView)
 {
-	const size_t length = stringView.GetLength();
-	const char *str = stringView.GetString();
+	const size_t length = stringView.length();
+	const char *str = stringView.data();
 	WriteValue16(Value16(uint16_t(length)));
 	for (size_t i = 0; i < length; ++i)
 	{
@@ -4625,7 +4625,7 @@ uint16_t GeneratorCore::MapQualifiedName(const Symbol *symbol, const char *suffi
 			sym = sym->GetParentSymbol();
 		}
 
-		if (!simpleSuffix.IsEmpty())
+		if (!simpleSuffix.empty())
 		{
 			MapString(simpleSuffix);
 		}
@@ -4641,7 +4641,7 @@ uint16_t GeneratorCore::MapString(const StringView &str)
 	{
 		PushError(CompilerError::STRING_TABLE_OVERFLOW);
 	}
-	if (!IsInRange<uint16_t>(str.GetLength()))
+	if (!IsInRange<uint16_t>(str.length()))
 	{
 		PushError(CompilerError::STRING_OVERFLOW);
 	}

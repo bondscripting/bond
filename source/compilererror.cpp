@@ -96,7 +96,7 @@ void CompilerError::Print(OutputStream &stream) const
 
 				case 'c':
 				{
-					mContext->GetText().PrintTo(stream);
+					PrintTo(mContext->GetText(), stream);
 					state = STATE_NORMAL;
 				}
 				break;
@@ -146,7 +146,7 @@ void CompilerError::Print(OutputStream &stream) const
 				case 't':
 				{
 					const Token *token = reinterpret_cast<const Token *>(arg);
-					token->GetText().PrintTo(stream);
+					PrintTo(token->GetText(), stream);
 					state = STATE_NORMAL;
 				}
 				break;

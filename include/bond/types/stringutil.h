@@ -7,9 +7,6 @@
 namespace Bond
 {
 
-class StringView;
-class OutputStream;
-
 /// \addtogroup types
 /// @{
 

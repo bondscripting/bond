@@ -5,8 +5,8 @@ namespace Bond
 
 void Token::SetStringValue(const StringView &str)
 {
-	mValue.mString.buffer = str.GetString();
-	mValue.mString.length = str.GetLength();
+	mValue.mString.buffer = str.data();
+	mValue.mString.length = str.length();
 }
 
 

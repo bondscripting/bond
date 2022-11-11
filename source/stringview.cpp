@@ -4,11 +4,11 @@
 namespace Bond
 {
 
-void StringView::PrintTo(Bond::OutputStream &stream) const
+void PrintTo(const StringView &str, OutputStream &stream)
 {
-	for (size_t i = 0; i < mLength; ++i)
+	for (char c : str)
 	{
-		stream.Print("%c", mStr[i]);
+		stream.Print("%c", c);
 	}
 }
 
