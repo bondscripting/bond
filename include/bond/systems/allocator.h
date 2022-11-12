@@ -349,7 +349,7 @@ public:
 	void FreeAligned(const void *buffer) { FreeAligned(const_cast<void *>(buffer)); }
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized memory large enough to
-	/// accomodate an object of type T.
+	/// accommodate an object of type T.
 	template <typename T>
 	T *Alloc()
 	{
@@ -357,7 +357,7 @@ public:
 	}
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized memory large enough to
-	/// accomodate an array of objects of type T.
+	/// accommodate an array of objects of type T.
 	/// \param numElements The number of elements in the allocated array.
 	template <typename T>
 	T *Alloc(size_t numElements)
@@ -366,7 +366,7 @@ public:
 	}
 
 	/// \brief Allocates and returns an owning handle to a block of uninitialized memory large enough
-	/// to accomodate an object of type T.
+	/// to accommodate an object of type T.
 	template <typename T>
 	Handle<T> AllocOwned()
 	{
@@ -374,7 +374,7 @@ public:
 	}
 
 	/// \brief Allocates and returns an owning handle to a block of uninitialized memory large enough
-	/// to accomodate an array of objects of type T.
+	/// to accommodate an array of objects of type T.
 	/// \param numElements The number of elements in the allocated array.
 	template <typename T>
 	Handle<T> AllocOwned(size_t numElements)
@@ -383,7 +383,7 @@ public:
 	}
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized aligned memory large enough
-	/// to accomodate an object of type T.
+	/// to accommodate an object of type T.
 	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	T *AllocAligned(size_t align)
@@ -392,7 +392,7 @@ public:
 	}
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized aligned  memory large enough
-	/// to accomodate an array of objects of type T.
+	/// to accommodate an array of objects of type T.
 	/// \param numElements The number of elements in the allocated array.
 	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
@@ -402,7 +402,7 @@ public:
 	}
 
 	/// \brief Allocates and returns an owning handle to a block of uninitialized aligned memory large
-	/// enough to accomodate an object of type T.
+	/// enough to accommodate an object of type T.
 	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>
 	AlignedHandle<T> AllocOwnedAligned(size_t align)
@@ -411,7 +411,7 @@ public:
 	}
 
 	/// \brief Allocates and returns an owning handle to a block of uninitialized aligned memory large
-	/// enough to accomodate an array of objects of type T.
+	/// enough to accommodate an array of objects of type T.
 	/// \param numElements The number of elements in the allocated array.
 	/// \param align The alignment requirements for the allocated memory.
 	template <typename T>

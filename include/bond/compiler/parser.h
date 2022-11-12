@@ -58,7 +58,7 @@ public:
 
 	/// \brief Parses a sequence of Tokens and generates a parse tree.
 	/// \param stream The stream of Tokens to be parsed.
-	/// \returns A parse tree of ParseNodes rooted with a Translationunit.
+	/// \returns A parse tree of ParseNodes rooted with a TranslationUnit.
 	TranslationUnit *Parse(TokenStream &stream);
 
 	/// \brief Returns the buffer where error messages are pushed.

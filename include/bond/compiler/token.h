@@ -385,7 +385,7 @@ extern const Token FLOAT_TOKEN;
 /// \brief Constant Token of type `KEY_DOUBLE` representing the `double` keyword.
 extern const Token DOUBLE_TOKEN;
 
-/// \brief Constant TokenTypeSet of all keywords representing Bond primitive typesn namely:
+/// \brief Constant TokenTypeSet of all keywords representing Bond primitive types namely:
 /// `KEY_BOOL`, `KEY_CHAR`, `KEY_UCHAR`, `KEY_SHORT`, `KEY_USHORT`, `KEY_INT`, `KEY_UINT`,
 /// `KEY_LONG`, `KEY_ULONG`, `KEY_FLOAT`, `KEY_DOUBLE` and `KEY_VOID`.
 extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
