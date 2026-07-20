@@ -113,9 +113,9 @@ private:
 	template<typename T, typename... Args>
 	T *CreateNode(Args&&... args)
 	{
-		auto nodeHandle = mAllocator.AllocOwnedObject<T>(forward<Args>(args)...);
+		auto nodeHandle = mAllocator.AllocOwnedObject<T>(Bond::forward<Args>(args)...);
 		T *node = nodeHandle.get();
-		mStore.emplace_back(move(nodeHandle));
+		mStore.emplace_back(Bond::move(nodeHandle));
 		return node;
 	}
 

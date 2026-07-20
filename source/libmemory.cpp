@@ -72,7 +72,7 @@ void *AllocateAlignedCollected(Allocator &allocator, Collector &collector, size_
 	auto collectableHandle = allocator.AllocOwnedObject<AlignedCollectable>(
 		allocator.AllocOwnedAligned<uint8_t>(size, alignment));
 	void *ptr = collectableHandle->GetContent().get();
-	collector.Register(move(collectableHandle));
+	collector.Register(Bond::move(collectableHandle));
 	return ptr;
 }
 

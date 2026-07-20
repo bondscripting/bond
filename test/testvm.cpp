@@ -816,12 +816,12 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	VALIDATE_FUNCTION_CALL_0(INT, "LocalPointerDifference", int32_t(4));
 	VALIDATE_FUNCTION_CALL_2(INT, "PointerDifference", int32_t(&twoD[6][9] - &twoD[1][3]), &twoD[6][9], &twoD[1][3]);
 
-	uint8_t c;
-	VALIDATE_FUNCTION_CALL_2(PTR, "SmallStructPointerOffset", &c + (5 * 32), &c, int32_t(5));
-	VALIDATE_FUNCTION_CALL_2(INT, "SmallStructPointerDifference", 9, &c + (9 * 32), &c);
+	uint8_t aggregate[500000];
+	VALIDATE_FUNCTION_CALL_2(PTR, "SmallStructPointerOffset", &aggregate[5 * 32], aggregate, int32_t(5));
+	VALIDATE_FUNCTION_CALL_2(INT, "SmallStructPointerDifference", 9, &aggregate[9 * 32], aggregate);
 
-	VALIDATE_FUNCTION_CALL_2(PTR, "LargeStructPointerOffset", &c + (7 * 100000), &c, int32_t(7));
-	VALIDATE_FUNCTION_CALL_2(INT, "LargeStructPointerDifference", 3, &c + (3 * 100000), &c);
+	VALIDATE_FUNCTION_CALL_2(PTR, "LargeStructPointerOffset", &aggregate[4 * 100000], aggregate, int32_t(4));
+	VALIDATE_FUNCTION_CALL_2(INT, "LargeStructPointerDifference", 3, &aggregate[3 * 100000], aggregate);
 
 	VALIDATE_FUNCTION_CALL_0(INT, "LocalAlignment", int32_t(64));
 	VALIDATE_FUNCTION_CALL_0(INT, "LocalOverlap", int32_t(1));

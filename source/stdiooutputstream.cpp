@@ -41,7 +41,7 @@ StdioOutputStream &StdioOutputStream::operator=(StdioOutputStream &&other)
 {
 	if (this != &other)
 	{
-		mHandle = move(other.mHandle);
+		mHandle = Bond::move(other.mHandle);
 		mFile = other.mFile;
 		other.mFile = nullptr;
 	}

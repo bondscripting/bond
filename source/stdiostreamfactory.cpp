@@ -13,7 +13,7 @@ InputStreamHandle StdioStreamFactory::CreateInputStream(const char *fileName)
 
 	if (fileHandle.IsBound())
 	{
-		streamHandle = mAllocator.AllocOwnedObject<StdioInputStream>(move(fileHandle));
+		streamHandle = mAllocator.AllocOwnedObject<StdioInputStream>(Bond::move(fileHandle));
 	}
 	else if (mDelegateFactory != nullptr)
 	{
@@ -36,7 +36,7 @@ OutputStreamHandle StdioStreamFactory::CreateOutputStream(const char *fileName, 
 
 	if (fileHandle.IsBound())
 	{
-		streamHandle = mAllocator.AllocOwnedObject<StdioOutputStream>(move(fileHandle));
+		streamHandle = mAllocator.AllocOwnedObject<StdioOutputStream>(Bond::move(fileHandle));
 	}
 	else if (mDelegateFactory != nullptr)
 	{

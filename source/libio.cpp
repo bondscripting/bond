@@ -12,7 +12,7 @@ namespace Bond
 
 struct InputStreamPair
 {
-	explicit InputStreamPair(InputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
+	explicit InputStreamPair(InputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(Bond::move(handle)) {}
 	InputStreamAdaptor mAdaptor;
 	InputStreamHandle mHandle;
 };
@@ -21,7 +21,7 @@ typedef WrapperCollectable<InputStreamPair> InputStreamCollectable;
 
 struct OutputStreamPair
 {
-	explicit OutputStreamPair(OutputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(move(handle)) {}
+	explicit OutputStreamPair(OutputStreamHandle &&handle): mAdaptor(handle.get()), mHandle(Bond::move(handle)) {}
 	OutputStreamAdaptor mAdaptor;
 	OutputStreamHandle mHandle;
 };
@@ -498,7 +498,7 @@ void CreateInputStream(Bond::StackFrame &frame)
 	void *adaptor = nullptr;
 	if (streamHandle)
 	{
-		adaptor = allocator.AllocObject<InputStreamPair>(move(streamHandle));
+		adaptor = allocator.AllocObject<InputStreamPair>(Bond::move(streamHandle));
 	}
 	frame.SetReturnValue(adaptor);
 }
@@ -514,9 +514,9 @@ InputStreamAdaptor *CreateInputStreamCollected(
 	auto streamHandle = streamFactory.CreateInputStream(fileName);
 	if (streamHandle)
 	{
-		auto collectableHandle = allocator.AllocOwnedObject<InputStreamCollectable>(move(streamHandle));
+		auto collectableHandle = allocator.AllocOwnedObject<InputStreamCollectable>(Bond::move(streamHandle));
 		adaptor = &collectableHandle->GetContent().mAdaptor;
-		collector.Register(move(collectableHandle));
+		collector.Register(Bond::move(collectableHandle));
 	}
 	return adaptor;
 }
@@ -564,7 +564,7 @@ void CreateOutputStream(Bond::StackFrame &frame)
 	void *adaptor = nullptr;
 	if (streamHandle)
 	{
-		adaptor = allocator.AllocObject<OutputStreamPair>(move(streamHandle));
+		adaptor = allocator.AllocObject<OutputStreamPair>(Bond::move(streamHandle));
 	}
 	frame.SetReturnValue(adaptor);
 }
@@ -581,9 +581,9 @@ OutputStreamAdaptor *CreateOutputStreamCollected(
 	auto streamHandle = streamFactory.CreateOutputStream(fileName, append);
 	if (streamHandle)
 	{
-		auto collectableHandle = allocator.AllocOwnedObject<OutputStreamCollectable>(move(streamHandle));
+		auto collectableHandle = allocator.AllocOwnedObject<OutputStreamCollectable>(Bond::move(streamHandle));
 		adaptor = &collectableHandle->GetContent().mAdaptor;
-		collector.Register(move(collectableHandle));
+		collector.Register(Bond::move(collectableHandle));
 	}
 	return adaptor;
 }

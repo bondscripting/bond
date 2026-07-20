@@ -1,4 +1,5 @@
 #include "bond/api/libinclude.h"
+#include "bond/types/types.h"
 
 namespace Bond
 {

@@ -19,11 +19,11 @@ public:
 	virtual ~Collectable()
 	{
 		// Destroy the list of objects iteratively to avoid a recursive stack overflow.
-		CollectableHandle curr = move(mNext);
+		CollectableHandle curr = Bond::move(mNext);
 		while (curr != nullptr)
 		{
-			CollectableHandle next = move(curr->mNext);
-			curr = move(next);
+			CollectableHandle next = Bond::move(curr->mNext);
+			curr = Bond::move(next);
 		}
 	}
 
@@ -39,7 +39,7 @@ public:
 
 	template<typename... Args>
 	explicit WrapperCollectable(Args&&... args):
-		mContent(forward<Args>(args)...)
+		mContent(Bond::forward<Args>(args)...)
 	{}
 
 	virtual ~WrapperCollectable() {}
@@ -64,8 +64,8 @@ public:
 			{
 				tail = tail->mNext.get();
 			}
-			tail->mNext = move(mHead);
-			mHead = move(object);
+			tail->mNext = Bond::move(mHead);
+			mHead = Bond::move(object);
 		}
 	}
 

@@ -21,12 +21,12 @@ public:
 	explicit StdioOutputStream(const char *fileName);
 
 	explicit StdioOutputStream(StdioFileHandle &&handle):
-		mHandle(move(handle)),
+		mHandle(Bond::move(handle)),
 		mFile(mHandle.GetFile())
 	{}
 
 	StdioOutputStream(StdioOutputStream &&other):
-		mHandle(move(other.mHandle)),
+		mHandle(Bond::move(other.mHandle)),
 		mFile(other.mFile)
 	{
 		other.mFile = nullptr;

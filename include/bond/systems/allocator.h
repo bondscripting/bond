@@ -49,12 +49,12 @@ public:
 		{}
 
 		Handle(Handle &&other):
-			unique_ptr<T, Deallocator<T> >(move(other))
+			unique_ptr<T, Deallocator<T> >(Bond::move(other))
 		{}
 
 		Handle &operator=(Handle &&other)
 		{
-			unique_ptr<T, Deallocator<T> >::operator=(move(other));
+			unique_ptr<T, Deallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
@@ -91,12 +91,12 @@ public:
 		{}
 
 		AlignedHandle(AlignedHandle &&other):
-			unique_ptr<T, AlignedDeallocator<T> >(move(other))
+			unique_ptr<T, AlignedDeallocator<T> >(Bond::move(other))
 		{}
 
 		AlignedHandle &operator=(AlignedHandle &&other)
 		{
-			unique_ptr<T, AlignedDeallocator<T> >::operator=(move(other));
+			unique_ptr<T, AlignedDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
@@ -142,12 +142,12 @@ public:
 		{}
 
 		ObjectHandle(ObjectHandle &&other):
-			unique_ptr<T, ObjectDeallocator<T> >(move(other))
+			unique_ptr<T, ObjectDeallocator<T> >(Bond::move(other))
 		{}
 
 		ObjectHandle &operator=(ObjectHandle &&other)
 		{
-			unique_ptr<T, ObjectDeallocator<T> >::operator=(move(other));
+			unique_ptr<T, ObjectDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
@@ -193,12 +193,12 @@ public:
 		{}
 
 		AlignedObjectHandle(AlignedObjectHandle &&other):
-			unique_ptr<T, AlignedObjectDeallocator<T> >(move(other))
+			unique_ptr<T, AlignedObjectDeallocator<T> >(Bond::move(other))
 		{}
 
 		AlignedObjectHandle &operator=(AlignedObjectHandle &&other)
 		{
-			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(move(other));
+			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
@@ -426,7 +426,7 @@ public:
 	T *AllocObject(Args&&... args)
 	{
 		auto memHandle = AllocOwned<T>();
-		new (memHandle.get()) T(forward<Args>(args)...);
+		new (memHandle.get()) T(Bond::forward<Args>(args)...);
 		return memHandle.release();
 	}
 
@@ -435,7 +435,7 @@ public:
 	template<typename T, typename... Args>
 	ObjectHandle<T> AllocOwnedObject(Args&&... args)
 	{
-		return ObjectHandle<T>(this, AllocObject<T>(forward<Args>(args)...));
+		return ObjectHandle<T>(this, AllocObject<T>(Bond::forward<Args>(args)...));
 	}
 
 	/// \brief Allocates, constructs and returns a pointer to an aligned instance of type T.
@@ -445,7 +445,7 @@ public:
 	T *AllocAlignedObject(size_t align, Args&&... args)
 	{
 		auto memHandle = AllocOwnedAligned<T>(align);
-		new (memHandle.get()) T(forward<Args>(args)...);
+		new (memHandle.get()) T(Bond::forward<Args>(args)...);
 		return memHandle.release();
 	}
 
@@ -455,7 +455,7 @@ public:
 	template<typename T, typename... Args>
 	AlignedObjectHandle<T> AllocOwnedAlignedObject(size_t align, Args&&... args)
 	{
-		return AlignedObjectHandle<T>(this, AllocAlignedObject<T>(align, forward<Args>(args)...));
+		return AlignedObjectHandle<T>(this, AllocAlignedObject<T>(align, Bond::forward<Args>(args)...));
 	}
 };
 

@@ -26,7 +26,7 @@ public:
 
 		template<typename... Args>
 		Element(AutoStack &stack, Args&&... args):
-			mValue(forward<Args>(args)...),
+			mValue(Bond::forward<Args>(args)...),
 			mStack(stack),
 			mNext(nullptr)
 		{
@@ -42,7 +42,7 @@ public:
 		Element &operator=(const Element &other) = delete;
 
 		Element &operator=(const ValueType &value) { mValue = value; return *this; }
-		Element &operator=(ValueType &&value) { mValue = move(value); return *this; }
+		Element &operator=(ValueType &&value) { mValue = Bond::move(value); return *this; }
 
 		operator const ValueType&() const { return mValue; }
 		operator ValueType&() { return mValue; }
@@ -51,7 +51,7 @@ public:
 		ValueType &GetValue() { return mValue; }
 
 		void SetValue(const ValueType &value) { mValue = value; }
-		void SetValue(ValueType &&value) { mValue = move(value); }
+		void SetValue(ValueType &&value) { mValue = Bond::move(value); }
 
 	protected:
 		Element *GetNext() { return mNext; }
@@ -136,7 +136,7 @@ public:
 	template<typename... Args>
 	Element Push(Args&&... args)
 	{
-		return Element(*this, forward<Args>(args)...);
+		return Element(*this, Bond::forward<Args>(args)...);
 	}
 
 
@@ -157,7 +157,7 @@ public:
 	{
 		if (mTop != nullptr)
 		{
-			mTop->SetValue(move(value));
+			mTop->SetValue(Bond::move(value));
 		}
 	}
 
@@ -189,8 +189,32 @@ public:
 private:
 	void PushElement(Element *element)
 	{
+		// Store pointer to local Element object. Safe because the Element's destructor
+		// (PopElement) is guaranteed to be called before the pointer is accessed after
+		// the Element's lifetime ends. This is an intentional RAII pattern where the
+		// Element manages its own stack membership via constructor/destructor.
+#if defined(__clang__)
+# if defined(__has_warning)
+#  if __has_warning("-Wdangling-pointer")
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wdangling-pointer"
+#  endif
+# endif
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
 		element->SetNext(mTop);
 		mTop = element;
+#if defined(__clang__)
+# if defined(__has_warning)
+#  if __has_warning("-Wdangling-pointer")
+#   pragma clang diagnostic pop
+#  endif
+# endif
+#elif defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 	}
 
 

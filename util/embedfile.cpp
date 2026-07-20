@@ -6,10 +6,11 @@
 
 void EmbedFile(FILE *cppFile, FILE *hFile, const char *inputFileName, const char *linkage)
 {
-	char baseName[LINE_MAX];
+	const size_t MAX_NAME_LENGTH = 2048;
+	char baseName[MAX_NAME_LENGTH];
 	const char *n = inputFileName;
 	size_t j = 0;
-	while ((*n != '\0') && (j < (LINE_MAX - 1)))
+	while ((*n != '\0') && (j < (MAX_NAME_LENGTH - 1)))
 	{
 		const char c = *n++;
 		baseName[j++] = isalnum(c) ? toupper(c) : '_';
