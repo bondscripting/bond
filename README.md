@@ -60,7 +60,33 @@ Usage: prettyprint <options> <source files>
 
 ## Building Bond
 
-### With `make`
+### With CMake
+
+Bond can be built with CMake. Configure a build directory with:
+
+```sh
+cmake -S . -B build
+```
+
+To build the Bond static library, type:
+
+```sh
+cmake --build build --target bond_lib
+```
+
+To build the Bond toolset, type:
+
+```sh
+cmake --build build --target tools
+```
+
+To build and run the unit tests, type:
+
+```sh
+cmake --build build --target test
+```
+
+### With make
 
 Bond offers a few Makefiles for common platforms. First create a symbolic link to an appropriate Makefile. Do not use `Makefile.common`; it is included by the other Makefiles. For example:
 
@@ -80,7 +106,7 @@ To build the Bond toolset, type:
 make tools
 ```
 
-To run the unit tests, type:
+To build and run the unit tests, type:
 
 ```sh
 make test
