@@ -179,7 +179,7 @@ struct InputStream
 	/// \brief Returns whether the end of the stream has been reached.
 	bool IsEof() const;
 
-	/// \brief Returns whether an error has occured during an input operation.
+	/// \brief Returns whether an error has occurred during an input operation.
 	bool HasError() const;
 
 	/// \brief Clears the error flag.
@@ -356,7 +356,7 @@ struct OutputStream
 	/// \brief Returns whether the end of the stream has been reached.
 	bool IsEof() const;
 
-	/// \brief Returns whether an error has occured during an output operation.
+	/// \brief Returns whether an error has occurred during an output operation.
 	bool HasError() const;
 
 	/// \brief Clears the error flag.
@@ -370,12 +370,12 @@ InputStream *StdIn();
 
 /// \brief Returns the virtual machine's standard output stream.
 ///
-/// This stream must not be passed to the FreeOuputStream function.
+/// This stream must not be passed to the FreeOutputStream function.
 OutputStream *StdOut();
 
 /// \brief Returns the virtual machine's standard error stream.
 ///
-/// This stream must not be passed to the FreeOuputStream function.
+/// This stream must not be passed to the FreeOutputStream function.
 OutputStream *StdErr();
 
 InputStream *CreateInputStream(const char *fileName);
