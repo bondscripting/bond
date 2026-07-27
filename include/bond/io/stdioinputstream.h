@@ -10,21 +10,36 @@ namespace Bond
 
 /// \brief A concrete implementation of InputStream that performs input operations from a stdio
 /// FILE*.
+///
+/// StdioInputStream adapts a C stdio FILE object to the InputStream interface. The stream may be
+/// bound either to an existing FILE pointer or to a file opened and owned through a
+/// StdioFileHandle.
+///
+/// \sa InputStream, StdioOutputStream
 /// \ingroup io
 class StdioInputStream: public InputStream
 {
 public:
+	/// \brief Constructs a StdioInputStream object.
+	/// \param file The stdio FILE object from which input will be read. The file is not owned by the
+	///        StdioInputStream unless it is later replaced by an owning handle.
 	explicit StdioInputStream(FILE *file):
 		mFile(file)
 	{}
 
+	/// \brief Constructs a StdioInputStream object.
+	/// \param fileName The name of the file to open for reading.
 	explicit StdioInputStream(const char *fileName);
 
+	/// \brief Constructs a StdioInputStream object.
+	/// \param handle An owning file handle whose FILE object will be used for input operations.
 	explicit StdioInputStream(StdioFileHandle &&handle):
 		mHandle(Bond::move(handle)),
 		mFile(mHandle.GetFile())
 	{}
 
+	/// \brief Move-constructs a StdioInputStream object.
+	/// \param other The StdioInputStream object from which resources will be moved.
 	StdioInputStream(StdioInputStream &&other):
 		mHandle(Bond::move(other.mHandle)),
 		mFile(other.mFile)
@@ -39,6 +54,8 @@ public:
 
 	StdioInputStream &operator=(StdioInputStream &&other);
 
+	/// \brief Tests whether this stream is currently bound to a FILE object.
+	/// \returns True if this stream is bound to a FILE object.
 	bool IsBound() const { return (mFile != nullptr); }
 
 	virtual void Close() override;
@@ -63,9 +80,12 @@ private:
 };
 
 
+/// \brief A concrete implementation of StdioInputStream bound to stdin.
+/// \sa StdioInputStream
 class StdInInputStream: public StdioInputStream
 {
 public:
+	/// \brief Constructs a StdInInputStream object.
 	StdInInputStream(): StdioInputStream(stdin) {}
 	virtual ~StdInInputStream() {}
 };

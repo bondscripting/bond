@@ -7,12 +7,21 @@
 namespace Bond
 {
 
-/// \brief A concrete implementation of OuputStream that performs ouput operations to an
+/// \brief A concrete implementation of OutputStream that performs output operations to an
 /// in-memory buffer.
+///
+/// MemoryOutputStream provides a non-owning view over a writable memory buffer and writes data to
+/// that buffer without reallocating it.
+///
+/// \sa MemoryInputStream, OutputStream
 /// \ingroup io
 class MemoryOutputStream: public OutputStream
 {
 public:
+	/// \brief Constructs a MemoryOutputStream object.
+	/// \param buffer A pointer to the memory buffer to which bytes will be written. The buffer is
+	///        not copied and must remain valid for the lifetime of the MemoryOutputStream.
+	/// \param size The size of the memory buffer, in bytes.
 	MemoryOutputStream(void *buffer, pos_t size);
 	virtual ~MemoryOutputStream() {}
 
