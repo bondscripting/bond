@@ -4,6 +4,7 @@
 #include "bond/api/libruntime.h"
 #include "bond/api/libstring.h"
 #include "bond/api/libtype.h"
+#include "bond/stl/typetraits.h"
 #include "bond/types/dataview.h"
 #include "bond/vm/cboloader.h"
 
@@ -11,7 +12,7 @@ namespace Bond
 {
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibIoCbo()
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibIoCbo()
 {
 #include "private/libruntime32_io_cbo_embedded.h"
 	return IO_CBO;
@@ -19,7 +20,7 @@ typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibIoC
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibIoCbo()
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibIoCbo()
 {
 #include "private/libruntime64_io_cbo_embedded.h"
 	return IO_CBO;
@@ -27,7 +28,7 @@ typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibIoC
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMathCbo()
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMathCbo()
 {
 #include "private/libruntime32_math_cbo_embedded.h"
 	return MATH_CBO;
@@ -35,7 +36,7 @@ typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMat
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMathCbo()
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMathCbo()
 {
 #include "private/libruntime64_math_cbo_embedded.h"
 	return MATH_CBO;
@@ -43,7 +44,7 @@ typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMat
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMemoryCbo()
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMemoryCbo()
 {
 #include "private/libruntime32_memory_cbo_embedded.h"
 	return MEMORY_CBO;
@@ -51,7 +52,7 @@ typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibMem
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMemoryCbo()
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMemoryCbo()
 {
 #include "private/libruntime64_memory_cbo_embedded.h"
 	return MEMORY_CBO;
@@ -59,7 +60,7 @@ typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibMem
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibStringCbo()
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibStringCbo()
 {
 #include "private/libruntime32_string_cbo_embedded.h"
 	return STRING_CBO;
@@ -67,7 +68,7 @@ typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibStr
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibStringCbo()
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibStringCbo()
 {
 #include "private/libruntime64_string_cbo_embedded.h"
 	return STRING_CBO;
@@ -75,7 +76,7 @@ typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibStr
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibTypeCbo()
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibTypeCbo()
 {
 #include "private/libruntime32_type_cbo_embedded.h"
 	return TYPE_CBO;
@@ -83,7 +84,7 @@ typename std::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibTyp
 
 
 template<PointerSize size>
-typename std::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibTypeCbo()
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibTypeCbo()
 {
 #include "private/libruntime64_type_cbo_embedded.h"
 	return TYPE_CBO;

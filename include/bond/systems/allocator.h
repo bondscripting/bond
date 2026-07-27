@@ -3,6 +3,7 @@
 
 #include "bond/conf.h"
 #include "bond/stl/memory.h"
+#include "bond/stl/typetraits.h"
 #include "bond/stl/utility.h"
 
 namespace Bond
@@ -117,7 +118,7 @@ public:
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != nullptr)
+			if ((mAllocator != nullptr) && (ptr != nullptr))
 			{
 				ptr->~T();
 				mAllocator->Free(ptr);
@@ -151,7 +152,7 @@ public:
 			return *this;
 		}
 
-		template <typename U>
+		template <typename U, typename Bond::enable_if<Bond::is_same<U, T>::value || Bond::has_virtual_destructor<U>::value, int>::type = 0>
 		operator ObjectHandle<U>() &&
 		{
 			return ObjectHandle<U>(this->get_deleter().mAllocator, this->release());
@@ -168,7 +169,7 @@ public:
 
 		void operator()(T *ptr)
 		{
-			if (mAllocator != nullptr)
+			if ((mAllocator != nullptr) && (ptr != nullptr))
 			{
 				ptr->~T();
 				mAllocator->FreeAligned(ptr);
@@ -202,7 +203,7 @@ public:
 			return *this;
 		}
 
-		template <typename U>
+		template <typename U, typename Bond::enable_if<Bond::is_same<U, T>::value || Bond::has_virtual_destructor<U>::value, int>::type = 0>
 		operator AlignedObjectHandle<U>() &&
 		{
 			return AlignedObjectHandle<U>(this->get_deleter().mAllocator, this->release());
