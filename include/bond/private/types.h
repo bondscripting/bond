@@ -106,7 +106,7 @@ struct floating_point_to_integral_limits<FloatType, IntegralType, typename std::
 	{
 		return FloatType(std::numeric_limits<IntegralType>::max() & ~((IntegralType(1) << (std::numeric_limits<IntegralType>::digits - std::numeric_limits<FloatType>::digits)) - IntegralType(1)));
 	}
-	static constexpr FloatType min() { return -max(); }
+	static constexpr FloatType min() { return FloatType(std::numeric_limits<IntegralType>::min()); }
 };
 
 
