@@ -6,8 +6,14 @@
 namespace Bond
 {
 
+/// \addtogroup tools
+/// @{
+
+/// \brief A set of counters for Bond parse node types.
 struct ParseNodeCount
 {
+	/// \brief Constructs a ParseNodeCount and initializes all counters.
+	/// \param defaultValue Initial value assigned to each counter.
 	explicit ParseNodeCount(int defaultValue = 0):
 		mTranslationUnit(defaultValue),
 		mIncludeDirective(defaultValue),
@@ -90,14 +96,29 @@ struct ParseNodeCount
 };
 
 
+/// \brief A parse tree traverser that counts encountered parse nodes.
+///
+/// ParseNodeCounter traverses parse trees and increments counters in ParseNodeCount for each
+/// parse node type visited.
+///
+/// \sa ParseNodeCount, ParseNodeTraverser
 class ParseNodeCounter: private ParseNodeTraverser
 {
 public:
+	/// \brief Constructs a ParseNodeCounter with all counters initialized to zero.
 	ParseNodeCounter(): mCount(0) {}
 	virtual ~ParseNodeCounter() {}
 
+	/// \brief Returns the current parse node counters.
+	/// \returns The accumulated ParseNodeCount values.
 	const ParseNodeCount &GetCount() const { return mCount; }
+
+	/// \brief Traverses a parse tree and accumulates node counts.
+	/// \param parseNode Root parse node to traverse.
 	void Count(const ParseNode *parseNode) { Traverse(parseNode); }
+
+	/// \brief Traverses a linked list of parse nodes and accumulates node counts.
+	/// \param listNode Head of the parse node list to traverse.
 	void CountList(const ListParseNode *listNode) { TraverseList(listNode); }
 
 private:
@@ -143,6 +164,7 @@ private:
 	ParseNodeCount mCount;
 };
 
-}
+/// @}
 
+}
 #endif

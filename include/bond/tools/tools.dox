@@ -1,0 +1,4 @@
+/**
+\defgroup tools Tools
+\brief These classes implement tools for querying, validating and debugging Bond parse trees and compiled code.
+*/

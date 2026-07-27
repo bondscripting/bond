@@ -8,12 +8,21 @@ namespace Bond
 
 class InputStream;
 
+/// \brief A validator for Bond CBO bytecode streams.
+///
+/// The CboValidator verifies the structure of serialized CBO data and reports summary
+/// information about the validated contents.
+///
+/// \sa InputStream
+/// \ingroup tools
 class CboValidator
 {
 public:
 
+/// \brief Summary information produced during CBO validation.
 	struct Result
 	{
+		/// \brief Constructs an empty validation result with default values.
 		Result():
 			mMajorVersion(0),
 			mMinorVersion(0),
@@ -61,7 +70,15 @@ public:
 		size_t mDataAlignment;
 	};
 
+	/// \brief Validates CBO data from an in-memory byte buffer.
+	/// \param byteCode Pointer to the beginning of the byte buffer.
+	/// \param length The number of bytes in the buffer.
+	/// \returns A Result containing decoded metadata and aggregate counts.
 	Result Validate(const void *byteCode, size_t length);
+
+	/// \brief Validates CBO data from an input stream.
+	/// \param stream Input stream containing CBO data.
+	/// \returns A Result containing decoded metadata and aggregate counts.
 	Result Validate(InputStream &stream);
 };
 
