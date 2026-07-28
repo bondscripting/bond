@@ -207,9 +207,23 @@ CodeSegmentHandle CboLoader::Load()
 
 	auto functionComparator = [](const Function &a, const Function &b) { return a.mName < b.mName; };
 	sort(functionTable, functionTable + functionCount, functionComparator);
+	for (size_t i = 1; i < functionCount; ++i)
+	{
+		if (functionTable[i - 1].mName == functionTable[i].mName)
+		{
+			FunctionIsDefinedMultipleTimes(functionTable[i].mName);
+		}
+	}
 
 	auto dataComparator = [](const DataEntry &a, const DataEntry &b) { return a.mName < b.mName; };
 	sort(dataTable, dataTable + dataCount, dataComparator);
+	for (size_t i = 1; i < dataCount; ++i)
+	{
+		if (dataTable[i - 1].mName == dataTable[i].mName)
+		{
+			DataIsDefinedMultipleTimes(dataTable[i].mName);
+		}
+	}
 
 	for (const NativeBindingCollection *bindingCollection: mNativeBindingList)
 	{
@@ -353,14 +367,15 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					code += sizeof(Value32);
 
 					ConvertBigEndian32(code);
-					const uint32_t minMatch = *reinterpret_cast<uint32_t *>(code);
+					const int32_t minMatch = *reinterpret_cast<int32_t *>(code);
 					code += sizeof(Value32);
 
 					ConvertBigEndian32(code);
-					const uint32_t maxMatch = *reinterpret_cast<uint32_t *>(code);
+					const int32_t maxMatch = *reinterpret_cast<int32_t *>(code);
 					code += sizeof(Value32);
 
-					const uint32_t numMatches = maxMatch - minMatch + 1;
+					BOND_ASSERT(maxMatch >= minMatch);
+					const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
 					for (uint32_t i = 0; i < numMatches; ++i)
 					{
 						ConvertBigEndian32(code);
@@ -388,6 +403,24 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	function.mName.PrintTo(stream);
 	BOND_FAIL_FORMAT(("Native function '%s' is not bound.", buffer));
+}
+
+
+void CboLoader::FunctionIsDefinedMultipleTimes(const QualifiedName &name) const
+{
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	name.PrintTo(stream);
+	BOND_FAIL_FORMAT(("Function '%s' is defined multiple times.", buffer));
+}
+
+
+void CboLoader::DataIsDefinedMultipleTimes(const QualifiedName &name) const
+{
+	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
+	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
+	name.PrintTo(stream);
+	BOND_FAIL_FORMAT(("Data '%s' is defined multiple times.", buffer));
 }
 
 
@@ -598,7 +631,7 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 		case SIG_ULONG:
 		case SIG_DOUBLE:
 		{
-			if (payload.mUInt <= 0xffff)
+			if (payload.mUInt != BOND_UINT_MAX)
 			{
 				*reinterpret_cast<Value64 *>(dataEntry->mData) = mConstantTable->mValue64Table[payload.mUInt];
 			}

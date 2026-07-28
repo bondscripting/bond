@@ -386,16 +386,17 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				const int32_t defaultOffset = ReadValue32().mInt;
 				const int32_t minMatch = ReadValue32().mInt;
 				const int32_t maxMatch = ReadValue32().mInt;
+				if (minMatch > maxMatch)
+				{
+					CodeIsInvalid();
+				}
+
 				const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
 				const size_t tableSize = numMatches * sizeof(Value32);
 				const int32_t baseAddress = int32_t(GetPosition() + tableSize - codeStart);
 				const int32_t defaultAddress = baseAddress + defaultOffset;
 
 				AssertBytesRemaining(tableSize);
-				if (minMatch > maxMatch)
-				{
-					CodeIsInvalid();
-				}
 				if ((defaultAddress < 0) || (uint32_t(defaultAddress) > codeSize))
 				{
 					CodeIsInvalid();
@@ -436,6 +437,14 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 	DecodeSizeAndType(sizeAndType, size, type);
 	const Value32 payload = ReadValue32();
 	size_t alignment = size_t(BOND_SLOT_SIZE);
+
+	if ((type == SIG_LONG) || (type == SIG_ULONG) || (type == SIG_DOUBLE))
+	{
+		if ((payload.mUInt != BOND_UINT_MAX) && (payload.mUInt >= mResult.mValue64Count))
+		{
+			CboIsInvalid();
+		}
+	}
 
 	if (type == SIG_AGGREGATE)
 	{
