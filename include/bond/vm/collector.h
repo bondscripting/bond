@@ -11,8 +11,11 @@ class Collectable;
 /// \addtogroup vm
 /// @{
 
+/// \brief An owning pointer to a dynamically allocated Collectable.
 typedef Allocator::ObjectHandle<Collectable> CollectableHandle;
 
+
+/// \brief Base class for objects tracked by a Collector.
 class Collectable
 {
 public:
@@ -27,16 +30,25 @@ public:
 		}
 	}
 
+	friend class Collector;
+
+private:
 	CollectableHandle mNext;
 };
 
 
+/// \brief A Collectable wrapper for arbitrary content.
+///
+/// This class can be used to register non-Collectable objects with a Collector by storing them
+/// as wrapped content.
 template <typename T>
 class WrapperCollectable: public Collectable
 {
 public:
 	typedef T ContentType;
 
+	/// \brief Constructs the wrapped content in place.
+	/// \param args Arguments forwarded to the wrapped content constructor.
 	template<typename... Args>
 	explicit WrapperCollectable(Args&&... args):
 		mContent(Bond::forward<Args>(args)...)
@@ -52,9 +64,14 @@ private:
 };
 
 
+/// \brief Tracks and destroys Collectable objects.
+///
+/// All tracked Collectable objects are destroyed when the Collector is destroyed.
 class Collector
 {
 public:
+	/// \brief Registers a Collectable object for later destruction.
+	/// \param object An owning handle to the Collectable object.
 	void Register(CollectableHandle &&object)
 	{
 		if (object != nullptr)
