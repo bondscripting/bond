@@ -13,8 +13,8 @@ bool RunLexerTest(
 	const char *scriptName,
 	LexerValidationFunction *validationFunction)
 {
-	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, ("Script name is NULL."));
-	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, ("Validation function is NULL."));
+	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, "Script name is NULL.");
+	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::DefaultAllocator fileLoaderAllocator;
 	Bond::DefaultAllocator lexerAllocator;
@@ -34,9 +34,9 @@ bool RunLexerTest(
 	}
 
 	__ASSERT_FORMAT__(fileLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations()));
+		"File loader leaked %d chunks of memory.", fileLoaderAllocator.GetNumAllocations());
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
+		"Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations());
 
 	return result;
 }

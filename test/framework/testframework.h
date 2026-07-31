@@ -26,32 +26,36 @@
     return success ? 0 : 1;                                            \
   }                                                                    \
 
-#define ASSERT_MESSAGE(condition, message)                                  \
-  __ASSERT_FORMAT__(condition, logger, __FILE__, __LINE__, ("%s", message)) \
+#define ASSERT_MESSAGE(condition, message)                                   \
+  __ASSERT_FORMAT__(condition, logger, __FILE__, __LINE__, "%s", message)  \
 
-#define ASSERT_FORMAT(condition, format)                                    \
-  __ASSERT_FORMAT__(condition, logger, __FILE__, __LINE__, format)          \
+#define ASSERT_FORMAT(condition, ...)                                       \
+  __ASSERT_FORMAT__(condition, logger, __FILE__, __LINE__, __VA_ARGS__)     \
 
-#define __ASSERT_FORMAT__(condition, logger, file, line, format)            \
-  if (!(condition))                                                         \
+#define __ASSERT_FORMAT__(condition, logger, file, line, ...)                \
+  do                                                                        \
+  {                                                                         \
+    if (!(condition))                                                       \
+    {                                                                       \
+      logger.Print("line %u in %s: ", line, file);                         \
+      logger.Print(__VA_ARGS__);                                            \
+      return false;                                                         \
+    }                                                                       \
+  } while (false)
+
+
+#define ERROR_MESSAGE(message)                                               \
+  __ERROR_FORMAT__(logger, __FILE__, __LINE__, "%s", message)              \
+
+#define ERROR_FORMAT(...)                                                    \
+  __ERROR_FORMAT__(logger, __FILE__, __LINE__, __VA_ARGS__)                  \
+
+#define __ERROR_FORMAT__(logger, file, line, ...)                             \
+  do                                                                        \
   {                                                                         \
     logger.Print("line %u in %s: ", line, file);                            \
-    logger.Print format;                                                    \
-    return false;                                                           \
-  }                                                                         \
-
-
-#define ERROR_MESSAGE(message)                                              \
-  __ERROR_FORMAT__(logger, __FILE__, __LINE__, ("%s", message))             \
-
-#define ERROR_FORMAT(format)                                                \
-  __ERROR_FORMAT__(logger, __FILE__, __LINE__, format)                      \
-
-#define __ERROR_FORMAT__(logger, file, line, format)                        \
-  {                                                                         \
-    logger.Print("line %u in %s: ", line, file);                            \
-    logger.Print format;                                                    \
-  }                                                                         \
+    logger.Print(__VA_ARGS__);                                               \
+  } while (false)
 
 
 namespace TestFramework

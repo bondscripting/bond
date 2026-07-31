@@ -88,22 +88,22 @@
 
 #define VALIDATE_RETURN_VALUE_INT(expectedResult)                                             \
   ASSERT_FORMAT(returnValue == (expectedResult),                                              \
-    ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", (expectedResult), returnValue)); \
+    "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", (expectedResult), returnValue); \
 
 
 #define VALIDATE_RETURN_VALUE_UINT(expectedResult)                                            \
   ASSERT_FORMAT(returnValue == (expectedResult),                                              \
-    ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", (expectedResult), returnValue)); \
+    "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", (expectedResult), returnValue); \
 
 
 #define VALIDATE_RETURN_VALUE_LONG(expectedResult)                                            \
   ASSERT_FORMAT(returnValue == (expectedResult),                                              \
-    ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", (expectedResult), returnValue)); \
+    "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", (expectedResult), returnValue); \
 
 
 #define VALIDATE_RETURN_VALUE_ULONG(expectedResult)                                           \
   ASSERT_FORMAT(returnValue == (expectedResult),                                              \
-    ("Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", (expectedResult), returnValue)); \
+    "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", (expectedResult), returnValue); \
 
 
 #define VALIDATE_RETURN_VALUE_FLOAT(expectedResult)                                              \
@@ -111,7 +111,7 @@
     const float delta = Bond::Max(Bond::Abs((expectedResult) * float(1.0e-6)), float(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                 \
       (returnValue <= ((expectedResult) + delta)),                                               \
-      ("Expected %f, but was %f.", (expectedResult), returnValue));  \
+      "Expected %f, but was %f.", (expectedResult), returnValue);  \
   }                                                                                              \
 
 
@@ -120,13 +120,13 @@
     const double delta = Bond::Max(Bond::Abs((expectedResult) * double(1.0e-6)), double(1.0e-6)); \
     ASSERT_FORMAT((returnValue >= ((expectedResult) - delta)) &&                                \
       (returnValue <= ((expectedResult) + delta)),                                              \
-      ("Expected %f, but was %f.", (expectedResult), returnValue)); \
+      "Expected %f, but was %f.", (expectedResult), returnValue); \
   }                                                                                             \
 
 
 #define VALIDATE_RETURN_VALUE_PTR(expectedResult)                                             \
   ASSERT_FORMAT(returnValue == (expectedResult),                                              \
-    ("Expected %p, but was %p.", (expectedResult), returnValue));                             \
+    "Expected %p, but was %p.", (expectedResult), returnValue);                               \
 
 
 namespace TestFramework

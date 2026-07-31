@@ -10,7 +10,7 @@ namespace Bond
 {
 	if (!IsBound())
 	{
-		BOND_FAIL_FORMAT(("Failed to open file '%s' for writing.", fileName));
+		BOND_FAIL_FORMAT("Failed to open file '%s' for writing.", fileName);
 	}
 }
 

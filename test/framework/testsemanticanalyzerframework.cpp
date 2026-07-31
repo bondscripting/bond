@@ -19,8 +19,8 @@ bool RunSemanticAnalyzerTest(
 	const char *scriptName,
 	SemanticAnalyzerValidationFunction *validationFunction)
 {
-	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, ("Script name is NULL."));
-	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, ("Validation function is NULL."));
+	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, "Script name is NULL.");
+	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
@@ -50,13 +50,13 @@ bool RunSemanticAnalyzerTest(
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
+		"Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations());
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		"Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations());
 	__ASSERT_FORMAT__(streamFactoryAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Stream factory leaked %d chunks of memory.", streamFactoryAllocator.GetNumAllocations()));
+		"Stream factory leaked %d chunks of memory.", streamFactoryAllocator.GetNumAllocations());
 	__ASSERT_FORMAT__(frontEndAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Front end leaked %d chunks of memory.", frontEndAllocator.GetNumAllocations()));
+		"Front end leaked %d chunks of memory.", frontEndAllocator.GetNumAllocations());
 
 	return result;
 }

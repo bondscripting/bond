@@ -4,28 +4,37 @@
 #include "bond/systems/exception.h"
 
 #define BOND_ASSERT(condition) \
-  if (!(condition))            \
+  do                           \
   {                            \
-    throw Bond::Exception();   \
-  }                            \
+    if (!(condition))          \
+    {                          \
+      throw Bond::Exception(); \
+    }                          \
+  } while (false)
 
 
 #define BOND_ASSERT_MESSAGE(condition, message) \
-  if (!(condition))                             \
+  do                                            \
   {                                             \
-    throw Bond::Exception(message);             \
-  }                                             \
+    if (!(condition))                           \
+    {                                           \
+      throw Bond::Exception(message);           \
+    }                                           \
+  } while (false)
 
 
-#define BOND_ASSERT_FORMAT(condition, format)   \
-  if (!(condition))                             \
+#define BOND_ASSERT_FORMAT(condition, ...)      \
+  do                                            \
   {                                             \
-    throw Bond::Exception format;               \
-  }                                             \
+    if (!(condition))                           \
+    {                                           \
+      throw Bond::Exception(__VA_ARGS__);       \
+    }                                           \
+  } while (false)
 
 
 #define BOND_FAIL() throw Bond::Exception()
 #define BOND_FAIL_MESSAGE(message) throw Bond::Exception("%s", (message))
-#define BOND_FAIL_FORMAT(format) throw Bond::Exception format
+#define BOND_FAIL_FORMAT(...) throw Bond::Exception(__VA_ARGS__)
 
 #endif

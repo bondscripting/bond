@@ -63,7 +63,7 @@ void InvocationStackFrame::Initialize(VM &vm, const QualifiedName &functionName,
 		char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 		MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 		functionName.PrintTo(stream);
-		BOND_FAIL_FORMAT(("Failed to look up function '%s'.", buffer));
+		BOND_FAIL_FORMAT("Failed to look up function '%s'.", buffer);
 	}
 
 	Initialize(vm, *function, returnPointer);
@@ -74,7 +74,7 @@ void InvocationStackFrame::Initialize(VM &vm, const char *functionName, void *re
 {
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
-	BOND_ASSERT_FORMAT(function != nullptr, ("Failed to look up function '%s'.", functionName));
+	BOND_ASSERT_FORMAT(function != nullptr, "Failed to look up function '%s'.", functionName);
 	Initialize(vm, *function, returnPointer);
 }
 

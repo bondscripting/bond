@@ -44,18 +44,18 @@ bool AssertCompilerErrors(
 		const Bond::Token *context = actual.GetContext();
 		const Bond::StreamPos &pos = context->GetStartPos();
 		__ASSERT_FORMAT__(expected->errorType == actual.GetType(), logger, assertFile, assertLine,
-			("Expected type of error %d to be %s but was %s.", i,
+			"Expected type of error %d to be %s but was %s.", i,
 			Bond::CompilerError::GetErrorName(expected->errorType),
-			actual.GetErrorName()));
+			actual.GetErrorName());
 		__ASSERT_FORMAT__(expected->context == context->GetTokenType(), logger, assertFile, assertLine,
-			("Expected context of error %d to be %s but was %s.", i,
-			Bond::Token::GetTokenName(expected->context), context->GetTokenName()));
+			"Expected context of error %d to be %s but was %s.", i,
+			Bond::Token::GetTokenName(expected->context), context->GetTokenName());
 		__ASSERT_FORMAT__(expected->line == pos.line, logger, assertFile, assertLine,
-			("Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line));
+			"Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line);
 	}
 
 	__ASSERT_FORMAT__(errorBuffer.GetNumErrors() == numErrors, logger, assertFile, assertLine,
-		("Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors()));
+		"Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors());
 
 	return true;
 }

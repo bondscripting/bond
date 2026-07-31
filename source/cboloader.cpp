@@ -132,7 +132,7 @@ CodeSegmentHandle CboLoader::Load()
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(stream);
 		stream.SetPosition(pos);
-		BOND_ASSERT_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, ("CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE)));
+		BOND_ASSERT_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, "CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE));
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
@@ -393,7 +393,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	function.mName.PrintTo(stream);
-	BOND_FAIL_FORMAT(("Target function '%s' of native function binding is not native.", buffer));
+	BOND_FAIL_FORMAT("Target function '%s' of native function binding is not native.", buffer);
 }
 
 
@@ -402,7 +402,7 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	function.mName.PrintTo(stream);
-	BOND_FAIL_FORMAT(("Native function '%s' is not bound.", buffer));
+	BOND_FAIL_FORMAT("Native function '%s' is not bound.", buffer);
 }
 
 
@@ -411,7 +411,7 @@ void CboLoader::FunctionIsDefinedMultipleTimes(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT(("Function '%s' is defined multiple times.", buffer));
+	BOND_FAIL_FORMAT("Function '%s' is defined multiple times.", buffer);
 }
 
 
@@ -420,7 +420,7 @@ void CboLoader::DataIsDefinedMultipleTimes(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT(("Data '%s' is defined multiple times.", buffer));
+	BOND_FAIL_FORMAT("Data '%s' is defined multiple times.", buffer);
 }
 
 
@@ -429,13 +429,13 @@ void CboLoader::UnresolvedQualifiedName(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT(("Unresolved qualified name '%s'.", buffer));
+	BOND_FAIL_FORMAT("Unresolved qualified name '%s'.", buffer);
 }
 
 
 void CboLoader::UnresolvedQualifiedName(const char *name) const
 {
-	BOND_FAIL_FORMAT(("Unresolved qualified name '%s'.", name));
+	BOND_FAIL_FORMAT("Unresolved qualified name '%s'.", name);
 }
 
 

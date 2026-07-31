@@ -15,8 +15,8 @@ bool RunParserTest(
 	const char *scriptName,
 	ParserValidationFunction *validationFunction)
 {
-	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, ("Script name is NULL."));
-	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, ("Validation function is NULL."));
+	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, "Script name is NULL.");
+	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
@@ -44,9 +44,9 @@ bool RunParserTest(
 	}
 
 	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations()));
+		"Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations());
 	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		("Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations()));
+		"Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations());
 
 	return result;
 }
@@ -69,9 +69,9 @@ bool AssertParseNodeCount(
     logger,                                                                    \
     assertFile,                                                                \
     assertLine,                                                                \
-    ("Expected " #field " count to be %d, but was %d.",                        \
-    expected.m ## field,                                                       \
-    actual.m ## field));                                                       \
+		"Expected " #field " count to be %d, but was %d.",                        \
+		expected.m ## field,                                                       \
+		actual.m ## field);                                                        \
 
 	ASSERT_COUNT(TranslationUnit);
 	ASSERT_COUNT(NamespaceDefinition);

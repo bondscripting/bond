@@ -88,45 +88,33 @@ DEFINE_VM_TEST(MemoryOperations, "scripts/vm_MemoryOperations.bond")
 	using namespace Bond;
 	int8_t chars[] = {0, -123, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(INT, "LoadcStorec", int32_t(-123), chars + 1, chars + 3);
-	ASSERT_FORMAT(chars[1] == chars[3],
-		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", chars[1], chars[3]));
-	ASSERT_MESSAGE((chars[0] == 0) && (chars[2] == 0) && (chars[4] == 0),
-		"Memory stomp by LoadcStorec() detected.");
+	ASSERT_FORMAT(chars[1] == chars[3], "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", chars[1], chars[3]);
+	ASSERT_MESSAGE((chars[0] == 0) && (chars[2] == 0) && (chars[4] == 0), "Memory stomp by LoadcStorec() detected.");
 
 	uint8_t uchars[] = {0, 0xff, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(UINT, "LoaducStorec", uint32_t(0xff), uchars + 1, uchars + 3);
-	ASSERT_FORMAT(uchars[1] == uchars[3],
-		("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", uchars[1], uchars[3]));
-	ASSERT_MESSAGE((uchars[0] == 0) && (uchars[2] == 0) && (uchars[4] == 0),
-		"Memory stomp by LoaducStorec() detected.");
+	ASSERT_FORMAT(uchars[1] == uchars[3], "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", uchars[1], uchars[3]);
+	ASSERT_MESSAGE((uchars[0] == 0) && (uchars[2] == 0) && (uchars[4] == 0), "Memory stomp by LoaducStorec() detected.");
 
 	int16_t shorts[] = {0, -234, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(INT, "LoadsStores", int32_t(-234), shorts + 1, shorts + 3);
-	ASSERT_FORMAT(shorts[1] == shorts[3],
-		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", shorts[1], shorts[3]));
-	ASSERT_MESSAGE((shorts[0] == 0) && (shorts[2] == 0) && (shorts[4] == 0),
-		"Memory stomp by LoadsStores() detected.");
+	ASSERT_FORMAT(shorts[1] == shorts[3], "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", shorts[1], shorts[3]);
+	ASSERT_MESSAGE((shorts[0] == 0) && (shorts[2] == 0) && (shorts[4] == 0), "Memory stomp by LoadsStores() detected.");
 
 	uint16_t ushorts[] = {0, 0xffff, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(UINT, "LoadusStores", int32_t(0xffff), ushorts + 1, ushorts + 3);
-	ASSERT_FORMAT(ushorts[1] == ushorts[3],
-		("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ushorts[1], ushorts[3]));
-	ASSERT_MESSAGE((ushorts[0] == 0) && (ushorts[2] == 0) && (ushorts[4] == 0),
-		"Memory stomp by LoadusStores() detected.");
+	ASSERT_FORMAT(ushorts[1] == ushorts[3], "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ushorts[1], ushorts[3]);
+	ASSERT_MESSAGE((ushorts[0] == 0) && (ushorts[2] == 0) && (ushorts[4] == 0), "Memory stomp by LoadusStores() detected.");
 
 	int32_t ints[] = {0, -345, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(INT, "Load32Store32", int32_t(-345), ints + 1, ints + 3);
-	ASSERT_FORMAT(ints[1] == ints[3],
-		("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ints[1], ints[3]));
-	ASSERT_MESSAGE((ints[0] == 0) && (ints[2] == 0) && (ints[4] == 0),
-		"Memory stomp by Load32Store32() detected.");
+	ASSERT_FORMAT(ints[1] == ints[3], "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ints[1], ints[3]);
+	ASSERT_MESSAGE((ints[0] == 0) && (ints[2] == 0) && (ints[4] == 0), "Memory stomp by Load32Store32() detected.");
 
 	int64_t longs[] = {0, -456, 0, 0, 0};
 	VALIDATE_FUNCTION_CALL_2(LONG, "Load64Store64", int64_t(-456), longs + 1, longs + 3);
-	ASSERT_FORMAT(longs[1] == longs[3],
-		("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", longs[1], longs[3]));
-	ASSERT_MESSAGE((longs[0] == 0) && (longs[2] == 0) && (longs[4] == 0),
-		"Memory stomp by Load64Store64() detected.");
+	ASSERT_FORMAT(longs[1] == longs[3], "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", longs[1], longs[3]);
+	ASSERT_MESSAGE((longs[0] == 0) && (longs[2] == 0) && (longs[4] == 0), "Memory stomp by Load64Store64() detected.");
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Loadfp", int32_t(-567), int32_t(-567));
 
@@ -413,8 +401,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	int32_t value = 13;
 	VALIDATE_FUNCTION_CALL_1(INT, "Preinc5", int32_t(14), &value);
-	ASSERT_FORMAT(value == int32_t(14),
-		("Expected 14, but was %" BOND_PRId32 ".", value));
+	ASSERT_FORMAT(value == int32_t(14), "Expected 14, but was %" BOND_PRId32 ".", value);
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Postinc1", int32_t(6), int32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "Postinc2", int32_t(8), int32_t(7));
@@ -422,8 +409,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "Postinc4", int32_t(12), int32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Postinc5", int32_t(14), &value);
-	ASSERT_FORMAT(value == int32_t(15),
-		("Expected 15, but was %" BOND_PRId32 ".", value));
+	ASSERT_FORMAT(value == int32_t(15), "Expected 15, but was %" BOND_PRId32 ".", value);
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Predec1", int32_t(4), int32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "Predec2", int32_t(6), int32_t(7));
@@ -431,8 +417,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "Predec4", int32_t(10), int32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Predec5", int32_t(14), &value);
-	ASSERT_FORMAT(value == int32_t(14),
-		("Expected 14, but was %" BOND_PRId32 ".", value));
+	ASSERT_FORMAT(value == int32_t(14), "Expected 14, but was %" BOND_PRId32 ".", value);
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Postdec1", int32_t(4), int32_t(5));
 	VALIDATE_FUNCTION_CALL_1(INT, "Postdec2", int32_t(6), int32_t(7));
@@ -440,8 +425,7 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL_1(INT, "Postdec4", int32_t(10), int32_t(11));
 
 	VALIDATE_FUNCTION_CALL_1(INT, "Postdec5", int32_t(14), &value);
-	ASSERT_FORMAT(value == int32_t(13),
-		("Expected 13, but was %" BOND_PRId32 ".", value));
+	ASSERT_FORMAT(value == int32_t(13), "Expected 13, but was %" BOND_PRId32 ".", value);
 
 	return true;
 }
@@ -774,12 +758,12 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	memset(oneD, 0, sizeof(oneD));
 
 	vm.CallVoidFunction("SetValueAt_3", &oneD, int32_t(7));
-	ASSERT_FORMAT(oneD[3] == 7, ("Expected 7, but was %" BOND_PRId32 ".", oneD[3]));
+	ASSERT_FORMAT(oneD[3] == 7, "Expected 7, but was %" BOND_PRId32 ".", oneD[3]);
 	ASSERT_MESSAGE((oneD[1] == 0) && (oneD[2] == 0) && (oneD[4] == 0) && (oneD[5] == 0),
 		"Memory stomp by SetValueAt_3() detected.");
 
 	vm.CallVoidFunction("SetValueAt", &oneD, int32_t(5), int32_t(864));
-	ASSERT_FORMAT(oneD[5] == 864, ("Expected 864, but was %" BOND_PRId32 ".", oneD[5]));
+	ASSERT_FORMAT(oneD[5] == 864, "Expected 864, but was %" BOND_PRId32 ".", oneD[5]);
 	ASSERT_MESSAGE((oneD[3] == 7) && (oneD[4] == 0) && (oneD[6] == 0) && (oneD[7] == 0),
 		"Memory stomp by SetValueAt() detected.");
 
@@ -793,14 +777,14 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	memset(twoD, 0, sizeof(twoD));
 
 	vm.CallVoidFunction("SetValue2DAt_4_9", &twoD, int32_t(901));
-	ASSERT_FORMAT(twoD[4][9] == 901, ("Expected 901, but was %" BOND_PRId32 ".", twoD[4][9]));
+	ASSERT_FORMAT(twoD[4][9] == 901, "Expected 901, but was %" BOND_PRId32 ".", twoD[4][9]);
 	ASSERT_MESSAGE((twoD[3][8] == 0) && (twoD[3][9] == 0) && (twoD[3][10] == 0) &&
 		(twoD[4][8] == 0) && (twoD[4][10] == 0) &&
 		(twoD[5][8] == 0) && (twoD[5][9] == 0) && (twoD[5][10] == 0),
 		"Memory stomp by SetValue2DAt_4_9() detected.");
 
 	vm.CallVoidFunction("SetValue2DAt", &twoD, int32_t(2), int32_t(4), int32_t(98973));
-	ASSERT_FORMAT(twoD[2][4] == 98973, ("Expected 98973, but was %" BOND_PRId32 ".", twoD[2][4]));
+	ASSERT_FORMAT(twoD[2][4] == 98973, "Expected 98973, but was %" BOND_PRId32 ".", twoD[2][4]);
 	ASSERT_MESSAGE((twoD[1][3] == 0) && (twoD[1][4] == 0) && (twoD[1][5] == 0) &&
 		(twoD[2][3] == 0) && (twoD[2][5] == 0) &&
 		(twoD[3][3] == 0) && (twoD[3][4] == 0) && (twoD[3][5] == 0),
@@ -836,172 +820,172 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	int32_t i = -97; int32_t oi = 27; int32_t ri = i + oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Addi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	uint32_t u = 97; uint32_t ou = 27; uint32_t ru = u + ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Addi", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	int64_t l = int64_t(-97) << 40; int64_t ol = int64_t(27) << 40; int64_t rl = l + ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Addl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	uint64_t ul = uint64_t(97) << 40; uint64_t oul = uint64_t(27) << 40; uint64_t rul = ul + oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Addl", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 	float f = -97.0f; float of = 27.0f; float rf = f + of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "Addf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
+	ASSERT_FORMAT(f == rf, "Expected %f, but was %f.", rf, f);
 
 	double d = -97.0; double od = 27.0; double rd = d + od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "Addd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %f, but was %.", rd, d));
+	ASSERT_FORMAT(d == rd, "Expected %f, but was %.", rd, d);
 
 
 	i = -85; oi = 39; ri = i - oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Subi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	u = 85; ou = 39; ru = u - ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Subi", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	l = int64_t(-85) << 40; ol = int64_t(39) << 40; rl = l - ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Subl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	ul = uint64_t(85) << 40; oul = uint64_t(39) << 40; rul = ul - oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Subl", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 	f = -85.0f; of = 39.0f; rf = f - of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "Subf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
+	ASSERT_FORMAT(f == rf, "Expected %f, but was %f.", rf, f);
 
 	d = -85.0; od = 39.0; rd = d - od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "Subd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
+	ASSERT_FORMAT(d == rd, "Expected %f, but was %f.", rd, d);
 
 
 	i = -48; oi = 135; ri = i * oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Muli", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	u = 48; ou = 135; ru = u * ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Mului", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	l = int64_t(-48) << 40; ol = int64_t(135) << 40; rl = l * ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Mull", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	ul = uint64_t(48) << 40; oul = uint64_t(135) << 40; rul = ul * oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Mulul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 	f = -48.0f; of = 135.0f; rf = f * of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "Mulf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
+	ASSERT_FORMAT(f == rf, "Expected %f, but was %f.", rf, f);
 
 	d = -48.0; od = 135.0; rd = d * od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "Muld", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
+	ASSERT_FORMAT(d == rd, "Expected %f, but was %f.", rd, d);
 
 
 	i = -10; oi = 3; ri = i / oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Divi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	u = 10; ou = 3; ru = u / ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Divui", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	l = int64_t(-10) << 40; ol = int64_t(3); rl = l / ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Divl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	ul = uint64_t(10) << 40; oul = uint64_t(3); rul = ul / oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Divul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 	f = -10.0f; of = 3.0f; rf = f / of;
 	VALIDATE_FUNCTION_CALL_2(FLOAT, "Divf", rf, &f, of);
-	ASSERT_FORMAT(f == rf, ("Expected %f, but was %f.", rf, f));
+	ASSERT_FORMAT(f == rf, "Expected %f, but was %f.", rf, f);
 
 	d = -10.0; od = 3.0; rd = d / od;
 	VALIDATE_FUNCTION_CALL_2(DOUBLE, "Divd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, ("Expected %f, but was %f.", rd, d));
+	ASSERT_FORMAT(d == rd, "Expected %f, but was %f.", rd, d);
 
 
 	i = -10; oi = 3; ri = i % oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Remi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	u = 10; ou = 3; ru = u % ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Remui", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	l = int64_t(-10) << 40; ol = int64_t(34); rl = l % ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Reml", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	ul = uint64_t(10) << 40; oul = uint64_t(34); rul = ul % oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Remul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 
 	i = 7; oi = 7; ri = i << oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Lshi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	l = 7; ol = 50; rl = l << ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Lshl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 
 	i = -(int32_t(1) << 20); oi = 16; ri = i >> oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Rshi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	u = uint32_t(-(int32_t(1) << 20)); ou = 16; ru = u >> ou;
 	VALIDATE_FUNCTION_CALL_2(UINT, "Rshui", ru, &u, ou);
-	ASSERT_FORMAT(u == ru, ("Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u));
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
 	l = -(int64_t(1) << 20); ol = 16; rl = l >> ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Rshl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	ul = uint64_t(-(int64_t(1) << 20)); oul = 16; rul = ul >> oul;
 	VALIDATE_FUNCTION_CALL_2(ULONG, "Rshul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul));
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
 
 
 	i = 0xfff0; oi = 0xff; ri = i & oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Andi", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	l = int64_t(0xfff0) << 31; ol = int64_t(0xff) << 31; rl = l & ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Andl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 
 	i = 0xfff0; oi = 0xff; ri = i | oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Ori", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	l = int64_t(0xfff0) << 31; ol = int64_t(0xff) << 31; rl = l | ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Orl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 
 	i = 0xfff0; oi = 0xff; ri = i ^ oi;
 	VALIDATE_FUNCTION_CALL_2(INT, "Xori", ri, &i, oi);
-	ASSERT_FORMAT(i == ri, ("Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i));
+	ASSERT_FORMAT(i == ri, "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, i);
 
 	l = int64_t(0xfff0) << 31; ol = int64_t(0xff) << 31; rl = l ^ ol;
 	VALIDATE_FUNCTION_CALL_2(LONG, "Xorl", rl, &l, ol);
-	ASSERT_FORMAT(l == rl, ("Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l));
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 	return true;
 }
@@ -1026,10 +1010,10 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	Char3 c3;
 	memset(&c3, 0, sizeof(c3));
 	vm.CallVoidFunction("SetChar3", &c3, int8_t(45), int8_t(-56), int8_t(67));
-	ASSERT_FORMAT(c3.x == 45, ("Expected 45, but was %" BOND_PRId32 ".", c3.x));
-	ASSERT_FORMAT(c3.y == -56, ("Expected -56, but was %" BOND_PRId32 ".", c3.y));
-	ASSERT_FORMAT(c3.z == 67, ("Expected 67, but was %" BOND_PRId32 ".", c3.z));
-	ASSERT_FORMAT(c3.padding == 0, ("Expected 0, but was %" BOND_PRId32 ".", c3.padding));
+	ASSERT_FORMAT(c3.x == 45, "Expected 45, but was %" BOND_PRId32 ".", c3.x);
+	ASSERT_FORMAT(c3.y == -56, "Expected -56, but was %" BOND_PRId32 ".", c3.y);
+	ASSERT_FORMAT(c3.z == 67, "Expected 67, but was %" BOND_PRId32 ".", c3.z);
+	ASSERT_FORMAT(c3.padding == 0, "Expected 0, but was %" BOND_PRId32 ".", c3.padding);
 
 	VALIDATE_FUNCTION_CALL_1(INT, "GetChar3X", int32_t(45), c3);
 	VALIDATE_FUNCTION_CALL_1(INT, "GetChar3Y", int32_t(-56), c3);
@@ -1037,8 +1021,8 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 
 	Char3Pair char3Pair;
 	vm.CallVoidFunction("SetChar3PairX", &char3Pair, int8_t(23), int8_t(32));
-	ASSERT_FORMAT(char3Pair.first.x == 23, ("Expected 23, but was %" BOND_PRId32 ".", char3Pair.first.x));
-	ASSERT_FORMAT(char3Pair.second.x == 32, ("Expected 32, but was %" BOND_PRId32 ".", char3Pair.second.x));
+	ASSERT_FORMAT(char3Pair.first.x == 23, "Expected 23, but was %" BOND_PRId32 ".", char3Pair.first.x);
+	ASSERT_FORMAT(char3Pair.second.x == 32, "Expected 32, but was %" BOND_PRId32 ".", char3Pair.second.x);
 
 	VALIDATE_FUNCTION_CALL_0(UINT, "InitializeChar3Pair", uint32_t(1));
 
@@ -1047,9 +1031,9 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	Vector3 v3c;
 	memset(&v3a, 0, sizeof(v3a));
 	vm.CallVoidFunction("SetVector3", &v3a, int32_t(11), int32_t(-12), int32_t(13));
-	ASSERT_FORMAT(v3a.x == 11, ("Expected 11, but was %" BOND_PRId32 ".", v3a.x));
-	ASSERT_FORMAT(v3a.y == -12, ("Expected -12, but was %" BOND_PRId32 ".", v3a.y));
-	ASSERT_FORMAT(v3a.z == 13, ("Expected 13, but was %" BOND_PRId32 ".", v3a.z));
+	ASSERT_FORMAT(v3a.x == 11, "Expected 11, but was %" BOND_PRId32 ".", v3a.x);
+	ASSERT_FORMAT(v3a.y == -12, "Expected -12, but was %" BOND_PRId32 ".", v3a.y);
+	ASSERT_FORMAT(v3a.z == 13, "Expected 13, but was %" BOND_PRId32 ".", v3a.z);
 
 	v3a.x = 88;
 	v3a.y = 888;
@@ -1071,14 +1055,14 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	VALIDATE_FUNCTION_CALL_2(INT, "Vector3.Dot", int32_t(20), &v3a, &v3b);
 
 	vm.CallFunction("ConstructVector3", &v3a, int32_t(99), int32_t(-100), int32_t(101));
-	ASSERT_FORMAT(v3a.x == 99, ("Expected 99, but was %" BOND_PRId32 ".", v3a.x));
-	ASSERT_FORMAT(v3a.y == -100, ("Expected -100, but was %" BOND_PRId32 ".", v3a.y));
-	ASSERT_FORMAT(v3a.z == 101, ("Expected 101, but was %" BOND_PRId32 ".", v3a.z));
+	ASSERT_FORMAT(v3a.x == 99, "Expected 99, but was %" BOND_PRId32 ".", v3a.x);
+	ASSERT_FORMAT(v3a.y == -100, "Expected -100, but was %" BOND_PRId32 ".", v3a.y);
+	ASSERT_FORMAT(v3a.z == 101, "Expected 101, but was %" BOND_PRId32 ".", v3a.z);
 
 	vm.CallFunction("ConstructVector3Indirect", &v3a, int32_t(102), int32_t(-103), int32_t(104));
-	ASSERT_FORMAT(v3a.x == 102, ("Expected 102, but was %" BOND_PRId32 ".", v3a.x));
-	ASSERT_FORMAT(v3a.y == -103, ("Expected -103, but was %" BOND_PRId32 ".", v3a.y));
-	ASSERT_FORMAT(v3a.z == 104, ("Expected 104, but was %" BOND_PRId32 ".", v3a.z));
+	ASSERT_FORMAT(v3a.x == 102, "Expected 102, but was %" BOND_PRId32 ".", v3a.x);
+	ASSERT_FORMAT(v3a.y == -103, "Expected -103, but was %" BOND_PRId32 ".", v3a.y);
+	ASSERT_FORMAT(v3a.z == 104, "Expected 104, but was %" BOND_PRId32 ".", v3a.z);
 
 	VALIDATE_FUNCTION_CALL_1(INT, "ConstructVector3AndGetY", int32_t(12321), int32_t(12321));
 
@@ -1093,14 +1077,14 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	v3c.z = 53;
 
 	vm.CallFunction("SelectVector3", &v3c, uint8_t(1), v3a, v3b);
-	ASSERT_FORMAT(v3c.x == 31, ("Expected 31, but was %" BOND_PRId32 ".", v3c.x));
-	ASSERT_FORMAT(v3c.y == 32, ("Expected 32, but was %" BOND_PRId32 ".", v3c.y));
-	ASSERT_FORMAT(v3c.z == 33, ("Expected 33, but was %" BOND_PRId32 ".", v3c.z));
+	ASSERT_FORMAT(v3c.x == 31, "Expected 31, but was %" BOND_PRId32 ".", v3c.x);
+	ASSERT_FORMAT(v3c.y == 32, "Expected 32, but was %" BOND_PRId32 ".", v3c.y);
+	ASSERT_FORMAT(v3c.z == 33, "Expected 33, but was %" BOND_PRId32 ".", v3c.z);
 
 	vm.CallFunction("SelectVector3", &v3c, uint8_t(0), v3a, v3b);
-	ASSERT_FORMAT(v3c.x == 41, ("Expected 41, but was %" BOND_PRId32 ".", v3c.x));
-	ASSERT_FORMAT(v3c.y == 42, ("Expected 42, but was %" BOND_PRId32 ".", v3c.y));
-	ASSERT_FORMAT(v3c.z == 43, ("Expected 43, but was %" BOND_PRId32 ".", v3c.z));
+	ASSERT_FORMAT(v3c.x == 41, "Expected 41, but was %" BOND_PRId32 ".", v3c.x);
+	ASSERT_FORMAT(v3c.y == 42, "Expected 42, but was %" BOND_PRId32 ".", v3c.y);
+	ASSERT_FORMAT(v3c.z == 43, "Expected 43, but was %" BOND_PRId32 ".", v3c.z);
 
 	return true;
 }
@@ -1127,14 +1111,14 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 	const int32_t *vectors = nullptr;
 	vm.CallFunction("GetCollectionVectors", &vectors);
 
-	ASSERT_FORMAT(vectors[0] == 121, ("Expected 121, but was %" BOND_PRId32 ".", vectors[0]));
-	ASSERT_FORMAT(vectors[1] == 123, ("Expected 123, but was %" BOND_PRId32 ".", vectors[1]));
-	ASSERT_FORMAT(vectors[2] == 125, ("Expected 125, but was %" BOND_PRId32 ".", vectors[2]));
-	ASSERT_FORMAT(vectors[3] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[3]));
-	ASSERT_FORMAT(vectors[4] == 127, ("Expected 127, but was %" BOND_PRId32 ".", vectors[4]));
-	ASSERT_FORMAT(vectors[5] == 129, ("Expected 129, but was %" BOND_PRId32 ".", vectors[5]));
-	ASSERT_FORMAT(vectors[6] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[6]));
-	ASSERT_FORMAT(vectors[7] == 0,   ("Expected 0, but was %" BOND_PRId32 ".",   vectors[7]));
+	ASSERT_FORMAT(vectors[0] == 121, "Expected 121, but was %" BOND_PRId32 ".", vectors[0]);
+	ASSERT_FORMAT(vectors[1] == 123, "Expected 123, but was %" BOND_PRId32 ".", vectors[1]);
+	ASSERT_FORMAT(vectors[2] == 125, "Expected 125, but was %" BOND_PRId32 ".", vectors[2]);
+	ASSERT_FORMAT(vectors[3] == 0,   "Expected 0, but was %" BOND_PRId32 ".",   vectors[3]);
+	ASSERT_FORMAT(vectors[4] == 127, "Expected 127, but was %" BOND_PRId32 ".", vectors[4]);
+	ASSERT_FORMAT(vectors[5] == 129, "Expected 129, but was %" BOND_PRId32 ".", vectors[5]);
+	ASSERT_FORMAT(vectors[6] == 0,   "Expected 0, but was %" BOND_PRId32 ".",   vectors[6]);
+	ASSERT_FORMAT(vectors[7] == 0,   "Expected 0, but was %" BOND_PRId32 ".",   vectors[7]);
 
 	const char *testStr = nullptr;
 	vm.CallFunction("GetTestString", &testStr);

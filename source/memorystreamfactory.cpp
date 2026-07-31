@@ -29,7 +29,7 @@ InputStreamHandle MemoryStreamFactory::CreateInputStream(const char *fileName)
 
 	if (!handle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT(("Failed to open file '%s' for reading.", fileName));
+		BOND_FAIL_FORMAT("Failed to open file '%s' for reading.", fileName);
 	}
 
 	return handle;
@@ -46,7 +46,7 @@ OutputStreamHandle MemoryStreamFactory::CreateOutputStream(const char *fileName,
 
 	if (!handle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT(("Failed to open file '%s' for writing.", fileName));
+		BOND_FAIL_FORMAT("Failed to open file '%s' for writing.", fileName);
 	}
 
 	return handle;

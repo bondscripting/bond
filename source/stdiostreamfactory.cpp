@@ -22,7 +22,7 @@ InputStreamHandle StdioStreamFactory::CreateInputStream(const char *fileName)
 
 	if (!streamHandle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT(("Failed to open file '%s' for reading.", fileName));
+		BOND_FAIL_FORMAT("Failed to open file '%s' for reading.", fileName);
 	}
 
 	return streamHandle;
@@ -45,7 +45,7 @@ OutputStreamHandle StdioStreamFactory::CreateOutputStream(const char *fileName, 
 
 	if (!streamHandle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT(("Failed to open file '%s' for writing.", fileName));
+		BOND_FAIL_FORMAT("Failed to open file '%s' for writing.", fileName);
 	}
 
 	return streamHandle;
