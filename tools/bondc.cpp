@@ -161,6 +161,8 @@ int main(int argc, const char *argv[])
 			return 1;
 		}
 
+		analyzer.SetPointerSize(pointerSize);
+
 		Bond::TranslationUnit *translationUnitList = frontEnd.Analyze();
 
 		if (!errorBuffer.HasErrors())

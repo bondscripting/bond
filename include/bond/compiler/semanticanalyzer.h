@@ -50,6 +50,10 @@ public:
 	/// \brief Returns the buffer where error messages are pushed.
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
+	/// \brief Sets the pointer size used for type and value evaluation.
+	/// \param pointerSize Size of pointers used by the target virtual machine.
+	void SetPointerSize(PointerSize pointerSize) { mPointerSize = pointerSize; }
+
 private:
 	SemanticAnalyzer(const SemanticAnalyzer &other) = delete;
 	SemanticAnalyzer &operator=(const SemanticAnalyzer &other) = delete;
