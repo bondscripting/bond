@@ -3399,9 +3399,18 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 		const TypeDescriptor &offsetDescriptor = offsetTav.GetTypeDescriptor();
 		if (IsInRange<int16_t>(elementSize))
 		{
-			const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
-			EmitPushResultAs(offsetResult, offsetDescriptor, intTypeDescriptor);
-			EmitOpCode(OPCODE_PTROFF);
+			if (offsetDescriptor.IsMost32IntegerType())
+			{
+				const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
+				EmitPushResultAs(offsetResult, offsetDescriptor, intTypeDescriptor);
+				EmitOpCode(OPCODE_PTROFFI);
+			}
+			else
+			{
+				const TypeDescriptor longTypeDescriptor = TypeDescriptor::GetLongType();
+				EmitPushResultAs(offsetResult, offsetDescriptor, longTypeDescriptor);
+				EmitOpCode(OPCODE_PTROFFL);
+			}
 			EmitValue16(Value16(elementSize));
 		}
 		else if (Is64BitPointer())

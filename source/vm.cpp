@@ -1192,10 +1192,21 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_PTROFF:
+			case OPCODE_PTROFFI:
 			{
 				intptr_t *ptr = reinterpret_cast<intptr_t *>(sp - (2 * BOND_SLOT_SIZE));
 				const int32_t *offset = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 elementSize(code + pc);
+				*ptr += static_cast<intptr_t>(*offset) * static_cast<intptr_t>(elementSize.mShort);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_PTROFFL:
+			{
+				intptr_t *ptr = reinterpret_cast<intptr_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int64_t *offset = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
 				const Value16 elementSize(code + pc);
 				*ptr += static_cast<intptr_t>(*offset) * static_cast<intptr_t>(elementSize.mShort);
 				pc += sizeof(Value16);
