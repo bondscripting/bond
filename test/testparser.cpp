@@ -180,6 +180,21 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 	expectedCount.mJumpStatement = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
+	expectedCount.mUsingDeclaration = 6;
+	expectedCount.mUsingDirective = 7;
+
+	return true;
+}
+
+
+DEFINE_PARSER_TEST(UsingStatements, "scripts/parser_UsingStatements.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::ParseNodeCount expectedCount(-1);
+	// expectedCount.mJumpStatement = 4;
+
+	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 
 	return true;
 }
@@ -303,6 +318,8 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
   TEST_ITEM(WhileStatements)                    \
   TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
+  TEST_ITEM(JumpStatements)                     \
+  TEST_ITEM(UsingStatements)                    \
   TEST_ITEM(EnumErrors)                         \
   TEST_ITEM(StructErrors)                       \
   TEST_ITEM(MiscErrors)                         \

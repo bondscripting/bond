@@ -1,0 +1,99 @@
+namespace A
+{
+	namespace AA
+	{
+		struct StructType
+		{
+			int aa;
+		};
+	}
+
+	struct StructType
+	{
+		int a;
+	};
+}
+
+namespace B
+{
+	namespace BB
+	{
+		struct StructType
+		{
+			int bb;
+		};
+
+		void DoNothing() {}
+	}
+
+	struct StructType
+	{
+		int b;
+	};
+}
+
+void TheFunction()
+{
+	{
+		using namespace A;
+		StructType s;
+		s.a = 1;
+	}
+
+	{
+		using namespace A::AA;
+		StructType s;
+		s.aa = 1;
+	}
+
+	{
+		using namespace B;
+		StructType s;
+		s.b = 1;
+	}
+
+	{
+		using namespace B::BB;
+		StructType s;
+		s.bb = 1;
+		DoNothing();
+	}
+
+	{
+		using A::StructType;
+		StructType s;
+		s.a = 1;
+	}
+
+	{
+		using A::AA::StructType;
+		StructType s;
+		s.aa = 1;
+	}
+
+	{
+		using B::StructType;
+		StructType s;
+		s.b = 1;
+	}
+
+	{
+		using B::BB::StructType;
+		using B::BB::DoNothing;
+		StructType s;
+		s.bb = 1;
+		DoNothing();
+	}
+
+	{
+		using namespace B;
+		using namespace BB;
+		DoNothing();
+	}
+
+	{
+		using namespace B;
+		using BB::DoNothing;
+		DoNothing();
+	}
+}

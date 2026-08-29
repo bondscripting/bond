@@ -38,6 +38,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 		Bond::Token::KEY_UINT,
 		Bond::Token::KEY_ULONG,
 		Bond::Token::KEY_USHORT,
+		Bond::Token::KEY_USING,
 		Bond::Token::KEY_VOID,
 		Bond::Token::KEY_WHILE,
 		Bond::Token::OP_PLUS,

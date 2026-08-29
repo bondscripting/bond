@@ -59,6 +59,7 @@ private:
 	Initializer *ParseInitializer();
 	QualifiedIdentifier *ParseQualifiedIdentifier();
 	ListParseNode *ParseStatement();
+	ListParseNode *ParseUsingStatement();
 	CompoundStatement *ParseCompoundStatement();
 	IfStatement *ParseIfStatement();
 	SwitchStatement *ParseSwitchStatement();
@@ -943,6 +944,10 @@ ListParseNode *ParserCore::ParseStatement()
 			statement = ParseJumpStatement();
 			break;
 
+		case Token::KEY_USING:
+			statement = ParseUsingStatement();
+			break;
+
 		default:
 			statement = ParseExpressionOrDeclarativeStatement();
 			break;
@@ -1202,6 +1207,33 @@ JumpStatement *ParserCore::ParseJumpStatement()
 	}
 
 	return jumpStatement;
+}
+
+
+// using_statement
+//   : USING NAMESPACE qualified_id ';'
+//   | USING qualified_id ';'
+ListParseNode *ParserCore::ParseUsingStatement()
+{
+	ListParseNode *statement = nullptr;
+
+	if (mStream.NextIf(Token::KEY_USING) != nullptr)
+	{
+		const bool isNamespace = mStream.NextIf(Token::KEY_NAMESPACE) != nullptr;
+		QualifiedIdentifier *identifier = ParseQualifiedIdentifier();
+		AssertNode(identifier);
+
+		if (identifier != nullptr)
+		{
+			statement = isNamespace ?
+				static_cast<ListParseNode *>(CreateNode<UsingDirective>(identifier)) :
+				static_cast<ListParseNode *>(CreateNode<UsingDeclaration>(identifier));
+		}
+
+		ExpectStatementTerminator();
+	}
+
+	return statement;
 }
 
 

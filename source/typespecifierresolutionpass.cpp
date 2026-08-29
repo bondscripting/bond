@@ -77,4 +77,45 @@ void TypeSpecifierResolutionPass::Visit(ForStatement *forStatement)
 	SemanticAnalysisPass::Visit(forStatement);
 }
 
+void TypeSpecifierResolutionPass::Visit(UsingDeclaration *usingDeclaration)
+{
+	const QualifiedIdentifier *identifier = usingDeclaration->GetIdentifier();
+	Symbol *target = GetSymbol(identifier);
+
+	if (target == nullptr)
+	{
+		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+	}
+	else if (target->GetSymbolType() == Symbol::TYPE_NAMESPACE)
+	{
+		mErrorBuffer.PushError(CompilerError::USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD, identifier->GetContextToken(), identifier);
+	}
+	else
+	{
+		usingDeclaration->SetTarget(target);
+		InsertSymbol(usingDeclaration);
+	}
+}
+
+
+void TypeSpecifierResolutionPass::Visit(UsingDirective *usingDirective)
+{
+	const QualifiedIdentifier *identifier = usingDirective->GetIdentifier();
+	Symbol *target = GetSymbol(identifier);
+
+	if (target == nullptr)
+	{
+		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+	}
+	else if (target->GetSymbolType() != Symbol::TYPE_NAMESPACE)
+	{
+		mErrorBuffer.PushError(CompilerError::EXPECTED_NAMESPACE, identifier->GetContextToken(), identifier);
+	}
+	else
+	{
+		usingDirective->SetNamespace(target);
+		GetCurrentScope()->AddUsingNamespace(usingDirective);
+	}
+}
+
 }

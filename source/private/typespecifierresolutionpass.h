@@ -22,6 +22,8 @@ protected:
 	virtual void Visit(CompoundStatement *compoundStatement) override;
 	virtual void Visit(SwitchSection *switchSection) override;
 	virtual void Visit(ForStatement *forStatement) override;
+	virtual void Visit(UsingDeclaration *usingDeclaration) override;
+	virtual void Visit(UsingDirective *usingDirective) override;
 };
 
 }

@@ -95,6 +95,12 @@ public:
 	virtual void Visit(DeclarativeStatement *declarativeStatement) = 0;
 	virtual void Visit(const DeclarativeStatement *declarativeStatement) = 0;
 
+	virtual void Visit(UsingDeclaration *usingDeclaration) = 0;
+	virtual void Visit(const UsingDeclaration *usingDeclaration) = 0;
+
+	virtual void Visit(UsingDirective *usingDirective) = 0;
+	virtual void Visit(const UsingDirective *usingDirective) = 0;
+
 	virtual void Visit(ExpressionStatement *expressionStatement) = 0;
 	virtual void Visit(const ExpressionStatement *expressionStatement) = 0;
 
@@ -222,6 +228,12 @@ public:
 
 	virtual void Visit(DeclarativeStatement *declarativeStatement) override {}
 	virtual void Visit(const DeclarativeStatement *declarativeStatement) override {}
+
+	virtual void Visit(UsingDeclaration *usingDeclaration) override {}
+	virtual void Visit(const UsingDeclaration *usingDeclaration) override {}
+
+	virtual void Visit(UsingDirective *usingDirective) override {}
+	virtual void Visit(const UsingDirective *usingDirective) override {}
 
 	virtual void Visit(ExpressionStatement *expressionStatement) override {}
 	virtual void Visit(const ExpressionStatement *expressionStatement) override {}

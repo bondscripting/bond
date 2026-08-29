@@ -116,6 +116,12 @@ public:
 	virtual void Visit(DeclarativeStatement *declarativeStatement) override;
 	virtual void Visit(const DeclarativeStatement *declarativeStatement) override;
 
+	virtual void Visit(UsingDeclaration *usingDeclaration) override;
+	virtual void Visit(const UsingDeclaration *usingDeclaration) override;
+
+	virtual void Visit(UsingDirective *usingDirective) override;
+	virtual void Visit(const UsingDirective *usingDirective) override;
+
 	virtual void Visit(ExpressionStatement *expressionStatement) override;
 	virtual void Visit(const ExpressionStatement *expressionStatement) override;
 

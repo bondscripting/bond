@@ -172,6 +172,20 @@ void ParseNodeCounter::Visit(const DeclarativeStatement *declarativeStatement)
 }
 
 
+void ParseNodeCounter::Visit(const UsingDeclaration *usingDeclaration)
+{
+	++mCount.mUsingDeclaration;
+	ParseNodeTraverser::Visit(usingDeclaration);
+}
+
+
+void ParseNodeCounter::Visit(const UsingDirective *usingDirective)
+{
+	++mCount.mUsingDirective;
+	ParseNodeTraverser::Visit(usingDirective);
+}
+
+
 void ParseNodeCounter::Visit(const ExpressionStatement *expressionStatement)
 {
 	++mCount.mExpressionStatement;

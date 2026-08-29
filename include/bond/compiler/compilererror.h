@@ -74,6 +74,10 @@
     "Expected '%s' before '%c'.")                                                          \
   BOND_COMPILER_ERROR(SYMBOL_IS_NOT_DEFINED,                                               \
     "Symbol '%n' is not defined.")                                                         \
+  BOND_COMPILER_ERROR(EXPECTED_NAMESPACE,                                                  \
+    "Symbol '%n' is not a namespace.")                                                     \
+  BOND_COMPILER_ERROR(USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD,                          \
+    "'%n' is a namespace; use 'using namespace' to bring it into scope.")                  \
   BOND_COMPILER_ERROR(NATIVE_STRUCT_IS_NOT_DEFINED,                                        \
     "Native struct '%c' is not defined.")                                                  \
   BOND_COMPILER_ERROR(DUPLICATE_NATIVE_STRUCT_STUB,                                        \

@@ -38,6 +38,8 @@ struct ParseNodeCount
 		mWhileStatement(defaultValue),
 		mForStatement(defaultValue),
 		mJumpStatement(defaultValue),
+		mUsingDeclaration(defaultValue),
+		mUsingDirective(defaultValue),
 		mDeclarativeStatement(defaultValue),
 		mExpressionStatement(defaultValue),
 		mConditionalExpression(defaultValue),
@@ -78,6 +80,8 @@ struct ParseNodeCount
 	int mWhileStatement;
 	int mForStatement;
 	int mJumpStatement;
+	int mUsingDeclaration;
+	int mUsingDirective;
 	int mDeclarativeStatement;
 	int mExpressionStatement;
 	int mConditionalExpression;
@@ -146,6 +150,8 @@ private:
 	virtual void Visit(const ForStatement *forStatement) override;
 	virtual void Visit(const JumpStatement *jumpStatement) override;
 	virtual void Visit(const DeclarativeStatement *declarativeStatement) override;
+	virtual void Visit(const UsingDeclaration *usingDeclaration) override;
+	virtual void Visit(const UsingDirective *usingDirective) override;
 	virtual void Visit(const ExpressionStatement *expressionStatement) override;
 	virtual void Visit(const ConditionalExpression *conditionalExpression) override;
 	virtual void Visit(const BinaryExpression *binaryExpression) override;

@@ -69,12 +69,14 @@ bool AssertParseNodeCount(
     logger,                                                                    \
     assertFile,                                                                \
     assertLine,                                                                \
-		"Expected " #field " count to be %d, but was %d.",                        \
-		expected.m ## field,                                                       \
-		actual.m ## field);                                                        \
+		"Expected " #field " count to be %d, but was %d.",                     \
+		expected.m ## field,                                                   \
+		actual.m ## field);                                                    \
 
 	ASSERT_COUNT(TranslationUnit);
+	ASSERT_COUNT(IncludeDirective);
 	ASSERT_COUNT(NamespaceDefinition);
+	ASSERT_COUNT(NativeBlock);
 	ASSERT_COUNT(EnumDeclaration);
 	ASSERT_COUNT(Enumerator);
 	ASSERT_COUNT(StructDeclaration);
@@ -94,6 +96,8 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(WhileStatement);
 	ASSERT_COUNT(ForStatement);
 	ASSERT_COUNT(JumpStatement);
+	ASSERT_COUNT(UsingDeclaration);
+	ASSERT_COUNT(UsingDirective);
 	ASSERT_COUNT(DeclarativeStatement);
 	ASSERT_COUNT(ExpressionStatement);
 	ASSERT_COUNT(ConditionalExpression);
@@ -107,6 +111,8 @@ bool AssertParseNodeCount(
 	ASSERT_COUNT(PropertyofExpression);
 	ASSERT_COUNT(ConstantLiteralExpression);
 	ASSERT_COUNT(IdentifierExpression);
+	ASSERT_COUNT(ThisExpression);
+	ASSERT_COUNT(EmptyExpression);
 
 #undef ASSERT_COUNT
 

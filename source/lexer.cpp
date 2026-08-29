@@ -1244,11 +1244,12 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 	KEYWORD_ITEM(KEY_STRUCT,    "struct")    \
 	KEYWORD_ITEM(KEY_SWITCH,    "switch")    \
 	KEYWORD_ITEM(KEY_THIS,      "this")      \
-	KEYWORD_ITEM(CONST_BOOL,    "true")		  \
+	KEYWORD_ITEM(CONST_BOOL,    "true")      \
 	KEYWORD_ITEM(KEY_UCHAR,     "uchar")     \
 	KEYWORD_ITEM(KEY_UINT,      "uint")      \
 	KEYWORD_ITEM(KEY_ULONG,     "ulong")     \
 	KEYWORD_ITEM(KEY_USHORT,    "ushort")    \
+	KEYWORD_ITEM(KEY_USING,     "using")     \
 	KEYWORD_ITEM(KEY_VOID,      "void")      \
 	KEYWORD_ITEM(KEY_WHILE,     "while")     \
 

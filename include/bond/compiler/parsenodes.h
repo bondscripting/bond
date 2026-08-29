@@ -216,6 +216,27 @@ public:
 	/// \param name Name to compare against.
 	bool Matches(const StringView &name) const;
 
+	/// \brief Returns the symbol that lookups through this symbol should ultimately resolve to.
+	///
+	/// Overridden by UsingDeclaration so that a using-declaration alias is never observed
+	/// outside of symbol lookup; every other symbol resolves to itself.
+	virtual Symbol *Resolve() { return this; }
+
+	/// \brief Returns the symbol that lookups through this symbol should ultimately resolve to.
+	virtual const Symbol *Resolve() const { return this; }
+
+	/// \brief Returns the list of namespaces opened in this scope via using-directives.
+	/// \returns The head of the list, or null if this symbol does not establish local scope.
+	virtual UsingDirective *GetUsingNamespaceList() { return nullptr; }
+
+	/// \brief Returns the list of namespaces opened in this scope via using-directives.
+	/// \returns The head of the list, or null if this symbol does not establish local scope.
+	virtual const UsingDirective *GetUsingNamespaceList() const { return nullptr; }
+
+	/// \brief Opens a namespace into this scope, making its members visible to unqualified lookup.
+	/// \param usingDirective Using-directive node to link into this scope's opened-namespace list.
+	virtual void AddUsingNamespace(UsingDirective *usingDirective) {}
+
 protected:
 	Symbol():
 		mNextSymbol(nullptr),
@@ -1304,7 +1325,10 @@ class CompoundStatement: public Symbol
 public:
 	/// \brief Constructs a compound statement.
 	/// \param statementList List of statements in the block.
-	explicit CompoundStatement(ListParseNode *statementList): mStatementList(statementList) {}
+	explicit CompoundStatement(ListParseNode *statementList):
+		mStatementList(statementList),
+		mUsingNamespaceList(nullptr)
+	{}
 	virtual ~CompoundStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1318,8 +1342,14 @@ public:
 	/// \brief Returns the statement list in this block.
 	const ListParseNode *GetStatementList() const { return mStatementList; }
 
+	virtual UsingDirective *GetUsingNamespaceList() override { return mUsingNamespaceList; }
+	virtual const UsingDirective *GetUsingNamespaceList() const override { return mUsingNamespaceList; }
+
+	virtual void AddUsingNamespace(UsingDirective *usingDirective) override;
+
 private:
 	ListParseNode *mStatementList;
+	UsingDirective *mUsingNamespaceList;
 };
 
 
@@ -1464,6 +1494,7 @@ public:
 	SwitchSection(SwitchLabel *labelList, ListParseNode* statementList):
 		mLabelList(labelList),
 		mStatementList(statementList),
+		mUsingNamespaceList(nullptr),
 		mJumpTargetId(0)
 	{}
 
@@ -1493,9 +1524,15 @@ public:
 	/// \param id Jump target identifier.
 	void SetJumpTargetId(size_t id) { mJumpTargetId = id; }
 
+	virtual UsingDirective *GetUsingNamespaceList() override { return mUsingNamespaceList; }
+	virtual const UsingDirective *GetUsingNamespaceList() const override { return mUsingNamespaceList; }
+
+	virtual void AddUsingNamespace(UsingDirective *usingDirective) override;
+
 private:
 	SwitchLabel *mLabelList;
 	ListParseNode *mStatementList;
+	UsingDirective *mUsingNamespaceList;
 	size_t mJumpTargetId;
 };
 
@@ -1661,7 +1698,8 @@ public:
 		mInitializer(initializer),
 		mCondition(condition),
 		mCountingExpression(countingExpression),
-		mBody(body)
+		mBody(body),
+		mUsingNamespaceList(nullptr)
 	{}
 
 	virtual ~ForStatement() {}
@@ -1700,12 +1738,18 @@ public:
 	/// \brief Returns the loop body.
 	const ParseNode *GetBody() const { return mBody; }
 
+	virtual UsingDirective *GetUsingNamespaceList() override { return mUsingNamespaceList; }
+	virtual const UsingDirective *GetUsingNamespaceList() const override { return mUsingNamespaceList; }
+
+	virtual void AddUsingNamespace(UsingDirective *usingDirective) override;
+
 private:
 	const Token *mKeyword;
 	ParseNode *mInitializer;
 	Expression *mCondition;
 	Expression *mCountingExpression;
 	ParseNode *mBody;
+	UsingDirective *mUsingNamespaceList;
 };
 
 
@@ -1782,6 +1826,109 @@ public:
 private:
 	TypeDescriptor *mTypeDescriptor;
 	NamedInitializer *mNamedInitializerList;
+};
+
+
+/// \brief Represents a using-declaration that aliases a single symbol into local scope.
+///
+/// Participates in symbol lookup as an ordinary Symbol so that it can be linked into the
+/// intrusive scope list like any other local declaration, but Symbol::Resolve() causes lookups
+/// to transparently unwrap it to the aliased target, so no other part of the compiler ever
+/// observes a UsingDeclaration.
+class UsingDeclaration: public Symbol
+{
+public:
+	/// \brief Constructs a using-declaration.
+	/// \param identifier Qualified identifier naming the symbol to bring into scope.
+	explicit UsingDeclaration(QualifiedIdentifier *identifier);
+	virtual ~UsingDeclaration() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
+
+	virtual SymbolType GetSymbolType() const override { return mTarget->GetSymbolType(); }
+	virtual const Token *GetName() const override { return mNameToken; }
+	virtual TypeAndValue *GetTypeAndValue() override { return mTarget->GetTypeAndValue(); }
+	virtual const TypeAndValue *GetTypeAndValue() const override { return mTarget->GetTypeAndValue(); }
+	virtual bool IsResolved() const override { return (mTarget != nullptr) && mTarget->IsResolved(); }
+
+	/// \brief Returns the qualified identifier naming the symbol to bring into scope.
+	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
+
+	/// \brief Returns the qualified identifier naming the symbol to bring into scope.
+	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+	/// \brief Sets the resolved symbol that this declaration aliases.
+	/// \param target Symbol to alias.
+	void SetTarget(Symbol *target) { mTarget = target; }
+
+	/// \brief Returns the resolved symbol that this declaration aliases, if any.
+	Symbol *GetTarget() { return mTarget; }
+
+	virtual Symbol *Resolve() override { return (mTarget != nullptr) ? mTarget->Resolve() : this; }
+	virtual const Symbol *Resolve() const override { return (mTarget != nullptr) ? mTarget->Resolve() : this; }
+
+private:
+	QualifiedIdentifier *mIdentifier;
+	const Token *mNameToken;
+	Symbol *mTarget;
+};
+
+
+/// \brief Represents a using-directive that opens a namespace's symbols into local scope.
+///
+/// Never enters a symbol table; it is instead threaded into its enclosing local scope's
+/// list of opened namespaces (via its own dedicated next-pointer, separate from the
+/// ListParseNode next-pointer used to place it among the enclosing statement list) and
+/// consulted as a fallback by Symbol::FindSymbol.
+class UsingDirective: public ListParseNode
+{
+public:
+	/// \brief Constructs a using-directive.
+	/// \param identifier Qualified identifier naming the namespace to open.
+	explicit UsingDirective(QualifiedIdentifier *identifier):
+		mIdentifier(identifier),
+		mNamespace(nullptr),
+		mNextUsingDirective(nullptr)
+	{}
+
+	virtual ~UsingDirective() {}
+
+	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
+	virtual void Accept(ParseNodeVisitor &visitor) const override { visitor.Visit(this); }
+
+	virtual const Token *GetContextToken() const override { return mIdentifier->GetContextToken(); }
+
+	/// \brief Returns the qualified identifier naming the namespace to open.
+	QualifiedIdentifier *GetIdentifier() { return mIdentifier; }
+
+	/// \brief Returns the qualified identifier naming the namespace to open.
+	const QualifiedIdentifier *GetIdentifier() const { return mIdentifier; }
+
+	/// \brief Sets the resolved namespace symbol that this directive opens.
+	/// \param space Namespace symbol to open into the enclosing local scope.
+	void SetNamespace(Symbol *space) { mNamespace = space; }
+
+	/// \brief Returns the resolved namespace symbol that this directive opens, if any.
+	Symbol *GetNamespace() { return mNamespace; }
+
+	/// \brief Returns the resolved namespace symbol that this directive opens, if any.
+	const Symbol *GetNamespace() const { return mNamespace; }
+
+	/// \brief Returns the next using-directive opened in the same local scope.
+	UsingDirective *GetNextUsingDirective() { return mNextUsingDirective; }
+
+	/// \brief Returns the next using-directive opened in the same local scope.
+	const UsingDirective *GetNextUsingDirective() const { return mNextUsingDirective; }
+
+	/// \brief Links this directive into its enclosing scope's list of opened namespaces.
+	/// \param next Next using-directive in the scope's list.
+	void SetNextUsingDirective(UsingDirective *next) { mNextUsingDirective = next; }
+
+private:
+	QualifiedIdentifier *mIdentifier;
+	Symbol *mNamespace;
+	UsingDirective *mNextUsingDirective;
 };
 
 

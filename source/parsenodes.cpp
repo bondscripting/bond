@@ -28,7 +28,21 @@ Symbol *Symbol::FindSymbol(const StringView &name)
 		symbol = symbol->mNextSymbol;
 	}
 
-	return symbol;
+	if (symbol == nullptr)
+	{
+		for (UsingDirective *usingDirective = GetUsingNamespaceList();
+			usingDirective != nullptr;
+			usingDirective = usingDirective->GetNextUsingDirective())
+		{
+			Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
+			if (candidate != nullptr)
+			{
+				symbol = candidate;
+			}
+		}
+	}
+
+	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
 }
 
 
@@ -41,7 +55,21 @@ const Symbol *Symbol::FindSymbol(const StringView &name) const
 		symbol = symbol->mNextSymbol;
 	}
 
-	return symbol;
+	if (symbol == nullptr)
+	{
+		for (const UsingDirective *usingDirective = GetUsingNamespaceList();
+			usingDirective != nullptr;
+			usingDirective = usingDirective->GetNextUsingDirective())
+		{
+			const Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
+			if (candidate != nullptr)
+			{
+				symbol = candidate;
+			}
+		}
+	}
+
+	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
 }
 
 
@@ -79,7 +107,7 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	{
 		symbol = FindSymbol(identifier->GetName());
 	}
-	else if (GetSymbolType() == TYPE_NAMESPACE)
+	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
 	{
 		Symbol *nextScope = FindSymbol(identifier->GetName());
 		if (nextScope != nullptr)
@@ -101,11 +129,14 @@ const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 	{
 		symbol = FindSymbol(identifier->GetName());
 	}
-	else
+	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
 	{
 		const Symbol *nextScope = FindSymbol(identifier->GetName());
-		const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-		symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+		if (nextScope != nullptr)
+		{
+			const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+			symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+		}
 	}
 
 	return symbol;
@@ -805,6 +836,43 @@ bool Initializer::IsResolved() const
 
 	return true;
 }
+
+
+void CompoundStatement::AddUsingNamespace(UsingDirective *usingDirective)
+{
+	usingDirective->SetNextUsingDirective(mUsingNamespaceList);
+	mUsingNamespaceList = usingDirective;
+}
+
+
+void SwitchSection::AddUsingNamespace(UsingDirective *usingDirective)
+{
+	usingDirective->SetNextUsingDirective(mUsingNamespaceList);
+	mUsingNamespaceList = usingDirective;
+}
+
+
+void ForStatement::AddUsingNamespace(UsingDirective *usingDirective)
+{
+	usingDirective->SetNextUsingDirective(mUsingNamespaceList);
+	mUsingNamespaceList = usingDirective;
+}
+
+
+UsingDeclaration::UsingDeclaration(QualifiedIdentifier *identifier):
+	mIdentifier(identifier),
+	mNameToken(nullptr),
+	mTarget(nullptr)
+{
+	// The name introduced into local scope is the last segment of the qualified identifier.
+	const QualifiedIdentifier *segment = identifier;
+	while (!segment->IsTerminal())
+	{
+		segment = segment->GetNextIdentifier();
+	}
+	mNameToken = segment->GetName();
+}
+
 
 
 const TypeSpecifier VOID_TYPE_SPECIFIER(&VOID_TOKEN);

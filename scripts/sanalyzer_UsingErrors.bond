@@ -1,0 +1,54 @@
+namespace A
+{
+	namespace AA
+	{
+		struct StructType
+		{
+			int aa;
+		};
+	}
+
+	struct StructType
+	{
+		int a;
+	};
+}
+
+namespace B
+{
+	namespace BB
+	{
+		struct StructType
+		{
+			int bb;
+		};
+
+		void DoNothing() {}
+	}
+
+	struct StructType
+	{
+		int b;
+	};
+}
+
+void TheFunction()
+{
+	{
+		using A;
+	}
+
+	{
+		using namespace A::StructType;
+	}
+
+	{
+		using A::StructType;
+		using A::AA::StructType;
+	}
+
+	{
+		using namespace A;
+		using A::AA::StructType;
+	}
+}

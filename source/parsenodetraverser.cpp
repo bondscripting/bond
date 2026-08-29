@@ -342,6 +342,30 @@ void ParseNodeTraverser::Visit(const DeclarativeStatement *declarativeStatement)
 }
 
 
+void ParseNodeTraverser::Visit(UsingDeclaration *usingDeclaration)
+{
+	Traverse(usingDeclaration->GetIdentifier());
+}
+
+
+void ParseNodeTraverser::Visit(const UsingDeclaration *usingDeclaration)
+{
+	Traverse(usingDeclaration->GetIdentifier());
+}
+
+
+void ParseNodeTraverser::Visit(UsingDirective *usingDirective)
+{
+	Traverse(usingDirective->GetIdentifier());
+}
+
+
+void ParseNodeTraverser::Visit(const UsingDirective *usingDirective)
+{
+	Traverse(usingDirective->GetIdentifier());
+}
+
+
 void ParseNodeTraverser::Visit(ExpressionStatement *expressionStatement)
 {
 	Traverse(expressionStatement->GetExpression());

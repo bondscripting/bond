@@ -32,6 +32,8 @@ namespace Bond
 	class ForStatement;
 	class JumpStatement;
 	class DeclarativeStatement;
+	class UsingDeclaration;
+	class UsingDirective;
 	class ExpressionStatement;
 	class Expression;
 	class TemporaryExpression;

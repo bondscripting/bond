@@ -131,6 +131,21 @@ DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.
 	return true;
 }
 
+DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/sanalyzer_UsingErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD, Bond::Token::IDENTIFIER, 38},
+		{Bond::CompilerError::EXPECTED_NAMESPACE, Bond::Token::IDENTIFIER, 42},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 47},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 52},
+	};
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	return true;
+}
 
 DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifierErrors.bond")
 {
@@ -441,6 +456,7 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(WhileStatements)                    \
   TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
+  TEST_ITEM(UsingStatements)                    \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \

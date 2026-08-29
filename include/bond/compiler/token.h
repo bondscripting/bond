@@ -38,6 +38,7 @@
 	BOND_TOKEN_ITEM(KEY_UINT)                 \
 	BOND_TOKEN_ITEM(KEY_ULONG)                \
 	BOND_TOKEN_ITEM(KEY_USHORT)               \
+	BOND_TOKEN_ITEM(KEY_USING)                \
 	BOND_TOKEN_ITEM(KEY_VOID)                 \
 	BOND_TOKEN_ITEM(KEY_WHILE)                \
 	                                          \
