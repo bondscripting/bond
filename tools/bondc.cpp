@@ -41,14 +41,21 @@ int main(int argc, const char *argv[])
 		const char *bindingCollectionName = nullptr;
 		const char *includeName = nullptr;
 		bool generateBindings = false;
+		bool pointerSizeSet = false;
+		int inputFileCount = 0;
 
 		for (int i = 1; i < argc; ++i)
 		{
 			if (strcmp(argv[i], "-b") == 0)
 			{
-				if (++i < argc)
+				if (bindingCollectionName != nullptr)
 				{
-					bindingCollectionName = argv[i];
+					fprintf(stderr, "Option '-b' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					bindingCollectionName = argv[++i];
 				}
 				else
 				{
@@ -58,9 +65,14 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-c") == 0)
 			{
-				if (++i < argc)
+				if (cppFileName != nullptr)
 				{
-					cppFileName = argv[i];
+					fprintf(stderr, "Option '-c' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					cppFileName = argv[++i];
 				}
 				else
 				{
@@ -70,9 +82,14 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-h") == 0)
 			{
-				if (++i < argc)
+				if (hFileName != nullptr)
 				{
-					hFileName = argv[i];
+					fprintf(stderr, "Option '-h' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					hFileName = argv[++i];
 				}
 				else
 				{
@@ -82,9 +99,14 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-i") == 0)
 			{
-				if (++i < argc)
+				if (includeName != nullptr)
 				{
-					includeName = argv[i];
+					fprintf(stderr, "Option '-i' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					includeName = argv[++i];
 				}
 				else
 				{
@@ -94,10 +116,10 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-I") == 0)
 			{
-				if (++i < argc)
+				if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
 				{
 					auto &prev = factoryList.back();
-					factoryList.emplace_back(allocator, argv[i]);
+					factoryList.emplace_back(allocator, argv[++i]);
 					prev.SetDelegateFactory(&factoryList.back());
 				}
 				else
@@ -108,9 +130,14 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-o") == 0)
 			{
-				if (++i < argc)
+				if (cboFileName != nullptr)
 				{
-					cboFileName = argv[i];
+					fprintf(stderr, "Option '-o' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					cboFileName = argv[++i];
 				}
 				else
 				{
@@ -120,11 +147,29 @@ int main(int argc, const char *argv[])
 			}
 			else if (strcmp(argv[i], "-p32") == 0)
 			{
-				pointerSize = Bond::POINTER_32BIT;
+				if (pointerSizeSet)
+				{
+					fprintf(stderr, "Conflicting options -p32/-p64\n");
+					error = true;
+				}
+				else
+				{
+					pointerSize = Bond::POINTER_32BIT;
+					pointerSizeSet = true;
+				}
 			}
 			else if (strcmp(argv[i], "-p64") == 0)
 			{
-				pointerSize = Bond::POINTER_64BIT;
+				if (pointerSizeSet)
+				{
+					fprintf(stderr, "Conflicting options -p32/-p64\n");
+					error = true;
+				}
+				else
+				{
+					pointerSize = Bond::POINTER_64BIT;
+					pointerSizeSet = true;
+				}
 			}
 			else if (argv[i][0] == '-')
 			{
@@ -134,7 +179,14 @@ int main(int argc, const char *argv[])
 			else
 			{
 				frontEnd.AddInputFile(argv[i]);
+				++inputFileCount;
 			}
+		}
+
+		if (inputFileCount == 0)
+		{
+			fprintf(stderr, "No input files specified\n");
+			error = true;
 		}
 
 		if ((cppFileName != nullptr) || (hFileName != nullptr) || (bindingCollectionName != nullptr) || (includeName != nullptr))

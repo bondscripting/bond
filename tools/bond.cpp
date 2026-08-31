@@ -29,6 +29,8 @@ int main(int argc, const char *argv[])
 	int32_t exitCode = 0;
 	bool pushingApplicationArgs = false;
 	bool error = false;
+	bool entryPointSet = false;
+	bool stackSizeSet = false;
 
 	cboFileNameList.reserve(size_t(argc));
 	argList.reserve(size_t(argc));
@@ -45,9 +47,15 @@ int main(int argc, const char *argv[])
 		}
 		else if (strcmp(argv[i], "-e") == 0)
 		{
-			if (++i < argc)
+			if (entryPointSet)
 			{
-				entryPoint = argv[i];
+				fprintf(stderr, "Option '-e' specified more than once\n");
+				error = true;
+			}
+			else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+			{
+				entryPoint = argv[++i];
+				entryPointSet = true;
 			}
 			else
 			{
@@ -57,9 +65,16 @@ int main(int argc, const char *argv[])
 		}
 		else if (strcmp(argv[i], "-s") == 0)
 		{
-			if (++i < argc)
+			if (stackSizeSet)
 			{
+				fprintf(stderr, "Option '-s' specified more than once\n");
+				error = true;
+			}
+			else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+			{
+				++i;
 				stackSize = size_t(atol(argv[i]));
+				stackSizeSet = true;
 				if (stackSize < MIN_STACK_SIZE)
 				{
 					fprintf(stderr, "Stack size must be at least %u kB.\n", unsigned(MIN_STACK_SIZE));
@@ -81,6 +96,12 @@ int main(int argc, const char *argv[])
 		{
 			cboFileNameList.push_back(argv[i]);
 		}
+	}
+
+	if (cboFileNameList.empty())
+	{
+		fprintf(stderr, "No input files specified\n");
+		error = true;
 	}
 
 	if (error)

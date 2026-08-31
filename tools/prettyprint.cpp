@@ -70,6 +70,8 @@ int main(int argc, const char *argv[])
 	auto folding = Bond::PrettyPrinter::CONSTANT_FOLDING_OFF;
 	bool doSemanticAnalysis = false;
 	bool printParseTree = false;
+	bool error = false;
+	int inputFileCount = 0;
 
 	for (int i = 1; i < argc; ++i)
 	{
@@ -89,11 +91,23 @@ int main(int argc, const char *argv[])
 		{
 			doSemanticAnalysis = true;
 		}
+		else if (argv[i][0] == '-')
+		{
+			fprintf(stderr, "Unknown option '%s'\n", argv[i]);
+			error = true;
+		}
 		else
 		{
 			PrintScript(argv[i], verbosity, folding, doSemanticAnalysis, printParseTree);
+			++inputFileCount;
 		}
 	}
 
-	return 0;
+	if (inputFileCount == 0)
+	{
+		fprintf(stderr, "No input files specified\n");
+		error = true;
+	}
+
+	return error ? 1 : 0;
 }
