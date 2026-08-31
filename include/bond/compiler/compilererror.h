@@ -78,6 +78,8 @@
     "Symbol '%n' is not a namespace.")                                                     \
   BOND_COMPILER_ERROR(USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD,                          \
     "'%n' is a namespace; use 'using namespace' to bring it into scope.")                  \
+  BOND_COMPILER_ERROR(AMBIGUOUS_SYMBOL_REFERENCE,                                          \
+    "Reference to '%n' is ambiguous.")                                                     \
   BOND_COMPILER_ERROR(NATIVE_STRUCT_IS_NOT_DEFINED,                                        \
     "Native struct '%c' is not defined.")                                                  \
   BOND_COMPILER_ERROR(DUPLICATE_NATIVE_STRUCT_STUB,                                        \

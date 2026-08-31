@@ -185,6 +185,18 @@ public:
 	/// \returns Matching symbol, or null if not found.
 	const Symbol *FindSymbol(const StringView &name) const;
 
+	/// \brief Finds a directly contained symbol by name, flagging ambiguous opened-namespace matches.
+	/// \param name Name to search for.
+	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
+	/// \returns Best-effort matching symbol (the first match found), or null if not found.
+	Symbol *FindSymbol(const StringView &name, bool &isAmbiguous);
+
+	/// \brief Finds a directly contained symbol by name, flagging ambiguous opened-namespace matches.
+	/// \param name Name to search for.
+	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
+	/// \returns Best-effort matching symbol (the first match found), or null if not found.
+	const Symbol *FindSymbol(const StringView &name, bool &isAmbiguous) const;
+
 	/// \brief Finds a directly contained symbol by token text.
 	/// \param name Name token to search for.
 	/// \returns Matching symbol, or null if not found.
@@ -195,6 +207,18 @@ public:
 	/// \returns Matching symbol, or null if not found.
 	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetText()); }
 
+	/// \brief Finds a directly contained symbol by token text, flagging ambiguous opened-namespace matches.
+	/// \param name Name token to search for.
+	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
+	/// \returns Matching symbol, or null if not found.
+	Symbol *FindSymbol(const Token *name, bool &isAmbiguous) { return FindSymbol(name->GetText(), isAmbiguous); }
+
+	/// \brief Finds a directly contained symbol by token text, flagging ambiguous opened-namespace matches.
+	/// \param name Name token to search for.
+	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
+	/// \returns Matching symbol, or null if not found.
+	const Symbol *FindSymbol(const Token *name, bool &isAmbiguous) const { return FindSymbol(name->GetText(), isAmbiguous); }
+
 	/// \brief Finds a symbol referenced by a qualified identifier.
 	/// \param identifier Qualified identifier to resolve.
 	/// \returns Matching symbol, or null if not found.
@@ -204,6 +228,18 @@ public:
 	/// \param identifier Qualified identifier to resolve.
 	/// \returns Matching symbol, or null if not found.
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
+
+	/// \brief Finds a symbol referenced by a qualified identifier, flagging ambiguous matches.
+	/// \param identifier Qualified identifier to resolve.
+	/// \param isAmbiguous Set to true if the identifier resolves ambiguously at some scope level.
+	/// \returns Best-effort matching symbol, or null if not found.
+	Symbol *FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous);
+
+	/// \brief Finds a symbol referenced by a qualified identifier, flagging ambiguous matches.
+	/// \param identifier Qualified identifier to resolve.
+	/// \param isAmbiguous Set to true if the identifier resolves ambiguously at some scope level.
+	/// \returns Best-effort matching symbol, or null if not found.
+	const Symbol *FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const;
 
 	/// \brief Inserts a symbol into this symbol's child list.
 	/// \param symbol Symbol to insert.
@@ -245,8 +281,8 @@ protected:
 	{}
 
 private:
-	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier);
-	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier) const;
+	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous);
+	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;

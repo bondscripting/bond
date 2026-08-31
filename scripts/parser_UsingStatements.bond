@@ -72,6 +72,12 @@ void TheFunction()
 	}
 
 	{
+		using namespace A;
+		using namespace A;
+		StructType s;
+	}
+
+	{
 		using B::StructType;
 		StructType s;
 		s.b = 1;
@@ -96,4 +102,4 @@ void TheFunction()
 		using BB::DoNothing;
 		DoNothing();
 	}
-}
+	}

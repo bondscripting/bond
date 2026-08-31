@@ -51,4 +51,10 @@ void TheFunction()
 		using namespace A;
 		using A::AA::StructType;
 	}
+
+	{
+		using namespace A;
+		using namespace B;
+		StructType s;
+	}
 }

@@ -21,6 +21,20 @@ void Symbol::SetParentSymbol(Symbol *parent)
 
 Symbol *Symbol::FindSymbol(const StringView &name)
 {
+	bool isAmbiguous = false;
+	return FindSymbol(name, isAmbiguous);
+}
+
+
+const Symbol *Symbol::FindSymbol(const StringView &name) const
+{
+	bool isAmbiguous = false;
+	return FindSymbol(name, isAmbiguous);
+}
+
+
+Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous)
+{
 	Symbol *symbol = mSymbolList;
 
 	while ((symbol != nullptr) && !symbol->Matches(name))
@@ -28,7 +42,11 @@ Symbol *Symbol::FindSymbol(const StringView &name)
 		symbol = symbol->mNextSymbol;
 	}
 
-	if (symbol == nullptr)
+	if (symbol != nullptr)
+	{
+		symbol = symbol->Resolve();
+	}
+	else
 	{
 		for (UsingDirective *usingDirective = GetUsingNamespaceList();
 			usingDirective != nullptr;
@@ -37,16 +55,24 @@ Symbol *Symbol::FindSymbol(const StringView &name)
 			Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
 			if (candidate != nullptr)
 			{
-				symbol = candidate;
+				if (symbol == nullptr)
+				{
+					symbol = candidate;
+				}
+				else if (candidate != symbol)
+				{
+					isAmbiguous = true;
+					break;
+				}
 			}
 		}
 	}
 
-	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
+	return symbol;
 }
 
 
-const Symbol *Symbol::FindSymbol(const StringView &name) const
+const Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous) const
 {
 	const Symbol *symbol = mSymbolList;
 
@@ -55,7 +81,11 @@ const Symbol *Symbol::FindSymbol(const StringView &name) const
 		symbol = symbol->mNextSymbol;
 	}
 
-	if (symbol == nullptr)
+	if (symbol != nullptr)
+	{
+		symbol = symbol->Resolve();
+	}
+	else
 	{
 		for (const UsingDirective *usingDirective = GetUsingNamespaceList();
 			usingDirective != nullptr;
@@ -64,56 +94,86 @@ const Symbol *Symbol::FindSymbol(const StringView &name) const
 			const Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
 			if (candidate != nullptr)
 			{
-				symbol = candidate;
+				if (symbol == nullptr)
+				{
+					symbol = candidate;
+				}
+				else if (candidate != symbol)
+				{
+					isAmbiguous = true;
+					break;
+				}
 			}
 		}
 	}
 
-	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
+	return symbol;
 }
 
 
 Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier)
 {
-	Symbol *symbol = FindQualifiedSymbol(identifier);
-
-	if ((symbol == nullptr) && (mParentSymbol != nullptr))
-	{
-		symbol = mParentSymbol->FindSymbol(identifier);
-	}
-
-	return symbol;
+	bool isAmbiguous = false;
+	return FindSymbol(identifier, isAmbiguous);
 }
 
 
 const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
 {
-	const Symbol *symbol = FindQualifiedSymbol(identifier);
+	bool isAmbiguous = false;
+	return FindSymbol(identifier, isAmbiguous);
+}
 
-	if ((symbol == nullptr) && (mParentSymbol != nullptr))
+
+Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous)
+{
+	Symbol *symbol = FindQualifiedSymbol(identifier, isAmbiguous);
+
+	if ((symbol == nullptr) && !isAmbiguous && (mParentSymbol != nullptr))
 	{
-		symbol = mParentSymbol->FindSymbol(identifier);
+		symbol = mParentSymbol->FindSymbol(identifier, isAmbiguous);
 	}
 
 	return symbol;
 }
 
 
-Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
+const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const
+{
+	const Symbol *symbol = FindQualifiedSymbol(identifier, isAmbiguous);
+
+	if ((symbol == nullptr) && !isAmbiguous && (mParentSymbol != nullptr))
+	{
+		symbol = mParentSymbol->FindSymbol(identifier, isAmbiguous);
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous)
 {
 	Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
-		symbol = FindSymbol(identifier->GetName());
+		symbol = FindSymbol(identifier->GetName(), isAmbiguous);
 	}
 	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
 	{
-		Symbol *nextScope = FindSymbol(identifier->GetName());
+		Symbol *nextScope = FindSymbol(identifier->GetName(), isAmbiguous);
 		if (nextScope != nullptr)
 		{
-			const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-			symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+			if (isAmbiguous)
+			{
+				// The first segment itself is ambiguous; don't compound it by descending further.
+				symbol = nextScope;
+			}
+			else
+			{
+				const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, isAmbiguous);
+			}
 		}
 	}
 
@@ -121,21 +181,29 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier)
 }
 
 
-const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier) const
+const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const
 {
 	const Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
-		symbol = FindSymbol(identifier->GetName());
+		symbol = FindSymbol(identifier->GetName(), isAmbiguous);
 	}
 	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
 	{
-		const Symbol *nextScope = FindSymbol(identifier->GetName());
+		const Symbol *nextScope = FindSymbol(identifier->GetName(), isAmbiguous);
 		if (nextScope != nullptr)
 		{
-			const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-			symbol = nextScope->FindQualifiedSymbol(nextIdentifier);
+			if (isAmbiguous)
+			{
+				// The first segment itself is ambiguous; don't compound it by descending further.
+				symbol = nextScope;
+			}
+			else
+			{
+				const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
+				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, isAmbiguous);
+			}
 		}
 	}
 

@@ -139,6 +139,7 @@ DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/sanalyzer_UsingErrors.bon
 		{Bond::CompilerError::EXPECTED_NAMESPACE, Bond::Token::IDENTIFIER, 42},
 		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 47},
 		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 52},
+		{Bond::CompilerError::AMBIGUOUS_SYMBOL_REFERENCE, Bond::Token::IDENTIFIER, 58},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 

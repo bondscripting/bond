@@ -63,6 +63,8 @@ void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 
 Symbol *SemanticAnalysisPass::GetSymbol(const Token *name)
 {
+	// Not ambiguity-aware: only used for same-scope lookups against scopes that can never have
+	// opened namespaces (e.g. native struct stub matching), unlike the qualified-identifier overload.
 	Symbol *parent = GetCurrentScope();
 	return parent->FindSymbol(name);
 }
@@ -71,7 +73,15 @@ Symbol *SemanticAnalysisPass::GetSymbol(const Token *name)
 Symbol *SemanticAnalysisPass::GetSymbol(const QualifiedIdentifier *identifier)
 {
 	Symbol *parent = GetCurrentScope();
-	return parent->FindSymbol(identifier);
+	bool isAmbiguous = false;
+	Symbol *symbol = parent->FindSymbol(identifier, isAmbiguous);
+
+	if (isAmbiguous)
+	{
+		mErrorBuffer.PushError(CompilerError::AMBIGUOUS_SYMBOL_REFERENCE, identifier->GetContextToken(), identifier);
+	}
+
+	return symbol;
 }
 
 
