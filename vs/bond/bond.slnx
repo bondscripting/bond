@@ -1,0 +1,46 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Win32" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../bondc/bondc.vcxproj" Id="c6939ec7-bd5f-45ba-912d-709eea9796e9">
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../bondd/bondd.vcxproj" Id="526b9b46-ece0-4f81-b1d5-4fb5d9f91361">
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../bondvm/bondvm.vcxproj" Id="445e3d0d-1550-4e45-a8a9-f0b1b89e5fbd">
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../framework/framework.vcxproj" Id="7e525b78-8165-452d-bca1-6855b3ffd564">
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../prettyprint/prettyprint.vcxproj" Id="4b420d40-1329-475c-9d79-ac5d9da0798f">
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testlexer/testlexer.vcxproj" Id="848238c2-d932-4905-9a82-13a93edda04d">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testlibraries/testlibraries.vcxproj" Id="20fc9cce-8b73-4050-b92d-9e7a95da779e">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testnative/testnative.vcxproj" Id="e724ce98-a647-4075-8a6f-a520aef1812a">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testparser/testparser.vcxproj" Id="8f2278f0-c2dd-42d2-a9c9-318384fb2e0b">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testsemanticanalyzer/testsemanticanalyzer.vcxproj" Id="2e62f9f1-c155-42b1-bbef-dc31785ebbc5">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="../testvm/testvm.vcxproj" Id="cecb9239-b362-4e11-a5a0-cc88e3f6b53c">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
+  <Project Path="bond.vcxproj" Id="30fdc924-3cee-40ab-9ce4-bc01b5c781e0" />
+</Solution>
