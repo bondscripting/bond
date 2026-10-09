@@ -7,46 +7,43 @@
 #include "bond/tools/parsenodecounter.h"
 
 #define DEFINE_PARSER_TEST(testName, scriptName)                              \
-  bool __Validate ## testName ## __(                                          \
-    Bond::OutputStream &logger,                                               \
+  void __Validate ## testName ## __(                                          \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::TranslationUnit *translationUnit);                                  \
                                                                               \
-  bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
+  void __Test ## testName ## __()                                            \
   {                                                                           \
-    return TestFramework::RunParserTest(                                      \
-      logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
+    TestFramework::RunParserTest(                                             \
+      __FILE__, __LINE__, scriptName, &__Validate ## testName ## __);         \
   }                                                                           \
                                                                               \
-  bool __Validate ## testName ## __(                                          \
-    Bond::OutputStream &logger,                                               \
+  void __Validate ## testName ## __(                                          \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::TranslationUnit *translationUnit)                                   \
 
-#define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                                                       \
-  if (!TestFramework::AssertParseNodeCount(logger, __FILE__, __LINE__, parseNode, expectedCount)) return false; \
+#define ASSERT_PARSE_NODE_COUNT(parseNode, expectedCount)                     \
+  TestFramework::AssertParseNodeCount(__FILE__, __LINE__, parseNode, expectedCount)
 
 
 namespace TestFramework
 {
 
-typedef bool ParserValidationFunction(
-	Bond::OutputStream &logger,
+typedef void ParserValidationFunction(
 	Bond::CompilerErrorBuffer &errorBuffer,
 	Bond::TranslationUnit *translationUnit);
 
-bool RunParserTest(
-	Bond::OutputStream &logger,
+void RunParserTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
 	ParserValidationFunction *validationFunction);
 
-bool AssertParseNodeCount(
-	Bond::OutputStream &logger,
+/// \brief Throws an AssertionFailure if the parse node counts rooted at parseNode don't match
+/// expectedCount (a count of -1 for a given field means "don't care").
+void AssertParseNodeCount(
 	const char *assertFile,
 	int assertLine,
-	const Bond::ListParseNode *root,
+	const Bond::ListParseNode *parseNode,
 	const Bond::ParseNodeCount &expectedCount);
 
 }

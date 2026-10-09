@@ -1,4 +1,5 @@
 #include "framework/testparserframework.h"
+#include "framework/asserts.h"
 #include "bond/compiler/lexer.h"
 #include "bond/compiler/parser.h"
 #include "bond/io/stdioinputstream.h"
@@ -8,19 +9,19 @@
 namespace TestFramework
 {
 
-bool RunParserTest(
-	Bond::OutputStream &logger,
+void RunParserTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
 	ParserValidationFunction *validationFunction)
 {
-	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, "Script name is NULL.");
-	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, "Validation function is NULL.");
+	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
+	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
-	bool result = false;
+	AllocationLeakGuard<Bond::DefaultAllocator> lexerLeakGuard(lexerAllocator, "Lexer", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> parserLeakGuard(parserAllocator, "Parser", assertFile, assertLine);
 
 	try
 	{
@@ -36,87 +37,82 @@ bool RunParserTest(
 			Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
 			translationUnit = parser.Parse(stream);
 		}
-		result = validationFunction(logger, errorBuffer, translationUnit);
+		validationFunction(errorBuffer, translationUnit);
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
+		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
 	}
-
-	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations());
-
-	return result;
 }
 
 
-bool AssertParseNodeCount(
-	Bond::OutputStream &logger,
+void AssertParseNodeCount(
 	const char *assertFile,
 	int assertLine,
-	const Bond::ListParseNode *root,
+	const Bond::ListParseNode *parseNode,
 	const Bond::ParseNodeCount &expected)
 {
 	Bond::ParseNodeCounter counter;
-	counter.CountList(root);
+	counter.CountList(parseNode);
 	const Bond::ParseNodeCount &actual = counter.GetCount();
 
-#define ASSERT_COUNT(field)                                                    \
-  __ASSERT_FORMAT__(                                                           \
-    (expected.m ## field == -1) || (expected.m ## field == actual.m ## field), \
-    logger,                                                                    \
-    assertFile,                                                                \
-    assertLine,                                                                \
-		"Expected " #field " count to be %d, but was %d.",                     \
-		expected.m ## field,                                                   \
-		actual.m ## field);                                                    \
+	struct CountField
+	{
+		const char *name;
+		int Bond::ParseNodeCount::*member;
+	};
 
-	ASSERT_COUNT(TranslationUnit);
-	ASSERT_COUNT(IncludeDirective);
-	ASSERT_COUNT(NamespaceDefinition);
-	ASSERT_COUNT(NativeBlock);
-	ASSERT_COUNT(EnumDeclaration);
-	ASSERT_COUNT(Enumerator);
-	ASSERT_COUNT(StructDeclaration);
-	ASSERT_COUNT(FunctionDefinition);
-	ASSERT_COUNT(FunctionPrototype);
-	ASSERT_COUNT(Parameter);
-	ASSERT_COUNT(TypeDescriptor);
-	ASSERT_COUNT(TypeSpecifier);
-	ASSERT_COUNT(NamedInitializer);
-	ASSERT_COUNT(Initializer);
-	ASSERT_COUNT(QualifiedIdentifier);
-	ASSERT_COUNT(CompoundStatement);
-	ASSERT_COUNT(IfStatement);
-	ASSERT_COUNT(SwitchStatement);
-	ASSERT_COUNT(SwitchSection);
-	ASSERT_COUNT(SwitchLabel);
-	ASSERT_COUNT(WhileStatement);
-	ASSERT_COUNT(ForStatement);
-	ASSERT_COUNT(JumpStatement);
-	ASSERT_COUNT(UsingDeclaration);
-	ASSERT_COUNT(UsingDirective);
-	ASSERT_COUNT(DeclarativeStatement);
-	ASSERT_COUNT(ExpressionStatement);
-	ASSERT_COUNT(ConditionalExpression);
-	ASSERT_COUNT(BinaryExpression);
-	ASSERT_COUNT(UnaryExpression);
-	ASSERT_COUNT(PostfixExpression);
-	ASSERT_COUNT(MemberExpression);
-	ASSERT_COUNT(ArraySubscriptExpression);
-	ASSERT_COUNT(FunctionCallExpression);
-	ASSERT_COUNT(CastExpression);
-	ASSERT_COUNT(PropertyofExpression);
-	ASSERT_COUNT(ConstantLiteralExpression);
-	ASSERT_COUNT(IdentifierExpression);
-	ASSERT_COUNT(ThisExpression);
-	ASSERT_COUNT(EmptyExpression);
+	static const CountField FIELDS[] =
+	{
+		{"TranslationUnit", &Bond::ParseNodeCount::mTranslationUnit},
+		{"IncludeDirective", &Bond::ParseNodeCount::mIncludeDirective},
+		{"NamespaceDefinition", &Bond::ParseNodeCount::mNamespaceDefinition},
+		{"NativeBlock", &Bond::ParseNodeCount::mNativeBlock},
+		{"EnumDeclaration", &Bond::ParseNodeCount::mEnumDeclaration},
+		{"Enumerator", &Bond::ParseNodeCount::mEnumerator},
+		{"StructDeclaration", &Bond::ParseNodeCount::mStructDeclaration},
+		{"FunctionDefinition", &Bond::ParseNodeCount::mFunctionDefinition},
+		{"FunctionPrototype", &Bond::ParseNodeCount::mFunctionPrototype},
+		{"Parameter", &Bond::ParseNodeCount::mParameter},
+		{"TypeDescriptor", &Bond::ParseNodeCount::mTypeDescriptor},
+		{"TypeSpecifier", &Bond::ParseNodeCount::mTypeSpecifier},
+		{"NamedInitializer", &Bond::ParseNodeCount::mNamedInitializer},
+		{"Initializer", &Bond::ParseNodeCount::mInitializer},
+		{"QualifiedIdentifier", &Bond::ParseNodeCount::mQualifiedIdentifier},
+		{"CompoundStatement", &Bond::ParseNodeCount::mCompoundStatement},
+		{"IfStatement", &Bond::ParseNodeCount::mIfStatement},
+		{"SwitchStatement", &Bond::ParseNodeCount::mSwitchStatement},
+		{"SwitchSection", &Bond::ParseNodeCount::mSwitchSection},
+		{"SwitchLabel", &Bond::ParseNodeCount::mSwitchLabel},
+		{"WhileStatement", &Bond::ParseNodeCount::mWhileStatement},
+		{"ForStatement", &Bond::ParseNodeCount::mForStatement},
+		{"JumpStatement", &Bond::ParseNodeCount::mJumpStatement},
+		{"UsingDeclaration", &Bond::ParseNodeCount::mUsingDeclaration},
+		{"UsingDirective", &Bond::ParseNodeCount::mUsingDirective},
+		{"DeclarativeStatement", &Bond::ParseNodeCount::mDeclarativeStatement},
+		{"ExpressionStatement", &Bond::ParseNodeCount::mExpressionStatement},
+		{"ConditionalExpression", &Bond::ParseNodeCount::mConditionalExpression},
+		{"BinaryExpression", &Bond::ParseNodeCount::mBinaryExpression},
+		{"UnaryExpression", &Bond::ParseNodeCount::mUnaryExpression},
+		{"PostfixExpression", &Bond::ParseNodeCount::mPostfixExpression},
+		{"MemberExpression", &Bond::ParseNodeCount::mMemberExpression},
+		{"ArraySubscriptExpression", &Bond::ParseNodeCount::mArraySubscriptExpression},
+		{"FunctionCallExpression", &Bond::ParseNodeCount::mFunctionCallExpression},
+		{"CastExpression", &Bond::ParseNodeCount::mCastExpression},
+		{"PropertyofExpression", &Bond::ParseNodeCount::mPropertyofExpression},
+		{"ConstantLiteralExpression", &Bond::ParseNodeCount::mConstantLiteralExpression},
+		{"IdentifierExpression", &Bond::ParseNodeCount::mIdentifierExpression},
+		{"ThisExpression", &Bond::ParseNodeCount::mThisExpression},
+		{"EmptyExpression", &Bond::ParseNodeCount::mEmptyExpression},
+	};
 
-#undef ASSERT_COUNT
-
-	return true;
+	for (const CountField &field : FIELDS)
+	{
+		const int expectedCount = expected.*field.member;
+		const int actualCount = actual.*field.member;
+		Assert((expectedCount == -1) || (expectedCount == actualCount), assertFile, assertLine,
+			"Expected %s count to be %d, but was %d.", field.name, expectedCount, actualCount);
+	}
 }
 
 }

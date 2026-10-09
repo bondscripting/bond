@@ -9,8 +9,6 @@ DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 	expectedCount.mNamespaceDefinition = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -23,8 +21,6 @@ DEFINE_PARSER_TEST(Enums, "scripts/parser_Enums.bond")
 	expectedCount.mEnumerator = 9;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -39,8 +35,6 @@ DEFINE_PARSER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bo
 	expectedCount.mParameter = 5;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -55,8 +49,6 @@ DEFINE_PARSER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefinitions.bond
 	expectedCount.mParameter = 10;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -70,8 +62,6 @@ DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_Declarati
 	expectedCount.mNamedInitializer = 3;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -85,8 +75,6 @@ DEFINE_PARSER_TEST(Initializers, "scripts/parser_Initializers.bond")
 	expectedCount.mInitializer = 25;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -101,8 +89,6 @@ DEFINE_PARSER_TEST(Structs, "scripts/parser_Structs.bond")
 	expectedCount.mFunctionDefinition = 8;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -116,8 +102,6 @@ DEFINE_PARSER_TEST(IfStatements, "scripts/parser_IfStatements.bond")
 	expectedCount.mExpressionStatement = 11;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -133,8 +117,6 @@ DEFINE_PARSER_TEST(WhileStatements, "scripts/parser_WhileStatements.bond")
 	expectedCount.mBinaryExpression = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -151,8 +133,6 @@ DEFINE_PARSER_TEST(ForStatements, "scripts/parser_ForStatements.bond")
 	expectedCount.mBinaryExpression = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -167,8 +147,6 @@ DEFINE_PARSER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.bond")
 	expectedCount.mJumpStatement = 2;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -182,8 +160,6 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 	expectedCount.mUsingDeclaration = 6;
 	expectedCount.mUsingDirective = 7;
-
-	return true;
 }
 
 
@@ -195,8 +171,6 @@ DEFINE_PARSER_TEST(UsingStatements, "scripts/parser_UsingStatements.bond")
 	// expectedCount.mJumpStatement = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -219,8 +193,6 @@ DEFINE_PARSER_TEST(EnumErrors, "scripts/parser_EnumErrors.bond")
 	expectedCount.mEnumerator = 6;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -250,8 +222,6 @@ DEFINE_PARSER_TEST(StructErrors, "scripts/parser_StructErrors.bond")
 	expectedCount.mFunctionPrototype = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 
@@ -301,8 +271,6 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
 	expectedCount.mForStatement = 5;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-
-	return true;
 }
 
 

@@ -1,36 +1,27 @@
 #include "framework/asserts.h"
+#include "bond/io/memoryoutputstream.h"
 
 namespace TestFramework
 {
 
-bool AssertNoCompilerErrors(
-	Bond::OutputStream &logger,
+void AssertNoCompilerErrors(
 	const char *assertFile,
-	size_t assertLine,
+	int assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer)
 {
 	if (errorBuffer.HasErrors())
 	{
-		logger.Print("line %u in %s:\n", assertLine, assertFile);
-
-		for (size_t i = 0; i < errorBuffer.GetNumErrors(); ++i)
-		{
-			logger.Print("\t\t");
-			const Bond::CompilerError &error = errorBuffer.GetError(i);
-			error.Print(logger);
-			logger.Print("\n");
-		}
-		return false;
+		char buffer[768];
+		Bond::MemoryOutputStream stream(buffer, sizeof(buffer));
+		errorBuffer.Print(stream);
+		Assert(false, assertFile, assertLine, "Unexpected compiler errors:\n\t\t%s", buffer);
 	}
-
-	return true;
 }
 
 
-bool AssertCompilerErrors(
-	Bond::OutputStream &logger,
+void AssertCompilerErrors(
 	const char *assertFile,
-	size_t assertLine,
+	int assertLine,
 	const Bond::CompilerErrorBuffer &errorBuffer,
 	const ExpectedCompilerError *expectedErrors,
 	size_t numErrors)
@@ -43,21 +34,19 @@ bool AssertCompilerErrors(
 		const Bond::CompilerError &actual = errorBuffer.GetError(i);
 		const Bond::Token *context = actual.GetContext();
 		const Bond::StreamPos &pos = context->GetStartPos();
-		__ASSERT_FORMAT__(expected->errorType == actual.GetType(), logger, assertFile, assertLine,
+		Assert(expected->errorType == actual.GetType(), assertFile, assertLine,
 			"Expected type of error %d to be %s but was %s.", i,
 			Bond::CompilerError::GetErrorName(expected->errorType),
 			actual.GetErrorName());
-		__ASSERT_FORMAT__(expected->context == context->GetTokenType(), logger, assertFile, assertLine,
+		Assert(expected->context == context->GetTokenType(), assertFile, assertLine,
 			"Expected context of error %d to be %s but was %s.", i,
 			Bond::Token::GetTokenName(expected->context), context->GetTokenName());
-		__ASSERT_FORMAT__(expected->line == pos.line, logger, assertFile, assertLine,
+		Assert(expected->line == pos.line, assertFile, assertLine,
 			"Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line);
 	}
 
-	__ASSERT_FORMAT__(errorBuffer.GetNumErrors() == numErrors, logger, assertFile, assertLine,
+	Assert(errorBuffer.GetNumErrors() == numErrors, assertFile, assertLine,
 		"Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors());
-
-	return true;
 }
 
 }

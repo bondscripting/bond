@@ -101,8 +101,6 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
-
-	return true;
 }
 
 
@@ -251,8 +249,6 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
-
-	return true;
 }
 
 
@@ -282,8 +278,6 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
-
-	return true;
 }
 
 
@@ -297,8 +291,6 @@ DEFINE_LEXER_TEST(UnterminatedCharacter, "scripts/lexer_UnterminatedCharacter.bo
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
-
-	return true;
 }
 
 
@@ -312,8 +304,6 @@ DEFINE_LEXER_TEST(UnterminatedString, "scripts/lexer_UnterminatedString.bond")
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
-
-	return true;
 }
 
 
@@ -327,8 +317,6 @@ DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
-
-	return true;
 }
 
 
@@ -343,8 +331,6 @@ DEFINE_LEXER_TEST(EndOfStream1, "scripts/lexer_EndOfStream1.bond")
 	Bond::StreamPos pos = token->GetStartPos();
 	ASSERT_FORMAT((pos.line == 3) && (pos.column == 2),
 		"Expected EOF at line 3 column 2 but was at line %d column %d.", pos.line, pos.column);
-
-	return true;
 }
 
 
@@ -358,8 +344,6 @@ DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
 	Bond::StreamPos pos = token->GetStartPos();
 	ASSERT_FORMAT((pos.line == 1) && (pos.column == 2),
 		"Expected EOF at line 1 column 2 but was at line %d column %d.", pos.line, pos.column);
-
-	return true;
 }
 
 

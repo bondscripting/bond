@@ -5,19 +5,17 @@
 #include "bond/compiler/semanticanalyzer.h"
 
 #define DEFINE_SEMANTICANALYZER_TEST(testName, scriptName)                    \
-  bool __Validate ## testName ## __(                                          \
-    Bond::OutputStream &logger,                                               \
+  void __Validate ## testName ## __(                                          \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::SemanticAnalyzer &analyzer);                                        \
                                                                               \
-  bool __Test ## testName ## __(Bond::OutputStream &logger)                   \
+  void __Test ## testName ## __()                                            \
   {                                                                           \
-    return TestFramework::RunSemanticAnalyzerTest(                            \
-      logger, __FILE__, __LINE__, scriptName, &__Validate ## testName ## __); \
+    TestFramework::RunSemanticAnalyzerTest(                                   \
+      __FILE__, __LINE__, scriptName, &__Validate ## testName ## __);         \
   }                                                                           \
                                                                               \
-  bool __Validate ## testName ## __(                                          \
-    Bond::OutputStream &logger,                                               \
+  void __Validate ## testName ## __(                                          \
     Bond::CompilerErrorBuffer &errorBuffer,                                   \
     Bond::SemanticAnalyzer &analyzer)                                         \
 
@@ -25,13 +23,11 @@
 namespace TestFramework
 {
 
-typedef bool SemanticAnalyzerValidationFunction(
-	Bond::OutputStream &logger,
+typedef void SemanticAnalyzerValidationFunction(
 	Bond::CompilerErrorBuffer &errorBuffer,
 	Bond::SemanticAnalyzer &analyzer);
 
-bool RunSemanticAnalyzerTest(
-	Bond::OutputStream &logger,
+void RunSemanticAnalyzerTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,

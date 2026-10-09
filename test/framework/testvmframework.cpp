@@ -1,4 +1,5 @@
 #include "framework/testvmframework.h"
+#include "framework/asserts.h"
 #include "bond/api/libinclude.h"
 #include "bond/api/libruntime.h"
 #include "bond/compiler/compilererror.h"
@@ -18,16 +19,15 @@
 namespace TestFramework
 {
 
-bool RunVMTest(
-	Bond::OutputStream &logger,
+void RunVMTest(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
 	VMValidationFunction *validationFunction,
 	const Bond::NativeBindingCollection *nativeBinding)
 {
-	__ASSERT_FORMAT__(scriptName != nullptr, logger, assertFile, assertLine, "Script name is NULL.");
-	__ASSERT_FORMAT__(validationFunction != nullptr, logger, assertFile, assertLine, "Validation function is NULL.");
+	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
+	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::ValidateConfiguration();
 
@@ -38,7 +38,17 @@ bool RunVMTest(
 	Bond::DefaultAllocator codeGeneratorAllocator;
 	Bond::DefaultAllocator cboLoaderAllocator;
 	Bond::DefaultAllocator vmAllocator;
-	bool result = false;
+	AllocationLeakGuard<Bond::DefaultAllocator> lexerLeakGuard(lexerAllocator, "Lexer", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> parserLeakGuard(parserAllocator, "Parser", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> streamFactoryLeakGuard(
+		streamFactoryAllocator, "Stream factory", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> frontEndLeakGuard(
+		frontEndAllocator, "Front end", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> codeGeneratorLeakGuard(
+		codeGeneratorAllocator, "Code generator", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> cboLoaderLeakGuard(
+		cboLoaderAllocator, "CBO loader", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> vmLeakGuard(vmAllocator, "VM", assertFile, assertLine);
 
 	try
 	{
@@ -76,37 +86,19 @@ bool RunVMTest(
 				Bond::StdioStreamFactory vmStreamFactory(vmAllocator);
 				Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, nullptr, nullptr, &vmStreamFactory);
 				codeSegmentHandle.get()->CallStaticInitializers(vm);
-				result = validationFunction(logger, vm);
+				validationFunction(vm);
 			}
 		}
 
 		if (errorBuffer.HasErrors())
 		{
-			logger.Print("line %u in %s: Failed to compile '%s'.", assertLine, assertFile, scriptName);
-			result = false;
+			throw AssertionFailure(assertFile, assertLine, "Failed to compile '%s'.", scriptName);
 		}
 	}
 	catch (const Bond::Exception &e)
 	{
-		logger.Print("line %u in %s: %s\n", assertLine, assertFile, e.GetMessage());
+		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
 	}
-
-	__ASSERT_FORMAT__(lexerAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Lexer leaked %d chunks of memory.", lexerAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(parserAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Parser leaked %d chunks of memory.", parserAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(streamFactoryAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Stream factory leaked %d chunks of memory.", streamFactoryAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(frontEndAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Front end leaked %d chunks of memory.", frontEndAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(codeGeneratorAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"Code generator leaked %d chunks of memory.", codeGeneratorAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(cboLoaderAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"CBO loader leaked %d chunks of memory.", cboLoaderAllocator.GetNumAllocations());
-	__ASSERT_FORMAT__(vmAllocator.GetNumAllocations() == 0, logger, assertFile, assertLine,
-		"VM leaked %d chunks of memory.", vmAllocator.GetNumAllocations());
-
-	return result;
 }
 
 }

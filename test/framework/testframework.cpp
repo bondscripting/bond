@@ -1,9 +1,47 @@
 #include "framework/testframework.h"
-#include "bond/io/memoryoutputstream.h"
+#include "bond/systems/exception.h"
 #include <cstdio>
 
 namespace TestFramework
 {
+
+void AssertionFailure::Format(const char *file, int line, const char *format, va_list args)
+{
+	const int prefixLength = snprintf(mMessage, MESSAGE_BUFFER_LENGTH, "line %d in %s: ", line, file);
+	if ((prefixLength >= 0) && (size_t(prefixLength) < MESSAGE_BUFFER_LENGTH))
+	{
+		vsnprintf(mMessage + prefixLength, MESSAGE_BUFFER_LENGTH - size_t(prefixLength), format, args);
+	}
+}
+
+
+AssertionFailure::AssertionFailure(const char *file, int line, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	Format(file, line, format, args);
+	va_end(args);
+}
+
+
+AssertionFailure::AssertionFailure(const char *file, int line, const char *format, va_list args)
+{
+	Format(file, line, format, args);
+}
+
+
+void Assert(bool condition, const char *file, int line, const char *format, ...)
+{
+	if (!condition)
+	{
+		va_list args;
+		va_start(args, format);
+		AssertionFailure failure(file, line, format, args);
+		va_end(args);
+		throw failure;
+	}
+}
+
 
 bool RunTests(const TestGroup &testGroup)
 {
@@ -15,25 +53,41 @@ bool RunTests(const TestGroup &testGroup)
 
 	for (unsigned i = 0; i < numTests; ++i)
 	{
-		const Bond::Stream::pos_t BUFFER_SIZE = 1024;
-		char buffer[BUFFER_SIZE];
-		Bond::MemoryOutputStream logger(buffer, BUFFER_SIZE);
 		const TestItem &item = testGroup.items[i];
-		bool result = item.testFunction(logger);
-		const char *resultStr = "";
+		const char *resultStr = "PASS";
+		char message[1024] = "";
 
-		if (result)
+		try
 		{
+			item.testFunction();
 			++numPassed;
-			resultStr = "PASS";
 		}
-		else
+		catch (const AssertionFailure &e)
 		{
 			++numFailed;
 			resultStr = "FAIL";
+			snprintf(message, sizeof(message), "%s", e.what());
+		}
+		catch (const Bond::Exception &e)
+		{
+			++numFailed;
+			resultStr = "FAIL";
+			snprintf(message, sizeof(message), "%s", e.GetMessage());
+		}
+		catch (const std::exception &e)
+		{
+			++numFailed;
+			resultStr = "FAIL";
+			snprintf(message, sizeof(message), "%s", e.what());
+		}
+		catch (...)
+		{
+			++numFailed;
+			resultStr = "FAIL";
+			snprintf(message, sizeof(message), "Unknown exception.");
 		}
 
-		printf("\t%u/%u/%u %s: [%s] %s\n", numFailed, numPassed, numTests, item.testName, resultStr, buffer);
+		printf("\t%u/%u/%u %s: [%s] %s\n", numFailed, numPassed, numTests, item.testName, resultStr, message);
 	}
 
 	printf("Results for %s: %u/%u/%u\n", testGroup.groupName, numFailed, numPassed, numTests);
