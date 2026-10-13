@@ -1,7 +1,11 @@
 #ifndef BOND_PRIVATE_STLALLOCATOR_H
 #define BOND_PRIVATE_STLALLOCATOR_H
 
-#include "bond/stl/utility.h"
+#include "bond/systems/allocator.h"
+
+#include <cstddef>
+#include <new>
+#include <type_traits>
 
 namespace Bond
 {
@@ -12,7 +16,7 @@ class StlAllocator
 public:
 	using value_type = T;
 
-	StlAllocator(Allocator *allocator) noexcept:
+	explicit StlAllocator(Allocator *allocator) noexcept:
 		mAllocator(allocator)
 	{}
 
@@ -20,19 +24,57 @@ public:
 		mAllocator(other.GetAllocator())
 	{}
 
-	value_type *allocate(size_t numElements)
+	value_type *allocate(std::size_t numElements)
 	{
-		return mAllocator->Alloc<T>(numElements);
+		if (numElements > max_size())
+		{
+			throw std::bad_array_new_length();
+		}
+
+		value_type *p = nullptr;
+
+		if constexpr (UsesAlignedAllocation())
+		{
+			p = mAllocator->AllocAligned<T>(numElements, alignof(T));
+		}
+		else
+		{
+			p = mAllocator->Alloc<T>(numElements);
+		}
+
+		if (p == nullptr)
+		{
+			throw std::bad_alloc();
+		}
+
+		return p;
 	}
 
-	void deallocate(value_type *p, size_t) noexcept
+	void deallocate(value_type *p, std::size_t) noexcept
 	{
-		mAllocator->Free(p);
+		if constexpr (UsesAlignedAllocation())
+		{
+			mAllocator->FreeAligned(p);
+		}
+		else
+		{
+			mAllocator->Free(p);
+		}
+	}
+
+	std::size_t max_size() const noexcept
+	{
+		return static_cast<std::size_t>(-1) / sizeof(T);
 	}
 
 	Allocator *GetAllocator() const { return mAllocator; }
 
 private:
+	static constexpr bool UsesAlignedAllocation() noexcept
+	{
+		return alignof(T) > alignof(std::max_align_t);
+	}
+
 	Allocator *mAllocator;
 };
 
