@@ -55,7 +55,7 @@ bool RunTests(const TestGroup &testGroup)
 	{
 		const TestItem &item = testGroup.items[i];
 		const char *resultStr = "PASS";
-		char message[1024] = "";
+		char message[Bond::Exception::MESSAGE_BUFFER_LENGTH] = "";
 
 		try
 		{

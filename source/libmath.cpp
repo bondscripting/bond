@@ -1,533 +1,1216 @@
 #include "bond/api/libmath.h"
 #include "bond/vm/vm.h"
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <limits>
 
 namespace Bond
 {
 
-void Sin(Bond::StackFrame &frame)
+void SinD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = sin(x);
+	const auto y = std::sin(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Sinf(Bond::StackFrame &frame)
+void SinF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = sinf(x);
+	const auto y = std::sin(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Cos(Bond::StackFrame &frame)
+void CosD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = cos(x);
+	const auto y = std::cos(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Cosf(Bond::StackFrame &frame)
+void CosF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = cosf(x);
+	const auto y = std::cos(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Tan(Bond::StackFrame &frame)
+void TanD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = tan(x);
+	const auto y = std::tan(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Tanf(Bond::StackFrame &frame)
+void TanF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = tanf(x);
+	const auto y = std::tan(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Asin(Bond::StackFrame &frame)
+void AsinD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = asin(x);
+	const auto y = std::asin(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Asinf(Bond::StackFrame &frame)
+void AsinF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = asinf(x);
+	const auto y = std::asin(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Acos(Bond::StackFrame &frame)
+void AcosD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = acos(x);
+	const auto y = std::acos(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Acosf(Bond::StackFrame &frame)
+void AcosF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = acosf(x);
+	const auto y = std::acos(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Atan(Bond::StackFrame &frame)
+void AtanD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = atan(x);
+	const auto y = std::atan(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Atanf(Bond::StackFrame &frame)
+void AtanF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = atanf(x);
+	const auto y = std::atan(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Atan2(Bond::StackFrame &frame)
+void Atan2D(Bond::StackFrame &frame)
 {
 	const auto y = frame.GetArg<double>(0);
 	const auto x = frame.GetArg<double>(1);
-	const auto result = atan2(y, x);
+	const auto result = std::atan2(y, x);
 	frame.SetReturnValue(result);
 }
 
 
-void Atan2f(Bond::StackFrame &frame)
+void Atan2F(Bond::StackFrame &frame)
 {
 	const auto y = frame.GetArg<float>(0);
 	const auto x = frame.GetArg<float>(1);
-	const auto result = atan2f(y, x);
+	const auto result = std::atan2(y, x);
 	frame.SetReturnValue(result);
 }
 
 
-void Sinh(Bond::StackFrame &frame)
+void SinhD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = sinh(x);
+	const auto y = std::sinh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Sinhf(Bond::StackFrame &frame)
+void SinhF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = sinhf(x);
+	const auto y = std::sinh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Cosh(Bond::StackFrame &frame)
+void CoshD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = cosh(x);
+	const auto y = std::cosh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Coshf(Bond::StackFrame &frame)
+void CoshF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = coshf(x);
+	const auto y = std::cosh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Tanh(Bond::StackFrame &frame)
+void TanhD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = tanh(x);
+	const auto y = std::tanh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Tanhf(Bond::StackFrame &frame)
+void TanhF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = tanhf(x);
+	const auto y = std::tanh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Asinh(Bond::StackFrame &frame)
+void AsinhD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = asinh(x);
+	const auto y = std::asinh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Asinhf(Bond::StackFrame &frame)
+void AsinhF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = asinhf(x);
+	const auto y = std::asinh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Acosh(Bond::StackFrame &frame)
+void AcoshD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = acosh(x);
+	const auto y = std::acosh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Acoshf(Bond::StackFrame &frame)
+void AcoshF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = acoshf(x);
+	const auto y = std::acosh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Atanh(Bond::StackFrame &frame)
+void AtanhD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = atanh(x);
+	const auto y = std::atanh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Atanhf(Bond::StackFrame &frame)
+void AtanhF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = atanhf(x);
+	const auto y = std::atanh(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Exp(Bond::StackFrame &frame)
+void ExpD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = exp(x);
+	const auto y = std::exp(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Expf(Bond::StackFrame &frame)
+void ExpF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = expf(x);
+	const auto y = std::exp(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Exp2(Bond::StackFrame &frame)
+void Exp2D(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = exp2(x);
+	const auto y = std::exp2(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Exp2f(Bond::StackFrame &frame)
+void Exp2F(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = exp2f(x);
+	const auto y = std::exp2(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Log(Bond::StackFrame &frame)
+void LogD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = log(x);
+	const auto y = std::log(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Logf(Bond::StackFrame &frame)
+void LogF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = logf(x);
+	const auto y = std::log(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Log2(Bond::StackFrame &frame)
+void Log2D(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = log2(x);
+	const auto y = std::log2(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Log2f(Bond::StackFrame &frame)
+void Log2F(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = log2f(x);
+	const auto y = std::log2(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Log10(Bond::StackFrame &frame)
+void Log10D(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = log10(x);
+	const auto y = std::log10(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Log10f(Bond::StackFrame &frame)
+void Log10F(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = log10f(x);
+	const auto y = std::log10(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Pow(Bond::StackFrame &frame)
+void PowD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
 	const auto y = frame.GetArg<double>(1);
-	const auto result = pow(x, y);
+	const auto result = std::pow(x, y);
 	frame.SetReturnValue(result);
 }
 
 
-void Powf(Bond::StackFrame &frame)
+void PowF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const auto y = frame.GetArg<float>(1);
-	const auto result = powf(x, y);
+	const auto result = std::pow(x, y);
 	frame.SetReturnValue(result);
 }
 
 
-void Sqrt(Bond::StackFrame &frame)
+void SqrtD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = sqrt(x);
+	const auto y = std::sqrt(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Sqrtf(Bond::StackFrame &frame)
+void SqrtF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = sqrtf(x);
+	const auto y = std::sqrt(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Cbrt(Bond::StackFrame &frame)
+void CbrtD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = cbrt(x);
+	const auto y = std::cbrt(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Cbrtf(Bond::StackFrame &frame)
+void CbrtF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = cbrtf(x);
+	const auto y = std::cbrt(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Hypot(Bond::StackFrame &frame)
+void HypotD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
 	const auto y = frame.GetArg<double>(1);
-	const auto h = hypot(x, y);
+	const auto h = std::hypot(x, y);
 	frame.SetReturnValue(h);
 }
 
 
-void Hypotf(Bond::StackFrame &frame)
+void HypotF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const auto y = frame.GetArg<float>(1);
-	const auto h = hypotf(x, y);
+	const auto h = std::hypot(x, y);
 	frame.SetReturnValue(h);
 }
 
 
-void Ceil(Bond::StackFrame &frame)
+void CeilD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = ceil(x);
+	const auto y = std::ceil(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Ceilf(Bond::StackFrame &frame)
+void CeilF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = ceilf(x);
+	const auto y = std::ceil(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Floor(Bond::StackFrame &frame)
+void FloorD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = floor(x);
+	const auto y = std::floor(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Floorf(Bond::StackFrame &frame)
+void FloorF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = floorf(x);
+	const auto y = std::floor(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Trunc(Bond::StackFrame &frame)
+void TruncD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = trunc(x);
+	const auto y = std::trunc(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Truncf(Bond::StackFrame &frame)
+void TruncF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = truncf(x);
+	const auto y = std::trunc(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Fabs(Bond::StackFrame &frame)
+void AbsC(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int8_t>(0);
+	const auto y = std::abs(x);
+	frame.SetReturnValue(y);
+}
+
+
+void AbsS(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int16_t>(0);
+	const auto y = static_cast<int16_t>(std::abs(x));
+	frame.SetReturnValue(y);
+}
+
+
+void AbsI(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int32_t>(0);
+	const auto y = std::abs(x);
+	frame.SetReturnValue(y);
+}
+
+
+void AbsL(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int64_t>(0);
+	const auto y = std::abs(x);
+	frame.SetReturnValue(y);
+}
+
+
+void AbsD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
-	const auto y = fabs(x);
+	const auto y = std::abs(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Fabsf(Bond::StackFrame &frame)
+void AbsF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
-	const auto y = fabsf(x);
+	const auto y = std::abs(x);
 	frame.SetReturnValue(y);
 }
 
 
-void Ldexp(Bond::StackFrame &frame)
+void LdexpD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
 	const int n = int(frame.GetArg<int32_t>(1));
-	const auto result = ldexp(x, n);
+	const auto result = std::ldexp(x, n);
 	frame.SetReturnValue(result);
 }
 
 
-void Ldexpf(Bond::StackFrame &frame)
+void LdexpF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const int n = int(frame.GetArg<int32_t>(1));
-	const auto result = ldexpf(x, n);
+	const auto result = std::ldexp(x, n);
 	frame.SetReturnValue(result);
 }
 
 
-void Frexp(Bond::StackFrame &frame)
+void FrexpD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
 	int exp;
-	const auto result = frexp(x, &exp);
+	const auto result = std::frexp(x, &exp);
 	frame.SetReturnValue(result);
 	*frame.GetArg<int32_t *>(1) = int32_t(exp);
 }
 
 
-void Frexpf(Bond::StackFrame &frame)
+void FrexpF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	int exp;
-	const auto result = frexpf(x, &exp);
+	const auto result = std::frexp(x, &exp);
 	frame.SetReturnValue(result);
 	*frame.GetArg<int32_t *>(1) = int32_t(exp);
 }
 
 
-void Modf(Bond::StackFrame &frame)
+void ModfD(Bond::StackFrame &frame)
 {
-	const double x = double(frame.GetArg<double>(0));
+	const auto x = frame.GetArg<double>(0);
 	double ip;
-	const double fp = modf(x, &ip);
-	frame.SetReturnValue(double(fp));
-	*frame.GetArg<double *>(1) = double(ip);
+	const auto fp = std::modf(x, &ip);
+	frame.SetReturnValue(fp);
+	*frame.GetArg<double *>(1) = ip;
 }
 
 
-void Modff(Bond::StackFrame &frame)
+void ModfF(Bond::StackFrame &frame)
 {
-	const double x = double(frame.GetArg<float>(0));
-	double ip;
-	const double fp = modf(x, &ip);
-	frame.SetReturnValue(float(fp));
-	*frame.GetArg<float *>(1) = float(ip);
+	const auto x = frame.GetArg<float>(0);
+	float ip;
+	const auto fp = std::modf(x, &ip);
+	frame.SetReturnValue(fp);
+	*frame.GetArg<float *>(1) = ip;
 }
 
 
-void Fmod(Bond::StackFrame &frame)
-{
-	const double x = double(frame.GetArg<double>(0));
-	const double y = double(frame.GetArg<double>(1));
-	const double result = fmod(x, y);
-	frame.SetReturnValue(double(result));
-}
-
-
-void Fmodf(Bond::StackFrame &frame)
-{
-	const double x = double(frame.GetArg<float>(0));
-	const double y = double(frame.GetArg<float>(1));
-	const double result = fmod(x, y);
-	frame.SetReturnValue(float(result));
-}
-
-void CopySign(Bond::StackFrame &frame)
+void FmodD(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<double>(0);
 	const auto y = frame.GetArg<double>(1);
-	const auto result = copysign(x, y);
+	const auto result = std::fmod(x, y);
 	frame.SetReturnValue(result);
 }
 
 
-void CopySignf(Bond::StackFrame &frame)
+void FmodF(Bond::StackFrame &frame)
 {
 	const auto x = frame.GetArg<float>(0);
 	const auto y = frame.GetArg<float>(1);
-	const auto result = copysignf(x, y);
+	const auto result = std::fmod(x, y);
 	frame.SetReturnValue(result);
 }
 
-void NaN(Bond::StackFrame &frame)
+void CopySignD(Bond::StackFrame &frame)
 {
-	const auto result = nan("");
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = std::copysign(x, y);
 	frame.SetReturnValue(result);
 }
 
-void NaNf(Bond::StackFrame &frame)
+
+void CopySignF(Bond::StackFrame &frame)
 {
-	const auto result = nanf("");
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = std::copysign(x, y);
+	frame.SetReturnValue(result);
+}
+
+void NaND(Bond::StackFrame &frame)
+{
+	const auto result = std::nan("");
+	frame.SetReturnValue(result);
+}
+
+
+void NaNF(Bond::StackFrame &frame)
+{
+	const auto result = std::nanf("");
+	frame.SetReturnValue(result);
+}
+
+
+void InfD(Bond::StackFrame &frame)
+{
+	const auto result = std::numeric_limits<double>::infinity();
+	frame.SetReturnValue(result);
+}
+
+
+void InfF(Bond::StackFrame &frame)
+{
+	const auto result = std::numeric_limits<float>::infinity();
+	frame.SetReturnValue(result);
+}
+
+
+void IsNaND(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const bool result = std::isnan(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IsNaNF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const bool result = std::isnan(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IsInfD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const bool result = std::isinf(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IsInfF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const bool result = std::isinf(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IsFiniteD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const bool result = std::isfinite(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IsFiniteF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const bool result = std::isfinite(x);
+	frame.SetReturnValue(result);
+}
+
+
+void SignBitD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const bool result = std::signbit(x);
+	frame.SetReturnValue(result);
+}
+
+
+void SignBitF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const bool result = std::signbit(x);
+	frame.SetReturnValue(result);
+}
+
+
+void RoundD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::round(x);
+	frame.SetReturnValue(y);
+}
+
+
+void RoundF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::round(x);
+	frame.SetReturnValue(y);
+}
+
+
+void RintD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::rint(x);
+	frame.SetReturnValue(y);
+}
+
+
+void RintF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::rint(x);
+	frame.SetReturnValue(y);
+}
+
+
+void NearbyintD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::nearbyint(x);
+	frame.SetReturnValue(y);
+}
+
+
+void NearbyintF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::nearbyint(x);
+	frame.SetReturnValue(y);
+}
+
+
+void RemainderD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = std::remainder(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void RemainderF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = std::remainder(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void LroundD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto result = int64_t(std::llround(x));
+	frame.SetReturnValue(result);
+}
+
+
+void LroundF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto result = int64_t(std::llround(x));
+	frame.SetReturnValue(result);
+}
+
+
+void Log1pD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::log1p(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Log1pF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::log1p(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Expm1D(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::expm1(x);
+	frame.SetReturnValue(y);
+}
+
+
+void Expm1F(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::expm1(x);
+	frame.SetReturnValue(y);
+}
+
+
+void ErfD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::erf(x);
+	frame.SetReturnValue(y);
+}
+
+
+void ErfF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::erf(x);
+	frame.SetReturnValue(y);
+}
+
+
+void ErfcD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::erfc(x);
+	frame.SetReturnValue(y);
+}
+
+
+void ErfcF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::erfc(x);
+	frame.SetReturnValue(y);
+}
+
+
+void TgammaD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::tgamma(x);
+	frame.SetReturnValue(y);
+}
+
+
+void TgammaF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::tgamma(x);
+	frame.SetReturnValue(y);
+}
+
+
+void LgammaD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::lgamma(x);
+	frame.SetReturnValue(y);
+}
+
+
+void LgammaF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::lgamma(x);
+	frame.SetReturnValue(y);
+}
+
+
+void FmaD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto z = frame.GetArg<double>(2);
+	const auto result = std::fma(x, y, z);
+	frame.SetReturnValue(result);
+}
+
+
+void FmaF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto z = frame.GetArg<float>(2);
+	const auto result = std::fma(x, y, z);
+	frame.SetReturnValue(result);
+}
+
+
+void NextafterD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = std::nextafter(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void NextafterF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = std::nextafter(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void ScalbnD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const int n = int(frame.GetArg<int32_t>(1));
+	const auto result = std::scalbn(x, n);
+	frame.SetReturnValue(result);
+}
+
+
+void ScalbnF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const int n = int(frame.GetArg<int32_t>(1));
+	const auto result = std::scalbn(x, n);
+	frame.SetReturnValue(result);
+}
+
+
+void IlogbD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const int32_t result = std::ilogb(x);
+	frame.SetReturnValue(result);
+}
+
+
+void IlogbF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const int32_t result = std::ilogb(x);
+	frame.SetReturnValue(result);
+}
+
+
+void LogbD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = std::logb(x);
+	frame.SetReturnValue(y);
+}
+
+
+void LogbF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = std::logb(x);
+	frame.SetReturnValue(y);
+}
+
+
+void RemquoD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	int quo;
+	const auto result = std::remquo(x, y, &quo);
+	frame.SetReturnValue(result);
+	*frame.GetArg<int32_t *>(2) = int32_t(quo);
+}
+
+
+void RemquoF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	int quo;
+	const auto result = std::remquo(x, y, &quo);
+	frame.SetReturnValue(result);
+	*frame.GetArg<int32_t *>(2) = int32_t(quo);
+}
+
+
+void MinC(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int8_t>(0);
+	const auto y = frame.GetArg<int8_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinUC(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint8_t>(0);
+	const auto y = frame.GetArg<uint8_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinS(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int16_t>(0);
+	const auto y = frame.GetArg<int16_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinUS(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint16_t>(0);
+	const auto y = frame.GetArg<uint16_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinI(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int32_t>(0);
+	const auto y = frame.GetArg<int32_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinUI(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint32_t>(0);
+	const auto y = frame.GetArg<uint32_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinL(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int64_t>(0);
+	const auto y = frame.GetArg<int64_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinUL(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint64_t>(0);
+	const auto y = frame.GetArg<uint64_t>(1);
+	const auto result = std::min(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = std::fmin(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MinF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = std::fmin(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxC(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int8_t>(0);
+	const auto y = frame.GetArg<int8_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxUC(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint8_t>(0);
+	const auto y = frame.GetArg<uint8_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxS(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int16_t>(0);
+	const auto y = frame.GetArg<int16_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxUS(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint16_t>(0);
+	const auto y = frame.GetArg<uint16_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxI(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int32_t>(0);
+	const auto y = frame.GetArg<int32_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxUI(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint32_t>(0);
+	const auto y = frame.GetArg<uint32_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxL(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<int64_t>(0);
+	const auto y = frame.GetArg<int64_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxUL(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<uint64_t>(0);
+	const auto y = frame.GetArg<uint64_t>(1);
+	const auto result = std::max(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxD(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<double>(0);
+	const auto y = frame.GetArg<double>(1);
+	const auto result = std::fmax(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void MaxF(Bond::StackFrame &frame)
+{
+	const auto x = frame.GetArg<float>(0);
+	const auto y = frame.GetArg<float>(1);
+	const auto result = std::fmax(x, y);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampC(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<int8_t>(0);
+	const auto low = frame.GetArg<int8_t>(1);
+	const auto high = frame.GetArg<int8_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampUC(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<uint8_t>(0);
+	const auto low = frame.GetArg<uint8_t>(1);
+	const auto high = frame.GetArg<uint8_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampS(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<int16_t>(0);
+	const auto low = frame.GetArg<int16_t>(1);
+	const auto high = frame.GetArg<int16_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampUS(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<uint16_t>(0);
+	const auto low = frame.GetArg<uint16_t>(1);
+	const auto high = frame.GetArg<uint16_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampI(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<int32_t>(0);
+	const auto low = frame.GetArg<int32_t>(1);
+	const auto high = frame.GetArg<int32_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampUI(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<uint32_t>(0);
+	const auto low = frame.GetArg<uint32_t>(1);
+	const auto high = frame.GetArg<uint32_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampL(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<int64_t>(0);
+	const auto low = frame.GetArg<int64_t>(1);
+	const auto high = frame.GetArg<int64_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampUL(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<uint64_t>(0);
+	const auto low = frame.GetArg<uint64_t>(1);
+	const auto high = frame.GetArg<uint64_t>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampD(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<double>(0);
+	const auto low = frame.GetArg<double>(1);
+	const auto high = frame.GetArg<double>(2);
+	const auto result = std::clamp(value, low, high);
+	frame.SetReturnValue(result);
+}
+
+
+void ClampF(Bond::StackFrame &frame)
+{
+	const auto value = frame.GetArg<float>(0);
+	const auto low = frame.GetArg<float>(1);
+	const auto high = frame.GetArg<float>(2);
+	const auto result = std::clamp(value, low, high);
 	frame.SetReturnValue(result);
 }
 

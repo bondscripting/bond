@@ -1,6 +1,8 @@
 #include "framework/testvmframework.h"
 #include <cctype>
+#include <cmath>
 #include <cstring>
+#include <limits>
 
 
 DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")
@@ -19,31 +21,85 @@ DEFINE_VM_TEST(Math, "scripts/sanalyzer_IncludeLibraries.bond")
 	const float THIRD_PI_F = float(PI / 3.0);
 	const float SIXTH_PI_F = float(PI / 6.0);
 
-	VALIDATE_FUNCTION_CALL(double, "Bond.Sin", 0.0, 0.0);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Sin", 1.0, HALF_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Sin", 0.5, SIXTH_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Sin", -1.0, -HALF_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Sin", -0.5, TWO_PI - SIXTH_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.SinD", 0.0, 0.0);
+	VALIDATE_FUNCTION_CALL(double, "Bond.SinD", 1.0, HALF_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.SinD", 0.5, SIXTH_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.SinD", -1.0, -HALF_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.SinD", -0.5, TWO_PI - SIXTH_PI);
 
-	VALIDATE_FUNCTION_CALL(float, "Bond.Sinf", 0.0f, 0.0f);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Sinf", 1.0f, HALF_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Sinf", 0.5f, SIXTH_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Sinf", -1.0f, -HALF_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Sinf", -0.5f, TWO_PI_F - SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SinF", 0.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SinF", 1.0f, HALF_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SinF", 0.5f, SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SinF", -1.0f, -HALF_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SinF", -0.5f, TWO_PI_F - SIXTH_PI_F);
 
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", 1.0, 0.0);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", 0.0, HALF_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", 0.5, THIRD_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", 0.0, -HALF_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", 0.5, TWO_PI - THIRD_PI);
-	VALIDATE_FUNCTION_CALL(double, "Bond.Cos", -0.5, HALF_PI + SIXTH_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", 1.0, 0.0);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", 0.0, HALF_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", 0.5, THIRD_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", 0.0, -HALF_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", 0.5, TWO_PI - THIRD_PI);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CosD", -0.5, HALF_PI + SIXTH_PI);
 
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", 1.0f, 0.0f);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", 0.0f, HALF_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", 0.5f, THIRD_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", 0.0f, -HALF_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", 0.5f, TWO_PI_F - THIRD_PI_F);
-	VALIDATE_FUNCTION_CALL(float, "Bond.Cosf", -0.5f, HALF_PI_F + SIXTH_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", 1.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", 0.0f, HALF_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", 0.5f, THIRD_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", 0.0f, -HALF_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", 0.5f, TWO_PI_F - THIRD_PI_F);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CosF", -0.5f, HALF_PI_F + SIXTH_PI_F);
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.CoshD", 1.0, 0.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CoshF", 1.0f, 0.0f);
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.SqrtD", 4.0, 16.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.SqrtF", 4.0f, 16.0f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CbrtD", -3.0, -27.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CbrtF", -3.0f, -27.0f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.HypotD", 5.0, 3.0, 4.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.HypotF", 5.0f, 3.0f, 4.0f);
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.CeilD", 4.0, PI);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CeilF", 4.0f, float(PI));
+	VALIDATE_FUNCTION_CALL(double, "Bond.FloorD", -2.0, -1.5);
+	VALIDATE_FUNCTION_CALL(float, "Bond.FloorF", -2.0f, -1.5f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.TruncD", -1.0, -1.5);
+	VALIDATE_FUNCTION_CALL(float, "Bond.TruncF", -1.0f, -1.5f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.RoundD", 3.0, 2.5);
+	VALIDATE_FUNCTION_CALL(float, "Bond.RoundF", -3.0f, -2.5f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.RintD", 2.0, 2.5);
+	VALIDATE_FUNCTION_CALL(float, "Bond.NearbyintF", 4.0f, 3.5f);
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.AbsD", 2.5, -2.5);
+	VALIDATE_FUNCTION_CALL(float, "Bond.AbsF", 2.5f, -2.5f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.AbsS", 7, int16_t(-7));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.AbsI", 7, int32_t(-7));
+	VALIDATE_FUNCTION_CALL(int64_t, "Bond.AbsL", 7, int64_t(-7));
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.LdexpD", 12.0, 1.5, int32_t(3));
+	VALIDATE_FUNCTION_CALL(float, "Bond.LdexpF", 12.0f, 1.5f, int32_t(3));
+	VALIDATE_FUNCTION_CALL(double, "Bond.FmodD", 1.5, 7.5, 2.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.FmodF", 1.5f, 7.5f, 2.0f);
+	VALIDATE_FUNCTION_CALL(double, "Bond.CopySignD", -3.0, 3.0, -0.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.CopySignF", 3.0f, -3.0f, 1.0f);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsNaND", int32_t(1), std::nan(""));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsNaND", int32_t(0), 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsInfF", int32_t(1), std::numeric_limits<float>::infinity());
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsFiniteD", int32_t(0), std::numeric_limits<double>::infinity());
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.SignBitD", int32_t(1), -0.0);
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.MinD", 1.0, 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.MaxF", 2.0f, 1.0f, 2.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.MinI", -3, -3, 5);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.MaxI", 5, -3, 5);
+	VALIDATE_FUNCTION_CALL(int64_t, "Bond.MinL", -3, int64_t(-3), int64_t(5));
+	VALIDATE_FUNCTION_CALL(uint64_t, "Bond.MaxUL", uint64_t(5), uint64_t(3), uint64_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.MinUC", 3, uint8_t(3), uint8_t(200));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.MaxUS", 200, uint16_t(3), uint16_t(200));
+
+	VALIDATE_FUNCTION_CALL(double, "Bond.ClampD", 1.0, 5.0, 0.0, 1.0);
+	VALIDATE_FUNCTION_CALL(float, "Bond.ClampF", 0.5f, 0.5f, 0.0f, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ClampI", 0, -5, 0, 10);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ClampS", 10, int16_t(15), int16_t(0), int16_t(10));
 }
 
 

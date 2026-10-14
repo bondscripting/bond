@@ -15,296 +15,702 @@ namespace Bond
 /// @{
 
 /// \brief The value of pi as a double.
-const double PI = 3.14159265358979323846;
+const double PI_D = 3.14159265358979323846;
 
 /// \brief The value of pi as a float.
-const float PI_F = cast<float>(PI);
+const float PI_F = cast<float>(PI_D);
 
 /// \brief The value of pi/2 as a double.
-const double HALF_PI = PI / 2.0;
+const double HALF_PI_D = PI_D / 2.0;
 
 /// \brief The value of pi/2 as a float.
-const float HALF_PI_F = cast<float>(HALF_PI);
+const float HALF_PI_F = cast<float>(HALF_PI_D);
 
 /// \brief The value of 2pi as a double.
-const double TWO_PI = PI * 2.0;
+const double TWO_PI_D = PI_D * 2.0;
 
 /// \brief The value of 2pi as a float.
-const float TWO_PI_F = cast<float>(TWO_PI);
+const float TWO_PI_F = cast<float>(TWO_PI_D);
+
+/// \brief The value of e as a double.
+const double E_D = 2.71828182845904523536;
+
+/// \brief The value of e as a float.
+const float E_F = cast<float>(E_D);
+
+/// \brief The natural logarithm of 2 as a double.
+const double LN2_D = 0.69314718055994530942;
+
+/// \brief The natural logarithm of 2 as a float.
+const float LN2_F = cast<float>(LN2_D);
+
+/// \brief The natural logarithm of 10 as a double.
+const double LN10_D = 2.30258509299404568402;
+
+/// \brief The natural logarithm of 10 as a float.
+const float LN10_F = cast<float>(LN10_D);
+
+/// \brief The base-2 logarithm of e as a double.
+const double LOG2E_D = 1.44269504088896340736;
+
+/// \brief The base-2 logarithm of e as a float.
+const float LOG2E_F = cast<float>(LOG2E_D);
+
+/// \brief The base-10 logarithm of e as a double.
+const double LOG10E_D = 0.43429448190325182765;
+
+/// \brief The base-10 logarithm of e as a float.
+const float LOG10E_F = cast<float>(LOG10E_D);
+
+/// \brief The square root of 2 as a double.
+const double SQRT2_D = 1.41421356237309504880;
+
+/// \brief The square root of 2 as a float.
+const float SQRT2_F = cast<float>(SQRT2_D);
+
+/// \brief The square root of 1/2 as a double.
+const double SQRT1_2_D = 0.70710678118654752440;
+
+/// \brief The square root of 1/2 as a float.
+const float SQRT1_2_F = cast<float>(SQRT1_2_D);
 
 /// \brief Returns the sine of an angle in radians.
 /// \param x An angle expressed in radians.
-double Sin(double x);
+double SinD(double x);
 
 /// \brief Returns the sine of an angle in radians.
 /// \param x An angle expressed in radians.
-float Sinf(float x);
+float SinF(float x);
 
 /// \brief Returns the cosine of an angle in radians.
 /// \param x An angle expressed in radians.
-double Cos(double x);
+double CosD(double x);
 
 /// \brief Returns the cosine of an angle in radians.
 /// \param x An angle expressed in radians.
-float Cosf(float x);
+float CosF(float x);
 
 /// \brief Returns the tangent of an angle in radians.
 /// \param x An angle expressed in radians.
-double Tan(double x);
+double TanD(double x);
 
 /// \brief Returns the tangent of an angle in radians.
 /// \param x An angle expressed in radians.
-float Tanf(float x);
+float TanF(float x);
 
 /// \brief Returns the arcsine in radians of a value.
 /// \param x A value in the range [-1, +1] whose arcsine is calculated.
-double Asin(double x);
+double AsinD(double x);
 
 /// \brief Returns the arcsine in radians of a value.
 /// \param x A value in the range [-1, +1] whose arcsine is calculated.
-float Asinf(float x);
+float AsinF(float x);
 
 /// \brief Returns the arccosine in radians of a value.
 /// \param x A value in the range [-1, +1] whose arccosine is calculated.
-double Acos(double x);
+double AcosD(double x);
 
 /// \brief Returns the arccosine in radians of a value.
 /// \param x A value in the range [-1, +1] whose arccosine is calculated.
-float Acosf(float x);
+float AcosF(float x);
 
 /// \brief Returns the arctangent in radians of a value.
 /// \param x A value in the range [-1, +1] whose arctangent is calculated.
-double Atan(double x);
+double AtanD(double x);
 
 /// \brief Returns the arctangent in radians of a value.
 /// \param x A value in the range [-1, +1] whose arctangent is calculated.
-float Atanf(float x);
+float AtanF(float x);
 
 /// \brief Returns the arctangent in radians of y/x.
 /// \param y The coordinate on the Y axis.
 /// \param x The coordinate on the X axis.
-double Atan2(double y, double x);
+double Atan2D(double y, double x);
 
 /// \brief Returns the arctangent in radians of y/x.
 /// \param y The coordinate on the Y axis.
 /// \param x The coordinate on the X axis.
-float Atan2f(float y, float x);
+float Atan2F(float y, float x);
 
 /// \brief Returns the hyperbolic sine of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic sine is calculated.
-double Sinh(double x);
+double SinhD(double x);
 
 /// \brief Returns the hyperbolic sine of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic sine is calculated.
-float Sinhf(float x);
+float SinhF(float x);
 
 /// \brief Returns the hyperbolic cosine of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic cosine is calculated.
-double Cosh(double x);
+double CoshD(double x);
 
 /// \brief Returns the hyperbolic cosine of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic cosine is calculated.
-double Coshf(float x);
+float CoshF(float x);
 
 /// \brief Returns the hyperbolic tangent of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic tangent is calculated.
-double Tanh(double x);
+double TanhD(double x);
 
 /// \brief Returns the hyperbolic tangent of a hyperbolic angle.
 /// \param x A hyperbolic angle whose hyperbolic tangent is calculated.
-float Tanhf(float x);
+float TanhF(float x);
 
 /// \brief Returns the inverse hyperbolic sine of a value.
 /// \param x The value whose inverse hyperbolic sine is calculated.
-double Asinh(double x);
+double AsinhD(double x);
 
 /// \brief Returns the inverse hyperbolic sine of a value.
 /// \param x The value whose inverse hyperbolic sine is calculated.
-float Asinhf(float x);
+float AsinhF(float x);
 
 /// \brief Returns the inverse hyperbolic cosine of a value.
 /// \param x The value whose inverse hyperbolic cosine is calculated.
-double Acosh(double x);
+double AcoshD(double x);
 
 /// \brief Returns the inverse hyperbolic cosine of a value.
 /// \param x The value whose inverse hyperbolic cosine is calculated.
-float Acoshf(float x);
+float AcoshF(float x);
 
 /// \brief Returns the inverse hyperbolic tangent of a value.
 /// \param x The value whose inverse hyperbolic tangent is calculated.
-double Atanh(double x);
+double AtanhD(double x);
 
 /// \brief Returns the inverse hyperbolic tangent of a value.
 /// \param x The value whose inverse hyperbolic tangent is calculated.
-float Atanhf(float x);
+float AtanhF(float x);
 
 /// \brief Returns e raised to an exponent.
 /// \param x The value of the exponent.
-double Exp(double x);
+double ExpD(double x);
 
 /// \brief Returns e raised to an exponent.
 /// \param x The value of the exponent.
-float Expf(float x);
+float ExpF(float x);
 
 /// \brief Returns 2 raised to an exponent.
 /// \param x The value of the exponent.
-double Exp2(double x);
+double Exp2D(double x);
 
 /// \brief Returns 2 raised to an exponent.
 /// \param x The value of the exponent.
-float Exp2f(float x);
+float Exp2F(float x);
 
 /// \brief Returns the natural logarithm of a value.
 /// \param x The value whose natural logarithm is calculated.
-double Log(double x);
+double LogD(double x);
 
 /// \brief Returns the natural logarithm of a value.
 /// \param x The value whose natural logarithm is calculated.
-float Logf(float x);
+float LogF(float x);
 
 /// \brief Returns the base-2 logarithm of a value.
 /// \param x The value whose logarithm is calculated.
-double Log2(double x);
+double Log2D(double x);
 
 /// \brief Returns the base-2 logarithm of a value.
 /// \param x The value whose logarithm is calculated.
-float Log2f(float x);
+float Log2F(float x);
 
 /// \brief Returns the base-10 logarithm of a value.
 /// \param x The value whose logarithm is calculated.
-double Log10(double x);
+double Log10D(double x);
 
 /// \brief Returns the base-10 logarithm of a value.
 /// \param x The value whose logarithm is calculated.
-float Log10f(float x);
+float Log10F(float x);
 
 /// \brief Returns a base value raised to an exponent.
 /// \param base The value of the base.
 /// \param exponent The value of the exponent.
-double Pow(double base, double exponent);
+double PowD(double base, double exponent);
 
 /// \brief Returns a base value raised to an exponent.
 /// \param base The value of the base.
 /// \param exponent The value of the exponent.
-float Powf(float base, float exponent);
+float PowF(float base, float exponent);
 
 /// \brief Returns the square root of a value.
 /// \param x The value whose square root is calculated.
-double Sqrt(double x);
+double SqrtD(double x);
 
 /// \brief Returns the square root of a value.
 /// \param x The value whose square root is calculated.
-float Sqrtf(float x);
+float SqrtF(float x);
 
 /// \brief Returns the cube root of a value.
 /// \param x The value whose square root is calculated.
-double Cbrt(double x);
+double CbrtD(double x);
 
 /// \brief Returns the cube root of a value.
 /// \param x The value whose square root is calculated.
-float Cbrtf(float x);
+float CbrtF(float x);
 
 /// \brief Returns the hypotenuse of a right-angled triangle with sides of the given lengths.
 /// \param x The length of the first side of the triangle.
 /// \param y The length of the second side of the triangle.
-double Hypot(double x, double y);
+double HypotD(double x, double y);
 
 /// \brief Returns the hypotenuse of a right-angled triangle with sides of the given lengths.
 /// \param x The length of the first side of the triangle.
 /// \param y The length of the second side of the triangle.
-float Hypotf(float x, float y);
+float HypotF(float x, float y);
 
 /// \brief Returns a value rounded upward.
 /// \param x The value to be rounded.
-double Ceil(double x);
+double CeilD(double x);
 
 /// \brief Returns a value rounded upward.
 /// \param x The value to be rounded.
-float Ceilf(float x);
+float CeilF(float x);
 
 /// \brief Returns a value rounded downward.
 /// \param x The value to be rounded.
-double Floor(double x);
+double FloorD(double x);
 
 /// \brief Returns a value rounded downward.
 /// \param x The value to be rounded.
-float Floorf(float x);
+float FloorF(float x);
 
 /// \brief Returns a value rounded toward zero.
 /// \param x The value to be rounded.
-double Trunc(double x);
+double TruncD(double x);
 
 /// \brief Returns a value rounded toward zero.
 /// \param x The value to be rounded.
-float Truncf(float x);
+float TruncF(float x);
+
+/// \brief Returns the absolute value of a signed 8-bit value.
+/// \param x The value whose absolute value is calculated.
+char AbsC(char x);
+
+/// \brief Returns the absolute value of a signed 16-bit value.
+/// \param x The value whose absolute value is calculated.
+short AbsS(short x);
+
+/// \brief Returns the absolute value of a signed 32-bit value.
+/// \param x The value whose absolute value is calculated.
+int AbsI(int x);
+
+/// \brief Returns the absolute value of a signed 64-bit value.
+/// \param x The value whose absolute value is calculated.
+long AbsL(long x);
 
 /// \brief Returns the absolute value of a value.
 /// \param x The value whose absolute value is calculated.
-double Fabs(double x);
+double AbsD(double x);
 
 /// \brief Returns the absolute value of a value.
 /// \param x The value whose absolute value is calculated.
-float Fabsf(float x);
+float AbsF(float x);
 
 /// \brief Returns a value multiplied by 2 raised to an exponent.
 /// \param x The value that is multiplied by 2 raised to an exponent.
 /// \param exp The exponent.
-double Ldexp(double x, int exp);
+double LdexpD(double x, int exp);
 
 /// \brief Returns a value multiplied by 2 raised to an exponent.
 /// \param x The value that is multiplied by 2 raised to an exponent.
 /// \param exp The exponent.
-float Ldexpf(float x, int exp);
+float LdexpF(float x, int exp);
 
 /// \brief Decomposes a value into a fraction and an integral power of two.
 /// \param x The value that is decomposed.
 /// \param exp A pointer to an int where the exponent is stored.
 /// \returns A value whose absolute value is in the range [0.5, 1.0), which, when multiplied by 2 to the power of exp, results in x.
-double Frexp(double x, int *exp);
+double FrexpD(double x, int *exp);
 
 /// \brief Decomposes a value into a fraction and an integral power of two.
 /// \param x The value that is decomposed.
 /// \param exp A pointer to an int where the exponent is stored.
 /// \returns A value whose absolute value is in the range [0.5, 1.0), which, when multiplied by 2 to the power of exp, results in x.
-float Frexpf(float x, int *exp);
+float FrexpF(float x, int *exp);
 
 /// \brief Decomposes a value into its integral and fractional parts.
 /// \param x The value that is decomposed.
 /// \param ip A pointer to a double where the integral part is stored.
 /// \returns The fractional part, which, when added to ip, results in x.
-double Modf(double x, double *ip);
+double ModfD(double x, double *ip);
 
 /// \brief Decomposes a value into its integral and fractional parts.
 /// \param x The value that is decomposed.
 /// \param ip A pointer to a float where the integral part is stored.
 /// \returns The fractional part, which, when added to ip, results in x.
-float Modff(float x, float *ip);
+float ModfF(float x, float *ip);
 
 /// \brief Returns the remainder of x/y rounded toward zero.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
-double Fmod(double x, double y);
+double FmodD(double x, double y);
 
 /// \brief Returns the remainder of x/y rounded toward zero.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
-float Fmodf(float x, float y);
+float FmodF(float x, float y);
 
 /// \brief Returns a value with the magnitude of one and the sign of another.
 /// \param x The value whose magnitude is returned.
 /// \param y The value whose sign is returned.
-double CopySign(double x, double y);
+double CopySignD(double x, double y);
 
 /// \brief Returns a value with the magnitude of one and the sign of another.
 /// \param x The value whose magnitude is returned.
 /// \param y The value whose sign is returned.
-float CopySignf(float x, float y);
+float CopySignF(float x, float y);
 
 /// \brief Returns a value representing Not-a-Number.
-double NaN();
+double NaND();
 
 /// \brief Returns a value representing Not-a-Number.
-float NaNf();
+float NaNF();
+
+/// \brief Returns whether a value is Not-a-Number.
+/// \param x The value to check.
+bool IsNaND(double x);
+
+/// \brief Returns whether a value is Not-a-Number.
+/// \param x The value to check.
+bool IsNaNF(float x);
+
+/// \brief Returns whether a value is positive or negative infinity.
+/// \param x The value to check.
+bool IsInfD(double x);
+
+/// \brief Returns whether a value is positive or negative infinity.
+/// \param x The value to check.
+bool IsInfF(float x);
+
+/// \brief Returns whether a value is neither infinite nor Not-a-Number.
+/// \param x The value to check.
+bool IsFiniteD(double x);
+
+/// \brief Returns whether a value is neither infinite nor Not-a-Number.
+/// \param x The value to check.
+bool IsFiniteF(float x);
+
+/// \brief Returns whether the sign bit of a value is set.
+/// \param x The value to check.
+bool SignBitD(double x);
+
+/// \brief Returns whether the sign bit of a value is set.
+/// \param x The value to check.
+bool SignBitF(float x);
+
+/// \brief Returns a value rounded to the nearest integer, with halfway cases rounded away from zero.
+/// \param x The value to be rounded.
+double RoundD(double x);
+
+/// \brief Returns a value rounded to the nearest integer, with halfway cases rounded away from zero.
+/// \param x The value to be rounded.
+float RoundF(float x);
+
+/// \brief Returns a value rounded to the nearest integer using the current rounding mode.
+/// \param x The value to be rounded.
+double RintD(double x);
+
+/// \brief Returns a value rounded to the nearest integer using the current rounding mode.
+/// \param x The value to be rounded.
+float RintF(float x);
+
+/// \brief Returns a value rounded to the nearest integer using the current rounding mode without raising the inexact exception.
+/// \param x The value to be rounded.
+double NearbyintD(double x);
+
+/// \brief Returns a value rounded to the nearest integer using the current rounding mode without raising the inexact exception.
+/// \param x The value to be rounded.
+float NearbyintF(float x);
+
+/// \brief Returns the remainder of x/y rounded to the nearest integer.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
+double RemainderD(double x, double y);
+
+/// \brief Returns the remainder of x/y rounded to the nearest integer.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
+float RemainderF(float x, float y);
+
+/// \brief Returns a value rounded to the nearest long integer, with halfway cases rounded away from zero.
+/// \param x The value to be rounded.
+long LroundD(double x);
+
+/// \brief Returns a value rounded to the nearest long integer, with halfway cases rounded away from zero.
+/// \param x The value to be rounded.
+long LroundF(float x);
+
+/// \brief Returns the natural logarithm of one plus a value.
+/// \param x The value whose logarithm is calculated.
+double Log1pD(double x);
+
+/// \brief Returns the natural logarithm of one plus a value.
+/// \param x The value whose logarithm is calculated.
+float Log1pF(float x);
+
+/// \brief Returns e raised to an exponent minus one.
+/// \param x The value of the exponent.
+double Expm1D(double x);
+
+/// \brief Returns e raised to an exponent minus one.
+/// \param x The value of the exponent.
+float Expm1F(float x);
+
+/// \brief Returns the error function of a value.
+/// \param x The value whose error function is calculated.
+double ErfD(double x);
+
+/// \brief Returns the error function of a value.
+/// \param x The value whose error function is calculated.
+float ErfF(float x);
+
+/// \brief Returns the complementary error function of a value.
+/// \param x The value whose complementary error function is calculated.
+double ErfcD(double x);
+
+/// \brief Returns the complementary error function of a value.
+/// \param x The value whose complementary error function is calculated.
+float ErfcF(float x);
+
+/// \brief Returns the gamma function of a value.
+/// \param x The value whose gamma function is calculated.
+double TgammaD(double x);
+
+/// \brief Returns the gamma function of a value.
+/// \param x The value whose gamma function is calculated.
+float TgammaF(float x);
+
+/// \brief Returns the natural logarithm of the absolute value of the gamma function of a value.
+/// \param x The value whose log-gamma function is calculated.
+double LgammaD(double x);
+
+/// \brief Returns the natural logarithm of the absolute value of the gamma function of a value.
+/// \param x The value whose log-gamma function is calculated.
+float LgammaF(float x);
+
+/// \brief Returns x * y + z computed with a single rounding.
+/// \param x The multiplicand.
+/// \param y The multiplier.
+/// \param z The value added to the product.
+double FmaD(double x, double y, double z);
+
+/// \brief Returns x * y + z computed with a single rounding.
+/// \param x The multiplicand.
+/// \param y The multiplier.
+/// \param z The value added to the product.
+float FmaF(float x, float y, float z);
+
+/// \brief Returns the next representable value after x in the direction of y.
+/// \param x The starting value.
+/// \param y The value that indicates the direction.
+double NextafterD(double x, double y);
+
+/// \brief Returns the next representable value after x in the direction of y.
+/// \param x The starting value.
+/// \param y The value that indicates the direction.
+float NextafterF(float x, float y);
+
+/// \brief Returns a value multiplied by 2 raised to an integral exponent.
+/// \param x The value that is multiplied by 2 raised to an exponent.
+/// \param n The exponent.
+double ScalbnD(double x, int n);
+
+/// \brief Returns a value multiplied by 2 raised to an integral exponent.
+/// \param x The value that is multiplied by 2 raised to an exponent.
+/// \param n The exponent.
+float ScalbnF(float x, int n);
+
+/// \brief Returns the unbiased exponent of a value as an integer.
+/// \param x The value whose exponent is returned.
+int IlogbD(double x);
+
+/// \brief Returns the unbiased exponent of a value as an integer.
+/// \param x The value whose exponent is returned.
+int IlogbF(float x);
+
+/// \brief Returns the unbiased exponent of a value as a floating-point number.
+/// \param x The value whose exponent is returned.
+double LogbD(double x);
+
+/// \brief Returns the unbiased exponent of a value as a floating-point number.
+/// \param x The value whose exponent is returned.
+float LogbF(float x);
+
+/// \brief Returns the remainder of x/y rounded to the nearest integer and stores the low bits of the quotient.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
+/// \param quo A pointer to an int where the low bits of the quotient are stored.
+double RemquoD(double x, double y, int *quo);
+
+/// \brief Returns the remainder of x/y rounded to the nearest integer and stores the low bits of the quotient.
+/// \param x The numerator of the division operation.
+/// \param y The denominator of the division operation.
+/// \param quo A pointer to an int where the low bits of the quotient are stored.
+float RemquoF(float x, float y, int *quo);
+
+/// \brief Returns a representation of positive infinity.
+double InfD();
+
+/// \brief Returns a representation of positive infinity.
+float InfF();
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+char MinC(char x, char y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+uchar MinUC(uchar x, uchar y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+short MinS(short x, short y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+ushort MinUS(ushort x, ushort y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+int MinI(int x, int y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+uint MinUI(uint x, uint y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+long MinL(long x, long y);
+
+/// \brief Returns the smaller of two values.
+/// \param x The first value.
+/// \param y The second value.
+ulong MinUL(ulong x, ulong y);
+
+/// \brief Returns the smaller of two values. If either value is Not-a-Number, the other value is returned.
+/// \param x The first value.
+/// \param y The second value.
+double MinD(double x, double y);
+
+/// \brief Returns the smaller of two values. If either value is Not-a-Number, the other value is returned.
+/// \param x The first value.
+/// \param y The second value.
+float MinF(float x, float y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+char MaxC(char x, char y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+uchar MaxUC(uchar x, uchar y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+short MaxS(short x, short y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+ushort MaxUS(ushort x, ushort y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+int MaxI(int x, int y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+uint MaxUI(uint x, uint y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+long MaxL(long x, long y);
+
+/// \brief Returns the larger of two values.
+/// \param x The first value.
+/// \param y The second value.
+ulong MaxUL(ulong x, ulong y);
+
+/// \brief Returns the larger of two values. If either value is Not-a-Number, the other value is returned.
+/// \param x The first value.
+/// \param y The second value.
+double MaxD(double x, double y);
+
+/// \brief Returns the larger of two values. If either value is Not-a-Number, the other value is returned.
+/// \param x The first value.
+/// \param y The second value.
+float MaxF(float x, float y);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+char ClampC(char value, char low, char high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+uchar ClampUC(uchar value, uchar low, uchar high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+short ClampS(short value, short low, short high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+ushort ClampUS(ushort value, ushort low, ushort high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+int ClampI(int value, int low, int high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+uint ClampUI(uint value, uint low, uint high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+long ClampL(long value, long low, long high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+ulong ClampUL(ulong value, ulong low, ulong high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+double ClampD(double value, double low, double high);
+
+/// \brief Returns a value limited to the range [low, high].
+/// \param value The value to limit.
+/// \param low The lower bound.
+/// \param high The upper bound.
+float ClampF(float value, float low, float high);
 
 /// @}
 
