@@ -12,6 +12,7 @@
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
+#include "bond/version.h"
 #include <cstdio>
 #include <cstring>
 
@@ -170,6 +171,11 @@ int main(int argc, const char *argv[])
 					pointerSize = Bond::POINTER_64BIT;
 					pointerSizeSet = true;
 				}
+			}
+			else if (strcmp(argv[i], "-v") == 0)
+			{
+				printf("%s\n", Bond::VERSION_STRING);
+				return 0;
 			}
 			else if (argv[i][0] == '-')
 			{

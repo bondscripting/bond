@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\include\bond\compiler\token.h" />
     <ClInclude Include="..\..\include\bond\compiler\tokenstream.h" />
     <ClInclude Include="..\..\include\bond\compiler\typeandvalue.h" />
+    <ClInclude Include="..\..\include\bond\conf.h" />
     <ClInclude Include="..\..\include\bond\io\inputstream.h" />
     <ClInclude Include="..\..\include\bond\io\inputstreamadaptor.h" />
     <ClInclude Include="..\..\include\bond\io\memoryinputstream.h" />
@@ -95,6 +96,7 @@
     <ClInclude Include="..\..\include\bond\types\types.h" />
     <ClInclude Include="..\..\include\bond\types\typeutil.h" />
     <ClInclude Include="..\..\include\bond\types\value.h" />
+    <ClInclude Include="..\..\include\bond\version.h" />
     <ClInclude Include="..\..\include\bond\vm\cboloader.h" />
     <ClInclude Include="..\..\include\bond\vm\codesegment.h" />
     <ClInclude Include="..\..\include\bond\vm\collector.h" />

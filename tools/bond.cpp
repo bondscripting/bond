@@ -5,6 +5,7 @@
 #include "bond/stl/vector.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
+#include "bond/version.h"
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
 #include "bond/vm/vm.h"
@@ -12,7 +13,7 @@
 #include <cstring>
 
 const size_t MIN_STACK_SIZE = 1;
-const size_t DEFAULT_STACK_SIZE = 64;
+const size_t DEFAULT_STACK_SIZE = 256;
 const char *const DEFAULT_ENTRY_POINT = "main";
 typedef Bond::Vector<const char *> StringList;
 typedef Bond::Vector<Bond::StdioInputStream> InputStreamList;
@@ -86,6 +87,11 @@ int main(int argc, const char *argv[])
 				fprintf(stderr, "Missing argument to -s\n");
 				error = true;
 			}
+		}
+		else if (strcmp(argv[i], "-v") == 0)
+		{
+			printf("%s\n", Bond::VERSION_STRING);
+			return 0;
 		}
 		else if (argv[i][0] == '-')
 		{

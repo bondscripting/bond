@@ -351,6 +351,12 @@
     <ClInclude Include="..\..\include\bond\io\stdioinputstream.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\conf.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\version.h">
+      <Filter>Header Files\include\bond</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\cboloader.cpp">
