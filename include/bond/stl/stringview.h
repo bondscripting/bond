@@ -21,7 +21,7 @@ class OutputStream;
 /// \brief Writes the characters of a StringView to the provided output stream.
 /// \param str The StringView whose characters are written.
 /// \param stream The stream to which the characters of the StringView are written.
-void PrintTo(const StringView &str, OutputStream &stream);
+BOND_API void PrintTo(const StringView &str, OutputStream &stream);
 
 }
 

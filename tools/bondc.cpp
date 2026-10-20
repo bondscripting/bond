@@ -41,6 +41,8 @@ int main(int argc, const char *argv[])
 		const char *hFileName = nullptr;
 		const char *bindingCollectionName = nullptr;
 		const char *includeName = nullptr;
+		const char *exportMacro = nullptr;
+		const char *exportHeader = nullptr;
 		bool generateBindings = false;
 		bool pointerSizeSet = false;
 		int inputFileCount = 0;
@@ -112,6 +114,40 @@ int main(int argc, const char *argv[])
 				else
 				{
 					fprintf(stderr, "Missing argument to -i\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-e") == 0)
+			{
+				if (exportMacro != nullptr)
+				{
+					fprintf(stderr, "Option '-e' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					exportMacro = argv[++i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -e\n");
+					error = true;
+				}
+			}
+			else if (strcmp(argv[i], "-x") == 0)
+			{
+				if (exportHeader != nullptr)
+				{
+					fprintf(stderr, "Option '-x' specified more than once\n");
+					error = true;
+				}
+				else if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
+				{
+					exportHeader = argv[++i];
+				}
+				else
+				{
+					fprintf(stderr, "Missing argument to -x\n");
 					error = true;
 				}
 			}
@@ -208,6 +244,12 @@ int main(int argc, const char *argv[])
 			}
 		}
 
+		if (!generateBindings && ((exportMacro != nullptr) || (exportHeader != nullptr)))
+		{
+			fprintf(stderr, "Options -e and -x require -b -c -h and -i.\n");
+			error = true;
+		}
+
 		if (!generateBindings && (cboFileName == nullptr))
 		{
 			// If no output file name specified, then compile to bond.cbo.
@@ -236,7 +278,7 @@ int main(int argc, const char *argv[])
 					Bond::StdioOutputStream cppStream(cppFileName);
 					Bond::StdioOutputStream hStream(hFileName);
 					Bond::NativeBindingGenerator generator;
-					generator.Generate(translationUnitList, cppStream, hStream, bindingCollectionName, includeName);
+					generator.Generate(translationUnitList, cppStream, hStream, bindingCollectionName, includeName, exportMacro, exportHeader);
 			}
 		}
 

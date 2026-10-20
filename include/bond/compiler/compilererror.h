@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_COMPILERERROR_H
 #define BOND_COMPILER_COMPILERERROR_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 #define BOND_COMPILER_ERROR_LIST                                                           \
@@ -220,7 +221,7 @@ class ParseNode;
 /// all errors it contains.
 ///
 /// \sa CodeGenerator, CompilerErrorBuffer, Lexer, Parser, SemanticAnalyzer
-class CompilerError
+class BOND_API CompilerError
 {
 public:
 	/// \brief An enumeration identifying all types of compiler errors.
@@ -292,7 +293,7 @@ private:
 /// errors that caused the buffer to fill up.
 ///
 /// \sa CodeGenerator, CompilerError, Lexer, Parser, SemanticAnalyzer
-class CompilerErrorBuffer
+class BOND_API CompilerErrorBuffer
 {
 public:
 	/// \brief Default constructs an empty CompilerErrorBuffer object.

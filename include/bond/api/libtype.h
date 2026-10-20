@@ -3,27 +3,29 @@
 
 #include "bond/api/nativebinding.h"
 
+#include "bond/conf.h"
+
 namespace Bond
 {
-extern const Bond::NativeBindingCollection TYPE_BINDING_COLLECTION;
+extern BOND_API const Bond::NativeBindingCollection TYPE_BINDING_COLLECTION;
 }
 
 namespace Bond
 {
-void IsAlnum(Bond::StackFrame &frame);
-void IsAlpha(Bond::StackFrame &frame);
-void IsBlank(Bond::StackFrame &frame);
-void IsCntrl(Bond::StackFrame &frame);
-void IsDigit(Bond::StackFrame &frame);
-void IsGraph(Bond::StackFrame &frame);
-void IsLower(Bond::StackFrame &frame);
-void IsPrint(Bond::StackFrame &frame);
-void IsPunct(Bond::StackFrame &frame);
-void IsSpace(Bond::StackFrame &frame);
-void IsUpper(Bond::StackFrame &frame);
-void IsXDigit(Bond::StackFrame &frame);
-void ToLower(Bond::StackFrame &frame);
-void ToUpper(Bond::StackFrame &frame);
+BOND_API void IsAlnum(Bond::StackFrame &frame);
+BOND_API void IsAlpha(Bond::StackFrame &frame);
+BOND_API void IsBlank(Bond::StackFrame &frame);
+BOND_API void IsCntrl(Bond::StackFrame &frame);
+BOND_API void IsDigit(Bond::StackFrame &frame);
+BOND_API void IsGraph(Bond::StackFrame &frame);
+BOND_API void IsLower(Bond::StackFrame &frame);
+BOND_API void IsPrint(Bond::StackFrame &frame);
+BOND_API void IsPunct(Bond::StackFrame &frame);
+BOND_API void IsSpace(Bond::StackFrame &frame);
+BOND_API void IsUpper(Bond::StackFrame &frame);
+BOND_API void IsXDigit(Bond::StackFrame &frame);
+BOND_API void ToLower(Bond::StackFrame &frame);
+BOND_API void ToUpper(Bond::StackFrame &frame);
 }
 
 #endif

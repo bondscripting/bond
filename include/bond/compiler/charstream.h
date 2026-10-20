@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_CHARSTREAM_H
 #define BOND_COMPILER_CHARSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/compiler/streampos.h"
 #include "bond/io/inputstream.h"
 
@@ -13,7 +14,7 @@ namespace Bond
 /// their application will have to make direct use of it.
 ///
 /// \ingroup compiler
-class CharStream
+class BOND_API CharStream
 {
 public:
 	/// \brief Constructs a CharStream object

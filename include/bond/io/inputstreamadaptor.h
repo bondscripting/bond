@@ -1,6 +1,7 @@
 #ifndef BOND_IO_INPUTSTREAMADAPTOR_H
 #define BOND_IO_INPUTSTREAMADAPTOR_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -11,7 +12,7 @@ class InputStream;
 /// \brief A wrapper around an InputStream that adds formatted input operations used within
 /// the Bond Standard Library.
 /// \ingroup io
-class InputStreamAdaptor
+class BOND_API InputStreamAdaptor
 {
 public:
 	/// \brief Constructs an InputStreamAdaptor object.

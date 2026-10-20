@@ -68,11 +68,11 @@ const PointerSize BOND_NATIVE_POINTER_SIZE = (sizeof(void *) == 8) ? POINTER_64B
 
 inline uint32_t GetPointerSize(PointerSize pointerSize) { return (pointerSize == POINTER_64BIT) ? 8 : 4; }
 
-const char *GetBondTypeMnemonic(SignatureType signatureType);
-char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size);
+BOND_API const char *GetBondTypeMnemonic(SignatureType signatureType);
+BOND_API char *ExpandBondTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size);
 
-const char *GetApiTypeMnemonic(SignatureType signatureType);
-char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size);
+BOND_API const char *GetApiTypeMnemonic(SignatureType signatureType);
+BOND_API char *ExpandApiTypeMnemonic(char *buffer, size_t length, SignatureType signatureType, uint32_t size);
 
 #define BOND_NATIVE_GETTER_SUFFIX "@get"
 #define BOND_NATIVE_SETTER_SUFFIX "@set"

@@ -1,6 +1,7 @@
 #ifndef BOND_IO_INPUTSTREAM_H
 #define BOND_IO_INPUTSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/io/stream.h"
 #include <cstdarg>
 
@@ -14,7 +15,7 @@ namespace Bond
 ///
 /// \sa OutputStream, Stream
 /// \ingroup io
-class InputStream: public Stream
+class BOND_API InputStream: public Stream
 {
 public:
 	/// \brief Destroys an InputStream object.

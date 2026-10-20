@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_PARSENODEVISITOR_H
 #define BOND_COMPILER_PARSENODEVISITOR_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodesfwd.h"
 
 namespace Bond
@@ -18,7 +19,7 @@ namespace Bond
 /// in turn call the appropriate Visit method.
 ///
 /// \sa ParseNode, ParseNodeVisitorAdapter, ParseNodeTraverser
-class ParseNodeVisitor
+class BOND_API ParseNodeVisitor
 {
 public:
 	virtual ~ParseNodeVisitor() {}
@@ -152,7 +153,7 @@ public:
 /// methods of interest need to be overridden.
 ///
 /// \sa ParseNode, ParseNodeVisitor, ParseNodeTraverser
-class ParseNodeVisitorAdapter: public ParseNodeVisitor
+class BOND_API ParseNodeVisitorAdapter: public ParseNodeVisitor
 {
 public:
 	virtual ~ParseNodeVisitorAdapter() {}

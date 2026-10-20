@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STDIOINPUTSTREAM_H
 #define BOND_IO_STDIOINPUTSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/io/inputstream.h"
 #include "bond/io/stdiofilehandle.h"
 #include "bond/stl/utility.h"
@@ -17,7 +18,7 @@ namespace Bond
 ///
 /// \sa InputStream, StdioOutputStream
 /// \ingroup io
-class StdioInputStream: public InputStream
+class BOND_API StdioInputStream: public InputStream
 {
 public:
 	/// \brief Constructs a StdioInputStream object.
@@ -82,7 +83,7 @@ private:
 
 /// \brief A concrete implementation of StdioInputStream bound to stdin.
 /// \sa StdioInputStream
-class StdInInputStream: public StdioInputStream
+class BOND_API StdInInputStream: public StdioInputStream
 {
 public:
 	/// \brief Constructs a StdInInputStream object.

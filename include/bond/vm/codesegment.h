@@ -1,6 +1,7 @@
 #ifndef BOND_VM_CODESEGMENT_H
 #define BOND_VM_CODESEGMENT_H
 
+#include "bond/conf.h"
 #include "bond/api/nativebinding.h"
 #include "bond/stl/stringview.h"
 #include "bond/types/qualifiedname.h"
@@ -116,7 +117,7 @@ struct DataEntry
 /// A CodeSegment is produced by CboLoader and consumed by the VM. It supports looking up
 /// functions and data entries by qualified name, and calling static initializers before
 /// an application's entry point is invoked.
-class CodeSegment
+class BOND_API CodeSegment
 {
 public:
 	/// \brief Constructs a CodeSegment from prebuilt tables.

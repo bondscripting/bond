@@ -1,6 +1,7 @@
 #ifndef BOND_TOOLS_DISASSEMBLER_H
 #define BOND_TOOLS_DISASSEMBLER_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -18,7 +19,7 @@ class OutputStream;
 ///
 /// \sa InputStream, OutputStream
 /// \ingroup tools
-class Disassembler
+class BOND_API Disassembler
 {
 public:
 	/// \brief Constructs a Disassembler object.

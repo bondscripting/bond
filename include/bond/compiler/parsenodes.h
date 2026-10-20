@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_PARSENODES_H
 #define BOND_COMPILER_PARSENODES_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodesfwd.h"
 #include "bond/compiler/parsenodevisitor.h"
 #include "bond/compiler/token.h"
@@ -27,7 +28,7 @@ enum Scope
 
 
 /// \brief Base class for all parse tree nodes.
-class ParseNode
+class BOND_API ParseNode
 {
 public:
 	virtual ~ParseNode() {}
@@ -50,7 +51,7 @@ protected:
 
 
 /// \brief Base class for parse nodes that can be linked into singly linked lists.
-class ListParseNode: public ParseNode
+class BOND_API ListParseNode: public ParseNode
 {
 public:
 	virtual ~ListParseNode() {}
@@ -113,7 +114,7 @@ private:
 
 
 /// \brief Base class for named entities that participate in symbol lookup.
-class Symbol: public ListParseNode
+class BOND_API Symbol: public ListParseNode
 {
 public:
 	/// \brief Identifies the concrete symbol category.
@@ -291,7 +292,7 @@ private:
 
 
 /// \brief Describes a resolved or partially resolved Bond type.
-class TypeDescriptor: public ParseNode
+class BOND_API TypeDescriptor: public ParseNode
 {
 public:
 	/// \brief Constructs an undefined type descriptor.
@@ -547,7 +548,7 @@ private:
 
 
 /// \brief Represents a parsed type specifier.
-class TypeSpecifier: public ParseNode
+class BOND_API TypeSpecifier: public ParseNode
 {
 public:
 
@@ -653,7 +654,7 @@ private:
 
 
 /// \brief Represents a potentially qualified identifier.
-class QualifiedIdentifier: public ListParseNode
+class BOND_API QualifiedIdentifier: public ListParseNode
 {
 public:
 	/// \brief Constructs a qualified identifier element.
@@ -686,7 +687,7 @@ private:
 
 
 /// \brief Represents a complete parsed source file.
-class TranslationUnit: public ListParseNode
+class BOND_API TranslationUnit: public ListParseNode
 {
 public:
 	/// \brief Constructs a translation unit.
@@ -733,7 +734,7 @@ private:
 
 
 /// \brief Represents an include directive.
-class IncludeDirective: public ListParseNode
+class BOND_API IncludeDirective: public ListParseNode
 {
 public:
 	/// \brief Constructs an include directive node.
@@ -755,7 +756,7 @@ private:
 
 
 /// \brief Represents a namespace definition.
-class NamespaceDefinition: public Symbol
+class BOND_API NamespaceDefinition: public Symbol
 {
 public:
 	/// \brief Constructs a namespace definition.
@@ -787,7 +788,7 @@ private:
 
 
 /// \brief Represents a native declaration block.
-class NativeBlock: public ListParseNode
+class BOND_API NativeBlock: public ListParseNode
 {
 public:
 	/// \brief Constructs a native block.
@@ -821,7 +822,7 @@ private:
 
 
 /// \brief Represents an enum declaration.
-class EnumDeclaration: public Symbol
+class BOND_API EnumDeclaration: public Symbol
 {
 public:
 	/// \brief Constructs an enum declaration.
@@ -866,7 +867,7 @@ private:
 
 
 /// \brief Represents a single enum value.
-class Enumerator: public Symbol
+class BOND_API Enumerator: public Symbol
 {
 public:
 	/// \brief Constructs an enumerator.
@@ -902,7 +903,7 @@ private:
 
 
 /// \brief Represents a struct declaration.
-class StructDeclaration: public Symbol
+class BOND_API StructDeclaration: public Symbol
 {
 public:
 	/// \brief Identifies the implementation variant of a struct.
@@ -1042,7 +1043,7 @@ private:
 
 
 /// \brief Represents a function signature.
-class FunctionPrototype: public ParseNode
+class BOND_API FunctionPrototype: public ParseNode
 {
 public:
 	/// \brief Constructs a function prototype.
@@ -1091,7 +1092,7 @@ private:
 
 
 /// \brief Represents a function declaration or definition.
-class FunctionDefinition: public Symbol
+class BOND_API FunctionDefinition: public Symbol
 {
 public:
 	/// \brief Constructs a function definition node.
@@ -1171,7 +1172,7 @@ private:
 
 
 /// \brief Represents a function parameter.
-class Parameter: public Symbol
+class BOND_API Parameter: public Symbol
 {
 public:
 	/// \brief Constructs a named parameter.
@@ -1231,7 +1232,7 @@ private:
 
 
 /// \brief Represents a named variable initializer.
-class NamedInitializer: public Symbol
+class BOND_API NamedInitializer: public Symbol
 {
 public:
 	/// \brief Constructs a named initializer.
@@ -1298,7 +1299,7 @@ private:
 
 
 /// \brief Represents a scalar or aggregate initializer.
-class Initializer: public ListParseNode
+class BOND_API Initializer: public ListParseNode
 {
 public:
 	/// \brief Constructs a scalar initializer.
@@ -1356,7 +1357,7 @@ private:
 
 
 /// \brief Represents a block statement and its local scope.
-class CompoundStatement: public Symbol
+class BOND_API CompoundStatement: public Symbol
 {
 public:
 	/// \brief Constructs a compound statement.
@@ -1390,7 +1391,7 @@ private:
 
 
 /// \brief Represents an if/else statement.
-class IfStatement: public ListParseNode
+class BOND_API IfStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs an if statement.
@@ -1442,7 +1443,7 @@ private:
 
 
 /// \brief Represents a switch statement.
-class SwitchStatement: public ListParseNode
+class BOND_API SwitchStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs a switch statement.
@@ -1521,7 +1522,7 @@ private:
 
 
 /// \brief Represents one labeled section inside a switch statement.
-class SwitchSection: public Symbol
+class BOND_API SwitchSection: public Symbol
 {
 public:
 	/// \brief Constructs a switch section.
@@ -1574,7 +1575,7 @@ private:
 
 
 /// \brief Represents a resolved switch label used for code generation.
-class ResolvedSwitchLabel: public ListParseNode
+class BOND_API ResolvedSwitchLabel: public ListParseNode
 {
 public:
 	/// \brief Constructs a resolved switch label with default values.
@@ -1618,7 +1619,7 @@ private:
 
 
 /// \brief Represents a case or default label in a switch section.
-class SwitchLabel: public ListParseNode
+class BOND_API SwitchLabel: public ListParseNode
 {
 public:
 	/// \brief Constructs a default-style switch label with no expression.
@@ -1669,7 +1670,7 @@ private:
 
 
 /// \brief Represents a while or do-while loop.
-class WhileStatement: public ListParseNode
+class BOND_API WhileStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs a while/do-while statement.
@@ -1715,7 +1716,7 @@ private:
 
 
 /// \brief Represents a for loop and its local scope.
-class ForStatement: public Symbol
+class BOND_API ForStatement: public Symbol
 {
 public:
 	/// \brief Constructs a for statement.
@@ -1790,7 +1791,7 @@ private:
 
 
 /// \brief Represents a break, continue, or return statement.
-class JumpStatement: public ListParseNode
+class BOND_API JumpStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs a jump statement.
@@ -1829,7 +1830,7 @@ private:
 
 
 /// \brief Represents a declarative statement with one or more named initializers.
-class DeclarativeStatement: public ListParseNode
+class BOND_API DeclarativeStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs a declarative statement.
@@ -1871,7 +1872,7 @@ private:
 /// intrusive scope list like any other local declaration, but Symbol::Resolve() causes lookups
 /// to transparently unwrap it to the aliased target, so no other part of the compiler ever
 /// observes a UsingDeclaration.
-class UsingDeclaration: public Symbol
+class BOND_API UsingDeclaration: public Symbol
 {
 public:
 	/// \brief Constructs a using-declaration.
@@ -1917,7 +1918,7 @@ private:
 /// list of opened namespaces (via its own dedicated next-pointer, separate from the
 /// ListParseNode next-pointer used to place it among the enclosing statement list) and
 /// consulted as a fallback by Symbol::FindSymbol.
-class UsingDirective: public ListParseNode
+class BOND_API UsingDirective: public ListParseNode
 {
 public:
 	/// \brief Constructs a using-directive.
@@ -1969,7 +1970,7 @@ private:
 
 
 /// \brief Base class for expression nodes.
-class Expression: public ListParseNode
+class BOND_API Expression: public ListParseNode
 {
 public:
 	virtual ~Expression() {}
@@ -1997,7 +1998,7 @@ private:
 
 
 /// \brief Represents a statement that evaluates an expression.
-class ExpressionStatement: public ListParseNode
+class BOND_API ExpressionStatement: public ListParseNode
 {
 public:
 	/// \brief Constructs an expression statement.
@@ -2022,7 +2023,7 @@ private:
 
 
 /// \brief Represents a ternary conditional expression.
-class ConditionalExpression: public Expression
+class BOND_API ConditionalExpression: public Expression
 {
 public:
 	/// \brief Constructs a conditional expression.
@@ -2075,7 +2076,7 @@ private:
 
 
 /// \brief Represents a binary operator expression.
-class BinaryExpression: public Expression
+class BOND_API BinaryExpression: public Expression
 {
 public:
 	/// \brief Constructs a binary expression.
@@ -2118,7 +2119,7 @@ private:
 
 
 /// \brief Represents a unary operator expression.
-class UnaryExpression: public Expression
+class BOND_API UnaryExpression: public Expression
 {
 public:
 	/// \brief Constructs a unary expression.
@@ -2148,7 +2149,7 @@ private:
 
 
 /// \brief Represents a postfix operator expression.
-class PostfixExpression: public Expression
+class BOND_API PostfixExpression: public Expression
 {
 public:
 	/// \brief Constructs a postfix expression.
@@ -2178,7 +2179,7 @@ private:
 
 
 /// \brief Represents member access on a struct-like value.
-class MemberExpression: public Expression
+class BOND_API MemberExpression: public Expression
 {
 public:
 	/// \brief Constructs a member access expression.
@@ -2227,7 +2228,7 @@ private:
 
 
 /// \brief Represents an array subscript expression.
-class ArraySubscriptExpression: public Expression
+class BOND_API ArraySubscriptExpression: public Expression
 {
 public:
 	/// \brief Constructs an array subscript expression.
@@ -2270,7 +2271,7 @@ private:
 
 
 /// \brief Represents a function call expression.
-class FunctionCallExpression: public Expression
+class BOND_API FunctionCallExpression: public Expression
 {
 public:
 	/// \brief Constructs a function call expression.
@@ -2310,7 +2311,7 @@ private:
 
 
 /// \brief Represents an explicit cast expression.
-class CastExpression: public Expression
+class BOND_API CastExpression: public Expression
 {
 public:
 	/// \brief Constructs a cast expression.
@@ -2350,7 +2351,7 @@ private:
 
 
 /// \brief Represents sizeof/alignof style property queries.
-class PropertyofExpression: public Expression
+class BOND_API PropertyofExpression: public Expression
 {
 public:
 	/// \brief Constructs a property query on a type.
@@ -2407,7 +2408,7 @@ private:
 
 
 /// \brief Represents a literal constant expression.
-class ConstantLiteralExpression: public Expression
+class BOND_API ConstantLiteralExpression: public Expression
 {
 public:
 	/// \brief Constructs a literal expression.
@@ -2429,7 +2430,7 @@ private:
 
 
 /// \brief Represents an identifier expression.
-class IdentifierExpression: public Expression
+class BOND_API IdentifierExpression: public Expression
 {
 public:
 	/// \brief Constructs an identifier expression.
@@ -2469,7 +2470,7 @@ private:
 
 
 /// \brief Represents a this expression.
-class ThisExpression: public Expression
+class BOND_API ThisExpression: public Expression
 {
 public:
 	/// \brief Constructs a this expression.
@@ -2488,7 +2489,7 @@ private:
 
 
 /// \brief Represents an intentionally empty expression.
-class EmptyExpression: public Expression
+class BOND_API EmptyExpression: public Expression
 {
 public:
 	virtual ~EmptyExpression() {}
@@ -2501,31 +2502,31 @@ public:
 
 
 /// \brief Canonical void type specifier instance.
-extern const TypeSpecifier VOID_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier VOID_TYPE_SPECIFIER;
 
 /// \brief Canonical bool type specifier instance.
-extern const TypeSpecifier BOOL_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier BOOL_TYPE_SPECIFIER;
 
 /// \brief Canonical char type specifier instance.
-extern const TypeSpecifier CHAR_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier CHAR_TYPE_SPECIFIER;
 
 /// \brief Canonical int type specifier instance.
-extern const TypeSpecifier INT_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier INT_TYPE_SPECIFIER;
 
 /// \brief Canonical uint type specifier instance.
-extern const TypeSpecifier UINT_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier UINT_TYPE_SPECIFIER;
 
 /// \brief Canonical long type specifier instance.
-extern const TypeSpecifier LONG_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier LONG_TYPE_SPECIFIER;
 
 /// \brief Canonical ulong type specifier instance.
-extern const TypeSpecifier ULONG_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier ULONG_TYPE_SPECIFIER;
 
 /// \brief Canonical float type specifier instance.
-extern const TypeSpecifier FLOAT_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier FLOAT_TYPE_SPECIFIER;
 
 /// \brief Canonical double type specifier instance.
-extern const TypeSpecifier DOUBLE_TYPE_SPECIFIER;
+extern BOND_API const TypeSpecifier DOUBLE_TYPE_SPECIFIER;
 
 /// @}
 

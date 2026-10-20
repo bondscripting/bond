@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_TOKENSTREAM_H
 #define BOND_COMPILER_TOKENSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/compiler/token.h"
 
 namespace Bond
@@ -13,7 +14,7 @@ namespace Bond
 ///
 /// TokenStream has methods to return the next available Token, test whether the next Token is of
 /// a certain type, peek at the next Token and manipulate the position in the stream.
-class TokenStream
+class BOND_API TokenStream
 {
 public:
 	/// Constructs an empty TokenStream object.
@@ -101,7 +102,7 @@ private:
 ///
 /// A TokenCollection is the output from a Lexer and can be used as the input to a Parser. Several
 /// TokenCollections can be daisy-chained in a linked list.
-class TokenCollection
+class BOND_API TokenCollection
 {
 public:
 	/// \brief Constructs a TokenCollection object.

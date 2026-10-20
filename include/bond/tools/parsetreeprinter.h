@@ -18,7 +18,7 @@ class Token;
 ///
 /// \sa ParseNode, ListParseNode, OutputStream
 /// \ingroup tools
-class ParseTreePrinter
+class BOND_API ParseTreePrinter
 {
 public:
 	/// \brief Prints a parse tree rooted at a single parse node.

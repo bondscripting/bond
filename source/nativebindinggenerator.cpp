@@ -9,6 +9,11 @@
 namespace Bond
 {
 
+static const char *NullIfEmpty(const char *str)
+{
+	return ((str != nullptr) && (str[0] != '\0')) ? str : nullptr;
+}
+
 class NativeBindingGeneratorCore: private ParseNodeTraverser
 {
 public:
@@ -17,12 +22,16 @@ public:
 			OutputStream &cppStream,
 			OutputStream &hStream,
 			const char *collectionName,
-			const char *includeName):
+			const char *includeName,
+			const char *exportMacro,
+			const char *exportHeader):
 		mTranslationUnitList(translationUnitList),
 		mCppStream(cppStream),
 		mHStream(hStream),
 		mCollectionName(collectionName),
 		mIncludeName(includeName),
+		mExportMacro(NullIfEmpty(exportMacro)),
+		mExportHeader(NullIfEmpty(exportHeader)),
 		mNumFunctions(0)
 	{}
 
@@ -56,6 +65,7 @@ private:
 	void PrintNamespaceStack(OutputStream &stream, NamespaceStack::Iterator &it);
 	void PrintQualifiedBondName(OutputStream &stream, const Symbol *symbol);
 	void PrintQualifiedCppName(OutputStream &stream, const Symbol *symbol);
+	void PrintExportMacro(OutputStream &stream) const;
 
 	NamespaceStack mNamespaceStack;
 	BoolStack mInNativeBlockStack;
@@ -64,6 +74,8 @@ private:
 	OutputStream &mHStream;
 	const char *mCollectionName;
 	const char *mIncludeName;
+	const char *mExportMacro;
+	const char *mExportHeader;
 	uint32_t mNumFunctions;
 };
 
@@ -73,9 +85,11 @@ void NativeBindingGenerator::Generate(
 	OutputStream &cppStream,
 	OutputStream &hStream,
 	const char *collectionName,
-	const char *includeName)
+	const char *includeName,
+	const char *exportMacro,
+	const char *exportHeader)
 {
-	NativeBindingGeneratorCore generator(translationUnitList, cppStream, hStream, collectionName, includeName);
+	NativeBindingGeneratorCore generator(translationUnitList, cppStream, hStream, collectionName, includeName, exportMacro, exportHeader);
 	generator.Generate();
 }
 
@@ -104,8 +118,14 @@ void NativeBindingGeneratorCore::Generate()
 		}
 		includeGuard[i] = '\0';
 		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
+		if (mExportHeader != nullptr)
+		{
+			mHStream.Print("#include \"%s\"\n\n", mExportHeader);
+		}
 		OpenNamespaces(mHStream, identifiers, numIdentifiers);
-		mHStream.Print("extern const Bond::NativeBindingCollection ");
+		mHStream.Print("extern ");
+		PrintExportMacro(mHStream);
+		mHStream.Print("const Bond::NativeBindingCollection ");
 		PrintTo(collectionName, mHStream);
 		mHStream.Print(";\n");
 		CloseNamespaces(mHStream, numIdentifiers);
@@ -192,6 +212,7 @@ void NativeBindingGeneratorCore::Visit(const FunctionDefinition *functionDefinit
 		PrintNamespaceStack(mHStream, it);
 
 		// Generate the function prototype.
+		PrintExportMacro(mHStream);
 		mHStream.Print("void ");
 		if (functionDefinition->GetScope() == SCOPE_STRUCT_MEMBER)
 		{
@@ -220,7 +241,9 @@ void NativeBindingGeneratorCore::Visit(const NamedInitializer *namedInitializer)
 		// Generate the getter and setter function prototypes.
 		const char *structName = namedInitializer->GetParentSymbol()->GetName()->GetRawText();
 		const char *memberName = namedInitializer->GetName()->GetRawText();
+		PrintExportMacro(mHStream);
 		mHStream.Print("void %s__%s__get(Bond::StackFrame &frame);\n", structName, memberName);
+		PrintExportMacro(mHStream);
 		mHStream.Print("void %s__%s__set(Bond::StackFrame &frame);\n", structName, memberName);
 
 		// Generate the function bindings.
@@ -351,6 +374,15 @@ void NativeBindingGeneratorCore::PrintQualifiedCppName(OutputStream &stream, con
 				break;
 		}
 		stream.Print("%s%s", symbol->GetName()->GetRawText(), suffix);
+	}
+}
+
+
+void NativeBindingGeneratorCore::PrintExportMacro(OutputStream &stream) const
+{
+	if (mExportMacro != nullptr)
+	{
+		stream.Print("%s ", mExportMacro);
 	}
 }
 

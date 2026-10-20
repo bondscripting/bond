@@ -40,6 +40,14 @@ Usage: <code>bondc &lt;options&gt; &lt;source files&gt;</code>
       <td>Include path inserted in the generated C++ source file to include the generated C++ header file. Must be used in conjunction with <code>-b</code>, <code>-c</code> and <code>-h</code>.</td>
     </tr>
     <tr>
+      <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-e&nbsp;&lt;macro&gt;</code></td>
+      <td>Export macro applied to the generated C++ header declarations, such as <code>BOND_API</code>. Must be used in conjunction with <code>-b</code>, <code>-c</code>, <code>-h</code> and <code>-i</code>.</td>
+    </tr>
+    <tr>
+      <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-x&nbsp;&lt;header&gt;</code></td>
+      <td>Header included by the generated C++ header file to define the export macro. Must be used in conjunction with <code>-b</code>, <code>-c</code>, <code>-h</code> and <code>-i</code>.</td>
+    </tr>
+    <tr>
       <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-I&nbsp;&lt;path&gt;</code></td>
       <td>Add the specified path to the list of directories to be searched for included Bond files.</td>
     </tr>

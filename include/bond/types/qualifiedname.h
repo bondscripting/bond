@@ -1,6 +1,7 @@
 #ifndef BOND_TYPES_QUALIFIEDNAME_H
 #define BOND_TYPES_QUALIFIEDNAME_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -17,7 +18,7 @@ class OutputStream;
 /// QualifiedName.
 ///
 /// \ingroup types
-class QualifiedName
+class BOND_API QualifiedName
 {
 public:
 	/// \brief Constructs an empty QualifiedName. After construction, GetElement(0)

@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STDIOOUTPUTSTREAM_H
 #define BOND_IO_STDIOOUTPUTSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/io/outputstream.h"
 #include "bond/io/stdiofilehandle.h"
 #include "bond/stl/utility.h"
@@ -17,7 +18,7 @@ namespace Bond
 ///
 /// \sa OutputStream, StdioInputStream
 /// \ingroup io
-class StdioOutputStream: public OutputStream
+class BOND_API StdioOutputStream: public OutputStream
 {
 public:
 	/// \brief Constructs a StdioOutputStream object.
@@ -83,7 +84,7 @@ private:
 
 /// \brief A concrete implementation of StdioOutputStream bound to stdout.
 /// \sa StdioOutputStream
-class StdOutOutputStream: public StdioOutputStream
+class BOND_API StdOutOutputStream: public StdioOutputStream
 {
 public:
 	/// \brief Constructs a StdOutOutputStream object.
@@ -94,7 +95,7 @@ public:
 
 /// \brief A concrete implementation of StdioOutputStream bound to stderr.
 /// \sa StdioOutputStream
-class StdErrOutputStream: public StdioOutputStream
+class BOND_API StdErrOutputStream: public StdioOutputStream
 {
 public:
 	/// \brief Constructs a StdErrOutputStream object.

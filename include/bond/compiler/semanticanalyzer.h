@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_SEMANTICANALYZER_H
 #define BOND_COMPILER_SEMANTICANALYZER_H
 
+#include "bond/conf.h"
 #include "bond/compiler/symboltable.h"
 
 namespace Bond
@@ -25,7 +26,7 @@ class SymbolTable;
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Lexer, Parser, SymbolTable, TranslationUnit
 /// \ingroup compiler
-class SemanticAnalyzer
+class BOND_API SemanticAnalyzer
 {
 public:
 	/// \brief Constructs a SemanticAnalyzer object.

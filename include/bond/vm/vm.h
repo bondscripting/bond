@@ -1,6 +1,7 @@
 #ifndef BOND_VM_VM_H
 #define BOND_VM_VM_H
 
+#include "bond/conf.h"
 #include "bond/io/inputstreamadaptor.h"
 #include "bond/io/outputstreamadaptor.h"
 #include "bond/stl/autostack.h"
@@ -20,7 +21,7 @@ class VM;
 /// \addtogroup vm
 /// @{
 
-class StackFrame
+class BOND_API StackFrame
 {
 public:
 	explicit StackFrame(VM &vm):
@@ -80,7 +81,7 @@ private:
 typedef AutoStack<StackFrame> StackFrames;
 
 
-class InvocationStackFrame: private StackFrames::Element
+class BOND_API InvocationStackFrame: private StackFrames::Element
 {
 public:
 	InvocationStackFrame(VM &vm, const QualifiedName &functionName);
@@ -117,7 +118,7 @@ private:
 };
 
 
-class VM
+class BOND_API VM
 {
 public:
 	VM(

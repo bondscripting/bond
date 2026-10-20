@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_FRONTEND_H
 #define BOND_COMPILER_FRONTEND_H
 
+#include "bond/conf.h"
 #include "bond/compiler/lexer.h"
 #include "bond/stl/list.h"
 #include "bond/stl/stringview.h"
@@ -35,7 +36,7 @@ class TranslationUnit;
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TranslationUnit
 /// \ingroup compiler
-class FrontEnd
+class BOND_API FrontEnd
 {
 public:
 	/// \brief Constructs a FrontEnd object.

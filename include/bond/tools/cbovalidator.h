@@ -1,6 +1,7 @@
 #ifndef BOND_TOOLS_CBOVALIDATOR_H
 #define BOND_TOOLS_CBOVALIDATOR_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -15,7 +16,7 @@ class InputStream;
 ///
 /// \sa InputStream
 /// \ingroup tools
-class CboValidator
+class BOND_API CboValidator
 {
 public:
 

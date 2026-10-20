@@ -1,6 +1,7 @@
 #ifndef BOND_IO_MEMORYOUTPUTSTREAM_H
 #define BOND_IO_MEMORYOUTPUTSTREAM_H
 
+#include "bond/conf.h"
 #include "bond/io/outputstream.h"
 #include "bond/types/types.h"
 
@@ -15,7 +16,7 @@ namespace Bond
 ///
 /// \sa MemoryInputStream, OutputStream
 /// \ingroup io
-class MemoryOutputStream: public OutputStream
+class BOND_API MemoryOutputStream: public OutputStream
 {
 public:
 	/// \brief Constructs a MemoryOutputStream object.

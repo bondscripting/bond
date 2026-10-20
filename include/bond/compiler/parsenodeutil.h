@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_PARSENODEUTIL_H
 #define BOND_COMPILER_PARSENODEUTIL_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodes.h"
 #include "bond/compiler/parsenodevisitor.h"
 
@@ -12,7 +13,7 @@ namespace Bond
 
 /// \brief Counts and returns the length of a list of ListParseNodes.
 /// \param list Pointer to the list of nodes to be counted.
-uint32_t GetLength(const ListParseNode *list);
+BOND_API uint32_t GetLength(const ListParseNode *list);
 
 
 template <typename NodeType>
@@ -106,19 +107,19 @@ NodeType *SortNodes(NodeType *list, Comparator compare)
 }
 */
 
-bool AreComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
-bool AreConvertibleTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
-bool AreSameTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
-bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
-bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType);
+BOND_API bool AreComparableTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
+BOND_API bool AreConvertibleTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
+BOND_API bool AreSameTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
+BOND_API bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescriptor &toType);
+BOND_API bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
-TypeDescriptor PromoteType(const TypeDescriptor &type);
-TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
+BOND_API TypeDescriptor PromoteType(const TypeDescriptor &type);
+BOND_API TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
 
-Value CastValue(const Token &fromValue, Token::TokenType toType);
-Value CastValue(const TypeAndValue &fromTav, const TypeDescriptor &toType);
+BOND_API Value CastValue(const Token &fromValue, Token::TokenType toType);
+BOND_API Value CastValue(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
-bool IsNegativeIntegerConstant(const Token &token);
+BOND_API bool IsNegativeIntegerConstant(const Token &token);
 
 /// @}
 

@@ -4,6 +4,33 @@
 #include <cstddef>
 #include <new>
 
+#if defined(BOND_SHARED) || defined(BOND_BUILD_SHARED)
+  #if defined(_WIN32) || defined(__CYGWIN__)
+    #if defined(BOND_BUILD_SHARED)
+      #define BOND_API __declspec(dllexport)
+    #else
+      #define BOND_API __declspec(dllimport)
+    #endif
+    #define BOND_LOCAL
+  #else
+    #if defined(__GNUC__) && __GNUC__ >= 4
+      #define BOND_API   __attribute__((visibility("default")))
+      #define BOND_LOCAL __attribute__((visibility("hidden")))
+    #else
+      #define BOND_API
+      #define BOND_LOCAL
+    #endif
+  #endif
+#else
+  #define BOND_API
+  #define BOND_LOCAL
+#endif
+
+#if defined(_MSC_VER)
+  #pragma warning(disable: 4251)
+  #pragma warning(disable: 4275)
+#endif
+
 #ifdef USER_BOND_CONFIG_HEADER
 #include USER_BOND_CONFIG_HEADER
 #endif
@@ -36,7 +63,7 @@
 
 namespace Bond
 {
-	void ValidateConfiguration();
+	BOND_API void ValidateConfiguration();
 }
 
 #endif // BOND_CONF_H

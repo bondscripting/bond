@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_PARSER_H
 #define BOND_COMPILER_PARSER_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodes.h"
 #include "bond/stl/vector.h"
 
@@ -35,7 +36,7 @@ typedef Vector<ParseNodeHandle> ParseNodeStore;
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TokenCollection, TokenStream,
 /// TranslationUnit
-class Parser
+class BOND_API Parser
 {
 public:
 	/// \brief Constructs a Parser object.

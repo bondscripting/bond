@@ -16,7 +16,7 @@ class TranslationUnit;
 ///
 /// \sa TranslationUnit, OutputStream
 /// \ingroup tools
-class NativeBindingGenerator
+class BOND_API NativeBindingGenerator
 {
 public:
 	/// \brief Generates C++ native binding source and header output.
@@ -25,12 +25,16 @@ public:
 	/// \param hStream Output stream receiving generated C++ header declarations.
 	/// \param collectionName Identifier of the generated native binding collection.
 	/// \param includeName Include path written into the generated C++ source file for the header.
+	/// \param exportMacro Macro applied to generated declarations, or nullptr or empty for none.
+	/// \param exportHeader Header included by the generated header to define the export macro, or nullptr or empty for none.
 	void Generate(
 		const TranslationUnit *translationUnitList,
 		OutputStream &cppStream,
 		OutputStream &hStream,
 		const char *collectionName,
-		const char *includeName);
+		const char *includeName,
+		const char *exportMacro = nullptr,
+		const char *exportHeader = nullptr);
 };
 
 }

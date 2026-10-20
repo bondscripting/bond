@@ -1,6 +1,7 @@
 #ifndef BOND_IO_OUTPUTSTREAMADAPTOR_H
 #define BOND_IO_OUTPUTSTREAMADAPTOR_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -11,7 +12,7 @@ class OutputStream;
 /// \brief A wrapper around an OuputStream that adds formatted output operations used within
 /// the Bond Standard Library.
 /// \ingroup io
-class OutputStreamAdaptor
+class BOND_API OutputStreamAdaptor
 {
 public:
 	static const int DEFAULT_PRECISION = 6;

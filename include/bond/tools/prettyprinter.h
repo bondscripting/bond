@@ -18,7 +18,7 @@ class Token;
 ///
 /// \sa ParseNode, ListParseNode, OutputStream
 /// \ingroup tools
-class PrettyPrinter
+class BOND_API PrettyPrinter
 {
 public:
 	/// \brief Controls whitespace and layout verbosity in pretty-printed output.

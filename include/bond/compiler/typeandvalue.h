@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_TYPEANDVALUE_H
 #define BOND_COMPILER_TYPEANDVALUE_H
 
+#include "bond/conf.h"
 #include "bond/stl/stringview.h"
 #include "bond/types/value.h"
 
@@ -13,7 +14,7 @@ class TypeDescriptor;
 /// evaluated by the compiler.
 ///
 /// \ingroup compiler
-class TypeAndValue
+class BOND_API TypeAndValue
 {
 public:
 	explicit TypeAndValue(TypeDescriptor &descriptor):

@@ -8,7 +8,7 @@ namespace Bond
 
 /// \brief Exception thrown for all types of errors in the Bond Runtime Library.
 /// \ingroup systems
-class Exception
+class BOND_API Exception
 {
 public:
 	/// \brief Length of the buffer for the encapsulated error message.

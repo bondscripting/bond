@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_SYMBOLTABLE_H
 #define BOND_COMPILER_SYMBOLTABLE_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodes.h"
 
 namespace Bond
@@ -18,7 +19,7 @@ namespace Bond
 ///
 /// \sa SemanticAnalyzer, Symbol
 /// \ingroup compiler
-class SymbolTable
+class BOND_API SymbolTable
 {
 public:
 	SymbolTable() {}

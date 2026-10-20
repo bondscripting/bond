@@ -1,6 +1,7 @@
 #ifndef BOND_VM_CBOLOADER_H
 #define BOND_VM_CBOLOADER_H
 
+#include "bond/conf.h"
 #include "bond/api/nativebinding.h"
 #include "bond/io/memoryinputstream.h"
 #include "bond/stl/list.h"
@@ -25,7 +26,7 @@ typedef Allocator::AlignedHandle<const CodeSegment> CodeSegmentHandle;
 ///
 /// A CboLoader aggregates one or more CBO inputs, combines their contents into a single
 /// CodeSegment, and binds native functions from supplied NativeBindingCollections.
-class CboLoader
+class BOND_API CboLoader
 {
 public:
 	/// \brief Constructs a CboLoader using the same allocator for temporary and persistent data.

@@ -1,6 +1,7 @@
 #ifndef BOND_TYPES_OPCODES_H
 #define BOND_TYPES_OPCODES_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -307,15 +308,15 @@ enum OpCodeParam
 
 
 /// \brief Returns a string representation of the given opcode.
-const char *GetOpCodeMnemonic(OpCode opCode);
+BOND_API const char *GetOpCodeMnemonic(OpCode opCode);
 
 /// \brief Returns a value of the OpCodeParam enumeration describing the parameter types
 /// for the given opcode.
-OpCodeParam GetOpCodeParamType(OpCode opCode);
+BOND_API OpCodeParam GetOpCodeParamType(OpCode opCode);
 
 /// \brief Returns the how much the given opcode moves the stack pointer in multiples of
 /// BOND_SLOT_SIZE bytes.
-int32_t GetStackDelta(OpCode opCode);
+BOND_API int32_t GetStackDelta(OpCode opCode);
 
 /// @}
 

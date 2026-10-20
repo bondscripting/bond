@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STREAM_H
 #define BOND_IO_STREAM_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -14,7 +15,7 @@ namespace Bond
 ///
 /// \sa InputStream, OutputStream
 /// \ingroup io
-class Stream
+class BOND_API Stream
 {
 public:
 	/// \brief A special value returned by single-byte input functions to indicate end of stream.

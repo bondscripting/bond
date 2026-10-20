@@ -1,6 +1,7 @@
 #ifndef BOND_SYSTEMS_DEFAULTALLOCATOR_H
 #define BOND_SYSTEMS_DEFAULTALLOCATOR_H
 
+#include "bond/conf.h"
 #include "bond/systems/allocator.h"
 
 namespace Bond
@@ -10,7 +11,7 @@ namespace Bond
 /// operators and also tracks the number of outstanding allocations.
 ///
 /// \ingroup systems
-class DefaultAllocator: public Allocator
+class BOND_API DefaultAllocator: public Allocator
 {
 public:
 	DefaultAllocator(): mNumAllocations(0) {}

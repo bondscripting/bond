@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_CODEGENERATOR_H
 #define BOND_COMPILER_CODEGENERATOR_H
 
+#include "bond/conf.h"
 #include "bond/types/types.h"
 
 namespace Bond
@@ -19,7 +20,7 @@ class TranslationUnit;
 ///
 /// \sa ParseNode
 /// \ingroup compiler
-class CodeGenerator
+class BOND_API CodeGenerator
 {
 public:
 	/// \brief Constructs a CodeGenerator object.

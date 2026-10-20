@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STREAMFACTORY_H
 #define BOND_IO_STREAMFACTORY_H
 
+#include "bond/conf.h"
 #include "bond/io/inputstream.h"
 #include "bond/io/outputstream.h"
 #include "bond/systems/allocator.h"
@@ -19,7 +20,7 @@ typedef Allocator::ObjectHandle<OutputStream> OutputStreamHandle;
 
 /// \brief An abstract interface for creating file streams without being coupled to any particular
 /// concrete type of stream.
-class StreamFactory
+class BOND_API StreamFactory
 {
 public:
 	virtual ~StreamFactory() {}

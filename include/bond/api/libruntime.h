@@ -8,12 +8,12 @@ namespace Bond
 
 class CboLoader;
 
-void LoadAllLibs(CboLoader &cboLoader);
-void LoadLibIo(CboLoader &cboLoader);
-void LoadLibMath(CboLoader &cboLoader);
-void LoadLibMemory(CboLoader &cboLoader);
-void LoadLibString(CboLoader &cboLoader);
-void LoadLibType(CboLoader &cboLoader);
+BOND_API void LoadAllLibs(CboLoader &cboLoader);
+BOND_API void LoadLibIo(CboLoader &cboLoader);
+BOND_API void LoadLibMath(CboLoader &cboLoader);
+BOND_API void LoadLibMemory(CboLoader &cboLoader);
+BOND_API void LoadLibString(CboLoader &cboLoader);
+BOND_API void LoadLibType(CboLoader &cboLoader);
 
 }
 

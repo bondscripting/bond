@@ -1,6 +1,7 @@
 #ifndef BOND_IO_MEMORYSTREAMFACTORY_H
 #define BOND_IO_MEMORYSTREAMFACTORY_H
 
+#include "bond/conf.h"
 #include "bond/io/streamfactory.h"
 
 namespace Bond
@@ -15,7 +16,7 @@ class MemoryInputStream;
 /// \brief A concrete implementation of StreamFactory that instantiates MemoryInputStreams
 /// for a fixed collection of DataViews.
 /// \ingroup io
-class MemoryStreamFactory: public StreamFactory
+class BOND_API MemoryStreamFactory: public StreamFactory
 {
 public:
 	/// \brief Constructs a MemoryStreamFactory object.

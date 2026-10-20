@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_TOKEN_H
 #define BOND_COMPILER_TOKEN_H
 
+#include "bond/conf.h"
 #include "bond/compiler/streampos.h"
 #include "bond/stl/stringview.h"
 #include "bond/types/value.h"
@@ -128,7 +129,7 @@ namespace Bond
 /// the Bond source, a type and a value for tokens which are literal constants.
 ///
 /// \sa Lexer
-class Token
+class BOND_API Token
 {
 public:
 	/// \brief An enumeration describing the various types of Tokens.
@@ -318,7 +319,7 @@ private:
 /// TokenTypes. It is typically used by a Parser to validate that the Tokens contained in a
 /// TokenStream are syntactically correct.
 /// \sa Parser, TokenStream
-class TokenTypeSet
+class BOND_API TokenTypeSet
 {
  public:
 	TokenTypeSet(
@@ -357,182 +358,182 @@ private:
 
 
 /// \brief Constant Token of type `KEY_VOID` representing the `void` keyword.
-extern const Token VOID_TOKEN;
+extern BOND_API const Token VOID_TOKEN;
 
 /// \brief Constant Token of type `KEY_BOOL` representing the `bool` keyword.
-extern const Token BOOL_TOKEN;
+extern BOND_API const Token BOOL_TOKEN;
 
 /// \brief Constant Token of type `KEY_CHAR` representing the `char` keyword.
-extern const Token CHAR_TOKEN;
+extern BOND_API const Token CHAR_TOKEN;
 
 /// \brief Constant Token of type `KEY_UCHAR` representing the `uchar` keyword.
-extern const Token UCHAR_TOKEN;
+extern BOND_API const Token UCHAR_TOKEN;
 
 /// \brief Constant Token of type `KEY_INT` representing the `int` keyword.
-extern const Token INT_TOKEN;
+extern BOND_API const Token INT_TOKEN;
 
 /// \brief Constant Token of type `KEY_UINT` representing the `uint` keyword.
-extern const Token UINT_TOKEN;
+extern BOND_API const Token UINT_TOKEN;
 
 /// \brief Constant Token of type `KEY_LONG` representing the `long` keyword.
-extern const Token LONG_TOKEN;
+extern BOND_API const Token LONG_TOKEN;
 
 /// \brief Constant Token of type `KEY_ULONG` representing the `ulong` keyword.
-extern const Token ULONG_TOKEN;
+extern BOND_API const Token ULONG_TOKEN;
 
 /// \brief Constant Token of type `KEY_FLOAT` representing the `float` keyword.
-extern const Token FLOAT_TOKEN;
+extern BOND_API const Token FLOAT_TOKEN;
 
 /// \brief Constant Token of type `KEY_DOUBLE` representing the `double` keyword.
-extern const Token DOUBLE_TOKEN;
+extern BOND_API const Token DOUBLE_TOKEN;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond primitive types namely:
 /// `KEY_BOOL`, `KEY_CHAR`, `KEY_UCHAR`, `KEY_SHORT`, `KEY_USHORT`, `KEY_INT`, `KEY_UINT`,
 /// `KEY_LONG`, `KEY_ULONG`, `KEY_FLOAT`, `KEY_DOUBLE` and `KEY_VOID`.
-extern const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet PRIMITIVE_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet containing only `KEY_BOOL`.
-extern const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet BOOLEAN_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond character types, namely:
 /// `KEY_CHAR` and `KEY_UCHAR`.
-extern const TokenTypeSet CHAR_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet CHAR_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond integral types, namely:
 /// `KEY_CHAR`, `KEY_UCHAR`, `KEY_SHORT`, `KEY_USHORT`, `KEY_INT`, `KEY_UINT`, `KEY_LONG`
 /// and `KEY_ULONG`.
-extern const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond signed integral types, namely:
 /// `KEY_CHAR`, `KEY_SHORT`, `KEY_INT` and `KEY_LONG`.
-extern const TokenTypeSet SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond unsigned integral types, namely:
 /// `KEY_UCHAR`, `KEY_USHORT`, `KEY_UINT` and `KEY_ULONG`.
-extern const TokenTypeSet UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond integral types having at least
 /// 32 bits, namely: `KEY_INT`, `KEY_UINT`, `KEY_LONG` and `KEY_ULONG`.
-extern const TokenTypeSet LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond integral types having at most 32
 /// bits, namely: `KEY_CHAR`, `KEY_UCHAR`, `KEY_SHORT`, `KEY_USHORT`, `KEY_INT` and `KEY_UINT`.
-extern const TokenTypeSet MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond long integral types, namely:
 /// `KEY_LONG` and `KEY_ULONG`.
-extern const TokenTypeSet LONG_INTEGER_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet LONG_INTEGER_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords representing Bond numeric types, namely:
 /// `KEY_CHAR`, `KEY_UCHAR`, `KEY_SHORT`, `KEY_USHORT`, `KEY_INT`, `KEY_UINT`, `KEY_LONG`,
 /// `KEY_ULONG`, `KEY_FLOAT` and `KEY_DOUBLE`.
-extern const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet NUMERIC_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet containing only `KEY_VOID`.
-extern const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
+extern BOND_API const TokenTypeSet VOID_TYPE_SPECIFIERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all punctuation token types used to begin a new level of
 /// indirection in type descriptors, namely: `OP_STAR` and `OBRACKET`.
-extern const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
+extern BOND_API const TokenTypeSet TYPE_DESCRIPTORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all integral literal constants having at most 32 bits,
 /// namely: CONST_CHAR, CONST_INT and CONST_UINT.
-extern const TokenTypeSet MOST32_INTEGER_CONSTANTS_TYPESET;
+extern BOND_API const TokenTypeSet MOST32_INTEGER_CONSTANTS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all signed integral literal constants, namely:
 /// CONST_CHAR, CONST_INT and CONST_LONG.
-extern const TokenTypeSet SIGNED_INTEGER_CONSTANTS_TYPESET;
+extern BOND_API const TokenTypeSet SIGNED_INTEGER_CONSTANTS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords used for jumps in Bond source code, namely:
 /// `KEY_BREAK`, `KEY_CONTINUE` and `KEY_RETURN`.
-extern const TokenTypeSet JUMP_KEYWORDS_TYPESET;
+extern BOND_API const TokenTypeSet JUMP_KEYWORDS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all keywords used for defining case labels in Bond switch
 /// statements, namely: `KEY_CASE` and `KEY_DEFAULT`.
-extern const TokenTypeSet SWITCH_LABELS_TYPESET;
+extern BOND_API const TokenTypeSet SWITCH_LABELS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond assignment operators, namely: `ASSIGN`, `ASSIGN_LEFT`,
 /// `ASSIGN_RIGHT`, `ASSIGN_PLUS`, `ASSIGN_MINUS`, `ASSIGN_MULT`, `ASSIGN_DIV`, `ASSIGN_MOD`,
 /// `ASSIGN_AND`, `ASSIGN_OR` and `ASSIGN_XOR`.
-extern const TokenTypeSet ASSIGNMENT_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet ASSIGNMENT_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond equality operators, namely: `OP_EQUAL`, `OP_NOT_EQUAL`.
-extern const TokenTypeSet EQUALITY_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet EQUALITY_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond relational operators, namely: `OP_LT`, `OP_LTE`,
 /// `OP_GT` and `OP_GTE`.
-extern const TokenTypeSet RELATIONAL_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet RELATIONAL_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond shift operators, namely: `OP_LEFT` and `OP_RIGHT`.
-extern const TokenTypeSet SHIFT_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet SHIFT_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond additive arithmetic operators, namely: `OP_PLUS`
 /// and `OP_MINUS`.
-extern const TokenTypeSet ADDITIVE_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet ADDITIVE_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond multiplicative arithmetic operators, namely: `OP_STAR`,
 /// `OP_DIV` and `OP_MOD`.
-extern const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet MULTIPLICATIVE_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond prefix unary operators, namely: `OP_PLUS`, `OP_MINUS`,
 /// `OP_STAR`, `OP_INC`, `OP_DEC`, `OP_NOT`, `OP_AMP` and `OP_BIT_NOT`.
-extern const TokenTypeSet UNARY_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet UNARY_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond postfix unary operators, namely: `OP_INC`, `OP_DEC`,
 /// `OP_ARROW`, `OPAREN`, `OBRACKET` and `PERIOD`.
-extern const TokenTypeSet POSTFIX_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet POSTFIX_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond operators for retrieving type properties, namely:
 /// `KEY_ALIGNOF`and `KEY_SIZEOF`.
-extern const TokenTypeSet PROPERTYOF_OPERATORS_TYPESET;
+extern BOND_API const TokenTypeSet PROPERTYOF_OPERATORS_TYPESET;
 
 /// \brief Constant TokenTypeSet of all Bond constant literals, namely: `CONST_BOOL`, `CONST_CHAR`,
 /// `CONST_INT`, `CONST_UINT`, `CONST_LONG`, `CONST_ULONG`, `CONST_FLOAT`, `CONST_DOUBLE`,
 /// `CONST_STRING` and `CONST_NULL`.
-extern const TokenTypeSet CONSTANT_LITERALS_TYPESET;
+extern BOND_API const TokenTypeSet CONSTANT_LITERALS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of a block of Bond source, namely:
 /// `CBRACE` and `END`.
-extern const TokenTypeSet BLOCK_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet BLOCK_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond declarations, namely:
 /// `KEY_ENUM`, `KEY_NAMESPACE`, `KEY_NATIVE`, `KEY_STRUCT`, `CBRACE`, `SEMICOLON`, and `END`.
-extern const TokenTypeSet DECLARATION_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet DECLARATION_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond declarations and includes,
 /// namely: `KEY_ENUM`, `KEY_INCLUDE`, `KEY_NAMESPACE`, `KEY_NATIVE`, `KEY_STRUCT`, `CBRACE`,
 /// `SEMICOLON`, and `END`.
-extern const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet INCLUDE_AND_DECLARATION_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond enum declarations, namely:
 /// `CBRACE`, `SEMICOLON`, and `END`.
-extern const TokenTypeSet ENUM_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet ENUM_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond enumerator declarations,
 /// namely: `CBRACE`, `SEMICOLON`, and `COMMA`.
-extern const TokenTypeSet ENUMERATOR_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet ENUMERATOR_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond struct member declarations,
 /// namely: `CBRACE` and `SEMICOLON`.
-extern const TokenTypeSet STRUCT_MEMBER_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet STRUCT_MEMBER_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond initializers, namely:
 /// `CBRACE`, `OBRACE` and `COMMA`.
-extern const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond switch statement sections,
 /// namely: `KEY_CASE`, `KEY_DEFAULT`, `CBRACE` and `COMMA`.
-extern const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond statements, namely:
 /// `KEY_BREAK`, `KEY_CASE`, `KEY_CONTINUE`, `KEY_DEFAULT`, `KEY_DO`, `KEY_IF`, `KEY_FOR`,
 /// `KEY_RETURN`, `KEY_SWITCH`, `KEY_WHILE`, `OBRACE`, `CBRACE` and `COLON`.
-extern const TokenTypeSet STATEMENT_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet STATEMENT_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond switch labels, namely:
 /// `KEY_BREAK`, `KEY_CASE`, `KEY_CONTINUE`, `KEY_DEFAULT`, `KEY_DO`, `KEY_IF`, `KEY_FOR`,
 /// `KEY_RETURN`, `KEY_SWITCH`, `KEY_WHILE`, `OBRACE`, `CBRACE`, `SEMICOLON` and `COLON`.
-extern const TokenTypeSet LABEL_DELIMITERS_TYPESET;
+extern BOND_API const TokenTypeSet LABEL_DELIMITERS_TYPESET;
 
 /// @}
 

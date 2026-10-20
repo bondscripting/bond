@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_PARSENODETRAVERSER_H
 #define BOND_COMPILER_PARSENODETRAVERSER_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodevisitor.h"
 
 namespace Bond
@@ -19,7 +20,7 @@ namespace Bond
 ///
 /// \sa ParseNode, ParseNodeVisitorAdapter, ParseNodeTraverser
 /// \ingroup compiler
-class ParseNodeTraverser: public ParseNodeVisitor
+class BOND_API ParseNodeTraverser: public ParseNodeVisitor
 {
 public:
 	virtual ~ParseNodeTraverser() {}

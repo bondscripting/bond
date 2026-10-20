@@ -1,6 +1,7 @@
 #ifndef BOND_VM_COLLECTOR_H
 #define BOND_VM_COLLECTOR_H
 
+#include "bond/conf.h"
 #include "bond/systems/allocator.h"
 
 namespace Bond
@@ -16,7 +17,7 @@ typedef Allocator::ObjectHandle<Collectable> CollectableHandle;
 
 
 /// \brief Base class for objects tracked by a Collector.
-class Collectable
+class BOND_API Collectable
 {
 public:
 	virtual ~Collectable()
@@ -67,7 +68,7 @@ private:
 /// \brief Tracks and destroys Collectable objects.
 ///
 /// All tracked Collectable objects are destroyed when the Collector is destroyed.
-class Collector
+class BOND_API Collector
 {
 public:
 	/// \brief Registers a Collectable object for later destruction.

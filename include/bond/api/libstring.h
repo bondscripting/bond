@@ -3,19 +3,21 @@
 
 #include "bond/api/nativebinding.h"
 
+#include "bond/conf.h"
+
 namespace Bond
 {
-extern const Bond::NativeBindingCollection STRING_BINDING_COLLECTION;
+extern BOND_API const Bond::NativeBindingCollection STRING_BINDING_COLLECTION;
 }
 
 namespace Bond
 {
-void Strlen(Bond::StackFrame &frame);
-void Strcmp(Bond::StackFrame &frame);
-void TryParseInt(Bond::StackFrame &frame);
-void TryParseLong(Bond::StackFrame &frame);
-void TryParseFloat(Bond::StackFrame &frame);
-void TryParseDouble(Bond::StackFrame &frame);
+BOND_API void Strlen(Bond::StackFrame &frame);
+BOND_API void Strcmp(Bond::StackFrame &frame);
+BOND_API void TryParseInt(Bond::StackFrame &frame);
+BOND_API void TryParseLong(Bond::StackFrame &frame);
+BOND_API void TryParseFloat(Bond::StackFrame &frame);
+BOND_API void TryParseDouble(Bond::StackFrame &frame);
 }
 
 #endif

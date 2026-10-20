@@ -22,7 +22,7 @@ namespace Bond
 /// functionality provided by this class is built on top of those four methods.
 ///
 /// \ingroup systems
-class Allocator
+class BOND_API Allocator
 {
 public:
 	/// \brief A custom unique_ptr deleter that deallocates memory by calling Allocator::Free rather

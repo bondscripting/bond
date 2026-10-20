@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STDIOSTREAMFACTORY_H
 #define BOND_IO_STDIOSTREAMFACTORY_H
 
+#include "bond/conf.h"
 #include "bond/io/streamfactory.h"
 #include "bond/io/stdiofilehandle.h"
 
@@ -15,7 +16,7 @@ class StdioInputStream;
 /// \brief A concrete implementation of StreamFactory that creates instances of StdioInputStream
 /// and StdioOutputStream.
 /// \ingroup io
-class StdioStreamFactory: public StreamFactory
+class BOND_API StdioStreamFactory: public StreamFactory
 {
 public:
 	/// \brief Constructs a StdioStreamFactory object.

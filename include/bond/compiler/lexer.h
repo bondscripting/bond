@@ -1,6 +1,7 @@
 #ifndef BOND_COMPILER_LEXER_H
 #define BOND_COMPILER_LEXER_H
 
+#include "bond/conf.h"
 #include "bond/compiler/tokenstream.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/allocator.h"
@@ -33,7 +34,7 @@ typedef Vector<TokenCollectionHandle> TokenCollectionStore;
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
 /// \sa CompilerErrorBuffer, FrontEnd, Parser, TokenCollection
-class Lexer
+class BOND_API Lexer
 {
 public:
 	/// \brief Constructs a Lexer object.

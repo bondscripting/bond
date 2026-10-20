@@ -1,6 +1,7 @@
 #ifndef BOND_TOOLS_PARSENODECOUNTER_H
 #define BOND_TOOLS_PARSENODECOUNTER_H
 
+#include "bond/conf.h"
 #include "bond/compiler/parsenodetraverser.h"
 
 namespace Bond
@@ -106,7 +107,7 @@ struct ParseNodeCount
 /// parse node type visited.
 ///
 /// \sa ParseNodeCount, ParseNodeTraverser
-class ParseNodeCounter: private ParseNodeTraverser
+class BOND_API ParseNodeCounter: private ParseNodeTraverser
 {
 public:
 	/// \brief Constructs a ParseNodeCounter with all counters initialized to zero.
