@@ -27,16 +27,45 @@ file(GLOB UTIL_SOURCES "${UTIL_DIR}/*.cpp")
 file(GLOB TEST_SOURCES "${TEST_DIR}/*.cpp")
 file(GLOB TEST_FRAMEWORK_SOURCES "${TEST_DIR}/framework/*.cpp")
 
-add_library(bond_lib STATIC ${BOND_SOURCES})
+# Static by default; BUILD_SHARED_LIBS=ON builds the runtime as a shared library.
+add_library(bond_lib ${BOND_SOURCES})
 target_include_directories(bond_lib PUBLIC ${INCLUDE_DIR} ${SOURCE_DIR})
 set_target_properties(bond_lib PROPERTIES
   OUTPUT_NAME bond
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+if(BUILD_SHARED_LIBS)
+  message(STATUS "Bond runtime library: SHARED")
+  target_compile_definitions(bond_lib PRIVATE BOND_BUILD_SHARED PUBLIC BOND_SHARED)
+  # Distinct PDB name so the DLL's PDB does not collide with the bond tool's PDB in bin/.
+  set_target_properties(bond_lib PROPERTIES PDB_NAME bond_lib)
+  if(NOT MSVC)
+    # Hide everything not marked BOND_API so missing exports fail to link, as they do on Windows.
+    set_target_properties(bond_lib PROPERTIES
+      CXX_VISIBILITY_PRESET hidden
+      VISIBILITY_INLINES_HIDDEN ON
+    )
+  endif()
+else()
+  message(STATUS "Bond runtime library: STATIC")
+endif()
+
+# Windows has no RPATH, so the DLL must sit beside every executable that loads it.
+function(bond_copy_runtime_dll target)
+  if(BUILD_SHARED_LIBS AND WIN32)
+    add_custom_command(TARGET ${target} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:bond_lib> $<TARGET_FILE_DIR:${target}>
+    )
+  endif()
+endfunction()
 
 if(BOND_ENABLE_DEFAULT_WARNINGS)
   if(MSVC)
-    target_compile_options(bond_lib PRIVATE /W4 /permissive-)
+    target_compile_options(bond_lib PRIVATE /W4 /wd"4100" /permissive-)
   else()
     target_compile_options(bond_lib PRIVATE
       -Wall -Wextra -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization
@@ -73,7 +102,7 @@ if(BOND_BUILD_TEST_FRAMEWORK)
   )
   if(BOND_ENABLE_DEFAULT_WARNINGS)
     if(MSVC)
-      target_compile_options(framework_lib PRIVATE /W4 /permissive-)
+      target_compile_options(framework_lib PRIVATE /W4 /wd"4100" /permissive-)
     else()
       target_compile_options(framework_lib PRIVATE
         -Wall -Wextra -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization
@@ -82,6 +111,8 @@ if(BOND_BUILD_TEST_FRAMEWORK)
       )
     endif()
   endif()
+  # Links bond_lib so framework sources get BOND_SHARED (dllimport) in shared builds.
+  target_link_libraries(framework_lib PUBLIC bond_lib)
   list(APPEND FRAMEWORK_TARGETS framework_lib)
   add_custom_target(framework DEPENDS framework_lib)
 endif()
@@ -92,14 +123,28 @@ if(BOND_BUILD_TESTS)
     get_filename_component(test_name ${test_src} NAME_WE)
     add_executable(${test_name} ${test_src})
     target_include_directories(${test_name} PRIVATE ${INCLUDE_DIR} ${TEST_DIR})
-    target_link_libraries(${test_name} PRIVATE bond_lib framework_lib)
+    target_link_libraries(${test_name} PRIVATE bond_lib framework_lib ${CMAKE_DL_LIBS})
     set_target_properties(${test_name} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/testbin"
       EXCLUDE_FROM_ALL TRUE
     )
+    bond_copy_runtime_dll(${test_name})
     list(APPEND TEST_TARGETS ${test_name})
   endforeach()
   add_custom_target(test DEPENDS ${TEST_TARGETS})
+
+  # Tests open scripts/*.bond by relative path, so they must run from the source root.
+  set(RUN_TEST_COMMANDS)
+  foreach(test_name IN LISTS TEST_TARGETS)
+    list(APPEND RUN_TEST_COMMANDS COMMAND $<TARGET_FILE:${test_name}>)
+  endforeach()
+  add_custom_target(run_tests
+    ${RUN_TEST_COMMANDS}
+    DEPENDS ${TEST_TARGETS}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running Bond unit tests"
+    VERBATIM
+  )
 endif()
 
 set(UTIL_TARGETS)
