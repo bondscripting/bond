@@ -78,7 +78,7 @@ public:
 	void ClearFlags() { mFlags = 0; }
 
 private:
-	void Format(char *format, const char *specifier) const;
+	void Format(char *format, size_t formatSize, const char *specifier) const;
 
 	InputStream *mStream;
 	int mFlags;

@@ -155,6 +155,9 @@ if(BOND_BUILD_UTILS)
     target_compile_options(${util_name} PRIVATE
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
     )
+    target_compile_definitions(${util_name} PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+    )
     set_target_properties(${util_name} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/util"
       EXCLUDE_FROM_ALL TRUE

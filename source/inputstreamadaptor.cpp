@@ -48,7 +48,7 @@ int8_t InputStreamAdaptor::ScanChar()
 {
 	char value = 0;
 	char format[16];
-	Format(format, "c");
+	Format(format, sizeof(format), "c");
 	mStream->Scan(format, &value);
 	return int8_t(value);
 }
@@ -63,7 +63,7 @@ int32_t InputStreamAdaptor::ScanInt()
 		((mFlags & IO::Oct) != 0) ? BOND_SCNo32 :
 		BOND_SCNi32;
 	char format[16];
-	Format(format, specifier);
+	Format(format, sizeof(format), specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -78,7 +78,7 @@ uint32_t InputStreamAdaptor::ScanUInt()
 		((mFlags & IO::Oct) != 0) ? BOND_SCNo32 :
 		BOND_SCNu32;
 	char format[16];
-	Format(format, specifier);
+	Format(format, sizeof(format), specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -93,7 +93,7 @@ int64_t InputStreamAdaptor::ScanLong()
 		((mFlags & IO::Oct) != 0) ? BOND_SCNo64 :
 		BOND_SCNi64;
 	char format[16];
-	Format(format, specifier);
+	Format(format, sizeof(format), specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -108,7 +108,7 @@ uint64_t InputStreamAdaptor::ScanULong()
 		((mFlags & IO::Oct) != 0) ? BOND_SCNo64 :
 		BOND_SCNi64;
 	char format[16];
-	Format(format, specifier);
+	Format(format, sizeof(format), specifier);
 	mStream->Scan(format, &value);
 	return value;
 }
@@ -118,20 +118,15 @@ double InputStreamAdaptor::ScanDouble()
 {
 	double value = 0.0;
 	char format[16];
-	Format(format, "lf");
+	Format(format, sizeof(format), "lf");
 	mStream->Scan(format, &value);
 	return value;
 }
 
 
-void InputStreamAdaptor::Format(char *format, const char *specifier) const
+void InputStreamAdaptor::Format(char *format, size_t formatSize, const char *specifier) const
 {
-	if ((mFlags & IO::SkipWhite) != 0)
-	{
-		*format++ = ' ';
-	}
-	*format++ = '%';
-	sprintf(format, "%s", specifier);
+	snprintf(format, formatSize, "%s%%%s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", specifier);
 }
 
 }

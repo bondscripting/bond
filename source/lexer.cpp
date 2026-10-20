@@ -7,6 +7,7 @@
 #include "private/memory.h"
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace Bond
@@ -1293,28 +1294,16 @@ void LexerCore::EvaluateCharToken(Token &token)
 
 void LexerCore::EvaluateFloatToken(Token &token) const
 {
-	float value;
-	sscanf(token.GetRawText(), "%f", &value);
+	float value = strtof(token.GetRawText(), nullptr);
 	token.SetFloatValue(value);
 }
 
 
 void LexerCore::EvaluateIntegerToken(Token &token) const
 {
-	uint32_t value;
 	const char *text = token.GetRawText();
-	if (token.HasAnnotation(Token::OCTAL))
-	{
-		sscanf(text, "%" BOND_SCNo32, &value);
-	}
-	else if (token.HasAnnotation(Token::HEX))
-	{
-		sscanf(text, "%" BOND_SCNx32, &value);
-	}
-	else
-	{
-		sscanf(text, "%" BOND_SCNu32, &value);
-	}
+	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
+	const uint32_t value = uint32_t(strtoull(text, nullptr, base));
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
@@ -1329,20 +1318,9 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 
 void LexerCore::EvaluateLongToken(Token &token) const
 {
-	uint64_t value;
 	const char *text = token.GetRawText();
-	if (token.HasAnnotation(Token::OCTAL))
-	{
-		sscanf(text, "%" BOND_SCNo64, &value);
-	}
-	else if (token.HasAnnotation(Token::HEX))
-	{
-		sscanf(text, "%" BOND_SCNx64, &value);
-	}
-	else
-	{
-		sscanf(text, "%" BOND_SCNu64, &value);
-	}
+	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
+	const uint64_t value = uint64_t(strtoull(text, nullptr, base));
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
@@ -1357,8 +1335,7 @@ void LexerCore::EvaluateLongToken(Token &token) const
 
 void LexerCore::EvaluateDoubleToken(Token &token) const
 {
-	double value;
-	sscanf(token.GetRawText(), "%lf", &value);
+	double value = strtod(token.GetRawText(), nullptr);
 	token.SetDoubleValue(value);
 }
 
@@ -1413,11 +1390,10 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 
 			case 'x':
 			{
-				uint32_t value;
-				int length;
-				sscanf(text + 2, "%" BOND_SCNx32 "%n", &value, &length);
+				char *end;
+				const uint32_t value = uint32_t(strtoull(text + 2, &end, 16));
 				result.value = char(value);
-				result.end = text + 2 + length;
+				result.end = end;
 				if (!IsInRange<uint8_t>(value))
 				{
 					result.error = CompilerError::HEX_ESCAPE_RANGE;
@@ -1428,11 +1404,10 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			default:
 				if (IsOctalChar(text[1]))
 				{
-					uint32_t value;
-					int length;
-					sscanf(text + 1, "%" BOND_SCNo32 "%n", &value, &length);
+					char *end;
+					const uint32_t value = uint32_t(strtoull(text + 1, &end, 8));
 					result.value = char(value);
-					result.end = text + 1 + length;
+					result.end = end;
 					if (!IsInRange<uint8_t>(value))
 					{
 						result.error = CompilerError::OCTAL_ESCAPE_RANGE;

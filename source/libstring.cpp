@@ -1,6 +1,8 @@
 #include "bond/api/libstring.h"
 #include "bond/vm/vm.h"
+#include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace Bond
@@ -30,7 +32,14 @@ void TryParseInt(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%" BOND_SCNd32, result) == 1;
+		char *end;
+		errno = 0;
+		const long long value = strtoll(str, &end, 10);
+		success = (end != str) && (errno != ERANGE) && (value >= BOND_INT_MIN) && (value <= BOND_INT_MAX);
+		if (success)
+		{
+			*result = int32_t(value);
+		}
 	}
 	frame.SetReturnValue(success);
 }
@@ -43,7 +52,14 @@ void TryParseLong(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%" BOND_SCNd64, result) == 1;
+		char *end;
+		errno = 0;
+		const long long value = strtoll(str, &end, 10);
+		success = (end != str) && (errno != ERANGE);
+		if (success)
+		{
+			*result = int64_t(value);
+		}
 	}
 	frame.SetReturnValue(success);
 }
@@ -56,7 +72,13 @@ void TryParseFloat(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%f", result) == 1;
+		char *end;
+		const float value = strtof(str, &end);
+		success = end != str;
+		if (success)
+		{
+			*result = value;
+		}
 	}
 	frame.SetReturnValue(success);
 }
@@ -69,7 +91,13 @@ void TryParseDouble(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		success = sscanf(str, "%lf", result) == 1;
+		char *end;
+		const double value = strtod(str, &end);
+		success = end != str;
+		if (success)
+		{
+			*result = value;
+		}
 	}
 	frame.SetReturnValue(success);
 }

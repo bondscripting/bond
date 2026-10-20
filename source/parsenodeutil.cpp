@@ -612,6 +612,7 @@ Value CastValue(const Value &value, Token::TokenType fromType, Token::TokenType 
 				default:
 					break;
 			}
+			break;
 
 		case Token::KEY_CHAR:
 			switch (fromType)

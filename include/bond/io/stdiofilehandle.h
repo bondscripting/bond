@@ -6,6 +6,22 @@
 namespace Bond
 {
 
+namespace Private
+{
+
+// fopen_s is used on MSVC only; it is optional Annex K and unavailable in most other C libraries.
+inline FILE *OpenStdioFile(const char *fileName, const char *mode)
+{
+#if defined(_MSC_VER)
+	FILE *file = nullptr;
+	return (fopen_s(&file, fileName, mode) == 0) ? file : nullptr;
+#else
+	return fopen(fileName, mode);
+#endif
+}
+
+}
+
 /// \brief A handle to a stdio FILE* to ensure that the file is properly disposed using RAII.
 /// \ingroup io
 class StdioFileHandle
@@ -27,7 +43,7 @@ public:
 	/// \param mode The fopen mode string used to open the file.
 	/// \remarks If fopen fails, the handle remains unbound.
 	StdioFileHandle(const char *fileName, const char *mode):
-		mFile(fopen(fileName, mode))
+		mFile(Private::OpenStdioFile(fileName, mode))
 	{}
 
 	/// \brief Move-constructs a handle by transferring ownership from another handle.

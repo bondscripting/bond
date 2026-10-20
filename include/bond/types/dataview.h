@@ -78,7 +78,7 @@ public:
 	const DataView *GetDataViews() const { return mDataViews; }
 
 	/// \brief Returns the number of DataViews in the index.
-	const size_t GetNumDataViews() const { return mNumDataViews; }
+	size_t GetNumDataViews() const { return mNumDataViews; }
 
 private:
 	const StringView *mDataViewNames;
