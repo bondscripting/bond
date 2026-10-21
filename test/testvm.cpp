@@ -1,6 +1,17 @@
 #include "framework/testvmframework.h"
 #include <cstring>
 
+namespace
+{
+// Avoids MSVC C4310 for intentionally truncating constant casts.
+template <typename To, typename From>
+To TruncateCast(From value)
+{
+	return static_cast<To>(value);
+}
+}
+
+
 struct Char3
 {
 	int8_t x;
@@ -120,22 +131,22 @@ DEFINE_VM_TEST(TypeConversions, "scripts/vm_TypeConversions.bond")
 {
 	using namespace Bond;
 	VALIDATE_FUNCTION_CALL(int32_t, "Itoc", int32_t(int8_t(-17)), int32_t(-17));
-	VALIDATE_FUNCTION_CALL(int32_t, "Itoc", int32_t(int8_t(0xabc)), int32_t(0xabc));
-	VALIDATE_FUNCTION_CALL(int32_t, "Itoc", int32_t(int8_t(0x864)), int32_t(0x864));
+	VALIDATE_FUNCTION_CALL(int32_t, "Itoc", int32_t(TruncateCast<int8_t>(0xabc)), int32_t(0xabc));
+	VALIDATE_FUNCTION_CALL(int32_t, "Itoc", int32_t(TruncateCast<int8_t>(0x864)), int32_t(0x864));
 
 	VALIDATE_FUNCTION_CALL(uint32_t, "Uitouc", uint32_t(uint8_t(17)), uint32_t(17));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Uitouc", uint32_t(uint8_t(0xabc)), uint32_t(0xabc));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Uitouc", uint32_t(uint8_t(0x864)), uint32_t(0x864));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Uitouc", uint32_t(TruncateCast<uint8_t>(0xabc)), uint32_t(0xabc));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Uitouc", uint32_t(TruncateCast<uint8_t>(0x864)), uint32_t(0x864));
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(int16_t(-17)), int32_t(-17));
 	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(int16_t(0xabc)), int32_t(0xabc));
-	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(int16_t(0xabcde)), int32_t(0xabcde));
-	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(int16_t(0x987654)), int32_t(0x987654));
+	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(TruncateCast<int16_t>(0xabcde)), int32_t(0xabcde));
+	VALIDATE_FUNCTION_CALL(int32_t, "Itos", int32_t(TruncateCast<int16_t>(0x987654)), int32_t(0x987654));
 
 	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(uint16_t(17)), uint32_t(17));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(uint16_t(0xabc)), uint32_t(0xabc));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(uint16_t(0xabcde)), uint32_t(0xabcde));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(uint16_t(0x987654)), uint32_t(0x987654));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(TruncateCast<uint16_t>(0xabcde)), uint32_t(0xabcde));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(TruncateCast<uint16_t>(0x987654)), uint32_t(0x987654));
 
 	VALIDATE_FUNCTION_CALL(int64_t, "Itol", int64_t(int32_t(-4567)), int32_t(-4567));
 	VALIDATE_FUNCTION_CALL(int64_t, "Itol", int64_t(int32_t(4567)), int32_t(4567));
@@ -167,7 +178,7 @@ DEFINE_VM_TEST(TypeConversions, "scripts/vm_TypeConversions.bond")
 	VALIDATE_FUNCTION_CALL(double, "Uitod", double(uint32_t(3000)), uint32_t(3000));
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Ltoi", int32_t(int64_t(-8745)), int64_t(-8745));
-	VALIDATE_FUNCTION_CALL(int32_t, "Ltoi", int32_t(int64_t(0xabcdef) << 16), int64_t(0xabcdef) << 16);
+	VALIDATE_FUNCTION_CALL(int32_t, "Ltoi", TruncateCast<int32_t>(int64_t(0xabcdef) << 16), int64_t(0xabcdef) << 16);
 	VALIDATE_FUNCTION_CALL(int32_t, "Ltoi", int32_t(int64_t(8745)), int64_t(8745));
 
 	VALIDATE_FUNCTION_CALL(float, "Ltof", float(int64_t(0)), int64_t(0));
@@ -263,7 +274,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	using namespace Bond;
 	VALIDATE_FUNCTION_CALL(int32_t, "Addi", int32_t(-65) + int32_t(13), int32_t(-65), int32_t(13));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Addi", uint32_t(65) + uint32_t(13), uint32_t(65), uint32_t(13));
-	VALIDATE_FUNCTION_CALL(int64_t, "Addl", (int64_t(-65) << 40) + (int64_t(13) << 40), (int64_t(-65) << 40), (int64_t(13) << 40));
+	VALIDATE_FUNCTION_CALL(int64_t, "Addl", (-(int64_t(65) << 40)) + (int64_t(13) << 40), (-(int64_t(65) << 40)), (int64_t(13) << 40));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Addl", (uint64_t(65) << 40) + (uint64_t(13) << 40), (uint64_t(65) << 40), (uint64_t(13) << 40));
 	VALIDATE_FUNCTION_CALL(float, "Addf", -65.0f + 13.0f, -65.0f, 13.0f);
 	VALIDATE_FUNCTION_CALL(float, "Addf", 1e20f + 0.5e20f, 1e20f, 0.5e20f);
@@ -272,7 +283,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Subi", int32_t(-43) - int32_t(12), int32_t(-43), int32_t(12));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Subi", uint32_t(43) - uint32_t(12), uint32_t(43), uint32_t(12));
-	VALIDATE_FUNCTION_CALL(int64_t, "Subl", (int64_t(-43) << 40) - (int64_t(12) << 40), (int64_t(-43) << 40), (int64_t(12) << 40));
+	VALIDATE_FUNCTION_CALL(int64_t, "Subl", (-(int64_t(43) << 40)) - (int64_t(12) << 40), (-(int64_t(43) << 40)), (int64_t(12) << 40));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Subl", (uint64_t(43) << 40) - (uint64_t(12) << 40), (uint64_t(43) << 40), (uint64_t(12) << 40));
 	VALIDATE_FUNCTION_CALL(float, "Subf", -43.0f - 12.0f, -43.0f, 12.0f);
 	VALIDATE_FUNCTION_CALL(float, "Subf", 1e20f - 0.5e20f, 1e20f, 0.5e20f);
@@ -282,7 +293,7 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(0), int32_t(-58), int32_t(0));
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(17), int32_t(-58), int32_t(17));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", uint32_t(58) * uint32_t(17), uint32_t(58), uint32_t(17));
-	VALIDATE_FUNCTION_CALL(int64_t, "Mull", (int64_t(-58) << 40) * int64_t(17), (int64_t(-58) << 40), int64_t(17));
+	VALIDATE_FUNCTION_CALL(int64_t, "Mull", (-(int64_t(58) << 40)) * int64_t(17), (-(int64_t(58) << 40)), int64_t(17));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", (uint64_t(58) << 40) * uint64_t(17), (uint64_t(58) << 40), uint64_t(17));
 	VALIDATE_FUNCTION_CALL(float, "Mulf", 0.0f * 84.3f, -0.0f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Mulf", -98.1f * 84.3f, -98.1f, 84.3f);
@@ -319,14 +330,14 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Lshi", int32_t(1 & 1) << int32_t(31), int32_t(1), int32_t(31));
 	VALIDATE_FUNCTION_CALL(int32_t, "Lshi", int32_t(2 & 1) << int32_t(31), int32_t(2), int32_t(31));
 	VALIDATE_FUNCTION_CALL(int32_t, "Lshi", int32_t(3 & 1) << int32_t(31), int32_t(3), int32_t(31));
-	VALIDATE_FUNCTION_CALL(int32_t, "Lshi", int32_t(-3) << int32_t(16), int32_t(-3), int32_t(16));
+	VALIDATE_FUNCTION_CALL(int32_t, "Lshi", -(int32_t(3) << int32_t(16)), int32_t(-3), int32_t(16));
 
 	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", int64_t(0) << int64_t(1), int64_t(0), int64_t(1));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Lshl", uint64_t(1) << uint64_t(1), uint64_t(1), uint64_t(1));
 	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", int64_t(1 & 1) << int64_t(63), int64_t(1), int64_t(63));
 	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", int64_t(2 & 1) << int64_t(63), int64_t(2), int64_t(63));
 	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", int64_t(3 & 1) << int64_t(63), int64_t(3), int64_t(63));
-	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", int64_t(-3) << int64_t(16), int64_t(-3), int64_t(16));
+	VALIDATE_FUNCTION_CALL(int64_t, "Lshl", -(int64_t(3) << int64_t(16)), int64_t(-3), int64_t(16));
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Rshi", int32_t(0) >> int32_t(1), int32_t(0), int32_t(1));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Rshi", uint32_t(2) >> uint32_t(1), uint32_t(2), uint32_t(1));
@@ -806,7 +817,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Addi", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
-	int64_t l = int64_t(-97) << 40; int64_t ol = int64_t(27) << 40; int64_t rl = l + ol;
+	int64_t l = -(int64_t(97) << 40); int64_t ol = int64_t(27) << 40; int64_t rl = l + ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Addl", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
@@ -831,7 +842,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Subi", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
-	l = int64_t(-85) << 40; ol = int64_t(39) << 40; rl = l - ol;
+	l = -(int64_t(85) << 40); ol = int64_t(39) << 40; rl = l - ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Subl", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
@@ -856,7 +867,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
-	l = int64_t(-48) << 40; ol = int64_t(135) << 40; rl = l * ol;
+	l = -(int64_t(48) << 40); ol = int64_t(135) << 40; rl = l * ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Mull", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
@@ -881,7 +892,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Divui", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
-	l = int64_t(-10) << 40; ol = int64_t(3); rl = l / ol;
+	l = -(int64_t(10) << 40); ol = int64_t(3); rl = l / ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Divl", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
@@ -906,7 +917,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Remui", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
-	l = int64_t(-10) << 40; ol = int64_t(34); rl = l % ol;
+	l = -(int64_t(10) << 40); ol = int64_t(34); rl = l % ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Reml", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
