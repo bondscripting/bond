@@ -138,6 +138,9 @@
     <ClInclude Include="..\..\include\bond\systems\endian.h">
       <Filter>Header Files\include\bond\systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\systems\error.h">
+      <Filter>Header Files\include\bond\systems</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\systems\exception.h">
       <Filter>Header Files\include\bond\systems</Filter>
     </ClInclude>
@@ -199,6 +202,9 @@
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\private\assert.h">
+      <Filter>Header Files\include\bond\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\bond\private\error.h">
       <Filter>Header Files\include\bond\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\bond\private\libinclude_embedded.h">
@@ -359,6 +365,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\assert.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\cboloader.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>

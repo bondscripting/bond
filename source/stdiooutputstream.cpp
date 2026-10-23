@@ -1,5 +1,5 @@
 #include "bond/io/stdiooutputstream.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 
 namespace Bond
 {
@@ -10,7 +10,7 @@ namespace Bond
 {
 	if (!IsBound())
 	{
-		BOND_FAIL_FORMAT("Failed to open file '%s' for writing.", fileName);
+		BOND_ERROR_FORMAT("Failed to open file '%s' for writing.", fileName);
 	}
 }
 

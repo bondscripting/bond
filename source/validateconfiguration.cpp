@@ -1,5 +1,5 @@
 #include "bond/types/value.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 
 namespace Bond
 {
@@ -34,18 +34,18 @@ void ValidateConfiguration()
 	const EndianTest endiantTest;
 
 #if defined(BOND_LITTLE_ENDIAN)
-	BOND_ASSERT_MESSAGE(endiantTest.mBytes[0] == 1, "BOND_LITTLE_ENDIAN is defined but system is not little endian.");
+	BOND_CHECK_MESSAGE(endiantTest.mBytes[0] == 1, "BOND_LITTLE_ENDIAN is defined but system is not little endian.");
 #elif defined(BOND_BIG_ENDIAN)
-	BOND_ASSERT_MESSAGE(endiantTest.mBytes[0] == 0, "BOND_BIG_ENDIAN is defined but system is not big endian.");
+	BOND_CHECK_MESSAGE(endiantTest.mBytes[0] == 0, "BOND_BIG_ENDIAN is defined but system is not big endian.");
 #else
 #error Neither BOND_LITTLE_ENDIAN nor BOND_BIG_ENDIAN is defined.
 #endif
 
 	const Value32 floatFormatTest(-2.375f);
-	BOND_ASSERT_MESSAGE(floatFormatTest.mUInt == uint32_t(0xC0180000), "The representation of type 'float' does not appear to be in IEEE binary32 format.");
+	BOND_CHECK_MESSAGE(floatFormatTest.mUInt == uint32_t(0xC0180000), "The representation of type 'float' does not appear to be in IEEE binary32 format.");
 
 	const Value64 doubleFormatTest(-2.375);
-	BOND_ASSERT_MESSAGE(doubleFormatTest.mULong == (uint64_t(0xC0030000) << uint64_t(32)), "The representation of type 'double' does not appear to be in IEEE binary64 format.");
+	BOND_CHECK_MESSAGE(doubleFormatTest.mULong == (uint64_t(0xC0030000) << uint64_t(32)), "The representation of type 'double' does not appear to be in IEEE binary64 format.");
 }
 
 }

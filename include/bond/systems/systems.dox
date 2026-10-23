@@ -3,11 +3,29 @@
 \brief These classes implement low-level utilities.
 
 @{
+\defgroup assert Assert
+\brief Debugging asserts for catching logic errors during development. They are compiled out when
+BOND_ASSERTS_ENABLED is 0, and report the failure and abort instead of throwing.
+
+\code
+#include "bond/systems/assert.h"
+\endcode
+
+
 \defgroup endian Endian
 \brief These functions provide functionality for manipulating byte order.
 
 \code
 #include "bond/systems/endian.h"
+\endcode
+
+
+\defgroup error Error
+\brief Always enabled runtime error detection that throws Bond::Exception, for conditions that
+depend on program input.
+
+\code
+#include "bond/systems/error.h"
 \endcode
 
 

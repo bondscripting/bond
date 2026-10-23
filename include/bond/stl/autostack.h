@@ -4,7 +4,6 @@
 #include "bond/stl/utility.h"
 #include "bond/systems/assert.h"
 #include "bond/types/types.h"
-#include <cassert>
 
 namespace Bond
 {
@@ -58,8 +57,7 @@ public:
 		/// \brief Pops the Element from its stack. The Element must be at the top of the stack.
 		~Element()
 		{
-			// Not BOND_ASSERT: destructors are noexcept, so a throw would terminate anyway.
-			assert(mStack.mTop == this);
+			BOND_ASSERT(mStack.mTop == this);
 			mStack.mTop = mNext;
 		}
 
@@ -236,7 +234,7 @@ public:
 	~AutoStack()
 	{
 		// Live elements would keep a reference to this destroyed stack.
-		assert(mTop == nullptr);
+		BOND_ASSERT(mTop == nullptr);
 	}
 
 	AutoStack(const AutoStack &other) = delete;

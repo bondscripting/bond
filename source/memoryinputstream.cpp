@@ -1,5 +1,5 @@
 #include "bond/io/memoryinputstream.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include <cstring>
 #include <cstdio>
@@ -16,7 +16,7 @@ MemoryInputStream::MemoryInputStream(const void *buffer, pos_t size):
 
 void MemoryInputStream::VScan(const char *format, va_list argList)
 {
-	BOND_FAIL_MESSAGE("MemoryInputStream::VScan is not implemented.");
+	BOND_ERROR_MESSAGE("MemoryInputStream::VScan is not implemented.");
 }
 
 

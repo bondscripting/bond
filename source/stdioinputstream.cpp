@@ -1,5 +1,5 @@
 #include "bond/io/stdioinputstream.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 
 namespace Bond
 {
@@ -10,7 +10,7 @@ StdioInputStream::StdioInputStream(const char *fileName):
 {
 	if (!IsBound())
 	{
-		BOND_FAIL_FORMAT("Failed to open file '%s' for reading.", fileName);
+		BOND_ERROR_FORMAT("Failed to open file '%s' for reading.", fileName);
 	}
 }
 

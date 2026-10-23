@@ -6,7 +6,7 @@
 #include "bond/io/outputstreamadaptor.h"
 #include "bond/stl/autostack.h"
 #include "bond/systems/allocator.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 #include "bond/vm/codesegment.h"
 #include "bond/vm/collector.h"
 

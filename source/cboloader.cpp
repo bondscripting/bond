@@ -4,6 +4,7 @@
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
 #include "bond/systems/endian.h"
+#include "bond/systems/error.h"
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
 #include "bond/types/opcodes.h"
@@ -132,7 +133,7 @@ CodeSegmentHandle CboLoader::Load()
 		CboValidator::Result &result = resultList[i];
 		result = validator.Validate(stream);
 		stream.SetPosition(pos);
-		BOND_ASSERT_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, "CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE));
+		BOND_CHECK_FORMAT(result.mPointerSize == BOND_NATIVE_POINTER_SIZE, "CBO compiled with incompatible pointer size. CBO pointer size %" BOND_PRIu32 ". Native pointer size %" BOND_PRIu32 ".", GetPointerSize(result.mPointerSize), GetPointerSize(BOND_NATIVE_POINTER_SIZE));
 		value32Count += result.mValue32Count;
 		value64Count += result.mValue64Count;
 		stringCount += result.mStringCount;
@@ -374,6 +375,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 					const int32_t maxMatch = *reinterpret_cast<int32_t *>(code);
 					code += sizeof(Value32);
 
+					// Already rejected by the CboValidator, so this is an internal invariant.
 					BOND_ASSERT(maxMatch >= minMatch);
 					const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
 					for (uint32_t i = 0; i < numMatches; ++i)
@@ -393,7 +395,7 @@ void CboLoader::FunctionIsNotNative(const Function &function) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	function.mName.PrintTo(stream);
-	BOND_FAIL_FORMAT("Target function '%s' of native function binding is not native.", buffer);
+	BOND_ERROR_FORMAT("Target function '%s' of native function binding is not native.", buffer);
 }
 
 
@@ -402,7 +404,7 @@ void CboLoader::FunctionIsNotBound(const Function &function) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	function.mName.PrintTo(stream);
-	BOND_FAIL_FORMAT("Native function '%s' is not bound.", buffer);
+	BOND_ERROR_FORMAT("Native function '%s' is not bound.", buffer);
 }
 
 
@@ -411,7 +413,7 @@ void CboLoader::FunctionIsDefinedMultipleTimes(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT("Function '%s' is defined multiple times.", buffer);
+	BOND_ERROR_FORMAT("Function '%s' is defined multiple times.", buffer);
 }
 
 
@@ -420,7 +422,7 @@ void CboLoader::DataIsDefinedMultipleTimes(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT("Data '%s' is defined multiple times.", buffer);
+	BOND_ERROR_FORMAT("Data '%s' is defined multiple times.", buffer);
 }
 
 
@@ -429,13 +431,13 @@ void CboLoader::UnresolvedQualifiedName(const QualifiedName &name) const
 	char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 	MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 	name.PrintTo(stream);
-	BOND_FAIL_FORMAT("Unresolved qualified name '%s'.", buffer);
+	BOND_ERROR_FORMAT("Unresolved qualified name '%s'.", buffer);
 }
 
 
 void CboLoader::UnresolvedQualifiedName(const char *name) const
 {
-	BOND_FAIL_FORMAT("Unresolved qualified name '%s'.", name);
+	BOND_ERROR_FORMAT("Unresolved qualified name '%s'.", name);
 }
 
 

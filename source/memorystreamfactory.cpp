@@ -1,7 +1,7 @@
 #include "bond/io/memoryinputstream.h"
 #include "bond/io/memorystreamfactory.h"
 #include "bond/stl/algorithm.h"
-#include "bond/systems/assert.h"
+#include "bond/systems/error.h"
 #include "bond/types/dataview.h"
 
 namespace Bond
@@ -29,7 +29,7 @@ InputStreamHandle MemoryStreamFactory::CreateInputStream(const char *fileName)
 
 	if (!handle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT("Failed to open file '%s' for reading.", fileName);
+		BOND_ERROR_FORMAT("Failed to open file '%s' for reading.", fileName);
 	}
 
 	return handle;
@@ -46,7 +46,7 @@ OutputStreamHandle MemoryStreamFactory::CreateOutputStream(const char *fileName,
 
 	if (!handle && mThrowOnFailure)
 	{
-		BOND_FAIL_FORMAT("Failed to open file '%s' for writing.", fileName);
+		BOND_ERROR_FORMAT("Failed to open file '%s' for writing.", fileName);
 	}
 
 	return handle;

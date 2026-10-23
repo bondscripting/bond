@@ -80,7 +80,7 @@ Usage: <code>bond &lt;vm options&gt; - &lt;application options&gt;</code>
     </tr>
     <tr>
       <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-s&nbsp;&lt;int&gt;</code></td>
-      <td>Stack size in kilobytes. Defaults to 64 if omitted.</td>
+      <td>Stack size in kilobytes. Defaults to 256 if omitted.</td>
     </tr>
     <tr>
       <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-v</code></td>

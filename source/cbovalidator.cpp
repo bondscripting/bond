@@ -1,6 +1,6 @@
 #include "bond/io/memoryinputstream.h"
-#include "bond/systems/assert.h"
 #include "bond/systems/endian.h"
+#include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
@@ -80,8 +80,8 @@ CboValidator::Result CboValidatorCore::Validate()
 	const size_t stringCount = ReadValue16().mUShort;
 	const size_t qualifiedNameCount = ReadValue16().mUShort;
 
-	BOND_ASSERT_FORMAT(magicNumber == MAGIC_NUMBER, "CBO file contains invalid magic number: 0x%" BOND_PRIx32 ".", magicNumber);
-	BOND_ASSERT_FORMAT(IsCBOFormatLoadable(majorVersion, minorVersion), "Unsupported CBO file format version: %" BOND_PRIu32 ".%" BOND_PRIu32 ". Only CBO file format versions in the range %" BOND_PRIu32 ".%" BOND_PRIu32 " through %" BOND_PRIu32 ".XX are supported.", majorVersion, minorVersion, CBO_MIN_SUPPORTED_MAJOR_VERSION, CBO_MIN_SUPPORTED_MINOR_VERSION, CBO_MAX_SUPPORTED_MAJOR_VERSION);
+	BOND_CHECK_FORMAT(magicNumber == MAGIC_NUMBER, "CBO file contains invalid magic number: 0x%" BOND_PRIx32 ".", magicNumber);
+	BOND_CHECK_FORMAT(IsCBOFormatLoadable(majorVersion, minorVersion), "Unsupported CBO file format version: %" BOND_PRIu32 ".%" BOND_PRIu32 ". Only CBO file format versions in the range %" BOND_PRIu32 ".%" BOND_PRIu32 " through %" BOND_PRIu32 ".XX are supported.", majorVersion, minorVersion, CBO_MIN_SUPPORTED_MAJOR_VERSION, CBO_MIN_SUPPORTED_MINOR_VERSION, CBO_MAX_SUPPORTED_MAJOR_VERSION);
 
 	mResult.mMajorVersion = majorVersion;
 	mResult.mMinorVersion = minorVersion;
@@ -546,19 +546,19 @@ void CboValidatorCore::AssertBytesRemaining(size_t numBytes) const
 
 void CboValidatorCore::FunctionIsInvalid() const
 {
-	BOND_FAIL_MESSAGE("CBO file contains an invalid function blob");
+	BOND_ERROR_MESSAGE("CBO file contains an invalid function blob");
 }
 
 
 void CboValidatorCore::CodeIsInvalid() const
 {
-	BOND_FAIL_MESSAGE("CBO file contains invalid bytecode");
+	BOND_ERROR_MESSAGE("CBO file contains invalid bytecode");
 }
 
 
 void CboValidatorCore::CboIsInvalid() const
 {
-	BOND_FAIL_MESSAGE("CBO file is incomplete or malformed.");
+	BOND_ERROR_MESSAGE("CBO file is incomplete or malformed.");
 }
 
 }

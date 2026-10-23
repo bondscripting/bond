@@ -1,5 +1,6 @@
 #include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
+#include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include "bond/types/opcodes.h"
 #include "bond/vm/vm.h"
@@ -63,7 +64,7 @@ void InvocationStackFrame::Initialize(VM &vm, const QualifiedName &functionName,
 		char buffer[Exception::MESSAGE_BUFFER_LENGTH];
 		MemoryOutputStream stream(buffer, Stream::pos_t(Exception::MESSAGE_BUFFER_LENGTH));
 		functionName.PrintTo(stream);
-		BOND_FAIL_FORMAT("Failed to look up function '%s'.", buffer);
+		BOND_ERROR_FORMAT("Failed to look up function '%s'.", buffer);
 	}
 
 	Initialize(vm, *function, returnPointer);
@@ -74,7 +75,7 @@ void InvocationStackFrame::Initialize(VM &vm, const char *functionName, void *re
 {
 	const CodeSegment &codeSegment = vm.GetCodeSegment();
 	const Function *function = codeSegment.GetFunction(functionName);
-	BOND_ASSERT_FORMAT(function != nullptr, "Failed to look up function '%s'.", functionName);
+	BOND_CHECK_FORMAT(function != nullptr, "Failed to look up function '%s'.", functionName);
 	Initialize(vm, *function, returnPointer);
 }
 
@@ -2367,7 +2368,7 @@ void VM::RaiseError(const char *format, ...) const
 	stream.Print("\n");
 	DumpCallStack(stream);
 
-	BOND_FAIL_MESSAGE(buffer);
+	BOND_ERROR_MESSAGE(buffer);
 }
 
 }

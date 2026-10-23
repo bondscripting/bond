@@ -30,6 +30,9 @@ file(GLOB TEST_FRAMEWORK_SOURCES "${TEST_DIR}/framework/*.cpp")
 # Static by default; BUILD_SHARED_LIBS=ON builds the runtime as a shared library.
 add_library(bond_lib ${BOND_SOURCES})
 target_include_directories(bond_lib PUBLIC ${INCLUDE_DIR} ${SOURCE_DIR})
+# Debugging asserts are enabled by default in bond/conf.h; disable them in all non-Debug configs.
+# PUBLIC so that header templates such as AutoStack are compiled consistently by all consumers.
+target_compile_definitions(bond_lib PUBLIC $<$<NOT:$<CONFIG:Debug>>:BOND_ASSERTS_ENABLED=0>)
 set_target_properties(bond_lib PROPERTIES
   OUTPUT_NAME bond
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

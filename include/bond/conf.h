@@ -39,6 +39,10 @@
 #define BOND_RUNTIME_CHECKS_ENABLED 1
 #endif
 
+#ifndef BOND_ASSERTS_ENABLED
+#define BOND_ASSERTS_ENABLED 1
+#endif
+
 #if !defined(BOND_LITTLE_ENDIAN) && !defined(BOND_BIG_ENDIAN)
 #define BOND_LITTLE_ENDIAN
 #endif
