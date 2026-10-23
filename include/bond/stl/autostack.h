@@ -2,11 +2,17 @@
 #define BOND_STL_AUTOSTACK_H
 
 #include "bond/stl/utility.h"
+#include "bond/systems/assert.h"
 #include "bond/types/types.h"
+#include <cassert>
 
 namespace Bond
 {
 
+/// A stack whose elements are automatic variables. Pushing returns an Element that must
+/// be kept alive for as long as the value should remain on the stack; destroying it pops
+/// the value. Elements must be destroyed in reverse order of creation and must not outlive
+/// the stack. The stack cannot be copied or moved.
 template <typename ValueType>
 class AutoStack
 {
@@ -18,6 +24,7 @@ public:
 	{
 	public:
 		explicit Element(AutoStack &stack):
+			mValue(),
 			mStack(stack),
 			mNext(nullptr)
 		{
@@ -35,7 +42,9 @@ public:
 
 		~Element()
 		{
-			mStack.PopElement();
+			// Not BOND_ASSERT: destructors are noexcept, so a throw would terminate anyway.
+			assert(mStack.mTop == this);
+			mStack.mTop = mNext;
 		}
 
 		Element(const Element &other) = delete;
@@ -44,18 +53,18 @@ public:
 		Element &operator=(const ValueType &value) { mValue = value; return *this; }
 		Element &operator=(ValueType &&value) { mValue = Bond::move(value); return *this; }
 
-		operator const ValueType&() const { return mValue; }
-		operator ValueType&() { return mValue; }
+		operator const ValueType&() const noexcept { return mValue; }
+		operator ValueType&() noexcept { return mValue; }
 
-		const ValueType &GetValue() const  { return mValue; }
-		ValueType &GetValue() { return mValue; }
+		const ValueType &GetValue() const noexcept { return mValue; }
+		ValueType &GetValue() noexcept { return mValue; }
 
 		void SetValue(const ValueType &value) { mValue = value; }
 		void SetValue(ValueType &&value) { mValue = Bond::move(value); }
 
 	protected:
-		Element *GetNext() { return mNext; }
-		const Element *GetNext() const { return mNext; }
+		Element *GetNext() noexcept { return mNext; }
+		const Element *GetNext() const noexcept { return mNext; }
 
 		ValueType mValue;
 
@@ -64,7 +73,7 @@ public:
 		friend class Iterator;
 		friend class ConstIterator;
 
-		void SetNext(Element *next) { mNext = next; }
+		void SetNext(Element *next) noexcept { mNext = next; }
 
 		AutoStack &mStack;
 		Element *mNext;
@@ -74,16 +83,26 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator(): mElement(nullptr) {}
-		explicit Iterator(Element *element): mElement(element) {}
+		Iterator() noexcept: mElement(nullptr) {}
 
-		bool operator==(const Iterator& other) const { return mElement == other.mElement; }
-		bool operator!=(const Iterator& other) const { return mElement != other.mElement; }
-		ValueType &operator*() const { return mElement->GetValue(); }
-		ValueType *operator->() const { return &mElement->GetValue(); }
+		bool operator==(const Iterator& other) const noexcept { return mElement == other.mElement; }
+		bool operator!=(const Iterator& other) const noexcept { return mElement != other.mElement; }
+
+		ValueType &operator*() const
+		{
+			BOND_ASSERT(mElement != nullptr);
+			return mElement->GetValue();
+		}
+
+		ValueType *operator->() const
+		{
+			BOND_ASSERT(mElement != nullptr);
+			return &mElement->GetValue();
+		}
 
 		Iterator& operator++()
 		{
+			BOND_ASSERT(mElement != nullptr);
 			mElement = mElement->GetNext();
 			return *this;
 		}
@@ -91,11 +110,16 @@ public:
 		Iterator operator++(int)
 		{
 			Iterator temp = *this;
-			mElement = mElement->GetNext();
+			++*this;
 			return temp;
 		}
 
 	private:
+		friend class AutoStack;
+		friend class ConstIterator;
+
+		explicit Iterator(Element *element) noexcept: mElement(element) {}
+
 		Element *mElement;
 	};
 
@@ -103,17 +127,28 @@ public:
 	class ConstIterator
 	{
 	public:
-		ConstIterator(): mElement(nullptr) {}
-		explicit ConstIterator(const Element *element): mElement(element) {}
-		explicit ConstIterator(const Iterator &iterator): mElement(iterator.mElement) {}
+		ConstIterator() noexcept: mElement(nullptr) {}
+		ConstIterator(const Iterator &iterator) noexcept: mElement(iterator.mElement) {}
 
-		bool operator==(const ConstIterator& other) const { return mElement == other.mElement; }
-		bool operator!=(const ConstIterator& other) const { return mElement != other.mElement; }
-		const ValueType &operator*() const { return mElement->GetValue(); }
-		const ValueType *operator->() const { return &mElement->GetValue(); }
+		// Hidden friends so that mixed Iterator/ConstIterator comparisons work in either order.
+		friend bool operator==(const ConstIterator& a, const ConstIterator& b) noexcept { return a.mElement == b.mElement; }
+		friend bool operator!=(const ConstIterator& a, const ConstIterator& b) noexcept { return a.mElement != b.mElement; }
+
+		const ValueType &operator*() const
+		{
+			BOND_ASSERT(mElement != nullptr);
+			return mElement->GetValue();
+		}
+
+		const ValueType *operator->() const
+		{
+			BOND_ASSERT(mElement != nullptr);
+			return &mElement->GetValue();
+		}
 
 		ConstIterator& operator++()
 		{
+			BOND_ASSERT(mElement != nullptr);
 			mElement = mElement->GetNext();
 			return *this;
 		}
@@ -121,48 +156,67 @@ public:
 		ConstIterator operator++(int)
 		{
 			ConstIterator temp = *this;
-			mElement = mElement->GetNext();
+			++*this;
 			return temp;
 		}
 
 	private:
+		friend class AutoStack;
+
+		explicit ConstIterator(const Element *element) noexcept: mElement(element) {}
+
 		const Element *mElement;
 	};
 
 
-	AutoStack(): mTop(nullptr) {}
+	AutoStack() noexcept: mTop(nullptr) {}
+
+	~AutoStack()
+	{
+		// Live elements would keep a reference to this destroyed stack.
+		assert(mTop == nullptr);
+	}
+
+	AutoStack(const AutoStack &other) = delete;
+	AutoStack &operator=(const AutoStack &other) = delete;
 
 
+	// Discarding the result destroys the Element immediately, which pops the value again.
 	template<typename... Args>
-	Element Push(Args&&... args)
+	[[nodiscard]] Element Push(Args&&... args)
 	{
 		return Element(*this, Bond::forward<Args>(args)...);
 	}
 
 
-	ValueType &GetTop() { return mTop->GetValue(); }
-	const ValueType &GetTop() const { return mTop->GetValue(); }
+	ValueType &GetTop()
+	{
+		BOND_ASSERT(mTop != nullptr);
+		return mTop->GetValue();
+	}
+
+	const ValueType &GetTop() const
+	{
+		BOND_ASSERT(mTop != nullptr);
+		return mTop->GetValue();
+	}
 
 
 	void SetTop(const ValueType &value)
 	{
-		if (mTop != nullptr)
-		{
-			mTop->SetValue(value);
-		}
+		BOND_ASSERT(mTop != nullptr);
+		mTop->SetValue(value);
 	}
 
 
 	void SetTop(ValueType &&value)
 	{
-		if (mTop != nullptr)
-		{
-			mTop->SetValue(Bond::move(value));
-		}
+		BOND_ASSERT(mTop != nullptr);
+		mTop->SetValue(Bond::move(value));
 	}
 
 
-	bool IsEmpty() const { return mTop == nullptr; }
+	bool IsEmpty() const noexcept { return mTop == nullptr; }
 
 
 	bool Contains(const ValueType &value) const
@@ -179,20 +233,20 @@ public:
 		return false;
 	}
 
-	Iterator begin() { return Iterator(mTop); }
-	ConstIterator begin() const { return ConstIterator(mTop); }
-	ConstIterator cbegin() const { return ConstIterator(mTop); }
-	Iterator end() { return Iterator(nullptr); }
-	ConstIterator end() const { return ConstIterator(nullptr); }
-	ConstIterator cend() const { return ConstIterator(nullptr); }
+	Iterator begin() noexcept { return Iterator(mTop); }
+	ConstIterator begin() const noexcept { return ConstIterator(mTop); }
+	ConstIterator cbegin() const noexcept { return ConstIterator(mTop); }
+	Iterator end() noexcept { return Iterator(nullptr); }
+	ConstIterator end() const noexcept { return ConstIterator(nullptr); }
+	ConstIterator cend() const noexcept { return ConstIterator(nullptr); }
 
 private:
-	void PushElement(Element *element)
+	void PushElement(Element *element) noexcept
 	{
 		// Store pointer to local Element object. Safe because the Element's destructor
-		// (PopElement) is guaranteed to be called before the pointer is accessed after
-		// the Element's lifetime ends. This is an intentional RAII pattern where the
-		// Element manages its own stack membership via constructor/destructor.
+		// restores mTop before the pointer is accessed after the Element's lifetime ends.
+		// This is an intentional RAII pattern where the Element manages its own stack
+		// membership via constructor/destructor.
 #if defined(__clang__)
 # if defined(__has_warning)
 #  if __has_warning("-Wdangling-pointer")
@@ -200,7 +254,7 @@ private:
 #   pragma clang diagnostic ignored "-Wdangling-pointer"
 #  endif
 # endif
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && (__GNUC__ >= 12)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdangling-pointer"
 #endif
@@ -212,18 +266,9 @@ private:
 #   pragma clang diagnostic pop
 #  endif
 # endif
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && (__GNUC__ >= 12)
 # pragma GCC diagnostic pop
 #endif
-	}
-
-
-	void PopElement()
-	{
-		if (mTop != nullptr)
-		{
-			mTop = mTop->GetNext();
-		}
 	}
 
 
