@@ -1228,7 +1228,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_INCI:
 			{
-				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
+				const int32_t slotIndex = static_cast<int32_t>(static_cast<int8_t>(code[pc]));
 				const uint32_t value = static_cast<uint32_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
 				*reinterpret_cast<uint32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
@@ -1237,7 +1237,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_INCL:
 			{
-				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
+				const int32_t slotIndex = static_cast<int32_t>(static_cast<int8_t>(code[pc]));
 				const uint64_t value = static_cast<uint64_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
 				*reinterpret_cast<uint64_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
@@ -1328,25 +1328,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_MULUI:
-			{
-				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				uint32_t *b = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a *= *b;
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_MULL:
-			{
-				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a *= *b;
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_MULUL:
 			{
 				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
 				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
@@ -2155,8 +2137,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				const int32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
 				const void *address = *reinterpret_cast<void **>(sp - BOND_SLOT_SIZE);
 				memcpy(frame.mReturnPointer, address, memSize);
-				//pc += sizeof(Value16);
-				//sp = AlignPointerUp(sp - BOND_SLOT_SIZE + memSize, BOND_SLOT_SIZE);
 			}
 			return;
 

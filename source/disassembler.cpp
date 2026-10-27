@@ -222,8 +222,12 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 			case OC_PARAM_UCHAR:
 				mOutStream.Print("%" BOND_PRIu32, uint32_t(mCboStream.Read()));
 				break;
-			case OC_PARAM_UCHAR_CHAR:
-				mOutStream.Print("%" BOND_PRIu32 ", %" BOND_PRId32, uint32_t(mCboStream.Read()), int32_t(int8_t(mCboStream.Read())));
+			case OC_PARAM_CHAR_CHAR:
+			{
+				const int32_t slotIndex = int32_t(int8_t(mCboStream.Read()));
+				const int32_t value = int32_t(int8_t(mCboStream.Read()));
+				mOutStream.Print("%" BOND_PRId32 ", %" BOND_PRId32, slotIndex, value);
+			}
 				break;
 			case OC_PARAM_SHORT:
 				mOutStream.Print("%" BOND_PRId32, int32_t(ReadValue16().mShort));

@@ -81,6 +81,88 @@ int LargeStructPointerDifference(const LargeStruct *a, const LargeStruct *b)
 	return cast<int>(a - b);
 }
 
+const int *PreincPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	++a;
+	return a;
+}
+
+const int *PostincPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	return a++;
+}
+
+const int *PredecPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	--a;
+	return a;
+}
+
+const int *PostdecPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	return a--;
+}
+
+const int *AddToPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	a += 2;
+	return a;
+}
+
+const int *SubFromPointerParam(const int *a)
+{
+	// Should be optimized to an inci/incl instruction with a negative slot index.
+	a -= 2;
+	return a;
+}
+
+const int *PredecLocalPointer(const int *a)
+{
+	// Should be optimized to an inci/incl instruction.
+	int b;
+	const int *c = a;
+	--c;
+	return c;
+}
+
+const int *PostdecLocalPointer(const int *a)
+{
+	// Should be optimized to an inci/incl instruction.
+	int b;
+	const int *c = a;
+	c--;
+	return c;
+}
+
+const int *PredecIndirectPointer(const int **a)
+{
+	return --(*a);
+}
+
+const int *PostdecIndirectPointer(const int **a)
+{
+	return (*a)--;
+}
+
+const LargeStruct *PredecLargeStructPointer(const LargeStruct *a)
+{
+	// The element size is too large for an inci/incl instruction.
+	--a;
+	return a;
+}
+
+const LargeStruct *PostdecLargeStructPointer(const LargeStruct *a)
+{
+	// The element size is too large for an inci/incl instruction.
+	a--;
+	return a;
+}
+
 int LocalAlignment()
 {
 	SmallStruct a;

@@ -162,8 +162,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(PTROFFL,      ptroffl,      SHORT,        -1) \
 	BOND_OPCODE_ITEM(PTRDIFF,      ptrdiff,      SHORT,        -1) \
 	                                                               \
-	BOND_OPCODE_ITEM(INCI,         inci,         UCHAR_CHAR,   0)  \
-	BOND_OPCODE_ITEM(INCL,         incl,         UCHAR_CHAR,   0)  \
+	BOND_OPCODE_ITEM(INCI,         inci,         CHAR_CHAR,    0)  \
+	BOND_OPCODE_ITEM(INCL,         incl,         CHAR_CHAR,    0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(ADDI,         addi,         NONE,         -1) \
 	BOND_OPCODE_ITEM(ADDL,         addl,         NONE,         -1) \
@@ -176,9 +176,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(SUBD,         subd,         NONE,         -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(MULI,         muli,         NONE,         -1) \
-	BOND_OPCODE_ITEM(MULUI,        mului,        NONE,         -1) \
 	BOND_OPCODE_ITEM(MULL,         mull,         NONE,         -1) \
-	BOND_OPCODE_ITEM(MULUL,        mulul,        NONE,         -1) \
 	BOND_OPCODE_ITEM(MULF,         mulf,         NONE,         -1) \
 	BOND_OPCODE_ITEM(MULD,         muld,         NONE,         -1) \
 	                                                               \
@@ -295,7 +293,7 @@ enum OpCodeParam
 	OC_PARAM_NONE,
 	OC_PARAM_CHAR,
 	OC_PARAM_UCHAR,
-	OC_PARAM_UCHAR_CHAR,
+	OC_PARAM_CHAR_CHAR,
 	OC_PARAM_SHORT,
 	OC_PARAM_USHORT,
 	OC_PARAM_INT,

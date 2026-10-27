@@ -271,7 +271,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 				AssertBytesRemaining(1);
 				Skip(1);
 				break;
-			case OC_PARAM_UCHAR_CHAR:
+			case OC_PARAM_CHAR_CHAR:
 			case OC_PARAM_SHORT:
 			case OC_PARAM_USHORT:
 				AssertBytesRemaining(sizeof(Value16));

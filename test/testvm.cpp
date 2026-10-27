@@ -304,8 +304,10 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(0), int32_t(-58), int32_t(0));
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(17), int32_t(-58), int32_t(17));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", uint32_t(58) * uint32_t(17), uint32_t(58), uint32_t(17));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", uint32_t(0xFFFFFFFFu) * uint32_t(3), uint32_t(0xFFFFFFFFu), uint32_t(3));
 	VALIDATE_FUNCTION_CALL(int64_t, "Mull", (-(int64_t(58) << 40)) * int64_t(17), (-(int64_t(58) << 40)), int64_t(17));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", (uint64_t(58) << 40) * uint64_t(17), (uint64_t(58) << 40), uint64_t(17));
+	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", ~uint64_t(0) * uint64_t(3), ~uint64_t(0), uint64_t(3));
 	VALIDATE_FUNCTION_CALL(float, "Mulf", 0.0f * 84.3f, -0.0f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Mulf", -98.1f * 84.3f, -98.1f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Mulf", 1e20f * 3.3e10f, 1e20f, 3.3e10f);
@@ -445,6 +447,17 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Postdec5", int32_t(14), &value);
 	ASSERT_FORMAT(value == int32_t(13), "Expected 13, but was %" BOND_PRId32 ".", value);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "PreincParamValue", int32_t(21), int32_t(20));
+	VALIDATE_FUNCTION_CALL(int32_t, "PostincParamValue", int32_t(20), int32_t(20));
+	VALIDATE_FUNCTION_CALL(int32_t, "PredecParamValue", int32_t(19), int32_t(20));
+	VALIDATE_FUNCTION_CALL(int32_t, "PostdecParamValue", int32_t(20), int32_t(20));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncSecondParam", int32_t(32), int32_t(10), int32_t(30));
+
+	VALIDATE_FUNCTION_CALL(int64_t, "PreincLongParam", (int64_t(5) << 40) + 1, int64_t(5) << 40);
+	VALIDATE_FUNCTION_CALL(int64_t, "PostincLongParam", int64_t(5) << 40, int64_t(5) << 40);
+	VALIDATE_FUNCTION_CALL(int64_t, "PredecLongParam", (int64_t(5) << 40) - 1, int64_t(5) << 40);
+	VALIDATE_FUNCTION_CALL(int64_t, "PostdecLongParam", int64_t(5) << 40, int64_t(5) << 40);
 }
 
 
@@ -822,6 +835,24 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	VALIDATE_FUNCTION_CALL(const void *, "LargeStructPointerOffset", &aggregate[4 * 100000], aggregate, int32_t(4));
 	VALIDATE_FUNCTION_CALL(int32_t, "LargeStructPointerDifference", 3, &aggregate[3 * 100000], aggregate);
 
+	VALIDATE_FUNCTION_CALL(const void *, "PreincPointerParam", &oneD[5], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "PostincPointerParam", &oneD[4], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "PredecPointerParam", &oneD[3], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "PostdecPointerParam", &oneD[4], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "AddToPointerParam", &oneD[6], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "SubFromPointerParam", &oneD[2], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "PredecLocalPointer", &oneD[3], &oneD[4]);
+	VALIDATE_FUNCTION_CALL(const void *, "PostdecLocalPointer", &oneD[3], &oneD[4]);
+
+	const int32_t *oneDPtr = &oneD[4];
+	VALIDATE_FUNCTION_CALL(const void *, "PredecIndirectPointer", &oneD[3], &oneDPtr);
+	ASSERT_MESSAGE(oneDPtr == &oneD[3], "PredecIndirectPointer() did not store the decremented pointer.");
+	VALIDATE_FUNCTION_CALL(const void *, "PostdecIndirectPointer", &oneD[3], &oneDPtr);
+	ASSERT_MESSAGE(oneDPtr == &oneD[2], "PostdecIndirectPointer() did not store the decremented pointer.");
+
+	VALIDATE_FUNCTION_CALL(const void *, "PredecLargeStructPointer", &aggregate[2 * 100000], &aggregate[3 * 100000]);
+	VALIDATE_FUNCTION_CALL(const void *, "PostdecLargeStructPointer", &aggregate[2 * 100000], &aggregate[3 * 100000]);
+
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalAlignment", int32_t(64));
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalOverlap", int32_t(1));
 }
@@ -889,6 +920,10 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", ru, &u, ou);
 	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
 
+	u = 0xFFFFFFFFu; ou = 3; ru = u * ou;
+	VALIDATE_FUNCTION_CALL(uint32_t, "Mului", ru, &u, ou);
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
+
 	l = -(int64_t(48) << 40); ol = int64_t(135) << 40; rl = l * ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Mull", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
@@ -896,6 +931,10 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	ul = uint64_t(48) << 40; oul = uint64_t(135) << 40; rul = ul * oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", rul, &ul, oul);
 	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+
+	ul = ~uint64_t(0); oul = 3; rul = ul * oul;
+	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", rul, &ul, oul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	f = -48.0f; of = 135.0f; rf = f * of;
 	VALIDATE_FUNCTION_CALL(float, "Mulf", rf, &f, of);
@@ -1003,6 +1042,11 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	VALIDATE_FUNCTION_CALL(int32_t, "AddFloatToLocal", int32_t(-3 + 0.5f), int32_t(-3));
 	VALIDATE_FUNCTION_CALL(int32_t, "SubDoubleFromLocal", int32_t(3 - 0.5), int32_t(3));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "AddToParam", int32_t(2), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "SubFromParamValue", int32_t(-10), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int64_t, "AddToLongParam", (int64_t(3) << 40) + 100, int64_t(3) << 40);
+	VALIDATE_FUNCTION_CALL(int64_t, "SubFromLongParamValue", (int64_t(3) << 40) - 100, int32_t(1), int64_t(3) << 40);
 }
 
 

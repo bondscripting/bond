@@ -110,7 +110,7 @@ pop64_l2            ..., value64 -> ...
 pop64_l3            ..., value64 -> ...
 
 memcopyw, ushort    ..., address, address -> ...
-memzerow, ushort    address, ..., -> ...
+memzerow, ushort    ..., address -> ...
 
 dup                 ..., value64 -> ..., value64, value64
 dupins              ..., value64a, value64b -> ..., value64b, value64a, value64b
@@ -148,8 +148,8 @@ ptroffi, short      ..., address, int -> ..., address
 ptroffl, short      ..., address, long -> ..., address
 ptrdiff, short      ..., address, address -> ..., (int|long)
 
-inci, uchar, char   ... -> ...
-incl, uchar, char   ... -> ...
+inci, char, char    ... -> ...
+incl, char, char    ... -> ...
 
 addi                ..., int, int -> ..., int
 addl                ..., long, long -> ..., long
@@ -162,9 +162,7 @@ subf                ..., float, float -> ..., float
 subd                ..., double, double -> ..., double
 
 muli                ..., int, int -> ..., int
-mului               ..., uint, uint -> ..., uint
 mull                ..., long, long -> ..., long
-mulul               ..., ulong, ulong -> ..., ulong
 mulf                ..., float, float -> ..., float
 muld                ..., double, double -> ..., double
 
@@ -194,12 +192,12 @@ orl                 ..., long, long -> ..., long
 xori                ..., int, int -> ..., int
 xorl                ..., long, long -> ..., long
 
-negi                ..., int -> int
-negl                ..., long -> long
-negf                ..., float -> float
-negd                ..., double -> double
+negi                ..., int -> ..., int
+negl                ..., long -> ..., long
+negf                ..., float -> ..., float
+negd                ..., double -> ..., double
 
-not                 ..., int -> int
+not                 ..., int -> ..., int
 
 cmpeqi              ..., int, int -> ..., int
 cmpeql              ..., long, long -> ..., int

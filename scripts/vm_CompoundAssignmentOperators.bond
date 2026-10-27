@@ -195,3 +195,29 @@ int SubDoubleFromLocal(int a)
 	c -= 0.5;
 	return c;
 }
+
+int AddToParam(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	a += 5;
+	return a;
+}
+
+int SubFromParamValue(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	return a -= 7;
+}
+
+long AddToLongParam(long a)
+{
+	// Should be optimized to an incl instruction with a negative slot index.
+	a += 100;
+	return a;
+}
+
+long SubFromLongParamValue(int a, long b)
+{
+	// Should be optimized to an incl instruction with a slot index below -1.
+	return b -= 100;
+}

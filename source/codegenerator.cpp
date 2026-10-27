@@ -8,6 +8,7 @@
 #include "bond/stl/list.h"
 #include "bond/stl/map.h"
 #include "bond/stl/vector.h"
+#include "bond/systems/assert.h"
 #include "bond/systems/endian.h"
 #include "bond/systems/math.h"
 #include "bond/tools/cboutil.h"
@@ -104,7 +105,7 @@ static const OpCodeSet LOAD_OPCODES(OPCODE_LOAD32, OPCODE_LOAD64);
 static const OpCodeSet STORE_OPCODES(OPCODE_STORE32, OPCODE_STORE64);
 static const OpCodeSet ADD_OPCODES(OPCODE_ADDI, OPCODE_ADDL, OPCODE_ADDF, OPCODE_ADDD);
 static const OpCodeSet SUB_OPCODES(OPCODE_SUBI, OPCODE_SUBL, OPCODE_SUBF, OPCODE_SUBD);
-static const OpCodeSet MUL_OPCODES(OPCODE_MULI, OPCODE_MULUI, OPCODE_MULL, OPCODE_MULUL, OPCODE_MULF, OPCODE_MULD);
+static const OpCodeSet MUL_OPCODES(OPCODE_MULI, OPCODE_MULL, OPCODE_MULF, OPCODE_MULD);
 static const OpCodeSet DIV_OPCODES(OPCODE_DIVI, OPCODE_DIVUI, OPCODE_DIVL, OPCODE_DIVUL, OPCODE_DIVF, OPCODE_DIVD);
 static const OpCodeSet REM_OPCODES(OPCODE_REMI, OPCODE_REMUI, OPCODE_REML, OPCODE_REMUL, OPCODE_NOP, OPCODE_NOP);
 static const OpCodeSet LSH_OPCODES(OPCODE_LSHI, OPCODE_LSHL);
@@ -2622,6 +2623,10 @@ void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescrip
 			break;
 
 		case Token::KEY_BOOL:
+			// Only bool converts to bool.
+			BOND_ASSERT(sourceType.GetPrimitiveType() == Token::KEY_BOOL);
+			break;
+
 		case Token::KEY_UCHAR:
 			switch (sourceType.GetPrimitiveType())
 			{
@@ -2870,6 +2875,10 @@ void GeneratorCore::EmitCastWithoutNarrowing32(const TypeDescriptor &sourceType,
 			break;
 
 		case Token::KEY_BOOL:
+			// Only bool converts to bool.
+			BOND_ASSERT(sourceType.GetPrimitiveType() == Token::KEY_BOOL);
+			break;
+
 		case Token::KEY_UCHAR:
 			switch (sourceType.GetPrimitiveType())
 			{
@@ -3123,7 +3132,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 
 	if (((&opCodeSet == &ADD_OPCODES) || (&opCodeSet == &SUB_OPCODES)) &&
 	    (lhRef.GetValue().mContext == ValueRef::CONTEXT_FP_INDIRECT) &&
-	    IsInRange<uint8_t>(slotIndex) &&
+	    IsInRange<int8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    lhDescriptor.IsLeast32IntegerType() &&
 	    rhDescriptor.IsIntegerType() &&
@@ -3219,7 +3228,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerCompoundAssignmentOperator(con
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((pointerRef.GetValue().mContext == ValueRef::CONTEXT_FP_INDIRECT) &&
-	    IsInRange<uint8_t>(slotIndex) &&
+	    IsInRange<int8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    offsetTav.IsValueDefined() &&
 	    IsInRange<int8_t>(offset))
@@ -3446,7 +3455,7 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expression *expression, const Expression *operand, Fixedness fixedness, int sign)
 {
 	const TypeDescriptor &operandDescriptor = operand->GetTypeDescriptor();
-	const int32_t pointerOffset = int32_t(sign * operandDescriptor.GetDereferencedType().GetSize(mPointerSize)) * sign;
+	const int32_t pointerOffset = sign * int32_t(operandDescriptor.GetDereferencedType().GetSize(mPointerSize));
 	uint32_t stackTop = mStackTop.GetTop();
 
 	auto operandRef = mValueRef.Push();
@@ -3455,7 +3464,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expres
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandRef.GetValue().mContext == ValueRef::CONTEXT_FP_INDIRECT) &&
-	    IsInRange<uint8_t>(slotIndex) &&
+	    IsInRange<int8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    IsInRange<int8_t>(pointerOffset))
 	{
@@ -3586,7 +3595,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitIncrementOperator(const Expression *e
 	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
 	if ((operandRef.GetValue().mContext == ValueRef::CONTEXT_FP_INDIRECT) &&
-	    IsInRange<uint8_t>(slotIndex) &&
+	    IsInRange<int8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    operandDescriptor.IsLeast32IntegerType())
 	{

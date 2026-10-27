@@ -45,7 +45,7 @@ ulong BitNotul(ulong a)
 
 int Preinc1(int a)
 {
-	// Should push 1, add then pop.
+	// Should be optimized to an inci instruction with a negative slot index.
 	++a;
 	return a;
 }
@@ -85,7 +85,7 @@ int Preinc5(int *a)
 
 int Postinc1(int a)
 {
-	// Should push 1, add then pop.
+	// Should be optimized to an inci instruction with a negative slot index.
 	a++;
 	return a;
 }
@@ -125,7 +125,7 @@ int Postinc5(int *a)
 
 int Predec1(int a)
 {
-	// Should push 1, add then pop.
+	// Should be optimized to an inci instruction with a negative slot index.
 	--a;
 	return a;
 }
@@ -165,7 +165,7 @@ int Predec5(int *a)
 
 int Postdec1(int a)
 {
-	// Should push 1, add then pop.
+	// Should be optimized to an inci instruction with a negative slot index.
 	a--;
 	return a;
 }
@@ -201,4 +201,62 @@ int Postdec5(int *a)
 {
 	// Does gymnastics to store the new value and leave a temporary on the stack.
 	return (*a)--;
+}
+
+int PreincParamValue(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	return ++a;
+}
+
+int PostincParamValue(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	return a++;
+}
+
+int PredecParamValue(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	return --a;
+}
+
+int PostdecParamValue(int a)
+{
+	// Should be optimized to an inci instruction with a negative slot index.
+	return a--;
+}
+
+int IncSecondParam(int a, int b)
+{
+	// Should be optimized to inci instructions with a slot index below -1.
+	++b;
+	b++;
+	return b;
+}
+
+long PreincLongParam(long a)
+{
+	// Should be optimized to an incl instruction with a negative slot index.
+	++a;
+	return a;
+}
+
+long PostincLongParam(long a)
+{
+	// Should be optimized to an incl instruction with a negative slot index.
+	return a++;
+}
+
+long PredecLongParam(long a)
+{
+	// Should be optimized to an incl instruction with a negative slot index.
+	--a;
+	return a;
+}
+
+long PostdecLongParam(long a)
+{
+	// Should be optimized to an incl instruction with a negative slot index.
+	return a--;
 }

@@ -295,7 +295,7 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				case OC_PARAM_UCHAR:
 					++code;
 					break;
-				case OC_PARAM_UCHAR_CHAR:
+				case OC_PARAM_CHAR_CHAR:
 					code += 2;
 					break;
 				case OC_PARAM_SHORT:
