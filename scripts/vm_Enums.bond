@@ -1,0 +1,80 @@
+enum Implicit
+{
+	IMPLICIT_ZERO,
+	IMPLICIT_ONE,
+	IMPLICIT_TWO
+};
+
+enum Explicit
+{
+	EXPLICIT_A = 3,
+	EXPLICIT_B,
+	EXPLICIT_C = EXPLICIT_A + EXPLICIT_B * 2,
+	EXPLICIT_D = -1,
+	EXPLICIT_E
+};
+
+namespace Space
+{
+	enum Nested
+	{
+		NESTED_A = 10,
+		NESTED_B = NESTED_A << 2
+	};
+}
+
+int GetImplicitTwo()
+{
+	return IMPLICIT_TWO;
+}
+
+int GetExplicitA()
+{
+	return EXPLICIT_A;
+}
+
+int GetExplicitB()
+{
+	return EXPLICIT_B;
+}
+
+int GetExplicitC()
+{
+	return EXPLICIT_C;
+}
+
+int GetExplicitD()
+{
+	return EXPLICIT_D;
+}
+
+int GetExplicitE()
+{
+	return EXPLICIT_E;
+}
+
+int GetNestedB()
+{
+	return Space::NESTED_B;
+}
+
+int SwitchOnEnum(int a)
+{
+	switch (a)
+	{
+		case EXPLICIT_A:
+			return 1;
+		case EXPLICIT_C:
+			return 2;
+		case Space::NESTED_B:
+			return 3;
+		default:
+			return 0;
+	}
+}
+
+uint GetArrayLength()
+{
+	int[EXPLICIT_C] array;
+	return sizeof(array) / sizeof<int>;
+}

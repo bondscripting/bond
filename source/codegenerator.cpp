@@ -342,6 +342,7 @@ private:
 	void TraverseOmitConstantFolding(const Expression *expression);
 
 	virtual void Visit(const TranslationUnit *translationUnit) override;
+	virtual void Visit(const EnumDeclaration *enumDeclaration) override {}
 	virtual void Visit(const FunctionDefinition *functionDefinition) override;
 	virtual void Visit(const TypeDescriptor *typeDescriptor) override {}
 	virtual void Visit(const NamedInitializer *namedInitializer) override;

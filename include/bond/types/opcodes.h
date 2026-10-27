@@ -268,15 +268,14 @@ namespace Bond
 	BOND_OPCODE_ITEM(TABLESWITCH,  tableswitch,  TABLESWITCH,  -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(INVOKE,       invoke,       NAME,         0)  \
+	/* Never emitted by the compiler. The CboLoader substitutes it for */ \
+	/* invoke when the callee's arguments must be moved into its frame. */ \
+	BOND_OPCODE_ITEM(INVOKEUNPACK, invokeunpack, NAME,         0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE,         0)  \
 	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE,         -1) \
 	BOND_OPCODE_ITEM(RETURN64,     return64,     NONE,         -1) \
 	BOND_OPCODE_ITEM(RETURNMEMW,   returnmemw,   INT,          -1) \
-	                                                               \
-	/* Never emitted by the compiler. The CboLoader substitutes it for */ \
-	/* invoke when the callee's arguments must be moved into its frame. */ \
-	BOND_OPCODE_ITEM(INVOKEUNPACK, invokeunpack, NAME,         0)  \
 
 
 /// \brief Enumeration of all opcodes in the Bond Virtual Machine instruction set.

@@ -1123,6 +1123,25 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 }
 
 
+DEFINE_VM_TEST(Enums, "scripts/vm_Enums.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL(int32_t, "GetImplicitTwo", int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetExplicitA", int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetExplicitB", int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetExplicitC", int32_t(11));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetExplicitD", int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetExplicitE", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetNestedB", int32_t(40));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(1), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(2), int32_t(11));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(3), int32_t(40));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(0), int32_t(5));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetArrayLength", uint32_t(11));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1138,5 +1157,6 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
   TEST_ITEM(FunctionCalls)                      \
   TEST_ITEM(Structs)                            \
   TEST_ITEM(Initializers)                       \
+  TEST_ITEM(Enums)                              \
 
 RUN_TESTS(VM, TEST_ITEMS)
