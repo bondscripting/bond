@@ -100,7 +100,6 @@ struct Function
 	uint32_t mLocalSize;
 	uint32_t mStackSize;
 	uint32_t mFramePointerAlignment;
-	bool mUnpackArguments;
 };
 
 

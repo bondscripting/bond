@@ -175,6 +175,7 @@ private:
 	friend class InvocationStackFrame;
 
 	void ExecuteScriptFunction(StackFrame &frame);
+	template <bool UNPACK_ARGUMENTS>
 	uint8_t *InvokeFunction(const Function &function, uint8_t *stackTop);
 	void ValidateStackPointer(uint8_t *stackPointer) const;
 

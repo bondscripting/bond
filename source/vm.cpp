@@ -2118,7 +2118,16 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				const Value16 functionIndex(code + pc);
 				pc += sizeof(Value16);
 				const Function &function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
-				sp = InvokeFunction(function, sp);
+				sp = InvokeFunction<false>(function, sp);
+			}
+			break;
+
+			case OPCODE_INVOKEUNPACK:
+			{
+				const Value16 functionIndex(code + pc);
+				pc += sizeof(Value16);
+				const Function &function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
+				sp = InvokeFunction<true>(function, sp);
 			}
 			break;
 
@@ -2155,6 +2164,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 }
 
 
+template <bool UNPACK_ARGUMENTS>
 uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 {
 	// Functions return values on top of the stack with the exception of functions that return
@@ -2187,7 +2197,10 @@ uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 
 	uint8_t *framePointer = AlignPointerUp(argTop + function.mArgSize - function.mPackedArgSize, function.mFramePointerAlignment);
 
-	if (function.mUnpackArguments)
+	// The CboLoader selects OPCODE_INVOKEUNPACK for functions whose frame pointer requires more than
+	// slot alignment. Otherwise the packed arguments are already where the frame expects them. On a
+	// little endian host, that includes small integers widened to 32 bits.
+	if constexpr (UNPACK_ARGUMENTS)
 	{
 		const uint32_t numParams = function.mParamListSignature.mParamCount;
 		const ParamSignature *signatures = function.mParamListSignature.mParamSignatures;
@@ -2197,26 +2210,7 @@ uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 			const ParamSignature &signature = signatures[i];
 			const size_t size = signature.mSize;
 			source -= AlignUp(size, size_t(BOND_SLOT_SIZE));
-
-			switch (signature.mType)
-			{
-				case SIG_CHAR:
-					CopyValue<int32_t, int8_t>(source, framePointer + signature.mFramePointerOffset);
-					break;
-				case SIG_BOOL:
-				case SIG_UCHAR:
-					CopyValue<uint32_t, uint8_t>(source, framePointer + signature.mFramePointerOffset);
-					break;
-				case SIG_SHORT:
-					CopyValue<int32_t, int16_t>(source, framePointer + signature.mFramePointerOffset);
-					break;
-				case SIG_USHORT:
-					CopyValue<uint32_t, uint16_t>(source, framePointer + signature.mFramePointerOffset);
-					break;
-				default:
-					memmove(framePointer + signature.mFramePointerOffset, source, size);
-					break;
-			}
+			memmove(framePointer + signature.mFramePointerOffset, source, size);
 		}
 	}
 

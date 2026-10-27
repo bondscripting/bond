@@ -987,6 +987,11 @@ DEFINE_VM_TEST(FunctionCalls, "scripts/vm_FunctionCalls.bond")
 	VALIDATE_FUNCTION_CALL(uint32_t, "FibonacciRecursive", uint32_t(6765), uint32_t(20));
 	VALIDATE_FUNCTION_CALL(uint32_t, "TestSetCharValue", uint32_t(1));
 	VALIDATE_FUNCTION_CALL(int32_t, "StrangeMath", int32_t((10 + 40) - (30 + 80)), int32_t(10), int32_t(40), int32_t(30), int32_t(80));
+	VALIDATE_FUNCTION_CALL(int32_t, "TestOverAlignedFrames", int32_t(
+		(-3 + 1000 - 200 + 50000) +
+		(1 + (-4 + 1000 - 300 + 60000)) +
+		(-5 - 400 + 70000) +
+		(2 + (3 + (-6 - 500 + 80000)))));
 }
 
 

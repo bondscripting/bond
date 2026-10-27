@@ -37,3 +37,37 @@ int StrangeMath(int a, int b, int c, int d)
 {
 	return Sub(Add(a, b), Add(c, d));
 }
+
+native { struct Aligned_32_32<32, 32> {}; }
+
+struct OverAligned
+{
+	Aligned_32_32 a;
+	int value;
+};
+
+// The over-aligned parameter requires the arguments to be unpacked into the frame.
+int OverAlignedParam(char a, OverAligned b, short c, int d)
+{
+	return a + b.value + c + d;
+}
+
+// The over-aligned local requires the arguments to be unpacked into the frame.
+int OverAlignedLocal(char a, short b, int c)
+{
+	Aligned_32_32 s;
+	return a + b + c;
+}
+
+int TestOverAlignedFrames()
+{
+	OverAligned b;
+	b.value = 1000;
+
+	// Nest some of the calls so that they start at different stack depths.
+	return
+		OverAlignedParam(-3, b, -200, 50000) +
+		(1 + OverAlignedParam(-4, b, -300, 60000)) +
+		OverAlignedLocal(-5, -400, 70000) +
+		(2 + (3 + OverAlignedLocal(-6, -500, 80000)));
+}

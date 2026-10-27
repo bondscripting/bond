@@ -43,8 +43,8 @@
 #define BOND_ASSERTS_ENABLED 1
 #endif
 
-#if !defined(BOND_LITTLE_ENDIAN) && !defined(BOND_BIG_ENDIAN)
-#define BOND_LITTLE_ENDIAN
+#if defined(BOND_BIG_ENDIAN)
+#error Big endian hosts are not supported.
 #endif
 
 #ifndef BOND_PATH_SEPARATOR

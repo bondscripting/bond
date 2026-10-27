@@ -323,8 +323,18 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 						}
 						break;
 						case OPCODE_INVOKE:
+						case OPCODE_INVOKEUNPACK:
 						{
 							resolvedIndex = codeSegment.GetFunctionIndex(name);
+							if (resolvedIndex >= 0)
+							{
+								// Arguments are pushed packed into consecutive slots. They are already where
+								// the callee's frame expects them unless its frame pointer needs more than
+								// slot alignment, so decide here rather than on every call.
+								const Function &callee = codeSegment.GetFunctionAtIndex(uint32_t(resolvedIndex));
+								const bool unpackArguments = callee.mFramePointerAlignment > uint32_t(BOND_SLOT_SIZE);
+								code[-1] = uint8_t(unpackArguments ? OPCODE_INVOKEUNPACK : OPCODE_INVOKE);
+							}
 						}
 						break;
 						default:
@@ -566,19 +576,6 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 	{
 		function->mNativeFunction = nullptr;
 	}
-
-	bool unpackArguments = function->mFramePointerAlignment > uint32_t(BOND_SLOT_SIZE);
-	const uint32_t numParams = function->mParamListSignature.mParamCount;
-	const ParamSignature *signatures = function->mParamListSignature.mParamSignatures;
-	for (uint32_t i = 0; (i < numParams) && !unpackArguments; ++i)
-	{
-		const SignatureType type = SignatureType(signatures[i].mType);
-		if ((type >= SIG_BOOL) && (type <= SIG_USHORT))
-		{
-			unpackArguments = true;
-		}
-	}
-	function->mUnpackArguments = unpackArguments;
 
 	// Load the optional metadata blob.
 	if (GetPosition() < blobEnd)

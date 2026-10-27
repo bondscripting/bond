@@ -261,3 +261,8 @@ return
 return32
 return64
 returnmemw, ushort  ..., address -> ...
+
+invokeunpack, ushort ... -> ...
+  Not emitted by the compiler. When the CBO is loaded, invoke is replaced with
+  invokeunpack if the callee's frame pointer needs more than slot alignment.
+  invokeunpack then moves the packed arguments into the callee's frame.

@@ -66,24 +66,8 @@ inline Value64 ReverseByteOrder64(Value64 value)
 	return value;
 }
 
-#if defined(BOND_BIG_ENDIAN)
-
-inline void ConvertBigEndian16(void *value) {}
-inline Value16 ConvertBigEndian16(Value16 value) { return value; }
-inline int16_t ConvertBigEndianI16(int16_t value) { return value; }
-inline uint16_t ConvertBigEndianU16(uint16_t value) { return value; }
-inline void ConvertBigEndian32(void *value) {}
-inline Value32 ConvertBigEndian32(Value32 value) { return value; }
-inline int32_t ConvertBigEndianI32(int32_t value) { return value; }
-inline uint32_t ConvertBigEndianU32(uint32_t value) { return value; }
-inline float ConvertBigEndianF32(float value) { return value; }
-inline void ConvertBigEndian64(void *value) {}
-inline Value64 ConvertBigEndian64(Value64 value) { return value; }
-inline int64_t ConvertBigEndianI64(int64_t value) { return value; }
-inline uint64_t ConvertBigEndianU64(uint64_t value) { return value; }
-inline double ConvertBigEndianF64(double value) { return value; }
-
-#else
+// Bond only supports little endian hosts, so converting to or from big endian always reverses the
+// byte order.
 
 /// \brief Converts the byte order of a 16 bit value from native byte order to big endian or vice versa
 /// in place.
@@ -195,8 +179,6 @@ inline double ConvertBigEndianF64(double value)
 {
 	return ReverseByteOrder64(Value64(value)).mDouble;
 }
-
-#endif
 
 /// @}
 

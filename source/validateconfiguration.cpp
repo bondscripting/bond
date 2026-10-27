@@ -33,13 +33,7 @@ void ValidateConfiguration()
 	};
 	const EndianTest endiantTest;
 
-#if defined(BOND_LITTLE_ENDIAN)
-	BOND_CHECK_MESSAGE(endiantTest.mBytes[0] == 1, "BOND_LITTLE_ENDIAN is defined but system is not little endian.");
-#elif defined(BOND_BIG_ENDIAN)
-	BOND_CHECK_MESSAGE(endiantTest.mBytes[0] == 0, "BOND_BIG_ENDIAN is defined but system is not big endian.");
-#else
-#error Neither BOND_LITTLE_ENDIAN nor BOND_BIG_ENDIAN is defined.
-#endif
+	BOND_CHECK_MESSAGE(endiantTest.mBytes[0] == 1, "System is not little endian. Bond only supports little endian systems.");
 
 	const Value32 floatFormatTest(-2.375f);
 	BOND_CHECK_MESSAGE(floatFormatTest.mUInt == uint32_t(0xC0180000), "The representation of type 'float' does not appear to be in IEEE binary32 format.");
