@@ -60,7 +60,7 @@ pushuc, short       ... -> uint
 pushucw, ushort     ... -> uint
 pushs, short        ... -> int
 pushsw, ushort      ... -> int
-pushus, ushort      ... -> uint
+pushus, short       ... -> uint
 pushusw, ushort     ... -> uint
 push32, short       ... -> value32
 push32w, ushort     ... -> value32

@@ -43,6 +43,11 @@ const int *PointerOffset(const int *a, int b)
 	return a + b;
 }
 
+const char *UIntPointerOffset(const char *a, uint b)
+{
+	return a + b;
+}
+
 int LocalPointerDifference()
 {
 	int [8] a;

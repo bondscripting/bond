@@ -148,6 +148,17 @@ DEFINE_VM_TEST(TypeConversions, "scripts/vm_TypeConversions.bond")
 	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(TruncateCast<uint16_t>(0xabcde)), uint32_t(0xabcde));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Uitous", uint32_t(TruncateCast<uint16_t>(0x987654)), uint32_t(0x987654));
 
+	VALIDATE_FUNCTION_CALL(int32_t, "Uctoc", int32_t(-56), uint8_t(200));
+	VALIDATE_FUNCTION_CALL(int32_t, "Uctoc", int32_t(100), uint8_t(100));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Ctouc", uint32_t(255), int8_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Ctouc", uint32_t(100), int8_t(100));
+	VALIDATE_FUNCTION_CALL(int32_t, "Ustos", int32_t(-1), uint16_t(0xffff));
+	VALIDATE_FUNCTION_CALL(int32_t, "Ustos", int32_t(1000), uint16_t(1000));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Stous", uint32_t(0xffff), int16_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Stous", uint32_t(1000), int16_t(1000));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Ctous", uint32_t(0xffff), int8_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Ctous", uint32_t(100), int8_t(100));
+
 	VALIDATE_FUNCTION_CALL(int64_t, "Itol", int64_t(int32_t(-4567)), int32_t(-4567));
 	VALIDATE_FUNCTION_CALL(int64_t, "Itol", int64_t(int32_t(4567)), int32_t(4567));
 
@@ -394,6 +405,13 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(uint32_t, "Not", uint32_t(1), uint8_t(0));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Not", uint32_t(0), uint8_t(1));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Not", uint32_t(0), uint8_t(23));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "BitNoti", int32_t(-1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "BitNoti", ~int32_t(0x12345678), int32_t(0x12345678));
+	VALIDATE_FUNCTION_CALL(uint32_t, "BitNotui", ~uint32_t(0x89abcdef), uint32_t(0x89abcdef));
+	VALIDATE_FUNCTION_CALL(int64_t, "BitNotl", int64_t(-1), int64_t(0));
+	VALIDATE_FUNCTION_CALL(int64_t, "BitNotl", ~(int64_t(0x12345678) << 24), int64_t(0x12345678) << 24);
+	VALIDATE_FUNCTION_CALL(uint64_t, "BitNotul", ~(uint64_t(0x89abcdef) << 24), uint64_t(0x89abcdef) << 24);
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Preinc1", int32_t(6), int32_t(5));
 	VALIDATE_FUNCTION_CALL(int32_t, "Preinc2", int32_t(8), int32_t(7));
@@ -790,6 +808,10 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "GetValue2DAt", twoD[6][11], &twoD, int32_t(6), int32_t(11));
 
 	VALIDATE_FUNCTION_CALL(const void *, "PointerOffset", &twoD[1][2] + 19, &twoD[1][2], int32_t(19));
+	// The pointer is never dereferenced, so compute the expected address with integer arithmetic.
+	const char *uintOffsetBase = reinterpret_cast<const char *>(&twoD[0][0]);
+	const char *uintOffsetResult = reinterpret_cast<const char *>(reinterpret_cast<uintptr_t>(uintOffsetBase) + uintptr_t(0x80000000u));
+	VALIDATE_FUNCTION_CALL(const void *, "UIntPointerOffset", uintOffsetResult, uintOffsetBase, uint32_t(0x80000000u));
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalPointerDifference", int32_t(4));
 	VALIDATE_FUNCTION_CALL(int32_t, "PointerDifference", int32_t(&twoD[6][9] - &twoD[1][3]), &twoD[6][9], &twoD[1][3]);
 
@@ -977,6 +999,10 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	l = int64_t(0xfff0) << 31; ol = int64_t(0xff) << 31; rl = l ^ ol;
 	VALIDATE_FUNCTION_CALL(int64_t, "Xorl", rl, &l, ol);
 	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
+
+
+	VALIDATE_FUNCTION_CALL(int32_t, "AddFloatToLocal", int32_t(-3 + 0.5f), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "SubDoubleFromLocal", int32_t(3 - 0.5), int32_t(3));
 }
 
 

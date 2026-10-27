@@ -1229,25 +1229,28 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_INCI:
 			{
 				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
-				const int32_t value = static_cast<int32_t>(static_cast<int8_t>(code[pc + 1]));
+				const uint32_t value = static_cast<uint32_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
-				*reinterpret_cast<int32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
+				*reinterpret_cast<uint32_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}
 			break;
 
 			case OPCODE_INCL:
 			{
 				const uint32_t slotIndex = static_cast<uint32_t>(code[pc]);
-				const int64_t value = static_cast<int64_t>(static_cast<int8_t>(code[pc + 1]));
+				const uint64_t value = static_cast<uint64_t>(static_cast<int8_t>(code[pc + 1]));
 				pc += 2;
-				*reinterpret_cast<int64_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
+				*reinterpret_cast<uint64_t *>(fp + (slotIndex * BOND_SLOT_SIZE)) += value;
 			}
 			break;
 
+			// Integer addition, subtraction, multiplication, negation and left shifts are performed
+			// on unsigned types so that overflow wraps instead of being undefined behaviour. The
+			// resulting bits are the same for signed and unsigned operands.
 			case OPCODE_ADDI:
 			{
-				int32_t *a = reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int32_t *b = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint32_t *b = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a += *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1255,8 +1258,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_ADDL:
 			{
-				int64_t *a = reinterpret_cast<int64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int64_t *b = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a += *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1282,8 +1285,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_SUBI:
 			{
-				int32_t *a = reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int32_t *b = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint32_t *b = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a -= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1291,8 +1294,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_SUBL:
 			{
-				int64_t *a = reinterpret_cast<int64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int64_t *b = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a -= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1318,8 +1321,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_MULI:
 			{
-				int32_t *a = reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int32_t *b = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint32_t *b = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a *= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1336,8 +1339,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_MULL:
 			{
-				int64_t *a = reinterpret_cast<int64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int64_t *b = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a *= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1462,8 +1465,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_LSHI:
 			{
-				int32_t *a = reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int32_t *b = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint32_t *b = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a <<= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1471,8 +1474,8 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_LSHL:
 			{
-				int64_t *a = reinterpret_cast<int64_t *>(sp - (2 * BOND_SLOT_SIZE));
-				int64_t *b = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (2 * BOND_SLOT_SIZE));
+				uint64_t *b = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
 				*a <<= *b;
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1570,15 +1573,15 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_NEGI:
 			{
-				int32_t *a = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = -(*a);
+				uint32_t *a = reinterpret_cast<uint32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				*a = uint32_t(0) - *a;
 			}
 			break;
 
 			case OPCODE_NEGL:
 			{
-				int64_t *a = reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
-				*a = -(*a);
+				uint64_t *a = reinterpret_cast<uint64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				*a = uint64_t(0) - *a;
 			}
 			break;
 

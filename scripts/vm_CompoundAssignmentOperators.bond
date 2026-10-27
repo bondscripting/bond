@@ -177,3 +177,21 @@ long Xorl(long *a, long b)
 {
 	return *a ^= b;
 }
+
+int AddFloatToLocal(int a)
+{
+	// Must not be optimized to an inci instruction.
+	int b;
+	int c = a;
+	c += 0.5f;
+	return c;
+}
+
+int SubDoubleFromLocal(int a)
+{
+	// Must not be optimized to an inci instruction.
+	int b;
+	int c = a;
+	c -= 0.5;
+	return c;
+}

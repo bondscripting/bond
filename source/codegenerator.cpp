@@ -2596,6 +2596,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescrip
 		case Token::KEY_CHAR:
 			switch (sourceType.GetPrimitiveType())
 			{
+				case Token::KEY_UCHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_USHORT:
 				case Token::KEY_INT:
@@ -2624,6 +2625,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescrip
 		case Token::KEY_UCHAR:
 			switch (sourceType.GetPrimitiveType())
 			{
+				case Token::KEY_CHAR:
 				case Token::KEY_SHORT:
 				case Token::KEY_USHORT:
 				case Token::KEY_INT:
@@ -2651,6 +2653,7 @@ void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescrip
 		case Token::KEY_SHORT:
 			switch (sourceType.GetPrimitiveType())
 			{
+				case Token::KEY_USHORT:
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
 					EmitOpCode(OPCODE_ITOS);
@@ -2676,6 +2679,8 @@ void GeneratorCore::EmitCast(const TypeDescriptor &sourceType, const TypeDescrip
 		case Token::KEY_USHORT:
 			switch (sourceType.GetPrimitiveType())
 			{
+				case Token::KEY_CHAR:
+				case Token::KEY_SHORT:
 				case Token::KEY_INT:
 				case Token::KEY_UINT:
 					EmitOpCode(OPCODE_UITOUS);
@@ -3121,6 +3126,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 	    IsInRange<uint8_t>(slotIndex) &&
 	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
 	    lhDescriptor.IsLeast32IntegerType() &&
+	    rhDescriptor.IsIntegerType() &&
 	    rhTav.IsValueDefined() &&
 	    IsInRange<int8_t>(rhValue))
 	{
@@ -3400,7 +3406,10 @@ void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_
 		const TypeDescriptor &offsetDescriptor = offsetTav.GetTypeDescriptor();
 		if (IsInRange<int16_t>(elementSize))
 		{
-			if (offsetDescriptor.IsMost32IntegerType())
+			// ptroffi sign extends its offset, so a uint offset must be widened to long
+			// when pointers are 64 bits.
+			if (offsetDescriptor.IsMost32IntegerType() &&
+			    !(Is64BitPointer() && (offsetDescriptor.GetPrimitiveType() == Token::KEY_UINT)))
 			{
 				const TypeDescriptor intTypeDescriptor = TypeDescriptor::GetIntType();
 				EmitPushValueRefAs(offsetRef, offsetDescriptor, intTypeDescriptor);
@@ -3748,16 +3757,8 @@ GeneratorCore::ValueRef GeneratorCore::EmitBitwiseNotOperator(const UnaryExpress
 
 	if (negated)
 	{
-		if (resultDescriptor.GetPrimitiveType() == Token::KEY_LONG)
-		{
-			EmitOpCode(OPCODE_CONSTL_1);
-			EmitOpCode(OPCODE_XORL);
-		}
-		else
-		{
-			EmitOpCode(OPCODE_CONSTI_1);
-			EmitOpCode(OPCODE_XORI);
-		}
+		EmitOpCode(CONSTN1_OPCODES.GetOpCode(resultDescriptor));
+		EmitOpCode(XOR_OPCODES.GetOpCode(resultDescriptor));
 	}
 
 	return ValueRef(ValueRef::CONTEXT_STACK_VALUE);

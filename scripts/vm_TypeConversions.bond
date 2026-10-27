@@ -18,6 +18,31 @@ ushort Uitous(uint a)
 	return cast<ushort>(a);
 }
 
+char Uctoc(uchar a)
+{
+	return cast<char>(a);
+}
+
+uchar Ctouc(char a)
+{
+	return cast<uchar>(a);
+}
+
+short Ustos(ushort a)
+{
+	return cast<short>(a);
+}
+
+ushort Stous(short a)
+{
+	return cast<ushort>(a);
+}
+
+ushort Ctous(char a)
+{
+	return cast<ushort>(a);
+}
+
 long Itol(int a)
 {
 	return cast<long>(a);

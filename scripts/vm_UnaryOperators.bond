@@ -23,6 +23,26 @@ bool Not(bool a)
 	return !a;
 }
 
+int BitNoti(int a)
+{
+	return ~a;
+}
+
+uint BitNotui(uint a)
+{
+	return ~a;
+}
+
+long BitNotl(long a)
+{
+	return ~a;
+}
+
+ulong BitNotul(ulong a)
+{
+	return ~a;
+}
+
 int Preinc1(int a)
 {
 	// Should push 1, add then pop.
