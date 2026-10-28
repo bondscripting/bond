@@ -1226,6 +1226,9 @@ DEFINE_VM_TEST(Enums, "scripts/vm_Enums.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(3), int32_t(40));
 	VALIDATE_FUNCTION_CALL(int32_t, "SwitchOnEnum", int32_t(0), int32_t(5));
 	VALIDATE_FUNCTION_CALL(uint32_t, "GetArrayLength", uint32_t(11));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetEnumLocal", int32_t(11));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetEnumParameterAndReturn", int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetEnumStructMember", int32_t(-1));
 }
 
 

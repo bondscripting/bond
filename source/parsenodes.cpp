@@ -775,9 +775,10 @@ SignatureType TypeSpecifier::GetSignatureType() const
 
 Token::TokenType TypeSpecifier::GetPrimitiveType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return mPrimitiveType->GetTokenType();
+		return primitiveType->GetTokenType();
 	}
 	return Token::INVALID;
 }
@@ -785,9 +786,10 @@ Token::TokenType TypeSpecifier::GetPrimitiveType() const
 
 bool TypeSpecifier::IsBooleanType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return BOOLEAN_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return BOOLEAN_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -795,9 +797,10 @@ bool TypeSpecifier::IsBooleanType() const
 
 bool TypeSpecifier::IsCharType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return CHAR_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return CHAR_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -805,9 +808,10 @@ bool TypeSpecifier::IsCharType() const
 
 bool TypeSpecifier::IsIntegerType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -815,9 +819,10 @@ bool TypeSpecifier::IsIntegerType() const
 
 bool TypeSpecifier::IsLeast32IntegerType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return LEAST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -825,9 +830,10 @@ bool TypeSpecifier::IsLeast32IntegerType() const
 
 bool TypeSpecifier::IsMost32IntegerType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return MOST32_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -835,9 +841,10 @@ bool TypeSpecifier::IsMost32IntegerType() const
 
 bool TypeSpecifier::IsNumericType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return NUMERIC_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
 }
@@ -845,11 +852,27 @@ bool TypeSpecifier::IsNumericType() const
 
 bool TypeSpecifier::IsVoidType() const
 {
-	if (mPrimitiveType != nullptr)
+	const Token *primitiveType = GetResolvedPrimitiveTypeToken();
+	if (primitiveType != nullptr)
 	{
-		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(mPrimitiveType->GetTokenType());
+		return VOID_TYPE_SPECIFIERS_TYPESET.Contains(primitiveType->GetTokenType());
 	}
 	return false;
+}
+
+
+const Token *TypeSpecifier::GetResolvedPrimitiveTypeToken() const
+{
+	if (mPrimitiveType != nullptr)
+	{
+		return mPrimitiveType;
+	}
+	const EnumDeclaration *enumDeclaration = CastNode<EnumDeclaration>(mDefinition);
+	if (enumDeclaration != nullptr)
+	{
+		return enumDeclaration->GetTypeDescriptor().GetTypeSpecifier()->GetPrimitiveTypeToken();
+	}
+	return nullptr;
 }
 
 

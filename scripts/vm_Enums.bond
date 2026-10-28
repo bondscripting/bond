@@ -78,3 +78,33 @@ uint GetArrayLength()
 	int[EXPLICIT_C] array;
 	return sizeof(array) / sizeof<int>;
 }
+
+struct EnumHolder
+{
+	Explicit mValue;
+};
+
+Explicit PassThroughEnum(Explicit e)
+{
+	return e;
+}
+
+int GetEnumLocal()
+{
+	Explicit e = EXPLICIT_C;
+	return e;
+}
+
+int GetEnumParameterAndReturn()
+{
+	Implicit i = IMPLICIT_TWO;
+	Explicit e = PassThroughEnum(EXPLICIT_B);
+	return e + i;
+}
+
+int GetEnumStructMember()
+{
+	EnumHolder holder;
+	holder.mValue = EXPLICIT_D;
+	return holder.mValue;
+}

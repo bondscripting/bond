@@ -647,6 +647,9 @@ public:
 	bool IsStructType() const;
 
 private:
+	/// \brief Returns the primitive type token, resolving enum types to their underlying type.
+	const Token *GetResolvedPrimitiveTypeToken() const;
+
 	const Token *mPrimitiveType;
 	QualifiedIdentifier *mIdentifier;
 	const Symbol *mDefinition;
