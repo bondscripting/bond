@@ -123,6 +123,17 @@ static const OpCodeSet CMPGE_OPCODES(OPCODE_CMPGEI, OPCODE_CMPGEUI, OPCODE_CMPGE
 static const OpCodeSet RETURN_OPCODES(OPCODE_RETURN32, OPCODE_RETURN64, OPCODE_RETURN32, OPCODE_RETURN64);
 
 
+// Shifts take the type of their promoted left operand, as in C. Other operators combine both operand types.
+static TypeDescriptor GetBinaryOperationType(const TypeDescriptor &lhDescriptor, const TypeDescriptor &rhDescriptor, const OpCodeSet &opCodeSet)
+{
+	if ((&opCodeSet == &LSH_OPCODES) || (&opCodeSet == &RSH_OPCODES))
+	{
+		return PromoteShiftOperandType(lhDescriptor);
+	}
+	return CombineOperandTypes(lhDescriptor, rhDescriptor);
+}
+
+
 class GeneratorCore: private ParseNodeTraverser
 {
 public:
@@ -2947,7 +2958,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpr
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor resultDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor resultDescriptor = GetBinaryOperationType(lhDescriptor, rhDescriptor, opCodeSet);
 
 	auto lhRef = mValueRef.Push();
 	Traverse(lhs);
@@ -3120,7 +3131,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
-	const TypeDescriptor intermediateDescriptor = CombineOperandTypes(lhDescriptor, rhDescriptor);
+	const TypeDescriptor intermediateDescriptor = GetBinaryOperationType(lhDescriptor, rhDescriptor, opCodeSet);
 	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
 	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
 	uint32_t stackTop = mStackTop.GetTop();

@@ -532,6 +532,18 @@ TypeDescriptor PromoteType(const TypeDescriptor &type)
 }
 
 
+TypeDescriptor PromoteShiftOperandType(const TypeDescriptor &type)
+{
+	// Shifts follow C's integer promotions, under which uchar and ushort promote to int.
+	const Token::TokenType t = type.GetPrimitiveType();
+	if (!type.IsPointerType() && ((t == Token::KEY_UCHAR) || (t == Token::KEY_USHORT)))
+	{
+		return TypeDescriptor::GetIntType();
+	}
+	return PromoteType(type);
+}
+
+
 TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB)
 {
  	const Token::TokenType a = typeA.GetPrimitiveType();

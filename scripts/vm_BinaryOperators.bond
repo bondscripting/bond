@@ -148,6 +148,41 @@ ulong Rshul(ulong a, ulong b)
 	return a >> b;
 }
 
+uint RshuiInt(uint a, int b)
+{
+	return a >> b;
+}
+
+long LshiLong(int a, long b)
+{
+	return a << b;
+}
+
+long LshlInt(long a, int b)
+{
+	return a << b;
+}
+
+long LshUChar(uchar a, int b)
+{
+	return a << b;
+}
+
+long LshUShort(ushort a, int b)
+{
+	return a << b;
+}
+
+uint RshuiConstant()
+{
+	return 0x80000000u >> 4;
+}
+
+long LshiConstant()
+{
+	return 1 << 31L;
+}
+
 int Andi(int a, int b)
 {
 	return a & b;

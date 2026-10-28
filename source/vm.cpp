@@ -1911,7 +1911,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_NBRZ:
 			{
 				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = int32_t(1) - *condition;
+				*condition = (*condition == 0) ? 1 : 0;
 			}
 			// Fall through.
 
@@ -1934,7 +1934,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_NBRZW:
 			{
 				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = int32_t(1) - *condition;
+				*condition = (*condition == 0) ? 1 : 0;
 			}
 			// Fall through.
 
@@ -1957,7 +1957,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_NBRNZ:
 			{
 				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = int32_t(1) - *condition;
+				*condition = (*condition == 0) ? 1 : 0;
 			}
 			// Fall through.
 
@@ -1980,7 +1980,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			case OPCODE_NBRNZW:
 			{
 				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = int32_t(1) - *condition;
+				*condition = (*condition == 0) ? 1 : 0;
 			}
 			// Fall through.
 

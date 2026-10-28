@@ -367,6 +367,15 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int64_t, "Rshl", -(int64_t(1) << int64_t(20)) >> int64_t(16), -(int64_t(1) << int64_t(20)), int64_t(16));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Rshul", uint64_t(-(int64_t(1) << int64_t(20))) >> uint64_t(16), uint64_t(-(int64_t(1) << int64_t(20))), uint64_t(16));
 
+	// Shifts take the type of the promoted left operand.
+	VALIDATE_FUNCTION_CALL(uint32_t, "RshuiInt", uint32_t(0x08000000), uint32_t(0x80000000), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int64_t, "LshiLong", int64_t(INT32_MIN), int32_t(1), int64_t(31));
+	VALIDATE_FUNCTION_CALL(int64_t, "LshlInt", int64_t(1) << 40, int64_t(1), int32_t(40));
+	VALIDATE_FUNCTION_CALL(int64_t, "LshUChar", int64_t(INT32_MIN), uint8_t(0x80), int32_t(24));
+	VALIDATE_FUNCTION_CALL(int64_t, "LshUShort", int64_t(INT32_MIN), uint16_t(0x8000), int32_t(16));
+	VALIDATE_FUNCTION_CALL(uint32_t, "RshuiConstant", uint32_t(0x08000000));
+	VALIDATE_FUNCTION_CALL(int64_t, "LshiConstant", int64_t(INT32_MIN));
+
 	VALIDATE_FUNCTION_CALL(int32_t, "Andi", int32_t(0xfff0) & int32_t(0xff), int32_t(0xfff0), int32_t(0xff));
 	VALIDATE_FUNCTION_CALL(int64_t, "Andl", (int64_t(0xfff0) << 31) & (int64_t(0xff) << 31), (int64_t(0xfff0) << 31), (int64_t(0xff) << 31));
 	VALIDATE_FUNCTION_CALL(int32_t, "Ori", int32_t(0xfff0) | int32_t(0xff), int32_t(0xfff0), int32_t(0xff));
@@ -1011,6 +1020,14 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 	ul = uint64_t(-(int64_t(1) << 20)); oul = 16; rul = ul >> oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Rshul", rul, &ul, oul);
 	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+
+	u = 0x80000000; oi = 4; ru = 0x08000000;
+	VALIDATE_FUNCTION_CALL(uint32_t, "RshuiInt", ru, &u, oi);
+	ASSERT_FORMAT(u == ru, "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ru, u);
+
+	l = 1; oi = 40; rl = int64_t(1) << 40;
+	VALIDATE_FUNCTION_CALL(int64_t, "LshlInt", rl, &l, oi);
+	ASSERT_FORMAT(l == rl, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rl, l);
 
 
 	i = 0xfff0; oi = 0xff; ri = i & oi;

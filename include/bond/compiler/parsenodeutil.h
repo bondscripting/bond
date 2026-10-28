@@ -114,6 +114,7 @@ BOND_API bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescr
 BOND_API bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
 BOND_API TypeDescriptor PromoteType(const TypeDescriptor &type);
+BOND_API TypeDescriptor PromoteShiftOperandType(const TypeDescriptor &type);
 BOND_API TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
 
 BOND_API Value CastValue(const Token &fromValue, Token::TokenType toType);
