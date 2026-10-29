@@ -131,6 +131,8 @@
     "While statement condition is not boolean.")                                           \
   BOND_COMPILER_ERROR(FOR_CONDITION_IS_NOT_BOOLEAN,                                        \
     "For statement condition is not boolean.")                                             \
+  BOND_COMPILER_ERROR(TERNARY_CONDITION_IS_NOT_BOOLEAN,                                    \
+    "Ternary operator condition is not boolean.")                                          \
   BOND_COMPILER_ERROR(TERNARY_OPERAND_TYPE_MISMATCH,                                       \
     "Operands to ?: have different types '%0n' and '%1n'.")                                \
   BOND_COMPILER_ERROR(UNINITIALIZED_CONST,                                                 \

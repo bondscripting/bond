@@ -58,6 +58,7 @@ void DummyFunction()
 	NativeStruct ns = { 4 };
 
 	Point p1 = { 123, 456, 789 };
+	(f1 + 1.0f) ? 1 : 2;
 
 	// Valid statements.
 	switch (i1)

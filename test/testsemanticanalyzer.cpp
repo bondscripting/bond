@@ -239,6 +239,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 		{Bond::CompilerError::THIS_IN_NON_MEMBER_FUNCTION, Bond::Token::KEY_THIS, 57},
 		{Bond::CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST, Bond::Token::OBRACE, 58},
 		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 60},
+		{Bond::CompilerError::TERNARY_CONDITION_IS_NOT_BOOLEAN, Bond::Token::OP_PLUS, 61},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

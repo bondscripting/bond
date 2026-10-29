@@ -155,6 +155,9 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 {
 	ParseNodeTraverser::Visit(conditionalExpression);
 
+	const Expression *condition = conditionalExpression->GetCondition();
+	AssertBooleanExpression(condition, CompilerError::TERNARY_CONDITION_IS_NOT_BOOLEAN);
+
 	const TypeAndValue &trueTav = conditionalExpression->GetTrueExpression()->GetTypeAndValue();
 	const TypeAndValue &falseTav = conditionalExpression->GetFalseExpression()->GetTypeAndValue();
 
