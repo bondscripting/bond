@@ -175,6 +175,8 @@
     "Cannot do pointer artithmetic on type '%n' of undefined size.")                       \
   BOND_COMPILER_ERROR(NOT_ALL_PATHS_RETURN_A_VALUE,                                        \
     "Not all paths return a value in function '%c'.")                                      \
+  BOND_COMPILER_ERROR(MISSING_RETURN_VALUE,                                                \
+    "Return statement must return a value of type '%n'.")                                  \
   BOND_COMPILER_ERROR(INVALID_BREAK,                                                       \
     "Break statement not within a loop or switch statement.")                              \
   BOND_COMPILER_ERROR(INVALID_CONTINUE,                                                    \

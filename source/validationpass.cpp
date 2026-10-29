@@ -274,12 +274,24 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 	else if (jumpStatement->IsReturn())
 	{
 		mHasReturn.SetTop(true);
-		AssertAssignableTypes(
-			jumpStatement->GetRhs()->GetTypeAndValue(),
-			*mReturnType.GetTop(),
-			jumpStatement->GetContextToken(),
-			CompilerError::INVALID_RETURN_TYPE_CONVERSION,
-			true);
+		const TypeDescriptor *returnType = mReturnType.GetTop();
+		const Expression *rhs = jumpStatement->GetRhs();
+		if (rhs == nullptr)
+		{
+			if (!returnType->IsVoidType())
+			{
+				mErrorBuffer.PushError(CompilerError::MISSING_RETURN_VALUE, jumpStatement->GetContextToken(), returnType);
+			}
+		}
+		else
+		{
+			AssertAssignableTypes(
+				rhs->GetTypeAndValue(),
+				*returnType,
+				jumpStatement->GetContextToken(),
+				CompilerError::INVALID_RETURN_TYPE_CONVERSION,
+				true);
+		}
 	}
 	mEndsWithJump.SetTop(mEndsWithJump.GetTop() || endsWithJump);
 }

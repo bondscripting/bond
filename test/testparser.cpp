@@ -158,8 +158,6 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 	expectedCount.mJumpStatement = 4;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
-	expectedCount.mUsingDeclaration = 6;
-	expectedCount.mUsingDirective = 7;
 }
 
 

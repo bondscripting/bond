@@ -118,6 +118,12 @@ DEFINE_SEMANTICANALYZER_TEST(SwitchStatements, "scripts/parser_SwitchStatements.
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 }
 
+
+DEFINE_SEMANTICANALYZER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
 DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/sanalyzer_UsingErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
@@ -390,22 +396,30 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 94},
 		{Bond::CompilerError::UNREACHABLE_CODE, Bond::Token::ASSIGN, 109},
 		{Bond::CompilerError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 115},
-		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 196},
-		{Bond::CompilerError::RETURN_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 198},
-		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 198},
-		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 200},
-		{Bond::CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN, 201},
-		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OBRACKET, 201},
-		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 202},
-		{Bond::CompilerError::DUPLICATE_DEFAULT_IN_SWITCH, Bond::Token::KEY_SWITCH, 207},
-		{Bond::CompilerError::DUPLICATE_CASE_IN_SWITCH, Bond::Token::KEY_SWITCH, 218},
-		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 229},
-		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_STRING, 234},
-		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 240},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 120},
+		{Bond::CompilerError::RETURN_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 122},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 122},
+		{Bond::CompilerError::DECLARATION_OF_UNDEFINED_SIZE, Bond::Token::IDENTIFIER, 124},
+		{Bond::CompilerError::ASSIGNMENT_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN, 125},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OBRACKET, 125},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 126},
+		{Bond::CompilerError::DUPLICATE_DEFAULT_IN_SWITCH, Bond::Token::KEY_SWITCH, 131},
+		{Bond::CompilerError::DUPLICATE_CASE_IN_SWITCH, Bond::Token::KEY_SWITCH, 142},
+		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_INT, 153},
+		{Bond::CompilerError::TOO_MANY_INITIALIZERS, Bond::Token::CONST_STRING, 158},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 164},
+		{Bond::CompilerError::MISSING_RETURN_VALUE, Bond::Token::KEY_RETURN, 169},
+		{Bond::CompilerError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 174},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(Validation, "scripts/sanalyzer_Validation.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 }
 
 
@@ -425,6 +439,7 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(WhileStatements)                    \
   TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
+  TEST_ITEM(JumpStatements)                     \
   TEST_ITEM(UsingStatements)                    \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
@@ -434,6 +449,7 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(LossyConversions1)                  \
   TEST_ITEM(LossyConversions2)                  \
   TEST_ITEM(ValidationErrors)                   \
+  TEST_ITEM(Validation)                         \
   TEST_ITEM(IncludeLibraries)                   \
 
 RUN_TESTS(SemanticAnalyzer, TEST_ITEMS)
