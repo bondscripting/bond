@@ -114,8 +114,13 @@ BOND_API bool AreAssignableTypes(const TypeDescriptor &fromType, const TypeDescr
 BOND_API bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType);
 
 BOND_API TypeDescriptor PromoteType(const TypeDescriptor &type);
-BOND_API TypeDescriptor PromoteShiftOperandType(const TypeDescriptor &type);
 BOND_API TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescriptor &typeB);
+
+/// \brief Returns true if the operand has a signed integer type, the operation in which it is used has
+/// an unsigned integer type and the operand is not a constant known to be non-negative.
+/// \param operandTav The type and value of the operand prior to promotion.
+/// \param operationType The type in which the operation is performed, as returned by CombineOperandTypes.
+BOND_API bool MayConvertNegativeToUnsigned(const TypeAndValue &operandTav, const TypeDescriptor &operationType);
 
 BOND_API Value CastValue(const Token &fromValue, Token::TokenType toType);
 BOND_API Value CastValue(const TypeAndValue &fromTav, const TypeDescriptor &toType);

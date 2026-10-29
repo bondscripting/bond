@@ -128,7 +128,7 @@ static TypeDescriptor GetBinaryOperationType(const TypeDescriptor &lhDescriptor,
 {
 	if ((&opCodeSet == &LSH_OPCODES) || (&opCodeSet == &RSH_OPCODES))
 	{
-		return PromoteShiftOperandType(lhDescriptor);
+		return PromoteType(lhDescriptor);
 	}
 	return CombineOperandTypes(lhDescriptor, rhDescriptor);
 }
@@ -3717,7 +3717,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitSignOperator(const UnaryExpression *u
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	auto rhRef = mValueRef.Push();
 	Traverse(rhs);
-	EmitPushValueRef(rhRef, rhDescriptor);
+	EmitPushValueRefAs(rhRef, rhDescriptor, resultDescriptor);
 
 	if (negated)
 	{
@@ -3773,7 +3773,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitBitwiseNotOperator(const UnaryExpress
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	auto rhRef = mValueRef.Push();
 	Traverse(rhs);
-	EmitPushValueRef(rhRef, rhDescriptor);
+	EmitPushValueRefAs(rhRef, rhDescriptor, resultDescriptor);
 
 	if (negated)
 	{

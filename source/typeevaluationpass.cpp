@@ -271,7 +271,7 @@ void TypeEvaluationPass::Visit(BinaryExpression *binaryExpression)
 				isResolvable =
 					AssertIntegerOperand(lhDescriptor, op) &&
 					AssertIntegerOperand(rhDescriptor, op);
-				resultType = PromoteShiftOperandType(lhDescriptor);
+				resultType = PromoteType(lhDescriptor);
 				break;
 
 			case Token::OP_LT:
@@ -375,6 +375,7 @@ void TypeEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			case Token::OP_PLUS:
 			case Token::OP_MINUS:
 				isResolvable = AssertNumericOperand(rhDescriptor, op);
+				resultType = PromoteType(rhDescriptor);
 				break;
 
 			case Token::OP_INC:

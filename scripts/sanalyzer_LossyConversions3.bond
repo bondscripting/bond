@@ -1,0 +1,10 @@
+void LossyConversions3()
+{
+	float f = 16777217;
+	f = 0x7fffffff;
+	f = 0x7fffffc1;
+	f = 0xffffffffU;
+	f = 0xffffffffffffffffLU;
+	double d = 0x7fffffffffffffffL;
+	d = 0xffffffffffffffffLU;
+}

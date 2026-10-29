@@ -1,0 +1,36 @@
+void SignednessErrors(int i, uint u, long l, ulong ul, char c, short s, bool b)
+{
+	uint r;
+	ulong rl;
+	r = i + u;
+	r = u - c;
+	r = s * u;
+	r = u / i;
+	r = u % i;
+	r = i & u;
+	r = u | i;
+	r = u ^ i;
+	b = i < u;
+	b = u <= i;
+	b = i > u;
+	b = i >= u;
+	b = i == u;
+	b = i != u;
+	b = -1 < u;
+	b = u == -1;
+	rl = i + ul;
+	rl = ul + l;
+	b = l < ul;
+	u += i;
+	u -= i;
+	u *= i;
+	u /= i;
+	u %= i;
+	u &= i;
+	u |= i;
+	u ^= i;
+	i += u;
+	ul += l;
+	r = b ? u : i;
+	rl = b ? -1 : ul;
+}

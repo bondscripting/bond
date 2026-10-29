@@ -1,0 +1,118 @@
+uint DivuiByIntConstant(uint a)
+{
+	return a / 2;
+}
+
+uint RemuiByIntConstant(uint a)
+{
+	return a % 10;
+}
+
+bool CmpgtuiIntConstant(uint a)
+{
+	return a > 5;
+}
+
+uint DivuiAssignIntConstant(uint a)
+{
+	a /= 2;
+	return a;
+}
+
+long AdduiIntConstantToLong(uint a)
+{
+	return a + 1;
+}
+
+bool CmpgtulLongConstant(ulong a)
+{
+	return a > 0L;
+}
+
+ulong DivulByIntConstant(ulong a)
+{
+	return a / 2;
+}
+
+long AdducUiToLong(uchar a, uint b)
+{
+	return a + b;
+}
+
+long SubucToLong(uchar a, uchar b)
+{
+	return a - b;
+}
+
+double SubusToDouble(ushort a, ushort b)
+{
+	return a - b;
+}
+
+int DivSubucByIntConstant(uchar a, uchar b)
+{
+	return (a - b) / 2;
+}
+
+bool CmpltSubuc(uchar a, uchar b)
+{
+	return (a - b) < 0;
+}
+
+long NegucToLong(uchar a)
+{
+	return -a;
+}
+
+ushort NegucToUs(uchar a)
+{
+	return cast<ushort>(-a);
+}
+
+long BitNotucToLong(uchar a)
+{
+	return ~a;
+}
+
+long BitNotusToLong(ushort a)
+{
+	return ~a;
+}
+
+int NegcConstant()
+{
+	return -'a';
+}
+
+int NegsConstant()
+{
+	return -cast<short>(5);
+}
+
+int BitNotucConstant()
+{
+	return ~cast<uchar>(1u);
+}
+
+int PluscConstant()
+{
+	return +cast<char>(-7);
+}
+
+int NegiMinConstant()
+{
+	return -cast<int>(0x80000000u);
+}
+
+long OffsetBySubuc(uchar a, uchar b)
+{
+	int[4] array;
+	int *base = array + 2;
+	int *p = base + (a - b);
+	return p - base;
+}
+
+long TernaryNegucToLong(bool cond, uchar a, uchar b)
+{
+	return cond ? -a : b;
+}

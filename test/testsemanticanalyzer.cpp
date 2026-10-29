@@ -382,6 +382,74 @@ DEFINE_SEMANTICANALYZER_TEST(LossyConversions2, "scripts/sanalyzer_LossyConversi
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(LossyConversions3, "scripts/sanalyzer_LossyConversions3.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_INT, 3},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 4},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 5},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 6},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 7},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_LONG, 8},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 9},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(SignednessErrors, "scripts/sanalyzer_SignednessErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_PLUS, 5},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_MINUS, 6},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_STAR, 7},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_DIV, 8},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_MOD, 9},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_AMP, 10},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_BIT_OR, 11},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_BIT_XOR, 12},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_LT, 13},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_LTE, 14},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_GT, 15},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_GTE, 16},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_EQUAL, 17},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_NOT_EQUAL, 18},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_LT, 19},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_EQUAL, 20},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_PLUS, 21},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_PLUS, 22},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_LT, 23},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_PLUS, 24},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_MINUS, 25},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_MULT, 26},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_DIV, 27},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_MOD, 28},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_AND, 29},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_OR, 30},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_XOR, 31},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_PLUS, 32},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::ASSIGN_PLUS, 33},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_TERNARY, 34},
+		{Bond::CompilerError::SIGNED_UNSIGNED_MISMATCH, Bond::Token::OP_TERNARY, 35},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(Signedness, "scripts/sanalyzer_Signedness.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
 DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
@@ -449,6 +517,9 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(ValueEvaluationErrors2)             \
   TEST_ITEM(LossyConversions1)                  \
   TEST_ITEM(LossyConversions2)                  \
+  TEST_ITEM(LossyConversions3)                  \
+  TEST_ITEM(SignednessErrors)                   \
+  TEST_ITEM(Signedness)                         \
   TEST_ITEM(ValidationErrors)                   \
   TEST_ITEM(Validation)                         \
   TEST_ITEM(IncludeLibraries)                   \

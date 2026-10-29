@@ -187,7 +187,9 @@
     "Unreachable code.")                                                                   \
   BOND_COMPILER_ERROR(LOSSY_CONVERSION,                                                    \
     "Possible loss of data in conversion from '%0n' to '%1n'.")                            \
-  BOND_COMPILER_ERROR(VALUE32_TABLE_OVERFLOW,                                              \
+  BOND_COMPILER_ERROR(SIGNED_UNSIGNED_MISMATCH,                                            \
+    "Operand of type '%0n' may be negative but is converted to '%1n'.")                    \
+  BOND_COMPILER_ERROR(VALUE32_TABLE_OVERFLOW,                                             \
     "32-bit constant table overflow.")                                                     \
   BOND_COMPILER_ERROR(VALUE64_TABLE_OVERFLOW,                                              \
     "64-bit constant table overflow.")                                                     \

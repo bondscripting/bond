@@ -490,6 +490,9 @@ bool IsLossyConversion(const TypeAndValue &fromTav, const TypeDescriptor &toType
 
 TypeDescriptor PromoteType(const TypeDescriptor &type)
 {
+	// Follows C's integer promotions. Types narrower than int promote to int, since int can represent
+	// all of their values. Narrow values are held sign or zero extended in 32-bit stack slots, so the
+	// promotion never requires a conversion instruction.
 	const Token::TokenType t = type.GetPrimitiveType();
 	TypeDescriptor result = TypeDescriptor::GetIntType();
 
@@ -515,13 +518,13 @@ TypeDescriptor PromoteType(const TypeDescriptor &type)
 	{
 		result = TypeDescriptor::GetULongType();
 	}
-	else if (SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(t))
-	{
-		result = TypeDescriptor::GetIntType();
-	}
-	else if (UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(t))
+	else if (t == Token::KEY_UINT)
 	{
 		result = TypeDescriptor::GetUIntType();
+	}
+	else if (INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(t))
+	{
+		result = TypeDescriptor::GetIntType();
 	}
 	else if (t == Token::KEY_BOOL)
 	{
@@ -529,18 +532,6 @@ TypeDescriptor PromoteType(const TypeDescriptor &type)
 	}
 
 	return result;
-}
-
-
-TypeDescriptor PromoteShiftOperandType(const TypeDescriptor &type)
-{
-	// Shifts follow C's integer promotions, under which uchar and ushort promote to int.
-	const Token::TokenType t = type.GetPrimitiveType();
-	if (!type.IsPointerType() && ((t == Token::KEY_UCHAR) || (t == Token::KEY_USHORT)))
-	{
-		return TypeDescriptor::GetIntType();
-	}
-	return PromoteType(type);
 }
 
 
@@ -570,30 +561,29 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescri
 	{
 		result = TypeDescriptor::GetFloatType();
 	}
-	else if (SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
-	         SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
+	else if (INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
+	         INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
 	{
-		if (LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
-	      LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
+		// Follows C's usual arithmetic conversions. After promotion, the wider type wins. When both
+		// types have the same width, the unsigned type wins. Mixing a possibly negative signed operand
+		// with an unsigned result type is rejected by the validation pass.
+		const Token::TokenType pa = PromoteType(typeA).GetPrimitiveType();
+		const Token::TokenType pb = PromoteType(typeB).GetPrimitiveType();
+		if ((pa == Token::KEY_ULONG) || (pb == Token::KEY_ULONG))
+		{
+			result = TypeDescriptor::GetULongType();
+		}
+		else if ((pa == Token::KEY_LONG) || (pb == Token::KEY_LONG))
 		{
 			result = TypeDescriptor::GetLongType();
+		}
+		else if ((pa == Token::KEY_UINT) || (pb == Token::KEY_UINT))
+		{
+			result = TypeDescriptor::GetUIntType();
 		}
 		else
 		{
 			result = TypeDescriptor::GetIntType();
-		}
-	}
-	else if (UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
-	         UNSIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
-	{
-		if (LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(a) ||
-	      LONG_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(b))
-		{
-			result = TypeDescriptor::GetULongType();
-		}
-		else
-		{
-			result = TypeDescriptor::GetUIntType();
 		}
 	}
 	else if ((a == Token::KEY_BOOL) || (b == Token::KEY_BOOL))
@@ -606,6 +596,19 @@ TypeDescriptor CombineOperandTypes(const TypeDescriptor &typeA, const TypeDescri
 	}
 
 	return result;
+}
+
+
+bool MayConvertNegativeToUnsigned(const TypeAndValue &operandTav, const TypeDescriptor &operationType)
+{
+	const TypeDescriptor &operandType = operandTav.GetTypeDescriptor();
+	const Token::TokenType operationPrimitiveType = operationType.GetPrimitiveType();
+	return
+		!operationType.IsPointerType() &&
+		((operationPrimitiveType == Token::KEY_UINT) || (operationPrimitiveType == Token::KEY_ULONG)) &&
+		!operandType.IsPointerType() &&
+		SIGNED_INTEGER_TYPE_SPECIFIERS_TYPESET.Contains(operandType.GetPrimitiveType()) &&
+		!(operandTav.IsValueDefined() && (operandTav.AsLongValue() >= 0));
 }
 
 

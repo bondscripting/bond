@@ -365,7 +365,48 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 		default:
 			break;
 	}
+
+	switch (op->GetTokenType())
+	{
+		case Token::ASSIGN_PLUS:
+		case Token::ASSIGN_MINUS:
+		case Token::ASSIGN_MULT:
+		case Token::ASSIGN_DIV:
+		case Token::ASSIGN_MOD:
+		case Token::ASSIGN_AND:
+		case Token::ASSIGN_OR:
+		case Token::ASSIGN_XOR:
+		case Token::OP_PLUS:
+		case Token::OP_MINUS:
+		case Token::OP_STAR:
+		case Token::OP_DIV:
+		case Token::OP_MOD:
+		case Token::OP_AMP:
+		case Token::OP_BIT_OR:
+		case Token::OP_BIT_XOR:
+		case Token::OP_LT:
+		case Token::OP_LTE:
+		case Token::OP_GT:
+		case Token::OP_GTE:
+		case Token::OP_EQUAL:
+		case Token::OP_NOT_EQUAL:
+			AssertNoNegativeToUnsignedConversion(binaryExpression->GetLhs(), binaryExpression->GetRhs(), op);
+			break;
+		default:
+			break;
+	}
+
 	ParseNodeTraverser::Visit(binaryExpression);
+}
+
+
+void ValidationPass::Visit(ConditionalExpression *conditionalExpression)
+{
+	AssertNoNegativeToUnsignedConversion(
+		conditionalExpression->GetTrueExpression(),
+		conditionalExpression->GetFalseExpression(),
+		conditionalExpression->GetContextToken());
+	ParseNodeTraverser::Visit(conditionalExpression);
 }
 
 
@@ -561,6 +602,30 @@ bool ValidationPass::AssertAssignableTypes(
 		return false;
 	}
 	return true;
+}
+
+
+void ValidationPass::AssertNoNegativeToUnsignedConversion(const Expression *lhs, const Expression *rhs, const Token *context)
+{
+	// Compiler errors hold pointers to their arguments, so the reported operation type needs static storage.
+	static const TypeDescriptor UINT_TYPE = TypeDescriptor::GetUIntType();
+	static const TypeDescriptor ULONG_TYPE = TypeDescriptor::GetULongType();
+
+	const TypeAndValue &lhTav = lhs->GetTypeAndValue();
+	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
+	if (lhTav.IsTypeDefined() && rhTav.IsTypeDefined())
+	{
+		const TypeDescriptor operationType = CombineOperandTypes(lhTav.GetTypeDescriptor(), rhTav.GetTypeDescriptor());
+		const TypeDescriptor *reportedType = (operationType.GetPrimitiveType() == Token::KEY_ULONG) ? &ULONG_TYPE : &UINT_TYPE;
+		if (MayConvertNegativeToUnsigned(lhTav, operationType))
+		{
+			mErrorBuffer.PushError(CompilerError::SIGNED_UNSIGNED_MISMATCH, context, &lhTav.GetTypeDescriptor(), reportedType);
+		}
+		else if (MayConvertNegativeToUnsigned(rhTav, operationType))
+		{
+			mErrorBuffer.PushError(CompilerError::SIGNED_UNSIGNED_MISMATCH, context, &rhTav.GetTypeDescriptor(), reportedType);
+		}
+	}
 }
 
 }

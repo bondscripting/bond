@@ -1,0 +1,55 @@
+void Signedness(int i, uint u, long l, ulong ul, char c, uchar uc, ushort us, bool b)
+{
+	const int K = 4;
+	uint r;
+	ulong rl;
+	long rs;
+	int ri;
+
+	// Signed constants that are non-negative may be mixed with unsigned operands.
+	r = u / 2;
+	r = u % 10;
+	r = u + 'a';
+	r = u / K;
+	b = u > 5;
+	b = u == 0;
+	rl = ul / 2;
+	rl = ul + 1;
+	b = ul > 0L;
+	r = b ? u : 0;
+
+	// uchar and ushort promote to int and are never negative.
+	ri = uc - us;
+	b = uc < i;
+	r = uc + u;
+	r = us * u;
+	ri = -uc;
+	ri = ~us;
+	ri = +c;
+
+	// A long can represent all uint values.
+	rs = l + u;
+	b = l < u;
+
+	// Explicit casts.
+	r = u + cast<uint>(i);
+	b = cast<int>(u) < i;
+
+	// Compound assignments with non-negative constants and shifts.
+	u += 1;
+	u -= 1;
+	u /= 2;
+	ul *= 3;
+	u <<= i;
+	u >>= i;
+	r = u << i;
+	ri = i >> u;
+
+	// Integer constants that are exactly representable as floating point values.
+	float f = 16777216;
+	f = cast<int>(0x80000000u);
+	f = 0x7fffff80;
+	f = 0xffffff0000000000LU;
+	double d = 0x7ffffffffffffc00L;
+	d = 0xfffffffffffff800LU;
+}

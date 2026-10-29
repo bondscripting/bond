@@ -225,30 +225,31 @@ inline Value BinaryNotEqual(const TypeAndValue &lhs, const TypeAndValue &rhs)
 }
 
 
-Value UnaryMinus(const TypeAndValue &value)
+// The operand is converted to the promoted result type before the operator is applied.
+Value UnaryMinus(const TypeAndValue &rhs, const TypeDescriptor &type)
 {
-	const TypeDescriptor &type = value.GetTypeDescriptor();
+	const Value r = CastValue(rhs, type);
 	Value resultValue;
 
 	switch (type.GetPrimitiveType())
 	{
 		case Token::KEY_INT:
-			resultValue.mInt = -value.GetIntValue();
+			resultValue.mInt = int32_t(uint32_t(0) - uint32_t(r.mInt));
 			break;
 		case Token::KEY_UINT:
-			resultValue.mUInt = uint32_t(-int32_t(value.GetUIntValue()));
+			resultValue.mUInt = uint32_t(0) - r.mUInt;
 			break;
 		case Token::KEY_LONG:
-			resultValue.mLong = -value.GetLongValue();
+			resultValue.mLong = int64_t(uint64_t(0) - uint64_t(r.mLong));
 			break;
 		case Token::KEY_ULONG:
-			resultValue.mULong = uint64_t(-int64_t(value.GetULongValue()));
+			resultValue.mULong = uint64_t(0) - r.mULong;
 			break;
 		case Token::KEY_FLOAT:
-			resultValue.mFloat = -value.GetFloatValue();
+			resultValue.mFloat = -r.mFloat;
 			break;
 		case Token::KEY_DOUBLE:
-			resultValue.mDouble = -value.GetDoubleValue();
+			resultValue.mDouble = -r.mDouble;
 			break;
 		default:
 			break;
@@ -258,30 +259,28 @@ Value UnaryMinus(const TypeAndValue &value)
 }
 
 
-Value UnaryBitNot(const TypeAndValue &value)
+// The operand is converted to the promoted result type before the operator is applied.
+Value UnaryBitNot(const TypeAndValue &rhs, const TypeDescriptor &type)
 {
-	const TypeDescriptor &type = value.GetTypeDescriptor();
+	const Value r = CastValue(rhs, type);
 	Value resultValue;
 
-	if (value.IsValueDefined())
+	switch (type.GetPrimitiveType())
 	{
-		switch (type.GetPrimitiveType())
-		{
-			case Token::KEY_INT:
-				resultValue.mInt = ~value.GetIntValue();
-				break;
-			case Token::KEY_UINT:
-				resultValue.mUInt = ~value.GetUIntValue();
-				break;
-			case Token::KEY_LONG:
-				resultValue.mLong = ~value.GetLongValue();
-				break;
-			case Token::KEY_ULONG:
-				resultValue.mULong = ~value.GetULongValue();
-				break;
-			default:
-				break;
-		}
+		case Token::KEY_INT:
+			resultValue.mInt = ~r.mInt;
+			break;
+		case Token::KEY_UINT:
+			resultValue.mUInt = ~r.mUInt;
+			break;
+		case Token::KEY_LONG:
+			resultValue.mLong = ~r.mLong;
+			break;
+		case Token::KEY_ULONG:
+			resultValue.mULong = ~r.mULong;
+			break;
+		default:
+			break;
 	}
 
 	return resultValue;
@@ -829,20 +828,21 @@ void ValueEvaluationPass::Visit(UnaryExpression *unaryExpression)
 			if (rhs.IsValueDefined())
 			{
 				const Token *op = unaryExpression->GetOperator();
+				const TypeDescriptor &resultType = tav.GetTypeDescriptor();
 
 				switch (op->GetTokenType())
 				{
 					case Token::OP_PLUS:
-						tav.SetValue(rhs.GetValue());
+						tav.SetValue(CastValue(rhs, resultType));
 						break;
 					case Token::OP_MINUS:
-						tav.SetValue(UnaryMinus(rhs));
+						tav.SetValue(UnaryMinus(rhs, resultType));
 						break;
 					case Token::OP_NOT:
 						tav.SetBoolValue(!rhs.GetBoolValue());
 						break;
 					case Token::OP_BIT_NOT:
-						tav.SetValue(UnaryBitNot(rhs));
+						tav.SetValue(UnaryBitNot(rhs, resultType));
 						break;
 					case Token::OP_STAR:
 						// TODO

@@ -179,9 +179,25 @@ bool>::type IsInRange(ValueType value)
 }
 
 
+// Integral values are in range when they are exactly representable. A value near the top of
+// ValueType's range can round up to a floating point value that is out of range for ValueType,
+// so the converted value is checked against the limits before it is converted back.
 template <typename RangeType, typename ValueType>
 typename std::enable_if<
-	std::is_floating_point<RangeType>::value,
+	std::is_floating_point<RangeType>::value && std::is_integral<ValueType>::value,
+bool>::type IsInRange(ValueType value)
+{
+	const RangeType convertedValue = RangeType(value);
+	return
+		(convertedValue >= floating_point_to_integral_limits<RangeType, ValueType>::min()) &&
+		(convertedValue <= floating_point_to_integral_limits<RangeType, ValueType>::max()) &&
+		(ValueType(convertedValue) == value);
+}
+
+
+template <typename RangeType, typename ValueType>
+typename std::enable_if<
+	std::is_floating_point<RangeType>::value && std::is_floating_point<ValueType>::value,
 bool>::type IsInRange(ValueType value)
 {
 	const RangeType convertedValue = RangeType(value);

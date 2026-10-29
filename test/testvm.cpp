@@ -1232,6 +1232,44 @@ DEFINE_VM_TEST(Enums, "scripts/vm_Enums.bond")
 }
 
 
+DEFINE_VM_TEST(ArithmeticConversions, "scripts/vm_ArithmeticConversions.bond")
+{
+	using namespace Bond;
+
+	// The usual arithmetic conversions: an int operand converts to the unsigned type of the other operand.
+	VALIDATE_FUNCTION_CALL(uint32_t, "DivuiByIntConstant", uint32_t(1500000000u), uint32_t(3000000000u));
+	VALIDATE_FUNCTION_CALL(uint32_t, "RemuiByIntConstant", uint32_t(0), uint32_t(3000000000u));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgtuiIntConstant", int32_t(1), uint32_t(3000000000u));
+	VALIDATE_FUNCTION_CALL(uint32_t, "DivuiAssignIntConstant", uint32_t(1500000000u), uint32_t(3000000000u));
+	VALIDATE_FUNCTION_CALL(int64_t, "AdduiIntConstantToLong", int64_t(3000000001), uint32_t(3000000000u));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgtulLongConstant", int32_t(1), uint64_t(10000000000000000000u));
+	VALIDATE_FUNCTION_CALL(uint64_t, "DivulByIntConstant", uint64_t(5000000000000000000u), uint64_t(10000000000000000000u));
+	VALIDATE_FUNCTION_CALL(int64_t, "AdducUiToLong", int64_t(0), uint8_t(1), BOND_UINT_MAX);
+
+	// The integer promotions: uchar and ushort promote to int.
+	VALIDATE_FUNCTION_CALL(int64_t, "SubucToLong", int64_t(-1), uint8_t(1), uint8_t(2));
+	VALIDATE_FUNCTION_CALL(double, "SubusToDouble", -1.0, uint16_t(1), uint16_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "DivSubucByIntConstant", int32_t(-2), uint8_t(1), uint8_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpltSubuc", int32_t(1), uint8_t(1), uint8_t(2));
+	VALIDATE_FUNCTION_CALL(int64_t, "OffsetBySubuc", int64_t(-1), uint8_t(1), uint8_t(2));
+
+	// Unary operators promote their operand.
+	VALIDATE_FUNCTION_CALL(int64_t, "NegucToLong", int64_t(-1), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "NegucToUs", uint32_t(65535), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int64_t, "BitNotucToLong", int64_t(-2), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int64_t, "BitNotusToLong", int64_t(-2), uint16_t(1));
+	VALIDATE_FUNCTION_CALL(int64_t, "TernaryNegucToLong", int64_t(-1), true, uint8_t(1), uint8_t(2));
+	VALIDATE_FUNCTION_CALL(int64_t, "TernaryNegucToLong", int64_t(2), false, uint8_t(1), uint8_t(2));
+
+	// Constant folding of unary operators on promoted operands.
+	VALIDATE_FUNCTION_CALL(int32_t, "NegcConstant", int32_t(-97));
+	VALIDATE_FUNCTION_CALL(int32_t, "NegsConstant", int32_t(-5));
+	VALIDATE_FUNCTION_CALL(int32_t, "BitNotucConstant", int32_t(-2));
+	VALIDATE_FUNCTION_CALL(int32_t, "PluscConstant", int32_t(-7));
+	VALIDATE_FUNCTION_CALL(int32_t, "NegiMinConstant", BOND_INT_MIN);
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1248,5 +1286,6 @@ DEFINE_VM_TEST(Enums, "scripts/vm_Enums.bond")
   TEST_ITEM(Structs)                            \
   TEST_ITEM(Initializers)                       \
   TEST_ITEM(Enums)                              \
+  TEST_ITEM(ArithmeticConversions)              \
 
 RUN_TESTS(VM, TEST_ITEMS)

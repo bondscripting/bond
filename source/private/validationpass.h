@@ -32,6 +32,7 @@ protected:
 	virtual void Visit(JumpStatement *jumpStatement) override;
 	virtual void Visit(DeclarativeStatement *declarativeStatement) override;
 	virtual void Visit(ExpressionStatement *expressionStatement) override;
+	virtual void Visit(ConditionalExpression *conditionalExpression) override;
 	virtual void Visit(BinaryExpression *binaryExpression) override;
 	virtual void Visit(UnaryExpression *unaryExpression) override;
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
@@ -52,6 +53,8 @@ private:
 		const Token *context,
 		CompilerError::Type errorType,
 		bool ignoreConst = false);
+
+	void AssertNoNegativeToUnsignedConversion(const Expression *lhs, const Expression *rhs, const Token *context);
 
 	BoolStack mHasDefaultLabel;
 	BoolStack mEndsWithJump;
