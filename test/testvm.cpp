@@ -40,9 +40,9 @@ DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {
 	using namespace Bond;
 	VALIDATE_FUNCTION_CALL(int32_t, "Constc", int32_t(-7));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Constuc", int32_t(130));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Constuc", uint32_t(130));
 	VALIDATE_FUNCTION_CALL(int32_t, "Consts", int32_t(-345));
-	VALIDATE_FUNCTION_CALL(uint32_t, "Constus", int32_t(40000));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Constus", uint32_t(40000));
 	VALIDATE_FUNCTION_CALL(int32_t, "Const32", int32_t(-34567));
 	VALIDATE_FUNCTION_CALL(int64_t, "Const64", int64_t(-34567));
 	VALIDATE_FUNCTION_CALL(int32_t, "Consti_n2", int32_t(-2));
@@ -109,7 +109,7 @@ DEFINE_VM_TEST(MemoryOperations, "scripts/vm_MemoryOperations.bond")
 	ASSERT_MESSAGE((shorts[0] == 0) && (shorts[2] == 0) && (shorts[4] == 0), "Memory stomp by LoadsStores() detected.");
 
 	uint16_t ushorts[] = {0, 0xffff, 0, 0, 0};
-	VALIDATE_FUNCTION_CALL(uint32_t, "LoadusStores", int32_t(0xffff), ushorts + 1, ushorts + 3);
+	VALIDATE_FUNCTION_CALL(uint32_t, "LoadusStores", uint32_t(0xffff), ushorts + 1, ushorts + 3);
 	ASSERT_FORMAT(ushorts[1] == ushorts[3], "Expected %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".", ushorts[1], ushorts[3]);
 	ASSERT_MESSAGE((ushorts[0] == 0) && (ushorts[2] == 0) && (ushorts[4] == 0), "Memory stomp by LoadusStores() detected.");
 
@@ -308,10 +308,10 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int64_t, "Mull", (-(int64_t(58) << 40)) * int64_t(17), (-(int64_t(58) << 40)), int64_t(17));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", (uint64_t(58) << 40) * uint64_t(17), (uint64_t(58) << 40), uint64_t(17));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", ~uint64_t(0) * uint64_t(3), ~uint64_t(0), uint64_t(3));
-	VALIDATE_FUNCTION_CALL(float, "Mulf", 0.0f * 84.3f, -0.0f, 84.3f);
+	VALIDATE_FUNCTION_CALL(float, "Mulf", -0.0f * 84.3f, -0.0f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Mulf", -98.1f * 84.3f, -98.1f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Mulf", 1e20f * 3.3e10f, 1e20f, 3.3e10f);
-	VALIDATE_FUNCTION_CALL(double, "Muld", 0.0 * 84.3, -0.0, 84.3);
+	VALIDATE_FUNCTION_CALL(double, "Muld", -0.0 * 84.3, -0.0, 84.3);
 	VALIDATE_FUNCTION_CALL(double, "Muld", -98.1 * 84.3, -98.1, 84.3);
 	VALIDATE_FUNCTION_CALL(double, "Muld", 1e40 * 3.3e20, 1e40, 3.3e20);
 
@@ -320,10 +320,10 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(uint32_t, "Divui", Bond::BOND_UINT_MAX / uint32_t(5678), BOND_UINT_MAX, uint32_t(5678));
 	VALIDATE_FUNCTION_CALL(int64_t, "Divl", Bond::BOND_LONG_MIN / int64_t(5678), BOND_LONG_MIN, int64_t(5678));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Divul", Bond::BOND_ULONG_MAX / uint64_t(5678), BOND_ULONG_MAX, uint64_t(5678));
-	VALIDATE_FUNCTION_CALL(float, "Divf", 0.0f / 84.3f, -0.0f, 84.3f);
+	VALIDATE_FUNCTION_CALL(float, "Divf", -0.0f / 84.3f, -0.0f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Divf", -98.1f / 84.3f, -98.1f, 84.3f);
 	VALIDATE_FUNCTION_CALL(float, "Divf", 1e20f / 3.3e10f, 1e20f, 3.3e10f);
-	VALIDATE_FUNCTION_CALL(double, "Divd", 0.0 / 84.3, -0.0, 84.3);
+	VALIDATE_FUNCTION_CALL(double, "Divd", -0.0 / 84.3, -0.0, 84.3);
 	VALIDATE_FUNCTION_CALL(double, "Divd", -98.1 / 84.3, -98.1, 84.3);
 	VALIDATE_FUNCTION_CALL(double, "Divd", 1e40 / 3.3e20, 1e40, 3.3e20);
 
@@ -331,9 +331,9 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Remi", int32_t(10) % int32_t(3), int32_t(10), int32_t(3));
 	VALIDATE_FUNCTION_CALL(int32_t, "Remi", int32_t(-10) % int32_t(3), int32_t(-10), int32_t(3));
 	VALIDATE_FUNCTION_CALL(int32_t, "Remi", int32_t(2352) % int32_t(24), int32_t(2352), int32_t(24));
-	VALIDATE_FUNCTION_CALL(int32_t, "Remui", uint32_t(0) % uint32_t(3), uint32_t(0), uint32_t(3));
-	VALIDATE_FUNCTION_CALL(int32_t, "Remui", uint32_t(10) % uint32_t(3), uint32_t(10), uint32_t(3));
-	VALIDATE_FUNCTION_CALL(int32_t, "Remui", uint32_t(2352) % uint32_t(24), uint32_t(2352), uint32_t(24));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Remui", uint32_t(0) % uint32_t(3), uint32_t(0), uint32_t(3));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Remui", uint32_t(10) % uint32_t(3), uint32_t(10), uint32_t(3));
+	VALIDATE_FUNCTION_CALL(uint32_t, "Remui", uint32_t(2352) % uint32_t(24), uint32_t(2352), uint32_t(24));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Remui", Bond::BOND_UINT_MAX % uint32_t(5678), BOND_UINT_MAX, uint32_t(5678));
 	VALIDATE_FUNCTION_CALL(int64_t, "Reml", Bond::BOND_LONG_MIN % int64_t(5678), BOND_LONG_MIN, int64_t(5678));
 	VALIDATE_FUNCTION_CALL(uint64_t, "Remul", Bond::BOND_ULONG_MAX % uint64_t(5678), BOND_ULONG_MAX, uint64_t(5678));
@@ -401,13 +401,13 @@ DEFINE_VM_TEST(UnaryOperators, "scripts/vm_UnaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(int64_t, "Negl", int64_t(-BOND_LONG_MAX), int64_t(BOND_LONG_MAX));
 	VALIDATE_FUNCTION_CALL(int64_t, "Negl", int64_t(BOND_LONG_MAX), int64_t(-BOND_LONG_MAX));
 
-	VALIDATE_FUNCTION_CALL(float, "Negf", 0.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(float, "Negf", -0.0f, 0.0f);
 	VALIDATE_FUNCTION_CALL(float, "Negf", -1.0f, 1.0f);
 	VALIDATE_FUNCTION_CALL(float, "Negf", 1.0f, -1.0f);
 	VALIDATE_FUNCTION_CALL(float, "Negf", -2.34e21f, 2.34e21f);
 	VALIDATE_FUNCTION_CALL(float, "Negf", 2.34e21f, -2.34e21f);
 
-	VALIDATE_FUNCTION_CALL(double, "Negd", 0.0, 0.0);
+	VALIDATE_FUNCTION_CALL(double, "Negd", -0.0, 0.0);
 	VALIDATE_FUNCTION_CALL(double, "Negd", -1.0, 1.0);
 	VALIDATE_FUNCTION_CALL(double, "Negd", 1.0, -1.0);
 	VALIDATE_FUNCTION_CALL(double, "Negd", -2.34e21, 2.34e21);
@@ -829,7 +829,7 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	twoD[6][11] = 9182;
 	VALIDATE_FUNCTION_CALL(int32_t, "GetValue2DAt", twoD[6][11], &twoD, int32_t(6), int32_t(11));
 
-	VALIDATE_FUNCTION_CALL(const void *, "PointerOffset", &twoD[1][2] + 19, &twoD[1][2], int32_t(19));
+	VALIDATE_FUNCTION_CALL(const void *, "PointerOffset", &twoD[1][2] + 9, &twoD[1][2], int32_t(9));
 	// The pointer is never dereferenced, so compute the expected address with integer arithmetic.
 	const char *uintOffsetBase = reinterpret_cast<const char *>(&twoD[0][0]);
 	const char *uintOffsetResult = reinterpret_cast<const char *>(reinterpret_cast<uintptr_t>(uintOffsetBase) + uintptr_t(0x80000000u));
@@ -864,6 +864,8 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalAlignment", int32_t(64));
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalOverlap", int32_t(1));
+
+	VALIDATE_FUNCTION_CALL(uint32_t, "PointersAndConstantFolding", uint32_t(1));
 }
 
 
@@ -885,7 +887,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	uint64_t ul = uint64_t(97) << 40; uint64_t oul = uint64_t(27) << 40; uint64_t rul = ul + oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Addl", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	float f = -97.0f; float of = 27.0f; float rf = f + of;
 	VALIDATE_FUNCTION_CALL(float, "Addf", rf, &f, of);
@@ -893,7 +895,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	double d = -97.0; double od = 27.0; double rd = d + od;
 	VALIDATE_FUNCTION_CALL(double, "Addd", rd, &d, od);
-	ASSERT_FORMAT(d == rd, "Expected %f, but was %.", rd, d);
+	ASSERT_FORMAT(d == rd, "Expected %f, but was %f.", rd, d);
 
 
 	i = -85; oi = 39; ri = i - oi;
@@ -910,7 +912,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	ul = uint64_t(85) << 40; oul = uint64_t(39) << 40; rul = ul - oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Subl", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	f = -85.0f; of = 39.0f; rf = f - of;
 	VALIDATE_FUNCTION_CALL(float, "Subf", rf, &f, of);
@@ -939,7 +941,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	ul = uint64_t(48) << 40; oul = uint64_t(135) << 40; rul = ul * oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	ul = ~uint64_t(0); oul = 3; rul = ul * oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Mulul", rul, &ul, oul);
@@ -968,7 +970,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	ul = uint64_t(10) << 40; oul = uint64_t(3); rul = ul / oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Divul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	f = -10.0f; of = 3.0f; rf = f / of;
 	VALIDATE_FUNCTION_CALL(float, "Divf", rf, &f, of);
@@ -993,7 +995,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	ul = uint64_t(10) << 40; oul = uint64_t(34); rul = ul % oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Remul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 
 	i = 7; oi = 7; ri = i << oi;
@@ -1019,7 +1021,7 @@ DEFINE_VM_TEST(CompoundAssignmentOperators, "scripts/vm_CompoundAssignmentOperat
 
 	ul = uint64_t(-(int64_t(1) << 20)); oul = 16; rul = ul >> oul;
 	VALIDATE_FUNCTION_CALL(uint64_t, "Rshul", rul, &ul, oul);
-	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRId64 ", but was %" BOND_PRId64 ".", rul, ul);
+	ASSERT_FORMAT(ul == rul, "Expected %" BOND_PRIu64 ", but was %" BOND_PRIu64 ".", rul, ul);
 
 	u = 0x80000000; oi = 4; ru = 0x08000000;
 	VALIDATE_FUNCTION_CALL(uint32_t, "RshuiInt", ru, &u, oi);
@@ -1183,7 +1185,7 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "GetVecXAt", int32_t(0), uint32_t(3));
 	VALIDATE_FUNCTION_CALL(int32_t, "GetVecYAt", int32_t(0), uint32_t(3));
 
-	VALIDATE_FUNCTION_CALL(uint32_t, "GetCollectionSize", int32_t(4));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetCollectionSize", uint32_t(4));
 
 	const int32_t *vectors = nullptr;
 	vm.CallFunction("GetCollectionVectors", &vectors);

@@ -1,6 +1,8 @@
 #include "framework/asserts.h"
 #include "framework/testlexerframework.h"
 #include "bond/stl/stringview.h"
+#include "bond/systems/math.h"
+#include <limits>
 
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
@@ -97,7 +99,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(EXPECTED_TYPES[i] == token->GetTokenType(),
-			("Expected %s, but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName()));
+			"Expected %s, but was %s.", Bond::Token::GetTokenName(EXPECTED_TYPES[i]), token->GetTokenName());
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
@@ -126,7 +128,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const float EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
 	const int NUM_FLOATS = sizeof(EXPECTED_FLOATS) / sizeof(*EXPECTED_FLOATS);
 
-	const double EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2 };
+	const double EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2, 0.1, 3.141592653589793 };
 	const int NUM_DOUBLES = sizeof(EXPECTED_DOUBLES) / sizeof(*EXPECTED_DOUBLES);
 
 	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
@@ -147,7 +149,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_BOOL == token->GetTokenType(),
-			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName()));
+			"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_BOOL), token->GetTokenName());
 
 		const bool expected = EXPECTED_BOOLS[i];
 		const bool actual = token->GetBoolValue();
@@ -162,7 +164,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_INT == token->GetTokenType(),
-			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName()));
+			"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_INT), token->GetTokenName());
 
 		const int32_t expected = EXPECTED_INTS[i];
 		const int32_t actual = token->GetIntValue();
@@ -173,7 +175,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_UINT == token->GetTokenType(),
-			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName()));
+			"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_UINT), token->GetTokenName());
 
 		const uint32_t expected = EXPECTED_UINTS[i];
 		const uint32_t actual = token->GetUIntValue();
@@ -195,7 +197,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	{
 		const Bond::Token *token = stream.Next();
 		ASSERT_FORMAT(Bond::Token::CONST_ULONG == token->GetTokenType(),
-			("Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName()));
+			"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::CONST_ULONG), token->GetTokenName());
 
 		const uint64_t expected = EXPECTED_ULONGS[i];
 		const uint64_t actual = token->GetULongValue();
@@ -210,8 +212,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 		const float expected = EXPECTED_FLOATS[i];
 		const float actual = token->GetFloatValue();
-		ASSERT_FORMAT((actual >= (expected - 0.0000001f)) && (actual <= (expected + 0.0000001f)),
-			"Expected %f, but was %f.", expected, actual);
+		ASSERT_FORMAT(Bond::Abs(actual - expected) <= (Bond::Abs(expected) * std::numeric_limits<float>::epsilon()),
+			"Expected %.9g, but was %.9g.", double(expected), double(actual));
 	}
 
 	for (int i = 0; i < NUM_DOUBLES; ++i)
@@ -222,8 +224,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 		const double expected = EXPECTED_DOUBLES[i];
 		const double actual = token->GetDoubleValue();
-		ASSERT_FORMAT((expected >= (actual - 0.0000001)) && (expected <= (actual + 0.0000001)),
-			"Expected %.16f, but was %.16f.", expected, actual);
+		ASSERT_FORMAT(expected == actual, "Expected %.17g, but was %.17g.", expected, actual);
 	}
 
 	for (int i = 0; i < NUM_CHARS; ++i)
@@ -245,7 +246,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 
 		const Bond::StringView &expected = EXPECTED_STRINGS[i];
 		const Bond::StringView actual = token->GetStringValue();
-		ASSERT_FORMAT(expected == actual, "Expected \"%s\", but was \"%s\".", expected.data(), actual.data());
+		ASSERT_FORMAT(expected == actual, "Expected \"%.*s\", but was \"%.*s\".",
+			int(expected.size()), expected.data(), int(actual.size()), actual.data());
 	}
 
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
@@ -322,28 +324,42 @@ DEFINE_LEXER_TEST(UnterminatedComment, "scripts/lexer_UnterminatedComment.bond")
 
 DEFINE_LEXER_TEST(EndOfStream1, "scripts/lexer_EndOfStream1.bond")
 {
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
 	Bond::TokenStream stream = tokenCollection.GetTokenStream();
 
 	ASSERT_FORMAT(stream.GetLength() == 2, "Expected 2 tokens but found %d.", stream.GetLength());
 
-	stream.SetPosition(1);
 	const Bond::Token *token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::KEY_BREAK == token->GetTokenType(),
+		"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::KEY_BREAK), token->GetTokenName());
+
+	stream.SetPosition(1);
+	token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::END == token->GetTokenType(),
+		"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::END), token->GetTokenName());
+
 	Bond::StreamPos pos = token->GetStartPos();
 	ASSERT_FORMAT((pos.line == 3) && (pos.column == 2),
-		"Expected EOF at line 3 column 2 but was at line %d column %d.", pos.line, pos.column);
+		"Expected EOF at line 3 column 2 but was at line %d column %d.", int(pos.line), int(pos.column));
 }
 
 
 DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
 {
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
 	Bond::TokenStream stream = tokenCollection.GetTokenStream();
 
 	ASSERT_FORMAT(stream.GetLength() == 1, "Expected 1 token but found %d.", stream.GetLength());
 
 	const Bond::Token *token = stream.Next();
+	ASSERT_FORMAT(Bond::Token::END == token->GetTokenType(),
+		"Expected %s, but was %s.", Bond::Token::GetTokenName(Bond::Token::END), token->GetTokenName());
+
 	Bond::StreamPos pos = token->GetStartPos();
 	ASSERT_FORMAT((pos.line == 1) && (pos.column == 2),
-		"Expected EOF at line 1 column 2 but was at line %d column %d.", pos.line, pos.column);
+		"Expected EOF at line 1 column 2 but was at line %d column %d.", int(pos.line), int(pos.column));
 }
 
 

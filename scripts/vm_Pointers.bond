@@ -233,5 +233,5 @@ bool PointersAndConstantFolding()
 	const int *dPtr = &d;
 	const int *ePtr = &e;
 
-	return ((cPtr - aPtr) == 8) && (ePtr > dPtr) && (dPtr > cPtr);
+	return ((cast<char*>(cPtr) - cast<char*>(aPtr)) == 8) && (ePtr > dPtr) && (dPtr > cPtr);
 }

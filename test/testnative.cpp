@@ -119,7 +119,7 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 	v3a = Vector3(56, 56, 56);
 	ri = v3a.GetY();
 	VALIDATE_FUNCTION_CALL(int32_t, "Vector3PostincrementY", ri, &v3a);
-	ASSERT_FORMAT(v3a.GetY() == (ri + 1), "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri, v3a.GetY());
+	ASSERT_FORMAT(v3a.GetY() == (ri + 1), "Expected %" BOND_PRId32 ", but was %" BOND_PRId32 ".", ri + 1, v3a.GetY());
 }
 
 

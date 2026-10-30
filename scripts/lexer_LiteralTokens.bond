@@ -4,7 +4,7 @@ true false null
 98765l 07777l 0x7fffffffl 0xffffffffl 0x7fffffffffffffffl
 98765ul 07777lu 0x7ffffffful 0xfffffffflu 0xfffffffffffffffflu
 3f 3.f 3.1f 15.75f 1.575E1f 1575e-2f 2.5e-3f 25E-4f .0075e+2f
-15.75 1.575E1 1575e-2 2.5e-3 25E-4 .0075e+2
+15.75 1.575E1 1575e-2 2.5e-3 25E-4 .0075e+2 0.1 3.141592653589793
 'z' '\t' '\'' '"' '\"'
 "string"
 "\""

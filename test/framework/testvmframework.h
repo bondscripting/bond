@@ -4,6 +4,7 @@
 #include "framework/testframework.h"
 #include "bond/systems/math.h"
 #include "bond/vm/vm.h"
+#include <cmath>
 #include <type_traits>
 
 #define DEFINE_VM_TEST(testName, scriptName)                                                   \
@@ -63,11 +64,16 @@ void ValidateFunctionCall(
 		const ReturnT delta = Bond::Max(Bond::Abs(expectedResult * ReturnT(1.0e-6)), ReturnT(1.0e-6));
 		Assert((returnValue >= (expectedResult - delta)) && (returnValue <= (expectedResult + delta)),
 			assertFile, assertLine, "Expected %f, but was %f.", double(expectedResult), double(returnValue));
+		if ((expectedResult == ReturnT(0)) && (returnValue == ReturnT(0)))
+		{
+			Assert(std::signbit(returnValue) == std::signbit(expectedResult), assertFile, assertLine,
+				"Expected %s0, but was %s0.", std::signbit(expectedResult) ? "-" : "+", std::signbit(returnValue) ? "-" : "+");
+		}
 	}
 	else if constexpr (std::is_pointer<ReturnT>::value)
 	{
 		Assert(returnValue == expectedResult, assertFile, assertLine,
-			"Expected %p, but was %p.", expectedResult, returnValue);
+			"Expected %p, but was %p.", static_cast<const void *>(expectedResult), static_cast<const void *>(returnValue));
 	}
 	else if constexpr (std::is_signed<ReturnT>::value)
 	{

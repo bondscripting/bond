@@ -41,6 +41,7 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	ASSERT_MESSAGE(enumerator != nullptr, "Expected 'EIGHTH' to be an enumerator.");
 
 	const Bond::TypeAndValue *tav = enumerator->GetTypeAndValue();
+	ASSERT_MESSAGE(tav != nullptr, "Expected 'EIGHTH' to have a type and value.");
 	ASSERT_MESSAGE(tav->GetTypeDescriptor().GetPrimitiveType() == Bond::Token::KEY_INT,
 		"Expected 'EIGHTH' to have an integer value.");
 	ASSERT_MESSAGE(tav->GetIntValue() == 5, "Expected 'EIGHTH' to have the value 5");
@@ -58,12 +59,14 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDefinitions, "scripts/parser_FunctionDefini
 	ASSERT_MESSAGE(symbol != nullptr, "Failed to find symbol 'VoidOneParameter'.");
 	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'VoidOneParameter' to be a function.");
 	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
+	ASSERT_MESSAGE(function != nullptr, "Expected 'VoidOneParameter' to be a function definition.");
 	ASSERT_MESSAGE(function->GetBody() == nullptr, "Expected 'VoidOneParameter' to have no body.");
 
 	symbol = globalScope->FindSymbol("ComplexFunctionPrototype2");
 	ASSERT_MESSAGE(symbol != nullptr, "Failed to find symbol 'ComplexFunctionPrototype2'.");
 	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype2' to be a function.");
 	function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
+	ASSERT_MESSAGE(function != nullptr, "Expected 'ComplexFunctionPrototype2' to be a function definition.");
 	ASSERT_MESSAGE(function->GetBody() != nullptr, "Expected 'ComplexFunctionPrototype2' to have a body.");
 }
 
@@ -124,7 +127,36 @@ DEFINE_SEMANTICANALYZER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 }
 
-DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/sanalyzer_UsingErrors.bond")
+
+DEFINE_SEMANTICANALYZER_TEST(FunctionDeclarations, "scripts/parser_FunctionDeclarations.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	const Bond::SymbolTable &table = analyzer.GetSymbolTable();
+	const Bond::Symbol *globalScope = table.GetGlobalScope();
+
+	const Bond::Symbol *symbol = globalScope->FindSymbol("ComplexFunctionPrototype");
+	ASSERT_MESSAGE(symbol != nullptr, "Failed to find symbol 'ComplexFunctionPrototype'.");
+	ASSERT_MESSAGE(symbol->GetSymbolType() == Bond::Symbol::TYPE_FUNCTION, "Expected 'ComplexFunctionPrototype' to be a function.");
+	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
+	ASSERT_MESSAGE(function != nullptr, "Expected 'ComplexFunctionPrototype' to be a function definition.");
+	ASSERT_MESSAGE(function->GetBody() == nullptr, "Expected 'ComplexFunctionPrototype' to have no body.");
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_DeclarativeAndExpressionStatements.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/parser_UsingStatements.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(UsingErrors, "scripts/sanalyzer_UsingErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
@@ -138,6 +170,7 @@ DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/sanalyzer_UsingErrors.bon
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 }
+
 
 DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifierErrors.bond")
 {
@@ -248,7 +281,13 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 }
 
 
-DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors, "scripts/sanalyzer_ValueEvaluationErrors.bond")
+DEFINE_SEMANTICANALYZER_TEST(TypeEvaluation, "scripts/sanalyzer_TypeEvaluation.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(ValueEvaluationErrors,"scripts/sanalyzer_ValueEvaluationErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
@@ -299,6 +338,8 @@ DEFINE_SEMANTICANALYZER_TEST(LossyConversions1, "scripts/sanalyzer_LossyConversi
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::OP_MINUS, 19},
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 20},
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 22},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 23},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 24},
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 26},
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 27},
 		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::ASSIGN, 28},
@@ -401,7 +442,13 @@ DEFINE_SEMANTICANALYZER_TEST(LossyConversions3, "scripts/sanalyzer_LossyConversi
 }
 
 
-DEFINE_SEMANTICANALYZER_TEST(SignednessErrors, "scripts/sanalyzer_SignednessErrors.bond")
+DEFINE_SEMANTICANALYZER_TEST(LosslessConversions, "scripts/sanalyzer_LosslessConversions.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(SignednessErrors,"scripts/sanalyzer_SignednessErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
@@ -509,15 +556,20 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(ForStatements)                      \
   TEST_ITEM(SwitchStatements)                   \
   TEST_ITEM(JumpStatements)                     \
+  TEST_ITEM(FunctionDeclarations)               \
+  TEST_ITEM(DeclarativeAndExpressionStatements) \
   TEST_ITEM(UsingStatements)                    \
+  TEST_ITEM(UsingErrors)                        \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
+  TEST_ITEM(TypeEvaluation)                     \
   TEST_ITEM(ValueEvaluationErrors)              \
   TEST_ITEM(ValueEvaluationErrors2)             \
   TEST_ITEM(LossyConversions1)                  \
   TEST_ITEM(LossyConversions2)                  \
   TEST_ITEM(LossyConversions3)                  \
+  TEST_ITEM(LosslessConversions)                \
   TEST_ITEM(SignednessErrors)                   \
   TEST_ITEM(Signedness)                         \
   TEST_ITEM(ValidationErrors)                   \

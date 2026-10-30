@@ -160,8 +160,8 @@ void StringInitializerTooLong(int x)
 
 void PointerToConst(int *p)
 {
-	const int *ptr = p; // bad
-	p = ptr;            // good
+	const int *ptr = p; // setup
+	p = ptr;            // error: discards const
 }
 
 int MissingReturnValue(int x)

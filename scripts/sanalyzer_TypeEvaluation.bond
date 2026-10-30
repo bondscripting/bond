@@ -1,0 +1,84 @@
+namespace OuterSpace
+{
+	namespace InnerSpace
+	{
+		const int Number = 1;
+	}
+}
+
+enum GoodEnum
+{
+	Zero,
+	One,
+	Two,
+};
+
+struct DummyStruct
+{
+	int x;
+	int GetX() const { return x; }
+};
+
+struct Point { int x; int y; };
+
+native { int [2]* FunnyReturnType(); struct OtherDummyStruct { int x; }; struct OtherDummyStruct<4>; }
+
+void TypeEvaluation1(const DummyStruct ds1, DummyStruct ds2, void *ptr, int[] arr)
+{
+	int[2] array1;
+	int *ptr1 = array1;
+	int *ptr2 = ptr1;
+	int i1 = 1;
+	int i2 = 2;
+	float f1 = 1.0f;
+	float f2 = 2.0f;
+	bool b1 = true;
+	bool b2 = false;
+	OtherDummyStruct ods;
+
+	(*FunnyReturnType())[0] = 1;
+	i1 = 1 << 2;
+	i1 <<= i2;
+	ptr2 = ptr1 + i1;
+	f2 = i1 + f1;
+	i1 /= i2;
+	b1 = b2 || false;
+	i1 = 1 & 2;
+	i2 = 1 | 2;
+	b1 = 1 < f1;
+	i1 = +-i2;
+	i1 = *ptr1;
+	ptr2 = ++ptr1;
+	ptr2 = ptr1--;
+	ds2.x = 3;
+	ods.x = 3;
+	i1 = ds1.GetX();
+	array1[0] = i1;
+	ptr1[0] = 2;
+	ptr1 = cast<int *>(&ds1);
+	i1 = OuterSpace::InnerSpace::Number;
+	i1 = *(ptr1 + 1);
+	i1 = *(array1 + 1);
+	TypeEvaluation1(ds1, ds2, ptr, arr);
+}
+
+
+void TypeEvaluation2()
+{
+	int i1 = 1;
+	float f1 = 1.0f;
+
+	switch (i1)
+	{
+		case 0:
+			break;
+		case One:
+			break;
+	}
+
+	if (f1 < 2.0f) {}
+	while ((i1 -= 1) != 0) {}
+	for (int j = 0; j < Two; ++j) {}
+
+	Point p2 = { 123, 456 };
+}

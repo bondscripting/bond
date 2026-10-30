@@ -59,19 +59,4 @@ void DummyFunction()
 
 	Point p1 = { 123, 456, 789 };
 	(f1 + 1.0f) ? 1 : 2;
-
-	// Valid statements.
-	switch (i1)
-	{
-		case 0:
-			break;
-		case One:
-			break;
-	}
-
-	if (f1 < 2.0f) {}
-	while ((i1 -= 1) != 0) {}
-	for (int j = 0; j < Two; ++j) {}
-
-	Point p2 = { 123, 456 };
 }

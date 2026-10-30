@@ -72,6 +72,8 @@ void RunVMTest(
 			Bond::MemoryOutputStream cboStream(cboBuffer, MAX_CBO_SIZE);
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);
 			generator.Generate(translationUnitList, cboStream);
+			Assert(cboStream.GetPosition() < MAX_CBO_SIZE, assertFile, assertLine,
+				"CBO for '%s' exceeds the %d byte test buffer.", scriptName, int(MAX_CBO_SIZE));
 
 			if (!errorBuffer.HasErrors())
 			{

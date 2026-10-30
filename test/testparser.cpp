@@ -166,7 +166,8 @@ DEFINE_PARSER_TEST(UsingStatements, "scripts/parser_UsingStatements.bond")
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	Bond::ParseNodeCount expectedCount(-1);
-	// expectedCount.mJumpStatement = 4;
+	expectedCount.mUsingDirective = 9;    // lines 38, 44, 50, 56, 75, 76, 95, 96, 101
+	expectedCount.mUsingDeclaration = 6;  // lines 63, 69, 81, 87, 88, 102
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 }

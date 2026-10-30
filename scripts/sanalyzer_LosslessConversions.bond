@@ -1,0 +1,111 @@
+void LosslessConversions1()
+{
+	char c = 0;
+	uchar uc = 0;
+	short s = 0;
+	ushort us = 0;
+	int i = 0;
+	uint ui = 0;
+
+	c = -128;
+	c = 127;
+
+	c = -128L;
+	c = 127L;
+	c = 127LU;
+
+	c = -128.0f;
+	c = 127.0f;
+
+	c = -128.0;
+	c = 127.0;
+
+	uc = 0;
+	uc = 255;
+
+	uc = 0L;
+	uc = 255L;
+	uc = 255LU;
+
+	uc = 0.0f;
+	uc = 255.0f;
+
+	uc = 0.0;
+	uc = 255.0;
+
+	s = -32768;
+	s = 32767;
+
+	s = -32768L;
+	s = 32767L;
+	s = 32767LU;
+
+	s = -32768.0f;
+	s = 32767.0f;
+
+	s = -32768.0;
+	s = 32767.0;
+
+	us = 0;
+	us = 65535;
+
+	us = 0L;
+	us = 65535L;
+	us = 65535LU;
+
+	us = 0.0f;
+	us = 65535.0f;
+
+	us = 0.0;
+	us = 65535.0;
+
+	i = 0x7fffffffU;
+	i = 0x7fffffffL;
+	i = -0x80000000L;
+	i = 0x7fffffffLU;
+
+	i = cast<float>(0x7fffff00U);
+	i = -cast<float>(0x7fffff00U);
+
+	i = cast<double>(0x7fffffffU);
+	i = -cast<double>(0x7fffffffU);
+
+	ui = 0L;
+	ui = 0xffffffffL;
+	ui = 0xffffffffLU;
+
+	ui = 0.0f;
+	ui = cast<float>(0xffffff00U);
+
+	ui = 0.0;
+	ui = cast<double>(0xffffff00U);
+}
+
+
+void LosslessConversions2()
+{
+	long l = 0;
+	ulong ul = 0;
+	float f = 0.0f;
+	double d = 0.0;
+
+	l = 0x7fffffffffffffffLU;
+
+	l = cast<float>(0x7fffff0000000000LU);
+	l = -cast<float>(0x7fffff0000000000LU);
+
+	l = cast<double>(0x7ffffffffffff000LU);
+	l = -cast<double>(0x7ffffffffffff000LU);
+
+	ul = 0.0f;
+	ul = cast<float>(0xffffff0000000000LU);
+
+	ul = 0.0;
+	ul = cast<double>(0xfffffffffffff000LU);
+
+	f = cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
+	f = -cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
+
+	d = cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
+	d = -cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
+}

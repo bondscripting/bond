@@ -30,25 +30,4 @@ void LossyConversions2()
 	double d = 0x7ffffffffffffe00L;
 	d = -0x7ffffffffffffe00L;
 	d = 0xfffffffffffffd00LU;
-
-	// Good
-	l = 0x7fffffffffffffffLU;
-
-	l = cast<float>(0x7fffff0000000000LU);
-	l = -cast<float>(0x7fffff0000000000LU);
-
-	l = cast<double>(0x7ffffffffffff000LU);
-	l = -cast<double>(0x7ffffffffffff000LU);
-
-	ul = 0.0f;
-	ul = cast<float>(0xffffff0000000000LU);
-
-	ul = 0.0;
-	ul = cast<double>(0xfffffffffffff000LU);
-
-	f = cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
-	f = -cast<float>(0x8000000000000000LU) * cast<float>(0x8000000000000000LU);
-
-	d = cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
-	d = -cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
 }

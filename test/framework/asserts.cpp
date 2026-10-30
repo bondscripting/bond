@@ -33,20 +33,21 @@ void AssertCompilerErrors(
 		const ExpectedCompilerError *expected = expectedErrors + i;
 		const Bond::CompilerError &actual = errorBuffer.GetError(i);
 		const Bond::Token *context = actual.GetContext();
+		Assert(context != nullptr, assertFile, assertLine, "Error %d has no context.", int(i));
 		const Bond::StreamPos &pos = context->GetStartPos();
 		Assert(expected->errorType == actual.GetType(), assertFile, assertLine,
-			"Expected type of error %d to be %s but was %s.", i,
+			"Expected type of error %d to be %s but was %s.", int(i),
 			Bond::CompilerError::GetErrorName(expected->errorType),
 			actual.GetErrorName());
 		Assert(expected->context == context->GetTokenType(), assertFile, assertLine,
-			"Expected context of error %d to be %s but was %s.", i,
+			"Expected context of error %d to be %s but was %s.", int(i),
 			Bond::Token::GetTokenName(expected->context), context->GetTokenName());
 		Assert(expected->line == pos.line, assertFile, assertLine,
-			"Expected error %d to be on line %d but was on %d.", i, expected->line, pos.line);
+			"Expected error %d to be on line %d but was on %d.", int(i), int(expected->line), int(pos.line));
 	}
 
 	Assert(errorBuffer.GetNumErrors() == numErrors, assertFile, assertLine,
-		"Expected %d errors but found %d.", numErrors, errorBuffer.GetNumErrors());
+		"Expected %d errors but found %d.", int(numErrors), int(errorBuffer.GetNumErrors()));
 }
 
 }

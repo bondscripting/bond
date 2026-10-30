@@ -316,6 +316,8 @@ DEFINE_TEST(ModuleIdentity)
 	ASSERT_MESSAGE(libraryModule != nullptr, "Could not determine the module of the library.");
 	ASSERT_MESSAGE(exeModule != nullptr, "Could not determine the module of the executable.");
 	ASSERT_MESSAGE(libraryModule != exeModule, "The runtime library was linked statically into the executable.");
+#else
+	printf("\tModuleIdentity: skipped module check (static build); run the build-shared configuration.\n");
 #endif
 }
 
