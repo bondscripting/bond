@@ -18,6 +18,10 @@
   <Project Path="../prettyprint/prettyprint.vcxproj" Id="4b420d40-1329-475c-9d79-ac5d9da0798f">
     <BuildDependency Project="bond.vcxproj" />
   </Project>
+  <Project Path="../testcboloader/testcboloader.vcxproj" Id="89e43a36-577d-4169-9bb6-0f999cad0c6a">
+    <BuildDependency Project="../framework/framework.vcxproj" />
+    <BuildDependency Project="bond.vcxproj" />
+  </Project>
   <Project Path="../testlexer/testlexer.vcxproj" Id="848238c2-d932-4905-9a82-13a93edda04d">
     <BuildDependency Project="../framework/framework.vcxproj" />
     <BuildDependency Project="bond.vcxproj" />

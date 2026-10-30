@@ -26,18 +26,55 @@ void RunVMTest(
 	VMValidationFunction *validationFunction,
 	const Bond::NativeBindingCollection *nativeBinding)
 {
-	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
 	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::ValidateConfiguration();
+
+	uint8_t cboBuffer[MAX_CBO_SIZE];
+	const size_t cboSize = CompileScriptToCbo(assertFile, assertLine, scriptName, cboBuffer, MAX_CBO_SIZE);
+
+	Bond::DefaultAllocator cboLoaderAllocator;
+	Bond::DefaultAllocator vmAllocator;
+	AllocationLeakGuard<Bond::DefaultAllocator> cboLoaderLeakGuard(
+		cboLoaderAllocator, "CBO loader", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> vmLeakGuard(vmAllocator, "VM", assertFile, assertLine);
+
+	try
+	{
+		Bond::CboLoader cboLoader(cboLoaderAllocator);
+		Bond::LoadAllLibs(cboLoader);
+		if (nativeBinding != nullptr)
+		{
+			cboLoader.AddNativeBinding(*nativeBinding);
+		}
+		cboLoader.AddCboFile(cboBuffer, cboSize);
+		Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
+		Bond::StdioStreamFactory vmStreamFactory(vmAllocator);
+		Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, nullptr, nullptr, &vmStreamFactory);
+		codeSegmentHandle.get()->CallStaticInitializers(vm);
+		validationFunction(vm);
+	}
+	catch (const Bond::Exception &e)
+	{
+		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
+	}
+}
+
+
+size_t CompileScriptToCbo(
+	const char *assertFile,
+	int assertLine,
+	const char *scriptName,
+	uint8_t *cboBuffer,
+	size_t bufferSize)
+{
+	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
 	Bond::DefaultAllocator streamFactoryAllocator;
 	Bond::DefaultAllocator frontEndAllocator;
 	Bond::DefaultAllocator codeGeneratorAllocator;
-	Bond::DefaultAllocator cboLoaderAllocator;
-	Bond::DefaultAllocator vmAllocator;
 	AllocationLeakGuard<Bond::DefaultAllocator> lexerLeakGuard(lexerAllocator, "Lexer", assertFile, assertLine);
 	AllocationLeakGuard<Bond::DefaultAllocator> parserLeakGuard(parserAllocator, "Parser", assertFile, assertLine);
 	AllocationLeakGuard<Bond::DefaultAllocator> streamFactoryLeakGuard(
@@ -46,9 +83,8 @@ void RunVMTest(
 		frontEndAllocator, "Front end", assertFile, assertLine);
 	AllocationLeakGuard<Bond::DefaultAllocator> codeGeneratorLeakGuard(
 		codeGeneratorAllocator, "Code generator", assertFile, assertLine);
-	AllocationLeakGuard<Bond::DefaultAllocator> cboLoaderLeakGuard(
-		cboLoaderAllocator, "CBO loader", assertFile, assertLine);
-	AllocationLeakGuard<Bond::DefaultAllocator> vmLeakGuard(vmAllocator, "VM", assertFile, assertLine);
+
+	size_t cboSize = 0;
 
 	try
 	{
@@ -67,29 +103,12 @@ void RunVMTest(
 
 		if (!errorBuffer.HasErrors())
 		{
-			const Bond::Stream::pos_t MAX_CBO_SIZE = 8 * 1024;
-			uint8_t cboBuffer[MAX_CBO_SIZE];
-			Bond::MemoryOutputStream cboStream(cboBuffer, MAX_CBO_SIZE);
+			Bond::MemoryOutputStream cboStream(cboBuffer, Bond::Stream::pos_t(bufferSize));
 			Bond::CodeGenerator generator(codeGeneratorAllocator, errorBuffer);
 			generator.Generate(translationUnitList, cboStream);
-			Assert(cboStream.GetPosition() < MAX_CBO_SIZE, assertFile, assertLine,
-				"CBO for '%s' exceeds the %d byte test buffer.", scriptName, int(MAX_CBO_SIZE));
-
-			if (!errorBuffer.HasErrors())
-			{
-				Bond::CboLoader cboLoader(cboLoaderAllocator);
-				Bond::LoadAllLibs(cboLoader);
-				if (nativeBinding != nullptr)
-				{
-					cboLoader.AddNativeBinding(*nativeBinding);
-				}
-				cboLoader.AddCboFile(cboBuffer, size_t(cboStream.GetPosition()));
-				Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
-				Bond::StdioStreamFactory vmStreamFactory(vmAllocator);
-				Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, nullptr, nullptr, &vmStreamFactory);
-				codeSegmentHandle.get()->CallStaticInitializers(vm);
-				validationFunction(vm);
-			}
+			cboSize = size_t(cboStream.GetPosition());
+			Assert(cboSize < bufferSize, assertFile, assertLine,
+				"CBO for '%s' exceeds the %d byte test buffer.", scriptName, int(bufferSize));
 		}
 
 		if (errorBuffer.HasErrors())
@@ -101,6 +120,8 @@ void RunVMTest(
 	{
 		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
 	}
+
+	return cboSize;
 }
 
 }

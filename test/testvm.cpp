@@ -1272,6 +1272,45 @@ DEFINE_VM_TEST(ArithmeticConversions, "scripts/vm_ArithmeticConversions.bond")
 }
 
 
+DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
+{
+	using namespace Bond;
+
+	int32_t intResult = 0;
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+	ASSERT_BOND_EXCEPTION("Attempt to call function with too few arguments.", vm.CallFunction("AddInts", &intResult, int32_t(1)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("Attempt to index argument 2 out of range.", vm.CallFunction("AddInts", &intResult, int32_t(1), int32_t(2), int32_t(3)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("AddInts", &intResult, 1.0, int32_t(2)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("Attempt to call a function with incorrect return address type.", vm.CallFunction("GetDouble", &intResult));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("Attempt to call a non-void function without a return address.", vm.CallVoidFunction("AddInts", int32_t(1), int32_t(2)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+#endif
+
+	ASSERT_BOND_EXCEPTION("Failed to look up function 'NoSuchFunction'.", vm.CallFunction("NoSuchFunction", &intResult));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("Stack overflow", vm.CallFunction("Recurse", &intResult, int32_t(0)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
+	ASSERT_BOND_EXCEPTION("VM::GetCallerStackFrame(): No caller stack frame exists.", vm.GetCallerStackFrame());
+	const VM &constVm = vm;
+	ASSERT_BOND_EXCEPTION("VM::GetCallerStackFrame(): No caller stack frame exists.", constVm.GetCallerStackFrame());
+
+	vm.CallVoidFunction("DoNothing");
+	VALIDATE_FUNCTION_CALL(double, "GetDouble", 1.5);
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1289,5 +1328,6 @@ DEFINE_VM_TEST(ArithmeticConversions, "scripts/vm_ArithmeticConversions.bond")
   TEST_ITEM(Initializers)                       \
   TEST_ITEM(Enums)                              \
   TEST_ITEM(ArithmeticConversions)              \
+  TEST_ITEM(RuntimeErrors)                      \
 
 RUN_TESTS(VM, TEST_ITEMS)

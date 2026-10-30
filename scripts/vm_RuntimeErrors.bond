@@ -1,0 +1,19 @@
+int AddInts(int a, int b)
+{
+	return a + b;
+}
+
+double GetDouble()
+{
+	return 1.5;
+}
+
+void DoNothing()
+{
+}
+
+int Recurse(int n)
+{
+	char[2048] stackPadding;
+	return Recurse(n + 1) + 1;
+}

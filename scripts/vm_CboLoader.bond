@@ -1,0 +1,28 @@
+include "math.bond";
+
+native
+{
+	int UnboundNative();
+}
+
+const int Global = 7;
+
+int GetLargeConstant()
+{
+	return 123456;
+}
+
+int CallGetLargeConstant()
+{
+	return GetLargeConstant() + Global;
+}
+
+double CallSqrt(double x)
+{
+	return Bond::SqrtD(x);
+}
+
+int CallUnboundNative()
+{
+	return UnboundNative();
+}
