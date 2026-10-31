@@ -49,8 +49,10 @@ void RunVMTest(
 		}
 		cboLoader.AddCboFile(cboBuffer, cboSize);
 		Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
-		Bond::StdioStreamFactory vmStreamFactory(vmAllocator);
-		Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, nullptr, nullptr, &vmStreamFactory);
+		Bond::StdioStreamFactory vmStreamFactory(vmAllocator, nullptr, nullptr, false);
+		CapturedOutputStream stdOut;
+		CapturedOutputStream stdErr;
+		Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, &stdOut, &stdErr, &vmStreamFactory);
 		codeSegmentHandle.get()->CallStaticInitializers(vm);
 		validationFunction(vm);
 	}
@@ -122,6 +124,21 @@ size_t CompileScriptToCbo(
 	}
 
 	return cboSize;
+}
+
+
+void AssertCapturedOutput(
+	const char *assertFile,
+	int assertLine,
+	Bond::OutputStreamAdaptor &stream,
+	const char *expectedOutput)
+{
+	CapturedOutputStream *captured = static_cast<CapturedOutputStream *>(stream.GetStream());
+	const size_t length = size_t(captured->GetPosition());
+	const char *buffer = captured->GetBuffer();
+	Assert((length == strlen(expectedOutput)) && (memcmp(buffer, expectedOutput, length) == 0),
+		assertFile, assertLine, "Expected output \"%s\", but was \"%.*s\".", expectedOutput, int(length), buffer);
+	captured->SetPosition(0);
 }
 
 }

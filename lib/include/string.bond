@@ -21,8 +21,8 @@ int Strcmp(const char *str1, const char *str2);
 
 bool TryParseInt(const char *str, int *result);
 bool TryParseLong(const char *str, long *result);
-bool TryParseFloat(const char *str, int *result);
-bool TryParseDouble(const char *str, int *result);
+bool TryParseFloat(const char *str, float *result);
+bool TryParseDouble(const char *str, double *result);
 
 /// @}
 

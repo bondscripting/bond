@@ -49,10 +49,15 @@ void AllocateCollected(Bond::StackFrame &frame)
 
 void AllocateWithCollector(Bond::StackFrame &frame)
 {
-	Allocator &allocator = frame.GetVM().GetAllocator();
-	Collector &collector = *frame.GetArg<Collector *>(0);
+	VM &vm = frame.GetVM();
+	Allocator &allocator = vm.GetAllocator();
+	Collector *collector = frame.GetArg<Collector *>(0);
 	const size_t size = size_t(frame.GetArg<uint64_t>(1));
-	void *ptr = AllocateCollected(allocator, collector, size);
+	if (collector == nullptr)
+	{
+		collector = &vm.GetCallerStackFrame().GetCollector();
+	}
+	void *ptr = AllocateCollected(allocator, *collector, size);
 	frame.SetReturnValue(ptr);
 }
 
@@ -91,11 +96,16 @@ void AllocateAlignedCollected(Bond::StackFrame &frame)
 
 void AllocateAlignedWithCollector(Bond::StackFrame &frame)
 {
-	Allocator &allocator = frame.GetVM().GetAllocator();
-	Collector &collector = *frame.GetArg<Collector *>(0);
+	VM &vm = frame.GetVM();
+	Allocator &allocator = vm.GetAllocator();
+	Collector *collector = frame.GetArg<Collector *>(0);
 	const size_t size = size_t(frame.GetArg<uint64_t>(1));
 	const size_t alignment = size_t(frame.GetArg<uint32_t>(2));
-	void *ptr = AllocateAlignedCollected(allocator, collector, size, alignment);
+	if (collector == nullptr)
+	{
+		collector = &vm.GetCallerStackFrame().GetCollector();
+	}
+	void *ptr = AllocateAlignedCollected(allocator, *collector, size, alignment);
 	frame.SetReturnValue(ptr);
 }
 
@@ -121,7 +131,16 @@ void Memcpy(Bond::StackFrame &frame)
 	void *dest = frame.GetArg<void *>(0);
 	void *src = frame.GetArg<void *>(1);
 	size_t size = size_t(frame.GetArg<uint64_t>(2));
-	memcpy(dest, src, size);
+	if (size > 0)
+	{
+#if BOND_RUNTIME_CHECKS_ENABLED
+		if ((dest == nullptr) || (src == nullptr))
+		{
+			frame.GetVM().RaiseError("Attempt to copy memory using a null pointer.");
+		}
+#endif
+		memcpy(dest, src, size);
+	}
 }
 
 }

@@ -383,9 +383,9 @@ InputStream *CreateInputStreamCollected(const char *fileName);
 InputStream *CreateInputStreamWithCollector(Collector *collector, const char *fileName);
 void FreeInputStream(InputStream *stream);
 
-OutputStream *CreateOutputStream(const char *fileName);
-OutputStream *CreateOutputStreamCollected(const char *fileName);
-OutputStream *CreateOutputStreamWithCollector(Collector *collector, const char *fileName);
+OutputStream *CreateOutputStream(const char *fileName, bool append);
+OutputStream *CreateOutputStreamCollected(const char *fileName, bool append);
+OutputStream *CreateOutputStreamWithCollector(Collector *collector, const char *fileName, bool append);
 void FreeOutputStream(OutputStream *stream);
 
 /// @}

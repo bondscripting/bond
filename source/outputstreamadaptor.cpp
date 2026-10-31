@@ -6,6 +6,16 @@
 namespace Bond
 {
 
+void OutputStreamAdaptor::Close()
+{
+	if (mStream != nullptr)
+	{
+		mStream->Close();
+		mStream = nullptr;
+	}
+}
+
+
 void OutputStreamAdaptor::Print(const char *str)
 {
 	const char *format = ((mFlags & IO::Left) != 0) ? "%-*s" : "%*s";

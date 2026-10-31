@@ -8,9 +8,22 @@
 namespace Bond
 {
 
+static const char *GetStringArg(Bond::StackFrame &frame, size_t index)
+{
+	const char *str = frame.GetArg<const char *>(index);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (str == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to pass a null string.");
+	}
+#endif
+	return str;
+}
+
+
 void Strlen(Bond::StackFrame &frame)
 {
-	const char *str = frame.GetArg<const char *>(0);
+	const char *str = GetStringArg(frame, 0);
 	const uint32_t length = uint32_t(strlen(str));
 	frame.SetReturnValue(length);
 }
@@ -18,8 +31,8 @@ void Strlen(Bond::StackFrame &frame)
 
 void Strcmp(Bond::StackFrame &frame)
 {
-	const char *str1 = frame.GetArg<const char *>(0);
-	const char *str2 = frame.GetArg<const char *>(1);
+	const char *str1 = GetStringArg(frame, 0);
+	const char *str2 = GetStringArg(frame, 1);
 	const uint32_t result = uint32_t(strcmp(str1, str2));
 	frame.SetReturnValue(result);
 }

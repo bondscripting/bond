@@ -22,6 +22,10 @@ public:
 	/// \brief Returns the wrapped InputStream.
 	InputStream *GetStream() const { return mStream; }
 
+	/// \brief Closes the wrapped InputStream and detaches from it, after which GetStream returns
+	/// null. Does nothing if there is no wrapped InputStream.
+	void Close();
+
 	/// \brief Scans a string from the wrapped InputStream.
 	/// \param str Buffer where the scanned string is written.
 	/// \param bufferSize The size of the destination buffer, in bytes.

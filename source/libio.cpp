@@ -28,25 +28,90 @@ struct OutputStreamPair
 
 typedef WrapperCollectable<OutputStreamPair> OutputStreamCollectable;
 
-void InputStream__Close(Bond::StackFrame &frame)
+static InputStreamAdaptor *GetInputStream(Bond::StackFrame &frame)
 {
 	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
-	stream->GetStream()->Close();
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if ((stream == nullptr) || (stream->GetStream() == nullptr))
+	{
+		frame.GetVM().RaiseError("Attempt to use a null or closed stream.");
+	}
+#endif
+	return stream;
+}
+
+
+static OutputStreamAdaptor *GetOutputStream(Bond::StackFrame &frame)
+{
+	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if ((stream == nullptr) || (stream->GetStream() == nullptr))
+	{
+		frame.GetVM().RaiseError("Attempt to use a null or closed stream.");
+	}
+#endif
+	return stream;
+}
+
+
+static StreamFactory &GetStreamFactory(Bond::StackFrame &frame)
+{
+	StreamFactory *streamFactory = frame.GetVM().GetStreamFactory();
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (streamFactory == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to open a stream without a stream factory.");
+	}
+#endif
+	return *streamFactory;
+}
+
+
+static const char *GetFileName(Bond::StackFrame &frame, size_t index)
+{
+	const char *fileName = frame.GetArg<const char *>(index);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (fileName == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to open a stream with a null file name.");
+	}
+#endif
+	return fileName;
+}
+
+
+void InputStream__Close(Bond::StackFrame &frame)
+{
+	// Unlike other operations, closing a stream that is already closed is allowed.
+	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (stream == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to use a null or closed stream.");
+	}
+#endif
+	stream->Close();
 }
 
 
 void InputStream__ScanStr(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	char *str = frame.GetArg<char *>(1);
 	const uint32_t bufferSize = frame.GetArg<uint32_t>(2);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if ((str == nullptr) || (bufferSize == 0))
+	{
+		frame.GetVM().RaiseError("Attempt to scan into an invalid buffer.");
+	}
+#endif
 	stream->ScanStr(str, bufferSize);
 }
 
 
 void InputStream__ScanB(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const bool value = stream->ScanBool();
 	frame.SetReturnValue(value);
 }
@@ -54,7 +119,7 @@ void InputStream__ScanB(Bond::StackFrame &frame)
 
 void InputStream__ScanC(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int8_t value = stream->ScanChar();
 	frame.SetReturnValue(value);
 }
@@ -62,7 +127,7 @@ void InputStream__ScanC(Bond::StackFrame &frame)
 
 void InputStream__ScanI(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int32_t value = stream->ScanInt();
 	frame.SetReturnValue(value);
 }
@@ -70,7 +135,7 @@ void InputStream__ScanI(Bond::StackFrame &frame)
 
 void InputStream__ScanUI(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const uint32_t value = stream->ScanUInt();
 	frame.SetReturnValue(value);
 }
@@ -78,7 +143,7 @@ void InputStream__ScanUI(Bond::StackFrame &frame)
 
 void InputStream__ScanL(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int64_t value = stream->ScanLong();
 	frame.SetReturnValue(value);
 }
@@ -86,7 +151,7 @@ void InputStream__ScanL(Bond::StackFrame &frame)
 
 void InputStream__ScanUL(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const uint64_t value = stream->ScanULong();
 	frame.SetReturnValue(value);
 }
@@ -94,7 +159,7 @@ void InputStream__ScanUL(Bond::StackFrame &frame)
 
 void InputStream__ScanF(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const double value = stream->ScanDouble();
 	frame.SetReturnValue(float(value));
 }
@@ -102,7 +167,7 @@ void InputStream__ScanF(Bond::StackFrame &frame)
 
 void InputStream__ScanD(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const double value = stream->ScanDouble();
 	frame.SetReturnValue(value);
 }
@@ -110,7 +175,7 @@ void InputStream__ScanD(Bond::StackFrame &frame)
 
 void InputStream__Get(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int value = stream->GetStream()->Read();
 	frame.SetReturnValue(int32_t(value));
 }
@@ -118,9 +183,15 @@ void InputStream__Get(Bond::StackFrame &frame)
 
 void InputStream__Read(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	uint8_t *bytes = frame.GetArg<uint8_t *>(1);
 	const size_t numBytes = size_t(frame.GetArg<uint32_t>(2));
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if ((bytes == nullptr) && (numBytes > 0))
+	{
+		frame.GetVM().RaiseError("Attempt to transfer bytes using a null pointer.");
+	}
+#endif
 	const size_t numRead = stream->GetStream()->Read(bytes, numBytes);
 	frame.SetReturnValue(uint32_t(numRead));
 }
@@ -128,7 +199,7 @@ void InputStream__Read(Bond::StackFrame &frame)
 
 void InputStream__GetFlags(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int32_t flags = int32_t(stream->GetFlags());
 	frame.SetReturnValue(flags);
 }
@@ -136,7 +207,7 @@ void InputStream__GetFlags(Bond::StackFrame &frame)
 
 void InputStream__SetFlags(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int flags = int(frame.GetArg<int32_t>(1));
 	stream->SetFlags(flags);
 	frame.SetReturnValue(stream);
@@ -145,7 +216,7 @@ void InputStream__SetFlags(Bond::StackFrame &frame)
 
 void InputStream__UnsetFlags(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int flags = int(frame.GetArg<int32_t>(1));
 	stream->UnsetFlags(flags);
 	frame.SetReturnValue(stream);
@@ -154,7 +225,7 @@ void InputStream__UnsetFlags(Bond::StackFrame &frame)
 
 void InputStream__ClearFlags(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	stream->ClearFlags();
 	frame.SetReturnValue(stream);
 }
@@ -162,7 +233,7 @@ void InputStream__ClearFlags(Bond::StackFrame &frame)
 
 void InputStream__GetPosition(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	int32_t pos = int32_t(stream->GetStream()->GetPosition());
 	frame.SetReturnValue(pos);
 }
@@ -170,7 +241,7 @@ void InputStream__GetPosition(Bond::StackFrame &frame)
 
 void InputStream__GetEndPosition(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	int32_t pos = int32_t(stream->GetStream()->GetEndPosition());
 	frame.SetReturnValue(pos);
 }
@@ -178,7 +249,7 @@ void InputStream__GetEndPosition(Bond::StackFrame &frame)
 
 void InputStream__SetPosition(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->GetStream()->SetPosition(Stream::pos_t(offset));
 }
@@ -186,7 +257,7 @@ void InputStream__SetPosition(Bond::StackFrame &frame)
 
 void InputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->GetStream()->SetPositionFromEnd(Stream::pos_t(offset));
 }
@@ -194,7 +265,7 @@ void InputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 
 void InputStream__AddOffset(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->GetStream()->AddOffset(Stream::pos_t(value));
 }
@@ -202,7 +273,7 @@ void InputStream__AddOffset(Bond::StackFrame &frame)
 
 void InputStream__IsEof(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const bool isEof = stream->GetStream()->IsEof();
 	frame.SetReturnValue(isEof);
 }
@@ -210,7 +281,7 @@ void InputStream__IsEof(Bond::StackFrame &frame)
 
 void InputStream__HasError(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	const bool isEof = stream->GetStream()->HasError();
 	frame.SetReturnValue(isEof);
 }
@@ -218,29 +289,42 @@ void InputStream__HasError(Bond::StackFrame &frame)
 
 void InputStream__ClearError(Bond::StackFrame &frame)
 {
-	InputStreamAdaptor *stream = frame.GetArg<InputStreamAdaptor *>(0);
+	InputStreamAdaptor *stream = GetInputStream(frame);
 	stream->GetStream()->ClearError();
 }
 
 
 void OutputStream__Close(Bond::StackFrame &frame)
 {
+	// Unlike other operations, closing a stream that is already closed is allowed.
 	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
-	stream->GetStream()->Close();
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (stream == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to use a null or closed stream.");
+	}
+#endif
+	stream->Close();
 }
 
 
 void OutputStream__Flush(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	stream->GetStream()->Flush();
 }
 
 
 void OutputStream__PrintStr(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const char *str = frame.GetArg<const char *>(1);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (str == nullptr)
+	{
+		frame.GetVM().RaiseError("Attempt to pass a null string.");
+	}
+#endif
 	stream->Print(str);
 	frame.SetReturnValue(stream);
 }
@@ -248,7 +332,7 @@ void OutputStream__PrintStr(Bond::StackFrame &frame)
 
 void OutputStream__PrintB(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const bool value = frame.GetArg<bool>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -257,7 +341,7 @@ void OutputStream__PrintB(Bond::StackFrame &frame)
 
 void OutputStream__PrintC(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const char value = char(frame.GetArg<int8_t>(1));
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -266,7 +350,7 @@ void OutputStream__PrintC(Bond::StackFrame &frame)
 
 void OutputStream__PrintI(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -275,7 +359,7 @@ void OutputStream__PrintI(Bond::StackFrame &frame)
 
 void OutputStream__PrintUI(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const uint32_t value = frame.GetArg<uint32_t>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -284,7 +368,7 @@ void OutputStream__PrintUI(Bond::StackFrame &frame)
 
 void OutputStream__PrintL(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int64_t value = frame.GetArg<int64_t>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -293,7 +377,7 @@ void OutputStream__PrintL(Bond::StackFrame &frame)
 
 void OutputStream__PrintUL(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const uint64_t value = frame.GetArg<uint64_t>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -302,7 +386,7 @@ void OutputStream__PrintUL(Bond::StackFrame &frame)
 
 void OutputStream__PrintF(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const float value = frame.GetArg<float>(1);
 	stream->Print(double(value));
 	frame.SetReturnValue(stream);
@@ -311,7 +395,7 @@ void OutputStream__PrintF(Bond::StackFrame &frame)
 
 void OutputStream__PrintD(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const double value = frame.GetArg<double>(1);
 	stream->Print(value);
 	frame.SetReturnValue(stream);
@@ -320,7 +404,7 @@ void OutputStream__PrintD(Bond::StackFrame &frame)
 
 void OutputStream__Put(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const char byte = char(frame.GetArg<int8_t>(1));
 	stream->GetStream()->Write(byte);
 	frame.SetReturnValue(stream);
@@ -329,9 +413,15 @@ void OutputStream__Put(Bond::StackFrame &frame)
 
 void OutputStream__Write(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const uint8_t *bytes = frame.GetArg<const uint8_t *>(1);
 	const size_t numBytes = size_t(frame.GetArg<uint32_t>(2));
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if ((bytes == nullptr) && (numBytes > 0))
+	{
+		frame.GetVM().RaiseError("Attempt to transfer bytes using a null pointer.");
+	}
+#endif
 	stream->GetStream()->Write(bytes, numBytes);
 	frame.SetReturnValue(stream);
 }
@@ -339,7 +429,7 @@ void OutputStream__Write(Bond::StackFrame &frame)
 
 void OutputStream__GetFlags(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t flags = int32_t(stream->GetFlags());
 	frame.SetReturnValue(flags);
 }
@@ -347,7 +437,7 @@ void OutputStream__GetFlags(Bond::StackFrame &frame)
 
 void OutputStream__SetFlags(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int flags = int(frame.GetArg<int32_t>(1));
 	stream->SetFlags(flags);
 	frame.SetReturnValue(stream);
@@ -356,7 +446,7 @@ void OutputStream__SetFlags(Bond::StackFrame &frame)
 
 void OutputStream__UnsetFlags(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int flags = int(frame.GetArg<int32_t>(1));
 	stream->UnsetFlags(flags);
 	frame.SetReturnValue(stream);
@@ -365,7 +455,7 @@ void OutputStream__UnsetFlags(Bond::StackFrame &frame)
 
 void OutputStream__ClearFlags(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	stream->ClearFlags();
 	frame.SetReturnValue(stream);
 }
@@ -373,7 +463,7 @@ void OutputStream__ClearFlags(Bond::StackFrame &frame)
 
 void OutputStream__GetPrecision(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t precision = int32_t(stream->GetPrecision());
 	frame.SetReturnValue(precision);
 }
@@ -381,7 +471,7 @@ void OutputStream__GetPrecision(Bond::StackFrame &frame)
 
 void OutputStream__SetPrecision(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int precision = int(frame.GetArg<int32_t>(1));
 	stream->SetPrecision(precision);
 	frame.SetReturnValue(stream);
@@ -390,7 +480,7 @@ void OutputStream__SetPrecision(Bond::StackFrame &frame)
 
 void OutputStream__GetWidth(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t width = int32_t(stream->GetWidth());
 	frame.SetReturnValue(width);
 }
@@ -398,7 +488,7 @@ void OutputStream__GetWidth(Bond::StackFrame &frame)
 
 void OutputStream__SetWidth(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int width = int(frame.GetArg<int32_t>(1));
 	stream->SetWidth(width);
 	frame.SetReturnValue(stream);
@@ -407,7 +497,7 @@ void OutputStream__SetWidth(Bond::StackFrame &frame)
 
 void OutputStream__GetPosition(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	int32_t pos = int32_t(stream->GetStream()->GetPosition());
 	frame.SetReturnValue(pos);
 }
@@ -415,7 +505,7 @@ void OutputStream__GetPosition(Bond::StackFrame &frame)
 
 void OutputStream__GetEndPosition(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	int32_t pos = int32_t(stream->GetStream()->GetEndPosition());
 	frame.SetReturnValue(pos);
 }
@@ -423,7 +513,7 @@ void OutputStream__GetEndPosition(Bond::StackFrame &frame)
 
 void OutputStream__SetPosition(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->GetStream()->SetPosition(Stream::pos_t(offset));
 }
@@ -431,7 +521,7 @@ void OutputStream__SetPosition(Bond::StackFrame &frame)
 
 void OutputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t offset = frame.GetArg<int32_t>(1);
 	stream->GetStream()->SetPositionFromEnd(Stream::pos_t(offset));
 }
@@ -439,7 +529,7 @@ void OutputStream__SetPositionFromEnd(Bond::StackFrame &frame)
 
 void OutputStream__AddOffset(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const int32_t value = frame.GetArg<int32_t>(1);
 	stream->GetStream()->AddOffset(Stream::pos_t(value));
 }
@@ -447,7 +537,7 @@ void OutputStream__AddOffset(Bond::StackFrame &frame)
 
 void OutputStream__IsEof(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const bool isEof = stream->GetStream()->IsEof();
 	frame.SetReturnValue(isEof);
 }
@@ -455,7 +545,7 @@ void OutputStream__IsEof(Bond::StackFrame &frame)
 
 void OutputStream__HasError(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	const bool isEof = stream->GetStream()->HasError();
 	frame.SetReturnValue(isEof);
 }
@@ -463,7 +553,7 @@ void OutputStream__HasError(Bond::StackFrame &frame)
 
 void OutputStream__ClearError(Bond::StackFrame &frame)
 {
-	OutputStreamAdaptor *stream = frame.GetArg<OutputStreamAdaptor *>(0);
+	OutputStreamAdaptor *stream = GetOutputStream(frame);
 	stream->GetStream()->ClearError();
 }
 
@@ -491,9 +581,9 @@ void StdErr(Bond::StackFrame &frame)
 
 void CreateInputStream(Bond::StackFrame &frame)
 {
-	StreamFactory &streamFactory = *frame.GetVM().GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = frame.GetVM().GetAllocator();
-	const char *fileName = frame.GetArg<const char *>(0);
+	const char *fileName = GetFileName(frame, 0);
 	auto streamHandle = streamFactory.CreateInputStream(fileName);
 	void *adaptor = nullptr;
 	if (streamHandle)
@@ -525,10 +615,10 @@ InputStreamAdaptor *CreateInputStreamCollected(
 void CreateInputStreamCollected(Bond::StackFrame &frame)
 {
 	VM &vm = frame.GetVM();
-	StreamFactory &streamFactory = *vm.GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = vm.GetAllocator();
 	Collector &collector = vm.GetCallerStackFrame().GetCollector();
-	const char *fileName = frame.GetArg<const char *>(0);
+	const char *fileName = GetFileName(frame, 0);
 	auto adaptor = CreateInputStreamCollected(streamFactory, allocator, collector, fileName);
 	frame.SetReturnValue(adaptor);
 }
@@ -537,11 +627,15 @@ void CreateInputStreamCollected(Bond::StackFrame &frame)
 void CreateInputStreamWithCollector(Bond::StackFrame &frame)
 {
 	VM &vm = frame.GetVM();
-	StreamFactory &streamFactory = *vm.GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = vm.GetAllocator();
-	Collector &collector = vm.GetCallerStackFrame().GetCollector();
-	const char *fileName = frame.GetArg<const char *>(0);
-	auto adaptor = CreateInputStreamCollected(streamFactory, allocator, collector, fileName);
+	Collector *collector = frame.GetArg<Collector *>(0);
+	const char *fileName = GetFileName(frame, 1);
+	if (collector == nullptr)
+	{
+		collector = &vm.GetCallerStackFrame().GetCollector();
+	}
+	auto adaptor = CreateInputStreamCollected(streamFactory, allocator, *collector, fileName);
 	frame.SetReturnValue(adaptor);
 }
 
@@ -550,15 +644,21 @@ void FreeInputStream(Bond::StackFrame &frame)
 {
 	// Let the handle do the clean up.
 	InputStreamPair *stream = frame.GetArg<InputStreamPair *>(0);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	if (static_cast<const void *>(stream) == &frame.GetVM().GetStdIn())
+	{
+		frame.GetVM().RaiseError("Attempt to free a standard stream.");
+	}
+#endif
 	Allocator::ObjectHandle<InputStreamPair>(frame.GetVM().GetAllocator(), stream);
 }
 
 
 void CreateOutputStream(Bond::StackFrame &frame)
 {
-	StreamFactory &streamFactory = *frame.GetVM().GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = frame.GetVM().GetAllocator();
-	const char *fileName = frame.GetArg<const char *>(0);
+	const char *fileName = GetFileName(frame, 0);
 	const bool append = frame.GetArg<bool>(1);
 	auto streamHandle = streamFactory.CreateOutputStream(fileName, append);
 	void *adaptor = nullptr;
@@ -592,10 +692,10 @@ OutputStreamAdaptor *CreateOutputStreamCollected(
 void CreateOutputStreamCollected(Bond::StackFrame &frame)
 {
 	VM &vm = frame.GetVM();
-	StreamFactory &streamFactory = *vm.GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = vm.GetAllocator();
 	Collector &collector = vm.GetCallerStackFrame().GetCollector();
-	const char *fileName = frame.GetArg<const char *>(0);
+	const char *fileName = GetFileName(frame, 0);
 	const bool append = frame.GetArg<bool>(1);
 	auto adaptor = CreateOutputStreamCollected(streamFactory, allocator, collector, fileName, append);
 	frame.SetReturnValue(adaptor);
@@ -605,19 +705,31 @@ void CreateOutputStreamCollected(Bond::StackFrame &frame)
 void CreateOutputStreamWithCollector(Bond::StackFrame &frame)
 {
 	VM &vm = frame.GetVM();
-	StreamFactory &streamFactory = *vm.GetStreamFactory();
+	StreamFactory &streamFactory = GetStreamFactory(frame);
 	Allocator &allocator = vm.GetAllocator();
-	Collector &collector = vm.GetCallerStackFrame().GetCollector();
-	const char *fileName = frame.GetArg<const char *>(0);
-	const bool append = frame.GetArg<bool>(1);
-	auto adaptor = CreateOutputStreamCollected(streamFactory, allocator, collector, fileName, append);
+	Collector *collector = frame.GetArg<Collector *>(0);
+	const char *fileName = GetFileName(frame, 1);
+	const bool append = frame.GetArg<bool>(2);
+	if (collector == nullptr)
+	{
+		collector = &vm.GetCallerStackFrame().GetCollector();
+	}
+	auto adaptor = CreateOutputStreamCollected(streamFactory, allocator, *collector, fileName, append);
 	frame.SetReturnValue(adaptor);
 }
+
 
 void FreeOutputStream(Bond::StackFrame &frame)
 {
 	// Let the handle do the clean up.
 	OutputStreamPair *stream = frame.GetArg<OutputStreamPair *>(0);
+#if BOND_RUNTIME_CHECKS_ENABLED
+	const void *address = stream;
+	if ((address == &frame.GetVM().GetStdOut()) || (address == &frame.GetVM().GetStdErr()))
+	{
+		frame.GetVM().RaiseError("Attempt to free a standard stream.");
+	}
+#endif
 	Allocator::ObjectHandle<OutputStreamPair>(frame.GetVM().GetAllocator(), stream);
 }
 

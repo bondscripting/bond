@@ -6,6 +6,16 @@
 namespace Bond
 {
 
+void InputStreamAdaptor::Close()
+{
+	if (mStream != nullptr)
+	{
+		mStream->Close();
+		mStream = nullptr;
+	}
+}
+
+
 void InputStreamAdaptor::ScanStr(char *str, uint32_t bufferSize)
 {
 	if (bufferSize > 0)

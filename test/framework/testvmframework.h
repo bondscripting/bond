@@ -2,6 +2,7 @@
 #define TEST_FRAMEWORK_TESTVMFRAMEWORK_H
 
 #include "framework/testframework.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/systems/exception.h"
 #include "bond/systems/math.h"
 #include "bond/vm/vm.h"
@@ -39,6 +40,12 @@
     __FILE__, __LINE__, (expectedMessagePrefix), [&]() { __VA_ARGS__; })
 
 
+// Thin pass-through macro that captures __FILE__/__LINE__ and forwards to
+// TestFramework::AssertCapturedOutput.
+#define ASSERT_CAPTURED_OUTPUT(stream, expectedOutput)                                         \
+  TestFramework::AssertCapturedOutput(__FILE__, __LINE__, (stream), (expectedOutput))
+
+
 namespace TestFramework
 {
 
@@ -46,6 +53,21 @@ typedef void VMValidationFunction(Bond::VM &vm);
 
 /// \brief Size of the buffer that test scripts are compiled into.
 const size_t MAX_CBO_SIZE = 8 * 1024;
+
+/// \brief An in-memory stream that records what a script writes to the VM's stdout or stderr.
+class CapturedOutputStream: public Bond::MemoryOutputStream
+{
+public:
+	static const size_t BUFFER_SIZE = 1024;
+
+	CapturedOutputStream(): Bond::MemoryOutputStream(mBuffer, pos_t(BUFFER_SIZE)) {}
+
+	const char *GetBuffer() const { return mBuffer; }
+
+private:
+	char mBuffer[BUFFER_SIZE];
+};
+
 
 void RunVMTest(
 	const char *assertFile,
@@ -63,6 +85,16 @@ size_t CompileScriptToCbo(
 	const char *scriptName,
 	uint8_t *cboBuffer,
 	size_t bufferSize);
+
+
+/// \brief Asserts that the text written to stream since the last call matches expectedOutput, then
+/// discards it. The stream must be the VM's stdout or stderr as set up by RunVMTest. Throws an
+/// AssertionFailure on mismatch.
+void AssertCapturedOutput(
+	const char *assertFile,
+	int assertLine,
+	Bond::OutputStreamAdaptor &stream,
+	const char *expectedOutput);
 
 
 /// \brief Calls function and asserts that it throws a Bond::Exception whose message starts with

@@ -1,0 +1,309 @@
+include "io.bond";
+include "memory.bond";
+
+native
+{
+	int GetNumAllocations();
+}
+
+// Flags and precision persist on the VM's stream, so each print test starts from a known state.
+Bond::OutputStream *Out()
+{
+	return Bond::StdOut()->ClearFlags(0)->SetPrecision(6);
+}
+
+void PrintText()
+{
+	Out()->PrintStr("abc")->PrintC(' ')->PrintStr("def");
+}
+
+void PrintBools()
+{
+	Out()->PrintB(true)->PrintB(false)->SetFlags(Bond::IO::BoolAlpha)->PrintB(true)->PrintC(' ')->PrintB(false);
+}
+
+void PrintIntegers()
+{
+	Out()->PrintI(-2147483647 - 1)->PrintC(' ')->PrintUI(4294967295u)->PrintC(' ');
+	Out()->PrintL(-9223372036854775807l - 1l)->PrintC(' ')->PrintUL(18446744073709551615lu);
+}
+
+void PrintBases()
+{
+	Out()->SetFlags(Bond::IO::Hex)->PrintI(255)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Hex | Bond::IO::ShowBase)->PrintI(255)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Oct)->PrintI(15)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Oct | Bond::IO::ShowBase)->PrintI(15)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Hex)->PrintUL(255lu);
+}
+
+void PrintWidths()
+{
+	Out()->SetWidth(5)->SetFlags(Bond::IO::Zero)->PrintI(42)->PrintC('|');
+	Out()->SetWidth(5)->SetFlags(Bond::IO::Left)->PrintI(42)->PrintC('|');
+	Out()->SetWidth(5)->PrintI(42)->PrintC('|');
+	Out()->SetWidth(5)->PrintStr("ab")->PrintI(7);
+}
+
+void PrintFloats()
+{
+	Out()->PrintF(1.5f)->PrintC(' ')->PrintD(0.25)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Fixed)->SetPrecision(3)->PrintD(1.5)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::Scientific)->SetPrecision(2)->PrintD(1500.0)->PrintC(' ');
+	Out()->SetFlags(Bond::IO::ShowPoint)->SetPrecision(3)->PrintD(2.0);
+}
+
+void PrintBytes()
+{
+	char[3] bytes;
+	bytes[0] = 'x';
+	bytes[1] = 'y';
+	bytes[2] = 'z';
+	Out()->Put(cast<uchar>('w'))->Write(&bytes[0], 3u);
+}
+
+void PrintError()
+{
+	Bond::StdErr()->PrintStr("err");
+}
+
+// Returns the number of the first failed check, or 0 on success.
+int CheckFormatState()
+{
+	int result = 0;
+	Bond::OutputStream *out = Out();
+	if (out->GetFlags() != 0) result = 1;
+	if (out->GetPrecision() != 6) result = 2;
+	out->SetFlags(Bond::IO::Hex | Bond::IO::Left)->UnsetFlags(Bond::IO::Hex);
+	if (out->GetFlags() != Bond::IO::Left) result = 3;
+	out->SetWidth(9);
+	if (out->GetWidth() != 9) result = 4;
+	out->PrintC('.');
+	if (out->GetWidth() != 0) result = 5;
+	return result;
+}
+
+bool MissingInputStream(const char *fileName)
+{
+	return Bond::CreateInputStream(fileName) == null;
+}
+
+bool MissingInputStreamCollected(const char *fileName)
+{
+	return Bond::CreateInputStreamCollected(fileName) == null;
+}
+
+bool MissingInputStreamWithCollector(const char *fileName)
+{
+	return Bond::CreateInputStreamWithCollector(Bond::GetCollector(), fileName) == null;
+}
+
+// Leaves the file containing "aXcYe42".
+int WriteFile(const char *fileName)
+{
+	Bond::OutputStream *stream = Bond::CreateOutputStream(fileName, false);
+	if (stream == null) return 1;
+
+	int result = 0;
+	char[4] bytes;
+	bytes[0] = 'a';
+	bytes[1] = 'b';
+	bytes[2] = 'c';
+	bytes[3] = 'd';
+	stream->Write(&bytes[0], 4u)->Put(cast<uchar>('e'));
+	if (stream->GetPosition() != 5) result = 2;
+	if (stream->GetEndPosition() != 5) result = 3;
+
+	stream->SetPosition(1);
+	if (stream->GetPosition() != 1) result = 4;
+	stream->Put(cast<uchar>('X'));
+	if (stream->GetPosition() != 2) result = 5;
+	if (stream->GetEndPosition() != 5) result = 6;
+
+	stream->AddOffset(1);
+	stream->Put(cast<uchar>('Y'));
+	if (stream->GetPosition() != 4) result = 7;
+
+	stream->SetPositionFromEnd(0);
+	if (stream->GetPosition() != 5) result = 8;
+	stream->PrintI(42);
+	if (stream->GetEndPosition() != 7) result = 9;
+	if (stream->HasError()) result = 10;
+
+	Bond::FreeOutputStream(stream);
+	return result;
+}
+
+int ReadFile(const char *fileName)
+{
+	Bond::InputStream *stream = Bond::CreateInputStream(fileName);
+	if (stream == null) return 1;
+
+	int result = 0;
+	char[4] bytes;
+	if (stream->GetEndPosition() != 7) result = 2;
+	if (stream->GetPosition() != 0) result = 3;
+	if (stream->Get() != 'a') result = 4;
+
+	if (stream->Read(&bytes[0], 2u) != 2u) result = 5;
+	if ((bytes[0] != 'X') || (bytes[1] != 'c')) result = 6;
+	if (stream->GetPosition() != 3) result = 7;
+
+	stream->SetPosition(3);
+	if (stream->Get() != 'Y') result = 8;
+	stream->AddOffset(1);
+	if (stream->GetPosition() != 5) result = 9;
+	if (stream->Get() != '4') result = 10;
+
+	stream->SetPositionFromEnd(0);
+	if (stream->GetPosition() != 7) result = 11;
+
+	stream->SetPosition(5);
+	if (stream->Read(&bytes[0], 4u) != 2u) result = 12;
+	if ((bytes[0] != '4') || (bytes[1] != '2')) result = 13;
+	if (stream->Get() != Bond::IO::Eof) result = 14;
+	if (!stream->IsEof()) result = 15;
+	if (stream->HasError()) result = 16;
+	stream->ClearError();
+	if (stream->IsEof()) result = 17;
+
+	Bond::FreeInputStream(stream);
+	return result;
+}
+
+int AppendToFile(const char *fileName)
+{
+	Bond::OutputStream *stream = Bond::CreateOutputStream(fileName, true);
+	if (stream == null) return 1;
+	stream->Put(cast<uchar>('z'));
+	Bond::FreeOutputStream(stream);
+
+	int result = 0;
+	Bond::InputStream *input = Bond::CreateInputStream(fileName);
+	if (input == null) return 2;
+	if (input->GetEndPosition() != 8) result = 3;
+	if (input->Get() != 'a') result = 4;
+	input->SetPosition(7);
+	if (input->Get() != 'z') result = 5;
+	Bond::FreeInputStream(input);
+	return result;
+}
+
+int TruncateFile(const char *fileName)
+{
+	Bond::OutputStream *stream = Bond::CreateOutputStream(fileName, false);
+	if (stream == null) return 1;
+	Bond::FreeOutputStream(stream);
+
+	int result = 0;
+	Bond::InputStream *input = Bond::CreateInputStream(fileName);
+	if (input == null) return 2;
+	if (input->GetEndPosition() != 0) result = 3;
+	Bond::FreeInputStream(input);
+	return result;
+}
+
+// Returns the first byte of the file, or -1 if it can't be opened.
+int ReadFirstByte(const char *fileName)
+{
+	int value = -1;
+	Bond::InputStream *stream = Bond::CreateInputStream(fileName);
+	if (stream != null)
+	{
+		value = stream->Get();
+		Bond::FreeInputStream(stream);
+	}
+	return value;
+}
+
+int OutputCollected(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::OutputStream *stream = Bond::CreateOutputStreamCollected(fileName, false);
+	if (stream == null) return 1;
+	stream->Put(cast<uchar>('c'));
+	return (GetNumAllocations() > baseline) ? 0 : 2;
+}
+
+Bond::OutputStream *OpenOutputOnCollector(Bond::Collector *collector, const char *fileName)
+{
+	return Bond::CreateOutputStreamWithCollector(collector, fileName, false);
+}
+
+int OutputWithCollector(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::OutputStream *stream = OpenOutputOnCollector(Bond::GetCollector(), fileName);
+	if (stream == null) return 1;
+	stream->Put(cast<uchar>('w'));
+	return (GetNumAllocations() > baseline) ? 0 : 2;
+}
+
+int OutputWithNullCollector(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::OutputStream *stream = Bond::CreateOutputStreamWithCollector(null, fileName, false);
+	if (stream == null) return 1;
+	stream->Put(cast<uchar>('n'));
+	return (GetNumAllocations() > baseline) ? 0 : 2;
+}
+
+int InputCollected(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::InputStream *stream = Bond::CreateInputStreamCollected(fileName);
+	if (stream == null) return 1;
+	if (stream->Get() != 'C') return 2;
+	return (GetNumAllocations() > baseline) ? 0 : 3;
+}
+
+Bond::InputStream *OpenInputOnCollector(Bond::Collector *collector, const char *fileName)
+{
+	return Bond::CreateInputStreamWithCollector(collector, fileName);
+}
+
+int InputWithCollector(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::InputStream *stream = OpenInputOnCollector(Bond::GetCollector(), fileName);
+	if (stream == null) return 1;
+	if (stream->Get() != 'C') return 2;
+	return (GetNumAllocations() > baseline) ? 0 : 3;
+}
+
+int InputWithNullCollector(const char *fileName)
+{
+	const int baseline = GetNumAllocations();
+	Bond::InputStream *stream = Bond::CreateInputStreamWithCollector(null, fileName);
+	if (stream == null) return 1;
+	if (stream->Get() != 'C') return 2;
+	return (GetNumAllocations() > baseline) ? 0 : 3;
+}
+
+void CloseInputTwice(const char *fileName)
+{
+	Bond::InputStream *stream = Bond::CreateInputStreamCollected(fileName);
+	stream->Close();
+	stream->Close();
+}
+
+void CloseOutputTwice(const char *fileName)
+{
+	Bond::OutputStream *stream = Bond::CreateOutputStreamCollected(fileName, false);
+	stream->Close();
+	stream->Close();
+}
+
+int UseClosedInput(const char *fileName)
+{
+	Bond::InputStream *stream = Bond::CreateInputStreamCollected(fileName);
+	stream->Close();
+	return stream->Get();
+}
+
+void UseClosedOutput(const char *fileName)
+{
+	Bond::OutputStream *stream = Bond::CreateOutputStreamCollected(fileName, false);
+	stream->Close();
+	stream->Put(cast<uchar>('x'));
+}

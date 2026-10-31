@@ -29,6 +29,10 @@ public:
 	/// \brief Returns the wrapped OutputStream.
 	OutputStream *GetStream() const { return mStream; }
 
+	/// \brief Closes the wrapped OutputStream and detaches from it, after which GetStream returns
+	/// null. Does nothing if there is no wrapped OutputStream.
+	void Close();
+
 	/// \brief Prints a null-terminated string to the wrapped OutputStream.
 	/// \param str The string to print.
 	void Print(const char *str);

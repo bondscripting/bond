@@ -1,0 +1,74 @@
+include "memory.bond";
+
+native
+{
+	int GetNumAllocations();
+}
+
+bool AllocateWriteReadFree()
+{
+	const int baseline = GetNumAllocations();
+	int *ptr = Bond::Allocate(16);
+	ptr[0] = 11;
+	ptr[3] = 44;
+	bool result = (GetNumAllocations() == (baseline + 1)) && (ptr[0] == 11) && (ptr[3] == 44);
+	Bond::Free(ptr);
+	return result && (GetNumAllocations() == baseline);
+}
+
+bool CopyMemory()
+{
+	int *src = Bond::Allocate(8);
+	int *dest = Bond::Allocate(8);
+	src[0] = 123;
+	src[1] = -456;
+	dest[0] = 0;
+	dest[1] = 0;
+	Bond::Memcpy(dest, src, 8);
+	bool result = (dest[0] == 123) && (dest[1] == -456);
+	Bond::Free(src);
+	Bond::Free(dest);
+	return result;
+}
+
+bool AllocateCollectedHeldByFrame()
+{
+	const int baseline = GetNumAllocations();
+	int *ptr = Bond::AllocateCollected(4);
+	*ptr = 55;
+	return (GetNumAllocations() == (baseline + 1)) && (*ptr == 55);
+}
+
+int *AllocateOnCollector(Bond::Collector *collector, int value)
+{
+	int *ptr = Bond::AllocateWithCollector(collector, 4);
+	*ptr = value;
+	return ptr;
+}
+
+bool CollectorOutlivesCallee()
+{
+	const int baseline = GetNumAllocations();
+	int *ptr = AllocateOnCollector(Bond::GetCollector(), 66);
+	return (GetNumAllocations() == (baseline + 1)) && (*ptr == 66);
+}
+
+bool NullCollectorUsesCaller()
+{
+	const int baseline = GetNumAllocations();
+	int *ptr = Bond::AllocateWithCollector(null, 4);
+	*ptr = 77;
+	return (GetNumAllocations() == (baseline + 1)) && (*ptr == 77);
+}
+
+bool AlignedCollectedHeldByFrame()
+{
+	const int baseline = GetNumAllocations();
+	int *ptr1 = Bond::AllocateAlignedCollected(4, 64u);
+	int *ptr2 = Bond::AllocateAlignedWithCollector(Bond::GetCollector(), 4, 64u);
+	int *ptr3 = Bond::AllocateAlignedWithCollector(null, 4, 64u);
+	*ptr1 = 1;
+	*ptr2 = 2;
+	*ptr3 = 3;
+	return (GetNumAllocations() > baseline) && (*ptr1 == 1) && (*ptr2 == 2) && (*ptr3 == 3);
+}
