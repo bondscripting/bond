@@ -1,0 +1,6 @@
+include "scripts/sanalyzer_DuplicateErrorsB.bond";
+
+int DuplicateFunction()
+{
+	return 1;
+}

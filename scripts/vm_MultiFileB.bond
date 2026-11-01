@@ -1,0 +1,12 @@
+struct MultiFilePair
+{
+	int first;
+	int second;
+};
+
+const MultiFilePair MULTI_FILE_PAIR = {4, 5};
+
+int MultiFileAdd(int a, int b)
+{
+	return a + b;
+}

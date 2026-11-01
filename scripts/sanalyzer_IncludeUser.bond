@@ -1,0 +1,10 @@
+include "scripts/sanalyzer_IncludeUserHelper.bond";
+include "scripts/sanalyzer_IncludeUserHelper.bond";
+
+int CallIncludedFunction()
+{
+	IncludeUserPoint point;
+	point.x = 1;
+	point.y = 2;
+	return IncludeUserSum(point);
+}

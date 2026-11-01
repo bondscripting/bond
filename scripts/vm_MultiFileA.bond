@@ -1,0 +1,19 @@
+include "scripts/vm_MultiFileB.bond";
+
+int CallAcrossFiles(int a, int b)
+{
+	return MultiFileAdd(a, b);
+}
+
+int UseStructAcrossFiles(int a, int b)
+{
+	MultiFilePair pair;
+	pair.first = a;
+	pair.second = b;
+	return pair.first * pair.second;
+}
+
+int ReadGlobalAcrossFiles()
+{
+	return MULTI_FILE_PAIR.first + MULTI_FILE_PAIR.second;
+}

@@ -1,0 +1,7 @@
+include "scripts/sanalyzer_IncludeCycleA.bond";
+include "scripts/sanalyzer_IncludeCycleB.bond";
+
+int IncludeCycleA(int n)
+{
+	return (n <= 0) ? 0 : IncludeCycleB(n - 1);
+}

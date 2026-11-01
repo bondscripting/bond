@@ -1,6 +1,7 @@
 #ifndef TEST_FRAMEWORK_TESTVMFRAMEWORK_H
 #define TEST_FRAMEWORK_TESTVMFRAMEWORK_H
 
+#include "framework/asserts.h"
 #include "framework/testframework.h"
 #include "bond/io/memoryoutputstream.h"
 #include "bond/systems/exception.h"
@@ -25,19 +26,27 @@
   void __Validate ## testName ## __(Bond::VM &vm)                                             \
 
 
+// Compiles all of the scripts named by the remaining arguments into a single CBO.
+#define DEFINE_VM_MULTI_TEST(testName, ...)                                                    \
+  void __Validate ## testName ## __(Bond::VM &vm);                                             \
+                                                                                               \
+  void __Test ## testName ## __()                                                             \
+  {                                                                                            \
+    const char *const scriptNames[] = {__VA_ARGS__};                                           \
+    TestFramework::RunVMTest(                                                                  \
+      __FILE__, __LINE__, scriptNames, sizeof(scriptNames) / sizeof(*scriptNames),             \
+      &__Validate ## testName ## __, nullptr);                                                 \
+  }                                                                                            \
+                                                                                               \
+  void __Validate ## testName ## __(Bond::VM &vm)                                             \
+
+
 // Thin pass-through macro that captures __FILE__/__LINE__ and forwards to the
 // TestFramework::ValidateFunctionCall template, which calls the Bond function and asserts its
 // return value, throwing on failure.
 #define VALIDATE_FUNCTION_CALL(returnType, functionName, expectedResult, ...)                  \
   TestFramework::ValidateFunctionCall<returnType>(                                             \
     vm, __FILE__, __LINE__, (functionName), (expectedResult), ##__VA_ARGS__)
-
-
-// Thin pass-through macro that captures __FILE__/__LINE__ and wraps the statements in a lambda
-// for TestFramework::AssertThrowsBondException. A null prefix accepts any message.
-#define ASSERT_BOND_EXCEPTION(expectedMessagePrefix, ...)                                      \
-  TestFramework::AssertThrowsBondException(                                                    \
-    __FILE__, __LINE__, (expectedMessagePrefix), [&]() { __VA_ARGS__; })
 
 
 // Thin pass-through macro that captures __FILE__/__LINE__ and forwards to
@@ -77,12 +86,32 @@ void RunVMTest(
 	const Bond::NativeBindingCollection *nativeBinding);
 
 
+void RunVMTest(
+	const char *assertFile,
+	int assertLine,
+	const char *const *scriptNames,
+	size_t numScripts,
+	VMValidationFunction *validationFunction,
+	const Bond::NativeBindingCollection *nativeBinding);
+
+
 /// \brief Compiles scriptName into cboBuffer and returns the size of the CBO. Throws an
 /// AssertionFailure if the script fails to compile, the CBO does not fit or memory leaks.
 size_t CompileScriptToCbo(
 	const char *assertFile,
 	int assertLine,
 	const char *scriptName,
+	uint8_t *cboBuffer,
+	size_t bufferSize);
+
+
+/// \brief Compiles scriptNames into a single CBO in cboBuffer and returns the size of the CBO.
+/// Throws an AssertionFailure if a script fails to compile, the CBO does not fit or memory leaks.
+size_t CompileScriptsToCbo(
+	const char *assertFile,
+	int assertLine,
+	const char *const *scriptNames,
+	size_t numScripts,
 	uint8_t *cboBuffer,
 	size_t bufferSize);
 
@@ -95,33 +124,6 @@ void AssertCapturedOutput(
 	int assertLine,
 	Bond::OutputStreamAdaptor &stream,
 	const char *expectedOutput);
-
-
-/// \brief Calls function and asserts that it throws a Bond::Exception whose message starts with
-/// expectedPrefix. A null expectedPrefix accepts any message. Throws an AssertionFailure if no
-/// Bond::Exception is thrown or the message does not match.
-template <typename FunctionT>
-void AssertThrowsBondException(
-	const char *assertFile,
-	int assertLine,
-	const char *expectedPrefix,
-	FunctionT function)
-{
-	try
-	{
-		function();
-	}
-	catch (const Bond::Exception &e)
-	{
-		const char *message = e.GetMessage();
-		Assert((expectedPrefix == nullptr) || (strncmp(message, expectedPrefix, strlen(expectedPrefix)) == 0),
-			assertFile, assertLine, "Expected an exception starting with \"%s\", but was \"%s\".",
-			(expectedPrefix != nullptr) ? expectedPrefix : "", message);
-		return;
-	}
-	throw AssertionFailure(assertFile, assertLine, "Expected an exception starting with \"%s\", but none was thrown.",
-		(expectedPrefix != nullptr) ? expectedPrefix : "");
-}
 
 
 /// \brief Calls functionName on vm, passing args, and asserts that the returned value matches

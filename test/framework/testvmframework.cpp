@@ -26,12 +26,24 @@ void RunVMTest(
 	VMValidationFunction *validationFunction,
 	const Bond::NativeBindingCollection *nativeBinding)
 {
+	RunVMTest(assertFile, assertLine, &scriptName, 1, validationFunction, nativeBinding);
+}
+
+
+void RunVMTest(
+	const char *assertFile,
+	int assertLine,
+	const char *const *scriptNames,
+	size_t numScripts,
+	VMValidationFunction *validationFunction,
+	const Bond::NativeBindingCollection *nativeBinding)
+{
 	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
 
 	Bond::ValidateConfiguration();
 
 	uint8_t cboBuffer[MAX_CBO_SIZE];
-	const size_t cboSize = CompileScriptToCbo(assertFile, assertLine, scriptName, cboBuffer, MAX_CBO_SIZE);
+	const size_t cboSize = CompileScriptsToCbo(assertFile, assertLine, scriptNames, numScripts, cboBuffer, MAX_CBO_SIZE);
 
 	Bond::DefaultAllocator cboLoaderAllocator;
 	Bond::DefaultAllocator vmAllocator;
@@ -70,7 +82,22 @@ size_t CompileScriptToCbo(
 	uint8_t *cboBuffer,
 	size_t bufferSize)
 {
-	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
+	return CompileScriptsToCbo(assertFile, assertLine, &scriptName, 1, cboBuffer, bufferSize);
+}
+
+
+size_t CompileScriptsToCbo(
+	const char *assertFile,
+	int assertLine,
+	const char *const *scriptNames,
+	size_t numScripts,
+	uint8_t *cboBuffer,
+	size_t bufferSize)
+{
+	for (size_t i = 0; i < numScripts; ++i)
+	{
+		Assert(scriptNames[i] != nullptr, assertFile, assertLine, "Script name is NULL.");
+	}
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
@@ -100,7 +127,10 @@ size_t CompileScriptToCbo(
 		Bond::MemoryStreamFactory stdLibFactory(streamFactoryAllocator, Bond::INCLUDE_FILE_INDEX, &streamFactory);
 		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibFactory);
 
-		frontEnd.AddInputFile(scriptName);
+		for (size_t i = 0; i < numScripts; ++i)
+		{
+			frontEnd.AddInputFile(scriptNames[i]);
+		}
 		Bond::TranslationUnit *translationUnitList = frontEnd.Analyze();
 
 		if (!errorBuffer.HasErrors())
@@ -110,12 +140,12 @@ size_t CompileScriptToCbo(
 			generator.Generate(translationUnitList, cboStream);
 			cboSize = size_t(cboStream.GetPosition());
 			Assert(cboSize < bufferSize, assertFile, assertLine,
-				"CBO for '%s' exceeds the %d byte test buffer.", scriptName, int(bufferSize));
+				"CBO for '%s' exceeds the %d byte test buffer.", scriptNames[0], int(bufferSize));
 		}
 
 		if (errorBuffer.HasErrors())
 		{
-			throw AssertionFailure(assertFile, assertLine, "Failed to compile '%s'.", scriptName);
+			throw AssertionFailure(assertFile, assertLine, "Failed to compile '%s'.", scriptNames[0]);
 		}
 	}
 	catch (const Bond::Exception &e)

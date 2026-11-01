@@ -1,0 +1,10 @@
+struct IncludeUserPoint
+{
+	int x;
+	int y;
+};
+
+int IncludeUserSum(IncludeUserPoint point)
+{
+	return point.x + point.y;
+}

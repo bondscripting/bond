@@ -1,0 +1,9 @@
+struct MultiFilePoint
+{
+	int x;
+};
+
+int MultiFileB()
+{
+	return MULTI_FILE_VALUE;
+}

@@ -1,0 +1,8 @@
+const int MULTI_FILE_VALUE = 4;
+
+int MultiFileA()
+{
+	MultiFilePoint point;
+	point.x = MultiFileB();
+	return point.x;
+}

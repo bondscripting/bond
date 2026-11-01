@@ -319,7 +319,7 @@ struct OutputStream
 	///
 	/// The format flags modify how the stream formats output.
 	/// \returns The stream on which this function was called.
-	OutputStream *ClearFlags(int flags);
+	OutputStream *ClearFlags();
 
 	int GetPrecision() const;
 	OutputStream *SetPrecision(int flags);

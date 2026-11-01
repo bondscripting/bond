@@ -157,3 +157,63 @@ bool Cmpged(double a, double b)
 {
 	return a >= b;
 }
+
+bool CmpeqConstNaNf()
+{
+	return (0.0f / 0.0f) == 1.0f;
+}
+
+bool CmpeqConstNaNd()
+{
+	return (0.0 / 0.0) == 1.0;
+}
+
+bool CmpneqConstNaNf()
+{
+	return (0.0f / 0.0f) != 1.0f;
+}
+
+bool CmpneqConstNaNd()
+{
+	return (0.0 / 0.0) != 1.0;
+}
+
+bool CmpltConstNaNf()
+{
+	return (0.0f / 0.0f) < 1.0f;
+}
+
+bool CmpltConstNaNd()
+{
+	return (0.0 / 0.0) < 1.0;
+}
+
+bool CmpleConstNaNf()
+{
+	return (0.0f / 0.0f) <= 1.0f;
+}
+
+bool CmpleConstNaNd()
+{
+	return (0.0 / 0.0) <= 1.0;
+}
+
+bool CmpgtConstNaNf()
+{
+	return (0.0f / 0.0f) > 1.0f;
+}
+
+bool CmpgtConstNaNd()
+{
+	return (0.0 / 0.0) > 1.0;
+}
+
+bool CmpgeConstNaNf()
+{
+	return (0.0f / 0.0f) >= 1.0f;
+}
+
+bool CmpgeConstNaNd()
+{
+	return (0.0 / 0.0) >= 1.0;
+}

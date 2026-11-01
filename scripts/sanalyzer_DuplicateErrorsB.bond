@@ -1,0 +1,4 @@
+int DuplicateFunction()
+{
+	return 2;
+}

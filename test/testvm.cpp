@@ -1,4 +1,9 @@
 #include "framework/testvmframework.h"
+#include "bond/api/libruntime.h"
+#include "bond/systems/defaultallocator.h"
+#include "bond/vm/cboloader.h"
+#include "bond/vm/codesegment.h"
+#include <cmath>
 #include <cstring>
 
 namespace
@@ -663,6 +668,66 @@ DEFINE_VM_TEST(ComparisonOperators, "scripts/vm_ComparisonOperators.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(1), 2.0, -2.0);
 	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(0), 5.67e27, 5.68e27);
 	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(1), 5.68e27, 5.67e27);
+
+	// Every comparison with NaN is false, except for !=.
+	const float NAN_F = std::nanf("");
+	const double NAN_D = std::nan("");
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqf", int32_t(0), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqf", int32_t(0), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqf", int32_t(0), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqd", int32_t(0), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqd", int32_t(0), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpeqd", int32_t(0), NAN_D, NAN_D);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqf", int32_t(1), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqf", int32_t(1), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqf", int32_t(1), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqd", int32_t(1), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqd", int32_t(1), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpneqd", int32_t(1), NAN_D, NAN_D);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltf", int32_t(0), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltf", int32_t(0), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltf", int32_t(0), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltd", int32_t(0), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltd", int32_t(0), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpltd", int32_t(0), NAN_D, NAN_D);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmplef", int32_t(0), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmplef", int32_t(0), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmplef", int32_t(0), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpled", int32_t(0), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpled", int32_t(0), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpled", int32_t(0), NAN_D, NAN_D);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtf", int32_t(0), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtf", int32_t(0), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtf", int32_t(0), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtd", int32_t(0), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtd", int32_t(0), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgtd", int32_t(0), NAN_D, NAN_D);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgef", int32_t(0), NAN_F, 1.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgef", int32_t(0), 1.0f, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpgef", int32_t(0), NAN_F, NAN_F);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(0), NAN_D, 1.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(0), 1.0, NAN_D);
+	VALIDATE_FUNCTION_CALL(int32_t, "Cmpged", int32_t(0), NAN_D, NAN_D);
+
+	// The same comparisons, folded by the compiler rather than evaluated by the VM.
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpeqConstNaNf", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpeqConstNaNd", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpneqConstNaNf", int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpneqConstNaNd", int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpltConstNaNf", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpltConstNaNd", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpleConstNaNf", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpleConstNaNd", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgtConstNaNf", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgtConstNaNd", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgeConstNaNf", int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CmpgeConstNaNd", int32_t(0));
 }
 
 
@@ -780,6 +845,45 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "For", int32_t(5), int32_t(5));
 
 	VALIDATE_FUNCTION_CALL(int32_t, "NestedLoopsWithJumps", int32_t(360), int32_t(5), int32_t(8));
+
+	// Conditions that compare against NaN. The ordinary values prove that each path is reachable.
+	const float NAN_F = std::nanf("");
+	const double NAN_D = std::nan("");
+
+	VALIDATE_FUNCTION_CALL(int32_t, "IfLtf", int32_t(1), 1.0f, 2.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfLtf", int32_t(2), NAN_F, 2.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfLtd", int32_t(1), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfLtd", int32_t(2), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtf", int32_t(2), 1.0f, 2.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtf", int32_t(1), NAN_F, 2.0f);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtd", int32_t(2), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtd", int32_t(1), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "TernaryLt", int32_t(1), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "TernaryLt", int32_t(2), NAN_D, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "TernaryNotLt", int32_t(2), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "TernaryNotLt", int32_t(1), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileLt", int32_t(3), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileLt", int32_t(0), NAN_D, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileLt", int32_t(3), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileLt", int32_t(1), NAN_D, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "ForLt", int32_t(3), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "ForLt", int32_t(0), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "AndLt", int32_t(1), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "AndLt", int32_t(0), NAN_D, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "OrLt", int32_t(1), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "OrLt", int32_t(0), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "NotLtAndNotGt", int32_t(0), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "NotLtAndNotGt", int32_t(1), NAN_D, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtOrGt", int32_t(2), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "IfNotLtOrGt", int32_t(1), NAN_D, 2.0);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnNotLt", int32_t(0), 1.0, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnNotLt", int32_t(1), NAN_D, 2.0);
 }
 
 
@@ -1311,6 +1415,76 @@ DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
 }
 
 
+namespace
+{
+void ValidateMultiFileCalls(Bond::VM &vm)
+{
+	VALIDATE_FUNCTION_CALL(int32_t, "CallAcrossFiles", int32_t(7), int32_t(3), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "UseStructAcrossFiles", int32_t(12), int32_t(3), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReadGlobalAcrossFiles", int32_t(9));
+}
+}
+
+
+DEFINE_VM_MULTI_TEST(MultiFileOneCbo, "scripts/vm_MultiFileA.bond", "scripts/vm_MultiFileB.bond")
+{
+	ValidateMultiFileCalls(vm);
+}
+
+
+DEFINE_TEST(MultiFileTwoCbos)
+{
+	using namespace Bond;
+	using namespace TestFramework;
+
+	uint8_t cboBufferA[MAX_CBO_SIZE];
+	uint8_t cboBufferB[MAX_CBO_SIZE];
+	const size_t cboSizeA = CompileScriptToCbo(__FILE__, __LINE__, "scripts/vm_MultiFileA.bond", cboBufferA, MAX_CBO_SIZE);
+	const size_t cboSizeB = CompileScriptToCbo(__FILE__, __LINE__, "scripts/vm_MultiFileB.bond", cboBufferB, MAX_CBO_SIZE);
+
+	DefaultAllocator cboLoaderAllocator;
+	DefaultAllocator vmAllocator;
+	AllocationLeakGuard<DefaultAllocator> cboLoaderLeakGuard(cboLoaderAllocator, "CBO loader", __FILE__, __LINE__);
+	AllocationLeakGuard<DefaultAllocator> vmLeakGuard(vmAllocator, "VM", __FILE__, __LINE__);
+
+	try
+	{
+		CboLoader cboLoader(cboLoaderAllocator);
+		LoadAllLibs(cboLoader);
+		cboLoader.AddCboFile(cboBufferA, cboSizeA);
+		cboLoader.AddCboFile(cboBufferB, cboSizeB);
+		CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
+		VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024);
+		codeSegmentHandle.get()->CallStaticInitializers(vm);
+		ValidateMultiFileCalls(vm);
+	}
+	catch (const Exception &e)
+	{
+		throw AssertionFailure(__FILE__, __LINE__, "%s", e.GetMessage());
+	}
+}
+
+
+// An included file is only analyzed. No code is generated for it, so its definitions must be
+// supplied by another input file or CBO.
+DEFINE_TEST(IncludeOnlyDoesNotLink)
+{
+	using namespace Bond;
+	using namespace TestFramework;
+
+	uint8_t cboBuffer[MAX_CBO_SIZE];
+	const size_t cboSize = CompileScriptToCbo(__FILE__, __LINE__, "scripts/vm_MultiFileA.bond", cboBuffer, MAX_CBO_SIZE);
+
+	DefaultAllocator cboLoaderAllocator;
+	AllocationLeakGuard<DefaultAllocator> cboLoaderLeakGuard(cboLoaderAllocator, "CBO loader", __FILE__, __LINE__);
+
+	CboLoader cboLoader(cboLoaderAllocator);
+	LoadAllLibs(cboLoader);
+	cboLoader.AddCboFile(cboBuffer, cboSize);
+	ASSERT_BOND_EXCEPTION("Unresolved qualified name", cboLoader.Load());
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1329,5 +1503,8 @@ DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
   TEST_ITEM(Enums)                              \
   TEST_ITEM(ArithmeticConversions)              \
   TEST_ITEM(RuntimeErrors)                      \
+  TEST_ITEM(MultiFileOneCbo)                    \
+  TEST_ITEM(MultiFileTwoCbos)                   \
+  TEST_ITEM(IncludeOnlyDoesNotLink)             \
 
 RUN_TESTS(VM, TEST_ITEMS)

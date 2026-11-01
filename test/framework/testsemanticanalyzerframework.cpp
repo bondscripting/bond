@@ -13,14 +13,20 @@
 namespace TestFramework
 {
 
-void RunSemanticAnalyzerTest(
+// Analyzes the scripts within the scope of the leak guards. With a null validationFunction, the
+// analysis is expected to throw a Bond::Exception whose message starts with expectedPrefix.
+static void AnalyzeScripts(
 	const char *assertFile,
 	int assertLine,
-	const char *scriptName,
-	SemanticAnalyzerValidationFunction *validationFunction)
+	const char *const *scriptNames,
+	size_t numScripts,
+	SemanticAnalyzerValidationFunction *validationFunction,
+	const char *expectedPrefix)
 {
-	Assert(scriptName != nullptr, assertFile, assertLine, "Script name is NULL.");
-	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
+	for (size_t i = 0; i < numScripts; ++i)
+	{
+		Assert(scriptNames[i] != nullptr, assertFile, assertLine, "Script name is NULL.");
+	}
 
 	Bond::DefaultAllocator lexerAllocator;
 	Bond::DefaultAllocator parserAllocator;
@@ -33,7 +39,7 @@ void RunSemanticAnalyzerTest(
 	AllocationLeakGuard<Bond::DefaultAllocator> frontEndLeakGuard(
 		frontEndAllocator, "Front end", assertFile, assertLine);
 
-	try
+	const auto analyze = [&]()
 	{
 		Bond::CompilerErrorBuffer errorBuffer;
 		Bond::TokenCollectionStore tokenStore((Bond::TokenCollectionStore::allocator_type(&lexerAllocator)));
@@ -45,14 +51,64 @@ void RunSemanticAnalyzerTest(
 		Bond::MemoryStreamFactory stdLibFactory(streamFactoryAllocator, Bond::INCLUDE_FILE_INDEX, &streamFactory);
 		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibFactory);
 
-		frontEnd.AddInputFile(scriptName);
+		for (size_t i = 0; i < numScripts; ++i)
+		{
+			frontEnd.AddInputFile(scriptNames[i]);
+		}
 		frontEnd.Analyze();
-		validationFunction(errorBuffer, analyzer);
+
+		if (validationFunction != nullptr)
+		{
+			validationFunction(errorBuffer, analyzer);
+		}
+	};
+
+	if (validationFunction == nullptr)
+	{
+		AssertThrowsBondException(assertFile, assertLine, expectedPrefix, analyze);
+		return;
+	}
+
+	try
+	{
+		analyze();
 	}
 	catch (const Bond::Exception &e)
 	{
 		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
 	}
+}
+
+
+void RunSemanticAnalyzerTest(
+	const char *assertFile,
+	int assertLine,
+	const char *scriptName,
+	SemanticAnalyzerValidationFunction *validationFunction)
+{
+	RunSemanticAnalyzerTest(assertFile, assertLine, &scriptName, 1, validationFunction);
+}
+
+
+void RunSemanticAnalyzerTest(
+	const char *assertFile,
+	int assertLine,
+	const char *const *scriptNames,
+	size_t numScripts,
+	SemanticAnalyzerValidationFunction *validationFunction)
+{
+	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
+	AnalyzeScripts(assertFile, assertLine, scriptNames, numScripts, validationFunction, nullptr);
+}
+
+
+void AssertAnalysisThrows(
+	const char *assertFile,
+	int assertLine,
+	const char *scriptName,
+	const char *expectedPrefix)
+{
+	AnalyzeScripts(assertFile, assertLine, &scriptName, 1, nullptr, expectedPrefix);
 }
 
 }

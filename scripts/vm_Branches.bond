@@ -265,3 +265,121 @@ int NestedLoopsWithJumps(int a, int b)
 
 	return c;
 }
+
+int IfLtf(float a, float b)
+{
+	if (a < b)
+	{
+		return 1;
+	}
+	return 2;
+}
+
+int IfLtd(double a, double b)
+{
+	if (a < b)
+	{
+		return 1;
+	}
+	return 2;
+}
+
+int IfNotLtf(float a, float b)
+{
+	if (!(a < b))
+	{
+		return 1;
+	}
+	return 2;
+}
+
+int IfNotLtd(double a, double b)
+{
+	if (!(a < b))
+	{
+		return 1;
+	}
+	return 2;
+}
+
+int TernaryLt(double a, double b)
+{
+	return (a < b) ? 1 : 2;
+}
+
+int TernaryNotLt(double a, double b)
+{
+	return !(a < b) ? 1 : 2;
+}
+
+int WhileLt(double a, double b)
+{
+	int n = 0;
+	while (a < b)
+	{
+		++n;
+		if (n == 3)
+		{
+			break;
+		}
+	}
+	return n;
+}
+
+int DoWhileLt(double a, double b)
+{
+	int n = 0;
+	do
+	{
+		++n;
+		if (n == 3)
+		{
+			break;
+		}
+	}
+	while (a < b);
+	return n;
+}
+
+int ForLt(double a, double b)
+{
+	int n = 0;
+	for (int i = 0; a < b; ++i)
+	{
+		++n;
+		if (n == 3)
+		{
+			break;
+		}
+	}
+	return n;
+}
+
+bool AndLt(double a, double b)
+{
+	return (a < b) && (a <= b);
+}
+
+bool OrLt(double a, double b)
+{
+	return (a < b) || (a > b);
+}
+
+bool NotLtAndNotGt(double a, double b)
+{
+	return !(a < b) && !(a > b);
+}
+
+int IfNotLtOrGt(double a, double b)
+{
+	if (!((a < b) || (a > b)))
+	{
+		return 1;
+	}
+	return 2;
+}
+
+bool ReturnNotLt(double a, double b)
+{
+	return !(a < b);
+}

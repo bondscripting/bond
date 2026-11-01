@@ -9,7 +9,7 @@ native
 // Flags and precision persist on the VM's stream, so each print test starts from a known state.
 Bond::OutputStream *Out()
 {
-	return Bond::StdOut()->ClearFlags(0)->SetPrecision(6);
+	return Bond::StdOut()->ClearFlags()->SetPrecision(6);
 }
 
 void PrintText()

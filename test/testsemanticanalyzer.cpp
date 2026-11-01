@@ -2,6 +2,7 @@
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
 #include "bond/compiler/parsenodeutil.h"
+#include <cstring>
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
@@ -545,6 +546,62 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(IncludeUserFile, "scripts/sanalyzer_IncludeUser.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IncludeCycle, "scripts/sanalyzer_IncludeCycleA.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_TEST(IncludeMissing)
+{
+	ASSERT_ANALYSIS_THROWS(
+		"scripts/sanalyzer_IncludeMissing.bond",
+		"Failed to open file 'scripts/does_not_exist.bond'");
+}
+
+
+DEFINE_SEMANTICANALYZER_MULTI_TEST(MultiFileSymbols, "scripts/sanalyzer_MultiFileA.bond", "scripts/sanalyzer_MultiFileB.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_MULTI_TEST(MultiFileDuplicateErrors, "scripts/sanalyzer_DuplicateErrorsA.bond", "scripts/sanalyzer_DuplicateErrorsB.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 1},
+	};
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_MESSAGE(
+		strcmp(errorBuffer.GetError(0).GetContext()->GetFileName(), "scripts/sanalyzer_DuplicateErrorsB.bond") == 0,
+		"Expected the error to be reported in the later file.");
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IncludeDuplicateErrors, "scripts/sanalyzer_IncludeDuplicateErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 1},
+	};
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_MESSAGE(
+		strcmp(errorBuffer.GetError(0).GetContext()->GetFileName(), "scripts/sanalyzer_DuplicateErrorsB.bond") == 0,
+		"Expected the error to be reported in the included file.");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -575,5 +632,11 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeLibraries, "scripts/sanalyzer_IncludeLibrari
   TEST_ITEM(ValidationErrors)                   \
   TEST_ITEM(Validation)                         \
   TEST_ITEM(IncludeLibraries)                   \
+  TEST_ITEM(IncludeUserFile)                    \
+  TEST_ITEM(IncludeCycle)                       \
+  TEST_ITEM(IncludeMissing)                     \
+  TEST_ITEM(MultiFileSymbols)                   \
+  TEST_ITEM(MultiFileDuplicateErrors)           \
+  TEST_ITEM(IncludeDuplicateErrors)             \
 
 RUN_TESTS(SemanticAnalyzer, TEST_ITEMS)
