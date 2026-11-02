@@ -1,0 +1,33 @@
+void TakesCharPointer(char *s) {}
+
+char *ReturnStringAsNonConst()
+{
+	return "abc";
+}
+
+int ReturnNullAsInt()
+{
+	return null;
+}
+
+void StringToNonConstPointer()
+{
+	char *s = "abc";
+	s = "def";
+	TakesCharPointer("ghi");
+}
+
+void VoidPointerArithmetic(void *p, void *q)
+{
+	void *r = p + 1;
+	r = 1 + p;
+	r = p - 1;
+	p - q;
+	p += 1;
+	p -= 1;
+	p[1];
+	++p;
+	p++;
+	--p;
+	p--;
+}

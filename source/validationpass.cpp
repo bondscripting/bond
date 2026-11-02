@@ -349,16 +349,11 @@ void ValidationPass::Visit(BinaryExpression *binaryExpression)
 		case Token::OP_PLUS:
 		case Token::OP_MINUS:
 		{
-			if (lhDescriptor.IsPointerType())
+			AssertPointerArithmeticIsDefined(lhDescriptor, binaryExpression->GetContextToken());
+			if ((op->GetTokenType() == Token::OP_PLUS) && !lhDescriptor.IsPointerType())
 			{
-				const TypeDescriptor parentType = lhDescriptor.GetDereferencedType();
-				if (!parentType.IsInstantiable())
-				{
-					mErrorBuffer.PushError(
-						CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
-						binaryExpression->GetContextToken(),
-						&lhDescriptor);
-				}
+				// The pointer can also be on the right, as in 'n + p'.
+				AssertPointerArithmeticIsDefined(binaryExpression->GetRhs()->GetTypeDescriptor(), binaryExpression->GetContextToken());
 			}
 		}
 		break;
@@ -413,7 +408,11 @@ void ValidationPass::Visit(ConditionalExpression *conditionalExpression)
 void ValidationPass::Visit(UnaryExpression *unaryExpression)
 {
 	const Token *op = unaryExpression->GetOperator();
-	if (op->GetTokenType() == Token::OP_AMP)
+	if ((op->GetTokenType() == Token::OP_INC) || (op->GetTokenType() == Token::OP_DEC))
+	{
+		AssertPointerArithmeticIsDefined(unaryExpression->GetRhs()->GetTypeDescriptor(), op);
+	}
+	else if (op->GetTokenType() == Token::OP_AMP)
 	{
 		IdentifierExpression *identifierExpression = CastNode<IdentifierExpression>(unaryExpression->GetRhs());
 		if (identifierExpression != nullptr)
@@ -429,10 +428,18 @@ void ValidationPass::Visit(UnaryExpression *unaryExpression)
 }
 
 
+void ValidationPass::Visit(PostfixExpression *postfixExpression)
+{
+	// Postfix expressions are only '++' and '--'.
+	AssertPointerArithmeticIsDefined(postfixExpression->GetLhs()->GetTypeDescriptor(), postfixExpression->GetOperator());
+	ParseNodeTraverser::Visit(postfixExpression);
+}
+
+
 void ValidationPass::Visit(ArraySubscriptExpression *arraySubscriptExpression)
 {
 	const TypeDescriptor &typeDescriptor = arraySubscriptExpression->GetTypeDescriptor();
-	if (!typeDescriptor.IsInstantiable())
+	if (!typeDescriptor.IsInstantiable() || typeDescriptor.IsVoidType())
 	{
 		mErrorBuffer.PushError(
 			CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE,
@@ -602,6 +609,20 @@ bool ValidationPass::AssertAssignableTypes(
 		return false;
 	}
 	return true;
+}
+
+
+void ValidationPass::AssertPointerArithmeticIsDefined(const TypeDescriptor &typeDescriptor, const Token *context)
+{
+	if (typeDescriptor.IsPointerType())
+	{
+		// void counts as instantiable so that functions may return it, but it has no size to step by.
+		const TypeDescriptor parentType = typeDescriptor.GetDereferencedType();
+		if (!parentType.IsInstantiable() || parentType.IsVoidType())
+		{
+			mErrorBuffer.PushError(CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, context, &typeDescriptor);
+		}
+	}
 }
 
 

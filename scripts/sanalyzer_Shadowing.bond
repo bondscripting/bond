@@ -1,0 +1,48 @@
+// Each shadowing declaration has a different type from the one it hides, so resolving a name
+// to the wrong declaration produces a type error.
+
+const bool VALUE = true;
+
+int LocalHidesGlobal()
+{
+	int VALUE = 1;
+	return VALUE + 1;
+}
+
+bool GlobalIsVisibleElsewhere()
+{
+	return VALUE && true;
+}
+
+int NestedBlockShadowsParameter(int a)
+{
+	{
+		bool a = true;
+		if (a)
+		{
+			return 0;
+		}
+	}
+	return a + 1;
+}
+
+int ForInitializerShadowsParameter(int a)
+{
+	for (bool a = true; a; a = false)
+	{
+	}
+	return a + 1;
+}
+
+int NestedBlockShadowsLocal()
+{
+	int x = 1;
+	{
+		bool x = true;
+		if (x)
+		{
+			return 0;
+		}
+	}
+	return x + 1;
+}

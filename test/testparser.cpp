@@ -363,16 +363,19 @@ DEFINE_PARSER_TEST(StrayBraceErrors, "scripts/parser_StrayBraceErrors.bond")
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
 	{
 		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::CBRACE, 2},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::CBRACE, 4},
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::CBRACE, 5},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
 
-	// Documents current behaviour: parsing of file-scope declarations stops at the stray '}',
-	// so G is silently dropped.
+	// Each stray '}' at file scope is reported and skipped, and the declarations after it survive.
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mFunctionDefinition = 1;
+	expectedCount.mFunctionDefinition = 3;
+	expectedCount.mNamespaceDefinition = 1;
+	expectedCount.mDeclarativeStatement = 1;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 }

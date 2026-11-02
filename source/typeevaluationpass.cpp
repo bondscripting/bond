@@ -78,6 +78,18 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 	// declared before being referenced, so they must be added as the expressions are evaluated.
 	if (namedInitializer->GetScope() == SCOPE_LOCAL)
 	{
+		// Parameters live in the function's scope, and the body is a nested scope. As in C, a
+		// local at the top level of the body cannot redeclare a parameter, but nested blocks may
+		// shadow one.
+		const FunctionDefinition *function = mFunction.GetTop();
+		if ((function != nullptr) && (GetCurrentScope() == function->GetBody()))
+		{
+			const Symbol *parameter = function->FindSymbol(namedInitializer->GetName());
+			if (parameter != nullptr)
+			{
+				mErrorBuffer.PushError(CompilerError::DUPLICATE_SYMBOL, namedInitializer->GetName(), parameter->GetName());
+			}
+		}
 		InsertSymbol(namedInitializer);
 	}
 

@@ -1,3 +1,6 @@
 void F() {}
 }
 void G() {}
+namespace N { void H() {} } }
+}
+const int X = 1;

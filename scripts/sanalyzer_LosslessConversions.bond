@@ -109,3 +109,30 @@ void LosslessConversions2()
 	d = cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
 	d = -cast<double>(0x8000000000000000LU) * cast<double>(0x8000000000000000LU);
 }
+
+
+struct LosslessPair { int a; int b; };
+
+void TakesChar(char c) {}
+void TakesInt(int i) {}
+void TakesLong(long l) {}
+void TakesDouble(double d) {}
+
+void LosslessArguments(char c, int i, float f)
+{
+	TakesChar(127);
+	TakesInt(c);
+	TakesLong(i);
+	TakesDouble(f);
+}
+
+char LosslessReturnConstant() { return 127; }
+long LosslessReturnInt(int i) { return i; }
+double LosslessReturnFloat(float f) { return f; }
+
+void LosslessInitializerLists(char c, int i)
+{
+	char[2] chars = { 1, 127 };
+	long[2] longs = { i, c };
+	LosslessPair pair = { c, 1 };
+}

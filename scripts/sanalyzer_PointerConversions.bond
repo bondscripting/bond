@@ -1,0 +1,53 @@
+struct Point { int x; int y; };
+
+void TakesConstCharPointer(const char *s) {}
+
+const char *ReturnString()
+{
+	return "abc";
+}
+
+int *ReturnNull()
+{
+	return null;
+}
+
+void StringToConstPointer()
+{
+	const char *s = "abc";
+	s = "def";
+	TakesConstCharPointer("ghi");
+}
+
+void NullToPointers()
+{
+	int *ip = null;
+	void *vp = null;
+	Point *pp = null;
+	ip = null;
+	vp = null;
+	pp = null;
+}
+
+void VoidPointerConversions(int *ip, void *vp)
+{
+	void *v = ip;
+	int *i = vp;
+	v = ip;
+	i = vp;
+}
+
+void CharPointerArithmetic(char *p, char *q)
+{
+	char *r = p + 1;
+	r = 1 + p;
+	r = p - 1;
+	p - q;
+	p += 1;
+	p -= 1;
+	p[1];
+	++p;
+	p++;
+	--p;
+	p--;
+}

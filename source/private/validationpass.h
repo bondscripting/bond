@@ -35,6 +35,7 @@ protected:
 	virtual void Visit(ConditionalExpression *conditionalExpression) override;
 	virtual void Visit(BinaryExpression *binaryExpression) override;
 	virtual void Visit(UnaryExpression *unaryExpression) override;
+	virtual void Visit(PostfixExpression *postfixExpression) override;
 	virtual void Visit(ArraySubscriptExpression *arraySubscriptExpression) override;
 	virtual void Visit(FunctionCallExpression *functionCallExpression) override;
 
@@ -54,6 +55,7 @@ private:
 		CompilerError::Type errorType,
 		bool ignoreConst = false);
 
+	void AssertPointerArithmeticIsDefined(const TypeDescriptor &typeDescriptor, const Token *context);
 	void AssertNoNegativeToUnsignedConversion(const Expression *lhs, const Expression *rhs, const Token *context);
 
 	BoolStack mHasDefaultLabel;

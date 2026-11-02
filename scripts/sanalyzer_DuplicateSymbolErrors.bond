@@ -1,0 +1,23 @@
+void DuplicateFunction() {}
+void DuplicateFunction() {}
+
+int Overloaded(int a) { return a; }
+float Overloaded(float a) { return a; }
+
+struct DuplicateMembers
+{
+	int x;
+	float x;
+	void F() {}
+	void F() {}
+	void G() {}
+	int G;
+};
+
+enum FirstEnum { SHARED, FIRST };
+enum SecondEnum { SECOND, SHARED };
+enum ThirdEnum
+{
+	THIRD,
+	THIRD,
+};

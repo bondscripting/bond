@@ -46,6 +46,24 @@ DEFINE_SEMANTICANALYZER_TEST(Enums, "scripts/parser_Enums.bond")
 	ASSERT_MESSAGE(tav->GetTypeDescriptor().GetPrimitiveType() == Bond::Token::KEY_INT,
 		"Expected 'EIGHTH' to have an integer value.");
 	ASSERT_MESSAGE(tav->GetIntValue() == 5, "Expected 'EIGHTH' to have the value 5");
+
+	struct EnumeratorCase { const char *name; int32_t value; };
+	const EnumeratorCase CASES[] =
+	{
+		{"SEVENTH", 2},
+		// sizeof<int const *const[234]> is 234 pointers.
+		{"NINTH", int32_t(234 * Bond::GetPointerSize(Bond::BOND_NATIVE_POINTER_SIZE))},
+	};
+
+	for (const EnumeratorCase &c : CASES)
+	{
+		const Bond::Enumerator *e = Bond::CastNode<Bond::Enumerator>(globalScope->FindSymbol(c.name));
+		ASSERT_FORMAT(e != nullptr, "Expected '%s' to be an enumerator.", c.name);
+		const Bond::TypeAndValue *eTav = e->GetTypeAndValue();
+		ASSERT_FORMAT((eTav != nullptr) && eTav->IsValueDefined(), "Expected '%s' to have a value.", c.name);
+		ASSERT_FORMAT(eTav->GetIntValue() == c.value, "Expected '%s' to be %" BOND_PRId32 ", but was %" BOND_PRId32 ".",
+			c.name, c.value, eTav->GetIntValue());
+	}
 }
 
 
@@ -142,6 +160,76 @@ DEFINE_SEMANTICANALYZER_TEST(FunctionDeclarations, "scripts/parser_FunctionDecla
 	const Bond::FunctionDefinition *function = Bond::CastNode<Bond::FunctionDefinition>(symbol);
 	ASSERT_MESSAGE(function != nullptr, "Expected 'ComplexFunctionPrototype' to be a function definition.");
 	ASSERT_MESSAGE(function->GetBody() == nullptr, "Expected 'ComplexFunctionPrototype' to have no body.");
+	ASSERT_MESSAGE(function->IsNative(), "Expected 'ComplexFunctionPrototype' to be native.");
+
+	auto getFunction = [globalScope](const char *name) -> const Bond::FunctionDefinition *
+	{
+		return Bond::CastNode<Bond::FunctionDefinition>(globalScope->FindSymbol(name));
+	};
+
+	// VoidNoParameters: native, returns void, no parameters.
+	const Bond::FunctionDefinition *voidNoParameters = getFunction("VoidNoParameters");
+	ASSERT_MESSAGE(voidNoParameters != nullptr, "Failed to find function 'VoidNoParameters'.");
+	ASSERT_MESSAGE(voidNoParameters->IsNative(), "Expected 'VoidNoParameters' to be native.");
+	ASSERT_MESSAGE(voidNoParameters->GetPrototype()->GetReturnType()->IsVoidType(),
+		"Expected 'VoidNoParameters' to return void.");
+	ASSERT_MESSAGE(voidNoParameters->GetPrototype()->GetParameterList() == nullptr,
+		"Expected 'VoidNoParameters' to have no parameters.");
+
+	// VoidOneParameter: one int parameter named 'arg'.
+	const Bond::FunctionDefinition *voidOneParameter = getFunction("VoidOneParameter");
+	ASSERT_MESSAGE(voidOneParameter != nullptr, "Failed to find function 'VoidOneParameter'.");
+	ASSERT_MESSAGE(voidOneParameter->IsNative(), "Expected 'VoidOneParameter' to be native.");
+	const Bond::Parameter *param = voidOneParameter->GetPrototype()->GetParameterList();
+	ASSERT_MESSAGE(param != nullptr, "Expected 'VoidOneParameter' to have a parameter.");
+	ASSERT_MESSAGE(param->GetName()->GetText() == "arg", "Expected the parameter to be named 'arg'.");
+	ASSERT_MESSAGE(param->GetTypeDescriptor()->IsValueType() &&
+		(param->GetTypeDescriptor()->GetPrimitiveType() == Bond::Token::KEY_INT),
+		"Expected 'arg' to be an int.");
+	ASSERT_MESSAGE(Bond::NextNode(param) == nullptr, "Expected 'VoidOneParameter' to have exactly one parameter.");
+
+	// VoidTwoParameters: 'arg1' then 'arg2'.
+	const Bond::FunctionDefinition *voidTwoParameters = getFunction("VoidTwoParameters");
+	ASSERT_MESSAGE(voidTwoParameters != nullptr, "Failed to find function 'VoidTwoParameters'.");
+	param = voidTwoParameters->GetPrototype()->GetParameterList();
+	ASSERT_MESSAGE((param != nullptr) && (param->GetName()->GetText() == "arg1"), "Expected the first parameter to be 'arg1'.");
+	param = Bond::NextNode(param);
+	ASSERT_MESSAGE((param != nullptr) && (param->GetName()->GetText() == "arg2"), "Expected the second parameter to be 'arg2'.");
+	ASSERT_MESSAGE(Bond::NextNode(param) == nullptr, "Expected 'VoidTwoParameters' to have exactly two parameters.");
+
+	// const char *ComplexFunctionPrototype(const float [2] *arg1, Identifier * const * arg2)
+	const Bond::FunctionPrototype *prototype = function->GetPrototype();
+	const Bond::TypeDescriptor *returnType = prototype->GetReturnType();
+	ASSERT_MESSAGE(returnType->IsPointerType(), "Expected the return type to be a pointer.");
+	const Bond::TypeDescriptor returnPointee = returnType->GetDereferencedType();
+	ASSERT_MESSAGE(returnPointee.IsConst() && (returnPointee.GetPrimitiveType() == Bond::Token::KEY_CHAR),
+		"Expected the return type to point to a const char.");
+
+	param = prototype->GetParameterList();
+	ASSERT_MESSAGE((param != nullptr) && (param->GetName()->GetText() == "arg1"), "Expected the first parameter to be 'arg1'.");
+	const Bond::TypeDescriptor *arg1Type = param->GetTypeDescriptor();
+	ASSERT_MESSAGE(arg1Type->IsPointerType() && !arg1Type->IsArrayType(), "Expected 'arg1' to be a pointer.");
+	const Bond::TypeDescriptor arg1Pointee = arg1Type->GetDereferencedType();
+	ASSERT_MESSAGE(arg1Pointee.IsArrayType(), "Expected 'arg1' to point to an array.");
+	ASSERT_MESSAGE(arg1Pointee.GetLengthExpressionList()->GetTypeAndValue().GetUIntValue() == 2,
+		"Expected 'arg1' to point to an array of length 2.");
+	const Bond::TypeDescriptor arg1Element = arg1Pointee.GetDereferencedType();
+	ASSERT_MESSAGE(arg1Element.IsConst() && (arg1Element.GetPrimitiveType() == Bond::Token::KEY_FLOAT),
+		"Expected 'arg1' to point to an array of const float.");
+
+	param = Bond::NextNode(param);
+	ASSERT_MESSAGE((param != nullptr) && (param->GetName()->GetText() == "arg2"), "Expected the second parameter to be 'arg2'.");
+	const Bond::TypeDescriptor *arg2Type = param->GetTypeDescriptor();
+	ASSERT_MESSAGE(arg2Type->IsPointerType() && !arg2Type->IsConst(), "Expected 'arg2' to be a non-const pointer.");
+	const Bond::TypeDescriptor arg2Pointee = arg2Type->GetDereferencedType();
+	ASSERT_MESSAGE(arg2Pointee.IsPointerType() && arg2Pointee.IsConst(), "Expected 'arg2' to point to a const pointer.");
+	const Bond::TypeDescriptor arg2Target = arg2Pointee.GetDereferencedType();
+	const Bond::Symbol *identifier = globalScope->FindSymbol("Identifier");
+	ASSERT_MESSAGE((identifier != nullptr) && (identifier->GetSymbolType() == Bond::Symbol::TYPE_ENUM),
+		"Expected 'Identifier' to be an enum.");
+	ASSERT_MESSAGE(arg2Target.IsValueType() && (arg2Target.GetTypeSpecifier()->GetDefinition() == identifier),
+		"Expected 'arg2' to point to a const pointer to 'Identifier'.");
+	ASSERT_MESSAGE(Bond::NextNode(param) == nullptr, "Expected 'ComplexFunctionPrototype' to have exactly two parameters.");
 }
 
 
@@ -655,6 +743,165 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeDuplicateErrors, "scripts/sanalyzer_IncludeD
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(LossyConversions4, "scripts/sanalyzer_LossyConversions4.bond")
+{
+	// Lossy conversions at call arguments, in return statements and in initializer lists.
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 9},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 10},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 11},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_INT, 12},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::KEY_RETURN, 15},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::KEY_RETURN, 16},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::KEY_RETURN, 17},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::KEY_RETURN, 18},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 22},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::CONST_INT, 22},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 23},
+		{Bond::CompilerError::LOSSY_CONVERSION, Bond::Token::IDENTIFIER, 24},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(DuplicateSymbolErrors, "scripts/sanalyzer_DuplicateSymbolErrors.bond")
+{
+	// Struct member functions are visited before member variables, so line 12 precedes line 10.
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 2},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 5},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 12},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 10},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 14},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 18},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 22},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(DuplicateLocalErrors, "scripts/sanalyzer_DuplicateLocalErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 1},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 5},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 11},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 18},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(Shadowing, "scripts/sanalyzer_Shadowing.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(NullConversionErrors, "scripts/sanalyzer_NullConversionErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_NULL, 5},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 6},
+		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_NULL, 7},
+		{Bond::CompilerError::INVALID_TYPE_CONVERSION, Bond::Token::CONST_NULL, 8},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(PointerErrors, "scripts/sanalyzer_PointerErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 5},
+		{Bond::CompilerError::INVALID_RETURN_TYPE_CONVERSION, Bond::Token::KEY_RETURN, 10},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::CONST_STRING, 15},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::ASSIGN, 16},
+		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::CONST_STRING, 17},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 22},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_PLUS, 23},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_MINUS, 24},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_MINUS, 25},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN_PLUS, 26},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::ASSIGN_MINUS, 27},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OBRACKET, 28},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_INC, 29},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_INC, 30},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_DEC, 31},
+		{Bond::CompilerError::POINTER_ARITHMETIC_OF_UNDEFINED_SIZE, Bond::Token::OP_DEC, 32},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(PointerConversions, "scripts/sanalyzer_PointerConversions.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(StructLayout, "scripts/sanalyzer_StructLayout.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	const Bond::Symbol *globalScope = analyzer.GetSymbolTable().GetGlobalScope();
+	const uint32_t P = Bond::GetPointerSize(Bond::BOND_NATIVE_POINTER_SIZE);
+
+	struct MemberCase { const char *name; uint32_t offset; };
+	struct StructCase { const char *name; uint32_t size; uint32_t alignment; MemberCase members[3]; size_t numMembers; };
+	const StructCase CASES[] =
+	{
+		// Structs are at least BOND_DEFAULT_STRUCT_SIZE bytes and BOND_DEFAULT_STRUCT_ALIGN aligned.
+		{"TwoChars", 4, 4, {{"a", 0}, {"b", 1}}, 2},
+		{"CharLongChar", 24, 8, {{"c", 0}, {"l", 8}, {"d", 16}}, 3},
+		{"CharPointerChar", 3 * P, P, {{"c", 0}, {"p", P}, {"d", 2 * P}}, 3},
+		{"CharIntShort", 12, 4, {{"c", 0}, {"i", 4}, {"s", 8}}, 3},
+		{"CharArrayInt", 12, 4, {{"c", 0}, {"s", 1}, {"i", 8}}, 3},
+		{"Nested", 40, 8, {{"c", 0}, {"n", 8}, {"d", 32}}, 3},
+	};
+
+	for (const StructCase &s : CASES)
+	{
+		const Bond::StructDeclaration *decl = Bond::CastNode<Bond::StructDeclaration>(globalScope->FindSymbol(s.name));
+		ASSERT_FORMAT(decl != nullptr, "Expected '%s' to be a struct.", s.name);
+		ASSERT_FORMAT(decl->GetSize() == s.size, "Expected '%s' to have size %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".",
+			s.name, s.size, decl->GetSize());
+		ASSERT_FORMAT(decl->GetAlignment() == s.alignment, "Expected '%s' to have alignment %" BOND_PRIu32 ", but was %" BOND_PRIu32 ".",
+			s.name, s.alignment, decl->GetAlignment());
+
+		for (size_t i = 0; i < s.numMembers; ++i)
+		{
+			const MemberCase &m = s.members[i];
+			const Bond::NamedInitializer *member = Bond::CastNode<Bond::NamedInitializer>(decl->FindSymbol(m.name));
+			ASSERT_FORMAT(member != nullptr, "Expected '%s.%s' to be a member variable.", s.name, m.name);
+			ASSERT_FORMAT(member->GetOffset() == int32_t(m.offset),
+				"Expected '%s.%s' to have offset %" BOND_PRIu32 ", but was %" BOND_PRId32 ".",
+				s.name, m.name, m.offset, member->GetOffset());
+		}
+	}
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Namespaces)                         \
   TEST_ITEM(Enums)                              \
@@ -682,6 +929,7 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeDuplicateErrors, "scripts/sanalyzer_IncludeD
   TEST_ITEM(LossyConversions1)                  \
   TEST_ITEM(LossyConversions2)                  \
   TEST_ITEM(LossyConversions3)                  \
+  TEST_ITEM(LossyConversions4)                  \
   TEST_ITEM(LosslessConversions)                \
   TEST_ITEM(SignednessErrors)                   \
   TEST_ITEM(Signedness)                         \
@@ -694,5 +942,12 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeDuplicateErrors, "scripts/sanalyzer_IncludeD
   TEST_ITEM(MultiFileSymbols)                   \
   TEST_ITEM(MultiFileDuplicateErrors)           \
   TEST_ITEM(IncludeDuplicateErrors)             \
+  TEST_ITEM(DuplicateSymbolErrors)              \
+  TEST_ITEM(DuplicateLocalErrors)               \
+  TEST_ITEM(Shadowing)                          \
+  TEST_ITEM(NullConversionErrors)               \
+  TEST_ITEM(PointerErrors)                      \
+  TEST_ITEM(PointerConversions)                 \
+  TEST_ITEM(StructLayout)                       \
 
 RUN_TESTS(SemanticAnalyzer, TEST_ITEMS)

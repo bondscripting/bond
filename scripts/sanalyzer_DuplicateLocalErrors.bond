@@ -1,0 +1,20 @@
+void DuplicateParameters(int a, int a) {}
+
+void LocalRedeclaresParameter(int a)
+{
+	int a = 1;
+}
+
+void DuplicateLocals()
+{
+	int b = 1;
+	float b = 2.0f;
+}
+
+void DuplicateLocalsInNestedBlock(int c)
+{
+	{
+		bool c = true;
+		bool c = false;
+	}
+}

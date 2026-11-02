@@ -1,0 +1,40 @@
+struct TwoChars
+{
+	char a;
+	char b;
+};
+
+struct CharLongChar
+{
+	char c;
+	long l;
+	char d;
+};
+
+struct CharPointerChar
+{
+	char c;
+	int *p;
+	char d;
+};
+
+struct CharIntShort
+{
+	char c;
+	int i;
+	short s;
+};
+
+struct CharArrayInt
+{
+	char c;
+	char[5] s;
+	int i;
+};
+
+struct Nested
+{
+	char c;
+	CharLongChar n;
+	char d;
+};

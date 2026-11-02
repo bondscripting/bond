@@ -1,0 +1,25 @@
+struct Pair { int a; int b; };
+
+void TakesChar(char c) {}
+void TakesInt(int i) {}
+void TakesFloat(float f) {}
+
+void LossyArguments(int i, long l, double d)
+{
+	TakesChar(i);
+	TakesInt(l);
+	TakesFloat(d);
+	TakesChar(300);
+}
+
+char LossyReturnInt(int i) { return i; }
+int LossyReturnLong(long l) { return l; }
+float LossyReturnDouble(double d) { return d; }
+char LossyReturnConstant() { return 300; }
+
+void LossyInitializerLists(int i, long l)
+{
+	char[2] chars = { i, 300 };
+	int[1] ints = { l };
+	Pair pair = { l, 1 };
+}

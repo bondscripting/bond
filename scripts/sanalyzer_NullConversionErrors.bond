@@ -1,0 +1,9 @@
+void TakesInt(int i) {}
+
+void NullToNonPointer()
+{
+	int i = null;
+	i = null;
+	TakesInt(null);
+	bool b = null;
+}

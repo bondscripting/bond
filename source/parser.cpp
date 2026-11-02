@@ -182,10 +182,17 @@ void ParserCore::ParseIncludeDirectiveAndExternalDeclarationLists(
 	ParseNodeList<IncludeDirective> includeList;
 	ParseNodeList<ListParseNode> declarationList;
 
-	while (mStream.PeekIf(BLOCK_DELIMITERS_TYPESET) == nullptr)
+	while (mStream.PeekIf(Token::END) == nullptr)
 	{
+		// A '}' cannot start a declaration at file scope. Report it and keep parsing, rather than
+		// silently dropping the rest of the file. No recovery is needed, since the brace is consumed.
+		const Token *strayBrace = mStream.NextIf(Token::CBRACE);
+		if (strayBrace != nullptr)
+		{
+			PushError(CompilerError::UNEXPECTED_TOKEN, strayBrace, "declaration");
+		}
 		// Eat up superfluous semicolons.
-		if (mStream.NextIf(Token::SEMICOLON) == nullptr)
+		else if (mStream.NextIf(Token::SEMICOLON) == nullptr)
 		{
 			ListParseNode *externalDeclaration = ParseExternalDeclaration();
 			if (externalDeclaration != nullptr)
