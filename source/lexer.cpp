@@ -6,6 +6,7 @@
 #include "bond/systems/allocator.h"
 #include "private/memory.h"
 #include <cctype>
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -113,8 +114,8 @@ private:
 	void EvaluateToken(Token &token);
 	void EvaluateKeywordOrIdentifierToken(Token &token) const;
 	void EvaluateCharToken(Token &token);
-	void EvaluateIntegerToken(Token &token) const;
-	void EvaluateLongToken(Token &token) const;
+	void EvaluateIntegerToken(Token &token);
+	void EvaluateLongToken(Token &token);
 	void EvaluateFloatToken(Token &token) const;
 	void EvaluateDoubleToken(Token &token) const;
 	void EvaluateStringToken(Token &token);
@@ -1299,11 +1300,14 @@ void LexerCore::EvaluateFloatToken(Token &token) const
 }
 
 
-void LexerCore::EvaluateIntegerToken(Token &token) const
+void LexerCore::EvaluateIntegerToken(Token &token)
 {
 	const char *text = token.GetRawText();
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
-	const uint32_t value = uint32_t(strtoull(text, nullptr, base));
+	errno = 0;
+	const unsigned long long rawValue = strtoull(text, nullptr, base);
+	const bool outOfRange = (errno == ERANGE) || (rawValue > 0xFFFFFFFFull);
+	const uint32_t value = uint32_t(rawValue);
 
 	if (token.GetTokenType() == Token::CONST_INT)
 	{
@@ -1313,14 +1317,21 @@ void LexerCore::EvaluateIntegerToken(Token &token) const
 	{
 		token.SetUIntValue(value);
 	}
+
+	if (outOfRange)
+	{
+		PushError(CompilerError::INT_OUT_OF_RANGE, token);
+	}
 }
 
 
-void LexerCore::EvaluateLongToken(Token &token) const
+void LexerCore::EvaluateLongToken(Token &token)
 {
 	const char *text = token.GetRawText();
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
+	errno = 0;
 	const uint64_t value = uint64_t(strtoull(text, nullptr, base));
+	const bool outOfRange = (errno == ERANGE);
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
@@ -1329,6 +1340,11 @@ void LexerCore::EvaluateLongToken(Token &token) const
 	else
 	{
 		token.SetULongValue(value);
+	}
+
+	if (outOfRange)
+	{
+		PushError(CompilerError::INT_OUT_OF_RANGE, token);
 	}
 }
 

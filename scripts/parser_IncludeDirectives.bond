@@ -1,0 +1,4 @@
+include "math.bond";
+include "scripts/sanalyzer_IncludeUserHelper.bond";
+
+void IncludeDirectivesFunction() {}

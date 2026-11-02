@@ -4,6 +4,37 @@
 #include "bond/systems/math.h"
 #include <limits>
 
+#define ASSERT_TOKEN(token, expectedType, expectedText, expectedLine, expectedColumn) \
+  AssertToken(__FILE__, __LINE__, (token), (expectedType), (expectedText), (expectedLine), (expectedColumn))
+
+
+/// \brief Asserts a token's type, text and start position. A null expectedText skips the text check.
+static void AssertToken(
+	const char *assertFile,
+	int assertLine,
+	const Bond::Token *token,
+	Bond::Token::TokenType expectedType,
+	const char *expectedText,
+	int expectedLine,
+	int expectedColumn)
+{
+	TestFramework::Assert(token->GetTokenType() == expectedType, assertFile, assertLine,
+		"Expected %s, but was %s.", Bond::Token::GetTokenName(expectedType), token->GetTokenName());
+
+	if (expectedText != nullptr)
+	{
+		const Bond::StringView actual = token->GetText();
+		TestFramework::Assert(actual == Bond::StringView(expectedText), assertFile, assertLine,
+			"Expected text \"%s\", but was \"%.*s\".", expectedText, int(actual.size()), actual.data());
+	}
+
+	const Bond::StreamPos pos = token->GetStartPos();
+	TestFramework::Assert((int(pos.line) == expectedLine) && (int(pos.column) == expectedColumn),
+		assertFile, assertLine, "Expected %s at line %d column %d, but was at line %d column %d.",
+		token->GetTokenName(), expectedLine, expectedColumn, int(pos.line), int(pos.column));
+}
+
+
 DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuationTokens.bond")
 {
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
@@ -26,6 +57,7 @@ DEFINE_LEXER_TEST(KeywordAndPunctuationTokens, "scripts/lexer_KeywordAndPunctuat
 		Bond::Token::KEY_FLOAT,
 		Bond::Token::KEY_FOR,
 		Bond::Token::KEY_IF,
+		Bond::Token::KEY_INCLUDE,
 		Bond::Token::KEY_INT,
 		Bond::Token::KEY_LONG,
 		Bond::Token::KEY_NAMESPACE,
@@ -122,7 +154,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const int64_t EXPECTED_LONGS[] = { 98765, 07777, 0x7fffffff, 0xffffffff, Bond::BOND_LONG_MAX };
 	const int NUM_LONGS = sizeof(EXPECTED_LONGS) / sizeof(*EXPECTED_LONGS);
 
-	const uint64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX };
+	const uint64_t EXPECTED_ULONGS[] = { 98765u, 07777u, 0x7fffffffu, 0xffffffffu, Bond::BOND_ULONG_MAX, Bond::BOND_ULONG_MAX };
 	const int NUM_ULONGS = sizeof(EXPECTED_ULONGS) / sizeof(*EXPECTED_ULONGS);
 
 	const float EXPECTED_FLOATS[] = { 3.0f, 3.0f, 3.1f, 15.75f, 1.575E1f, 1575e-2f, 2.5e-3f, 25E-4f, .0075e+2f };
@@ -131,7 +163,7 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 	const double EXPECTED_DOUBLES[] = { 15.75, 1.575E1, 1575e-2, 2.5e-3, 25E-4, .0075e+2, 0.1, 3.141592653589793 };
 	const int NUM_DOUBLES = sizeof(EXPECTED_DOUBLES) / sizeof(*EXPECTED_DOUBLES);
 
-	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"' };
+	const char EXPECTED_CHARS[] = { 'z', '\t', '\'', '"', '\"', '\0', 'A', 'A', '\\' };
 	const int NUM_CHARS = sizeof(EXPECTED_CHARS) / sizeof(*EXPECTED_CHARS);
 
 	const Bond::StringView EXPECTED_STRINGS[] = {
@@ -139,7 +171,8 @@ DEFINE_LEXER_TEST(LiteralTokens, "scripts/lexer_LiteralTokens.bond")
 		Bond::StringView("\""),
 		Bond::StringView("\'"),
 		Bond::StringView("\\"),
-		Bond::StringView("\x7e \0 \176", 5)
+		Bond::StringView("\x7e \0 \176", 5),
+		Bond::StringView("\a\b\f\n\r\t\v\?\'\"\\")
 	};
 	const int NUM_STRINGS = sizeof(EXPECTED_STRINGS) / sizeof(*EXPECTED_STRINGS);
 
@@ -275,6 +308,12 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 		{Bond::CompilerError::MISSING_HEX_ESCAPE, Bond::Token::INVALID, 4},
 		{Bond::CompilerError::OCTAL_ESCAPE_RANGE, Bond::Token::INVALID, 5},
 		{Bond::CompilerError::HEX_ESCAPE_RANGE, Bond::Token::INVALID, 5},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -363,6 +402,62 @@ DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
 }
 
 
+DEFINE_LEXER_TEST(IdentifiersAndPositions, "scripts/lexer_IdentifiersAndPositions.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "foo", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "_bar", 1, 5);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "baz9", 1, 10);
+	// A keyword prefix must not be split off an identifier.
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "intx", 2, 3);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::KEY_INT, "int", 2, 8);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x_1", 2, 12);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// C-style comments don't nest: the first "*/" closes the comment, so "b */" is lexed as tokens.
+DEFINE_LEXER_BUFFER_TEST(Comments, "a /* /* */ b */ c")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "a", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "b", 1, 12);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::OP_STAR, "*", 1, 14);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::OP_DIV, "/", 1, 15);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "c", 1, 17);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// A line comment that ends at end of file, with no trailing newline.
+DEFINE_LEXER_BUFFER_TEST(LineCommentAtEof, "x // no newline")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_FORMAT(stream.GetLength() == 2, "Expected 2 tokens but found %d.", stream.GetLength());
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::END, nullptr, 1, 17);
+}
+
+
+// CRLF line endings: '\r' is whitespace and must not skew line or column tracking.
+DEFINE_LEXER_BUFFER_TEST(CrlfLineEndings, "a\r\n  b\r\n\r\nc")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "a", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "b", 2, 3);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "c", 4, 1);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
 #define TEST_ITEMS                       \
   TEST_ITEM(KeywordAndPunctuationTokens) \
   TEST_ITEM(LiteralTokens)               \
@@ -372,6 +467,10 @@ DEFINE_LEXER_TEST(EndOfStream2, "scripts/lexer_EndOfStream2.bond")
   TEST_ITEM(UnterminatedComment)         \
   TEST_ITEM(EndOfStream1)                \
   TEST_ITEM(EndOfStream2)                \
+  TEST_ITEM(IdentifiersAndPositions)     \
+  TEST_ITEM(Comments)                    \
+  TEST_ITEM(LineCommentAtEof)            \
+  TEST_ITEM(CrlfLineEndings)             \
 
 
 RUN_TESTS(Lexer, TEST_ITEMS)

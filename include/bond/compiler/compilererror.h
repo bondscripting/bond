@@ -21,6 +21,8 @@
     "Invalid hexadecimal integer constant '%c'.")                                          \
   BOND_COMPILER_ERROR(INVALID_INT,                                                         \
     "Invalid integer constant '%c'.")                                                      \
+  BOND_COMPILER_ERROR(INT_OUT_OF_RANGE,                                                    \
+    "Integer constant '%c' is out of range.")                                              \
   BOND_COMPILER_ERROR(INVALID_FLOAT,                                                       \
     "Invalid floating point constant '%c'.")                                               \
   BOND_COMPILER_ERROR(EMPTY_CHARACTER_CONSTANT,                                            \

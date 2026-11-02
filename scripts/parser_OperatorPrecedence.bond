@@ -1,0 +1,8 @@
+const int P1 = 1 + 2 * 3;
+const int P2 = 1 - 2 - 3;
+const int P3 = 1 << 2 + 3;
+const int P4 = 1 | 2 ^ 3 & 4;
+const bool P5 = 1 < 2 == true;
+const bool P6 = true || false && false;
+const int P7 = false ? 1 : true ? 2 : 3;
+const int P8 = -2 * 3;

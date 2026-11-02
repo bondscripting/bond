@@ -1,0 +1,65 @@
+struct Node
+{
+	int mValue;
+	int GetValue() const { return this->mValue; }
+	int GetValueDeref() const { return (*this).mValue; }
+};
+
+
+struct Holder
+{
+	Node *[4] mNodes;
+};
+
+
+int Casts(int i, int *p)
+{
+	long l = cast<long>(i);
+	const char *c = cast<const char *>(p);
+	return cast<int>(cast<float>(i));
+}
+
+
+uint Properties(Holder h)
+{
+	return sizeof<int> + sizeof<Node[4]> + sizeof h + alignof<long> + alignof h.mNodes;
+}
+
+
+int Ternaries(bool a, bool b, int c, int d, int e)
+{
+	int x = a ? c : b ? d : e;
+	int y = (a ? b : false) ? d : e;
+	return x + y;
+}
+
+
+int PostfixChain(Holder h, int i)
+{
+	return h.mNodes[i]->GetValue();
+}
+
+
+int UnaryChains(int i, bool b)
+{
+	int a = -~i;
+	bool c = !!b;
+	int d = *&i;
+	return a + d;
+}
+
+
+void CompoundAssignments(int a, int b)
+{
+	a = b;
+	a += b;
+	a -= b;
+	a *= b;
+	a /= b;
+	a %= b;
+	a <<= b;
+	a >>= b;
+	a &= b;
+	a |= b;
+	a ^= b;
+}

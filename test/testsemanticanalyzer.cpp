@@ -157,6 +157,59 @@ DEFINE_SEMANTICANALYZER_TEST(UsingStatements, "scripts/parser_UsingStatements.bo
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(Expressions, "scripts/parser_Expressions.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(OperatorPrecedence, "scripts/parser_OperatorPrecedence.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	const Bond::Symbol *globalScope = analyzer.GetSymbolTable().GetGlobalScope();
+
+	auto getValue = [globalScope](const char *name) -> const Bond::TypeAndValue *
+	{
+		const Bond::Symbol *symbol = globalScope->FindSymbol(name);
+		const Bond::TypeAndValue *tav = (symbol != nullptr) ? symbol->GetTypeAndValue() : nullptr;
+		return ((tav != nullptr) && tav->IsValueDefined()) ? tav : nullptr;
+	};
+
+	struct IntCase { const char *name; int32_t value; };
+	const IntCase INT_CASES[] =
+	{
+		{"P1", 7},
+		{"P2", -4},
+		{"P3", 32},
+		{"P4", 3},
+		{"P7", 2},
+		{"P8", -6},
+	};
+
+	for (const IntCase &c : INT_CASES)
+	{
+		const Bond::TypeAndValue *tav = getValue(c.name);
+		ASSERT_FORMAT(tav != nullptr, "Expected '%s' to have a constant value.", c.name);
+		ASSERT_FORMAT(tav->GetIntValue() == c.value, "Expected '%s' to be %" BOND_PRId32 ", but was %" BOND_PRId32 ".",
+			c.name, c.value, tav->GetIntValue());
+	}
+
+	const Bond::TypeAndValue *p5 = getValue("P5");
+	ASSERT_MESSAGE((p5 != nullptr) && p5->GetBoolValue(), "Expected 'P5' to be true.");
+
+	// (true || false) && false would be false.
+	const Bond::TypeAndValue *p6 = getValue("P6");
+	ASSERT_MESSAGE((p6 != nullptr) && p6->GetBoolValue(), "Expected 'P6' to be true.");
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IncludeDirectives, "scripts/parser_IncludeDirectives.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
 DEFINE_SEMANTICANALYZER_TEST(UsingErrors, "scripts/sanalyzer_UsingErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
@@ -616,6 +669,9 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeDuplicateErrors, "scripts/sanalyzer_IncludeD
   TEST_ITEM(FunctionDeclarations)               \
   TEST_ITEM(DeclarativeAndExpressionStatements) \
   TEST_ITEM(UsingStatements)                    \
+  TEST_ITEM(Expressions)                        \
+  TEST_ITEM(OperatorPrecedence)                 \
+  TEST_ITEM(IncludeDirectives)                  \
   TEST_ITEM(UsingErrors)                        \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \

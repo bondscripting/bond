@@ -17,3 +17,23 @@ bool TestReturn2(int a)
 {
 	return (a > 10);
 }
+
+void TestDoContinue(int a)
+{
+	do
+	{
+		if (a > 1)
+			continue;
+		++a;
+	}
+	while (a < 5);
+}
+
+void TestDoBreak(int a)
+{
+	do
+	{
+		break;
+	}
+	while (true);
+}

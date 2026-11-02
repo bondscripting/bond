@@ -1,5 +1,74 @@
 #include "framework/asserts.h"
 #include "framework/testparserframework.h"
+#include "bond/compiler/parsenodeutil.h"
+
+#define ASSERT_BINARY(expression, expectedOperator) \
+  AssertBinary(__FILE__, __LINE__, (expression), (expectedOperator))
+
+#define ASSERT_UNARY(expression, expectedOperator) \
+  AssertUnary(__FILE__, __LINE__, (expression), (expectedOperator))
+
+#define ASSERT_CONDITIONAL(expression) \
+  AssertConditional(__FILE__, __LINE__, (expression))
+
+
+/// \brief Returns the initializer expression of the first name declared by the given top-level
+/// declarative statement, or null if it doesn't have one.
+static const Bond::Expression *GetInitializerExpression(const Bond::ListParseNode *declaration)
+{
+	const Bond::DeclarativeStatement *statement = Bond::CastNode<Bond::DeclarativeStatement>(declaration);
+	if (statement == nullptr)
+	{
+		return nullptr;
+	}
+	const Bond::NamedInitializer *namedInitializer = statement->GetNamedInitializerList();
+	const Bond::Initializer *initializer = (namedInitializer != nullptr) ? namedInitializer->GetInitializer() : nullptr;
+	return (initializer != nullptr) ? initializer->GetExpression() : nullptr;
+}
+
+
+static const Bond::BinaryExpression *AssertBinary(
+	const char *assertFile,
+	int assertLine,
+	const Bond::Expression *expression,
+	Bond::Token::TokenType expectedOperator)
+{
+	const Bond::BinaryExpression *binary = Bond::CastNode<Bond::BinaryExpression>(expression);
+	TestFramework::Assert(binary != nullptr, assertFile, assertLine,
+		"Expected a binary %s expression.", Bond::Token::GetTokenName(expectedOperator));
+	const Bond::Token *op = binary->GetOperator();
+	TestFramework::Assert(op->GetTokenType() == expectedOperator, assertFile, assertLine,
+		"Expected binary operator %s, but was %s.", Bond::Token::GetTokenName(expectedOperator), op->GetTokenName());
+	return binary;
+}
+
+
+static const Bond::UnaryExpression *AssertUnary(
+	const char *assertFile,
+	int assertLine,
+	const Bond::Expression *expression,
+	Bond::Token::TokenType expectedOperator)
+{
+	const Bond::UnaryExpression *unary = Bond::CastNode<Bond::UnaryExpression>(expression);
+	TestFramework::Assert(unary != nullptr, assertFile, assertLine,
+		"Expected a unary %s expression.", Bond::Token::GetTokenName(expectedOperator));
+	const Bond::Token *op = unary->GetOperator();
+	TestFramework::Assert(op->GetTokenType() == expectedOperator, assertFile, assertLine,
+		"Expected unary operator %s, but was %s.", Bond::Token::GetTokenName(expectedOperator), op->GetTokenName());
+	return unary;
+}
+
+
+static const Bond::ConditionalExpression *AssertConditional(
+	const char *assertFile,
+	int assertLine,
+	const Bond::Expression *expression)
+{
+	const Bond::ConditionalExpression *conditional = Bond::CastNode<Bond::ConditionalExpression>(expression);
+	TestFramework::Assert(conditional != nullptr, assertFile, assertLine, "Expected a conditional expression.");
+	return conditional;
+}
+
 
 DEFINE_PARSER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
 {
@@ -155,7 +224,7 @@ DEFINE_PARSER_TEST(JumpStatements, "scripts/parser_JumpStatements.bond")
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mJumpStatement = 4;
+	expectedCount.mJumpStatement = 6;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 }
@@ -168,6 +237,142 @@ DEFINE_PARSER_TEST(UsingStatements, "scripts/parser_UsingStatements.bond")
 	Bond::ParseNodeCount expectedCount(-1);
 	expectedCount.mUsingDirective = 9;    // lines 38, 44, 50, 56, 75, 76, 95, 96, 101
 	expectedCount.mUsingDeclaration = 6;  // lines 63, 69, 81, 87, 88, 102
+
+	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
+}
+
+
+DEFINE_PARSER_TEST(Expressions, "scripts/parser_Expressions.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::ParseNodeCount expectedCount(-1);
+	expectedCount.mCastExpression = 4;
+	expectedCount.mPropertyofExpression = 5;
+	expectedCount.mConditionalExpression = 4;
+	expectedCount.mThisExpression = 2;
+	expectedCount.mMemberExpression = 5;
+	expectedCount.mArraySubscriptExpression = 1;
+	expectedCount.mFunctionCallExpression = 1;
+	expectedCount.mUnaryExpression = 7;
+
+	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
+}
+
+
+DEFINE_PARSER_TEST(OperatorPrecedence, "scripts/parser_OperatorPrecedence.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	const Bond::ListParseNode *declaration = translationUnit->GetExternalDeclarationList();
+
+	// P1 = 1 + 2 * 3
+	const Bond::BinaryExpression *binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_PLUS);
+	ASSERT_BINARY(binary->GetRhs(), Bond::Token::OP_STAR);
+	declaration = declaration->GetNextNode();
+
+	// P2 = 1 - 2 - 3 (left associative)
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_MINUS);
+	ASSERT_BINARY(binary->GetLhs(), Bond::Token::OP_MINUS);
+	declaration = declaration->GetNextNode();
+
+	// P3 = 1 << 2 + 3
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_LEFT);
+	ASSERT_BINARY(binary->GetRhs(), Bond::Token::OP_PLUS);
+	declaration = declaration->GetNextNode();
+
+	// P4 = 1 | 2 ^ 3 & 4
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_BIT_OR);
+	binary = ASSERT_BINARY(binary->GetRhs(), Bond::Token::OP_BIT_XOR);
+	ASSERT_BINARY(binary->GetRhs(), Bond::Token::OP_AMP);
+	declaration = declaration->GetNextNode();
+
+	// P5 = 1 < 2 == true
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_EQUAL);
+	ASSERT_BINARY(binary->GetLhs(), Bond::Token::OP_LT);
+	declaration = declaration->GetNextNode();
+
+	// P6 = true || false && false
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_OR);
+	ASSERT_BINARY(binary->GetRhs(), Bond::Token::OP_AND);
+	declaration = declaration->GetNextNode();
+
+	// P7 = false ? 1 : true ? 2 : 3 (right associative)
+	const Bond::ConditionalExpression *conditional = ASSERT_CONDITIONAL(GetInitializerExpression(declaration));
+	ASSERT_CONDITIONAL(conditional->GetFalseExpression());
+	declaration = declaration->GetNextNode();
+
+	// P8 = -2 * 3
+	binary = ASSERT_BINARY(GetInitializerExpression(declaration), Bond::Token::OP_STAR);
+	ASSERT_UNARY(binary->GetLhs(), Bond::Token::OP_MINUS);
+	declaration = declaration->GetNextNode();
+
+	ASSERT_MESSAGE(declaration == nullptr, "Expected no more declarations.");
+}
+
+
+DEFINE_PARSER_TEST(IncludeDirectives, "scripts/parser_IncludeDirectives.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::ParseNodeCount expectedCount(-1);
+	expectedCount.mIncludeDirective = 2;
+	expectedCount.mFunctionDefinition = 1;
+
+	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
+
+	const char *const EXPECTED_PATHS[] = { "math.bond", "scripts/sanalyzer_IncludeUserHelper.bond" };
+	const int NUM_PATHS = sizeof(EXPECTED_PATHS) / sizeof(*EXPECTED_PATHS);
+
+	const Bond::IncludeDirective *include = translationUnit->GetIncludeDirectiveList();
+	for (int i = 0; i < NUM_PATHS; ++i)
+	{
+		ASSERT_FORMAT(include != nullptr, "Expected include directive for \"%s\".", EXPECTED_PATHS[i]);
+		const Bond::StringView actual = include->GetIncludePath()->GetStringValue();
+		ASSERT_FORMAT(actual == Bond::StringView(EXPECTED_PATHS[i]), "Expected include path \"%s\", but was \"%.*s\".",
+			EXPECTED_PATHS[i], int(actual.size()), actual.data());
+		include = Bond::CastNode<Bond::IncludeDirective>(include->GetNextNode());
+	}
+	ASSERT_MESSAGE(include == nullptr, "Expected no more include directives.");
+}
+
+
+DEFINE_PARSER_TEST(UnclosedFunctionErrors, "scripts/parser_UnclosedFunctionErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::END, 4},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	// The partially parsed function survives.
+	Bond::ParseNodeCount expectedCount(-1);
+	expectedCount.mFunctionDefinition = 1;
+	expectedCount.mCompoundStatement = 1;
+	expectedCount.mDeclarativeStatement = 1;
+
+	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
+}
+
+
+DEFINE_PARSER_TEST(StrayBraceErrors, "scripts/parser_StrayBraceErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNEXPECTED_TOKEN, Bond::Token::CBRACE, 2},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	// Documents current behaviour: parsing of file-scope declarations stops at the stray '}',
+	// so G is silently dropped.
+	Bond::ParseNodeCount expectedCount(-1);
+	expectedCount.mFunctionDefinition = 1;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 }
@@ -287,9 +492,14 @@ DEFINE_PARSER_TEST(MiscErrors, "scripts/parser_MiscErrors.bond")
   TEST_ITEM(SwitchStatements)                   \
   TEST_ITEM(JumpStatements)                     \
   TEST_ITEM(UsingStatements)                    \
+  TEST_ITEM(Expressions)                        \
+  TEST_ITEM(OperatorPrecedence)                 \
+  TEST_ITEM(IncludeDirectives)                  \
   TEST_ITEM(EnumErrors)                         \
   TEST_ITEM(StructErrors)                       \
   TEST_ITEM(MiscErrors)                         \
+  TEST_ITEM(UnclosedFunctionErrors)             \
+  TEST_ITEM(StrayBraceErrors)                   \
 
 
 RUN_TESTS(Parser, TEST_ITEMS)
