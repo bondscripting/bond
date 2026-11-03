@@ -2,6 +2,7 @@
 #include "framework/testsemanticanalyzerframework.h"
 #include "framework/testparserframework.h"
 #include "bond/compiler/parsenodeutil.h"
+#include "bond/io/memoryoutputstream.h"
 #include <cstring>
 
 DEFINE_SEMANTICANALYZER_TEST(Namespaces, "scripts/parser_Namespaces.bond")
@@ -699,11 +700,54 @@ DEFINE_SEMANTICANALYZER_TEST(IncludeCycle, "scripts/sanalyzer_IncludeCycleA.bond
 }
 
 
-DEFINE_TEST(IncludeMissing)
+DEFINE_SEMANTICANALYZER_TEST(IncludeMissing, "scripts/sanalyzer_IncludeMissing.bond")
 {
-	ASSERT_ANALYSIS_THROWS(
-		"scripts/sanalyzer_IncludeMissing.bond",
-		"Failed to open file 'scripts/does_not_exist.bond'");
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INCLUDE_FILE_NOT_FOUND, Bond::Token::CONST_STRING, 1},
+	};
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_MESSAGE(
+		strcmp(errorBuffer.GetError(0).GetContext()->GetFileName(), "scripts/sanalyzer_IncludeMissing.bond") == 0,
+		"Expected the error to be reported in the including file.");
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(InputFileMissing, "scripts/./does_not_exist.bond")
+{
+	ASSERT_FORMAT(errorBuffer.GetNumErrors() == 1, "Expected 1 error, but got %d.", int(errorBuffer.GetNumErrors()));
+	const Bond::CompilerError &error = errorBuffer.GetError(0);
+	ASSERT_MESSAGE(error.GetType() == Bond::CompilerError::INPUT_FILE_NOT_FOUND, "Expected INPUT_FILE_NOT_FOUND.");
+	ASSERT_MESSAGE(error.GetContext() == nullptr, "Expected no context for a missing input file.");
+
+	char buffer[256];
+	Bond::MemoryOutputStream stream(buffer, Bond::Stream::pos_t(sizeof(buffer)));
+	error.Print(stream);
+	const Bond::StringView actual(buffer, size_t(stream.GetPosition()));
+	const Bond::StringView expected("Failed to open input file 'scripts/does_not_exist.bond'.");
+	ASSERT_FORMAT(actual == expected, "Expected message \"%.*s\", but was \"%.*s\".",
+		int(expected.size()), expected.data(), int(actual.size()), actual.data());
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IncludeRelative, "scripts/sanalyzer_IncludeRelative.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(IncludeSpellings, "scripts/sanalyzer_IncludeSpellings.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+}
+
+
+DEFINE_SEMANTICANALYZER_MULTI_TEST(InputFileSpellings, "scripts/sanalyzer_IncludeUser.bond", "./scripts/sanalyzer_IncludeUserHelper.bond")
+{
+	// The explicit input file is also included by the first file, with a different spelling.
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 }
 
 
@@ -939,6 +983,10 @@ DEFINE_SEMANTICANALYZER_TEST(StructLayout, "scripts/sanalyzer_StructLayout.bond"
   TEST_ITEM(IncludeUserFile)                    \
   TEST_ITEM(IncludeCycle)                       \
   TEST_ITEM(IncludeMissing)                     \
+  TEST_ITEM(InputFileMissing)                   \
+  TEST_ITEM(IncludeRelative)                    \
+  TEST_ITEM(IncludeSpellings)                   \
+  TEST_ITEM(InputFileSpellings)                 \
   TEST_ITEM(MultiFileSymbols)                   \
   TEST_ITEM(MultiFileDuplicateErrors)           \
   TEST_ITEM(IncludeDuplicateErrors)             \

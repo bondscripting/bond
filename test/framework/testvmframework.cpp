@@ -123,8 +123,8 @@ size_t CompileScriptsToCbo(
 		Bond::Lexer lexer(lexerAllocator, errorBuffer);
 		Bond::Parser parser(parserAllocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
-		Bond::StdioStreamFactory streamFactory(streamFactoryAllocator);
-		Bond::MemoryStreamFactory stdLibFactory(streamFactoryAllocator, Bond::INCLUDE_FILE_INDEX, &streamFactory);
+		Bond::StdioStreamFactory streamFactory(streamFactoryAllocator, nullptr, nullptr, false);
+		Bond::MemoryStreamFactory stdLibFactory(streamFactoryAllocator, Bond::INCLUDE_FILE_INDEX, &streamFactory, false);
 		Bond::FrontEnd frontEnd(frontEndAllocator, tokenStore, lexer, parser, analyzer, stdLibFactory);
 
 		for (size_t i = 0; i < numScripts; ++i)

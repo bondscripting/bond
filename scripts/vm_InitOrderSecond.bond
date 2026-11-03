@@ -1,0 +1,9 @@
+include "vm_InitOrderFirst.bond";
+
+// Reads INIT_ORDER_FIRST, which is zero if its initializer has not run yet.
+const int[1] INIT_ORDER_SECOND = { INIT_ORDER_FIRST[0] + 1 };
+
+int GetInitOrderSecond()
+{
+	return INIT_ORDER_SECOND[0];
+}

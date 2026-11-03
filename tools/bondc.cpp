@@ -33,8 +33,10 @@ int main(int argc, const char *argv[])
 		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer);
 		StreamFactoryList factoryList((StreamFactoryList::allocator_type(&allocator)));
-		factoryList.emplace_back(allocator);
-		Bond::MemoryStreamFactory stdIncludeFactory(allocator, Bond::INCLUDE_FILE_INDEX, &factoryList.back());
+		// The factories return null for missing files, so the FrontEnd can report them as compiler
+		// errors with the location of the include directive.
+		factoryList.emplace_back(allocator, nullptr, nullptr, false);
+		Bond::MemoryStreamFactory stdIncludeFactory(allocator, Bond::INCLUDE_FILE_INDEX, &factoryList.back(), false);
 		Bond::FrontEnd frontEnd(allocator, tokenStore, lexer, parser, analyzer, stdIncludeFactory);
 		const char *cboFileName = nullptr;
 		const char *cppFileName = nullptr;
@@ -156,7 +158,7 @@ int main(int argc, const char *argv[])
 				if ((i + 1 < argc) && (argv[i + 1][0] != '-'))
 				{
 					auto &prev = factoryList.back();
-					factoryList.emplace_back(allocator, argv[++i]);
+					factoryList.emplace_back(allocator, argv[++i], nullptr, false);
 					prev.SetDelegateFactory(&factoryList.back());
 				}
 				else

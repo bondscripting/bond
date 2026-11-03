@@ -7,6 +7,10 @@
 #define BOND_COMPILER_ERROR_LIST                                                           \
   BOND_COMPILER_ERROR(NO_ERROR,                                                            \
     "")                                                                                    \
+  BOND_COMPILER_ERROR(INPUT_FILE_NOT_FOUND,                                                \
+    "Failed to open input file '%s'.")                                                     \
+  BOND_COMPILER_ERROR(INCLUDE_FILE_NOT_FOUND,                                              \
+    "Failed to open include file %c.")                                                     \
   BOND_COMPILER_ERROR(INVALID_ESCAPE,                                                      \
     "Invalid escape sequence in token %c.")                                                \
   BOND_COMPILER_ERROR(MISSING_HEX_ESCAPE,                                                  \

@@ -1,0 +1,15 @@
+include "scripts/sanalyzer_IncludeUserHelper.bond";
+include "./scripts/sanalyzer_IncludeUserHelper.bond";
+include "scripts//sanalyzer_IncludeUserHelper.bond";
+include "scripts/../scripts/sanalyzer_IncludeUserHelper.bond";
+include "scripts\\sanalyzer_IncludeUserHelper.bond";
+include "sanalyzer_IncludeUserHelper.bond";
+include "./sanalyzer_IncludeUserHelper.bond";
+
+int CallIncludedWithSpellings()
+{
+	IncludeUserPoint point;
+	point.x = 5;
+	point.y = 6;
+	return IncludeUserSum(point);
+}

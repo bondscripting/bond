@@ -39,12 +39,6 @@
     Bond::SemanticAnalyzer &analyzer)                                         \
 
 
-// Thin pass-through macro that captures __FILE__/__LINE__ and forwards to
-// TestFramework::AssertAnalysisThrows.
-#define ASSERT_ANALYSIS_THROWS(scriptName, expectedMessagePrefix)             \
-  TestFramework::AssertAnalysisThrows(__FILE__, __LINE__, (scriptName), (expectedMessagePrefix))
-
-
 namespace TestFramework
 {
 
@@ -65,15 +59,6 @@ void RunSemanticAnalyzerTest(
 	const char *const *scriptNames,
 	size_t numScripts,
 	SemanticAnalyzerValidationFunction *validationFunction);
-
-
-/// \brief Analyzes scriptName and asserts that it throws a Bond::Exception whose message starts
-/// with expectedPrefix. Throws an AssertionFailure if it does not, or if memory leaks.
-void AssertAnalysisThrows(
-	const char *assertFile,
-	int assertLine,
-	const char *scriptName,
-	const char *expectedPrefix);
 
 }
 

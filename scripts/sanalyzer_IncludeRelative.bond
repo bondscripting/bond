@@ -1,0 +1,10 @@
+include "sanalyzer_IncludeUserHelper.bond";
+include "sanalyzer_IncludeUser.bond";
+
+int CallRelativeInclude()
+{
+	IncludeUserPoint point;
+	point.x = 3;
+	point.y = 4;
+	return IncludeUserSum(point) + CallIncludedFunction();
+}

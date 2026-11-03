@@ -273,6 +273,9 @@
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\io\path.h">
+      <Filter>Header Files\include\bond\io</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\io\inputstream.h">
       <Filter>Header Files\include\bond\io</Filter>
     </ClInclude>
@@ -462,6 +465,9 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parser.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\path.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\parsetreeprinter.cpp">

@@ -1,0 +1,27 @@
+int Seven()
+{
+	return 7;
+}
+
+// Initializers run in declaration order, so INIT_ORDER_EARLY reads INIT_ORDER_LATE before its
+// initializer has run, and sees zero.
+const int[1] INIT_ORDER_EARLY = { INIT_ORDER_LATE[0] + 1 };
+const int[1] INIT_ORDER_LATE = { Seven() };
+const int[1] INIT_ORDER_AFTER = { INIT_ORDER_LATE[0] + 1 };
+
+int GetInitOrderEarly()
+{
+	return INIT_ORDER_EARLY[0];
+}
+
+
+int GetInitOrderLate()
+{
+	return INIT_ORDER_LATE[0];
+}
+
+
+int GetInitOrderAfter()
+{
+	return INIT_ORDER_AFTER[0];
+}

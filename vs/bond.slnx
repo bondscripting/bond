@@ -42,6 +42,10 @@
     <BuildDependency Project="framework/framework.vcxproj" />
     <BuildDependency Project="bond/bond.vcxproj" />
   </Project>
+  <Project Path="testutil/testutil.vcxproj" Id="0b87ea4d-ea6d-4773-be7f-3e7269ce8814">
+    <BuildDependency Project="framework/framework.vcxproj" />
+    <BuildDependency Project="bond/bond.vcxproj" />
+  </Project>
   <Project Path="testvm/testvm.vcxproj" Id="cecb9239-b362-4e11-a5a0-cc88e3f6b53c">
     <BuildDependency Project="framework/framework.vcxproj" />
     <BuildDependency Project="bond/bond.vcxproj" />

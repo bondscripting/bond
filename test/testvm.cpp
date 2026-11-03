@@ -1485,6 +1485,84 @@ DEFINE_TEST(IncludeOnlyDoesNotLink)
 }
 
 
+// Static initializers run in declaration order within a file. A global read before its initializer
+// has run is zero.
+DEFINE_VM_TEST(InitOrderInFile, "scripts/vm_InitOrderInFile.bond")
+{
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderEarly", int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderLate", int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderAfter", int32_t(8));
+}
+
+
+// Static initializers run in input file order within a CBO.
+DEFINE_VM_MULTI_TEST(InitOrderOneCbo, "scripts/vm_InitOrderFirst.bond", "scripts/vm_InitOrderSecond.bond")
+{
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderFirst", int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderSecond", int32_t(6));
+}
+
+
+DEFINE_VM_MULTI_TEST(InitOrderOneCboReversed, "scripts/vm_InitOrderSecond.bond", "scripts/vm_InitOrderFirst.bond")
+{
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderFirst", int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderSecond", int32_t(1));
+}
+
+
+namespace
+{
+// Static initializers run in CBO load order across CBOs.
+void ValidateInitOrderTwoCbos(const char *assertFile, int assertLine, bool firstLoadedFirst, int32_t expectedSecond)
+{
+	using namespace Bond;
+	using namespace TestFramework;
+
+	uint8_t cboBufferFirst[MAX_CBO_SIZE];
+	uint8_t cboBufferSecond[MAX_CBO_SIZE];
+	const size_t cboSizeFirst = CompileScriptToCbo(assertFile, assertLine, "scripts/vm_InitOrderFirst.bond", cboBufferFirst, MAX_CBO_SIZE);
+	const size_t cboSizeSecond = CompileScriptToCbo(assertFile, assertLine, "scripts/vm_InitOrderSecond.bond", cboBufferSecond, MAX_CBO_SIZE);
+
+	DefaultAllocator cboLoaderAllocator;
+	DefaultAllocator vmAllocator;
+	AllocationLeakGuard<DefaultAllocator> cboLoaderLeakGuard(cboLoaderAllocator, "CBO loader", assertFile, assertLine);
+	AllocationLeakGuard<DefaultAllocator> vmLeakGuard(vmAllocator, "VM", assertFile, assertLine);
+
+	try
+	{
+		CboLoader cboLoader(cboLoaderAllocator);
+		LoadAllLibs(cboLoader);
+		if (firstLoadedFirst)
+		{
+			cboLoader.AddCboFile(cboBufferFirst, cboSizeFirst);
+			cboLoader.AddCboFile(cboBufferSecond, cboSizeSecond);
+		}
+		else
+		{
+			cboLoader.AddCboFile(cboBufferSecond, cboSizeSecond);
+			cboLoader.AddCboFile(cboBufferFirst, cboSizeFirst);
+		}
+		CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
+		VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024);
+		codeSegmentHandle.get()->CallStaticInitializers(vm);
+		VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderFirst", int32_t(5));
+		VALIDATE_FUNCTION_CALL(int32_t, "GetInitOrderSecond", expectedSecond);
+	}
+	catch (const Exception &e)
+	{
+		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
+	}
+}
+}
+
+
+DEFINE_TEST(InitOrderTwoCbos)
+{
+	ValidateInitOrderTwoCbos(__FILE__, __LINE__, true, int32_t(6));
+	ValidateInitOrderTwoCbos(__FILE__, __LINE__, false, int32_t(1));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1506,5 +1584,9 @@ DEFINE_TEST(IncludeOnlyDoesNotLink)
   TEST_ITEM(MultiFileOneCbo)                    \
   TEST_ITEM(MultiFileTwoCbos)                   \
   TEST_ITEM(IncludeOnlyDoesNotLink)             \
+  TEST_ITEM(InitOrderInFile)                    \
+  TEST_ITEM(InitOrderOneCbo)                    \
+  TEST_ITEM(InitOrderOneCboReversed)            \
+  TEST_ITEM(InitOrderTwoCbos)                   \
 
 RUN_TESTS(VM, TEST_ITEMS)

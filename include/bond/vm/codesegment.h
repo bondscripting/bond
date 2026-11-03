@@ -209,6 +209,10 @@ public:
 	size_t GetDataCount() const { return mDataCount; }
 
 	/// \brief Calls all static initializer functions in this code segment.
+	///
+	/// Each CBO contributes at most one static initializer. They are called in the order the CBOs
+	/// were added to the CboLoader. Global data is zero-filled when the code segment is loaded, so
+	/// a global read before its initializer has run is zero.
 	/// \param vm VM instance used to invoke initializer functions.
 	void CallStaticInitializers(VM &vm) const;
 

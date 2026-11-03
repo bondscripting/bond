@@ -1,0 +1,12 @@
+int Five()
+{
+	return 5;
+}
+
+// The function call makes this initializer run in the static initializer.
+const int[1] INIT_ORDER_FIRST = { Five() };
+
+int GetInitOrderFirst()
+{
+	return INIT_ORDER_FIRST[0];
+}

@@ -79,6 +79,9 @@ public:
 	/// \brief Returns the buffer where error messages are pushed.
 	const CompilerErrorBuffer &GetErrorBuffer() const { return mErrorBuffer; }
 
+	/// \brief Returns the buffer where error messages are pushed.
+	CompilerErrorBuffer &GetErrorBuffer() { return mErrorBuffer; }
+
 private:
 
 	Allocator &mAllocator;

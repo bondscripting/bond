@@ -52,6 +52,7 @@
     <ClInclude Include="..\..\include\bond\io\memorystreamfactory.h" />
     <ClInclude Include="..\..\include\bond\io\outputstream.h" />
     <ClInclude Include="..\..\include\bond\io\outputstreamadaptor.h" />
+    <ClInclude Include="..\..\include\bond\io\path.h" />
     <ClInclude Include="..\..\include\bond\io\stdiofilehandle.h" />
     <ClInclude Include="..\..\include\bond\io\stdioinputstream.h" />
     <ClInclude Include="..\..\include\bond\io\stdiooutputstream.h" />
@@ -161,6 +162,7 @@
     <ClCompile Include="..\..\source\parsenodetraverser.cpp" />
     <ClCompile Include="..\..\source\parsenodeutil.cpp" />
     <ClCompile Include="..\..\source\parser.cpp" />
+    <ClCompile Include="..\..\source\path.cpp" />
     <ClCompile Include="..\..\source\parsetreeprinter.cpp" />
     <ClCompile Include="..\..\source\prettyprinter.cpp" />
     <ClCompile Include="..\..\source\qualifiedname.cpp" />
