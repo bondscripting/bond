@@ -383,3 +383,159 @@ bool ReturnNotLt(double a, double b)
 {
 	return !(a < b);
 }
+
+int DoWhile(int a)
+{
+	int n = 0;
+	do
+	{
+		++n;
+	}
+	while (n < a);
+	return n;
+}
+
+// A continue must jump to the condition. If it jumped to the top of the body instead, the loop
+// would not stop until n reached 10.
+int DoWhileContinue(int a)
+{
+	int n = 0;
+	int m = 0;
+	do
+	{
+		++n;
+		if (n < 10)
+		{
+			continue;
+		}
+		++m;
+	}
+	while (n < a);
+	return n + (m * 100);
+}
+
+// A continue must run the increment expression.
+int ForContinue(int a)
+{
+	int n = 0;
+	for (int i = 0; i < a; ++i)
+	{
+		++n;
+		if ((i % 2) == 0)
+		{
+			continue;
+		}
+		n += 100;
+	}
+	return n;
+}
+
+// Every switch section must end with a jump, so the only fall-through is several labels sharing
+// one section.
+int SwitchSharedSection(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 1:
+		case 2:
+			b = 5;
+			break;
+		case 3:
+		default:
+		case 5:
+			b = 6;
+			break;
+		case 6:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
+int LookupSwitchNegative(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case -100:
+			b = 5;
+			break;
+		case -1:
+			b = 6;
+			break;
+		case 50:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
+int TableSwitchNegative(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case -3:
+			b = 5;
+			break;
+		case -2:
+			b = 6;
+			break;
+		case -1:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
+int LookupSwitchExtremes(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case -2147483647 - 1:
+			b = 5;
+			break;
+		case 2147483647:
+			b = 6;
+			break;
+	}
+	return b;
+}
+
+int TableSwitchNearMax(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case 2147483645:
+			b = 5;
+			break;
+		case 2147483646:
+			b = 6;
+			break;
+		case 2147483647:
+			b = 7;
+			break;
+	}
+	return b;
+}
+
+int TableSwitchNearMin(int a)
+{
+	int b = 4;
+	switch (a)
+	{
+		case -2147483647 - 1:
+			b = 5;
+			break;
+		case -2147483647:
+			b = 6;
+			break;
+		case -2147483646:
+			b = 7;
+			break;
+	}
+	return b;
+}

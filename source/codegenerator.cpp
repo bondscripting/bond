@@ -14,6 +14,7 @@
 #include "bond/tools/cboutil.h"
 #include "bond/types/opcodes.h"
 #include "bond/version.h"
+#include <cmath>
 
 namespace Bond
 {
@@ -881,7 +882,9 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	const size_t loopEndLabel = CreateLabel();
 	SetLabelValue(loopStartLabel, GetByteCode().size());
 
-	auto continueElement = mContinueLabel.Push(loopStartLabel);
+	// In a do loop, continue jumps to the condition, which follows the body.
+	const size_t continueLabel = whileStatement->IsDoLoop() ? CreateLabel() : loopStartLabel;
+	auto continueElement = mContinueLabel.Push(continueLabel);
 	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
 	const Expression *condition = whileStatement->GetCondition();
@@ -890,6 +893,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	if (whileStatement->IsDoLoop())
 	{
 		Traverse(whileStatement->GetBody());
+		SetLabelValue(continueLabel, GetByteCode().size());
 
 		auto conditionRef = mValueRef.Push();
 		const bool negated = TraverseCollapseNotOperators(condition);
@@ -2332,7 +2336,7 @@ void GeneratorCore::EmitPushConstantFloat(float value)
 	{
 		EmitOpCode(OPCODE_CONSTF_NH);
 	}
-	else if (value == 0.0f)
+	else if ((value == 0.0f) && !std::signbit(value))
 	{
 		EmitOpCode(OPCODE_CONSTF_0);
 	}
@@ -2370,7 +2374,7 @@ void GeneratorCore::EmitPushConstantDouble(double value)
 	{
 		EmitOpCode(OPCODE_CONSTD_NH);
 	}
-	else if (value == 0.0)
+	else if ((value == 0.0) && !std::signbit(value))
 	{
 		EmitOpCode(OPCODE_CONSTD_0);
 	}

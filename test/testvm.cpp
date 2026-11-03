@@ -41,6 +41,30 @@ struct Vector3
 };
 
 
+struct Large
+{
+	int32_t a;
+	int32_t b;
+	int32_t c;
+	int32_t d;
+	int32_t e;
+	int32_t f;
+};
+
+
+struct alignas(16) OverAligned
+{
+	int32_t x;
+	uint8_t pad0[12];
+	uint8_t pad[16];
+	int32_t y;
+	uint8_t pad1[12];
+};
+
+static_assert(sizeof(OverAligned) == 48, "OverAligned must match the Bond layout.");
+static_assert(alignof(OverAligned) == 16, "OverAligned must match the Bond layout.");
+
+
 DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {
 	using namespace Bond;
@@ -69,6 +93,7 @@ DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 	VALIDATE_FUNCTION_CALL(float, "Constf_n2", -2.0f);
 	VALIDATE_FUNCTION_CALL(float, "Constf_n1", -1.0f);
 	VALIDATE_FUNCTION_CALL(float, "Constf_nh", -0.5f);
+	VALIDATE_FUNCTION_CALL(float, "Constf_n0", -0.0f);
 	VALIDATE_FUNCTION_CALL(float, "Constf_0", 0.0f);
 	VALIDATE_FUNCTION_CALL(float, "Constf_h",  0.5f);
 	VALIDATE_FUNCTION_CALL(float, "Constf_1", 1.0f);
@@ -76,6 +101,7 @@ DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 	VALIDATE_FUNCTION_CALL(double, "Constd_n2", -2.0);
 	VALIDATE_FUNCTION_CALL(double, "Constd_n1", -1.0);
 	VALIDATE_FUNCTION_CALL(double, "Constd_nh", -0.5);
+	VALIDATE_FUNCTION_CALL(double, "Constd_n0", -0.0);
 	VALIDATE_FUNCTION_CALL(double, "Constd_0", 0.0);
 	VALIDATE_FUNCTION_CALL(double, "Constd_h",  0.5);
 	VALIDATE_FUNCTION_CALL(double, "Constd_1", 1.0);
@@ -296,6 +322,10 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(float, "Addf", 1e20f + 0.5e20f, 1e20f, 0.5e20f);
 	VALIDATE_FUNCTION_CALL(double, "Addd", -65.0 + 13.0, -65.0, 13.0);
 	VALIDATE_FUNCTION_CALL(double, "Addd", 1e40 + 0.5e40, 1e40, 0.5e40);
+	VALIDATE_FUNCTION_CALL(float, "Addf", -0.0f, -0.0f, -0.0f);
+	VALIDATE_FUNCTION_CALL(float, "Addf", 0.0f, -0.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(double, "Addd", -0.0, -0.0, -0.0);
+	VALIDATE_FUNCTION_CALL(double, "Addd", 0.0, -0.0, 0.0);
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Subi", int32_t(-43) - int32_t(12), int32_t(-43), int32_t(12));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Subi", uint32_t(43) - uint32_t(12), uint32_t(43), uint32_t(12));
@@ -305,6 +335,10 @@ DEFINE_VM_TEST(BinaryOperators, "scripts/vm_BinaryOperators.bond")
 	VALIDATE_FUNCTION_CALL(float, "Subf", 1e20f - 0.5e20f, 1e20f, 0.5e20f);
 	VALIDATE_FUNCTION_CALL(double, "Subd", -43.0 - 12.0, -43.0, 12.0);
 	VALIDATE_FUNCTION_CALL(double, "Subd", 1e40 - 0.5e40, 1e40, 0.5e40);
+	VALIDATE_FUNCTION_CALL(float, "Subf", 0.0f, 0.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(float, "Subf", -0.0f, -0.0f, 0.0f);
+	VALIDATE_FUNCTION_CALL(double, "Subd", 0.0, 0.0, 0.0);
+	VALIDATE_FUNCTION_CALL(double, "Subd", -0.0, -0.0, 0.0);
 
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(0), int32_t(-58), int32_t(0));
 	VALIDATE_FUNCTION_CALL(int32_t, "Muli", int32_t(-58) * int32_t(17), int32_t(-58), int32_t(17));
@@ -884,6 +918,64 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 
 	VALIDATE_FUNCTION_CALL(int32_t, "ReturnNotLt", int32_t(0), 1.0, 2.0);
 	VALIDATE_FUNCTION_CALL(int32_t, "ReturnNotLt", int32_t(1), NAN_D, 2.0);
+
+	// Loops whose condition is false on entry.
+	VALIDATE_FUNCTION_CALL(int32_t, "While", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "While", int32_t(0), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "For", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "For", int32_t(0), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhile", int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhile", int32_t(1), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhile", int32_t(5), int32_t(5));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileContinue", int32_t(3), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileContinue", int32_t(312), int32_t(12));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForContinue", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForContinue", int32_t(205), int32_t(5));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(6), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(5), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(5), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(6), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(6), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(6), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(7), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchSharedSection", int32_t(6), int32_t(7));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(4), int32_t(-101));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(5), int32_t(-100));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(4), int32_t(-99));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(4), int32_t(-2));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(6), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(4), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(7), int32_t(50));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchNegative", int32_t(4), int32_t(51));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNegative", int32_t(4), int32_t(-4));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNegative", int32_t(5), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNegative", int32_t(6), int32_t(-2));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNegative", int32_t(7), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNegative", int32_t(4), int32_t(0));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchExtremes", int32_t(5), BOND_INT_MIN);
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchExtremes", int32_t(4), BOND_INT_MIN + 1);
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchExtremes", int32_t(4), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchExtremes", int32_t(4), BOND_INT_MAX - 1);
+	VALIDATE_FUNCTION_CALL(int32_t, "LookupSwitchExtremes", int32_t(6), BOND_INT_MAX);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(4), BOND_INT_MIN);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(4), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(4), BOND_INT_MAX - 3);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(5), BOND_INT_MAX - 2);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(6), BOND_INT_MAX - 1);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMax", int32_t(7), BOND_INT_MAX);
+
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(5), BOND_INT_MIN);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(6), BOND_INT_MIN + 1);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(7), BOND_INT_MIN + 2);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(4), BOND_INT_MIN + 3);
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(4), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNearMin", int32_t(4), BOND_INT_MAX);
 }
 
 
@@ -1270,6 +1362,48 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	ASSERT_FORMAT(v3c.x == 41, "Expected 41, but was %" BOND_PRId32 ".", v3c.x);
 	ASSERT_FORMAT(v3c.y == 42, "Expected 42, but was %" BOND_PRId32 ".", v3c.y);
 	ASSERT_FORMAT(v3c.z == 43, "Expected 43, but was %" BOND_PRId32 ".", v3c.z);
+
+	// Arrays of structs passed by pointer and indexed. Elements 0 and 5 are guards.
+	Vector3 v3Array[6];
+	for (int32_t i = 0; i < 6; ++i)
+	{
+		v3Array[i].x = i;
+		v3Array[i].y = 10 * i;
+		v3Array[i].z = 100 * i;
+	}
+	VALIDATE_FUNCTION_CALL(int32_t, "SumVector3Array", int32_t(111 * (1 + 2 + 3 + 4)), &v3Array[1], uint32_t(4));
+	vm.CallVoidFunction("ScaleVector3Array", &v3Array[1], uint32_t(4), int32_t(-3));
+	for (int32_t i = 0; i < 6; ++i)
+	{
+		const int32_t scale = ((i == 0) || (i == 5)) ? 1 : -3;
+		ASSERT_FORMAT((v3Array[i].x == (scale * i)) && (v3Array[i].y == (scale * 10 * i)) && (v3Array[i].z == (scale * 100 * i)),
+			"Element %" BOND_PRId32 ": expected (%" BOND_PRId32 ", %" BOND_PRId32 ", %" BOND_PRId32 "), but was (%" BOND_PRId32 ", %" BOND_PRId32 ", %" BOND_PRId32 ").",
+			i, scale * i, scale * 10 * i, scale * 100 * i, v3Array[i].x, v3Array[i].y, v3Array[i].z);
+	}
+
+	// Struct returns larger than 16 bytes.
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofLarge", uint32_t(sizeof(Large)));
+	Large large;
+	memset(&large, 0, sizeof(large));
+	vm.CallFunction("MakeLarge", &large, int32_t(70));
+	ASSERT_MESSAGE((large.a == 70) && (large.b == 71) && (large.c == 72) && (large.d == 73) && (large.e == 74) && (large.f == 75),
+		"MakeLarge() returned incorrect fields.");
+	VALIDATE_FUNCTION_CALL(int32_t, "MakeLargeAndGetE", int32_t(84), int32_t(80));
+
+	const Large largeIn = {-1, -2, -3, -4, -5, -6};
+	memset(&large, 0, sizeof(large));
+	vm.CallFunction("CopyLarge", &large, largeIn);
+	ASSERT_MESSAGE(memcmp(&large, &largeIn, sizeof(Large)) == 0, "CopyLarge() returned incorrect fields.");
+
+	// Over-aligned struct returns.
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofOverAligned", uint32_t(sizeof(OverAligned)));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetAlignofOverAligned", uint32_t(alignof(OverAligned)));
+	OverAligned overAligned;
+	memset(&overAligned, 0, sizeof(overAligned));
+	vm.CallFunction("MakeOverAligned", &overAligned, int32_t(-17), int32_t(29));
+	ASSERT_FORMAT(overAligned.x == -17, "Expected -17, but was %" BOND_PRId32 ".", overAligned.x);
+	ASSERT_FORMAT(overAligned.y == 29, "Expected 29, but was %" BOND_PRId32 ".", overAligned.y);
+	VALIDATE_FUNCTION_CALL(int32_t, "OverAlignedRoundTrip", int32_t(8 * 1000 + 3), int32_t(3), int32_t(8));
 }
 
 
@@ -1373,6 +1507,29 @@ DEFINE_VM_TEST(ArithmeticConversions, "scripts/vm_ArithmeticConversions.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "BitNotucConstant", int32_t(-2));
 	VALIDATE_FUNCTION_CALL(int32_t, "PluscConstant", int32_t(-7));
 	VALIDATE_FUNCTION_CALL(int32_t, "NegiMinConstant", BOND_INT_MIN);
+
+	// Results that overflow a narrow type wrap when stored back into it.
+	VALIDATE_FUNCTION_CALL(uint32_t, "AddUc", uint32_t(0), uint8_t(255), int32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AddUc", uint32_t(255), uint8_t(0), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddC", int32_t(-128), int8_t(127), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddC", int32_t(127), int8_t(-128), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddS", int32_t(-32768), int16_t(32767), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddS", int32_t(32767), int16_t(-32768), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AddUs", uint32_t(0), uint16_t(65535), int32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AddUs", uint32_t(65535), uint16_t(0), int32_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "CastAddUc", uint32_t(0), uint8_t(255), int32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "PreincUc", uint32_t(0), uint8_t(255));
+	VALIDATE_FUNCTION_CALL(int32_t, "PredecS", int32_t(32767), int16_t(-32768));
+
+	uint8_t uchars[] = {0, 255, 0};
+	vm.CallVoidFunction("IncUcAt", uchars + 1);
+	ASSERT_FORMAT(uchars[1] == 0, "Expected 0, but was %" BOND_PRIu32 ".", uint32_t(uchars[1]));
+	ASSERT_MESSAGE((uchars[0] == 0) && (uchars[2] == 0), "Memory stomp by IncUcAt() detected.");
+
+	uint16_t ushorts[] = {0, 65535, 0};
+	vm.CallVoidFunction("AddAssignUsAt", ushorts + 1, int32_t(2));
+	ASSERT_FORMAT(ushorts[1] == 1, "Expected 1, but was %" BOND_PRIu32 ".", uint32_t(ushorts[1]));
+	ASSERT_MESSAGE((ushorts[0] == 0) && (ushorts[2] == 0), "Memory stomp by AddAssignUsAt() detected.");
 }
 
 

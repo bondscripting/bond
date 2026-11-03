@@ -116,3 +116,97 @@ Vector3 SelectVector3(bool condition, Vector3 a, Vector3 b)
 	Vector3 c = condition ? a : b;
 	return c;
 }
+
+int SumVector3Array(const Vector3 *v, uint n)
+{
+	int sum = 0;
+	for (uint i = 0; i < n; ++i)
+	{
+		sum += v[i].mX + (v + i)->GetY() + v[i].mZ;
+	}
+	return sum;
+}
+
+void ScaleVector3Array(Vector3 *v, uint n, int s)
+{
+	for (uint i = 0; i < n; ++i)
+	{
+		v[i].mX *= s;
+		(v + i)->SetY(v[i].GetY() * s);
+		v[i].mZ = v[i].mZ * s;
+	}
+}
+
+// Larger than 16 bytes.
+struct Large
+{
+	int a;
+	int b;
+	int c;
+	int d;
+	int e;
+	int f;
+};
+
+Large MakeLarge(int base)
+{
+	Large l;
+	l.a = base;
+	l.b = base + 1;
+	l.c = base + 2;
+	l.d = base + 3;
+	l.e = base + 4;
+	l.f = base + 5;
+	return l;
+}
+
+int MakeLargeAndGetE(int base)
+{
+	return MakeLarge(base).e;
+}
+
+Large CopyLarge(Large l)
+{
+	Large copy = l;
+	return copy;
+}
+
+uint GetSizeofLarge()
+{
+	return sizeof<Large>;
+}
+
+// Aligned to 16 bytes by an opaque native member.
+native { struct Align16<16, 16> {}; }
+
+struct OverAligned
+{
+	int x;
+	Align16 pad;
+	int y;
+};
+
+OverAligned MakeOverAligned(int x, int y)
+{
+	OverAligned o;
+	o.x = x;
+	o.y = y;
+	return o;
+}
+
+int OverAlignedRoundTrip(int x, int y)
+{
+	OverAligned a = MakeOverAligned(x, y);
+	OverAligned b = MakeOverAligned(a.y, a.x);
+	return (b.x * 1000) + b.y;
+}
+
+uint GetSizeofOverAligned()
+{
+	return sizeof<OverAligned>;
+}
+
+uint GetAlignofOverAligned()
+{
+	return alignof<OverAligned>;
+}

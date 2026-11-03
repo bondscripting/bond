@@ -10,7 +10,7 @@ const Bond::NativeFunctionBinding NATIVE_STRUCTS_BINDING_COLLECTION_FUNCTIONS[] 
 	{"Vector3.Y.@set", Vector3__Y__set},
 	{"Vector3.Z.@get", Vector3__Z__get},
 	{"Vector3.Z.@set", Vector3__Z__set},
-	{0, NULL}
+	{nullptr, nullptr}
 };
 
 const Bond::NativeBindingCollection NATIVE_STRUCTS_BINDING_COLLECTION =

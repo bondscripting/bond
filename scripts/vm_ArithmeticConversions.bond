@@ -116,3 +116,58 @@ long TernaryNegucToLong(bool cond, uchar a, uchar b)
 {
 	return cond ? -a : b;
 }
+
+// Results that overflow a narrow type wrap when stored back into it. Plain assignment of an int to a
+// narrow type is a compiler error, so these use compound assignment, increment and cast.
+uchar AddUc(uchar a, int b)
+{
+	uchar r = a;
+	r += b;
+	return r;
+}
+
+char AddC(char a, int b)
+{
+	char r = a;
+	r += b;
+	return r;
+}
+
+short AddS(short a, int b)
+{
+	short r = a;
+	r += b;
+	return r;
+}
+
+ushort AddUs(ushort a, int b)
+{
+	ushort r = a;
+	r += b;
+	return r;
+}
+
+uchar CastAddUc(uchar a, int b)
+{
+	return cast<uchar>(a + b);
+}
+
+uchar PreincUc(uchar a)
+{
+	return ++a;
+}
+
+short PredecS(short a)
+{
+	return --a;
+}
+
+void IncUcAt(uchar *p)
+{
+	++*p;
+}
+
+void AddAssignUsAt(ushort *p, int b)
+{
+	*p += b;
+}

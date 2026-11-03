@@ -123,6 +123,11 @@ float Constf_nh()
 	return -0.5f;
 }
 
+float Constf_n0()
+{
+	return -0.0f;
+}
+
 float Constf_0()
 {
 	return 0.0f;
@@ -156,6 +161,11 @@ double Constd_n1()
 double Constd_nh()
 {
 	return -0.5;
+}
+
+double Constd_n0()
+{
+	return -0.0;
 }
 
 double Constd_0()
