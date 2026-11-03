@@ -212,4 +212,4 @@ make test
 
 ### With Visual Studio
 
-Bond also offers a Visual Studio solution for Visual Studio 2026. Install the Desktop development with C++ workload, then open `vs/bond/bond.slnx` and build.
+Bond also offers a Visual Studio solution for Visual Studio 2026. Install the Desktop development with C++ workload, then open `vs/bond.slnx` and build.
