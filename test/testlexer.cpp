@@ -308,6 +308,8 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 		{Bond::CompilerError::MISSING_HEX_ESCAPE, Bond::Token::INVALID, 4},
 		{Bond::CompilerError::OCTAL_ESCAPE_RANGE, Bond::Token::INVALID, 5},
 		{Bond::CompilerError::HEX_ESCAPE_RANGE, Bond::Token::INVALID, 5},
+		{Bond::CompilerError::OCTAL_ESCAPE_RANGE, Bond::Token::INVALID, 5},
+		{Bond::CompilerError::HEX_ESCAPE_RANGE, Bond::Token::INVALID, 5},
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},

@@ -373,14 +373,14 @@ void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 
 		case SIG_LONG:
 		{
-			const int64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mLong : 0;
+			const int64_t value = (payload.mUInt < mValue64Table.size()) ? mValue64Table[payload.mUInt].mLong : 0;
 			mOutStream.Print(" = %" BOND_PRId64 "\n", value);
 		}
 		break;
 
 		case SIG_ULONG:
 		{
-			const uint64_t value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mULong : 0;
+			const uint64_t value = (payload.mUInt < mValue64Table.size()) ? mValue64Table[payload.mUInt].mULong : 0;
 			mOutStream.Print(" = %" BOND_PRIu64 "\n", value);
 		}
 		break;
@@ -393,7 +393,7 @@ void DisassemblerCore::DisassembleDataBlob(size_t blobEnd)
 
 		case SIG_DOUBLE:
 		{
-			const double value = IsInRange<uint16_t>(payload.mUInt) ? mValue64Table[payload.mUInt].mDouble : 0.0;
+			const double value = (payload.mUInt < mValue64Table.size()) ? mValue64Table[payload.mUInt].mDouble : 0.0;
 			mOutStream.Print(" = %f\n", value);
 		}
 		break;

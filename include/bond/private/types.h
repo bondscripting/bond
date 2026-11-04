@@ -64,145 +64,46 @@ const size_t BOND_SIZE_MAX = std::numeric_limits<size_t>::max();
 const size_t BOND_SIZE_MIN = std::numeric_limits<size_t>::min();
 
 
-template <typename FloatType, typename IntegralType, typename Enabled = void>
-struct floating_point_to_integral_limits
-{};
-
-
-template <typename FloatType, typename IntegralType>
-struct floating_point_to_integral_limits<FloatType, IntegralType, typename std::enable_if<
-	std::is_floating_point<FloatType>::value && std::is_integral<IntegralType>::value &&
-	(std::numeric_limits<IntegralType>::digits <= std::numeric_limits<FloatType>::digits)
->::type>
+/// \brief Returns whether value is exactly representable by RangeType, i.e. whether converting it to
+/// RangeType and back is lossless. NaN and infinity are never representable.
+template <typename RangeType, typename ValueType>
+bool IsInRange(ValueType value)
 {
-	static constexpr FloatType max() { return FloatType(std::numeric_limits<IntegralType>::max()); }
-	static constexpr FloatType min() { return FloatType(std::numeric_limits<IntegralType>::min()); }
-};
+	static_assert(std::is_arithmetic<RangeType>::value && std::is_arithmetic<ValueType>::value, "IsInRange requires arithmetic types");
+	using RangeLimits = std::numeric_limits<RangeType>;
+	using ValueLimits = std::numeric_limits<ValueType>;
 
-
-template <typename FloatType, typename IntegralType>
-struct floating_point_to_integral_limits<FloatType, IntegralType, typename std::enable_if<
-	std::is_floating_point<FloatType>::value && std::is_integral<IntegralType>::value &&
-	(std::numeric_limits<IntegralType>::digits > std::numeric_limits<FloatType>::digits) &&
-	!std::numeric_limits<IntegralType>::is_signed
->::type>
-{
-	static constexpr FloatType max()
+	if constexpr (std::is_integral<RangeType>::value && std::is_integral<ValueType>::value)
 	{
-		return FloatType(~((IntegralType(1) << (std::numeric_limits<IntegralType>::digits - std::numeric_limits<FloatType>::digits)) - IntegralType(1)));
+		// Comparing through intmax_t and uintmax_t avoids mixed signedness comparisons.
+		if constexpr (ValueLimits::is_signed)
+		{
+			if (value < ValueType(0))
+			{
+				return RangeLimits::is_signed && (intmax_t(value) >= intmax_t(RangeLimits::min()));
+			}
+		}
+		return uintmax_t(value) <= uintmax_t(RangeLimits::max());
 	}
-	static constexpr FloatType min() { return FloatType(0); }
-};
-
-
-template <typename FloatType, typename IntegralType>
-struct floating_point_to_integral_limits<FloatType, IntegralType, typename std::enable_if<
-	std::is_floating_point<FloatType>::value && std::is_integral<IntegralType>::value &&
-	(std::numeric_limits<IntegralType>::digits > std::numeric_limits<FloatType>::digits) &&
-	std::numeric_limits<IntegralType>::is_signed
->::type>
-{
-	static constexpr FloatType max()
+	else if constexpr (std::is_integral<RangeType>::value)
 	{
-		return FloatType(std::numeric_limits<IntegralType>::max() & ~((IntegralType(1) << (std::numeric_limits<IntegralType>::digits - std::numeric_limits<FloatType>::digits)) - IntegralType(1)));
+		// 2^digits is exactly representable, so the bounds are exact. NaN fails every comparison.
+		const ValueType upperBound = std::ldexp(ValueType(1), RangeLimits::digits);
+		const ValueType lowerBound = RangeLimits::is_signed ? -upperBound : ValueType(0);
+		return (std::trunc(value) == value) && (value >= lowerBound) && (value < upperBound);
 	}
-	static constexpr FloatType min() { return FloatType(std::numeric_limits<IntegralType>::min()); }
-};
-
-
-// Trivial implementation for when RangeType can encode all values of ValueType.
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_integral<RangeType>::value && std::is_integral<ValueType>::value &&
-	(((std::numeric_limits<ValueType>::digits <= std::numeric_limits<RangeType>::digits) &&
-	  (std::numeric_limits<RangeType>::is_signed == std::numeric_limits<ValueType>::is_signed)) ||
-	 ((std::numeric_limits<ValueType>::digits < std::numeric_limits<RangeType>::digits) &&
-	  (std::numeric_limits<RangeType>::is_signed && !std::numeric_limits<ValueType>::is_signed))),
-bool>::type IsInRange(ValueType value)
-{
-	return true;
-}
-
-
-// RangeType is at least as large as ValueType, but is unsigned, so cannot
-// encode negative values.
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_integral<RangeType>::value && std::is_integral<ValueType>::value &&
-	(std::numeric_limits<ValueType>::digits <= std::numeric_limits<RangeType>::digits) &&
-	(!std::numeric_limits<RangeType>::is_signed && std::numeric_limits<ValueType>::is_signed),
-bool>::type IsInRange(ValueType value)
-{
-	return value >= ValueType(0);
-}
-
-
-// ValueType is signed and can encode all values of RangeType;
-// compare the value against upper and lower bounds of RangeType.
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_integral<RangeType>::value && std::is_integral<ValueType>::value &&
-	(std::numeric_limits<ValueType>::digits > std::numeric_limits<RangeType>::digits) &&
-	std::numeric_limits<ValueType>::is_signed,
-bool>::type IsInRange(ValueType value)
-{
-	return (value >= ValueType(std::numeric_limits<RangeType>::min())) &&
-		(value <= ValueType(std::numeric_limits<RangeType>::max()));
-}
-
-
-// ValueType is unsigned and can encode all non-negative values of RangeType;
-// compare the value against upper bound of RangeType.
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_integral<RangeType>::value && std::is_integral<ValueType>::value &&
-	(std::numeric_limits<ValueType>::digits > std::numeric_limits<RangeType>::digits) &&
-	!std::numeric_limits<ValueType>::is_signed,
-bool>::type IsInRange(ValueType value)
-{
-	return value <= ValueType(std::numeric_limits<RangeType>::max());
-}
-
-
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_integral<RangeType>::value && std::is_floating_point<ValueType>::value,
-bool>::type IsInRange(ValueType value)
-{
-	ValueType intPart;
-	return
-		(value == ValueType(0)) ||
-		(std::isnormal(value) &&
-		 (std::modf(value, &intPart) == ValueType(0)) &&
-		 (intPart >= floating_point_to_integral_limits<ValueType, RangeType>::min()) &&
-		 (intPart <= floating_point_to_integral_limits<ValueType, RangeType>::max()));
-}
-
-
-// Integral values are in range when they are exactly representable. A value near the top of
-// ValueType's range can round up to a floating point value that is out of range for ValueType,
-// so the converted value is checked against the limits before it is converted back.
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_floating_point<RangeType>::value && std::is_integral<ValueType>::value,
-bool>::type IsInRange(ValueType value)
-{
-	const RangeType convertedValue = RangeType(value);
-	return
-		(convertedValue >= floating_point_to_integral_limits<RangeType, ValueType>::min()) &&
-		(convertedValue <= floating_point_to_integral_limits<RangeType, ValueType>::max()) &&
-		(ValueType(convertedValue) == value);
-}
-
-
-template <typename RangeType, typename ValueType>
-typename std::enable_if<
-	std::is_floating_point<RangeType>::value && std::is_floating_point<ValueType>::value,
-bool>::type IsInRange(ValueType value)
-{
-	const RangeType convertedValue = RangeType(value);
-	const ValueType restoredValue = ValueType(convertedValue);
-	return value == restoredValue;
+	else if constexpr (std::is_integral<ValueType>::value)
+	{
+		// A value near the top of ValueType's range can round up to 2^digits, which is out of range
+		// for ValueType, so the converted value is checked before it is converted back.
+		const RangeType convertedValue = RangeType(value);
+		return (convertedValue < std::ldexp(RangeType(1), ValueLimits::digits)) && (ValueType(convertedValue) == value);
+	}
+	else
+	{
+		// Converting a finite value outside RangeType's range is undefined, so check it first.
+		return (std::fabs(value) <= RangeLimits::max()) && (ValueType(RangeType(value)) == value);
+	}
 }
 
 }

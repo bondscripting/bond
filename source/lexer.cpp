@@ -1407,7 +1407,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			case 'x':
 			{
 				char *end;
-				const uint32_t value = uint32_t(strtoull(text + 2, &end, 16));
+				const unsigned long long value = strtoull(text + 2, &end, 16);
 				result.value = char(value);
 				result.end = end;
 				if (!IsInRange<uint8_t>(value))
@@ -1421,7 +1421,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 				if (IsOctalChar(text[1]))
 				{
 					char *end;
-					const uint32_t value = uint32_t(strtoull(text + 1, &end, 8));
+					const unsigned long long value = strtoull(text + 1, &end, 8);
 					result.value = char(value);
 					result.end = end;
 					if (!IsInRange<uint8_t>(value))
