@@ -20,8 +20,6 @@ typedef Bond::Vector<Bond::StdioInputStream> InputStreamList;
 
 int main(int argc, const char *argv[])
 {
-	Bond::ValidateConfiguration();
-
 	Bond::DefaultAllocator allocator;
 	StringList cboFileNameList((StringList::allocator_type(&allocator)));
 	StringList argList((StringList::allocator_type(&allocator)));

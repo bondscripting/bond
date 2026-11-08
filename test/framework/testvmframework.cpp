@@ -40,8 +40,6 @@ void RunVMTest(
 {
 	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
 
-	Bond::ValidateConfiguration();
-
 	uint8_t cboBuffer[MAX_CBO_SIZE];
 	const size_t cboSize = CompileScriptsToCbo(assertFile, assertLine, scriptNames, numScripts, cboBuffer, MAX_CBO_SIZE);
 

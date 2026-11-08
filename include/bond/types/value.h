@@ -2,6 +2,7 @@
 #define BOND_TYPES_VALUE_H
 
 #include "bond/types/types.h"
+#include <limits>
 
 namespace Bond
 {
@@ -109,6 +110,12 @@ union Value64
 	double mDouble;
 	uint8_t mBytes[8];
 };
+
+static_assert(sizeof(Value16) == 2, "sizeof(Value16) is not 2");
+static_assert(sizeof(Value32) == 4, "sizeof(Value32) is not 4");
+static_assert(sizeof(Value64) == 8, "sizeof(Value64) is not 8");
+static_assert(std::numeric_limits<float>::is_iec559, "The representation of type 'float' does not appear to be in IEEE binary32 format.");
+static_assert(std::numeric_limits<double>::is_iec559, "The representation of type 'double' does not appear to be in IEEE binary64 format.");
 
 
 /// \brief Returns the result of the expression: <code>a.mUShort < b.mUShort</code>.

@@ -308,10 +308,8 @@ void ExecutableAnchor() {}
 
 DEFINE_TEST(ModuleIdentity)
 {
-	Bond::ValidateConfiguration();
-
 #if defined(BOND_SHARED)
-	const void *libraryModule = GetContainingModule(reinterpret_cast<const void *>(&Bond::ValidateConfiguration));
+	const void *libraryModule = GetContainingModule(reinterpret_cast<const void *>(&Bond::GetBondTypeMnemonic));
 	const void *exeModule = GetContainingModule(reinterpret_cast<const void *>(&ExecutableAnchor));
 	ASSERT_MESSAGE(libraryModule != nullptr, "Could not determine the module of the library.");
 	ASSERT_MESSAGE(exeModule != nullptr, "Could not determine the module of the executable.");

@@ -43,8 +43,19 @@
 #define BOND_ASSERTS_ENABLED 1
 #endif
 
-#if defined(BOND_BIG_ENDIAN)
-#error Big endian hosts are not supported.
+// Bond only supports little endian targets. C++17 has no standard way to detect the byte order at
+// compile time, so rely on compiler-specific predefined macros.
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)
+  #if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+    #error Bond only supports little endian targets.
+  #endif
+  #if defined(__FLOAT_WORD_ORDER__) && (__FLOAT_WORD_ORDER__ != __ORDER_LITTLE_ENDIAN__)
+    #error Bond requires floating point values to be stored in little endian byte order.
+  #endif
+#elif defined(_MSC_VER)
+  // All targets supported by MSVC are little endian.
+#else
+  #error Unable to determine the target byte order. Bond only supports little endian targets.
 #endif
 
 #ifndef BOND_PATH_SEPARATOR
@@ -64,10 +75,5 @@
 #ifndef BOND_FILESYSTEM_PREFIX
 #define BOND_FILESYSTEM_PREFIX ""
 #endif
-
-namespace Bond
-{
-	BOND_API void ValidateConfiguration();
-}
 
 #endif // BOND_CONF_H

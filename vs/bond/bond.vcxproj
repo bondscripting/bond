@@ -178,7 +178,6 @@
     <ClCompile Include="..\..\source\typeandvalue.cpp" />
     <ClCompile Include="..\..\source\typeevaluationpass.cpp" />
     <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp" />
-    <ClCompile Include="..\..\source\validateconfiguration.cpp" />
     <ClCompile Include="..\..\source\validationpass.cpp" />
     <ClCompile Include="..\..\source\valueevaluationpass.cpp" />
     <ClCompile Include="..\..\source\vm.cpp" />

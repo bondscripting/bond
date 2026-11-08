@@ -500,9 +500,6 @@
     <ClCompile Include="..\..\source\typespecifierresolutionpass.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\validateconfiguration.cpp">
-      <Filter>Source Files\source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\validationpass.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
