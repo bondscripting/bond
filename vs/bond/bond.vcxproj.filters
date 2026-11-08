@@ -135,9 +135,6 @@
     <ClInclude Include="..\..\include\bond\systems\defaultallocator.h">
       <Filter>Header Files\include\bond\systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bond\systems\endian.h">
-      <Filter>Header Files\include\bond\systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\bond\systems\error.h">
       <Filter>Header Files\include\bond\systems</Filter>
     </ClInclude>

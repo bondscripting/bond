@@ -9,10 +9,10 @@
 #include "bond/stl/map.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/assert.h"
-#include "bond/systems/endian.h"
 #include "bond/systems/math.h"
 #include "bond/tools/cboutil.h"
 #include "bond/types/opcodes.h"
+#include "bond/types/value.h"
 #include "bond/version.h"
 #include <cmath>
 
@@ -3926,7 +3926,6 @@ void GeneratorCore::EmitQualifiedName(const Symbol *symbol, const char *suffix)
 
 void GeneratorCore::EmitValue16(Value16 value)
 {
-	ConvertBigEndian16(value.mBytes);
 	ByteCode &byteCode = GetByteCode();
 	byteCode.push_back(value.mBytes[0]);
 	byteCode.push_back(value.mBytes[1]);
@@ -3935,7 +3934,6 @@ void GeneratorCore::EmitValue16(Value16 value)
 
 void GeneratorCore::EmitValue32At(Value32 value, size_t pos)
 {
-	ConvertBigEndian32(value.mBytes);
 	ByteCode &byteCode = GetByteCode();
 	byteCode[pos + 0] = value.mBytes[0];
 	byteCode[pos + 1] = value.mBytes[1];
@@ -4558,7 +4556,6 @@ void GeneratorCore::WriteParamListSignature(const Parameter *parameterList, bool
 
 void GeneratorCore::WriteValue16(Value16 value)
 {
-	ConvertBigEndian16(value.mBytes);
 	mStream.Write(value.mBytes[0]);
 	mStream.Write(value.mBytes[1]);
 }
@@ -4566,7 +4563,6 @@ void GeneratorCore::WriteValue16(Value16 value)
 
 void GeneratorCore::WriteValue32(Value32 value)
 {
-	ConvertBigEndian32(value.mBytes);
 	mStream.Write(value.mBytes[0]);
 	mStream.Write(value.mBytes[1]);
 	mStream.Write(value.mBytes[2]);
@@ -4576,7 +4572,6 @@ void GeneratorCore::WriteValue32(Value32 value)
 
 void GeneratorCore::WriteValue64(Value64 value)
 {
-	ConvertBigEndian64(value.mBytes);
 	mStream.Write(value.mBytes[0]);
 	mStream.Write(value.mBytes[1]);
 	mStream.Write(value.mBytes[2]);

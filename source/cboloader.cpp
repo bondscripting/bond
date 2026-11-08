@@ -3,7 +3,6 @@
 #include "bond/stl/vector.h"
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
-#include "bond/systems/endian.h"
 #include "bond/systems/error.h"
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
@@ -306,12 +305,10 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				case OC_PARAM_OFF16:
 				case OC_PARAM_OFF32:
 				case OC_PARAM_STRING:
-					ConvertBigEndian16(code);
 					code += sizeof(Value16);
 					break;
 				case OC_PARAM_NAME:
 				{
-					ConvertBigEndian16(code);
 					const QualifiedName &name = function.mConstantTable->mQualifiedNameTable[Value16(code).mUShort];
 					int32_t resolvedIndex = -1;
 
@@ -356,43 +353,31 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				break;
 				case OC_PARAM_LOOKUPSWITCH:
 				{
+					// Skip the default offset.
 					code = AlignPointerUp(code, sizeof(Value32));
-					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
-					ConvertBigEndian32(code);
 					const uint32_t numMatches = *reinterpret_cast<uint32_t *>(code);
 					code += sizeof(Value32);
-
-					for (uint32_t i = 0; i < (2 * numMatches); ++i)
-					{
-						ConvertBigEndian32(code);
-						code += sizeof(Value32);
-					}
+					code += size_t(numMatches) * 2 * sizeof(Value32);
 				}
 				break;
 				case OC_PARAM_TABLESWITCH:
 				{
+					// Skip the default offset.
 					code = AlignPointerUp(code, sizeof(Value32));
-					ConvertBigEndian32(code);
 					code += sizeof(Value32);
 
-					ConvertBigEndian32(code);
 					const int32_t minMatch = *reinterpret_cast<int32_t *>(code);
 					code += sizeof(Value32);
 
-					ConvertBigEndian32(code);
 					const int32_t maxMatch = *reinterpret_cast<int32_t *>(code);
 					code += sizeof(Value32);
 
 					// Already rejected by the CboValidator, so this is an internal invariant.
 					BOND_ASSERT(maxMatch >= minMatch);
 					const uint32_t numMatches = uint32_t(maxMatch - minMatch + 1);
-					for (uint32_t i = 0; i < numMatches; ++i)
-					{
-						ConvertBigEndian32(code);
-						code += sizeof(Value32);
-					}
+					code += size_t(numMatches) * sizeof(Value32);
 				}
 			}
 		}
@@ -691,7 +676,7 @@ Value16 CboLoaderCore::ReadValue16()
 {
 	Value16 value;
 	mStream.Read(value.mBytes, sizeof(Value16));
-	return ConvertBigEndian16(value);
+	return value;
 }
 
 
@@ -699,7 +684,7 @@ Value32 CboLoaderCore::ReadValue32()
 {
 	Value32 value;
 	mStream.Read(value.mBytes, sizeof(Value32));
-	return ConvertBigEndian32(value);
+	return value;
 }
 
 
@@ -707,7 +692,7 @@ Value64 CboLoaderCore::ReadValue64()
 {
 	Value64 value;
 	mStream.Read(value.mBytes, sizeof(Value64));
-	return ConvertBigEndian64(value);
+	return value;
 }
 
 }

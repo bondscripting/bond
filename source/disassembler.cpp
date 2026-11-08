@@ -2,7 +2,6 @@
 #include "bond/io/outputstream.h"
 #include "bond/stl/stringview.h"
 #include "bond/stl/vector.h"
-#include "bond/systems/endian.h"
 #include "bond/systems/math.h"
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
@@ -476,7 +475,7 @@ Value16 DisassemblerCore::ReadValue16()
 {
 	Value16 value;
 	mCboStream.Read(value.mBytes, sizeof(Value16));
-	return ConvertBigEndian16(value);
+	return value;
 }
 
 
@@ -484,7 +483,7 @@ Value32 DisassemblerCore::ReadValue32()
 {
 	Value32 value;
 	mCboStream.Read(value.mBytes, sizeof(Value32));
-	return ConvertBigEndian32(value);
+	return value;
 }
 
 
@@ -492,7 +491,7 @@ Value64 DisassemblerCore::ReadValue64()
 {
 	Value64 value;
 	mCboStream.Read(value.mBytes, sizeof(Value64));
-	return ConvertBigEndian64(value);
+	return value;
 }
 
 }

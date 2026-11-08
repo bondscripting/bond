@@ -84,7 +84,6 @@
     <ClInclude Include="..\..\include\bond\systems\allocator.h" />
     <ClInclude Include="..\..\include\bond\systems\assert.h" />
     <ClInclude Include="..\..\include\bond\systems\defaultallocator.h" />
-    <ClInclude Include="..\..\include\bond\systems\endian.h" />
     <ClInclude Include="..\..\include\bond\systems\error.h" />
     <ClInclude Include="..\..\include\bond\systems\exception.h" />
     <ClInclude Include="..\..\include\bond\systems\math.h" />

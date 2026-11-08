@@ -1,3 +1,5 @@
+All multi-byte values, including those in bytecode operands, are stored in little endian byte order.
+
 CompiledBondFile
 ----------------
 uint magicNumber = 0x57EDFA57;

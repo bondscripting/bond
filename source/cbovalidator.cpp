@@ -1,10 +1,10 @@
 #include "bond/io/memoryinputstream.h"
-#include "bond/systems/endian.h"
 #include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include "bond/tools/cboutil.h"
 #include "bond/tools/cbovalidator.h"
 #include "bond/types/opcodes.h"
+#include "bond/types/value.h"
 
 namespace Bond
 {
@@ -256,7 +256,7 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	const size_t codeStart = GetPosition();
 	const size_t codeEnd = codeStart + codeSize;
 
-	// Do a validation pass on the bytecode and ensure everything is converted to the correct endianness.
+	// Do a validation pass on the bytecode.
 	while (GetPosition() < codeEnd)
 	{
 		const OpCode opCode = static_cast<OpCode>(mStream.Read());
@@ -513,7 +513,7 @@ Value16 CboValidatorCore::ReadValue16()
 {
 	Value16 value;
 	mStream.Read(value.mBytes, sizeof(Value16));
-	return ConvertBigEndian16(value);
+	return value;
 }
 
 
@@ -521,7 +521,7 @@ Value32 CboValidatorCore::ReadValue32()
 {
 	Value32 value;
 	mStream.Read(value.mBytes, sizeof(Value32));
-	return ConvertBigEndian32(value);
+	return value;
 }
 
 

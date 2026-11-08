@@ -42,29 +42,29 @@ struct FunctionBlob
 };
 
 
-uint32_t ReadBE16(const Cbo &cbo, size_t offset)
+uint32_t ReadLE16(const Cbo &cbo, size_t offset)
 {
-	return (uint32_t(cbo.mBytes[offset]) << 8) | uint32_t(cbo.mBytes[offset + 1]);
+	return uint32_t(cbo.mBytes[offset]) | (uint32_t(cbo.mBytes[offset + 1]) << 8);
 }
 
 
-uint32_t ReadBE32(const Cbo &cbo, size_t offset)
+uint32_t ReadLE32(const Cbo &cbo, size_t offset)
 {
-	return (ReadBE16(cbo, offset) << 16) | ReadBE16(cbo, offset + 2);
+	return ReadLE16(cbo, offset) | (ReadLE16(cbo, offset + 2) << 16);
 }
 
 
-void WriteBE16(Cbo &cbo, size_t offset, uint32_t value)
+void WriteLE16(Cbo &cbo, size_t offset, uint32_t value)
 {
-	cbo.mBytes[offset] = uint8_t(value >> 8);
-	cbo.mBytes[offset + 1] = uint8_t(value);
+	cbo.mBytes[offset] = uint8_t(value);
+	cbo.mBytes[offset + 1] = uint8_t(value >> 8);
 }
 
 
-void WriteBE32(Cbo &cbo, size_t offset, uint32_t value)
+void WriteLE32(Cbo &cbo, size_t offset, uint32_t value)
 {
-	WriteBE16(cbo, offset, value >> 16);
-	WriteBE16(cbo, offset + 2, value);
+	WriteLE16(cbo, offset, value);
+	WriteLE16(cbo, offset + 2, value >> 16);
 }
 
 
@@ -76,14 +76,14 @@ void CompileCbo(const char *assertFile, int assertLine, const char *scriptName, 
 
 size_t FindStringIndex(const Cbo &cbo, const Bond::StringView &str)
 {
-	const size_t stringCount = ReadBE16(cbo, STRING_COUNT_OFFSET);
+	const size_t stringCount = ReadLE16(cbo, STRING_COUNT_OFFSET);
 	size_t offset = VALUE32_TABLE_OFFSET +
-		(ReadBE16(cbo, VALUE32_COUNT_OFFSET) * sizeof(Bond::Value32)) +
-		(ReadBE16(cbo, VALUE64_COUNT_OFFSET) * sizeof(Bond::Value64));
+		(ReadLE16(cbo, VALUE32_COUNT_OFFSET) * sizeof(Bond::Value32)) +
+		(ReadLE16(cbo, VALUE64_COUNT_OFFSET) * sizeof(Bond::Value64));
 
 	for (size_t i = 0; i < stringCount; ++i)
 	{
-		const size_t length = ReadBE16(cbo, offset);
+		const size_t length = ReadLE16(cbo, offset);
 		offset += sizeof(Bond::Value16);
 		if (Bond::StringView(reinterpret_cast<const char *>(cbo.mBytes + offset), length) == str)
 		{
@@ -97,7 +97,7 @@ size_t FindStringIndex(const Cbo &cbo, const Bond::StringView &str)
 
 size_t GetListBlobOffset(const Cbo &cbo)
 {
-	return TABLE_SIZE_OFFSET + ReadBE32(cbo, TABLE_SIZE_OFFSET);
+	return TABLE_SIZE_OFFSET + ReadLE32(cbo, TABLE_SIZE_OFFSET);
 }
 
 
@@ -107,28 +107,28 @@ bool GetFunctionBlob(const Cbo &cbo, size_t index, FunctionBlob &blob)
 {
 	const size_t functionIdIndex = FindStringIndex(cbo, Bond::BOND_FUNCTION_BLOB_ID);
 	const size_t listBlobOffset = GetListBlobOffset(cbo);
-	const size_t numBlobs = ReadBE32(cbo, listBlobOffset + 6);
+	const size_t numBlobs = ReadLE32(cbo, listBlobOffset + 6);
 	size_t offset = listBlobOffset + 10;
 
 	for (size_t i = 0; i < numBlobs; ++i)
 	{
-		if (ReadBE16(cbo, offset + 4) == functionIdIndex)
+		if (ReadLE16(cbo, offset + 4) == functionIdIndex)
 		{
 			if (index == 0)
 			{
-				const size_t numParams = ReadBE16(cbo, offset + 12);
+				const size_t numParams = ReadLE16(cbo, offset + 12);
 				const size_t argSizeOffset = offset + 14 + (numParams * 2 * sizeof(Bond::Value32));
 				blob.mBlobOffset = offset;
 				blob.mNameOffset = offset + 6;
 				blob.mArgSizeOffset = argSizeOffset;
 				blob.mCodeSizeOffset = argSizeOffset + (5 * sizeof(Bond::Value32));
 				blob.mCodeOffset = blob.mCodeSizeOffset + sizeof(Bond::Value32);
-				blob.mCodeSize = ReadBE32(cbo, blob.mCodeSizeOffset);
+				blob.mCodeSize = ReadLE32(cbo, blob.mCodeSizeOffset);
 				return true;
 			}
 			--index;
 		}
-		offset += ReadBE32(cbo, offset);
+		offset += ReadLE32(cbo, offset);
 	}
 	return false;
 }
@@ -201,15 +201,15 @@ size_t FindOperand(const char *assertFile, int assertLine, const Cbo &cbo, Bond:
 				case Bond::OC_PARAM_LOOKUPSWITCH:
 				{
 					offset = blob.mCodeOffset + Bond::AlignUp(offset - blob.mCodeOffset, sizeof(Bond::Value32));
-					const size_t numMatches = ReadBE32(cbo, offset + sizeof(Bond::Value32));
+					const size_t numMatches = ReadLE32(cbo, offset + sizeof(Bond::Value32));
 					offset += (2 + (2 * numMatches)) * sizeof(Bond::Value32);
 				}
 				break;
 				case Bond::OC_PARAM_TABLESWITCH:
 				{
 					offset = blob.mCodeOffset + Bond::AlignUp(offset - blob.mCodeOffset, sizeof(Bond::Value32));
-					const int32_t minMatch = int32_t(ReadBE32(cbo, offset + sizeof(Bond::Value32)));
-					const int32_t maxMatch = int32_t(ReadBE32(cbo, offset + (2 * sizeof(Bond::Value32))));
+					const int32_t minMatch = int32_t(ReadLE32(cbo, offset + sizeof(Bond::Value32)));
+					const int32_t maxMatch = int32_t(ReadLE32(cbo, offset + (2 * sizeof(Bond::Value32))));
 					offset += (3 + size_t(maxMatch - minMatch + 1)) * sizeof(Bond::Value32);
 				}
 				break;
@@ -352,7 +352,7 @@ DEFINE_TEST(UnsupportedVersion)
 {
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
-	WriteBE16(cbo, MAJOR_VERSION_OFFSET, uint32_t(Bond::CBO_MAX_SUPPORTED_MAJOR_VERSION) + 1);
+	WriteLE16(cbo, MAJOR_VERSION_OFFSET, uint32_t(Bond::CBO_MAX_SUPPORTED_MAJOR_VERSION) + 1);
 	ASSERT_LOAD_FAILS("Unsupported CBO file format version", cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -361,7 +361,7 @@ DEFINE_TEST(IncompatiblePointerSize)
 {
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
-	WriteBE16(cbo, FLAGS_OFFSET, ReadBE16(cbo, FLAGS_OFFSET) ^ 1);
+	WriteLE16(cbo, FLAGS_OFFSET, ReadLE16(cbo, FLAGS_OFFSET) ^ 1);
 	ASSERT_LOAD_FAILS("CBO compiled with incompatible pointer size", cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -370,14 +370,14 @@ DEFINE_TEST(BadTableSize)
 {
 	Cbo original;
 	COMPILE_CBO(SCRIPT_NAME, original);
-	const uint32_t tableSize = ReadBE32(original, TABLE_SIZE_OFFSET);
+	const uint32_t tableSize = ReadLE32(original, TABLE_SIZE_OFFSET);
 
 	Cbo cbo = original;
-	WriteBE32(cbo, TABLE_SIZE_OFFSET, tableSize + 1);
+	WriteLE32(cbo, TABLE_SIZE_OFFSET, tableSize + 1);
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 
 	cbo = original;
-	WriteBE32(cbo, TABLE_SIZE_OFFSET, tableSize - 1);
+	WriteLE32(cbo, TABLE_SIZE_OFFSET, tableSize - 1);
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -389,12 +389,12 @@ DEFINE_TEST(BadBlobSize)
 
 	Cbo cbo = original;
 	const size_t listBlobOffset = GetListBlobOffset(cbo);
-	WriteBE32(cbo, listBlobOffset, ReadBE32(cbo, listBlobOffset) + 1);
+	WriteLE32(cbo, listBlobOffset, ReadLE32(cbo, listBlobOffset) + 1);
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 
 	cbo = original;
 	const FunctionBlob blob = GetFirstFunctionBlob(__FILE__, __LINE__, cbo);
-	WriteBE32(cbo, blob.mBlobOffset, ReadBE32(cbo, blob.mBlobOffset) - 1);
+	WriteLE32(cbo, blob.mBlobOffset, ReadLE32(cbo, blob.mBlobOffset) - 1);
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -404,7 +404,7 @@ DEFINE_TEST(BadCodeSize)
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
 	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, cbo);
-	WriteBE32(cbo, blob.mCodeSizeOffset, uint32_t(blob.mCodeSize) + 1);
+	WriteLE32(cbo, blob.mCodeSizeOffset, uint32_t(blob.mCodeSize) + 1);
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -414,7 +414,7 @@ DEFINE_TEST(InvalidFunctionBlob)
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
 	const FunctionBlob blob = GetFirstFunctionBlob(__FILE__, __LINE__, cbo);
-	WriteBE32(cbo, blob.mArgSizeOffset, ReadBE32(cbo, blob.mArgSizeOffset) + 1);
+	WriteLE32(cbo, blob.mArgSizeOffset, ReadLE32(cbo, blob.mArgSizeOffset) + 1);
 	ASSERT_LOAD_FAILS("CBO file contains an invalid function blob", cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -424,7 +424,7 @@ DEFINE_TEST(ConstantIndexOutOfRange)
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
 	const size_t operandOffset = FindOperand(__FILE__, __LINE__, cbo, Bond::OC_PARAM_VAL32);
-	WriteBE16(cbo, operandOffset, ReadBE16(cbo, VALUE32_COUNT_OFFSET));
+	WriteLE16(cbo, operandOffset, ReadLE16(cbo, VALUE32_COUNT_OFFSET));
 	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -434,7 +434,7 @@ DEFINE_TEST(NameIndexOutOfRange)
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
 	const size_t operandOffset = FindOperand(__FILE__, __LINE__, cbo, Bond::OC_PARAM_NAME);
-	WriteBE16(cbo, operandOffset, ReadBE16(cbo, QUALIFIED_NAME_COUNT_OFFSET));
+	WriteLE16(cbo, operandOffset, ReadLE16(cbo, QUALIFIED_NAME_COUNT_OFFSET));
 	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, DEFAULT_LOAD_OPTIONS);
 }
 
@@ -444,7 +444,7 @@ DEFINE_TEST(FunctionNameIndexOutOfRange)
 	Cbo cbo;
 	COMPILE_CBO(SCRIPT_NAME, cbo);
 	const FunctionBlob blob = GetFirstFunctionBlob(__FILE__, __LINE__, cbo);
-	WriteBE16(cbo, blob.mNameOffset, ReadBE16(cbo, QUALIFIED_NAME_COUNT_OFFSET));
+	WriteLE16(cbo, blob.mNameOffset, ReadLE16(cbo, QUALIFIED_NAME_COUNT_OFFSET));
 	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
 }
 

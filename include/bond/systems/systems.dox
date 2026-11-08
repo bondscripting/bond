@@ -12,14 +12,6 @@ BOND_ASSERTS_ENABLED is 0, and report the failure and abort instead of throwing.
 \endcode
 
 
-\defgroup endian Endian
-\brief These functions provide functionality for manipulating byte order.
-
-\code
-#include "bond/systems/endian.h"
-\endcode
-
-
 \defgroup error Error
 \brief Always enabled runtime error detection that throws Bond::Exception, for conditions that
 depend on program input.
