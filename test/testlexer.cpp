@@ -317,6 +317,10 @@ DEFINE_LEXER_TEST(InvalidTokens, "scripts/lexer_InvalidTokens.bond")
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
 		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 6},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 7},
+		{Bond::CompilerError::INT_OUT_OF_RANGE, Bond::Token::INVALID, 7},
+		{Bond::CompilerError::FLOAT_OUT_OF_RANGE, Bond::Token::INVALID, 7},
+		{Bond::CompilerError::FLOAT_OUT_OF_RANGE, Bond::Token::INVALID, 7},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);

@@ -33,6 +33,8 @@
     "Integer constant '%c' is out of range.")                                              \
   BOND_COMPILER_ERROR(INVALID_FLOAT,                                                       \
     "Invalid floating point constant '%c'.")                                               \
+  BOND_COMPILER_ERROR(FLOAT_OUT_OF_RANGE,                                                  \
+    "Floating point constant '%c' is out of range.")                                       \
   BOND_COMPILER_ERROR(EMPTY_CHARACTER_CONSTANT,                                            \
     "Empty character constant.")                                                           \
   BOND_COMPILER_ERROR(MULTI_CHARACTER_CONSTANT,                                            \

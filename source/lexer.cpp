@@ -7,6 +7,7 @@
 #include "private/memory.h"
 #include "private/utf8.h"
 #include <cerrno>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -128,8 +129,8 @@ private:
 	void EvaluateCharToken(Token &token);
 	void EvaluateIntegerToken(Token &token);
 	void EvaluateLongToken(Token &token);
-	void EvaluateFloatToken(Token &token) const;
-	void EvaluateDoubleToken(Token &token) const;
+	void EvaluateFloatToken(Token &token);
+	void EvaluateDoubleToken(Token &token);
 	void EvaluateStringToken(Token &token);
 	CharResult EvaluateChar(const char *text) const;
 
@@ -1554,10 +1555,17 @@ void LexerCore::EvaluateCharToken(Token &token)
 }
 
 
-void LexerCore::EvaluateFloatToken(Token &token) const
+void LexerCore::EvaluateFloatToken(Token &token)
 {
-	float value = strtof(token.GetRawText(), nullptr);
+	errno = 0;
+	const float value = strtof(token.GetRawText(), nullptr);
 	token.SetFloatValue(value);
+
+	// Literals are unsigned, so overflow yields +HUGE_VALF. Underflow is permitted.
+	if ((errno == ERANGE) && (value == HUGE_VALF))
+	{
+		PushError(CompilerError::FLOAT_OUT_OF_RANGE, token);
+	}
 }
 
 
@@ -1567,7 +1575,10 @@ void LexerCore::EvaluateIntegerToken(Token &token)
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
 	errno = 0;
 	const unsigned long long rawValue = strtoull(text, nullptr, base);
-	const bool outOfRange = (errno == ERANGE) || (rawValue > 0xFFFFFFFFull);
+	// As in C++, hex and octal signed literals may use the full bit pattern, but decimal ones may not.
+	const bool isSignedDecimal = (token.GetTokenType() == Token::CONST_INT) && (base == 10);
+	const unsigned long long maxValue = isSignedDecimal ? uint64_t(BOND_INT_MAX) : 0xFFFFFFFFull;
+	const bool outOfRange = (errno == ERANGE) || (rawValue > maxValue);
 	const uint32_t value = uint32_t(rawValue);
 
 	if (token.GetTokenType() == Token::CONST_INT)
@@ -1592,7 +1603,9 @@ void LexerCore::EvaluateLongToken(Token &token)
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
 	errno = 0;
 	const uint64_t value = uint64_t(strtoull(text, nullptr, base));
-	const bool outOfRange = (errno == ERANGE);
+	// As in C++, hex and octal signed literals may use the full bit pattern, but decimal ones may not.
+	const bool isSignedDecimal = (token.GetTokenType() == Token::CONST_LONG) && (base == 10);
+	const bool outOfRange = (errno == ERANGE) || (isSignedDecimal && (value > uint64_t(BOND_LONG_MAX)));
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
@@ -1610,10 +1623,17 @@ void LexerCore::EvaluateLongToken(Token &token)
 }
 
 
-void LexerCore::EvaluateDoubleToken(Token &token) const
+void LexerCore::EvaluateDoubleToken(Token &token)
 {
-	double value = strtod(token.GetRawText(), nullptr);
+	errno = 0;
+	const double value = strtod(token.GetRawText(), nullptr);
 	token.SetDoubleValue(value);
+
+	// Literals are unsigned, so overflow yields +HUGE_VAL. Underflow is permitted.
+	if ((errno == ERANGE) && (value == HUGE_VAL))
+	{
+		PushError(CompilerError::FLOAT_OUT_OF_RANGE, token);
+	}
 }
 
 
