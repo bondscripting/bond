@@ -1,8 +1,17 @@
 #include "framework/testframework.h"
 #include "bond/io/path.h"
+#include "bond/io/stdiofilehandle.h"
+#include "bond/io/stdioinputstream.h"
+#include "bond/io/stdiooutputstream.h"
+#include "bond/io/stdiostreamfactory.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/private/types.h"
+#include <cstdio>
 #include <cstring>
+
+#if defined(_WIN32)
+#include <wchar.h>
+#endif
 
 DEFINE_TEST(NormalizePath)
 {
@@ -222,10 +231,100 @@ DEFINE_TEST(IsInRange)
 #undef ASSERT_IN_RANGE
 
 
+// "util_Café_Temp.bin", as escaped UTF-8 bytes so that editors and git cannot alter them.
+const char *const UTF8_TEMP_FILE_NAME = "util_Caf\xC3\xA9_Temp.bin";
+#if defined(_WIN32)
+const wchar_t *const WIDE_TEMP_FILE_NAME = L"util_Café_Temp.bin";
+#endif
+
+
+// Removes the temporary file before and after a test, whether or not the test passes.
+class Utf8TempFileGuard
+{
+public:
+	Utf8TempFileGuard() { Remove(); }
+	~Utf8TempFileGuard() { Remove(); }
+
+private:
+	static void Remove()
+	{
+#if defined(_WIN32)
+		_wremove(WIDE_TEMP_FILE_NAME);
+#else
+		remove(UTF8_TEMP_FILE_NAME);
+#endif
+	}
+};
+
+
+DEFINE_TEST(StdioUtf8FileName)
+{
+	Utf8TempFileGuard tempFileGuard;
+	const uint8_t CONTENT[] = {'B', 'o', 'n', 'd'};
+	const size_t CONTENT_SIZE = sizeof(CONTENT);
+
+	{
+		Bond::StdioOutputStream outputStream(UTF8_TEMP_FILE_NAME);
+		outputStream.Write(CONTENT, CONTENT_SIZE);
+	}
+
+	{
+		Bond::StdioInputStream inputStream(UTF8_TEMP_FILE_NAME);
+		uint8_t buffer[CONTENT_SIZE + 1];
+		const size_t numRead = inputStream.Read(buffer, sizeof(buffer));
+		ASSERT_FORMAT(numRead == CONTENT_SIZE, "Expected %u bytes, but read %u.", unsigned(CONTENT_SIZE), unsigned(numRead));
+		ASSERT_MESSAGE(memcmp(buffer, CONTENT, CONTENT_SIZE) == 0, "File content does not match what was written.");
+	}
+
+#if defined(_WIN32)
+	// The UTF-8 name must reach the file system as U+00E9, not as ANSI mojibake.
+#if defined(_MSC_VER)
+	FILE *wideFile = nullptr;
+	_wfopen_s(&wideFile, WIDE_TEMP_FILE_NAME, L"rb");
+#else
+	FILE *wideFile = _wfopen(WIDE_TEMP_FILE_NAME, L"rb");
+#endif
+	ASSERT_MESSAGE(wideFile != nullptr, "File was not created under its UTF-16 name.");
+	if (wideFile != nullptr)
+	{
+		fclose(wideFile);
+	}
+
+	// A name that is not valid UTF-8 fails to open rather than being reinterpreted.
+	Bond::StdioFileHandle invalidHandle("util_\xFF_Temp.bin", "wb");
+	ASSERT_MESSAGE(!invalidHandle.IsBound(), "Opened a file with an invalid UTF-8 name.");
+
+	// A name whose terminating null does not fit in BOND_MAX_PATH_LENGTH fails to open.
+	char longName[BOND_MAX_PATH_LENGTH + 1];
+	memset(longName, 'a', BOND_MAX_PATH_LENGTH);
+	longName[BOND_MAX_PATH_LENGTH] = '\0';
+	Bond::StdioFileHandle longHandle(longName, "rb");
+	ASSERT_MESSAGE(!longHandle.IsBound(), "Opened a file whose name exceeds BOND_MAX_PATH_LENGTH.");
+#endif
+}
+
+
+DEFINE_TEST(StdioStreamFactoryLongPath)
+{
+	Bond::DefaultAllocator allocator;
+	Bond::StdioStreamFactory factory(allocator, nullptr, nullptr, false);
+
+	// The full path, with its terminating null, is one byte too long, so it must not be
+	// truncated to a shorter name and opened.
+	char longName[BOND_MAX_PATH_LENGTH + 1];
+	memset(longName, 'a', BOND_MAX_PATH_LENGTH);
+	longName[BOND_MAX_PATH_LENGTH] = '\0';
+	Bond::InputStreamHandle stream = factory.CreateInputStream(longName);
+	ASSERT_MESSAGE(!stream, "Opened a path that exceeds BOND_MAX_PATH_LENGTH.");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(NormalizePath)                      \
   TEST_ITEM(IsAbsolutePath)                     \
   TEST_ITEM(GetDirectory)                       \
   TEST_ITEM(IsInRange)                          \
+  TEST_ITEM(StdioUtf8FileName)                  \
+  TEST_ITEM(StdioStreamFactoryLongPath)         \
 
 RUN_TESTS(Util, TEST_ITEMS)

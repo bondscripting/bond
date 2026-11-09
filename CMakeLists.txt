@@ -15,6 +15,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+# Read sources as UTF-8 on MSVC, as GCC and Clang already do.
+if(MSVC)
+  add_compile_options(/utf-8)
+endif()
+
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/source")
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(TEST_DIR "${CMAKE_SOURCE_DIR}/test")
@@ -39,6 +44,10 @@ set_target_properties(bond_lib PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+# CommandLineArgs uses CommandLineToArgvW from shell32.
+if(WIN32)
+  target_link_libraries(bond_lib PRIVATE shell32)
+endif()
 
 if(BUILD_SHARED_LIBS)
   message(STATUS "Bond runtime library: SHARED")

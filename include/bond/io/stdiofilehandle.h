@@ -1,6 +1,7 @@
 #ifndef BOND_IO_STDIOFILEHANDLE_H
 #define BOND_IO_STDIOFILEHANDLE_H
 
+#include "bond/conf.h"
 #include <cstdio>
 
 namespace Bond
@@ -9,16 +10,11 @@ namespace Bond
 namespace Private
 {
 
-// fopen_s is used on MSVC only; it is optional Annex K and unavailable in most other C libraries.
-inline FILE *OpenStdioFile(const char *fileName, const char *mode)
-{
-#if defined(_MSC_VER)
-	FILE *file = nullptr;
-	return (fopen_s(&file, fileName, mode) == 0) ? file : nullptr;
-#else
-	return fopen(fileName, mode);
-#endif
-}
+// Opens a file whose name is encoded in UTF-8. On Windows, the name is converted to UTF-16 so
+// that it does not depend on the ANSI code page, using a stack buffer and no heap allocation.
+// Returns null on failure, including, on Windows, when the name is not valid UTF-8 or is longer
+// than BOND_MAX_PATH_LENGTH bytes including the terminating null.
+BOND_API FILE *OpenStdioFile(const char *fileName, const char *mode);
 
 }
 
@@ -39,9 +35,11 @@ public:
 	{}
 
 	/// \brief Opens a file and constructs a handle that owns the resulting FILE pointer.
-	/// \param fileName The path to the file to open.
+	/// \param fileName The path to the file to open, encoded in UTF-8.
 	/// \param mode The fopen mode string used to open the file.
-	/// \remarks If fopen fails, the handle remains unbound.
+	/// \remarks If fopen fails, the handle remains unbound. On Windows, the handle also remains
+	/// unbound if fileName is not valid UTF-8 or is longer than BOND_MAX_PATH_LENGTH bytes,
+	/// including the terminating null.
 	StdioFileHandle(const char *fileName, const char *mode):
 		mFile(Private::OpenStdioFile(fileName, mode))
 	{}

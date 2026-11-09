@@ -5,6 +5,7 @@
 #include "bond/stl/vector.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
+#include "bond/tools/commandline.h"
 #include "bond/version.h"
 #include "bond/vm/cboloader.h"
 #include "bond/vm/codesegment.h"
@@ -21,6 +22,11 @@ typedef Bond::Vector<Bond::StdioInputStream> InputStreamList;
 int main(int argc, const char *argv[])
 {
 	Bond::DefaultAllocator allocator;
+	Bond::Utf8ConsoleOutput consoleOutput;
+	Bond::CommandLineArgs commandLine(allocator, argc, argv);
+	argc = commandLine.GetArgc();
+	argv = commandLine.GetArgv();
+
 	StringList cboFileNameList((StringList::allocator_type(&allocator)));
 	StringList argList((StringList::allocator_type(&allocator)));
 	size_t stackSize = DEFAULT_STACK_SIZE;

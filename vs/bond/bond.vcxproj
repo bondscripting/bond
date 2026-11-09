@@ -89,6 +89,7 @@
     <ClInclude Include="..\..\include\bond\systems\math.h" />
     <ClInclude Include="..\..\include\bond\tools\cboutil.h" />
     <ClInclude Include="..\..\include\bond\tools\cbovalidator.h" />
+    <ClInclude Include="..\..\include\bond\tools\commandline.h" />
     <ClInclude Include="..\..\include\bond\tools\disassembler.h" />
     <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h" />
     <ClInclude Include="..\..\include\bond\tools\prettyprinter.h" />
@@ -128,6 +129,7 @@
     <ClCompile Include="..\..\source\cbovalidator.cpp" />
     <ClCompile Include="..\..\source\charstream.cpp" />
     <ClCompile Include="..\..\source\codegenerator.cpp" />
+    <ClCompile Include="..\..\source\commandline.cpp" />
     <ClCompile Include="..\..\source\codesegment.cpp" />
     <ClCompile Include="..\..\source\compilererror.cpp" />
     <ClCompile Include="..\..\source\defaultallocator.cpp" />
@@ -168,6 +170,7 @@
     <ClCompile Include="..\..\source\semanticanalysispass.cpp" />
     <ClCompile Include="..\..\source\semanticanalyzer.cpp" />
     <ClCompile Include="..\..\source\stringview.cpp" />
+    <ClCompile Include="..\..\source\stdiofilehandle.cpp" />
     <ClCompile Include="..\..\source\stdioinputstream.cpp" />
     <ClCompile Include="..\..\source\stdiooutputstream.cpp" />
     <ClCompile Include="..\..\source\stdiostreamfactory.cpp" />
@@ -249,6 +252,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
@@ -264,6 +268,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
@@ -280,6 +285,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -299,6 +305,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>

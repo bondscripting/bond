@@ -2,6 +2,7 @@
 #include "bond/io/stdiooutputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
+#include "bond/tools/commandline.h"
 #include "bond/tools/disassembler.h"
 
 void Disassemble(const char *cboFileName)
@@ -23,6 +24,12 @@ void Disassemble(const char *cboFileName)
 
 int main(int argc, const char *argv[])
 {
+	Bond::DefaultAllocator argAllocator;
+	Bond::Utf8ConsoleOutput consoleOutput;
+	Bond::CommandLineArgs commandLine(argAllocator, argc, argv);
+	argc = commandLine.GetArgc();
+	argv = commandLine.GetArgv();
+
 	if (argc <= 1)
 	{
 		fprintf(stderr, "No input files specified\n");

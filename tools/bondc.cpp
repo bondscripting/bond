@@ -9,6 +9,7 @@
 #include "bond/io/stdiooutputstream.h"
 #include "bond/io/stdiostreamfactory.h"
 #include "bond/stl/list.h"
+#include "bond/tools/commandline.h"
 #include "bond/tools/nativebindinggenerator.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
@@ -20,6 +21,12 @@ typedef Bond::List<Bond::StdioStreamFactory> StreamFactoryList;
 
 int main(int argc, const char *argv[])
 {
+	Bond::DefaultAllocator argAllocator;
+	Bond::Utf8ConsoleOutput consoleOutput;
+	Bond::CommandLineArgs commandLine(argAllocator, argc, argv);
+	argc = commandLine.GetArgc();
+	argv = commandLine.GetArgv();
+
 	bool error = false;
 
 	try

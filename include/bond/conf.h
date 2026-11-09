@@ -76,4 +76,9 @@
 #define BOND_FILESYSTEM_PREFIX ""
 #endif
 
+// Maximum length of a file path in bytes, including the terminating null. Longer paths fail to open.
+#ifndef BOND_MAX_PATH_LENGTH
+#define BOND_MAX_PATH_LENGTH 1024
+#endif
+
 #endif // BOND_CONF_H

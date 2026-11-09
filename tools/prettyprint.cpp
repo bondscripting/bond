@@ -6,6 +6,7 @@
 #include "bond/io/stdiooutputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/systems/exception.h"
+#include "bond/tools/commandline.h"
 #include "bond/tools/parsetreeprinter.h"
 #include "bond/tools/prettyprinter.h"
 #include <cstdio>
@@ -66,6 +67,12 @@ class Boogup;
 
 int main(int argc, const char *argv[])
 {
+	Bond::DefaultAllocator argAllocator;
+	Bond::Utf8ConsoleOutput consoleOutput;
+	Bond::CommandLineArgs commandLine(argAllocator, argc, argv);
+	argc = commandLine.GetArgc();
+	argv = commandLine.GetArgv();
+
 	auto verbosity = Bond::PrettyPrinter::VERBOSITY_NORMAL;
 	auto folding = Bond::PrettyPrinter::CONSTANT_FOLDING_OFF;
 	bool doSemanticAnalysis = false;

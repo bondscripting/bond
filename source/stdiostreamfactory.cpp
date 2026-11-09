@@ -54,19 +54,24 @@ OutputStreamHandle StdioStreamFactory::CreateOutputStream(const char *fileName, 
 
 StdioFileHandle StdioStreamFactory::OpenFileHandle(const char *fileName, const char *mode)
 {
-	const size_t MAX_PATH_LENGTH = 1024;
-	char fullPath[MAX_PATH_LENGTH];
+	char fullPath[BOND_MAX_PATH_LENGTH];
+	int length;
 
 	if (mRootPath != nullptr)
 	{
-		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s%c%s", BOND_FILESYSTEM_PREFIX, mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
+		length = snprintf(fullPath, BOND_MAX_PATH_LENGTH, "%s%s%c%s", BOND_FILESYSTEM_PREFIX, mRootPath, BOND_PATH_SEPARATOR_CHAR, fileName);
 	}
 	else
 	{
-		snprintf(fullPath, MAX_PATH_LENGTH, "%s%s", BOND_FILESYSTEM_PREFIX, fileName);
+		length = snprintf(fullPath, BOND_MAX_PATH_LENGTH, "%s%s", BOND_FILESYSTEM_PREFIX, fileName);
 	}
 
-	fullPath[MAX_PATH_LENGTH - 1] = '\0';
+	// Fail rather than open a truncated path, which could name a different file.
+	if ((length < 0) || (length >= int(BOND_MAX_PATH_LENGTH)))
+	{
+		return StdioFileHandle();
+	}
+
 	return StdioFileHandle(fullPath, mode);
 }
 

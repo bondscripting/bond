@@ -153,6 +153,9 @@
     <ClInclude Include="..\..\include\bond\tools\disassembler.h">
       <Filter>Header Files\include\bond\tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\tools\commandline.h">
+      <Filter>Header Files\include\bond\tools</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\tools\parsenodecounter.h">
       <Filter>Header Files\include\bond\tools</Filter>
     </ClInclude>
@@ -531,6 +534,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stdiostreamfactory.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\stdiofilehandle.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\commandline.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\stringview.cpp">
