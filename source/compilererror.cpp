@@ -151,6 +151,14 @@ void CompilerError::Print(OutputStream &stream) const
 				}
 				break;
 
+				case 'u':
+				{
+					// A Unicode code point.
+					stream.Print("U+%04" BOND_PRIX32, uint32_t(arg));
+					state = STATE_NORMAL;
+				}
+				break;
+
 				default:
 				{
 					stream.Print("%%%c", *format);

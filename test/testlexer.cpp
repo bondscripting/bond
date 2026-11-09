@@ -1,5 +1,6 @@
 #include "framework/asserts.h"
 #include "framework/testlexerframework.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/stl/stringview.h"
 #include "bond/systems/math.h"
 #include <limits>
@@ -460,6 +461,174 @@ DEFINE_LEXER_BUFFER_TEST(CrlfLineEndings, "a\r\n  b\r\n\r\nc")
 }
 
 
+#define ASSERT_ERROR_MESSAGE(errorBuffer, index, expectedMessage) \
+  AssertErrorMessage(__FILE__, __LINE__, (errorBuffer), (index), (expectedMessage))
+
+
+/// \brief Asserts the full printed message of the error at the given index, including its location.
+static void AssertErrorMessage(
+	const char *assertFile,
+	int assertLine,
+	const Bond::CompilerErrorBuffer &errorBuffer,
+	size_t index,
+	const char *expectedMessage)
+{
+	char buffer[256];
+	Bond::MemoryOutputStream stream(buffer, Bond::Stream::pos_t(sizeof(buffer)));
+	errorBuffer.GetError(index).Print(stream);
+	const Bond::StringView actual(buffer, size_t(stream.GetPosition()));
+	const Bond::StringView expected(expectedMessage);
+	TestFramework::Assert(actual == expected, assertFile, assertLine, "Expected message \"%.*s\", but was \"%.*s\".",
+		int(expected.size()), expected.data(), int(actual.size()), actual.data());
+}
+
+
+// Source files may start with a UTF-8 byte order mark. It is skipped and does not count as a column.
+// The non-ASCII bytes in these tests are written as escapes, since MSVC reads source files using the
+// system code page unless /utf-8 is specified.
+DEFINE_LEXER_BUFFER_TEST(Utf8ByteOrderMark, "\xEF\xBB\xBF" "int x;\nfoo")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::KEY_INT, "int", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 1, 5);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::SEMICOLON, ";", 1, 6);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "foo", 2, 1);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// A byte order mark is only recognized at the start of the file.
+DEFINE_LEXER_BUFFER_TEST(Utf8ByteOrderMarkNotAtStart, "x \xEF\xBB\xBF")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_CHARACTER, Bond::Token::INVALID, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0, "Utf8ByteOrderMarkNotAtStart (1, 3): Invalid character '\xEF\xBB\xBF' (U+FEFF).");
+}
+
+
+// UTF-8 is already passed through unchanged in string literals and comments.
+DEFINE_LEXER_BUFFER_TEST(Utf8StringsAndComments, "// caf\xC3\xA9\n\"caf\xC3\xA9 \xE2\x86\x92 \xF0\x9F\x98\x80\" /* \xE6\x97\xA5 */ x")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_TOKEN(token, Bond::Token::CONST_STRING, nullptr, 2, 1);
+	const Bond::StringView expected("caf\xC3\xA9 \xE2\x86\x92 \xF0\x9F\x98\x80");
+	ASSERT_MESSAGE(token->GetStringValue() == expected, "Expected the string's UTF-8 bytes to be preserved.");
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 2, 28);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// Characters that can't start a token are reported once each, even when they are multi-byte.
+// Identifiers and numbers end before a non-ASCII character rather than absorbing it.
+DEFINE_LEXER_BUFFER_TEST(Utf8InvalidCharacters, "a @ \xC3\xA9 x\xE2\x86\x92y 12\xC3\xA9")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_CHARACTER, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_CHARACTER, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_CHARACTER, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_CHARACTER, Bond::Token::INVALID, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0, "Utf8InvalidCharacters (1, 3): Invalid character '@' (U+0040).");
+	ASSERT_ERROR_MESSAGE(errorBuffer, 1, "Utf8InvalidCharacters (1, 5): Invalid character '\xC3\xA9' (U+00E9).");
+
+	// Columns count bytes, so the é above occupies columns 5 and 6.
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "a", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "@", 1, 3);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xC3\xA9", 1, 5);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 1, 8);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xE2\x86\x92", 1, 9);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "y", 1, 12);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::CONST_INT, "12", 1, 14);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xC3\xA9", 1, 16);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// Malformed UTF-8: a stray lead byte, a truncated sequence, orphaned continuation bytes, an overlong
+// encoding of '/' and an encoded UTF-16 surrogate.
+DEFINE_LEXER_BUFFER_TEST(Utf8InvalidSequences, "\xFF \xC3 \x80\x80 \xC0\xAF \xED\xA0\x80")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+// Files with a UTF-16 or UTF-32 byte order mark produce a single error and no tokens.
+DEFINE_LEXER_BUFFER_TEST(Utf16LEByteOrderMark, "\xFF\xFE" "i\0n\0t\0")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNSUPPORTED_ENCODING, Bond::Token::END, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0,
+		"Utf16LEByteOrderMark (1, 2): Source file is encoded as UTF-16LE. Bond source files must be UTF-8.");
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_FORMAT(stream.GetLength() == 1, "Expected 1 token but found %d.", stream.GetLength());
+}
+
+
+DEFINE_LEXER_BUFFER_TEST(Utf16BEByteOrderMark, "\xFE\xFF" "\0i\0n\0t")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNSUPPORTED_ENCODING, Bond::Token::END, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0,
+		"Utf16BEByteOrderMark (1, 2): Source file is encoded as UTF-16BE. Bond source files must be UTF-8.");
+}
+
+
+DEFINE_LEXER_BUFFER_TEST(Utf32LEByteOrderMark, "\xFF\xFE\0\0" "i\0\0\0")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNSUPPORTED_ENCODING, Bond::Token::END, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0,
+		"Utf32LEByteOrderMark (1, 2): Source file is encoded as UTF-32LE. Bond source files must be UTF-8.");
+}
+
+
 #define TEST_ITEMS                       \
   TEST_ITEM(KeywordAndPunctuationTokens) \
   TEST_ITEM(LiteralTokens)               \
@@ -473,6 +642,14 @@ DEFINE_LEXER_BUFFER_TEST(CrlfLineEndings, "a\r\n  b\r\n\r\nc")
   TEST_ITEM(Comments)                    \
   TEST_ITEM(LineCommentAtEof)            \
   TEST_ITEM(CrlfLineEndings)             \
+  TEST_ITEM(Utf8ByteOrderMark)           \
+  TEST_ITEM(Utf8ByteOrderMarkNotAtStart) \
+  TEST_ITEM(Utf8StringsAndComments)      \
+  TEST_ITEM(Utf8InvalidCharacters)       \
+  TEST_ITEM(Utf8InvalidSequences)        \
+  TEST_ITEM(Utf16LEByteOrderMark)        \
+  TEST_ITEM(Utf16BEByteOrderMark)        \
+  TEST_ITEM(Utf32LEByteOrderMark)        \
 
 
 RUN_TESTS(Lexer, TEST_ITEMS)

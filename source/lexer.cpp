@@ -5,7 +5,6 @@
 #include "bond/stl/algorithm.h"
 #include "bond/systems/allocator.h"
 #include "private/memory.h"
-#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -84,6 +83,7 @@ private:
 		STATE_C_COMMENT,           // C style comment.
 		STATE_C_COMMENT_STAR,      // Star within a C style comment.
 		STATE_LINE_COMMENT,        // Single line C++ style comment.
+		STATE_INVALID_CHAR,        // Consume the continuation bytes of an invalid multi-byte character.
 		STATE_DONE                 // Done parsing the current token.
 	};
 
@@ -104,6 +104,7 @@ private:
 		char value;
 	};
 
+	const char *SkipByteOrderMark();
 	Resources CalculateResources(CharStream &stream) const;
 
 	void GenerateTokens(CharStream &stream);
@@ -121,6 +122,12 @@ private:
 	void EvaluateStringToken(Token &token);
 	CharResult EvaluateChar(const char *text) const;
 
+	// These classify ASCII only, independent of the locale. Unlike the <cctype> functions, they are
+	// safe to call with negative chars, i.e. bytes of multi-byte UTF-8 characters.
+	bool IsDigitChar(char c) const;
+	bool IsAlphaChar(char c) const;
+	bool IsSpaceChar(char c) const;
+	bool IsUtf8ContinuationChar(char c) const;
 	bool IsIdentifierChar(char c) const;
 	bool IsOctalChar(char c) const;
 	bool IsHexChar(char c) const;
@@ -132,6 +139,7 @@ private:
 	bool IsEscapeChar(char c) const;
 
 	void PushError(CompilerError::Type type, Token &token);
+	void PushInvalidCharacterError(Token &token);
 
 	char *AllocString(size_t length);
 	char *AllocString(const char *content, size_t length);
@@ -162,6 +170,9 @@ TokenCollectionHandle Lexer::Lex(const char *fileName, InputStream &stream)
 
 TokenCollectionHandle LexerCore::Lex()
 {
+	// Must run before the CharStream is constructed, since it captures the stream's start position.
+	const char *unsupportedEncoding = SkipByteOrderMark();
+
 	CharStream stream(mStream);
 	Resources resources = CalculateResources(stream);
 
@@ -181,10 +192,62 @@ TokenCollectionHandle LexerCore::Lex()
 	stream.Reset();
 	GenerateTokens(stream);
 
+	if (unsupportedEncoding != nullptr)
+	{
+		// The stream was skipped to its end, so the only token is END. Report the error against it
+		// for its file name, but leave its type intact so the parser still sees the end of input.
+		mErrorBuffer.PushError(CompilerError::UNSUPPORTED_ENCODING, mTokens, unsupportedEncoding);
+	}
+
 	TokenCollection *tokenCollection = new (memHandle.get() + tokenCollectionStart) TokenCollection(mTokens, static_cast<int>(resources.numTokens));
 	memHandle.release();
 
 	return TokenCollectionHandle(mAllocator, tokenCollection);
+}
+
+
+const char *LexerCore::SkipByteOrderMark()
+{
+	const Stream::pos_t startPos = mStream.GetPosition();
+	uint8_t bytes[4] = {0x01, 0x01, 0x01, 0x01};
+	const size_t numBytes = mStream.Read(bytes, sizeof(bytes));
+
+	const char *unsupportedEncoding = nullptr;
+	size_t skipLength = 0;
+
+	// UTF-32LE must be tested before UTF-16LE since its byte order mark starts with UTF-16LE's.
+	if ((numBytes >= 3) && (bytes[0] == 0xEF) && (bytes[1] == 0xBB) && (bytes[2] == 0xBF))
+	{
+		skipLength = 3;
+	}
+	else if ((numBytes >= 4) && (bytes[0] == 0xFF) && (bytes[1] == 0xFE) && (bytes[2] == 0x00) && (bytes[3] == 0x00))
+	{
+		unsupportedEncoding = "UTF-32LE";
+	}
+	else if ((numBytes >= 4) && (bytes[0] == 0x00) && (bytes[1] == 0x00) && (bytes[2] == 0xFE) && (bytes[3] == 0xFF))
+	{
+		unsupportedEncoding = "UTF-32BE";
+	}
+	else if ((numBytes >= 2) && (bytes[0] == 0xFF) && (bytes[1] == 0xFE))
+	{
+		unsupportedEncoding = "UTF-16LE";
+	}
+	else if ((numBytes >= 2) && (bytes[0] == 0xFE) && (bytes[1] == 0xFF))
+	{
+		unsupportedEncoding = "UTF-16BE";
+	}
+
+	if (unsupportedEncoding != nullptr)
+	{
+		// Lexing the content would produce a flood of meaningless errors, so skip all of it.
+		mStream.SetPositionFromEnd(0);
+	}
+	else
+	{
+		mStream.SetPosition(startPos + Stream::pos_t(skipLength));
+	}
+
+	return unsupportedEncoding;
 }
 
 
@@ -236,8 +299,18 @@ void LexerCore::GenerateToken(CharStream &stream, Token &token)
 {
 	const CompilerError::Type error = ScanToken(stream, token);
 	token.SetFileName(mFileName);
-	PushError(error, token);
 	ExtractToken(token);
+
+	// The token's text must be extracted before an invalid character can be decoded.
+	if (error == CompilerError::INVALID_CHARACTER)
+	{
+		PushInvalidCharacterError(token);
+	}
+	else
+	{
+		PushError(error, token);
+	}
+
 	EvaluateToken(token);
 }
 
@@ -377,16 +450,23 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_ZERO;
 				}
-				else if (isdigit(c))
+				else if (IsDigitChar(c))
 				{
 					state = STATE_IDIGITS;
 				}
-				else if (isalpha(c) || (c == '_'))
+				else if (IsAlphaChar(c) || (c == '_'))
 				{
 					state = STATE_IDENTIFIER;
 				}
-				else if (!isspace(c))
+				else if (uint8_t(c) >= 0x80)
 				{
+					// A non-ASCII character. Consume all of its bytes so it is reported only once.
+					error = CompilerError::INVALID_CHARACTER;
+					state = STATE_INVALID_CHAR;
+				}
+				else if (!IsSpaceChar(c))
+				{
+					error = CompilerError::INVALID_CHARACTER;
 					state = STATE_DONE;
 				}
 				break;
@@ -759,7 +839,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_UNSIGNED;
 				}
-				else if (isdigit(c))
+				else if (IsDigitChar(c))
 				{
 					// Remain in this state.
 				}
@@ -785,7 +865,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				{
 					state = STATE_FLOAT;
 				}
-				else if (isdigit(c))
+				else if (IsDigitChar(c))
 				{
 					// Remain in this state.
 				}
@@ -803,7 +883,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_EDIGITS:
-				if (isdigit(c))
+				if (IsDigitChar(c))
 				{
 					// Remain in this state.
 				}
@@ -825,7 +905,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_PERIOD:
-				if (isdigit(c))
+				if (IsDigitChar(c))
 				{
 					state = STATE_FDIGITS;
 				}
@@ -838,7 +918,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_EXPONENT:
-				if (isdigit(c))
+				if (IsDigitChar(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -860,7 +940,7 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				break;
 
 			case STATE_EXPONENT_SIGN:
-				if (isdigit(c))
+				if (IsDigitChar(c))
 				{
 					state = STATE_EDIGITS;
 				}
@@ -1123,6 +1203,14 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				if (c == '\n')
 				{
 					state = STATE_SPACE;
+				}
+				break;
+
+			case STATE_INVALID_CHAR:
+				if (!IsUtf8ContinuationChar(c))
+				{
+					stream.Reset(pos);
+					state = STATE_DONE;
 				}
 				break;
 
@@ -1446,9 +1534,33 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 }
 
 
+bool LexerCore::IsDigitChar(char c) const
+{
+	return (c >= '0') && (c <= '9');
+}
+
+
+bool LexerCore::IsAlphaChar(char c) const
+{
+	return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'));
+}
+
+
+bool LexerCore::IsSpaceChar(char c) const
+{
+	return (c == ' ') || (c == '\t') || (c == '\n') || (c == '\v') || (c == '\f') || (c == '\r');
+}
+
+
+bool LexerCore::IsUtf8ContinuationChar(char c) const
+{
+	return (uint8_t(c) & 0xC0) == 0x80;
+}
+
+
 bool LexerCore::IsIdentifierChar(char c) const
 {
-	return  isalnum(c) || (c == '_');
+	return IsAlphaChar(c) || IsDigitChar(c) || (c == '_');
 }
 
 
@@ -1460,7 +1572,7 @@ bool LexerCore::IsOctalChar(char c) const
 
 bool LexerCore::IsHexChar(char c) const
 {
-	return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
+	return IsDigitChar(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
 }
 
 
@@ -1507,6 +1619,64 @@ void LexerCore::PushError(CompilerError::Type type, Token &token)
 	{
 		token.SetTokenType(Token::INVALID);
 		mErrorBuffer.PushError(type, &token);
+	}
+}
+
+
+void LexerCore::PushInvalidCharacterError(Token &token)
+{
+	// Decode the token as a single UTF-8 character. The scanner has already grouped the lead byte
+	// with any continuation bytes that follow it, so the token must be exactly one well-formed sequence.
+	const StringView text = token.GetText();
+	const uint8_t lead = uint8_t(text[0]);
+	size_t length = 0;
+	uint32_t codePoint = 0;
+	uint32_t minCodePoint = 0;
+
+	if (lead < 0x80)
+	{
+		length = 1;
+		codePoint = lead;
+	}
+	else if ((lead & 0xE0) == 0xC0)
+	{
+		length = 2;
+		codePoint = lead & 0x1Fu;
+		minCodePoint = 0x80;
+	}
+	else if ((lead & 0xF0) == 0xE0)
+	{
+		length = 3;
+		codePoint = lead & 0x0Fu;
+		minCodePoint = 0x800;
+	}
+	else if ((lead & 0xF8) == 0xF0)
+	{
+		length = 4;
+		codePoint = lead & 0x07u;
+		minCodePoint = 0x10000;
+	}
+
+	bool valid = (length > 0) && (text.size() == length);
+	for (size_t i = 1; valid && (i < length); ++i)
+	{
+		codePoint = (codePoint << 6) | (uint8_t(text[i]) & 0x3Fu);
+	}
+
+	// Reject overlong encodings, UTF-16 surrogates and values beyond the Unicode range.
+	valid = valid &&
+		(codePoint >= minCodePoint) &&
+		((codePoint < 0xD800) || (codePoint > 0xDFFF)) &&
+		(codePoint <= 0x10FFFF);
+
+	token.SetTokenType(Token::INVALID);
+	if (valid)
+	{
+		mErrorBuffer.PushErrorInt(CompilerError::INVALID_CHARACTER, &token, intptr_t(codePoint));
+	}
+	else
+	{
+		mErrorBuffer.PushError(CompilerError::INVALID_UTF8, &token);
 	}
 }
 

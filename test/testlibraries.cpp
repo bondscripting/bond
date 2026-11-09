@@ -208,6 +208,20 @@ DEFINE_VM_TEST(Type, "scripts/sanalyzer_IncludeLibraries.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToUpper", int32_t(toupper('w')), int32_t('w'));
 	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToUpper", int32_t(toupper('W')), int32_t('W'));
 	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToUpper", int32_t(toupper('4')), int32_t('4'));
+
+	// Bond chars are signed, so the bytes of a UTF-8 character such as "\xC3\xA9" are negative.
+	// Non-ASCII values are never classified, and are returned unchanged by the case conversions.
+	const int32_t UTF8_LEAD = int32_t(int8_t(0xC3));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsAlnum", int32_t(0), UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsAlpha", int32_t(0), UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsCntrl", int32_t(0), UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsPrint", int32_t(0), UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsSpace", int32_t(0), UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsAlpha", int32_t(0), int32_t(0xC3));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.IsAlpha", int32_t(0), int32_t(0x10000));
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToLower", UTF8_LEAD, UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToUpper", UTF8_LEAD, UTF8_LEAD);
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.ToUpper", int32_t(0xE9), int32_t(0xE9));
 }
 
 

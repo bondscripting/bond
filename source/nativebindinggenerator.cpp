@@ -113,8 +113,11 @@ void NativeBindingGeneratorCore::Generate()
 		size_t i = 0;
 		while ((*n != '\0') && (i < (BUFFER_SIZE - 1)))
 		{
-			const char c = *n++;
-			includeGuard[i++] = char(isalnum(c) ? toupper(c) : '_');
+			// Convert to an unsigned byte, since <cctype> functions have undefined behavior for negative values.
+			// Non-ASCII bytes are not valid in a macro name, so they are replaced, even if the locale
+			// classifies them as alphanumeric.
+			const uint8_t c = uint8_t(*n++);
+			includeGuard[i++] = char(((c < 0x80) && isalnum(c)) ? toupper(c) : '_');
 		}
 		includeGuard[i] = '\0';
 		mHStream.Print("#ifndef %s\n#define %s\n\n#include \"bond/api/nativebinding.h\"\n\n", includeGuard, includeGuard);
@@ -272,8 +275,8 @@ size_t NativeBindingGeneratorCore::SplitIdentifiers(const char *str, StringView 
 	size_t numIdentifiers = 0;
 	while ((*next != '\0') && (numIdentifiers < maxIdentifiers))
 	{
-		const char c = *next;
-		const bool isIdentifierChar = isalnum(c) || (c == '_');
+		const uint8_t c = uint8_t(*next);
+		const bool isIdentifierChar = ((c < 0x80) && isalnum(c)) || (c == '_');
 		if (inIdentifier)
 		{
 			if (!isIdentifierChar)

@@ -39,6 +39,12 @@
     "Unterminated string literal.")                                                        \
   BOND_COMPILER_ERROR(UNTERMINATED_COMMENT,                                                \
     "Unterminated comment.")                                                               \
+  BOND_COMPILER_ERROR(INVALID_CHARACTER,                                                   \
+    "Invalid character '%c' (%u).")                                                        \
+  BOND_COMPILER_ERROR(INVALID_UTF8,                                                        \
+    "Invalid UTF-8 byte sequence.")                                                        \
+  BOND_COMPILER_ERROR(UNSUPPORTED_ENCODING,                                                \
+    "Source file is encoded as %s. Bond source files must be UTF-8.")                      \
   BOND_COMPILER_ERROR(DUPLICATE_CONST,                                                     \
     "Duplicate 'const' keyword.")                                                          \
   BOND_COMPILER_ERROR(PARSE_ERROR,                                                         \

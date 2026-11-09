@@ -20,6 +20,7 @@ public:
 	/// \brief Constructs a CharStream object
 	/// \param stream The underlying stream of characters over which this stream iterates.
 	explicit CharStream(InputStream &stream):
+		mPos(size_t(stream.GetPosition())),
 		mStream(stream),
 		mStartPos(size_t(stream.GetPosition())),
 		mEndPos(size_t(stream.GetEndPosition()))

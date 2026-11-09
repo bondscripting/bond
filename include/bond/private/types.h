@@ -21,6 +21,7 @@
 
 #define BOND_SCNx32 SCNx32
 #define BOND_PRIx32 PRIx32
+#define BOND_PRIX32 PRIX32
 
 #define BOND_SCNd64 SCNd64
 #define BOND_PRId64 PRId64

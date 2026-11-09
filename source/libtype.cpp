@@ -5,10 +5,19 @@
 namespace Bond
 {
 
+// The <cctype> functions have undefined behavior for negative values other than EOF. Bond chars are
+// signed, so bytes of multi-byte UTF-8 characters are negative. Classify ASCII only, so that the
+// results are also independent of the locale.
+static bool IsAscii(int c)
+{
+	return (c >= 0) && (c <= 0x7F);
+}
+
+
 void IsAlnum(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isalnum(c) != 0;
+	const bool result = IsAscii(c) && (isalnum(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -16,7 +25,7 @@ void IsAlnum(Bond::StackFrame &frame)
 void IsAlpha(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isalpha(c) != 0;
+	const bool result = IsAscii(c) && (isalpha(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -24,7 +33,7 @@ void IsAlpha(Bond::StackFrame &frame)
 void IsBlank(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isblank(c) != 0;
+	const bool result = IsAscii(c) && (isblank(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -32,7 +41,7 @@ void IsBlank(Bond::StackFrame &frame)
 void IsCntrl(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = iscntrl(c) != 0;
+	const bool result = IsAscii(c) && (iscntrl(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -40,7 +49,7 @@ void IsCntrl(Bond::StackFrame &frame)
 void IsDigit(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isdigit(c) != 0;
+	const bool result = IsAscii(c) && (isdigit(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -48,7 +57,7 @@ void IsDigit(Bond::StackFrame &frame)
 void IsGraph(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isgraph(c) != 0;
+	const bool result = IsAscii(c) && (isgraph(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -56,7 +65,7 @@ void IsGraph(Bond::StackFrame &frame)
 void IsLower(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = islower(c) != 0;
+	const bool result = IsAscii(c) && (islower(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -64,7 +73,7 @@ void IsLower(Bond::StackFrame &frame)
 void IsPrint(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isprint(c) != 0;
+	const bool result = IsAscii(c) && (isprint(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -72,7 +81,7 @@ void IsPrint(Bond::StackFrame &frame)
 void IsPunct(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = ispunct(c) != 0;
+	const bool result = IsAscii(c) && (ispunct(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -80,7 +89,7 @@ void IsPunct(Bond::StackFrame &frame)
 void IsSpace(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isspace(c) != 0;
+	const bool result = IsAscii(c) && (isspace(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -88,7 +97,7 @@ void IsSpace(Bond::StackFrame &frame)
 void IsUpper(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isupper(c) != 0;
+	const bool result = IsAscii(c) && (isupper(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -96,7 +105,7 @@ void IsUpper(Bond::StackFrame &frame)
 void IsXDigit(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const bool result = isxdigit(c) != 0;
+	const bool result = IsAscii(c) && (isxdigit(c) != 0);
 	frame.SetReturnValue(result);
 }
 
@@ -104,7 +113,7 @@ void IsXDigit(Bond::StackFrame &frame)
 void ToLower(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const int result = tolower(c);
+	const int result = IsAscii(c) ? tolower(c) : c;
 	frame.SetReturnValue(result);
 }
 
@@ -112,7 +121,7 @@ void ToLower(Bond::StackFrame &frame)
 void ToUpper(Bond::StackFrame &frame)
 {
 	const int c = frame.GetArg<int>(0);
-	const int result = toupper(c);
+	const int result = IsAscii(c) ? toupper(c) : c;
 	frame.SetReturnValue(result);
 }
 
