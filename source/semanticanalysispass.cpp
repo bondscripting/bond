@@ -63,8 +63,8 @@ void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 
 Symbol *SemanticAnalysisPass::GetSymbol(const Token *name)
 {
-	// Not ambiguity-aware: only used for same-scope lookups against scopes that can never have
-	// opened namespaces (e.g. native struct stub matching), unlike the qualified-identifier overload.
+	// Only searches the current scope's own declarations (e.g. native struct stub matching). Names
+	// made visible by using-directives are not considered, unlike the qualified-identifier overload.
 	Symbol *parent = GetCurrentScope();
 	return parent->FindSymbol(name);
 }

@@ -113,7 +113,28 @@ void TypeSpecifierResolutionPass::Visit(UsingDirective *usingDirective)
 	}
 	else
 	{
+		// Find the nearest namespace that encloses both the directive and the target namespace. The
+		// global scope is a namespace that encloses everything, so the search always succeeds.
+		Symbol *scope = GetCurrentScope();
+		Symbol *enclosingNamespace = nullptr;
+		while ((scope != nullptr) && (enclosingNamespace == nullptr))
+		{
+			if (scope->GetSymbolType() == Symbol::TYPE_NAMESPACE)
+			{
+				for (const Symbol *ancestor = target; ancestor != nullptr; ancestor = ancestor->GetParentSymbol())
+				{
+					if (ancestor == scope)
+					{
+						enclosingNamespace = scope;
+						break;
+					}
+				}
+			}
+			scope = scope->GetParentSymbol();
+		}
+
 		usingDirective->SetNamespace(target);
+		usingDirective->SetEnclosingNamespace(enclosingNamespace);
 		GetCurrentScope()->AddUsingNamespace(usingDirective);
 	}
 }

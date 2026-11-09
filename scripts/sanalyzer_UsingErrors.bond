@@ -49,12 +49,26 @@ void TheFunction()
 
 	{
 		using namespace A;
-		using A::AA::StructType;
-	}
-
-	{
-		using namespace A;
 		using namespace B;
 		StructType s;
 	}
+}
+
+namespace C
+{
+	struct Clash
+	{
+		int c;
+	};
+}
+
+struct Clash
+{
+	int g;
+};
+
+void TheOtherFunction()
+{
+	using namespace C;
+	Clash c;
 }

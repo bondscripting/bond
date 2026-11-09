@@ -21,20 +21,6 @@ void Symbol::SetParentSymbol(Symbol *parent)
 
 Symbol *Symbol::FindSymbol(const StringView &name)
 {
-	bool isAmbiguous = false;
-	return FindSymbol(name, isAmbiguous);
-}
-
-
-const Symbol *Symbol::FindSymbol(const StringView &name) const
-{
-	bool isAmbiguous = false;
-	return FindSymbol(name, isAmbiguous);
-}
-
-
-Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous)
-{
 	Symbol *symbol = mSymbolList;
 
 	while ((symbol != nullptr) && !symbol->Matches(name))
@@ -42,37 +28,11 @@ Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous)
 		symbol = symbol->mNextSymbol;
 	}
 
-	if (symbol != nullptr)
-	{
-		symbol = symbol->Resolve();
-	}
-	else
-	{
-		for (UsingDirective *usingDirective = GetUsingNamespaceList();
-			usingDirective != nullptr;
-			usingDirective = usingDirective->GetNextUsingDirective())
-		{
-			Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
-			if (candidate != nullptr)
-			{
-				if (symbol == nullptr)
-				{
-					symbol = candidate;
-				}
-				else if (candidate != symbol)
-				{
-					isAmbiguous = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return symbol;
+	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
 }
 
 
-const Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous) const
+const Symbol *Symbol::FindSymbol(const StringView &name) const
 {
 	const Symbol *symbol = mSymbolList;
 
@@ -81,33 +41,7 @@ const Symbol *Symbol::FindSymbol(const StringView &name, bool &isAmbiguous) cons
 		symbol = symbol->mNextSymbol;
 	}
 
-	if (symbol != nullptr)
-	{
-		symbol = symbol->Resolve();
-	}
-	else
-	{
-		for (const UsingDirective *usingDirective = GetUsingNamespaceList();
-			usingDirective != nullptr;
-			usingDirective = usingDirective->GetNextUsingDirective())
-		{
-			const Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
-			if (candidate != nullptr)
-			{
-				if (symbol == nullptr)
-				{
-					symbol = candidate;
-				}
-				else if (candidate != symbol)
-				{
-					isAmbiguous = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return symbol;
+	return (symbol != nullptr) ? symbol->Resolve() : nullptr;
 }
 
 
@@ -127,11 +61,11 @@ const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier) const
 
 Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous)
 {
-	Symbol *symbol = FindQualifiedSymbol(identifier, isAmbiguous);
+	Symbol *symbol = nullptr;
 
-	if ((symbol == nullptr) && !isAmbiguous && (mParentSymbol != nullptr))
+	for (Symbol *scope = this; (scope != nullptr) && (symbol == nullptr) && !isAmbiguous; scope = scope->mParentSymbol)
 	{
-		symbol = mParentSymbol->FindSymbol(identifier, isAmbiguous);
+		symbol = scope->FindQualifiedSymbol(identifier, this, isAmbiguous);
 	}
 
 	return symbol;
@@ -140,28 +74,28 @@ Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbigu
 
 const Symbol *Symbol::FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const
 {
-	const Symbol *symbol = FindQualifiedSymbol(identifier, isAmbiguous);
+	const Symbol *symbol = nullptr;
 
-	if ((symbol == nullptr) && !isAmbiguous && (mParentSymbol != nullptr))
+	for (const Symbol *scope = this; (scope != nullptr) && (symbol == nullptr) && !isAmbiguous; scope = scope->mParentSymbol)
 	{
-		symbol = mParentSymbol->FindSymbol(identifier, isAmbiguous);
+		symbol = scope->FindQualifiedSymbol(identifier, this, isAmbiguous);
 	}
 
 	return symbol;
 }
 
 
-Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous)
+Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, Symbol *origin, bool &isAmbiguous)
 {
 	Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
-		symbol = FindSymbol(identifier->GetName(), isAmbiguous);
+		symbol = FindScopeMember(identifier->GetName()->GetText(), origin, isAmbiguous);
 	}
-	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
+	else if (GetSymbolType() == TYPE_NAMESPACE)
 	{
-		Symbol *nextScope = FindSymbol(identifier->GetName(), isAmbiguous);
+		Symbol *nextScope = FindScopeMember(identifier->GetName()->GetText(), origin, isAmbiguous);
 		if (nextScope != nullptr)
 		{
 			if (isAmbiguous)
@@ -171,8 +105,9 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool 
 			}
 			else
 			{
+				// Qualified lookup into nextScope only sees its own members, so it is also the origin.
 				const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, isAmbiguous);
+				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, nextScope, isAmbiguous);
 			}
 		}
 	}
@@ -181,17 +116,17 @@ Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool 
 }
 
 
-const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const
+const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier, const Symbol *origin, bool &isAmbiguous) const
 {
 	const Symbol *symbol = nullptr;
 
 	if (identifier->IsTerminal())
 	{
-		symbol = FindSymbol(identifier->GetName(), isAmbiguous);
+		symbol = FindScopeMember(identifier->GetName()->GetText(), origin, isAmbiguous);
 	}
-	else if ((GetSymbolType() == TYPE_NAMESPACE) || (GetUsingNamespaceList() != nullptr))
+	else if (GetSymbolType() == TYPE_NAMESPACE)
 	{
-		const Symbol *nextScope = FindSymbol(identifier->GetName(), isAmbiguous);
+		const Symbol *nextScope = FindScopeMember(identifier->GetName()->GetText(), origin, isAmbiguous);
 		if (nextScope != nullptr)
 		{
 			if (isAmbiguous)
@@ -201,8 +136,82 @@ const Symbol *Symbol::FindQualifiedSymbol(const QualifiedIdentifier *identifier,
 			}
 			else
 			{
+				// Qualified lookup into nextScope only sees its own members, so it is also the origin.
 				const QualifiedIdentifier *nextIdentifier = identifier->GetNextIdentifier();
-				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, isAmbiguous);
+				symbol = nextScope->FindQualifiedSymbol(nextIdentifier, nextScope, isAmbiguous);
+			}
+		}
+	}
+
+	return symbol;
+}
+
+
+Symbol *Symbol::FindScopeMember(const StringView &name, Symbol *origin, bool &isAmbiguous)
+{
+	Symbol *symbol = FindSymbol(name);
+
+	// As in C++, a using-directive makes the opened namespace's members visible as though they were
+	// members of the nearest namespace enclosing both the directive and the opened namespace. Gather
+	// the directives between the lookup's origin and this scope whose enclosing namespace is this one.
+	if (GetSymbolType() == TYPE_NAMESPACE)
+	{
+		for (Symbol *scope = origin; (scope != nullptr) && (scope != this) && !isAmbiguous; scope = scope->mParentSymbol)
+		{
+			for (UsingDirective *usingDirective = scope->GetUsingNamespaceList();
+				(usingDirective != nullptr) && !isAmbiguous;
+				usingDirective = usingDirective->GetNextUsingDirective())
+			{
+				if (usingDirective->GetEnclosingNamespace() == this)
+				{
+					Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
+					if (candidate != nullptr)
+					{
+						if (symbol == nullptr)
+						{
+							symbol = candidate;
+						}
+						else if (candidate != symbol)
+						{
+							isAmbiguous = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return symbol;
+}
+
+
+const Symbol *Symbol::FindScopeMember(const StringView &name, const Symbol *origin, bool &isAmbiguous) const
+{
+	const Symbol *symbol = FindSymbol(name);
+
+	if (GetSymbolType() == TYPE_NAMESPACE)
+	{
+		for (const Symbol *scope = origin; (scope != nullptr) && (scope != this) && !isAmbiguous; scope = scope->mParentSymbol)
+		{
+			for (const UsingDirective *usingDirective = scope->GetUsingNamespaceList();
+				(usingDirective != nullptr) && !isAmbiguous;
+				usingDirective = usingDirective->GetNextUsingDirective())
+			{
+				if (usingDirective->GetEnclosingNamespace() == this)
+				{
+					const Symbol *candidate = usingDirective->GetNamespace()->FindSymbol(name);
+					if (candidate != nullptr)
+					{
+						if (symbol == nullptr)
+						{
+							symbol = candidate;
+						}
+						else if (candidate != symbol)
+						{
+							isAmbiguous = true;
+						}
+					}
+				}
 			}
 		}
 	}

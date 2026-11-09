@@ -186,18 +186,6 @@ public:
 	/// \returns Matching symbol, or null if not found.
 	const Symbol *FindSymbol(const StringView &name) const;
 
-	/// \brief Finds a directly contained symbol by name, flagging ambiguous opened-namespace matches.
-	/// \param name Name to search for.
-	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
-	/// \returns Best-effort matching symbol (the first match found), or null if not found.
-	Symbol *FindSymbol(const StringView &name, bool &isAmbiguous);
-
-	/// \brief Finds a directly contained symbol by name, flagging ambiguous opened-namespace matches.
-	/// \param name Name to search for.
-	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
-	/// \returns Best-effort matching symbol (the first match found), or null if not found.
-	const Symbol *FindSymbol(const StringView &name, bool &isAmbiguous) const;
-
 	/// \brief Finds a directly contained symbol by token text.
 	/// \param name Name token to search for.
 	/// \returns Matching symbol, or null if not found.
@@ -207,18 +195,6 @@ public:
 	/// \param name Name token to search for.
 	/// \returns Matching symbol, or null if not found.
 	const Symbol *FindSymbol(const Token *name) const { return FindSymbol(name->GetText()); }
-
-	/// \brief Finds a directly contained symbol by token text, flagging ambiguous opened-namespace matches.
-	/// \param name Name token to search for.
-	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
-	/// \returns Matching symbol, or null if not found.
-	Symbol *FindSymbol(const Token *name, bool &isAmbiguous) { return FindSymbol(name->GetText(), isAmbiguous); }
-
-	/// \brief Finds a directly contained symbol by token text, flagging ambiguous opened-namespace matches.
-	/// \param name Name token to search for.
-	/// \param isAmbiguous Set to true if more than one opened namespace defines a distinct match.
-	/// \returns Matching symbol, or null if not found.
-	const Symbol *FindSymbol(const Token *name, bool &isAmbiguous) const { return FindSymbol(name->GetText(), isAmbiguous); }
 
 	/// \brief Finds a symbol referenced by a qualified identifier.
 	/// \param identifier Qualified identifier to resolve.
@@ -231,6 +207,10 @@ public:
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier) const;
 
 	/// \brief Finds a symbol referenced by a qualified identifier, flagging ambiguous matches.
+	///
+	/// Performs unqualified lookup of the first segment, walking outward from this symbol. As in
+	/// C++, the members of a namespace opened by a using-directive are treated as members of the
+	/// nearest namespace that encloses both the directive and the opened namespace.
 	/// \param identifier Qualified identifier to resolve.
 	/// \param isAmbiguous Set to true if the identifier resolves ambiguously at some scope level.
 	/// \returns Best-effort matching symbol, or null if not found.
@@ -282,8 +262,10 @@ protected:
 	{}
 
 private:
-	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous);
-	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const;
+	Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, Symbol *origin, bool &isAmbiguous);
+	const Symbol *FindQualifiedSymbol(const QualifiedIdentifier *identifier, const Symbol *origin, bool &isAmbiguous) const;
+	Symbol *FindScopeMember(const StringView &name, Symbol *origin, bool &isAmbiguous);
+	const Symbol *FindScopeMember(const StringView &name, const Symbol *origin, bool &isAmbiguous) const;
 
 	Symbol *mNextSymbol;
 	Symbol *mParentSymbol;
@@ -1919,8 +1901,9 @@ private:
 ///
 /// Never enters a symbol table; it is instead threaded into its enclosing local scope's
 /// list of opened namespaces (via its own dedicated next-pointer, separate from the
-/// ListParseNode next-pointer used to place it among the enclosing statement list) and
-/// consulted as a fallback by Symbol::FindSymbol.
+/// ListParseNode next-pointer used to place it among the enclosing statement list). During
+/// unqualified lookup from within that scope, the opened namespace's members are treated as
+/// members of the directive's enclosing namespace, as in C++.
 class BOND_API UsingDirective: public ListParseNode
 {
 public:
@@ -1929,6 +1912,7 @@ public:
 	explicit UsingDirective(QualifiedIdentifier *identifier):
 		mIdentifier(identifier),
 		mNamespace(nullptr),
+		mEnclosingNamespace(nullptr),
 		mNextUsingDirective(nullptr)
 	{}
 
@@ -1955,6 +1939,16 @@ public:
 	/// \brief Returns the resolved namespace symbol that this directive opens, if any.
 	const Symbol *GetNamespace() const { return mNamespace; }
 
+	/// \brief Sets the nearest namespace that encloses both this directive and the namespace it opens.
+	/// \param space The enclosing namespace, to whose members the opened namespace's members are added.
+	void SetEnclosingNamespace(Symbol *space) { mEnclosingNamespace = space; }
+
+	/// \brief Returns the nearest namespace that encloses both this directive and the namespace it opens.
+	Symbol *GetEnclosingNamespace() { return mEnclosingNamespace; }
+
+	/// \brief Returns the nearest namespace that encloses both this directive and the namespace it opens.
+	const Symbol *GetEnclosingNamespace() const { return mEnclosingNamespace; }
+
 	/// \brief Returns the next using-directive opened in the same local scope.
 	UsingDirective *GetNextUsingDirective() { return mNextUsingDirective; }
 
@@ -1968,6 +1962,7 @@ public:
 private:
 	QualifiedIdentifier *mIdentifier;
 	Symbol *mNamespace;
+	Symbol *mEnclosingNamespace;
 	UsingDirective *mNextUsingDirective;
 };
 

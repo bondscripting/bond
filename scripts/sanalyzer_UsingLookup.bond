@@ -1,0 +1,84 @@
+namespace A
+{
+	namespace AA
+	{
+		struct StructType
+		{
+			int aa;
+		};
+	}
+
+	struct StructType
+	{
+		int a;
+	};
+
+	void UseEnclosingNamespace()
+	{
+		using namespace A;
+		StructType s;
+		s.a = 1;
+		AA::StructType t;
+		t.aa = 1;
+	}
+}
+
+namespace B
+{
+	struct StructType
+	{
+		int b;
+	};
+}
+
+namespace C
+{
+	struct Hidden
+	{
+		int c;
+	};
+}
+
+void TheFunction(int StructType)
+{
+	using namespace A;
+	StructType = 1;
+}
+
+void TheOtherFunction()
+{
+	{
+		using namespace A;
+		using B::StructType;
+		StructType s;
+		s.b = 1;
+	}
+
+	{
+		using B::StructType;
+		using namespace A;
+		StructType s;
+		s.b = 1;
+	}
+
+	{
+		using namespace A;
+		using AA::StructType;
+		StructType s;
+		s.aa = 1;
+	}
+
+	{
+		using namespace A;
+		int StructType = 0;
+		StructType = 1;
+	}
+
+	{
+		int Hidden = 0;
+		{
+			using namespace C;
+			Hidden = 1;
+		}
+	}
+}

@@ -306,12 +306,18 @@ DEFINE_SEMANTICANALYZER_TEST(UsingErrors, "scripts/sanalyzer_UsingErrors.bond")
 		{Bond::CompilerError::USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD, Bond::Token::IDENTIFIER, 38},
 		{Bond::CompilerError::EXPECTED_NAMESPACE, Bond::Token::IDENTIFIER, 42},
 		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 47},
-		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 52},
-		{Bond::CompilerError::AMBIGUOUS_SYMBOL_REFERENCE, Bond::Token::IDENTIFIER, 58},
+		{Bond::CompilerError::AMBIGUOUS_SYMBOL_REFERENCE, Bond::Token::IDENTIFIER, 53},
+		{Bond::CompilerError::AMBIGUOUS_SYMBOL_REFERENCE, Bond::Token::IDENTIFIER, 73},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(UsingLookup, "scripts/sanalyzer_UsingLookup.bond")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 }
 
 
@@ -964,6 +970,7 @@ DEFINE_SEMANTICANALYZER_TEST(StructLayout, "scripts/sanalyzer_StructLayout.bond"
   TEST_ITEM(OperatorPrecedence)                 \
   TEST_ITEM(IncludeDirectives)                  \
   TEST_ITEM(UsingErrors)                        \
+  TEST_ITEM(UsingLookup)                        \
   TEST_ITEM(TypeSpecifierErrors)                \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
