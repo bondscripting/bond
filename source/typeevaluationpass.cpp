@@ -49,6 +49,30 @@ void TypeEvaluationPass::Visit(Parameter *parameter)
 }
 
 
+void TypeEvaluationPass::Visit(TypeSpecifier *typeSpecifier)
+{
+	// Type names outside of function bodies were resolved by the TypeSpecifierResolutionPass. Those
+	// within function bodies are resolved here, in source order, so that they see exactly the
+	// locals and using statements declared before them.
+	if ((typeSpecifier->GetIdentifier() != nullptr) && (typeSpecifier->GetDefinition() == nullptr))
+	{
+		ResolveTypeSpecifier(typeSpecifier);
+	}
+}
+
+
+void TypeEvaluationPass::Visit(UsingDeclaration *usingDeclaration)
+{
+	ResolveUsingDeclaration(usingDeclaration);
+}
+
+
+void TypeEvaluationPass::Visit(UsingDirective *usingDirective)
+{
+	ResolveUsingDirective(usingDirective);
+}
+
+
 void TypeEvaluationPass::Visit(TypeDescriptor *typeDescriptor)
 {
 	auto constExpressionElement = mEnforceConstExpressions.Push(true);
@@ -93,8 +117,10 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		InsertSymbol(namedInitializer);
 	}
 
+	// A declaration whose type name failed to resolve is still inserted above, so that uses of it
+	// don't report it as undefined. Skip the checks that depend on its type.
 	TypeAndValue &tav = *namedInitializer->GetTypeAndValue();
-	if (tav.IsTypeDefined())
+	if (tav.IsTypeDefined() && !tav.GetTypeDescriptor().HasUndefinedTypeName())
 	{
 		const TypeDescriptor &typeDescriptor = tav.GetTypeDescriptor();
 		Initializer *initializer = namedInitializer->GetInitializer();
@@ -630,11 +656,11 @@ void TypeEvaluationPass::Visit(CastExpression *castExpression)
 	ParseNodeTraverser::Visit(castExpression);
 
 	const TypeAndValue &rhTav = castExpression->GetRhs()->GetTypeAndValue();
+	TypeDescriptor *lhDescriptor = castExpression->GetTargetTypeDescriptor();
 
-	if (rhTav.IsTypeDefined())
+	if (rhTav.IsTypeDefined() && !lhDescriptor->HasUndefinedTypeName())
 	{
 		const TypeDescriptor &rhDescriptor = rhTav.GetTypeDescriptor();
-		TypeDescriptor *lhDescriptor = castExpression->GetTargetTypeDescriptor();
 
 		AssertConvertibleTypes(
 			rhDescriptor,
@@ -719,7 +745,7 @@ void TypeEvaluationPass::Visit(IdentifierExpression *identifierExpression)
 		{
 			mErrorBuffer.PushError(CompilerError::INVALID_SYMBOL_IN_EXPRESSION, identifier->GetContextToken(), identifier);
 		}
-		else if (symbolTav->IsTypeDefined())
+		else if (symbolTav->IsTypeDefined() && !symbolTav->GetTypeDescriptor().HasUndefinedTypeName())
 		{
 			TypeDescriptor typeDescriptor = symbolTav->GetTypeDescriptor();
 

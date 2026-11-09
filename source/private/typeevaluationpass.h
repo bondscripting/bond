@@ -30,6 +30,9 @@ protected:
 	virtual void Visit(StructDeclaration *structDeclaration) override;
 	virtual void Visit(FunctionDefinition *functionDefinition) override;
 	virtual void Visit(Parameter *parameter) override;
+	virtual void Visit(TypeSpecifier *typeSpecifier) override;
+	virtual void Visit(UsingDeclaration *usingDeclaration) override;
+	virtual void Visit(UsingDirective *usingDirective) override;
 	virtual void Visit(TypeDescriptor *typeDescriptor) override;
 	virtual void Visit(NamedInitializer *namedInitializer) override;
 	virtual void Visit(IfStatement *ifStatement) override;

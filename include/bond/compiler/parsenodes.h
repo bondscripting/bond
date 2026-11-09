@@ -353,6 +353,12 @@ public:
 	/// \brief Returns true if all referenced type information is resolved.
 	bool IsResolved() const;
 
+	/// \brief Returns true if this descriptor refers to a type name that has no type definition.
+	///
+	/// Holds after name resolution if the name is undefined or does not name a type. That error
+	/// has already been reported, so further checks involving this type should be skipped.
+	bool HasUndefinedTypeName() const;
+
 	/// \brief Returns true if values of this type can be instantiated.
 	bool IsInstantiable() const;
 

@@ -44,6 +44,12 @@ protected:
 	void InsertSymbol(Symbol *symbol);
 	Symbol *GetOrInsertSymbol(Symbol *symbol);
 
+	// Name resolution shared by the pass that resolves declarations outside of function bodies and
+	// the pass that analyzes function bodies in source order.
+	void ResolveTypeSpecifier(TypeSpecifier *typeSpecifier);
+	void ResolveUsingDeclaration(UsingDeclaration *usingDeclaration);
+	void ResolveUsingDirective(UsingDirective *usingDirective);
+
 	CompilerErrorBuffer &mErrorBuffer;
 
 private:

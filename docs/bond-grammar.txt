@@ -132,6 +132,7 @@ statement
   | do_statement
   | for_statement
   | jump_statement
+  | using_statement
   | declarative_statement
   | expression_statement
 
@@ -168,6 +169,11 @@ jump_statement
   : CONTINUE ';'
   | BREAK ';'
   | RETURN [expression] ';'
+
+using_statement
+  : USING NAMESPACE qualified_id ';'
+  | USING qualified_id ';'
+  Takes effect from the point where it appears to the end of the enclosing block.
 
 declarative_statement
   : type_descriptor named_initializer_list ';'

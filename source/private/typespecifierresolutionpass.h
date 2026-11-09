@@ -18,12 +18,8 @@ public:
 protected:
 	using SemanticAnalysisPass::Visit;
 	virtual void Visit(StructDeclaration *structDeclaration) override;
+	virtual void Visit(FunctionDefinition *functionDefinition) override;
 	virtual void Visit(TypeSpecifier *typeSpecifier) override;
-	virtual void Visit(CompoundStatement *compoundStatement) override;
-	virtual void Visit(SwitchSection *switchSection) override;
-	virtual void Visit(ForStatement *forStatement) override;
-	virtual void Visit(UsingDeclaration *usingDeclaration) override;
-	virtual void Visit(UsingDirective *usingDirective) override;
 };
 
 }

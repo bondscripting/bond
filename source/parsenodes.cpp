@@ -348,6 +348,18 @@ bool TypeDescriptor::IsResolved() const
 }
 
 
+bool TypeDescriptor::HasUndefinedTypeName() const
+{
+	if ((mTypeSpecifier != nullptr) &&
+	    (mTypeSpecifier->GetIdentifier() != nullptr) &&
+	    (mTypeSpecifier->GetDefinition() == nullptr))
+	{
+		return true;
+	}
+	return (mParent != nullptr) && mParent->HasUndefinedTypeName();
+}
+
+
 bool TypeDescriptor::IsInstantiable() const
 {
 	if (IsValueType())

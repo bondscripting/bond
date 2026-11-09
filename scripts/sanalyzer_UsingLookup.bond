@@ -82,3 +82,17 @@ void TheOtherFunction()
 		}
 	}
 }
+
+namespace D
+{
+	void Fn(int x) {}
+}
+
+void Fn() {}
+
+void UsingOrder()
+{
+	Fn();
+	using D::Fn;
+	Fn(1);
+}

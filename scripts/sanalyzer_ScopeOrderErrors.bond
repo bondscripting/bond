@@ -1,0 +1,46 @@
+namespace A
+{
+	void F() {}
+
+	struct S
+	{
+		int a;
+	};
+}
+
+struct T
+{
+	int t;
+};
+
+void UseBeforeUsingDeclaration()
+{
+	F();
+	using A::F;
+}
+
+void UseBeforeUsingDirective()
+{
+	F();
+	using namespace A;
+}
+
+void LocalBeforeUsingDeclaration()
+{
+	int S = 0;
+	using A::S;
+}
+
+void LocalHidesType()
+{
+	int T = 0;
+	T x;
+}
+
+void UndefinedLocalType()
+{
+	Undefined u;
+	u.x = 1;
+	int y = u.x + 1;
+	u = u;
+}

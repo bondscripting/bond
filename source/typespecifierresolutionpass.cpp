@@ -32,111 +32,20 @@ void TypeSpecifierResolutionPass::Visit(StructDeclaration *structDeclaration)
 }
 
 
+void TypeSpecifierResolutionPass::Visit(FunctionDefinition *functionDefinition)
+{
+	// Only the prototype is resolved here, so that every signature is known before any body is
+	// analyzed. Bodies are resolved by the TypeEvaluationPass in source order, since local names are
+	// only visible after their declaration. Parameters aren't in the function's scope yet, so
+	// resolving the prototype from the enclosing scope is equivalent to resolving it from the
+	// function's scope.
+	Traverse(functionDefinition->GetPrototype());
+}
+
+
 void TypeSpecifierResolutionPass::Visit(TypeSpecifier *typeSpecifier)
 {
-	const QualifiedIdentifier *identifier = typeSpecifier->GetIdentifier();
-	if (identifier != nullptr)
-	{
-		const Symbol *symbol = GetSymbol(identifier);
-		if (symbol == nullptr)
-		{
-			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
-		}
-		else if (!symbol->IsTypeDefinition())
-		{
-			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_A_TYPE, identifier->GetContextToken(), identifier);
-		}
-		else
-		{
-			typeSpecifier->SetDefinition(symbol);
-		}
-	}
-}
-
-
-void TypeSpecifierResolutionPass::Visit(CompoundStatement *compoundStatement)
-{
-	Symbol *parent = GetCurrentScope();
-	compoundStatement->SetParentSymbol(parent);
-	SemanticAnalysisPass::Visit(compoundStatement);
-}
-
-
-void TypeSpecifierResolutionPass::Visit(SwitchSection *switchSection)
-{
-	Symbol *parent = GetCurrentScope();
-	switchSection->SetParentSymbol(parent);
-	SemanticAnalysisPass::Visit(switchSection);
-}
-
-
-void TypeSpecifierResolutionPass::Visit(ForStatement *forStatement)
-{
-	Symbol *parent = GetCurrentScope();
-	forStatement->SetParentSymbol(parent);
-	SemanticAnalysisPass::Visit(forStatement);
-}
-
-void TypeSpecifierResolutionPass::Visit(UsingDeclaration *usingDeclaration)
-{
-	const QualifiedIdentifier *identifier = usingDeclaration->GetIdentifier();
-	Symbol *target = GetSymbol(identifier);
-
-	if (target == nullptr)
-	{
-		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
-	}
-	else if (target->GetSymbolType() == Symbol::TYPE_NAMESPACE)
-	{
-		mErrorBuffer.PushError(CompilerError::USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD, identifier->GetContextToken(), identifier);
-	}
-	else
-	{
-		usingDeclaration->SetTarget(target);
-		InsertSymbol(usingDeclaration);
-	}
-}
-
-
-void TypeSpecifierResolutionPass::Visit(UsingDirective *usingDirective)
-{
-	const QualifiedIdentifier *identifier = usingDirective->GetIdentifier();
-	Symbol *target = GetSymbol(identifier);
-
-	if (target == nullptr)
-	{
-		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
-	}
-	else if (target->GetSymbolType() != Symbol::TYPE_NAMESPACE)
-	{
-		mErrorBuffer.PushError(CompilerError::EXPECTED_NAMESPACE, identifier->GetContextToken(), identifier);
-	}
-	else
-	{
-		// Find the nearest namespace that encloses both the directive and the target namespace. The
-		// global scope is a namespace that encloses everything, so the search always succeeds.
-		Symbol *scope = GetCurrentScope();
-		Symbol *enclosingNamespace = nullptr;
-		while ((scope != nullptr) && (enclosingNamespace == nullptr))
-		{
-			if (scope->GetSymbolType() == Symbol::TYPE_NAMESPACE)
-			{
-				for (const Symbol *ancestor = target; ancestor != nullptr; ancestor = ancestor->GetParentSymbol())
-				{
-					if (ancestor == scope)
-					{
-						enclosingNamespace = scope;
-						break;
-					}
-				}
-			}
-			scope = scope->GetParentSymbol();
-		}
-
-		usingDirective->SetNamespace(target);
-		usingDirective->SetEnclosingNamespace(enclosingNamespace);
-		GetCurrentScope()->AddUsingNamespace(usingDirective);
-	}
+	ResolveTypeSpecifier(typeSpecifier);
 }
 
 }

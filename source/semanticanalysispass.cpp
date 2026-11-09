@@ -1,5 +1,6 @@
 #include "private/semanticanalysispass.h"
 #include "bond/compiler/compilererror.h"
+#include "bond/compiler/parsenodes.h"
 #include "bond/compiler/symboltable.h"
 
 namespace Bond
@@ -42,6 +43,7 @@ void SemanticAnalysisPass::Visit(FunctionDefinition *functionDefinition)
 
 void SemanticAnalysisPass::Visit(CompoundStatement *compoundStatement)
 {
+	compoundStatement->SetParentSymbol(GetCurrentScope());
 	auto stackElement = mScopeStack.Push(compoundStatement);
 	ParseNodeTraverser::Visit(compoundStatement);
 }
@@ -49,6 +51,7 @@ void SemanticAnalysisPass::Visit(CompoundStatement *compoundStatement)
 
 void SemanticAnalysisPass::Visit(SwitchSection *switchSection)
 {
+	switchSection->SetParentSymbol(GetCurrentScope());
 	auto stackElement = mScopeStack.Push(switchSection);
 	ParseNodeTraverser::Visit(switchSection);
 }
@@ -56,6 +59,7 @@ void SemanticAnalysisPass::Visit(SwitchSection *switchSection)
 
 void SemanticAnalysisPass::Visit(ForStatement *forStatement)
 {
+	forStatement->SetParentSymbol(GetCurrentScope());
 	auto stackElement = mScopeStack.Push(forStatement);
 	ParseNodeTraverser::Visit(forStatement);
 }
@@ -129,6 +133,91 @@ Symbol *SemanticAnalysisPass::GetOrInsertSymbol(Symbol *parent, Symbol *symbol)
 	}
 
 	return target;
+}
+
+
+void SemanticAnalysisPass::ResolveTypeSpecifier(TypeSpecifier *typeSpecifier)
+{
+	const QualifiedIdentifier *identifier = typeSpecifier->GetIdentifier();
+	if (identifier != nullptr)
+	{
+		const Symbol *symbol = GetSymbol(identifier);
+		if (symbol == nullptr)
+		{
+			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+		}
+		else if (!symbol->IsTypeDefinition())
+		{
+			mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_A_TYPE, identifier->GetContextToken(), identifier);
+		}
+		else
+		{
+			typeSpecifier->SetDefinition(symbol);
+		}
+	}
+}
+
+
+void SemanticAnalysisPass::ResolveUsingDeclaration(UsingDeclaration *usingDeclaration)
+{
+	const QualifiedIdentifier *identifier = usingDeclaration->GetIdentifier();
+	Symbol *target = GetSymbol(identifier);
+
+	if (target == nullptr)
+	{
+		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+	}
+	else if (target->GetSymbolType() == Symbol::TYPE_NAMESPACE)
+	{
+		mErrorBuffer.PushError(CompilerError::USING_NAMESPACE_REQUIRES_NAMESPACE_KEYWORD, identifier->GetContextToken(), identifier);
+	}
+	else
+	{
+		usingDeclaration->SetTarget(target);
+		InsertSymbol(usingDeclaration);
+	}
+}
+
+
+void SemanticAnalysisPass::ResolveUsingDirective(UsingDirective *usingDirective)
+{
+	const QualifiedIdentifier *identifier = usingDirective->GetIdentifier();
+	Symbol *target = GetSymbol(identifier);
+
+	if (target == nullptr)
+	{
+		mErrorBuffer.PushError(CompilerError::SYMBOL_IS_NOT_DEFINED, identifier->GetContextToken(), identifier);
+	}
+	else if (target->GetSymbolType() != Symbol::TYPE_NAMESPACE)
+	{
+		mErrorBuffer.PushError(CompilerError::EXPECTED_NAMESPACE, identifier->GetContextToken(), identifier);
+	}
+	else
+	{
+		// Find the nearest namespace that encloses both the directive and the target namespace. The
+		// global scope is a namespace that encloses everything, so the search always succeeds.
+		Symbol *scope = GetCurrentScope();
+		Symbol *enclosingNamespace = nullptr;
+		while ((scope != nullptr) && (enclosingNamespace == nullptr))
+		{
+			if (scope->GetSymbolType() == Symbol::TYPE_NAMESPACE)
+			{
+				for (const Symbol *ancestor = target; ancestor != nullptr; ancestor = ancestor->GetParentSymbol())
+				{
+					if (ancestor == scope)
+					{
+						enclosingNamespace = scope;
+						break;
+					}
+				}
+			}
+			scope = scope->GetParentSymbol();
+		}
+
+		usingDirective->SetNamespace(target);
+		usingDirective->SetEnclosingNamespace(enclosingNamespace);
+		GetCurrentScope()->AddUsingNamespace(usingDirective);
+	}
 }
 
 }

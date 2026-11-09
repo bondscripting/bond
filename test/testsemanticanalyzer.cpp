@@ -327,8 +327,38 @@ DEFINE_SEMANTICANALYZER_TEST(TypeSpecifierErrors, "scripts/sanalyzer_TypeSpecifi
 	{
 		{Bond::CompilerError::SYMBOL_IS_NOT_A_TYPE, Bond::Token::IDENTIFIER, 5},
 		{Bond::CompilerError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 6},
-		{Bond::CompilerError::DUPLICATE_NATIVE_STRUCT_STUB, Bond::Token::IDENTIFIER, 14},
-		{Bond::CompilerError::NATIVE_STRUCT_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 15},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(NativeStubErrors, "scripts/sanalyzer_NativeStubErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::DUPLICATE_NATIVE_STRUCT_STUB, Bond::Token::IDENTIFIER, 6},
+		{Bond::CompilerError::NATIVE_STRUCT_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 7},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+DEFINE_SEMANTICANALYZER_TEST(ScopeOrderErrors, "scripts/sanalyzer_ScopeOrderErrors.bond")
+{
+	// Local scopes are built in source order: names are only visible after their declaration.
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 18},
+		{Bond::CompilerError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 24},
+		{Bond::CompilerError::DUPLICATE_SYMBOL, Bond::Token::IDENTIFIER, 31},
+		{Bond::CompilerError::SYMBOL_IS_NOT_A_TYPE, Bond::Token::IDENTIFIER, 37},
+		{Bond::CompilerError::SYMBOL_IS_NOT_DEFINED, Bond::Token::IDENTIFIER, 42},
 	};
 
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
@@ -972,6 +1002,8 @@ DEFINE_SEMANTICANALYZER_TEST(StructLayout, "scripts/sanalyzer_StructLayout.bond"
   TEST_ITEM(UsingErrors)                        \
   TEST_ITEM(UsingLookup)                        \
   TEST_ITEM(TypeSpecifierErrors)                \
+  TEST_ITEM(NativeStubErrors)                   \
+  TEST_ITEM(ScopeOrderErrors)                   \
   TEST_ITEM(TypeEvaluationErrors)               \
   TEST_ITEM(TypeEvaluationErrors2)              \
   TEST_ITEM(TypeEvaluation)                     \
