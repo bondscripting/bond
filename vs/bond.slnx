@@ -22,6 +22,10 @@
     <BuildDependency Project="framework/framework.vcxproj" />
     <BuildDependency Project="bond/bond.vcxproj" />
   </Project>
+  <Project Path="testdisassembler/testdisassembler.vcxproj" Id="67ba8f60-8e7c-4666-b48e-d759326e8b62">
+    <BuildDependency Project="framework/framework.vcxproj" />
+    <BuildDependency Project="bond/bond.vcxproj" />
+  </Project>
   <Project Path="testlexer/testlexer.vcxproj" Id="848238c2-d932-4905-9a82-13a93edda04d">
     <BuildDependency Project="framework/framework.vcxproj" />
     <BuildDependency Project="bond/bond.vcxproj" />

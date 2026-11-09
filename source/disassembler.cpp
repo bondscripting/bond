@@ -10,6 +10,7 @@
 #include "bond/types/qualifiedname.h"
 #include "bond/types/value.h"
 #include "bond/version.h"
+#include "private/utf8.h"
 
 namespace Bond
 {
@@ -53,6 +54,7 @@ private:
 	void DisassembleParamListSignature();
 	SignatureType DisassembleSizeAndType();
 	void WriteAbbreviatedString(const StringView &str);
+	void WriteEscapedString(const char *str, size_t length);
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
@@ -444,30 +446,90 @@ SignatureType DisassemblerCore::DisassembleSizeAndType()
 
 void DisassemblerCore::WriteAbbreviatedString(const StringView &str)
 {
+	const size_t MAX_UNABBREVIATED_LENGTH = 27;
+	const size_t ABBREVIATED_PART_LENGTH = 12;
 	const size_t length = str.length();
 	const char *s = str.data();
 
 	mOutStream.Print("%c", '"');
-	if (length < 28)
+	if (length <= MAX_UNABBREVIATED_LENGTH)
 	{
-		for (size_t i = 0; i < length; ++i)
-		{
-			mOutStream.Print("%c", s[i]);
-		}
+		WriteEscapedString(s, length);
 	}
 	else
 	{
-		for (size_t i = 0; i < 12; ++i)
+		// Don't split a UTF-8 sequence. Back the end of the prefix off to the start of a sequence and
+		// advance the start of the suffix past any continuation bytes. Sequences are at most 4 bytes
+		// long, so at most 3 bytes need to be skipped.
+		size_t prefixEnd = ABBREVIATED_PART_LENGTH;
+		for (size_t i = 0; (i < 3) && Private::IsUtf8ContinuationByte(s[prefixEnd]); ++i)
 		{
-			mOutStream.Print("%c", s[i]);
+			--prefixEnd;
 		}
+
+		size_t suffixStart = length - ABBREVIATED_PART_LENGTH;
+		for (size_t i = 0; (i < 3) && Private::IsUtf8ContinuationByte(s[suffixStart]); ++i)
+		{
+			++suffixStart;
+		}
+
+		WriteEscapedString(s, prefixEnd);
 		mOutStream.Print("%s", "...");
-		for (size_t i = length - 12; i < length; ++i)
-		{
-			mOutStream.Print("%c", s[i]);
-		}
+		WriteEscapedString(s + suffixStart, length - suffixStart);
 	}
 	mOutStream.Print("%c", '"');
+}
+
+
+void DisassemblerCore::WriteEscapedString(const char *str, size_t length)
+{
+	size_t i = 0;
+	while (i < length)
+	{
+		const char c = str[i];
+		const uint8_t b = uint8_t(c);
+
+		if (b >= 0x80)
+		{
+			const Private::Utf8Decoded decoded = Private::DecodeUtf8(str + i, length - i);
+			if (decoded.valid)
+			{
+				for (size_t j = 0; j < decoded.length; ++j)
+				{
+					mOutStream.Print("%c", str[i + j]);
+				}
+			}
+			else
+			{
+				for (size_t j = 0; j < decoded.length; ++j)
+				{
+					mOutStream.Print("\\x%02" BOND_PRIX32, uint32_t(uint8_t(str[i + j])));
+				}
+			}
+			i += decoded.length;
+			continue;
+		}
+
+		switch (c)
+		{
+			case '\n': mOutStream.Print("%s", "\\n"); break;
+			case '\r': mOutStream.Print("%s", "\\r"); break;
+			case '\t': mOutStream.Print("%s", "\\t"); break;
+			case '\"': mOutStream.Print("%s", "\\\""); break;
+			case '\\': mOutStream.Print("%s", "\\\\"); break;
+			default:
+				if ((b < 0x20) || (b == 0x7F))
+				{
+					mOutStream.Print("\\x%02" BOND_PRIX32, uint32_t(b));
+				}
+				else
+				{
+					mOutStream.Print("%c", c);
+				}
+				break;
+		}
+		++i;
+	}
 }
 
 

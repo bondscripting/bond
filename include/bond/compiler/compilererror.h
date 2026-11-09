@@ -19,6 +19,10 @@
     "Octal escape sequence out of range.")                                                 \
   BOND_COMPILER_ERROR(HEX_ESCAPE_RANGE,                                                    \
     "Hex escape sequence out of range.")                                                   \
+  BOND_COMPILER_ERROR(INVALID_UNICODE_ESCAPE,                                              \
+    "Incomplete Unicode escape sequence; \\u requires 4 hex digits and \\U requires 8.")   \
+  BOND_COMPILER_ERROR(UNICODE_ESCAPE_RANGE,                                                \
+    "Unicode escape sequence is a surrogate or exceeds U+10FFFF.")                         \
   BOND_COMPILER_ERROR(INVALID_OCTAL_INT,                                                   \
     "Invalid octal integer constant '%c'.")                                                \
   BOND_COMPILER_ERROR(INVALID_HEX_INT,                                                     \
@@ -33,6 +37,8 @@
     "Empty character constant.")                                                           \
   BOND_COMPILER_ERROR(MULTI_CHARACTER_CONSTANT,                                            \
     "Multi-character constant %c.")                                                        \
+  BOND_COMPILER_ERROR(NON_ASCII_CHARACTER_CONSTANT,                                        \
+    "Character constant %c is %0u, which is %1d bytes in UTF-8. A char holds a single byte; use a string literal.") \
   BOND_COMPILER_ERROR(UNTERMINATED_CHARACTER,                                              \
     "Unterminated character constant.")                                                    \
   BOND_COMPILER_ERROR(UNTERMINATED_STRING,                                                 \

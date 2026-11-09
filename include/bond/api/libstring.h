@@ -14,6 +14,10 @@ namespace Bond
 {
 BOND_API void Strlen(Bond::StackFrame &frame);
 BOND_API void Strcmp(Bond::StackFrame &frame);
+BOND_API void Utf8Length(Bond::StackFrame &frame);
+BOND_API void Utf8IsValid(Bond::StackFrame &frame);
+BOND_API void Utf8Decode(Bond::StackFrame &frame);
+BOND_API void Utf8Encode(Bond::StackFrame &frame);
 BOND_API void TryParseInt(Bond::StackFrame &frame);
 BOND_API void TryParseLong(Bond::StackFrame &frame);
 BOND_API void TryParseFloat(Bond::StackFrame &frame);

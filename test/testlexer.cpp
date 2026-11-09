@@ -524,7 +524,7 @@ DEFINE_LEXER_BUFFER_TEST(Utf8StringsAndComments, "// caf\xC3\xA9\n\"caf\xC3\xA9 
 	ASSERT_TOKEN(token, Bond::Token::CONST_STRING, nullptr, 2, 1);
 	const Bond::StringView expected("caf\xC3\xA9 \xE2\x86\x92 \xF0\x9F\x98\x80");
 	ASSERT_MESSAGE(token->GetStringValue() == expected, "Expected the string's UTF-8 bytes to be preserved.");
-	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 2, 28);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 2, 20);
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 }
 
@@ -547,16 +547,16 @@ DEFINE_LEXER_BUFFER_TEST(Utf8InvalidCharacters, "a @ \xC3\xA9 x\xE2\x86\x92y 12\
 	ASSERT_ERROR_MESSAGE(errorBuffer, 0, "Utf8InvalidCharacters (1, 3): Invalid character '@' (U+0040).");
 	ASSERT_ERROR_MESSAGE(errorBuffer, 1, "Utf8InvalidCharacters (1, 5): Invalid character '\xC3\xA9' (U+00E9).");
 
-	// Columns count bytes, so the é above occupies columns 5 and 6.
+	// Columns count code points, so each multi-byte character occupies a single column.
 	Bond::TokenStream stream = tokenCollection.GetTokenStream();
 	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "a", 1, 1);
 	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "@", 1, 3);
 	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xC3\xA9", 1, 5);
-	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 1, 8);
-	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xE2\x86\x92", 1, 9);
-	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "y", 1, 12);
-	ASSERT_TOKEN(stream.Next(), Bond::Token::CONST_INT, "12", 1, 14);
-	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xC3\xA9", 1, 16);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 1, 7);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xE2\x86\x92", 1, 8);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "y", 1, 9);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::CONST_INT, "12", 1, 11);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xC3\xA9", 1, 13);
 	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
 }
 
@@ -577,6 +577,102 @@ DEFINE_LEXER_BUFFER_TEST(Utf8InvalidSequences, "\xFF \xC3 \x80\x80 \xC0\xAF \xED
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 
 	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
+// Invalid UTF-8 is reported inside string literals, character literals and comments. Comments are not
+// tokens, so an invalid sequence within one is reported as a token of its own, and the comment resumes.
+DEFINE_LEXER_BUFFER_TEST(Utf8InvalidInLiteralsAndComments, "\"a\xC3\" // b\xFF" "c\n/* \xE2\x82 */ x '\xC3'")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 2},
+		{Bond::CompilerError::INVALID_UTF8, Bond::Token::INVALID, 2},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\"a\xC3\"", 1, 1);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xFF", 1, 10);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "\xE2\x82", 2, 4);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::IDENTIFIER, "x", 2, 9);
+	ASSERT_TOKEN(stream.Next(), Bond::Token::INVALID, "'\xC3'", 2, 11);
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+// \u and \U escapes are encoded in UTF-8. In character literals, they must be ASCII.
+DEFINE_LEXER_BUFFER_TEST(UnicodeEscapes, "\"\\u00e9\\U0001F600\\u0041z\" '\\u0041'")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_TOKEN(token, Bond::Token::CONST_STRING, nullptr, 1, 1);
+	const Bond::StringView expected("\xC3\xA9\xF0\x9F\x98\x80" "Az");
+	const Bond::StringView actual = token->GetStringValue();
+	ASSERT_FORMAT(expected == actual, "Expected \"%.*s\", but was \"%.*s\".",
+		int(expected.size()), expected.data(), int(actual.size()), actual.data());
+
+	token = stream.Next();
+	ASSERT_TOKEN(token, Bond::Token::CONST_CHAR, nullptr, 1, 27);
+	ASSERT_FORMAT(token->GetIntValue() == 'A', "Expected 65, but was %" BOND_PRId32 ".", token->GetIntValue());
+	ASSERT_MESSAGE(stream.Next()->GetTokenType() == Bond::Token::END, "Expected end of stream.");
+}
+
+
+DEFINE_LEXER_BUFFER_TEST(UnicodeEscapeErrors, "\"\\u12\" \"\\uD800\" \"\\U00110000\" '\\u00E9' '\\u12'")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::INVALID_UNICODE_ESCAPE, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::UNICODE_ESCAPE_RANGE, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::UNICODE_ESCAPE_RANGE, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::NON_ASCII_CHARACTER_CONSTANT, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::INVALID_UNICODE_ESCAPE, Bond::Token::INVALID, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 3, "UnicodeEscapeErrors (1, 30): Character constant '\\u00E9' is U+00E9, "
+		"which is 2 bytes in UTF-8. A char holds a single byte; use a string literal.");
+}
+
+
+// A character literal can't hold a multi-byte UTF-8 character.
+DEFINE_LEXER_BUFFER_TEST(NonAsciiCharLiteral, "'\xC3\xA9' '\xE2\x82\xAC'")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::NON_ASCII_CHARACTER_CONSTANT, Bond::Token::INVALID, 1},
+		{Bond::CompilerError::NON_ASCII_CHARACTER_CONSTANT, Bond::Token::INVALID, 1},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+	ASSERT_ERROR_MESSAGE(errorBuffer, 0, "NonAsciiCharLiteral (1, 1): Character constant '\xC3\xA9' is U+00E9, "
+		"which is 2 bytes in UTF-8. A char holds a single byte; use a string literal.");
+	ASSERT_ERROR_MESSAGE(errorBuffer, 1, "NonAsciiCharLiteral (1, 5): Character constant '\xE2\x82\xAC' is U+20AC, "
+		"which is 3 bytes in UTF-8. A char holds a single byte; use a string literal.");
+}
+
+
+// \x and octal escapes still produce arbitrary bytes, even ones that aren't valid UTF-8.
+DEFINE_LEXER_BUFFER_TEST(RawByteEscapes, "\"\\xFF\\200\\x41\"")
+{
+	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
+
+	Bond::TokenStream stream = tokenCollection.GetTokenStream();
+	const Bond::Token *token = stream.Next();
+	ASSERT_TOKEN(token, Bond::Token::CONST_STRING, nullptr, 1, 1);
+	ASSERT_MESSAGE(token->GetStringValue() == Bond::StringView("\xFF\x80" "A"), "Expected the bytes FF 80 41.");
 }
 
 
@@ -647,6 +743,11 @@ DEFINE_LEXER_BUFFER_TEST(Utf32LEByteOrderMark, "\xFF\xFE\0\0" "i\0\0\0")
   TEST_ITEM(Utf8StringsAndComments)      \
   TEST_ITEM(Utf8InvalidCharacters)       \
   TEST_ITEM(Utf8InvalidSequences)        \
+  TEST_ITEM(Utf8InvalidInLiteralsAndComments) \
+  TEST_ITEM(UnicodeEscapes)              \
+  TEST_ITEM(UnicodeEscapeErrors)         \
+  TEST_ITEM(NonAsciiCharLiteral)         \
+  TEST_ITEM(RawByteEscapes)              \
   TEST_ITEM(Utf16LEByteOrderMark)        \
   TEST_ITEM(Utf16BEByteOrderMark)        \
   TEST_ITEM(Utf32LEByteOrderMark)        \

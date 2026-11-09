@@ -243,6 +243,9 @@
     <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\private\utf8.h">
+      <Filter>Header Files\source\private</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\source\private\validationpass.h">
       <Filter>Header Files\source\private</Filter>
     </ClInclude>

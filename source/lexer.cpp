@@ -5,6 +5,7 @@
 #include "bond/stl/algorithm.h"
 #include "bond/systems/allocator.h"
 #include "private/memory.h"
+#include "private/utf8.h"
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -74,15 +75,21 @@ private:
 		STATE_CHAR_OCTAL_ESCAPE,   // Octal escape within a character literal.
 		STATE_CHAR_HEX_ESCAPE_X,   // \x at the start of a hex escape within a character literal.
 		STATE_CHAR_HEX_ESCAPE,     // Hex escape within a character literal.
+		STATE_CHAR_UNICODE_ESCAPE, // \u or \U escape within a character literal.
+		STATE_CHAR_UTF8,           // Multi-byte UTF-8 character within a character literal.
 		STATE_CHAR_END,            // Expect the end quote of a character literal..
 		STATE_STRING,              // String literal.
 		STATE_STRING_ESCAPE,       // Escape sequence within a string literal.
 		STATE_STRING_OCTAL_ESCAPE, // Octal escape within a string literal.
 		STATE_STRING_HEX_ESCAPE_X, // \x at the start of a hex escape within string literal.
 		STATE_STRING_HEX_ESCAPE,   // Hex escape within a string literal.
+		STATE_STRING_UNICODE_ESCAPE, // \u or \U escape within a string literal.
+		STATE_STRING_UTF8,         // Multi-byte UTF-8 character within a string literal.
 		STATE_C_COMMENT,           // C style comment.
 		STATE_C_COMMENT_STAR,      // Star within a C style comment.
+		STATE_C_COMMENT_UTF8,      // Multi-byte UTF-8 character within a C style comment.
 		STATE_LINE_COMMENT,        // Single line C++ style comment.
+		STATE_LINE_COMMENT_UTF8,   // Multi-byte UTF-8 character within a single line comment.
 		STATE_INVALID_CHAR,        // Consume the continuation bytes of an invalid multi-byte character.
 		STATE_DONE                 // Done parsing the current token.
 	};
@@ -95,21 +102,25 @@ private:
 		size_t stringBufferLength;
 	};
 
+	// The bytes that a character or escape sequence evaluates to. A \u or \U escape evaluates to
+	// the UTF-8 encoding of its code point; anything else evaluates to a single byte.
 	struct CharResult
 	{
-		CharResult(): error(CompilerError::NO_ERROR), end(nullptr), value(0) {}
+		CharResult(): error(CompilerError::NO_ERROR), end(nullptr), codePoint(0), length(1), bytes{0, 0, 0, 0} {}
 
 		CompilerError::Type error;
 		const char *end;
-		char value;
+		uint32_t codePoint;
+		size_t length;
+		char bytes[4];
 	};
 
 	const char *SkipByteOrderMark();
 	Resources CalculateResources(CharStream &stream) const;
 
 	void GenerateTokens(CharStream &stream);
-	void GenerateToken(CharStream &stream, Token &token);
-	CompilerError::Type ScanToken(CharStream &stream, Token &token) const;
+	void GenerateToken(CharStream &stream, Token &token, LexState &resumeState);
+	CompilerError::Type ScanToken(CharStream &stream, Token &token, LexState &resumeState) const;
 	void ExtractToken(Token &token);
 
 	void EvaluateToken(Token &token);
@@ -127,7 +138,6 @@ private:
 	bool IsDigitChar(char c) const;
 	bool IsAlphaChar(char c) const;
 	bool IsSpaceChar(char c) const;
-	bool IsUtf8ContinuationChar(char c) const;
 	bool IsIdentifierChar(char c) const;
 	bool IsOctalChar(char c) const;
 	bool IsHexChar(char c) const;
@@ -137,9 +147,11 @@ private:
 	bool IsLongSuffixChar(char c) const;
 	bool IsUnsignedSuffixChar(char c) const;
 	bool IsEscapeChar(char c) const;
+	uint32_t GetHexValue(char c) const;
 
 	void PushError(CompilerError::Type type, Token &token);
 	void PushInvalidCharacterError(Token &token);
+	void PushNonAsciiCharacterError(Token &token, uint32_t codePoint, size_t length);
 
 	char *AllocString(size_t length);
 	char *AllocString(const char *content, size_t length);
@@ -256,9 +268,10 @@ LexerCore::Resources LexerCore::CalculateResources(CharStream &stream) const
 	Resources resources;
 
 	Token token;
+	LexState resumeState = STATE_SPACE;
 	for (;;)
 	{
-		ScanToken(stream, token);
+		ScanToken(stream, token, resumeState);
 
 		size_t length = token.GetEndIndex() - token.GetStartPos().index + 1;
 		if (token.GetTokenType() == Token::CONST_STRING)
@@ -285,19 +298,20 @@ void LexerCore::GenerateTokens(CharStream &stream)
 {
 	size_t tokenIndex = 0;
 	bool done = false;
+	LexState resumeState = STATE_SPACE;
 
 	while (!done)
 	{
 		Token &token = mTokens[tokenIndex++];
-		GenerateToken(stream, token);
+		GenerateToken(stream, token, resumeState);
 		done = token.GetTokenType() == Bond::Token::END;
 	}
 }
 
 
-void LexerCore::GenerateToken(CharStream &stream, Token &token)
+void LexerCore::GenerateToken(CharStream &stream, Token &token, LexState &resumeState)
 {
-	const CompilerError::Type error = ScanToken(stream, token);
+	const CompilerError::Type error = ScanToken(stream, token, resumeState);
 	token.SetFileName(mFileName);
 	ExtractToken(token);
 
@@ -305,6 +319,13 @@ void LexerCore::GenerateToken(CharStream &stream, Token &token)
 	if (error == CompilerError::INVALID_CHARACTER)
 	{
 		PushInvalidCharacterError(token);
+	}
+	else if (error == CompilerError::NON_ASCII_CHARACTER_CONSTANT)
+	{
+		// Decode the character following the opening quote, which the scanner has validated.
+		const StringView text = token.GetText();
+		const Private::Utf8Decoded decoded = Private::DecodeUtf8(text.data() + 1, text.size() - 1);
+		PushNonAsciiCharacterError(token, decoded.codePoint, decoded.length);
 	}
 	else
 	{
@@ -315,13 +336,22 @@ void LexerCore::GenerateToken(CharStream &stream, Token &token)
 }
 
 
-CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
+CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token, LexState &resumeState) const
 {
 	CompilerError::Type error = CompilerError::NO_ERROR;
 	token = Token();
-	LexState state = STATE_SPACE;
+
+	// Scanning resumes within a comment after an invalid UTF-8 sequence inside it was returned as a
+	// token of its own.
+	LexState state = resumeState;
+	resumeState = STATE_SPACE;
+
+	Private::Utf8Validator utf8Validator;
+	StreamPos utf8SequenceStart;
+	int unicodeDigitsRemaining = 0;
 
 	stream.Sync();
+	token.SetStartPos(stream.GetStreamPos());
 	while (stream.HasNext() && (state != STATE_DONE))
 	{
 		const StreamPos pos = stream.GetStreamPos();
@@ -1048,11 +1078,41 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 					error = CompilerError::EMPTY_CHARACTER_CONSTANT;
 					state = STATE_DONE;
 				}
+				else if (uint8_t(c) >= 0x80)
+				{
+					if (utf8Validator.Start(c) == Private::Utf8Validator::INVALID)
+					{
+						error = CompilerError::INVALID_UTF8;
+						state = STATE_CHAR_END;
+					}
+					else
+					{
+						state = STATE_CHAR_UTF8;
+					}
+				}
 				else
 				{
 					state = STATE_CHAR_END;
 				}
 				break;
+
+			case STATE_CHAR_UTF8:
+			{
+				const Private::Utf8Validator::Result result = utf8Validator.Feed(c);
+				if (result == Private::Utf8Validator::COMPLETE)
+				{
+					// A char holds a single byte, so it cannot hold a multi-byte character.
+					error = CompilerError::NON_ASCII_CHARACTER_CONSTANT;
+					state = STATE_CHAR_END;
+				}
+				else if (result == Private::Utf8Validator::INVALID)
+				{
+					stream.Reset(pos);
+					error = CompilerError::INVALID_UTF8;
+					state = STATE_CHAR_END;
+				}
+			}
+			break;
 
 			case STATE_CHAR_ESCAPE:
 				if (IsEscapeChar(c))
@@ -1066,6 +1126,11 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				else if (c == 'x')
 				{
 					state = STATE_CHAR_HEX_ESCAPE_X;
+				}
+				else if ((c == 'u') || (c == 'U'))
+				{
+					unicodeDigitsRemaining = (c == 'u') ? 4 : 8;
+					state = STATE_CHAR_UNICODE_ESCAPE;
 				}
 				else
 				{
@@ -1103,6 +1168,19 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				break;
 
+			case STATE_CHAR_UNICODE_ESCAPE:
+				if (!IsHexChar(c))
+				{
+					stream.Reset(pos);
+					error = CompilerError::INVALID_UNICODE_ESCAPE;
+					state = STATE_CHAR_END;
+				}
+				else if (--unicodeDigitsRemaining == 0)
+				{
+					state = STATE_CHAR_END;
+				}
+				break;
+
 			case STATE_CHAR_END:
 				if (c == '\'')
 				{
@@ -1130,7 +1208,35 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 					token.SetTokenType(Token::CONST_STRING);
 					state = STATE_DONE;
 				}
+				else if (uint8_t(c) >= 0x80)
+				{
+					if (utf8Validator.Start(c) == Private::Utf8Validator::INVALID)
+					{
+						error = CompilerError::INVALID_UTF8;
+					}
+					else
+					{
+						state = STATE_STRING_UTF8;
+					}
+				}
 				break;
+
+			case STATE_STRING_UTF8:
+			{
+				const Private::Utf8Validator::Result result = utf8Validator.Feed(c);
+				if (result == Private::Utf8Validator::COMPLETE)
+				{
+					state = STATE_STRING;
+				}
+				else if (result == Private::Utf8Validator::INVALID)
+				{
+					// The byte that ended the sequence is not part of it, so scan it again.
+					stream.Reset(pos);
+					error = CompilerError::INVALID_UTF8;
+					state = STATE_STRING;
+				}
+			}
+			break;
 
 			case STATE_STRING_ESCAPE:
 				if (IsEscapeChar(c))
@@ -1144,6 +1250,11 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				else if (c == 'x')
 				{
 					state = STATE_STRING_HEX_ESCAPE_X;
+				}
+				else if ((c == 'u') || (c == 'U'))
+				{
+					unicodeDigitsRemaining = (c == 'u') ? 4 : 8;
+					state = STATE_STRING_UNICODE_ESCAPE;
 				}
 				else
 				{
@@ -1181,12 +1292,68 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				break;
 
+			case STATE_STRING_UNICODE_ESCAPE:
+				if (!IsHexChar(c))
+				{
+					stream.Reset(pos);
+					error = CompilerError::INVALID_UNICODE_ESCAPE;
+					state = STATE_STRING;
+				}
+				else if (--unicodeDigitsRemaining == 0)
+				{
+					state = STATE_STRING;
+				}
+				break;
+
 			case STATE_C_COMMENT:
-				if (c == '*')
+			case STATE_LINE_COMMENT:
+				if ((state == STATE_C_COMMENT) && (c == '*'))
 				{
 					state = STATE_C_COMMENT_STAR;
 				}
+				else if ((state == STATE_LINE_COMMENT) && (c == '\n'))
+				{
+					state = STATE_SPACE;
+				}
+				else if (uint8_t(c) >= 0x80)
+				{
+					utf8SequenceStart = pos;
+					if (utf8Validator.Start(c) == Private::Utf8Validator::INVALID)
+					{
+						// Comments aren't tokens, so return the invalid byte as a token of its own to
+						// report it, and resume the comment when scanning the next token.
+						token.SetStartPos(pos);
+						error = CompilerError::INVALID_UTF8;
+						resumeState = state;
+						state = STATE_DONE;
+					}
+					else
+					{
+						state = (state == STATE_C_COMMENT) ? STATE_C_COMMENT_UTF8 : STATE_LINE_COMMENT_UTF8;
+					}
+				}
 				break;
+
+			case STATE_C_COMMENT_UTF8:
+			case STATE_LINE_COMMENT_UTF8:
+			{
+				const LexState commentState = (state == STATE_C_COMMENT_UTF8) ? STATE_C_COMMENT : STATE_LINE_COMMENT;
+				const Private::Utf8Validator::Result result = utf8Validator.Feed(c);
+				if (result == Private::Utf8Validator::COMPLETE)
+				{
+					state = commentState;
+				}
+				else if (result == Private::Utf8Validator::INVALID)
+				{
+					// The byte that ended the sequence is not part of it, so scan it again.
+					stream.Reset(pos);
+					token.SetStartPos(utf8SequenceStart);
+					error = CompilerError::INVALID_UTF8;
+					resumeState = commentState;
+					state = STATE_DONE;
+				}
+			}
+			break;
 
 			case STATE_C_COMMENT_STAR:
 				if (c == '/')
@@ -1195,19 +1362,14 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 				}
 				else if (c != '*')
 				{
+					// Scan the character again, since it may start a multi-byte character.
+					stream.Reset(pos);
 					state = STATE_C_COMMENT;
 				}
 				break;
 
-			case STATE_LINE_COMMENT:
-				if (c == '\n')
-				{
-					state = STATE_SPACE;
-				}
-				break;
-
 			case STATE_INVALID_CHAR:
-				if (!IsUtf8ContinuationChar(c))
+				if (!Private::IsUtf8ContinuationByte(c))
 				{
 					stream.Reset(pos);
 					state = STATE_DONE;
@@ -1221,6 +1383,8 @@ CompilerError::Type LexerCore::ScanToken(CharStream &stream, Token &token) const
 
 	token.SetEndIndex(stream.GetStreamPos().index);
 
+	// The artificial space at the end of the stream completes or invalidates any UTF-8 sequence or
+	// Unicode escape, so scanning can't end in one of those states.
 	if ((state == STATE_SPACE) || (state == STATE_LINE_COMMENT))
 	{
 		token.SetTokenType(Token::END);
@@ -1376,8 +1540,17 @@ void LexerCore::EvaluateKeywordOrIdentifierToken(Token &token) const
 void LexerCore::EvaluateCharToken(Token &token)
 {
 	const CharResult result = EvaluateChar(token.GetRawText() + 1);
-	token.SetIntValue(result.value);
-	PushError(result.error, token);
+	token.SetIntValue(result.bytes[0]);
+
+	if ((result.error == CompilerError::NO_ERROR) && (result.length > 1))
+	{
+		// A \u or \U escape for a character beyond ASCII.
+		PushNonAsciiCharacterError(token, result.codePoint, result.length);
+	}
+	else
+	{
+		PushError(result.error, token);
+	}
 }
 
 
@@ -1447,7 +1620,8 @@ void LexerCore::EvaluateDoubleToken(Token &token) const
 void LexerCore::EvaluateStringToken(Token &token)
 {
 	// Allocate enough space for the string with the quotes stripped off. The string
-	// could actually be shorter once escape sequences are expanded.
+	// could actually be shorter once escape sequences are expanded, since no escape
+	// sequence is shorter than the bytes it evaluates to.
 	const size_t allocLength = token.GetEndIndex() - token.GetStartPos().index - 2;
 	char *buffer = AllocString(allocLength);
 	char *dest = buffer;
@@ -1460,9 +1634,9 @@ void LexerCore::EvaluateStringToken(Token &token)
 	{
 		CharResult result = EvaluateChar(source);
 		source = result.end;
-		*dest = result.value;
-		++dest;
-		++usedLength;
+		memcpy(dest, result.bytes, result.length);
+		dest += result.length;
+		usedLength += result.length;
 		error = (error == CompilerError::NO_ERROR) ? result.error : error;
 	}
 
@@ -1475,32 +1649,56 @@ void LexerCore::EvaluateStringToken(Token &token)
 LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 {
 	CharResult result;
+	char &value = result.bytes[0];
 	if (text[0] == '\\')
 	{
 		result.end = text + 2;
 		switch (text[1])
 		{
-			case 'a': result.value = '\a'; break;
-			case 'b': result.value = '\b'; break;
-			case 'f': result.value = '\f'; break;
-			case 'n': result.value = '\n'; break;
-			case 'r': result.value = '\r'; break;
-			case 't': result.value = '\t'; break;
-			case 'v': result.value = '\v'; break;
-			case '\'': result.value = '\''; break;
-			case '\"': result.value = '\"'; break;
-			case '\\': result.value = '\\'; break;
-			case '\?': result.value = '\?'; break;
+			case 'a': value = '\a'; break;
+			case 'b': value = '\b'; break;
+			case 'f': value = '\f'; break;
+			case 'n': value = '\n'; break;
+			case 'r': value = '\r'; break;
+			case 't': value = '\t'; break;
+			case 'v': value = '\v'; break;
+			case '\'': value = '\''; break;
+			case '\"': value = '\"'; break;
+			case '\\': value = '\\'; break;
+			case '\?': value = '\?'; break;
 
 			case 'x':
 			{
 				char *end;
-				const unsigned long long value = strtoull(text + 2, &end, 16);
-				result.value = char(value);
+				const unsigned long long hexValue = strtoull(text + 2, &end, 16);
+				value = char(hexValue);
 				result.end = end;
-				if (!IsInRange<uint8_t>(value))
+				if (!IsInRange<uint8_t>(hexValue))
 				{
 					result.error = CompilerError::HEX_ESCAPE_RANGE;
+				}
+			}
+			break;
+
+			case 'u':
+			case 'U':
+			{
+				// The scanner has verified that the exact number of hex digits is present. Parse
+				// them by hand, since strtoull would consume any hex digits that follow.
+				const size_t numDigits = (text[1] == 'u') ? 4 : 8;
+				const char *digits = text + 2;
+				uint32_t codePoint = 0;
+				for (size_t i = 0; i < numDigits; ++i)
+				{
+					// Can't overflow, since 8 hex digits fit in 32 bits.
+					codePoint = (codePoint << 4) | GetHexValue(digits[i]);
+				}
+				result.end = digits + numDigits;
+				result.codePoint = codePoint;
+				result.length = Private::EncodeUtf8(codePoint, result.bytes);
+				if (result.length == 0)
+				{
+					result.error = CompilerError::UNICODE_ESCAPE_RANGE;
 				}
 			}
 			break;
@@ -1509,17 +1707,17 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 				if (IsOctalChar(text[1]))
 				{
 					char *end;
-					const unsigned long long value = strtoull(text + 1, &end, 8);
-					result.value = char(value);
+					const unsigned long long octalValue = strtoull(text + 1, &end, 8);
+					value = char(octalValue);
 					result.end = end;
-					if (!IsInRange<uint8_t>(value))
+					if (!IsInRange<uint8_t>(octalValue))
 					{
 						result.error = CompilerError::OCTAL_ESCAPE_RANGE;
 					}
 				}
 				else
 				{
-					result.value = text[1];
+					value = text[1];
 				}
 				break;
 		}
@@ -1527,7 +1725,12 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 	else
 	{
 		result.end = text + 1;
-		result.value = text[0];
+		value = text[0];
+	}
+
+	if (result.length == 1)
+	{
+		result.codePoint = uint8_t(value);
 	}
 
 	return result;
@@ -1549,12 +1752,6 @@ bool LexerCore::IsAlphaChar(char c) const
 bool LexerCore::IsSpaceChar(char c) const
 {
 	return (c == ' ') || (c == '\t') || (c == '\n') || (c == '\v') || (c == '\f') || (c == '\r');
-}
-
-
-bool LexerCore::IsUtf8ContinuationChar(char c) const
-{
-	return (uint8_t(c) & 0xC0) == 0x80;
 }
 
 
@@ -1613,6 +1810,20 @@ bool LexerCore::IsEscapeChar(char c) const
 }
 
 
+uint32_t LexerCore::GetHexValue(char c) const
+{
+	if ((c >= 'a') && (c <= 'f'))
+	{
+		return uint32_t(c - 'a' + 10);
+	}
+	if ((c >= 'A') && (c <= 'F'))
+	{
+		return uint32_t(c - 'A' + 10);
+	}
+	return uint32_t(c - '0');
+}
+
+
 void LexerCore::PushError(CompilerError::Type type, Token &token)
 {
 	if (type != CompilerError::NO_ERROR)
@@ -1628,56 +1839,25 @@ void LexerCore::PushInvalidCharacterError(Token &token)
 	// Decode the token as a single UTF-8 character. The scanner has already grouped the lead byte
 	// with any continuation bytes that follow it, so the token must be exactly one well-formed sequence.
 	const StringView text = token.GetText();
-	const uint8_t lead = uint8_t(text[0]);
-	size_t length = 0;
-	uint32_t codePoint = 0;
-	uint32_t minCodePoint = 0;
-
-	if (lead < 0x80)
-	{
-		length = 1;
-		codePoint = lead;
-	}
-	else if ((lead & 0xE0) == 0xC0)
-	{
-		length = 2;
-		codePoint = lead & 0x1Fu;
-		minCodePoint = 0x80;
-	}
-	else if ((lead & 0xF0) == 0xE0)
-	{
-		length = 3;
-		codePoint = lead & 0x0Fu;
-		minCodePoint = 0x800;
-	}
-	else if ((lead & 0xF8) == 0xF0)
-	{
-		length = 4;
-		codePoint = lead & 0x07u;
-		minCodePoint = 0x10000;
-	}
-
-	bool valid = (length > 0) && (text.size() == length);
-	for (size_t i = 1; valid && (i < length); ++i)
-	{
-		codePoint = (codePoint << 6) | (uint8_t(text[i]) & 0x3Fu);
-	}
-
-	// Reject overlong encodings, UTF-16 surrogates and values beyond the Unicode range.
-	valid = valid &&
-		(codePoint >= minCodePoint) &&
-		((codePoint < 0xD800) || (codePoint > 0xDFFF)) &&
-		(codePoint <= 0x10FFFF);
+	const Private::Utf8Decoded decoded = Private::DecodeUtf8(text.data(), text.size());
+	const bool valid = decoded.valid && (decoded.length == text.size());
 
 	token.SetTokenType(Token::INVALID);
 	if (valid)
 	{
-		mErrorBuffer.PushErrorInt(CompilerError::INVALID_CHARACTER, &token, intptr_t(codePoint));
+		mErrorBuffer.PushErrorInt(CompilerError::INVALID_CHARACTER, &token, intptr_t(decoded.codePoint));
 	}
 	else
 	{
 		mErrorBuffer.PushError(CompilerError::INVALID_UTF8, &token);
 	}
+}
+
+
+void LexerCore::PushNonAsciiCharacterError(Token &token, uint32_t codePoint, size_t length)
+{
+	token.SetTokenType(Token::INVALID);
+	mErrorBuffer.PushErrorInt(CompilerError::NON_ASCII_CHARACTER_CONSTANT, &token, intptr_t(codePoint), intptr_t(length));
 }
 
 

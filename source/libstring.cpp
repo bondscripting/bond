@@ -1,5 +1,6 @@
 #include "bond/api/libstring.h"
 #include "bond/vm/vm.h"
+#include "private/utf8.h"
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -35,6 +36,68 @@ void Strcmp(Bond::StackFrame &frame)
 	const char *str2 = GetStringArg(frame, 1);
 	const uint32_t result = uint32_t(strcmp(str1, str2));
 	frame.SetReturnValue(result);
+}
+
+
+void Utf8Length(Bond::StackFrame &frame)
+{
+	const char *str = GetStringArg(frame, 0);
+	size_t remaining = strlen(str);
+	uint32_t length = 0;
+	while (remaining > 0)
+	{
+		const Private::Utf8Decoded decoded = Private::DecodeUtf8(str, remaining);
+		str += decoded.length;
+		remaining -= decoded.length;
+		++length;
+	}
+	frame.SetReturnValue(length);
+}
+
+
+void Utf8IsValid(Bond::StackFrame &frame)
+{
+	const char *str = GetStringArg(frame, 0);
+	size_t remaining = strlen(str);
+	bool valid = true;
+	while (valid && (remaining > 0))
+	{
+		const Private::Utf8Decoded decoded = Private::DecodeUtf8(str, remaining);
+		str += decoded.length;
+		remaining -= decoded.length;
+		valid = decoded.valid;
+	}
+	frame.SetReturnValue(valid);
+}
+
+
+void Utf8Decode(Bond::StackFrame &frame)
+{
+	const char *str = GetStringArg(frame, 0);
+	uint32_t *codePoint = frame.GetArg<uint32_t *>(1);
+	uint32_t length = 0;
+	if (*str != '\0')
+	{
+		// Bound the decoder by the string's length so that it never reads past the terminator.
+		const Private::Utf8Decoded decoded = Private::DecodeUtf8(str, strlen(str));
+		length = uint32_t(decoded.length);
+		if (codePoint != nullptr)
+		{
+			*codePoint = decoded.codePoint;
+		}
+	}
+	frame.SetReturnValue(length);
+}
+
+
+void Utf8Encode(Bond::StackFrame &frame)
+{
+	const uint32_t codePoint = frame.GetArg<uint32_t>(0);
+	char *buffer = frame.GetArg<char *>(1);
+	const size_t length = (buffer != nullptr) ?
+		Private::EncodeUtf8(codePoint, buffer) :
+		Private::GetUtf8EncodedLength(codePoint);
+	frame.SetReturnValue(uint32_t(length));
 }
 
 

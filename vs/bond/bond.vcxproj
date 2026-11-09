@@ -120,6 +120,7 @@
     <ClInclude Include="..\..\source\private\toplevelsymbolpass.h" />
     <ClInclude Include="..\..\source\private\typeevaluationpass.h" />
     <ClInclude Include="..\..\source\private\typespecifierresolutionpass.h" />
+    <ClInclude Include="..\..\source\private\utf8.h" />
     <ClInclude Include="..\..\source\private\validationpass.h" />
     <ClInclude Include="..\..\source\private\valueevaluationpass.h" />
   </ItemGroup>

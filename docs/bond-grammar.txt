@@ -1,3 +1,26 @@
+Lexical Conventions
+-------------------
+
+Source files are encoded in UTF-8, optionally starting with a UTF-8 byte order mark, which is
+ignored. A file starting with a UTF-16 or UTF-32 byte order mark is rejected. Invalid UTF-8 is an
+error anywhere in a source file, including in comments and literals.
+
+Keywords, identifiers, numbers and punctuation are ASCII. Non-ASCII characters may appear only in
+string literals and comments.
+
+A char literal holds a single byte, so it must be an ASCII character or an escape sequence that
+produces a single byte. A string literal evaluates to UTF-8 bytes.
+
+Escape sequences in char and string literals:
+  \a \b \f \n \r \t \v \' \" \\ \?
+  \ooo         1 or more octal digits: an arbitrary byte, 0 to 377.
+  \xhh         1 or more hex digits: an arbitrary byte, 0 to FF.
+  \uXXXX       Exactly 4 hex digits: the UTF-8 encoding of the code point.
+  \UXXXXXXXX   Exactly 8 hex digits: the UTF-8 encoding of the code point.
+A Unicode escape must not be a UTF-16 surrogate (D800 to DFFF) or exceed 10FFFF. In a char literal,
+it must not exceed 7F. Octal and hex escapes may produce bytes that are not valid UTF-8.
+
+
 External Definitions
 --------------------
 

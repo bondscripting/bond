@@ -8,16 +8,54 @@ namespace Bond
 /// \defgroup string string.bond
 /// \brief A collection of functions for manipulating strings of characters.
 ///
+/// Strings are null-terminated and encoded in UTF-8. A char holds a single byte, which is one
+/// UTF-8 code unit rather than one character. The Utf8 functions operate on code points.
+///
 /// \code
 /// include "string.bond";
 /// \endcode
 
 /// @{
 
-/// \brief Returns the length of a string.
+/// \brief Returns the length of a string in bytes, not in characters.
 /// \param str The string whose length is returned.
+/// \sa Utf8Length
 uint Strlen(const char *str);
+
+/// \brief Compares two strings byte by byte. For UTF-8 strings, this orders them by code point.
+/// The order is stable, but it is not a locale's collation order.
+/// \param str1 The first string to compare.
+/// \param str2 The second string to compare.
+/// \returns A negative value if str1 orders before str2, zero if they are equal, or a positive
+/// value if str1 orders after str2.
 int Strcmp(const char *str1, const char *str2);
+
+/// \brief Returns the number of code points in a UTF-8 string. Each invalid byte sequence counts as
+/// one, as if it were replaced with U+FFFD.
+/// \param str The string whose length is returned.
+uint Utf8Length(const char *str);
+
+/// \brief Returns whether a string is valid UTF-8. Overlong encodings, UTF-16 surrogates and values
+/// beyond U+10FFFF are invalid.
+/// \param str The string to validate.
+bool Utf8IsValid(const char *str);
+
+/// \brief Decodes the UTF-8 encoded code point at the start of a string.
+/// \param str The string to decode.
+/// \param codePoint Receives the decoded code point, or U+FFFD if the sequence is invalid. May be
+/// null to skip over a code point without reading it.
+/// \returns The number of bytes consumed, from 1 to 4, or 0 at the end of the string. For an invalid
+/// sequence, it is the length of the invalid sequence, which is at least 1, so the string can be
+/// iterated with `for (uint n; (n = Utf8Decode(str, &cp)) > 0u; str += n)`.
+uint Utf8Decode(const char *str, uint *codePoint);
+
+/// \brief Encodes a code point in UTF-8.
+/// \param codePoint The code point to encode.
+/// \param buffer Receives from 1 to 4 bytes, without a null terminator. May be null to just compute
+/// the length.
+/// \returns The number of bytes in the encoding, or 0 if the code point is a UTF-16 surrogate or is
+/// beyond U+10FFFF, in which case nothing is written.
+uint Utf8Encode(uint codePoint, char *buffer);
 
 bool TryParseInt(const char *str, int *result);
 bool TryParseLong(const char *str, long *result);

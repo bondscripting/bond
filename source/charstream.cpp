@@ -27,7 +27,12 @@ char CharStream::Next()
 	if (mPos.index <= mEndPos)
 	{
 		++mPos.index;
-		++mPos.column;
+
+		// Count columns in code points rather than bytes by skipping UTF-8 continuation bytes.
+		if ((uint8_t(c) & 0xC0) != 0x80)
+		{
+			++mPos.column;
+		}
 
 		if (c == '\n')
 		{

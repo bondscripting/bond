@@ -259,6 +259,73 @@ DEFINE_VM_TEST(String, "scripts/sanalyzer_IncludeLibraries.bond")
 	ASSERT_MESSAGE(strcmpResult("ab", "abc") < 0, "Expected \"ab\" < \"abc\".");
 	ASSERT_MESSAGE(strcmpResult("abc", "ab") > 0, "Expected \"abc\" > \"ab\".");
 
+	// Strlen counts bytes, and Strcmp orders UTF-8 strings by code point.
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Strlen", uint32_t(5), "caf\xC3\xA9");
+	ASSERT_MESSAGE(strcmpResult("\xC3\xA9", "\xE2\x82\xAC") < 0, "Expected U+00E9 < U+20AC.");
+
+	// Each invalid sequence counts as one code point, as if replaced with U+FFFD. The truncated
+	// sequence E2 82 is one maximal invalid subpart.
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(0), "");
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(3), "abc");
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(4), "caf\xC3\xA9");
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(3), "a\xF0\x9F\x98\x80" "b");
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(3), "a\xE2\x82" "b");
+	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Utf8Length", uint32_t(2), "\x80\x80");
+
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", SUCCESS, "");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", SUCCESS, "caf\xC3\xA9 \xE2\x82\xAC \xF0\x9F\x98\x80 \xF4\x8F\xBF\xBF");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", FAILURE, "\xC0\xAF");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", FAILURE, "\xED\xA0\x80");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", FAILURE, "\xF4\x90\x80\x80");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", FAILURE, "a\xE2\x82");
+	VALIDATE_FUNCTION_CALL(int32_t, "Bond.Utf8IsValid", FAILURE, "\xFF");
+
+	const auto validateDecode = [&vm](const char *str, uint32_t expectedLength, uint32_t expectedCodePoint)
+	{
+		uint32_t length = 99;
+		uint32_t codePoint = 0;
+		vm.CallFunction("Bond.Utf8Decode", &length, str, &codePoint);
+		ASSERT_FORMAT((length == expectedLength) && (codePoint == expectedCodePoint),
+			"Expected length %" BOND_PRIu32 " and U+%04" BOND_PRIX32 ", but was %" BOND_PRIu32 " and U+%04" BOND_PRIX32 ".",
+			expectedLength, expectedCodePoint, length, codePoint);
+	};
+	validateDecode("A", 1, 0x41);
+	validateDecode("\xC3\xA9z", 2, 0xE9);
+	validateDecode("\xE2\x82\xAC", 3, 0x20AC);
+	validateDecode("\xF0\x9F\x98\x80", 4, 0x1F600);
+	validateDecode("\xE2\x82" "A", 2, 0xFFFD);
+	validateDecode("\xC0\xAF", 1, 0xFFFD);
+	validateDecode("\xED\xA0\x80", 1, 0xFFFD);
+
+	uint32_t decodeLength = 99;
+	uint32_t codePoint = 1234;
+	vm.CallFunction("Bond.Utf8Decode", &decodeLength, "", &codePoint);
+	ASSERT_FORMAT((decodeLength == 0) && (codePoint == 1234), "Expected 0 at the end of the string, but was %" BOND_PRIu32 ".", decodeLength);
+	vm.CallFunction("Bond.Utf8Decode", &decodeLength, "\xC3\xA9", static_cast<uint32_t *>(nullptr));
+	ASSERT_FORMAT(decodeLength == 2, "Expected 2 with a null code point, but was %" BOND_PRIu32 ".", decodeLength);
+
+	const auto validateEncode = [&vm](uint32_t cp, const char *expected)
+	{
+		char buffer[5] = {0, 0, 0, 0, 0};
+		uint32_t length = 99;
+		vm.CallFunction("Bond.Utf8Encode", &length, cp, static_cast<char *>(buffer));
+		const size_t expectedLength = strlen(expected);
+		ASSERT_FORMAT((length == expectedLength) && (memcmp(buffer, expected, expectedLength) == 0) && (buffer[length] == '\0'),
+			"Expected %d bytes for U+%04" BOND_PRIX32 ", but was %" BOND_PRIu32 ".", int(expectedLength), cp, length);
+
+		uint32_t nullBufferLength = 99;
+		vm.CallFunction("Bond.Utf8Encode", &nullBufferLength, cp, static_cast<char *>(nullptr));
+		ASSERT_FORMAT(nullBufferLength == expectedLength, "Expected %d bytes for U+%04" BOND_PRIX32 " with a null buffer, but was %" BOND_PRIu32 ".",
+			int(expectedLength), cp, nullBufferLength);
+	};
+	validateEncode(0x41, "A");
+	validateEncode(0xE9, "\xC3\xA9");
+	validateEncode(0x20AC, "\xE2\x82\xAC");
+	validateEncode(0x1F600, "\xF0\x9F\x98\x80");
+	validateEncode(0x10FFFF, "\xF4\x8F\xBF\xBF");
+	validateEncode(0xD800, "");
+	validateEncode(0x110000, "");
+
 	int32_t intResult = -1;
 	VALIDATE_FUNCTION_CALL(int32_t, "Bond.TryParseInt", SUCCESS, "42", &intResult);
 	ASSERT_FORMAT(intResult == 42, "Expected 42, but was %" BOND_PRId32 ".", intResult);
@@ -498,6 +565,9 @@ DEFINE_VM_TEST_WITH_BINDING(RuntimeValidation, "scripts/vm_LibIO.bond", &ALLOCAT
 	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Strlen", &uintResult, NULL_STRING));
 	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Strcmp", &intResult, NULL_STRING, "a"));
 	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Strcmp", &intResult, "a", NULL_STRING));
+	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Utf8Length", &uintResult, NULL_STRING));
+	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Utf8IsValid", &intResult, NULL_STRING));
+	ASSERT_BOND_EXCEPTION(NULL_STRING_ERROR, vm.CallFunction("Bond.Utf8Decode", &uintResult, NULL_STRING, &uintResult));
 	VALIDATE_FUNCTION_CALL(uint32_t, "Bond.Strlen", uint32_t(3), "abc");
 
 	// memory
