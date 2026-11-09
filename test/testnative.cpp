@@ -145,6 +145,85 @@ DEFINE_VM_TEST_WITH_BINDING(NativeStructs, "scripts/vm_NativeStructs.bond", &NAT
 
 namespace
 {
+// Each returns a small integer whose C++ type differs in signedness from the declared Bond type.
+void ReturnBoolFromChar(Bond::StackFrame &frame) { frame.SetReturnValue(int8_t(5)); }
+void ReturnCharFromUChar(Bond::StackFrame &frame) { frame.SetReturnValue(uint8_t(200)); }
+void ReturnUCharFromChar(Bond::StackFrame &frame) { frame.SetReturnValue(int8_t(-1)); }
+void ReturnShortFromUShort(Bond::StackFrame &frame) { frame.SetReturnValue(uint16_t(0xffff)); }
+void ReturnUShortFromShort(Bond::StackFrame &frame) { frame.SetReturnValue(int16_t(-1)); }
+
+
+const Bond::NativeFunctionBinding NATIVE_TYPES_BINDING_FUNCTIONS[] =
+{
+	{"ReturnBoolFromChar", ReturnBoolFromChar},
+	{"ReturnCharFromUChar", ReturnCharFromUChar},
+	{"ReturnUCharFromChar", ReturnUCharFromChar},
+	{"ReturnShortFromUShort", ReturnShortFromUShort},
+	{"ReturnUShortFromShort", ReturnUShortFromShort},
+	{nullptr, nullptr}
+};
+
+const Bond::NativeBindingCollection NATIVE_TYPES_BINDING_COLLECTION = {NATIVE_TYPES_BINDING_FUNCTIONS, 5};
+
+
+enum NativeTypesEnum
+{
+	NATIVE_TYPES_ENUM_VALUE = 17
+};
+
+
+struct Pair
+{
+	int32_t a;
+	int32_t b;
+};
+}
+
+
+DEFINE_VM_TEST_WITH_BINDING(NativeTypes, "scripts/vm_NativeTypes.bond", &NATIVE_TYPES_BINDING_COLLECTION)
+{
+	using namespace Bond;
+
+	// Small integer return values are widened according to the declared Bond type.
+	VALIDATE_FUNCTION_CALL(uint32_t, "BoolReturnIsNormalized", uint32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "CharReturnIsSignExtended", uint32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "UCharReturnIsZeroExtended", uint32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "ShortReturnIsSignExtended", uint32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "UShortReturnIsZeroExtended", uint32_t(1));
+
+	// Bool arguments are stored as 0 or 1 whatever type is used to pass them.
+	VALIDATE_FUNCTION_CALL(uint32_t, "IsTrue", uint32_t(1), true);
+	VALIDATE_FUNCTION_CALL(uint32_t, "IsTrue", uint32_t(1), uint8_t(23));
+	VALIDATE_FUNCTION_CALL(uint32_t, "IsTrue", uint32_t(1), int8_t(-1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "IsTrue", uint32_t(0), int8_t(0));
+
+	// Integers match by size, whichever fundamental type the fixed width typedefs alias.
+	VALIDATE_FUNCTION_CALL(int32_t, "PassChar", int32_t(65), char(65));
+	VALIDATE_FUNCTION_CALL(int32_t, "PassChar", int32_t(-3), static_cast<signed char>(-3));
+	VALIDATE_FUNCTION_CALL(int64_t, "PassLong", int64_t(-5), static_cast<long long>(-5));
+	VALIDATE_FUNCTION_CALL(int64_t, "PassLong", int64_t(6), static_cast<unsigned long long>(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "PassInt", int32_t(17), NATIVE_TYPES_ENUM_VALUE);
+	VALIDATE_FUNCTION_CALL(uint32_t, "IsNull", uint32_t(1), nullptr);
+
+	Pair pair = {3, 4};
+	VALIDATE_FUNCTION_CALL(int32_t, "SumPair", int32_t(7), pair);
+	VALIDATE_FUNCTION_CALL(int32_t, "SumPairPointer", int32_t(7), &pair);
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+	int32_t intResult = 0;
+	int64_t longResult = 0;
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("SumPair", &intResult, &pair));
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("SumPairPointer", &intResult, pair));
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("PassLong", &longResult, int32_t(1)));
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("PassChar", &intResult, int16_t(1)));
+	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("PassInt", &intResult, 1.0f));
+	ASSERT_BOND_EXCEPTION("Attempt to call function with too many arguments.", vm.CallFunction("PassInt", &intResult, int32_t(1), int32_t(2)));
+#endif
+}
+
+
+namespace
+{
 const size_t MAX_BINDING_FILE_SIZE = 4 * 1024;
 
 // Reads a file and strips carriage returns, so that a CRLF checkout compares equal to LF output.
@@ -245,6 +324,7 @@ DEFINE_TEST(NativeBindingGenerator)
 
 #define TEST_ITEMS                              \
   TEST_ITEM(NativeStructs)                      \
+  TEST_ITEM(NativeTypes)                        \
   TEST_ITEM(NativeBindingGenerator)             \
 
 RUN_TESTS(Native, TEST_ITEMS)

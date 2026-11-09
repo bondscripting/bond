@@ -68,7 +68,7 @@ private:
 	ArgType &GetArgRef(size_t index) const;
 
 	template <typename ReturnType>
-	void AssertValidReturnAssignmentType() const;
+	void ValidateReturnAssignmentType() const;
 
 	Collector mCollector;
 	VM &mVm;
@@ -100,10 +100,8 @@ public:
 	template <typename ArgType>
 	void PushArg(const ArgType &arg);
 
-	void PushArgs() {}
-
-	template <typename Arg1, typename... Args>
-	void PushArgs(Arg1 arg1, Args... args);
+	template <typename... Args>
+	void PushArgs(Args... args);
 
 	void Call();
 

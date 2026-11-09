@@ -1,0 +1,21 @@
+/**
+\mainpage Bond C++ API
+
+Bond is a small C-like scripting language. This is the API of its compiler, virtual machine and
+runtime library.
+
+\section text_encoding Text encoding
+
+All text in Bond is encoded in UTF-8. Every `const char *` that crosses the C++ API is UTF-8,
+including:
+
+- Bond source code passed to the Lexer, and strings in Bond scripts and CBO files.
+- File names passed to stream factories, StdioFileHandle and the other I/O classes. On Windows,
+  they are converted to UTF-16 to open the file, so a name that is not valid UTF-8 fails to open.
+  An embedder must not pass names in the ANSI code page.
+- Names of functions, structs and other symbols, such as those passed to VM::CallFunction.
+- Command line arguments, which the Bond tools obtain with CommandLineArgs.
+
+A Bond `char` holds one byte, which is one UTF-8 code unit rather than one character. Compiler
+error columns count code points.
+*/

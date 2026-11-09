@@ -1,0 +1,74 @@
+native
+{
+	bool ReturnBoolFromChar();
+	char ReturnCharFromUChar();
+	uchar ReturnUCharFromChar();
+	short ReturnShortFromUShort();
+	ushort ReturnUShortFromShort();
+}
+
+struct Pair
+{
+	int a;
+	int b;
+};
+
+bool BoolReturnIsNormalized()
+{
+	return ReturnBoolFromChar() == true;
+}
+
+bool CharReturnIsSignExtended()
+{
+	return ReturnCharFromUChar() == -56;
+}
+
+bool UCharReturnIsZeroExtended()
+{
+	return ReturnUCharFromChar() == 255;
+}
+
+bool ShortReturnIsSignExtended()
+{
+	return ReturnShortFromUShort() == -1;
+}
+
+bool UShortReturnIsZeroExtended()
+{
+	return ReturnUShortFromShort() == 65535;
+}
+
+bool IsTrue(bool b)
+{
+	return b == true;
+}
+
+int PassChar(char c)
+{
+	return c;
+}
+
+int PassInt(int i)
+{
+	return i;
+}
+
+long PassLong(long l)
+{
+	return l;
+}
+
+bool IsNull(int *p)
+{
+	return p == null;
+}
+
+int SumPair(Pair p)
+{
+	return p.a + p.b;
+}
+
+int SumPairPointer(const Pair *p)
+{
+	return p->a + p->b;
+}

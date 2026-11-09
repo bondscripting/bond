@@ -1543,7 +1543,7 @@ DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
 	ASSERT_BOND_EXCEPTION("Attempt to call function with too few arguments.", vm.CallFunction("AddInts", &intResult, int32_t(1)));
 	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
 
-	ASSERT_BOND_EXCEPTION("Attempt to index argument 2 out of range.", vm.CallFunction("AddInts", &intResult, int32_t(1), int32_t(2), int32_t(3)));
+	ASSERT_BOND_EXCEPTION("Attempt to call function with too many arguments.", vm.CallFunction("AddInts", &intResult, int32_t(1), int32_t(2), int32_t(3)));
 	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
 
 	ASSERT_BOND_EXCEPTION("Attempt to access argument 0 using wrong type.", vm.CallFunction("AddInts", &intResult, 1.0, int32_t(2)));

@@ -2,218 +2,110 @@
 #define BOND_PRIVATE_VM_H
 
 #include "bond/systems/math.h"
+#include <type_traits>
 
 namespace Bond
 {
 
+inline bool IsIntegerSignatureType(SignatureType signatureType)
+{
+	switch (signatureType)
+	{
+		case SIG_BOOL:
+		case SIG_CHAR:
+		case SIG_UCHAR:
+		case SIG_SHORT:
+		case SIG_USHORT:
+		case SIG_INT:
+		case SIG_UINT:
+		case SIG_LONG:
+		case SIG_ULONG:
+			return true;
+		default:
+			return false;
+	}
+}
+
+
+/// \brief Returns whether a value of native type T can be stored in, or read from, a Bond value
+/// with the given signature type and size. Integers match any integer signature type of the same
+/// size, regardless of signedness. Unsupported types are rejected at compile time.
 template <typename T>
 bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
-	return
-		(sizeof(T)  == size) &&
-		((signatureType == SIG_POINTER) || (signatureType == SIG_AGGREGATE));
+	if constexpr (std::is_enum_v<T>)
+	{
+		return ValidateSignatureType<std::underlying_type_t<T>>(size, signatureType);
+	}
+	else
+	{
+		static_assert(
+			std::is_integral_v<T> || std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_pointer_v<T> ||
+			((std::is_class_v<T> || std::is_union_v<T>) && std::is_trivially_copyable_v<T>),
+			"Type cannot be passed to or returned from Bond.");
+
+		bool typeMatches;
+		if constexpr (std::is_integral_v<T>)
+		{
+			typeMatches = IsIntegerSignatureType(signatureType);
+		}
+		else if constexpr (std::is_same_v<T, float>)
+		{
+			typeMatches = signatureType == SIG_FLOAT;
+		}
+		else if constexpr (std::is_same_v<T, double>)
+		{
+			typeMatches = signatureType == SIG_DOUBLE;
+		}
+		else if constexpr (std::is_pointer_v<T>)
+		{
+			typeMatches = signatureType == SIG_POINTER;
+		}
+		else
+		{
+			typeMatches = signatureType == SIG_AGGREGATE;
+		}
+		return typeMatches && (sizeof(T) == size);
+	}
 }
 
 
-template <>
-inline bool ValidateSignatureType<bool>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_BOOL) ||
-		(signatureType == SIG_CHAR) ||
-		(signatureType == SIG_UCHAR);
-}
-
-
-template <>
-inline bool ValidateSignatureType<int8_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_BOOL) ||
-		(signatureType == SIG_CHAR) ||
-		(signatureType == SIG_UCHAR);
-}
-
-
-template <>
-inline bool ValidateSignatureType<uint8_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_BOOL) ||
-		(signatureType == SIG_CHAR) ||
-		(signatureType == SIG_UCHAR);
-}
-
-
-template <>
-inline bool ValidateSignatureType<int16_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_SHORT) ||
-		(signatureType == SIG_USHORT);
-}
-
-
-template <>
-inline bool ValidateSignatureType<uint16_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_SHORT) ||
-		(signatureType == SIG_USHORT);
-}
-
-
-template <>
-inline bool ValidateSignatureType<int32_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_INT) ||
-		(signatureType == SIG_UINT);
-}
-
-
-template <>
-inline bool ValidateSignatureType<uint32_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_INT) ||
-		(signatureType == SIG_UINT);
-}
-
-
-template <>
-inline bool ValidateSignatureType<int64_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_LONG) ||
-		(signatureType == SIG_ULONG);
-}
-
-
-template <>
-inline bool ValidateSignatureType<uint64_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_LONG) ||
-		(signatureType == SIG_ULONG);
-}
-
-
-template <>
-inline bool ValidateSignatureType<float>(size_t size, SignatureType signatureType)
-{
-	return signatureType == SIG_FLOAT;
-}
-
-
-template <>
-inline bool ValidateSignatureType<double>(size_t size, SignatureType signatureType)
-{
-	return signatureType == SIG_DOUBLE;
-}
-
-
+/// \brief Returns whether a variable of native type T can receive the return value of a function
+/// with the given return signature. Integers smaller than 32 bits are returned widened to 32 bits,
+/// so they require a 32-bit return variable.
 template <typename T>
 bool ValidateReturnType(size_t size, SignatureType signatureType)
 {
-	return
-		(sizeof(T)  == size) &&
-		((signatureType == SIG_POINTER) || (signatureType == SIG_AGGREGATE));
+	if constexpr (std::is_enum_v<T>)
+	{
+		return ValidateReturnType<std::underlying_type_t<T>>(size, signatureType);
+	}
+	else if constexpr (std::is_integral_v<T> && (sizeof(T) == sizeof(int32_t)))
+	{
+		return IsIntegerSignatureType(signatureType) && (size <= sizeof(T));
+	}
+	else
+	{
+		static_assert(!std::is_integral_v<T> || (sizeof(T) > sizeof(int32_t)),
+			"Integer return values smaller than 32 bits are widened to 32 bits. Use int32_t or uint32_t.");
+		return ValidateSignatureType<T>(size, signatureType);
+	}
 }
 
 
-template <>
-inline bool ValidateReturnType<bool>(size_t size, SignatureType signatureType)
+/// \brief Widens an integer smaller than 32 bits to 32 bits as the VM does for a value of the
+/// given signature type.
+template <typename T>
+int32_t WidenSmallInteger(T value, SignatureType signatureType)
 {
-	return false;
-}
-
-
-template <>
-inline bool ValidateReturnType<int8_t>(size_t size, SignatureType signatureType)
-{
-	return false;
-}
-
-
-template <>
-inline bool ValidateReturnType<uint8_t>(size_t size, SignatureType signatureType)
-{
-	return false;
-}
-
-
-template <>
-inline bool ValidateReturnType<int16_t>(size_t size, SignatureType signatureType)
-{
-	return false;
-}
-
-
-template <>
-inline bool ValidateReturnType<uint16_t>(size_t size, SignatureType signatureType)
-{
-	return false;
-}
-
-
-template <>
-inline bool ValidateReturnType<int32_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_BOOL) ||
-		(signatureType == SIG_CHAR) ||
-		(signatureType == SIG_UCHAR) ||
-		(signatureType == SIG_SHORT) ||
-		(signatureType == SIG_USHORT) ||
-		(signatureType == SIG_INT) ||
-		(signatureType == SIG_UINT);
-}
-
-
-template <>
-inline bool ValidateReturnType<uint32_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_BOOL) ||
-		(signatureType == SIG_CHAR) ||
-		(signatureType == SIG_UCHAR) ||
-		(signatureType == SIG_SHORT) ||
-		(signatureType == SIG_USHORT) ||
-		(signatureType == SIG_INT) ||
-		(signatureType == SIG_UINT);
-}
-
-
-template <>
-inline bool ValidateReturnType<int64_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_LONG) ||
-		(signatureType == SIG_ULONG);
-}
-
-
-template <>
-inline bool ValidateReturnType<uint64_t>(size_t size, SignatureType signatureType)
-{
-	return
-		(signatureType == SIG_LONG) ||
-		(signatureType == SIG_ULONG);
-}
-
-
-template <>
-inline bool ValidateReturnType<float>(size_t size, SignatureType signatureType)
-{
-	return signatureType == SIG_FLOAT;
-}
-
-
-template <>
-inline bool ValidateReturnType<double>(size_t size, SignatureType signatureType)
-{
-	return signatureType == SIG_DOUBLE;
+	switch (signatureType)
+	{
+		case SIG_BOOL: return (value != T(0)) ? int32_t(1) : int32_t(0);
+		case SIG_CHAR: return int32_t(int8_t(value));
+		case SIG_UCHAR: return int32_t(uint8_t(value));
+		case SIG_SHORT: return int32_t(int16_t(value));
+		default: return int32_t(uint16_t(value));
+	}
 }
 
 
@@ -227,48 +119,28 @@ inline const ArgType &StackFrame::GetArg(size_t index) const
 template <typename ReturnType>
 inline void StackFrame::SetReturnValue(const ReturnType &returnValue)
 {
-	AssertValidReturnAssignmentType<ReturnType>();
-	*reinterpret_cast<ReturnType*>(mReturnPointer) = returnValue;
-}
-
-
-template <>
-inline void StackFrame::SetReturnValue<bool>(const bool &returnValue)
-{
-	AssertValidReturnAssignmentType<bool>();
-	*reinterpret_cast<int32_t*>(mReturnPointer) = returnValue ? int32_t(1) : int32_t(0);
-}
-
-
-template <>
-inline void StackFrame::SetReturnValue<int8_t>(const int8_t &returnValue)
-{
-	AssertValidReturnAssignmentType<int8_t>();
-	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
-}
-
-
-template <>
-inline void StackFrame::SetReturnValue<uint8_t>(const uint8_t &returnValue)
-{
-	AssertValidReturnAssignmentType<uint8_t>();
-	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
-}
-
-
-template <>
-inline void StackFrame::SetReturnValue<int16_t>(const int16_t &returnValue)
-{
-	AssertValidReturnAssignmentType<int16_t>();
-	*reinterpret_cast<int32_t*>(mReturnPointer) = int32_t(returnValue);
-}
-
-
-template <>
-inline void StackFrame::SetReturnValue<uint16_t>(const uint16_t &returnValue)
-{
-	AssertValidReturnAssignmentType<uint16_t>();
-	*reinterpret_cast<uint32_t*>(mReturnPointer) = int32_t(returnValue);
+	if constexpr (std::is_enum_v<ReturnType>)
+	{
+		SetReturnValue(std::underlying_type_t<ReturnType>(returnValue));
+	}
+	else if constexpr (std::is_null_pointer_v<ReturnType>)
+	{
+		SetReturnValue(static_cast<void *>(nullptr));
+	}
+	else
+	{
+		ValidateReturnAssignmentType<ReturnType>();
+		if constexpr (std::is_integral_v<ReturnType> && (sizeof(ReturnType) < sizeof(int32_t)))
+		{
+			// The operand stack holds small integers widened according to their Bond type.
+			const SignatureType signatureType = SignatureType(mFunction->mReturnSignature.mType);
+			*reinterpret_cast<int32_t *>(mReturnPointer) = WidenSmallInteger(returnValue, signatureType);
+		}
+		else
+		{
+			*reinterpret_cast<ReturnType *>(mReturnPointer) = returnValue;
+		}
+	}
 }
 
 
@@ -302,7 +174,7 @@ inline ArgType &StackFrame::GetArgRef(size_t index) const
 
 
 template <typename ReturnType>
-inline void StackFrame::AssertValidReturnAssignmentType() const
+inline void StackFrame::ValidateReturnAssignmentType() const
 {
 #if BOND_RUNTIME_CHECKS_ENABLED
 	const ReturnSignature &ret = mFunction->mReturnSignature;
@@ -418,16 +290,45 @@ inline InvocationStackFrame::InvocationStackFrame(VM &vm, const Function &functi
 template <typename ArgType>
 inline void InvocationStackFrame::PushArg(const ArgType &arg)
 {
-	GetValue().GetArgRef<ArgType>(mNextArg) = arg;
-	++mNextArg;
+	if constexpr (std::is_enum_v<ArgType>)
+	{
+		PushArg(std::underlying_type_t<ArgType>(arg));
+	}
+	else if constexpr (std::is_null_pointer_v<ArgType>)
+	{
+		PushArg(static_cast<void *>(nullptr));
+	}
+	else
+	{
+		StackFrame &frame = GetValue();
+
+#if BOND_RUNTIME_CHECKS_ENABLED
+		if (mNextArg >= frame.mFunction->mParamListSignature.mParamCount)
+		{
+			frame.mVm.RaiseError("Attempt to call function with too many arguments.");
+		}
+#endif
+
+		ArgType &destination = frame.GetArgRef<ArgType>(mNextArg);
+		if constexpr (std::is_integral_v<ArgType> && (sizeof(ArgType) == BOND_BOOL_SIZE))
+		{
+			// Store bools as 0 or 1 regardless of the type used to pass them.
+			const bool isBool = frame.mFunction->mParamListSignature.mParamSignatures[mNextArg].mType == SIG_BOOL;
+			destination = isBool ? ArgType(arg != ArgType(0)) : arg;
+		}
+		else
+		{
+			destination = arg;
+		}
+		++mNextArg;
+	}
 }
 
 
-template <typename Arg1, typename... Args>
-inline void InvocationStackFrame::PushArgs(Arg1 arg1, Args... args)
+template <typename... Args>
+inline void InvocationStackFrame::PushArgs(Args... args)
 {
-	PushArg(arg1);
-	PushArgs(args...);
+	(PushArg(args), ...);
 }
 
 
