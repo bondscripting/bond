@@ -2007,7 +2007,13 @@ class BOND_API ExpressionStatement: public ListParseNode
 public:
 	/// \brief Constructs an expression statement.
 	/// \param expression Expression to evaluate, or null for empty statements.
-	explicit ExpressionStatement(Expression *expression): mExpression(expression) {}
+	/// \param declaratorName For a statement that has the shape of an uninitialized variable
+	///        declaration (e.g. `A * b;`), the token of the name that would have been declared.
+	///        Used to report a missing initializer if the statement turns out to be a declaration.
+	explicit ExpressionStatement(Expression *expression, const Token *declaratorName = nullptr):
+		mExpression(expression),
+		mDeclaratorName(declaratorName)
+	{}
 	virtual ~ExpressionStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2021,8 +2027,13 @@ public:
 	/// \brief Returns the statement expression.
 	const Expression *GetExpression() const { return mExpression; }
 
+	/// \brief Returns the token of the name that would have been declared if the statement were
+	/// an uninitialized variable declaration, or null if it does not have that shape.
+	const Token *GetDeclaratorName() const { return mDeclaratorName; }
+
 private:
 	Expression *mExpression;
+	const Token *mDeclaratorName;
 };
 
 

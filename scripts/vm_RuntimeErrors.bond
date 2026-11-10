@@ -14,6 +14,6 @@ void DoNothing()
 
 int Recurse(int n)
 {
-	char[2048] stackPadding;
+	char[2048] stackPadding = {};
 	return Recurse(n + 1) + 1;
 }

@@ -50,7 +50,7 @@ void TheFunction()
 	{
 		using namespace A;
 		using namespace B;
-		StructType s;
+		StructType s = {};
 	}
 }
 
@@ -70,5 +70,5 @@ struct Clash
 void TheOtherFunction()
 {
 	using namespace C;
-	Clash c;
+	Clash c = {};
 }

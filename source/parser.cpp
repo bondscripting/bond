@@ -16,6 +16,7 @@ public:
 		mErrorBuffer(errorBuffer),
 		mStore(store),
 		mStream(stream),
+		mNumErrorsDetected(0),
 		mHasUnrecoveredError(false)
 	{}
 
@@ -26,6 +27,16 @@ public:
 
 private:
 	typedef AutoStack<Scope> ScopeStack;
+
+	// Parser state saved before parsing speculatively, so that the parse can be undone.
+	struct Checkpoint
+	{
+		int mStreamPos;
+		size_t mStorePos;
+		size_t mNumErrors;
+		size_t mNumErrorsDetected;
+		bool mHasUnrecoveredError;
+	};
 
 	TranslationUnit *ParseTranslationUnit();
 
@@ -70,7 +81,8 @@ private:
 	ForStatement *ParseForStatement();
 	JumpStatement *ParseJumpStatement();
 	ListParseNode *ParseExpressionOrDeclarativeStatement();
-	ExpressionStatement *ParseExpressionStatement();
+	DeclarativeStatement *CompleteLocalDeclarativeStatement(TypeDescriptor *descriptor, NamedInitializer *initializerList);
+	ExpressionStatement *ParseExpressionStatement(const Token *declaratorName = nullptr);
 	Expression *ParseConstExpression();
 	Expression *ParseExpression();
 	Expression *ParseAssignmentExpression();
@@ -111,6 +123,10 @@ private:
 	void PushUnrecoveredError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
 	void PushError(CompilerError::Type errorType, const Token *token, const void *arg = nullptr);
 
+	Checkpoint SaveCheckpoint() const;
+	void RestoreCheckpoint(const Checkpoint &checkpoint);
+	bool HasErrorsSince(const Checkpoint &checkpoint) const { return mNumErrorsDetected != checkpoint.mNumErrorsDetected; }
+
 	template<typename T, typename... Args>
 	T *CreateNode(Args&&... args)
 	{
@@ -129,6 +145,9 @@ private:
 	BoolStack mParseConstExpressions;
 	BoolStack mInNativeBlock;
 
+	// Counts every error detected, including those that are not added to the error buffer because
+	// it is full. Used to tell whether a speculative parse succeeded.
+	size_t mNumErrorsDetected;
 	bool mHasUnrecoveredError;
 };
 
@@ -1244,61 +1263,120 @@ ListParseNode *ParserCore::ParseUsingStatement()
 }
 
 
-// declarative_statement
-//   : type_descriptor named_initializer_list ';'
-ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
+// Returns whether a type descriptor parsed at the start of a statement could also be the start of an
+// expression: a non-const, non-primitive type name followed by '*' and array suffixes, e.g. 'A * b'
+// or 'A[i] * b'. A type descriptor with any other shape (e.g. 'int', 'const A *' or plain 'A') can't
+// be followed by an identifier in an expression.
+static bool IsAmbiguousDeclarationShape(const TypeDescriptor *descriptor)
 {
-	ListParseNode *statement = nullptr;
-	const auto streamPos = mStream.GetPosition();
-	const auto storePos = mStore.size();
-
-	// The grammar is somewhat ambiguous. Since a qualified identifier followed by '*' tokens and array
-	// index operators can appear like a type descriptor as well as an expression, we'll treat anything
-	// that fits the profile of a declaration as such and everything else like an expression statement.
-	TypeDescriptor *descriptor = ParseRelaxedTypeDescriptor();
-	if (descriptor != nullptr)
+	if (!descriptor->IsPointerIntrinsicType() && !descriptor->IsArrayType())
 	{
-		NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
-
-		if (initializerList != nullptr)
-		{
-			AssertNonVoidType(descriptor);
-			descriptor->SetAddressable();
-			statement = CreateNode<DeclarativeStatement>(descriptor, initializerList);
-			ExpectStatementTerminator();
-		}
-		else
-		{
-			// The tokens that looked like a type descriptor might actually be part of an expression.
-			const auto descriptorPos = mStream.GetPosition();
-			descriptor = nullptr;
-			mStream.SetPosition(streamPos);
-			mStore.resize(storePos);
-
-			statement = ParseExpressionStatement();
-
-			if (statement == nullptr)
-			{
-				// Uh, oh. Looks like we're even worse off.
-				mStream.SetPosition(descriptorPos);
-				AssertNode(statement);
-				ExpectStatementTerminator();
-			}
-		}
+		return false;
 	}
 
-	else
+	while (descriptor != nullptr)
 	{
-		statement = ParseExpressionStatement();
+		if (descriptor->IsConst())
+		{
+			return false;
+		}
+		const TypeSpecifier *specifier = descriptor->GetTypeSpecifier();
+		if (specifier != nullptr)
+		{
+			return specifier->GetPrimitiveTypeToken() == nullptr;
+		}
+		descriptor = descriptor->GetParent();
+	}
+
+	return false;
+}
+
+
+// declarative_statement
+//   : type_descriptor named_initializer_list ';'
+//
+// Local variables must be initialized. That resolves the ambiguity between declarations and
+// expressions such as 'A * b;', which could declare a pointer or multiply two variables. Since
+// 'A * b = c' can't be an expression, a statement with that shape is a declaration only if its
+// first declarator has an initializer.
+ListParseNode *ParserCore::ParseExpressionOrDeclarativeStatement()
+{
+	const Checkpoint start = SaveCheckpoint();
+	TypeDescriptor *descriptor = ParseRelaxedTypeDescriptor();
+
+	if (descriptor == nullptr)
+	{
+		return ParseExpressionStatement();
+	}
+
+	NamedInitializer *initializerList = ParseNamedInitializerList(descriptor);
+
+	if (initializerList == nullptr)
+	{
+		// The tokens that looked like a type descriptor must be part of an expression.
+		const auto descriptorPos = mStream.GetPosition();
+		RestoreCheckpoint(start);
+		ListParseNode *statement = ParseExpressionStatement();
+
+		if (statement == nullptr)
+		{
+			// Uh, oh. Looks like we're even worse off.
+			mStream.SetPosition(descriptorPos);
+			AssertNode(statement);
+			ExpectStatementTerminator();
+		}
+		return statement;
+	}
+
+	if (!IsAmbiguousDeclarationShape(descriptor) || (initializerList->GetInitializer() != nullptr))
+	{
+		return CompleteLocalDeclarativeStatement(descriptor, initializerList);
+	}
+
+	// The statement could be an uninitialized declaration or an expression. Prefer the expression.
+	// If the declaration parsed cleanly, remember the name it would declare, so that the semantic
+	// analyzer can report a missing initializer if the leading name turns out to be a type.
+	const bool isCleanDeclaration = !HasErrorsSince(start) && (mStream.PeekIf(Token::SEMICOLON) != nullptr);
+	const Token *declaratorName = isCleanDeclaration ? initializerList->GetName() : nullptr;
+	RestoreCheckpoint(start);
+
+	ExpressionStatement *statement = ParseExpressionStatement(declaratorName);
+	if ((statement == nullptr) || HasErrorsSince(start))
+	{
+		if (isCleanDeclaration)
+		{
+			// The tokens can only be a declaration (e.g. 'A[2] b;'). Parse it again as such, which
+			// leads to the missing initializer being reported.
+			RestoreCheckpoint(start);
+			descriptor = ParseRelaxedTypeDescriptor();
+			initializerList = ParseNamedInitializerList(descriptor);
+			return CompleteLocalDeclarativeStatement(descriptor, initializerList);
+		}
+
+		if (statement == nullptr)
+		{
+			AssertNode(statement);
+			ExpectStatementTerminator();
+		}
 	}
 
 	return statement;
 }
 
 
+DeclarativeStatement *ParserCore::CompleteLocalDeclarativeStatement(TypeDescriptor *descriptor, NamedInitializer *initializerList)
+{
+	AssertNonVoidType(descriptor);
+	descriptor->SetAddressable();
+	DeclarativeStatement *statement = CreateNode<DeclarativeStatement>(descriptor, initializerList);
+	ExpectStatementTerminator();
+	return statement;
+}
+
+
 // expression_statement
 //   : [expression] ';'
-ExpressionStatement *ParserCore::ParseExpressionStatement()
+ExpressionStatement *ParserCore::ParseExpressionStatement(const Token *declaratorName)
 {
 	ExpressionStatement *expressionStatement = nullptr;
 	Expression *expression = ParseExpression();
@@ -1306,7 +1384,7 @@ ExpressionStatement *ParserCore::ParseExpressionStatement()
 	if (expression != nullptr)
 	{
 		ExpectStatementTerminator();
-		expressionStatement = CreateNode<ExpressionStatement>(expression);
+		expressionStatement = CreateNode<ExpressionStatement>(expression, declaratorName);
 	}
 	else if (mStream.NextIf(Token::SEMICOLON))
 	{
@@ -2005,6 +2083,7 @@ void ParserCore::PushUnrecoveredError(CompilerError::Type type, const Token *con
 	if (!mHasUnrecoveredError)
 	{
 		mErrorBuffer.PushError(type, context, arg);
+		++mNumErrorsDetected;
 		mHasUnrecoveredError = true;
 	}
 }
@@ -2015,7 +2094,30 @@ void ParserCore::PushError(CompilerError::Type type, const Token *context, const
 	if (!mHasUnrecoveredError)
 	{
 		mErrorBuffer.PushError(type, context, arg);
+		++mNumErrorsDetected;
 	}
+}
+
+
+ParserCore::Checkpoint ParserCore::SaveCheckpoint() const
+{
+	Checkpoint checkpoint;
+	checkpoint.mStreamPos = mStream.GetPosition();
+	checkpoint.mStorePos = mStore.size();
+	checkpoint.mNumErrors = mErrorBuffer.GetNumErrors();
+	checkpoint.mNumErrorsDetected = mNumErrorsDetected;
+	checkpoint.mHasUnrecoveredError = mHasUnrecoveredError;
+	return checkpoint;
+}
+
+
+void ParserCore::RestoreCheckpoint(const Checkpoint &checkpoint)
+{
+	mStream.SetPosition(checkpoint.mStreamPos);
+	mStore.resize(checkpoint.mStorePos);
+	mErrorBuffer.Truncate(checkpoint.mNumErrors);
+	mNumErrorsDetected = checkpoint.mNumErrorsDetected;
+	mHasUnrecoveredError = checkpoint.mHasUnrecoveredError;
 }
 
 }

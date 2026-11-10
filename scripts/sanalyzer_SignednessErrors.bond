@@ -1,7 +1,7 @@
 void SignednessErrors(int i, uint u, long l, ulong ul, char c, short s, bool b)
 {
-	uint r;
-	ulong rl;
+	uint r = 0;
+	ulong rl = 0;
 	r = i + u;
 	r = u - c;
 	r = s * u;

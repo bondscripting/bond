@@ -36,7 +36,7 @@ long Load64Store64(const long *a, long *b)
 
 int Loadfp(int a)
 {
-	int [20000] ints;
+	int [20000] ints = {};
 	int *ptr1 = &ints[3];
 	int *ptr2 = &ints[19000];
 	*ptr1 = a;

@@ -1,8 +1,32 @@
+struct Vec
+{
+	int x;
+	int y;
+};
+
+int Get() { return 1; }
+
 void TheFunction()
 {
-	int a, b;
+	int a = 0, b = 0;
 	a = b = 1;
 
-	int *[2] thingA;
+	int *[2] thingA = {};
 	*thingA[a] = 0;
+
+	// Statements shaped like 'A * b' are declarations when the first declarator is initialized.
+	Vec * pv = null;
+	Vec[2] * pva = null, pvb = null;
+	Vec v = {};
+	int[3] arr = {};
+
+	// Otherwise they are expressions.
+	a * b;
+	a * Get();
+	a * b++;
+	a * v.x;
+	a * pv->y;
+	arr[a] * b;
+	a * b, Get();
+	(a * b);
 }

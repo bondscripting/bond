@@ -50,7 +50,7 @@ const char *UIntPointerOffset(const char *a, uint b)
 
 int LocalPointerDifference()
 {
-	int [8] a;
+	int [8] a = {};
 	return cast<int>(&a[4] - &a[0]);
 }
 
@@ -124,7 +124,7 @@ const int *SubFromPointerParam(const int *a)
 const int *PredecLocalPointer(const int *a)
 {
 	// Should be optimized to an inci/incl instruction.
-	int b;
+	int b = 0;
 	const int *c = a;
 	--c;
 	return c;
@@ -133,7 +133,7 @@ const int *PredecLocalPointer(const int *a)
 const int *PostdecLocalPointer(const int *a)
 {
 	// Should be optimized to an inci/incl instruction.
-	int b;
+	int b = 0;
 	const int *c = a;
 	c--;
 	return c;
@@ -165,9 +165,9 @@ const LargeStruct *PostdecLargeStructPointer(const LargeStruct *a)
 
 int LocalAlignment()
 {
-	SmallStruct a;
-	int b;
-	SmallStruct c;
+	SmallStruct a = {};
+	int b = 0;
+	SmallStruct c = {};
 	return cast<int>(cast<char *>(&c) - cast<char *>(&a));
 }
 
@@ -181,31 +181,31 @@ bool LocalOverlap()
 	int *c2Ptr = null;
 
 	{
-		int a1;
+		int a1 = 0;
 		a1Ptr = &a1;
 
 		{
-			int b1;
+			int b1 = 0;
 			b1Ptr = &b1;
 		}
 
 		{
-			int c1;
+			int c1 = 0;
 			c1Ptr = &c1;
 		}
 	}
 
 	{
-		int a2;
+		int a2 = 0;
 		a2Ptr = &a2;
 
 		{
-			int b2;
+			int b2 = 0;
 			b2Ptr = &b2;
 		}
 
 		{
-			int c2;
+			int c2 = 0;
 			c2Ptr = &c2;
 		}
 	}

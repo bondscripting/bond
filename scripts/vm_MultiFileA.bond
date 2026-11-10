@@ -7,7 +7,7 @@ int CallAcrossFiles(int a, int b)
 
 int UseStructAcrossFiles(int a, int b)
 {
-	MultiFilePair pair;
+	MultiFilePair pair = {};
 	pair.first = a;
 	pair.second = b;
 	return pair.first * pair.second;

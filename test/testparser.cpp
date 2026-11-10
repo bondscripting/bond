@@ -126,9 +126,9 @@ DEFINE_PARSER_TEST(DeclarativeAndExpressionStatements, "scripts/parser_Declarati
 	ASSERT_NO_COMPILER_ERRORS(errorBuffer);
 
 	Bond::ParseNodeCount expectedCount(-1);
-	expectedCount.mDeclarativeStatement = 2;
-	expectedCount.mExpressionStatement = 2;
-	expectedCount.mNamedInitializer = 3;
+	expectedCount.mDeclarativeStatement = 8;
+	expectedCount.mExpressionStatement = 10;
+	expectedCount.mNamedInitializer = 10;
 
 	ASSERT_PARSE_NODE_COUNT(translationUnit, expectedCount);
 }

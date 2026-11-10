@@ -1,10 +1,10 @@
 void Signedness(int i, uint u, long l, ulong ul, char c, uchar uc, ushort us, bool b)
 {
 	const int K = 4;
-	uint r;
-	ulong rl;
-	long rs;
-	int ri;
+	uint r = 0;
+	ulong rl = 0;
+	long rs = 0;
+	int ri = 0;
 
 	// Signed constants that are non-negative may be mixed with unsigned operands.
 	r = u / 2;

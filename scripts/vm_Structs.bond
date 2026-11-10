@@ -41,7 +41,7 @@ void SetChar3PairX(Char3Pair *c3p, char x1, char x2)
 
 bool InitializeChar3Pair()
 {
-	Char3Pair c3p;
+	Char3Pair c3p = {};
 	SetChar3(&c3p.first, 9, 8, 7);
 	SetChar3(&c3p.second, 11, 22, 33);
 	return (c3p.first.x == 9) && (c3p.first.y == 8) && (c3p.first.z == 7) &&
@@ -68,7 +68,7 @@ struct Vector3
 
 Vector3 ConstructVector3(int x, int y, int z)
 {
-	Vector3 v3;
+	Vector3 v3 = {};
 	v3.mX = x;
 	v3.mY = y;
 	v3.mZ = z;
@@ -78,8 +78,8 @@ Vector3 ConstructVector3(int x, int y, int z)
 Vector3 ConstructVector3Indirect(int x, int y, int z)
 {
 	Vector3 v3a = ConstructVector3(x, y, z);
-	Vector3 v3b;
-	Vector3 v3c;
+	Vector3 v3b = {};
+	Vector3 v3c = {};
 	v3c = v3b = v3a;
 	return v3c;
 }
@@ -150,7 +150,7 @@ struct Large
 
 Large MakeLarge(int base)
 {
-	Large l;
+	Large l = {};
 	l.a = base;
 	l.b = base + 1;
 	l.c = base + 2;
@@ -188,7 +188,7 @@ struct OverAligned
 
 OverAligned MakeOverAligned(int x, int y)
 {
-	OverAligned o;
+	OverAligned o = {};
 	o.x = x;
 	o.y = y;
 	return o;

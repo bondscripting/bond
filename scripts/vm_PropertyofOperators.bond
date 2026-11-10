@@ -20,7 +20,7 @@ uint GetAlignofType_12_4()
 
 uint GetAlignofExpression_12_4()
 {
-	Struct_12_4 s;
+	Struct_12_4 s = {};
 	return alignof(s);
 }
 
@@ -31,7 +31,7 @@ uint GetSizeofType_12_4()
 
 uint GetSizeofExpression_12_4()
 {
-	Struct_12_4 s;
+	Struct_12_4 s = {};
 	return sizeof(s);
 }
 
@@ -42,7 +42,7 @@ uint GetAlignofType_32_16()
 
 uint GetAlignofExpression_32_16()
 {
-	Struct_32_16 s;
+	Struct_32_16 s = {};
 	return alignof(s);
 }
 
@@ -53,7 +53,7 @@ uint GetSizeofType_32_16()
 
 uint GetSizeofExpression_32_16()
 {
-	Struct_32_16 s;
+	Struct_32_16 s = {};
 	return sizeof(s);
 }
 
@@ -64,7 +64,7 @@ uint GetAlignofType_48_16()
 
 uint GetAlignofExpression_48_16()
 {
-	Struct_48_16 s;
+	Struct_48_16 s = {};
 	return alignof(s);
 }
 
@@ -75,18 +75,18 @@ uint GetSizeofType_48_16()
 
 uint GetSizeofExpression_48_16()
 {
-	Struct_48_16 s;
+	Struct_48_16 s = {};
 	return sizeof(s);
 }
 
 uint GetAlignofArray_48_16()
 {
-	Struct_48_16[4] s;
+	Struct_48_16[4] s = {};
 	return alignof(s);
 }
 
 uint GetSizeofArray_48_16()
 {
-	Struct_48_16[4] s;
+	Struct_48_16[4] s = {};
 	return sizeof(s);
 }

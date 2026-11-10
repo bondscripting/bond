@@ -1737,6 +1737,11 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 				memberDeclarationList = nextMemberDeclaration;
 			}
 		}
+		else
+		{
+			// A native struct can only be initialized with empty braces, which zero-initialize it.
+			EmitZero(index, offset, typeDescriptor.GetSize(mPointerSize));
+		}
 	}
 	else
 	{
@@ -3990,22 +3995,25 @@ void GeneratorCore::ResolveJumps()
 			jumpEntry.mToPos = labelList[jumpEntry.mToLabel];
 		}
 
-		// Optmize jumps if the target is another jump instruction.
+		// Optimize jumps if the target is another jump instruction. Another pass is needed only if a
+		// jump changed. Jumps can form cycles (e.g. 'for (;;);' compiles to a jump to itself), so a
+		// jump that targets itself is left alone. Every rewrite preserves the program's behaviour on
+		// its own, so the pass limit merely guarantees termination; stopping early is safe.
 		bool requiresAnotherPass = true;
-		while (requiresAnotherPass)
+		for (size_t pass = 0; requiresAnotherPass && (pass <= jumpList.size()); ++pass)
 		{
 			requiresAnotherPass = false;
 			for (JumpEntry &jumpEntry: jumpList)
 			{
 				const JumpEntry *targetEntry = FindJumpEntry(jumpList, jumpEntry.mToPos);
-				if (targetEntry != nullptr)
+				if ((targetEntry != nullptr) && (targetEntry != &jumpEntry))
 				{
+					const size_t oldToPos = jumpEntry.mToPos;
 					const uint8_t opCode = byteCode[jumpEntry.mOpCodePos];
 					const uint8_t targetOpCode = byteCode[targetEntry->mOpCodePos];
 					if (targetOpCode == OPCODE_GOTO)
 					{
 						jumpEntry.mToPos = targetEntry->mToPos;
-						requiresAnotherPass = true;
 					}
 					else
 					{
@@ -4016,24 +4024,20 @@ void GeneratorCore::ResolveJumps()
 								{
 									case OPCODE_BRZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRNZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
 									case OPCODE_IFNZ:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
-										requiresAnotherPass = true;
 										break;
 								}
 								break;
@@ -4043,24 +4047,20 @@ void GeneratorCore::ResolveJumps()
 								{
 									case OPCODE_BRNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
 									case OPCODE_IFZ:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
-										requiresAnotherPass = true;
 										break;
 								}
 								break;
@@ -4070,24 +4070,20 @@ void GeneratorCore::ResolveJumps()
 								{
 									case OPCODE_BRZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRNZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
 									case OPCODE_IFNZ:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
-										requiresAnotherPass = true;
 										break;
 								}
 								break;
@@ -4097,28 +4093,29 @@ void GeneratorCore::ResolveJumps()
 								{
 									case OPCODE_BRNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_NBRZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_IFNZ:
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
-										requiresAnotherPass = true;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
 									case OPCODE_IFZ:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
-										requiresAnotherPass = true;
 										break;
 								}
 								break;
 						}
+					}
+
+					if ((jumpEntry.mToPos != oldToPos) || (byteCode[jumpEntry.mOpCodePos] != opCode))
+					{
+						requiresAnotherPass = true;
 					}
 				}
 			}

@@ -16,9 +16,9 @@ namespace A
 	void UseEnclosingNamespace()
 	{
 		using namespace A;
-		StructType s;
+		StructType s = {};
 		s.a = 1;
-		AA::StructType t;
+		AA::StructType t = {};
 		t.aa = 1;
 	}
 }
@@ -50,21 +50,21 @@ void TheOtherFunction()
 	{
 		using namespace A;
 		using B::StructType;
-		StructType s;
+		StructType s = {};
 		s.b = 1;
 	}
 
 	{
 		using B::StructType;
 		using namespace A;
-		StructType s;
+		StructType s = {};
 		s.b = 1;
 	}
 
 	{
 		using namespace A;
 		using AA::StructType;
-		StructType s;
+		StructType s = {};
 		s.aa = 1;
 	}
 

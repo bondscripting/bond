@@ -133,6 +133,10 @@ void TypeEvaluationPass::Visit(NamedInitializer *namedInitializer)
 		{
 			mErrorBuffer.PushError(CompilerError::UNINITIALIZED_CONST, namedInitializer->GetName());
 		}
+		else if (namedInitializer->GetScope() == SCOPE_LOCAL)
+		{
+			mErrorBuffer.PushError(CompilerError::UNINITIALIZED_VARIABLE, namedInitializer->GetName());
+		}
 
 		if ((namedInitializer->GetScope() == SCOPE_GLOBAL) && !typeDescriptor.IsConst())
 		{
@@ -186,6 +190,49 @@ void TypeEvaluationPass::Visit(ForStatement *forStatement)
 	{
 		AssertBooleanExpression(condition, CompilerError::FOR_CONDITION_IS_NOT_BOOLEAN);
 	}
+}
+
+
+void TypeEvaluationPass::Visit(ExpressionStatement *expressionStatement)
+{
+	// The parser treats a statement like 'A * b;' as an expression, since local variables must be
+	// initialized. If 'A' names a type, the programmer most likely intended a declaration.
+	const Token *declaratorName = expressionStatement->GetDeclaratorName();
+	if (declaratorName != nullptr)
+	{
+		const Expression *head = expressionStatement->GetExpression();
+		while (head != nullptr)
+		{
+			const BinaryExpression *binaryExpression = CastNode<BinaryExpression>(head);
+			const ArraySubscriptExpression *subscriptExpression = CastNode<ArraySubscriptExpression>(head);
+			if (binaryExpression != nullptr)
+			{
+				head = binaryExpression->GetLhs();
+			}
+			else if (subscriptExpression != nullptr)
+			{
+				head = subscriptExpression->GetLhs();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		const IdentifierExpression *identifierExpression = CastNode<IdentifierExpression>(head);
+		if (identifierExpression != nullptr)
+		{
+			bool isAmbiguous = false;
+			const Symbol *symbol = GetCurrentScope()->FindSymbol(identifierExpression->GetIdentifier(), isAmbiguous);
+			if (!isAmbiguous && (symbol != nullptr) && symbol->IsTypeDefinition())
+			{
+				mErrorBuffer.PushError(CompilerError::UNINITIALIZED_VARIABLE, declaratorName);
+				return;
+			}
+		}
+	}
+
+	ParseNodeTraverser::Visit(expressionStatement);
 }
 
 
@@ -990,10 +1037,15 @@ void TypeEvaluationPass::ValidateInitializer(Initializer *initializer, const Typ
 
 		if (structDeclaration->IsNative())
 		{
-			mErrorBuffer.PushError(
-				CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST,
-				initializer->GetContextToken(),
-				&descriptor);
+			// Empty braces zero-initialize a native struct, since that's the only way to declare a
+			// local variable of a native struct type without calling a function that returns one.
+			if (initializerList != nullptr)
+			{
+				mErrorBuffer.PushError(
+					CompilerError::CANNOT_INITIALIZE_NATIVE_TYPE_WITH_INITIALIZER_LIST,
+					initializer->GetContextToken(),
+					&descriptor);
+			}
 		}
 		else
 		{

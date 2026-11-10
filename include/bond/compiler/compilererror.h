@@ -157,6 +157,8 @@
     "Operands to ?: have different types '%0n' and '%1n'.")                                \
   BOND_COMPILER_ERROR(UNINITIALIZED_CONST,                                                 \
     "Uninitialized const '%c'.")                                                           \
+  BOND_COMPILER_ERROR(UNINITIALIZED_VARIABLE,                                              \
+    "Uninitialized variable '%c'.")                                                        \
   BOND_COMPILER_ERROR(NON_CONST_DECLARATION,                                               \
     "Declaration of '%c' must be const.")                                                  \
   BOND_COMPILER_ERROR(NON_LVALUE_TYPE,                                                     \
@@ -343,6 +345,11 @@ public:
 
 	/// \brief Returns the number of errors in the buffer.
 	size_t GetNumErrors() const { return mNumErrors; }
+
+	/// \brief Discards the errors pushed after the buffer contained the given number of errors.
+	/// \param numErrors The number of errors to retain. Has no effect if it is not smaller than the
+	///        current number of errors.
+	void Truncate(size_t numErrors) { if (numErrors < mNumErrors) { mNumErrors = numErrors; } }
 
 	/// \brief Returns the CompilerError at the specified index in the buffer.
 	/// \param index The index of the error to be retrieved.

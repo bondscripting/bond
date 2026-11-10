@@ -1,0 +1,16 @@
+struct Point
+{
+	int x;
+	int y;
+};
+
+void Uninitialized(int a)
+{
+	int i;
+	Point p;
+	Point * pp;
+	Point[2] * pa;
+	Point[2] q;
+	Point * pq = null, pr;
+	for (int j; a < 10; ++a) {}
+}

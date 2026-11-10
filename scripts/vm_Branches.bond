@@ -522,6 +522,30 @@ int TableSwitchNearMax(int a)
 	return b;
 }
 
+// The following loops compile to jumps that target themselves or each other. Compiling them must
+// terminate. They are never called.
+void InfiniteFor()
+{
+	for (;;);
+}
+
+void InfiniteForBraces()
+{
+	for (;;) {}
+}
+
+void InfiniteForContinue()
+{
+	for (;;) continue;
+}
+
+// The back edge targets the break, which jumps past the loop.
+int ForBreak()
+{
+	for (;;) break;
+	return 1;
+}
+
 int TableSwitchNearMin(int a)
 {
 	int b = 4;

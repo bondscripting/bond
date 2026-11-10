@@ -200,6 +200,12 @@ using_statement
 
 declarative_statement
   : type_descriptor named_initializer_list ';'
+  In a function body, including a for statement's initializer, every named_initializer must have an
+  initializer. Empty braces, '{}', zero-initialize an array or struct, including a native struct.
+  A statement that starts with a non-const user-defined type name followed only by '*' and array
+  suffixes, such as 'A * b;' or 'A[n] * b;', can also be read as an expression. It is a declaration
+  only if its first named_initializer has an initializer, since 'A * b = c' can't be an expression.
+  Otherwise it is an expression_statement. Parentheses, as in '(a * b);', always make an expression.
 
 const_declarative_statement
   : declarative_statement 

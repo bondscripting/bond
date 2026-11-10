@@ -73,3 +73,27 @@ bool TestLocalStringInitializer()
 		(s[14] == 'g') &&
 		(s[15] == '\0');
 }
+
+int DirtyStack()
+{
+	int[12] junk = {7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
+	return junk[0];
+}
+
+bool CheckEmptyInitializers()
+{
+	Vector2 v = {};
+	int[4] a = {};
+	Vector2[2] va = {};
+	return
+		(v.x == 0) && (v.y == 0) &&
+		(a[0] == 0) && (a[1] == 0) && (a[2] == 0) && (a[3] == 0) &&
+		(va[0].x == 0) && (va[0].y == 0) && (va[1].x == 0) && (va[1].y == 0);
+}
+
+bool TestEmptyInitializers()
+{
+	// Fill the stack with non-zero values first, so that the test can't pass by accident.
+	DirtyStack();
+	return CheckEmptyInitializers();
+}

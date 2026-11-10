@@ -55,13 +55,13 @@ int OverAlignedParam(char a, OverAligned b, short c, int d)
 // The over-aligned local requires the arguments to be unpacked into the frame.
 int OverAlignedLocal(char a, short b, int c)
 {
-	Aligned_32_32 s;
+	Aligned_32_32 s = {};
 	return a + b + c;
 }
 
 int TestOverAlignedFrames()
 {
-	OverAligned b;
+	OverAligned b = {};
 	b.value = 1000;
 
 	// Nest some of the calls so that they start at different stack depths.

@@ -53,7 +53,7 @@ int Preinc1(int a)
 int Preinc2(int a)
 {
 	// Should be optimized to an inci instruction.
-	int b;
+	int b = 0;
 	int c = a;
 	++c;
 	return c;
@@ -62,7 +62,7 @@ int Preinc2(int a)
 short Preinc3(short a)
 {
 	// Should push 1, add then pop.
-	short b;
+	short b = 0;
 	short c = a;
 	++c;
 	return c;
@@ -71,7 +71,7 @@ short Preinc3(short a)
 int Preinc4(int a)
 {
 	// Should push 1, add then pop.
-	int[2000] b;
+	int[2000] b = {};
 	int c = a;
 	++c;
 	return c;
@@ -93,7 +93,7 @@ int Postinc1(int a)
 int Postinc2(int a)
 {
 	// Should be optimized to an inci instruction.
-	int b;
+	int b = 0;
 	int c = a;
 	c++;
 	return c;
@@ -102,7 +102,7 @@ int Postinc2(int a)
 short Postinc3(short a)
 {
 	// Should push 1, add then pop.
-	short b;
+	short b = 0;
 	short c = a;
 	c++;
 	return c;
@@ -111,7 +111,7 @@ short Postinc3(short a)
 int Postinc4(int a)
 {
 	// Should push 1, add then pop.
-	int[2000] b;
+	int[2000] b = {};
 	int c = a;
 	c++;
 	return c;
@@ -133,7 +133,7 @@ int Predec1(int a)
 int Predec2(int a)
 {
 	// Should be optimized to an deci instruction.
-	int b;
+	int b = 0;
 	int c = a;
 	--c;
 	return c;
@@ -142,7 +142,7 @@ int Predec2(int a)
 short Predec3(short a)
 {
 	// Should push 1, add then pop.
-	short b;
+	short b = 0;
 	short c = a;
 	--c;
 	return c;
@@ -151,7 +151,7 @@ short Predec3(short a)
 int Predec4(int a)
 {
 	// Should push 1, add then pop.
-	int[2000] b;
+	int[2000] b = {};
 	int c = a;
 	--c;
 	return c;
@@ -173,7 +173,7 @@ int Postdec1(int a)
 int Postdec2(int a)
 {
 	// Should be optimized to an deci instruction.
-	int b;
+	int b = 0;
 	int c = a;
 	c--;
 	return c;
@@ -182,7 +182,7 @@ int Postdec2(int a)
 short Postdec3(short a)
 {
 	// Should push 1, add then pop.
-	short b;
+	short b = 0;
 	short c = a;
 	c--;
 	return c;
@@ -191,7 +191,7 @@ short Postdec3(short a)
 int Postdec4(int a)
 {
 	// Should push 1, add then pop.
-	int[2000] b;
+	int[2000] b = {};
 	int c = a;
 	c--;
 	return c;

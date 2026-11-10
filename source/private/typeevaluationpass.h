@@ -40,6 +40,7 @@ protected:
 	virtual void Visit(SwitchLabel *switchLabel) override;
 	virtual void Visit(WhileStatement *whileStatement) override;
 	virtual void Visit(ForStatement *forStatement) override;
+	virtual void Visit(ExpressionStatement *expressionStatement) override;
 	virtual void Visit(ConditionalExpression *conditionalExpression) override;
 	virtual void Visit(BinaryExpression *binaryExpression) override;
 	virtual void Visit(UnaryExpression *unaryExpression) override;

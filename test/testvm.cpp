@@ -793,6 +793,7 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 {
 	using namespace Bond;
 
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreak", int32_t(1));
 	VALIDATE_FUNCTION_CALL(uint32_t, "And", uint32_t(0), uint8_t(0), uint8_t(0));
 	VALIDATE_FUNCTION_CALL(uint32_t, "And", uint32_t(0), uint8_t(0), uint8_t(1));
 	VALIDATE_FUNCTION_CALL(uint32_t, "And", uint32_t(0), uint8_t(1), uint8_t(0));
@@ -1447,6 +1448,7 @@ DEFINE_VM_TEST(Initializers, "scripts/vm_Initializers.bond")
 		"GetTestString2() return an incorrect string.");
 
 	VALIDATE_FUNCTION_CALL(int32_t, "TestLocalStringInitializer", int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "TestEmptyInitializers", int32_t(1));
 }
 
 

@@ -106,7 +106,7 @@ int NegiMinConstant()
 
 long OffsetBySubuc(uchar a, uchar b)
 {
-	int[4] array;
+	int[4] array = {};
 	int *base = array + 2;
 	int *p = base + (a - b);
 	return p - base;

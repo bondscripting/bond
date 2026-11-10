@@ -890,6 +890,25 @@ DEFINE_SEMANTICANALYZER_TEST(Shadowing, "scripts/sanalyzer_Shadowing.bond")
 }
 
 
+DEFINE_SEMANTICANALYZER_TEST(InitializationErrors, "scripts/sanalyzer_InitializationErrors.bond")
+{
+	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
+	{
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 9},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 10},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 11},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 12},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 13},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 14},
+		{Bond::CompilerError::UNINITIALIZED_VARIABLE, Bond::Token::IDENTIFIER, 15},
+	};
+
+	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
+
+	ASSERT_COMPILER_ERRORS(errorBuffer, EXPECTED_ERRORS, NUM_ERRORS);
+}
+
+
 DEFINE_SEMANTICANALYZER_TEST(NullConversionErrors, "scripts/sanalyzer_NullConversionErrors.bond")
 {
 	const TestFramework::ExpectedCompilerError EXPECTED_ERRORS[] =
@@ -1032,6 +1051,7 @@ DEFINE_SEMANTICANALYZER_TEST(StructLayout, "scripts/sanalyzer_StructLayout.bond"
   TEST_ITEM(DuplicateSymbolErrors)              \
   TEST_ITEM(DuplicateLocalErrors)               \
   TEST_ITEM(Shadowing)                          \
+  TEST_ITEM(InitializationErrors)               \
   TEST_ITEM(NullConversionErrors)               \
   TEST_ITEM(PointerErrors)                      \
   TEST_ITEM(PointerConversions)                 \

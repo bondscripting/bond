@@ -75,7 +75,7 @@ int SwitchOnEnum(int a)
 
 uint GetArrayLength()
 {
-	int[EXPLICIT_C] array;
+	int[EXPLICIT_C] array = {};
 	return sizeof(array) / sizeof<int>;
 }
 
@@ -104,7 +104,7 @@ int GetEnumParameterAndReturn()
 
 int GetEnumStructMember()
 {
-	EnumHolder holder;
+	EnumHolder holder = {};
 	holder.mValue = EXPLICIT_D;
 	return holder.mValue;
 }

@@ -55,7 +55,7 @@ void PrintFloats()
 
 void PrintBytes()
 {
-	char[3] bytes;
+	char[3] bytes = {};
 	bytes[0] = 'x';
 	bytes[1] = 'y';
 	bytes[2] = 'z';
@@ -105,7 +105,7 @@ int WriteFile(const char *fileName)
 	if (stream == null) return 1;
 
 	int result = 0;
-	char[4] bytes;
+	char[4] bytes = {};
 	bytes[0] = 'a';
 	bytes[1] = 'b';
 	bytes[2] = 'c';
@@ -140,7 +140,7 @@ int ReadFile(const char *fileName)
 	if (stream == null) return 1;
 
 	int result = 0;
-	char[4] bytes;
+	char[4] bytes = {};
 	if (stream->GetEndPosition() != 7) result = 2;
 	if (stream->GetPosition() != 0) result = 3;
 	if (stream->Get() != 'a') result = 4;
