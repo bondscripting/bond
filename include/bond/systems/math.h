@@ -1,7 +1,10 @@
 #ifndef BOND_SYSTEMS_MATH_H
 #define BOND_SYSTEMS_MATH_H
 
+#include "bond/stl/cmath.h"
+#include "bond/stl/typetraits.h"
 #include "bond/types/types.h"
+#include <limits>
 
 namespace Bond
 {
@@ -77,18 +80,47 @@ template <typename T>
 inline T Abs(T value) { return (value < T(0)) ? -value : value; }
 
 
-/// \brief Compares two numbers and returns the smaller of the two.
-/// \param a The first of the two compared numbers.
-/// \param b The second of the two compared numbers.
-template <typename T>
-inline T Min(T a, T b) { return (a < b) ? a : b; }
+/// \brief Returns whether value is exactly representable by RangeType, i.e. whether converting it to
+/// RangeType and back is lossless. NaN and infinity are never representable.
+template <typename RangeType, typename ValueType>
+bool IsInRange(ValueType value)
+{
+	static_assert(is_arithmetic<RangeType>::value && is_arithmetic<ValueType>::value, "IsInRange requires arithmetic types");
+	using RangeLimits = std::numeric_limits<RangeType>;
+	using ValueLimits = std::numeric_limits<ValueType>;
 
-
-/// \brief Compares two numbers and returns the larger of the two.
-/// \param a The first of the two compared numbers.
-/// \param b The second of the two compared numbers.
-template <typename T>
-inline T Max(T a, T b) { return (a > b) ? a : b; }
+	if constexpr (is_integral<RangeType>::value && is_integral<ValueType>::value)
+	{
+		// Comparing through intmax_t and uintmax_t avoids mixed signedness comparisons.
+		if constexpr (ValueLimits::is_signed)
+		{
+			if (value < ValueType(0))
+			{
+				return RangeLimits::is_signed && (intmax_t(value) >= intmax_t(RangeLimits::min()));
+			}
+		}
+		return uintmax_t(value) <= uintmax_t(RangeLimits::max());
+	}
+	else if constexpr (is_integral<RangeType>::value)
+	{
+		// 2^digits is exactly representable, so the bounds are exact. NaN fails every comparison.
+		const ValueType upperBound = Bond::ldexp(ValueType(1), RangeLimits::digits);
+		const ValueType lowerBound = RangeLimits::is_signed ? -upperBound : ValueType(0);
+		return (Bond::trunc(value) == value) && (value >= lowerBound) && (value < upperBound);
+	}
+	else if constexpr (is_integral<ValueType>::value)
+	{
+		// A value near the top of ValueType's range can round up to 2^digits, which is out of range
+		// for ValueType, so the converted value is checked before it is converted back.
+		const RangeType convertedValue = RangeType(value);
+		return (convertedValue < Bond::ldexp(RangeType(1), ValueLimits::digits)) && (ValueType(convertedValue) == value);
+	}
+	else
+	{
+		// Converting a finite value outside RangeType's range is undefined, so check it first.
+		return (Bond::fabs(value) <= RangeLimits::max()) && (ValueType(RangeType(value)) == value);
+	}
+}
 
 /// @}
 

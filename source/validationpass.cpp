@@ -150,8 +150,8 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 		if (!currLabel->IsDefault())
 		{
 			++numMatches;
-			minMatch = Min(minMatch, currLabel->GetMatch());
-			maxMatch = Max(maxMatch, currLabel->GetMatch());
+			minMatch = min(minMatch, currLabel->GetMatch());
+			maxMatch = max(maxMatch, currLabel->GetMatch());
 		}
 
 		const ResolvedSwitchLabel *prevLabel = currLabel;

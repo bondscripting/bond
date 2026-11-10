@@ -448,12 +448,12 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 
 	if (type == SIG_AGGREGATE)
 	{
-		alignment = Max(alignment, size_t(payload.mUInt));
+		alignment = max(alignment, size_t(payload.mUInt));
 	}
 
 	mResult.mDataSize = AlignUp(mResult.mDataSize, alignment);
 	mResult.mDataSize += size;
-	mResult.mDataAlignment = Max(mResult.mDataAlignment, alignment);
+	mResult.mDataAlignment = max(mResult.mDataAlignment, alignment);
 
 	// Validate the optional metadata blob.
 	if (GetPosition() < blobEnd)

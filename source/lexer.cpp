@@ -3,13 +3,11 @@
 #include "bond/compiler/lexer.h"
 #include "bond/io/memoryinputstream.h"
 #include "bond/stl/algorithm.h"
+#include "bond/stl/cstdlib.h"
 #include "bond/systems/allocator.h"
+#include "bond/systems/math.h"
 #include "private/memory.h"
 #include "private/utf8.h"
-#include <cerrno>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 
 namespace Bond
@@ -1557,12 +1555,12 @@ void LexerCore::EvaluateCharToken(Token &token)
 
 void LexerCore::EvaluateFloatToken(Token &token)
 {
-	errno = 0;
-	const float value = strtof(token.GetRawText(), nullptr);
+	bool outOfRange = false;
+	const float value = ParseFloat(token.GetRawText(), nullptr, &outOfRange);
 	token.SetFloatValue(value);
 
-	// Literals are unsigned, so overflow yields +HUGE_VALF. Underflow is permitted.
-	if ((errno == ERANGE) && (value == HUGE_VALF))
+	// Only overflow is reported. Underflow is permitted.
+	if (outOfRange)
 	{
 		PushError(CompilerError::FLOAT_OUT_OF_RANGE, token);
 	}
@@ -1573,12 +1571,12 @@ void LexerCore::EvaluateIntegerToken(Token &token)
 {
 	const char *text = token.GetRawText();
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
-	errno = 0;
-	const unsigned long long rawValue = strtoull(text, nullptr, base);
+	bool parseOutOfRange = false;
+	const uint64_t rawValue = ParseUInt64(text, nullptr, base, &parseOutOfRange);
 	// As in C++, hex and octal signed literals may use the full bit pattern, but decimal ones may not.
 	const bool isSignedDecimal = (token.GetTokenType() == Token::CONST_INT) && (base == 10);
-	const unsigned long long maxValue = isSignedDecimal ? uint64_t(BOND_INT_MAX) : 0xFFFFFFFFull;
-	const bool outOfRange = (errno == ERANGE) || (rawValue > maxValue);
+	const uint64_t maxValue = isSignedDecimal ? uint64_t(BOND_INT_MAX) : uint64_t(BOND_UINT_MAX);
+	const bool outOfRange = parseOutOfRange || (rawValue > maxValue);
 	const uint32_t value = uint32_t(rawValue);
 
 	if (token.GetTokenType() == Token::CONST_INT)
@@ -1601,11 +1599,11 @@ void LexerCore::EvaluateLongToken(Token &token)
 {
 	const char *text = token.GetRawText();
 	const int base = token.HasAnnotation(Token::OCTAL) ? 8 : token.HasAnnotation(Token::HEX) ? 16 : 10;
-	errno = 0;
-	const uint64_t value = uint64_t(strtoull(text, nullptr, base));
+	bool parseOutOfRange = false;
+	const uint64_t value = ParseUInt64(text, nullptr, base, &parseOutOfRange);
 	// As in C++, hex and octal signed literals may use the full bit pattern, but decimal ones may not.
 	const bool isSignedDecimal = (token.GetTokenType() == Token::CONST_LONG) && (base == 10);
-	const bool outOfRange = (errno == ERANGE) || (isSignedDecimal && (value > uint64_t(BOND_LONG_MAX)));
+	const bool outOfRange = parseOutOfRange || (isSignedDecimal && (value > uint64_t(BOND_LONG_MAX)));
 
 	if (token.GetTokenType() == Token::CONST_LONG)
 	{
@@ -1625,12 +1623,12 @@ void LexerCore::EvaluateLongToken(Token &token)
 
 void LexerCore::EvaluateDoubleToken(Token &token)
 {
-	errno = 0;
-	const double value = strtod(token.GetRawText(), nullptr);
+	bool outOfRange = false;
+	const double value = ParseDouble(token.GetRawText(), nullptr, &outOfRange);
 	token.SetDoubleValue(value);
 
-	// Literals are unsigned, so overflow yields +HUGE_VAL. Underflow is permitted.
-	if ((errno == ERANGE) && (value == HUGE_VAL))
+	// Only overflow is reported. Underflow is permitted.
+	if (outOfRange)
 	{
 		PushError(CompilerError::FLOAT_OUT_OF_RANGE, token);
 	}
@@ -1689,8 +1687,8 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 
 			case 'x':
 			{
-				char *end;
-				const unsigned long long hexValue = strtoull(text + 2, &end, 16);
+				const char *end;
+				const uint64_t hexValue = ParseUInt64(text + 2, &end, 16, nullptr);
 				value = char(hexValue);
 				result.end = end;
 				if (!IsInRange<uint8_t>(hexValue))
@@ -1704,7 +1702,7 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			case 'U':
 			{
 				// The scanner has verified that the exact number of hex digits is present. Parse
-				// them by hand, since strtoull would consume any hex digits that follow.
+				// them by hand, since ParseUInt64 would consume any hex digits that follow.
 				const size_t numDigits = (text[1] == 'u') ? 4 : 8;
 				const char *digits = text + 2;
 				uint32_t codePoint = 0;
@@ -1726,8 +1724,8 @@ LexerCore::CharResult LexerCore::EvaluateChar(const char *text) const
 			default:
 				if (IsOctalChar(text[1]))
 				{
-					char *end;
-					const unsigned long long octalValue = strtoull(text + 1, &end, 8);
+					const char *end;
+					const uint64_t octalValue = ParseUInt64(text + 1, &end, 8, nullptr);
 					value = char(octalValue);
 					result.end = end;
 					if (!IsInRange<uint8_t>(octalValue))

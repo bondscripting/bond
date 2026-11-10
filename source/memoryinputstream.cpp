@@ -2,7 +2,6 @@
 #include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include <cstring>
-#include <cstdio>
 
 namespace Bond
 {
@@ -22,7 +21,7 @@ void MemoryInputStream::VScan(const char *format, va_list argList)
 
 size_t MemoryInputStream::Read(uint8_t *bytes, size_t numBytes)
 {
-	const size_t n = Min(numBytes, size_t(mSize - mCurrent));
+	const size_t n = min(numBytes, size_t(mSize - mCurrent));
 	memcpy(bytes, mBuffer + mCurrent, n);
 	mCurrent += pos_t(n);
 	return n;
@@ -42,7 +41,7 @@ int MemoryInputStream::Read()
 
 void MemoryInputStream::SetPosition(off_t offset)
 {
-	const pos_t current = Min(Max(pos_t(offset), pos_t(0)), mSize);
+	const pos_t current = min(max(pos_t(offset), pos_t(0)), mSize);
 	mCurrent = current;
 }
 

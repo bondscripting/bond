@@ -1,9 +1,7 @@
 #include "bond/api/libstring.h"
+#include "bond/stl/cstdlib.h"
 #include "bond/vm/vm.h"
 #include "private/utf8.h"
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 
 namespace Bond
@@ -108,10 +106,10 @@ void TryParseInt(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		char *end;
-		errno = 0;
-		const long long value = strtoll(str, &end, 10);
-		success = (end != str) && (errno != ERANGE) && (value >= BOND_INT_MIN) && (value <= BOND_INT_MAX);
+		const char *end;
+		bool outOfRange = false;
+		const int64_t value = ParseInt64(str, &end, 10, &outOfRange);
+		success = (end != str) && !outOfRange && (value >= BOND_INT_MIN) && (value <= BOND_INT_MAX);
 		if (success)
 		{
 			*result = int32_t(value);
@@ -128,13 +126,13 @@ void TryParseLong(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		char *end;
-		errno = 0;
-		const long long value = strtoll(str, &end, 10);
-		success = (end != str) && (errno != ERANGE);
+		const char *end;
+		bool outOfRange = false;
+		const int64_t value = ParseInt64(str, &end, 10, &outOfRange);
+		success = (end != str) && !outOfRange;
 		if (success)
 		{
-			*result = int64_t(value);
+			*result = value;
 		}
 	}
 	frame.SetReturnValue(success);
@@ -148,8 +146,8 @@ void TryParseFloat(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		char *end;
-		const float value = strtof(str, &end);
+		const char *end;
+		const float value = ParseFloat(str, &end, nullptr);
 		success = end != str;
 		if (success)
 		{
@@ -167,8 +165,8 @@ void TryParseDouble(Bond::StackFrame &frame)
 	bool success = false;
 	if ((str != nullptr) && (result != nullptr))
 	{
-		char *end;
-		const double value = strtod(str, &end);
+		const char *end;
+		const double value = ParseDouble(str, &end, nullptr);
 		success = end != str;
 		if (success)
 		{

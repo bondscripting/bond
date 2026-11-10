@@ -144,13 +144,13 @@ void ValidateFunctionCall(
 
 	if constexpr (std::is_floating_point<ReturnT>::value)
 	{
-		const ReturnT delta = Bond::Max(Bond::Abs(expectedResult * ReturnT(1.0e-6)), ReturnT(1.0e-6));
+		const ReturnT delta = Bond::max(Bond::Abs(expectedResult * ReturnT(1.0e-6)), ReturnT(1.0e-6));
 		Assert((returnValue >= (expectedResult - delta)) && (returnValue <= (expectedResult + delta)),
 			assertFile, assertLine, "Expected %f, but was %f.", double(expectedResult), double(returnValue));
 		if ((expectedResult == ReturnT(0)) && (returnValue == ReturnT(0)))
 		{
-			Assert(std::signbit(returnValue) == std::signbit(expectedResult), assertFile, assertLine,
-				"Expected %s0, but was %s0.", std::signbit(expectedResult) ? "-" : "+", std::signbit(returnValue) ? "-" : "+");
+			Assert(Bond::signbit(returnValue) == Bond::signbit(expectedResult), assertFile, assertLine,
+				"Expected %s0, but was %s0.", Bond::signbit(expectedResult) ? "-" : "+", Bond::signbit(returnValue) ? "-" : "+");
 		}
 	}
 	else if constexpr (std::is_pointer<ReturnT>::value)

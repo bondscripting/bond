@@ -6,7 +6,7 @@ namespace Bond
 
 void *DefaultAllocator::AllocateAligned(size_t size, size_t align)
 {
-	const size_t allocAlign = Max(RoundUpToPowerOfTwo32(align), sizeof(void *));
+	const size_t allocAlign = max(RoundUpToPowerOfTwo32(align), sizeof(void *));
 	const size_t allocSize = size + sizeof(void *) + allocAlign - 1;
 	char *mem = Alloc<char>(allocSize);
 	void *buffer = mem;

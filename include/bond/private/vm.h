@@ -1,8 +1,8 @@
 #ifndef BOND_PRIVATE_VM_H
 #define BOND_PRIVATE_VM_H
 
+#include "bond/stl/typetraits.h"
 #include "bond/systems/math.h"
-#include <type_traits>
 
 namespace Bond
 {
@@ -33,31 +33,31 @@ inline bool IsIntegerSignatureType(SignatureType signatureType)
 template <typename T>
 bool ValidateSignatureType(size_t size, SignatureType signatureType)
 {
-	if constexpr (std::is_enum_v<T>)
+	if constexpr (Bond::is_enum_v<T>)
 	{
-		return ValidateSignatureType<std::underlying_type_t<T>>(size, signatureType);
+		return ValidateSignatureType<Bond::underlying_type_t<T>>(size, signatureType);
 	}
 	else
 	{
 		static_assert(
-			std::is_integral_v<T> || std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_pointer_v<T> ||
-			((std::is_class_v<T> || std::is_union_v<T>) && std::is_trivially_copyable_v<T>),
+			Bond::is_integral_v<T> || Bond::is_same_v<T, float> || Bond::is_same_v<T, double> || Bond::is_pointer_v<T> ||
+			((Bond::is_class_v<T> || Bond::is_union_v<T>) && Bond::is_trivially_copyable_v<T>),
 			"Type cannot be passed to or returned from Bond.");
 
 		bool typeMatches;
-		if constexpr (std::is_integral_v<T>)
+		if constexpr (Bond::is_integral_v<T>)
 		{
 			typeMatches = IsIntegerSignatureType(signatureType);
 		}
-		else if constexpr (std::is_same_v<T, float>)
+		else if constexpr (Bond::is_same_v<T, float>)
 		{
 			typeMatches = signatureType == SIG_FLOAT;
 		}
-		else if constexpr (std::is_same_v<T, double>)
+		else if constexpr (Bond::is_same_v<T, double>)
 		{
 			typeMatches = signatureType == SIG_DOUBLE;
 		}
-		else if constexpr (std::is_pointer_v<T>)
+		else if constexpr (Bond::is_pointer_v<T>)
 		{
 			typeMatches = signatureType == SIG_POINTER;
 		}
@@ -76,17 +76,17 @@ bool ValidateSignatureType(size_t size, SignatureType signatureType)
 template <typename T>
 bool ValidateReturnType(size_t size, SignatureType signatureType)
 {
-	if constexpr (std::is_enum_v<T>)
+	if constexpr (Bond::is_enum_v<T>)
 	{
-		return ValidateReturnType<std::underlying_type_t<T>>(size, signatureType);
+		return ValidateReturnType<Bond::underlying_type_t<T>>(size, signatureType);
 	}
-	else if constexpr (std::is_integral_v<T> && (sizeof(T) == sizeof(int32_t)))
+	else if constexpr (Bond::is_integral_v<T> && (sizeof(T) == sizeof(int32_t)))
 	{
 		return IsIntegerSignatureType(signatureType) && (size <= sizeof(T));
 	}
 	else
 	{
-		static_assert(!std::is_integral_v<T> || (sizeof(T) > sizeof(int32_t)),
+		static_assert(!Bond::is_integral_v<T> || (sizeof(T) > sizeof(int32_t)),
 			"Integer return values smaller than 32 bits are widened to 32 bits. Use int32_t or uint32_t.");
 		return ValidateSignatureType<T>(size, signatureType);
 	}
@@ -119,18 +119,18 @@ inline const ArgType &StackFrame::GetArg(size_t index) const
 template <typename ReturnType>
 inline void StackFrame::SetReturnValue(const ReturnType &returnValue)
 {
-	if constexpr (std::is_enum_v<ReturnType>)
+	if constexpr (Bond::is_enum_v<ReturnType>)
 	{
-		SetReturnValue(std::underlying_type_t<ReturnType>(returnValue));
+		SetReturnValue(Bond::underlying_type_t<ReturnType>(returnValue));
 	}
-	else if constexpr (std::is_null_pointer_v<ReturnType>)
+	else if constexpr (Bond::is_null_pointer_v<ReturnType>)
 	{
 		SetReturnValue(static_cast<void *>(nullptr));
 	}
 	else
 	{
 		ValidateReturnAssignmentType<ReturnType>();
-		if constexpr (std::is_integral_v<ReturnType> && (sizeof(ReturnType) < sizeof(int32_t)))
+		if constexpr (Bond::is_integral_v<ReturnType> && (sizeof(ReturnType) < sizeof(int32_t)))
 		{
 			// The operand stack holds small integers widened according to their Bond type.
 			const SignatureType signatureType = SignatureType(mFunction->mReturnSignature.mType);
@@ -290,11 +290,11 @@ inline InvocationStackFrame::InvocationStackFrame(VM &vm, const Function &functi
 template <typename ArgType>
 inline void InvocationStackFrame::PushArg(const ArgType &arg)
 {
-	if constexpr (std::is_enum_v<ArgType>)
+	if constexpr (Bond::is_enum_v<ArgType>)
 	{
-		PushArg(std::underlying_type_t<ArgType>(arg));
+		PushArg(Bond::underlying_type_t<ArgType>(arg));
 	}
-	else if constexpr (std::is_null_pointer_v<ArgType>)
+	else if constexpr (Bond::is_null_pointer_v<ArgType>)
 	{
 		PushArg(static_cast<void *>(nullptr));
 	}
@@ -310,7 +310,7 @@ inline void InvocationStackFrame::PushArg(const ArgType &arg)
 #endif
 
 		ArgType &destination = frame.GetArgRef<ArgType>(mNextArg);
-		if constexpr (std::is_integral_v<ArgType> && (sizeof(ArgType) == BOND_BOOL_SIZE))
+		if constexpr (Bond::is_integral_v<ArgType> && (sizeof(ArgType) == BOND_BOOL_SIZE))
 		{
 			// Store bools as 0 or 1 regardless of the type used to pass them.
 			const bool isBool = frame.mFunction->mParamListSignature.mParamSignatures[mNextArg].mType == SIG_BOOL;

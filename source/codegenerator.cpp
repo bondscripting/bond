@@ -14,7 +14,6 @@
 #include "bond/types/opcodes.h"
 #include "bond/types/value.h"
 #include "bond/version.h"
-#include <cmath>
 
 namespace Bond
 {
@@ -612,11 +611,11 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 	while (parameterList != nullptr)
 	{
 		const TypeDescriptor *typeDescriptor = parameterList->GetTypeDescriptor();
-		const uint32_t alignment = Max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+		const uint32_t alignment = max(typeDescriptor->GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
 		offset += typeDescriptor->GetSize(mPointerSize);
 		offset = AlignUp(offset, alignment);
 		packedOffset += typeDescriptor->GetStackSize(mPointerSize);
-		framePointerAlignment = Max(framePointerAlignment, alignment);
+		framePointerAlignment = max(framePointerAlignment, alignment);
 		parameterList->SetOffset(-int32_t(offset));
 		parameterList = NextNode(parameterList);
 	}
@@ -2341,7 +2340,7 @@ void GeneratorCore::EmitPushConstantFloat(float value)
 	{
 		EmitOpCode(OPCODE_CONSTF_NH);
 	}
-	else if ((value == 0.0f) && !std::signbit(value))
+	else if ((value == 0.0f) && !Bond::signbit(value))
 	{
 		EmitOpCode(OPCODE_CONSTF_0);
 	}
@@ -2379,7 +2378,7 @@ void GeneratorCore::EmitPushConstantDouble(double value)
 	{
 		EmitOpCode(OPCODE_CONSTD_NH);
 	}
-	else if ((value == 0.0) && !std::signbit(value))
+	else if ((value == 0.0) && !Bond::signbit(value))
 	{
 		EmitOpCode(OPCODE_CONSTD_0);
 	}
@@ -4346,7 +4345,7 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 
 		// Write the setter function.
 		{
-			const uint32_t alignment = Max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+			const uint32_t alignment = max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
 			const uint32_t offset = AlignUp(uint32_t(BOND_SLOT_SIZE) + typeDescriptor.GetSize(mPointerSize), alignment);
 			const uint32_t packedOffset = uint32_t(BOND_SLOT_SIZE) + typeDescriptor.GetStackSize(mPointerSize);
 			const TypeDescriptor voidDescriptor = TypeDescriptor::GetVoidType();
@@ -4593,20 +4592,20 @@ void GeneratorCore::ApplyStackDelta(int32_t delta)
 
 	const uint32_t stackTop = mStackTop.GetTop() + delta;
 	mStackTop.SetTop(stackTop);
-	function.mStackSize = Max(function.mStackSize, stackTop);
+	function.mStackSize = max(function.mStackSize, stackTop);
 }
 
 
 int32_t GeneratorCore::AllocateLocal(const TypeDescriptor &typeDescriptor)
 {
 	CompiledFunction &function = GetFunction();
-	const uint32_t alignment = Max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
+	const uint32_t alignment = max(typeDescriptor.GetAlignment(mPointerSize), uint32_t(BOND_SLOT_SIZE));
 	const uint32_t size = typeDescriptor.GetSize(mPointerSize);
 	const uint32_t offset = AlignUp(mLocalOffset.GetTop(), alignment);
 	const uint32_t nextOffset = AlignUp(offset + size, uint32_t(BOND_SLOT_SIZE));
 	mLocalOffset.SetTop(nextOffset);
-	function.mLocalSize = Max(function.mLocalSize, nextOffset);
-	function.mFramePointerAlignment = Max(function.mFramePointerAlignment, alignment);
+	function.mLocalSize = max(function.mLocalSize, nextOffset);
+	function.mFramePointerAlignment = max(function.mFramePointerAlignment, alignment);
 	return int32_t(offset);
 }
 

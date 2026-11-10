@@ -1,7 +1,6 @@
 #include "bond/api/libio.h"
 #include "bond/io/outputstream.h"
 #include "bond/io/outputstreamadaptor.h"
-#include <cstdio>
 
 namespace Bond
 {

@@ -1,5 +1,6 @@
 #include "bond/compiler/parsenodeutil.h"
 #include "bond/compiler/symboltable.h"
+#include "bond/systems/math.h"
 
 namespace Bond
 {

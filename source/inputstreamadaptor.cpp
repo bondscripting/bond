@@ -1,7 +1,7 @@
 #include "bond/api/libio.h"
 #include "bond/io/inputstream.h"
 #include "bond/io/inputstreamadaptor.h"
-#include <cstdio>
+#include "bond/stl/cstdio.h"
 
 namespace Bond
 {
@@ -23,7 +23,7 @@ void InputStreamAdaptor::ScanStr(char *str, uint32_t bufferSize)
 		--bufferSize;
 	}
 	char format[32];
-	snprintf(format, sizeof(format), "%s%%%" BOND_PRIu32 "s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", bufferSize);
+	Bond::snprintf(format, sizeof(format), "%s%%%" BOND_PRIu32 "s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", bufferSize);
 	mStream->Scan(format, str);
 }
 
@@ -136,7 +136,7 @@ double InputStreamAdaptor::ScanDouble()
 
 void InputStreamAdaptor::Format(char *format, size_t formatSize, const char *specifier) const
 {
-	snprintf(format, formatSize, "%s%%%s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", specifier);
+	Bond::snprintf(format, formatSize, "%s%%%s", ((mFlags & IO::SkipWhite) != 0) ? " " : "", specifier);
 }
 
 }

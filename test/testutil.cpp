@@ -5,7 +5,7 @@
 #include "bond/io/stdiooutputstream.h"
 #include "bond/io/stdiostreamfactory.h"
 #include "bond/systems/defaultallocator.h"
-#include "bond/private/types.h"
+#include "bond/systems/math.h"
 #include <cstdio>
 #include <cstring>
 

@@ -1,5 +1,6 @@
 #include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
+#include "bond/stl/cmath.h"
 #include "bond/stl/vector.h"
 #include "bond/systems/allocator.h"
 #include "bond/systems/assert.h"
@@ -146,7 +147,7 @@ CodeSegmentHandle CboLoader::Load()
 		dataCount += result.mDataCount;
 		dataSize = AlignUp(dataSize, result.mDataAlignment);
 		dataSize += result.mDataSize;
-		dataAlignment = Max(dataAlignment, result.mDataAlignment);
+		dataAlignment = max(dataAlignment, result.mDataAlignment);
 	}
 
 	size_t memSize = 0;
@@ -166,7 +167,7 @@ CodeSegmentHandle CboLoader::Load()
 	const size_t dataStart = TallyMemoryRequirements<const uint8_t>(memSize, dataSize, dataAlignment);
 
 	const size_t DEFAULT_ALIGNMENT = 256;
-	const size_t alignment = Max(DEFAULT_ALIGNMENT, dataAlignment);
+	const size_t alignment = max(DEFAULT_ALIGNMENT, dataAlignment);
 
 	auto memHandle = mPermAllocator.AllocOwnedAligned<uint8_t>(memSize, alignment);
 	memset(memHandle.get(), 0, memSize);

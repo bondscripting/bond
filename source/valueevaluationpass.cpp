@@ -417,7 +417,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						const uint32_t memberAlign = memberDescriptor->GetAlignment(mPointerSize);
 
 						structSize = AlignUp(structSize, memberAlign);
-						structAlign = Max(structAlign, memberAlign);
+						structAlign = max(structAlign, memberAlign);
 
 						NamedInitializer *initializerList = memberList->GetNamedInitializerList();
 						while (initializerList != nullptr)
@@ -431,7 +431,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 						memberList = NextNode(memberList);
 					}
 
-					structSize = AlignUp(Max(structSize, BOND_DEFAULT_STRUCT_SIZE), structAlign);
+					structSize = AlignUp(max(structSize, BOND_DEFAULT_STRUCT_SIZE), structAlign);
 					structDeclaration->SetSize(structSize);
 					structDeclaration->SetAlignment(structAlign);
 				}
@@ -621,7 +621,7 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 				if (initializerList != nullptr)
 				{
 					const uint32_t initializerListLength = GetLength(initializer->GetInitializerList());
-					length = Max(length, initializerListLength);
+					length = max(length, initializerListLength);
 				}
 				else if (expression != nullptr)
 				{
@@ -634,7 +634,7 @@ void ValueEvaluationPass::Visit(DeclarativeStatement *declarativeStatement)
 					if (isStringInitializer)
 					{
 						const uint32_t stringLength = uint32_t(constantExpression->GetValueToken()->GetStringLength() + 1);
-						length = Max(length, stringLength);
+						length = max(length, stringLength);
 					}
 				}
 			}

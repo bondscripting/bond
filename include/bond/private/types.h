@@ -2,10 +2,8 @@
 #define BOND_PRIVATE_TYPES_H
 
 #include <cinttypes>
-#include <cmath>
 #include <cstdint>
 #include <limits>
-#include <type_traits>
 
 #define BOND_SCNd32 SCNd32
 #define BOND_PRId32 PRId32
@@ -63,49 +61,6 @@ const uint64_t BOND_ULONG_MIN = std::numeric_limits<uint64_t>::min();
 
 const size_t BOND_SIZE_MAX = std::numeric_limits<size_t>::max();
 const size_t BOND_SIZE_MIN = std::numeric_limits<size_t>::min();
-
-
-/// \brief Returns whether value is exactly representable by RangeType, i.e. whether converting it to
-/// RangeType and back is lossless. NaN and infinity are never representable.
-template <typename RangeType, typename ValueType>
-bool IsInRange(ValueType value)
-{
-	static_assert(std::is_arithmetic<RangeType>::value && std::is_arithmetic<ValueType>::value, "IsInRange requires arithmetic types");
-	using RangeLimits = std::numeric_limits<RangeType>;
-	using ValueLimits = std::numeric_limits<ValueType>;
-
-	if constexpr (std::is_integral<RangeType>::value && std::is_integral<ValueType>::value)
-	{
-		// Comparing through intmax_t and uintmax_t avoids mixed signedness comparisons.
-		if constexpr (ValueLimits::is_signed)
-		{
-			if (value < ValueType(0))
-			{
-				return RangeLimits::is_signed && (intmax_t(value) >= intmax_t(RangeLimits::min()));
-			}
-		}
-		return uintmax_t(value) <= uintmax_t(RangeLimits::max());
-	}
-	else if constexpr (std::is_integral<RangeType>::value)
-	{
-		// 2^digits is exactly representable, so the bounds are exact. NaN fails every comparison.
-		const ValueType upperBound = std::ldexp(ValueType(1), RangeLimits::digits);
-		const ValueType lowerBound = RangeLimits::is_signed ? -upperBound : ValueType(0);
-		return (std::trunc(value) == value) && (value >= lowerBound) && (value < upperBound);
-	}
-	else if constexpr (std::is_integral<ValueType>::value)
-	{
-		// A value near the top of ValueType's range can round up to 2^digits, which is out of range
-		// for ValueType, so the converted value is checked before it is converted back.
-		const RangeType convertedValue = RangeType(value);
-		return (convertedValue < std::ldexp(RangeType(1), ValueLimits::digits)) && (ValueType(convertedValue) == value);
-	}
-	else
-	{
-		// Converting a finite value outside RangeType's range is undefined, so check it first.
-		return (std::fabs(value) <= RangeLimits::max()) && (ValueType(RangeType(value)) == value);
-	}
-}
 
 }
 
