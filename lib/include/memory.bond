@@ -14,22 +14,72 @@ namespace Bond
 
 /// @{
 
+/// \brief An opaque set of collected allocations that are freed together.
+///
+/// Every function call has its own Collector. When the call returns, all allocations registered with
+/// its Collector are freed.
 struct Collector {};
 
+/// \brief Returns the Collector of the calling function.
+///
+/// Allocations registered with it are freed when the calling function returns. The returned pointer
+/// can be passed to a function that it calls, so that the callee can allocate memory that outlives it.
 Collector *GetCollector();
 
+/// \brief Allocates a block of memory that must be freed manually.
+/// \param size The size of the block in bytes.
+/// \returns A pointer to the allocated memory, which must be freed with Free.
 void *Allocate(ulong size);
+
+/// \brief Allocates a block of memory that is freed automatically when the calling function returns.
+/// \param size The size of the block in bytes.
+/// \returns A pointer to the allocated memory, which must not be freed manually.
 void *AllocateCollected(ulong size);
+
+/// \brief Allocates a block of memory that is freed automatically along with a given Collector.
+/// \param collector The Collector with which the memory is registered. If null, the Collector of the
+/// calling function is used.
+/// \param size The size of the block in bytes.
+/// \returns A pointer to the allocated memory, which must not be freed manually.
 void *AllocateWithCollector(Collector *collector, ulong size);
 
+/// \brief Allocates an aligned block of memory that must be freed manually.
+/// \param size The size of the block in bytes.
+/// \param alignment The alignment of the block in bytes.
+/// \returns A pointer to the allocated memory, which must be freed with FreeAligned.
 void *AllocateAligned(ulong size, uint alignment);
+
+/// \brief Allocates an aligned block of memory that is freed automatically when the calling function
+/// returns.
+/// \param size The size of the block in bytes.
+/// \param alignment The alignment of the block in bytes.
+/// \returns A pointer to the allocated memory, which must not be freed manually.
 void *AllocateAlignedCollected(ulong size, uint alignment);
+
+/// \brief Allocates an aligned block of memory that is freed automatically along with a given
+/// Collector.
+/// \param collector The Collector with which the memory is registered. If null, the Collector of the
+/// calling function is used.
+/// \param size The size of the block in bytes.
+/// \param alignment The alignment of the block in bytes.
+/// \returns A pointer to the allocated memory, which must not be freed manually.
 void *AllocateAlignedWithCollector(Collector *collector, ulong size, uint alignment);
 
+/// \brief Frees a block of memory allocated with Allocate.
+/// \param ptr A pointer returned by Allocate.
 void Free(void *ptr);
+
+/// \brief Frees a block of memory allocated with AllocateAligned.
+/// \param ptr A pointer returned by AllocateAligned.
 void FreeAligned(void *ptr);
 
+/// \brief Copies bytes from one block of memory to another. The blocks must not overlap.
+/// \param dest A pointer to the memory into which the bytes are copied.
+/// \param src A pointer to the memory from which the bytes are copied.
+/// \param size The number of bytes to copy. Both pointers must be non-null unless it is 0.
 void Memcpy(void *dest, void *src, ulong size);
+
+/// @}
 
 }
 // begin ignore

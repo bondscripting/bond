@@ -114,20 +114,22 @@ double AcosD(double x);
 /// \param x A value in the range [-1, +1] whose arccosine is calculated.
 float AcosF(float x);
 
-/// \brief Returns the arctangent in radians of a value.
-/// \param x A value in the range [-1, +1] whose arctangent is calculated.
+/// \brief Returns the arctangent in radians of a value, in the range [-pi/2, +pi/2].
+/// \param x The value whose arctangent is calculated.
 double AtanD(double x);
 
-/// \brief Returns the arctangent in radians of a value.
-/// \param x A value in the range [-1, +1] whose arctangent is calculated.
+/// \brief Returns the arctangent in radians of a value, in the range [-pi/2, +pi/2].
+/// \param x The value whose arctangent is calculated.
 float AtanF(float x);
 
-/// \brief Returns the arctangent in radians of y/x.
+/// \brief Returns the arctangent in radians of y/x, in the range [-pi, +pi], using the signs of both
+/// arguments to determine the quadrant.
 /// \param y The coordinate on the Y axis.
 /// \param x The coordinate on the X axis.
 double Atan2D(double y, double x);
 
-/// \brief Returns the arctangent in radians of y/x.
+/// \brief Returns the arctangent in radians of y/x, in the range [-pi, +pi], using the signs of both
+/// arguments to determine the quadrant.
 /// \param y The coordinate on the Y axis.
 /// \param x The coordinate on the X axis.
 float Atan2F(float y, float x);
@@ -239,11 +241,11 @@ double SqrtD(double x);
 float SqrtF(float x);
 
 /// \brief Returns the cube root of a value.
-/// \param x The value whose square root is calculated.
+/// \param x The value whose cube root is calculated.
 double CbrtD(double x);
 
 /// \brief Returns the cube root of a value.
-/// \param x The value whose square root is calculated.
+/// \param x The value whose cube root is calculated.
 float CbrtF(float x);
 
 /// \brief Returns the hypotenuse of a right-angled triangle with sides of the given lengths.
@@ -280,19 +282,23 @@ double TruncD(double x);
 /// \param x The value to be rounded.
 float TruncF(float x);
 
-/// \brief Returns the absolute value of a signed 8-bit value.
+/// \brief Returns the absolute value of a signed 8-bit value. The result is unspecified for the most
+/// negative value, whose absolute value cannot be represented.
 /// \param x The value whose absolute value is calculated.
 char AbsC(char x);
 
-/// \brief Returns the absolute value of a signed 16-bit value.
+/// \brief Returns the absolute value of a signed 16-bit value. The result is unspecified for the most
+/// negative value, whose absolute value cannot be represented.
 /// \param x The value whose absolute value is calculated.
 short AbsS(short x);
 
-/// \brief Returns the absolute value of a signed 32-bit value.
+/// \brief Returns the absolute value of a signed 32-bit value. The result is unspecified for the most
+/// negative value, whose absolute value cannot be represented.
 /// \param x The value whose absolute value is calculated.
 int AbsI(int x);
 
-/// \brief Returns the absolute value of a signed 64-bit value.
+/// \brief Returns the absolute value of a signed 64-bit value. The result is unspecified for the most
+/// negative value, whose absolute value cannot be represented.
 /// \param x The value whose absolute value is calculated.
 long AbsL(long x);
 
@@ -338,12 +344,14 @@ double ModfD(double x, double *ip);
 /// \returns The fractional part, which, when added to ip, results in x.
 float ModfF(float x, float *ip);
 
-/// \brief Returns the remainder of x/y rounded toward zero.
+/// \brief Returns the remainder of x/y, where the quotient is rounded toward zero. The result has
+/// the same sign as x.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
 double FmodD(double x, double y);
 
-/// \brief Returns the remainder of x/y rounded toward zero.
+/// \brief Returns the remainder of x/y, where the quotient is rounded toward zero. The result has
+/// the same sign as x.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
 float FmodF(float x, float y);
@@ -420,12 +428,14 @@ double NearbyintD(double x);
 /// \param x The value to be rounded.
 float NearbyintF(float x);
 
-/// \brief Returns the remainder of x/y rounded to the nearest integer.
+/// \brief Returns the remainder of x/y, where the quotient is rounded to the nearest integer, with
+/// halfway cases rounded to even.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
 double RemainderD(double x, double y);
 
-/// \brief Returns the remainder of x/y rounded to the nearest integer.
+/// \brief Returns the remainder of x/y, where the quotient is rounded to the nearest integer, with
+/// halfway cases rounded to even.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
 float RemainderF(float x, float y);
@@ -534,16 +544,20 @@ double LogbD(double x);
 /// \param x The value whose exponent is returned.
 float LogbF(float x);
 
-/// \brief Returns the remainder of x/y rounded to the nearest integer and stores the low bits of the quotient.
+/// \brief Returns the remainder of x/y, where the quotient is rounded to the nearest integer, with
+/// halfway cases rounded to even, and stores the sign and low bits of the quotient.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
-/// \param quo A pointer to an int where the low bits of the quotient are stored.
+/// \param quo A pointer to an int where a value with the sign of the quotient and at least its
+/// three lowest bits is stored.
 double RemquoD(double x, double y, int *quo);
 
-/// \brief Returns the remainder of x/y rounded to the nearest integer and stores the low bits of the quotient.
+/// \brief Returns the remainder of x/y, where the quotient is rounded to the nearest integer, with
+/// halfway cases rounded to even, and stores the sign and low bits of the quotient.
 /// \param x The numerator of the division operation.
 /// \param y The denominator of the division operation.
-/// \param quo A pointer to an int where the low bits of the quotient are stored.
+/// \param quo A pointer to an int where a value with the sign of the quotient and at least its
+/// three lowest bits is stored.
 float RemquoF(float x, float y, int *quo);
 
 /// \brief Returns a representation of positive infinity.
@@ -652,61 +666,71 @@ double MaxD(double x, double y);
 /// \param y The second value.
 float MaxF(float x, float y);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 char ClampC(char value, char low, char high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 uchar ClampUC(uchar value, uchar low, uchar high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 short ClampS(short value, short low, short high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 ushort ClampUS(ushort value, ushort low, ushort high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 int ClampI(int value, int low, int high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 uint ClampUI(uint value, uint low, uint high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 long ClampL(long value, long low, long high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 ulong ClampUL(ulong value, ulong low, ulong high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
 double ClampD(double value, double low, double high);
 
-/// \brief Returns a value limited to the range [low, high].
+/// \brief Returns a value limited to the range [low, high]. The result is undefined if low is greater
+/// than high.
 /// \param value The value to limit.
 /// \param low The lower bound.
 /// \param high The upper bound.
@@ -715,6 +739,6 @@ float ClampF(float value, float low, float high);
 /// @}
 
 }
-//begin ignore
+// begin ignore
 }
-//end ignore
+// end ignore

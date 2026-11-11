@@ -19,25 +19,31 @@ namespace Bond
 
 namespace IO
 {
+	/// \brief Format flags that modify how InputStream and OutputStream interpret input and format
+	/// output. They are combined into a bitmask.
 	enum Flags
 	{
 		/// \brief Read and write bool values as the strings "true" and "false".
 		BoolAlpha = 1 << 0,
 		/// \brief Write base 16 and base 8 integers with a "0x" or "0" prefix.
 		ShowBase = 1 << 1,
-		/// \brief Always write a decimal point in floating-point values.
+		/// \brief Always write a decimal point in floating-point values, and keep trailing zeros when
+		/// neither IO::Fixed nor IO::Scientific is set.
 		ShowPoint = 1 << 2,
-		/// \brief Skip whitespace before consuming other characters in a formatted read.
+		/// \brief Skip whitespace before reading a character with InputStream::ScanC, or a bool with
+		/// InputStream::ScanB when IO::BoolAlpha is set. The other formatted reads always skip leading
+		/// whitespace.
 		SkipWhite = 1 << 3,
 		/// \brief Write numbers padded to the left with zeros instead of spaces.
 		Zero = 1 << 4,
-		/// \brief Read and write integers in base 10.
+		/// \brief Read integers in base 10. Takes precedence over IO::Hex and IO::Oct when reading,
+		/// but not when writing. Integers are written in base 10 unless IO::Hex or IO::Oct is set.
 		Dec = 1 << 5,
-		/// \brief Read and write integers in base 16.
+		/// \brief Read and write integers in base 16. Takes precedence over IO::Oct.
 		Hex = 1 << 6,
 		/// \brief Read and write integers in base 8.
 		Oct = 1 << 7,
-		/// \brief Write floating-point values in decimal notation.
+		/// \brief Write floating-point values in decimal notation. Takes precedence over IO::Scientific.
 		Fixed = 1 << 8,
 		/// \brief Write floating-point values in scientific notation.
 		Scientific = 1 << 9,
@@ -45,76 +51,94 @@ namespace IO
 		Left = 1 << 10,
 	};
 
+	/// \brief Constants used by the I/O functions.
 	enum Constants
 	{
+		/// \brief The value returned by InputStream::Get when the end of the stream has been reached.
 		Eof = -1
 	};
 }
 
 /// \brief An abstract interface for performing both unformatted and formatted input operations.
+///
+/// Except for Close, using a stream after it has been closed raises an error.
 struct InputStream
 {
 	/// \brief Discards any unread input and closes the stream.
+	///
+	/// Closing a stream that is already closed has no effect. Closing a stream does not free it.
 	void Close();
 
 	/// \brief Reads a string of characters from the input stream into a character buffer.
 	///
-	/// The scan stops at the first whitespace character or when the buffer is full. The string is null
-	/// terminated. At most bufferSize-1 characters are read to leave space for the null terminator.
+	/// Leading whitespace is skipped. The scan stops at the first whitespace character or when the
+	/// buffer is full. The string is null terminated. At most bufferSize-1 characters are read to leave
+	/// space for the null terminator. If the end of the stream is reached before any character is read,
+	/// the buffer is left unchanged.
 	/// \param str Pointer to a character buffer where characters are stored.
-	/// \param bufferSize Length of the buffer pointed to by str.
+	/// \param bufferSize Length of the buffer pointed to by str. It must be at least 1.
 	void ScanStr(char *str, uint bufferSize);
 
 	/// \brief Reads and returns a formatted Boolean value from the input stream.
 	///
-	/// If the IO::BoolAlpha flag is set, an attempt is made to read the strings "true" or "false",
-	/// otherwise an integer is read. If a non-zero value, or the string "true" is read, the value true is
-	/// returned. If no input that could be interpreted as a bool is read, HasError() returns true.
+	/// If the IO::BoolAlpha flag is set, an attempt is made to read the string "true" or "false",
+	/// otherwise an integer is read, in base 16 if it begins with 0x, in base 8 if it begins with 0, or
+	/// in base 10 otherwise. If the string "true" or a non-zero value is read, true is returned. If
+	/// no valid input can be read, false is returned and the stream is left at the first character
+	/// that did not match.
 	bool ScanB();
 
 	/// \brief Reads and returns a single character from the input stream.
+	///
+	/// Whitespace is skipped first if the IO::SkipWhite flag is set. If the end of the stream has been
+	/// reached, 0 is returned.
 	char ScanC();
 
 	/// \brief Reads and returns a formatted integer as an int from the input stream.
 	///
-	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
-	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
-	/// it begins with 0, or in base 10 otherwise. If no input that could be interpreted as an integer is
-	/// read, HasError() returns true.
+	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8
+	/// respectively, checked in that order. If none of those flags are set, the integer is read in base
+	/// 16 if it begins with 0x, in base 8 if it begins with 0, or in base 10 otherwise. Leading
+	/// whitespace is skipped. If no integer can be read, 0 is returned and the stream is left at the
+	/// first character that did not match.
 	int ScanI();
 
 	/// \brief Reads and returns a formatted unsigned integer as a uint from the input stream.
 	///
-	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
-	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
-	/// it begins with 0, or in base 10 otherwise. If no input that could be interpreted as an integer is
-	/// read, HasError() returns true.
+	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8
+	/// respectively, checked in that order. If none of those flags are set, the integer is read in base
+	/// 10. Leading whitespace is skipped. If no integer can be read, 0 is returned and the stream is
+	/// left at the first character that did not match.
 	uint ScanUI();
 
 	/// \brief Reads and returns a formatted integer as a long from the input stream.
 	///
-	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
-	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
-	/// it begins with 0, or in base 10 otherwise. If no input that could be interpreted as an integer is
-	/// read, HasError() returns true.
+	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8
+	/// respectively, checked in that order. If none of those flags are set, the integer is read in base
+	/// 16 if it begins with 0x, in base 8 if it begins with 0, or in base 10 otherwise. Leading
+	/// whitespace is skipped. If no integer can be read, 0 is returned and the stream is left at the
+	/// first character that did not match.
 	long ScanL();
 
 	/// \brief Reads and returns a formatted unsigned integer as a ulong from the input stream.
 	///
-	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8 respectively.
-	/// If none of those flags are set, the integer is read in base 16 if it begins with 0x, in base 8 if
-	/// it begins with 0, or in base 10 otherwise. If no input that could be interpreted as an integer is
-	/// read, HasError() returns true.
+	/// If the IO::Dec, IO::Hex or IO::Oct flag is set, the integer is read in base 10, 16 or 8
+	/// respectively, checked in that order. If none of those flags are set, the integer is read in base
+	/// 16 if it begins with 0x, in base 8 if it begins with 0, or in base 10 otherwise. Leading
+	/// whitespace is skipped. If no integer can be read, 0 is returned and the stream is left at the
+	/// first character that did not match.
 	ulong ScanUL();
 
 	/// \brief Reads and returns a formatted floating-point number as a float from the input stream.
 	///
-	/// If no input that could be interpreted as a floating-point number is read, HasError() returns true.
+	/// Leading whitespace is skipped. If no floating-point number can be read, 0 is returned and the
+	/// stream is left at the first character that did not match.
 	float ScanF();
 
 	/// \brief Reads and returns a formatted floating-point number as a double from the input stream.
 	///
-	/// If no input that could be interpreted as a floating-point number is read, HasError() returns true.
+	/// Leading whitespace is skipped. If no floating-point number can be read, 0 is returned and the
+	/// stream is left at the first character that did not match.
 	double ScanD();
 
 	/// \brief Reads and returns a single unformatted byte from the input stream.
@@ -125,7 +149,7 @@ struct InputStream
 
 	/// \brief Attempts to read the specified number of unformatted bytes into the given buffer.
 	///
-	/// Fewer bytes may be read if the end of the stream is reached or the stream is closed.
+	/// Fewer bytes are read if the end of the stream is reached.
 	/// \param bytes The buffer into which the read bytes are stored.
 	/// \param numBytes The requested number of bytes to be read.
 	/// \returns The number of bytes read.
@@ -136,16 +160,14 @@ struct InputStream
 	/// The format flags modify how the stream interprets input.
 	int GetFlags() const;
 
-	/// \brief Enables the format format flags in the given bitmask of values from the IO::Flags enum
-	/// if they are not already enabled.
+	/// \brief Enables the format flags in the given bitmask of values from the IO::Flags enum.
 	///
 	/// All other flags are left untouched. The format flags modify how the stream interprets input.
 	/// \param flags The bitmask of flags from the IO::Flags enum to enable.
 	/// \returns The stream on which this function was called.
 	InputStream *SetFlags(int flags);
 
-	/// \brief Disables the format format flags in the given bitmask of values from the IO::Flags enum
-	/// if they are not already disabled.
+	/// \brief Disables the format flags in the given bitmask of values from the IO::Flags enum.
 	///
 	/// All other flags are left untouched. The format flags modify how the stream interprets input.
 	/// \param flags The bitmask of flags from the IO::Flags enum to disable.
@@ -179,7 +201,9 @@ struct InputStream
 	/// \brief Returns whether the end of the stream has been reached.
 	bool IsEof() const;
 
-	/// \brief Returns whether an error has occurred during an input operation.
+	/// \brief Returns whether an I/O error has occurred during an input operation.
+	///
+	/// Input that does not match the requested format is not an error.
 	bool HasError() const;
 
 	/// \brief Clears the error flag.
@@ -188,9 +212,13 @@ struct InputStream
 
 
 /// \brief An abstract interface for performing both unformatted and formatted output operations.
+///
+/// Except for Close, using a stream after it has been closed raises an error.
 struct OutputStream
 {
 	/// \brief Flushes any unwritten output and closes the stream.
+	///
+	/// Closing a stream that is already closed has no effect. Closing a stream does not free it.
 	void Close();
 
 	/// \brief Flushes any unwritten output.
@@ -198,6 +226,9 @@ struct OutputStream
 
 	/// \brief Writes a string of characters to the output stream. Writing stops at the first null
 	/// character.
+	///
+	/// The string is padded to the field width (see SetWidth) with spaces, on the left, or on the
+	/// right if the IO::Left flag is set.
 	/// \param str Pointer to a string of characters to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintStr(const char *str);
@@ -205,12 +236,16 @@ struct OutputStream
 	/// \brief Writes a formatted Boolean value to the output stream.
 	///
 	/// If the IO::BoolAlpha flag is set, the values true and false are written as the strings
-	/// "true" and "false" respectively, otherwise they are written as the strings "0" and "1".
+	/// "true" and "false" respectively, otherwise they are written as the integers 1 and 0 as by
+	/// PrintI.
 	/// \param value The Boolean value to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintB(bool value);
 
 	/// \brief Writes a single character to the output stream.
+	///
+	/// The character is padded to the field width (see SetWidth) with spaces, on the left, or on the
+	/// right if the IO::Left flag is set.
 	/// \param value The character to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintC(char value);
@@ -219,9 +254,10 @@ struct OutputStream
 	///
 	/// If the IO::Hex or IO::Oct flag is set, the integer is written in base 16 or 8 respectively, otherwise
 	/// it is written in base 10. If the IO::ShowBase flag is set in addition to IO::Hex, the string "0x" is
-	/// written before the number. If the IO::ShowBase flag is set in addition to IO::Oct, the string "0"
-	/// is written before the number. If the IO::Zero flag is set, the value is zero padded to the left. If
-	/// the IO::Left flag is set, the value is left-justified instead of right-justified.
+	/// written before a non-zero number. If the IO::ShowBase flag is set in addition to IO::Oct, the
+	/// number is written with a leading "0". The value is padded to the field width (see SetWidth). If
+	/// the IO::Zero flag is set, it is zero padded to the left. If the IO::Left flag is set, the value is
+	/// left-justified instead of right-justified, and padded with spaces.
 	/// \param value The integer to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintI(int value);
@@ -230,9 +266,10 @@ struct OutputStream
 	///
 	/// If the IO::Hex or IO::Oct flag is set, the integer is written in base 16 or 8 respectively, otherwise
 	/// it is written in base 10. If the IO::ShowBase flag is set in addition to IO::Hex, the string "0x" is
-	/// written before the number. If the IO::ShowBase flag is set in addition to IO::Oct, the string "0"
-	/// is written before the number. If the IO::Zero flag is set, the value is zero padded to the left. If
-	/// the IO::Left flag is set, the value is left-justified instead of right-justified.
+	/// written before a non-zero number. If the IO::ShowBase flag is set in addition to IO::Oct, the
+	/// number is written with a leading "0". The value is padded to the field width (see SetWidth). If
+	/// the IO::Zero flag is set, it is zero padded to the left. If the IO::Left flag is set, the value is
+	/// left-justified instead of right-justified, and padded with spaces.
 	/// \param value The integer to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintUI(uint value);
@@ -241,9 +278,10 @@ struct OutputStream
 	///
 	/// If the IO::Hex or IO::Oct flag is set, the integer is written in base 16 or 8 respectively, otherwise
 	/// it is written in base 10. If the IO::ShowBase flag is set in addition to IO::Hex, the string "0x" is
-	/// written before the number. If the IO::ShowBase flag is set in addition to IO::Oct, the string "0"
-	/// is written before the number. If the IO::Zero flag is set, the value is zero padded to the left. If
-	/// the IO::Left flag is set, the value is left-justified instead of right-justified.
+	/// written before a non-zero number. If the IO::ShowBase flag is set in addition to IO::Oct, the
+	/// number is written with a leading "0". The value is padded to the field width (see SetWidth). If
+	/// the IO::Zero flag is set, it is zero padded to the left. If the IO::Left flag is set, the value is
+	/// left-justified instead of right-justified, and padded with spaces.
 	/// \param value The integer to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintL(long value);
@@ -252,9 +290,10 @@ struct OutputStream
 	///
 	/// If the IO::Hex or IO::Oct flag is set, the integer is written in base 16 or 8 respectively, otherwise
 	/// it is written in base 10. If the IO::ShowBase flag is set in addition to IO::Hex, the string "0x" is
-	/// written before the number. If the IO::ShowBase flag is set in addition to IO::Oct, the string "0"
-	/// is written before the number. If the IO::Zero flag is set, the value is zero padded to the left. If
-	/// the IO::Left flag is set, the value is left-justified instead of right-justified.
+	/// written before a non-zero number. If the IO::ShowBase flag is set in addition to IO::Oct, the
+	/// number is written with a leading "0". The value is padded to the field width (see SetWidth). If
+	/// the IO::Zero flag is set, it is zero padded to the left. If the IO::Left flag is set, the value is
+	/// left-justified instead of right-justified, and padded with spaces.
 	/// \param value The integer to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintUL(ulong value);
@@ -262,11 +301,14 @@ struct OutputStream
 	/// \brief Writes a formatted float to the output stream.
 	///
 	/// If the IO::Fixed or IO::Scientific flag is set, the number is written in decimal notation or
-	/// scientific notation respectively. If neither flag is set, the number is written in scientific
-	/// notation if the exponent is less than -4 or greater than the precision, otherwise the number is
-	/// written in decimal notation. If the IO::Zero flag is set, the value is zero padded to the left.
-	/// If the IO::Left flag is set, the value is left-justified instead of right-justified. If the
-	/// IO::ShowPoint flag is set, a decimal point is always written.
+	/// scientific notation respectively, with the precision (see SetPrecision) giving the number of
+	/// digits after the decimal point. If neither flag is set, the precision gives the number of
+	/// significant digits, trailing zeros are removed, and the number is written in scientific notation
+	/// if its exponent is less than -4 or greater than or equal to the precision, otherwise in decimal
+	/// notation. The value is padded to the field width (see SetWidth). If the IO::Zero flag is set, it
+	/// is zero padded to the left. If the IO::Left flag is set, the value is left-justified instead of
+	/// right-justified, and padded with spaces. If the IO::ShowPoint flag is set, a decimal point is
+	/// always written and trailing zeros are kept.
 	/// \param value The floating-point number to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintF(float value);
@@ -274,11 +316,14 @@ struct OutputStream
 	/// \brief Writes a formatted double to the output stream.
 	///
 	/// If the IO::Fixed or IO::Scientific flag is set, the number is written in decimal notation or
-	/// scientific notation respectively. If neither flag is set, the number is written in scientific
-	/// notation if the exponent is less than -4 or greater than the precision, otherwise the number is
-	/// written in decimal notation. If the IO::Zero flag is set, the value is zero padded to the left.
-	/// If the IO::Left flag is set, the value is left-justified instead of right-justified. If the
-	/// IO::ShowPoint flag is set, a decimal point is always written.
+	/// scientific notation respectively, with the precision (see SetPrecision) giving the number of
+	/// digits after the decimal point. If neither flag is set, the precision gives the number of
+	/// significant digits, trailing zeros are removed, and the number is written in scientific notation
+	/// if its exponent is less than -4 or greater than or equal to the precision, otherwise in decimal
+	/// notation. The value is padded to the field width (see SetWidth). If the IO::Zero flag is set, it
+	/// is zero padded to the left. If the IO::Left flag is set, the value is left-justified instead of
+	/// right-justified, and padded with spaces. If the IO::ShowPoint flag is set, a decimal point is
+	/// always written and trailing zeros are kept.
 	/// \param value The floating-point number to be written to the stream.
 	/// \returns The stream on which this function was called.
 	OutputStream *PrintD(double value);
@@ -288,7 +333,7 @@ struct OutputStream
 	/// \returns The stream on which this function was called.
 	OutputStream *Put(uchar byte);
 
-	// Writes an array of unformatted bytes to the output stream.
+	/// \brief Writes an array of unformatted bytes to the output stream.
 	/// \param bytes Pointer to the array of bytes to be written to the stream.
 	/// \param numBytes The number of bytes to be written.
 	/// \returns The stream on which this function was called.
@@ -299,16 +344,14 @@ struct OutputStream
 	/// The format flags modify how the stream formats output.
 	int GetFlags() const;
 
-	/// \brief Enables the format format flags in the given bitmask of values from the IO::Flags enum
-	/// if they are not already enabled.
+	/// \brief Enables the format flags in the given bitmask of values from the IO::Flags enum.
 	///
 	/// All other flags are left untouched. The format flags modify how the stream formats output.
 	/// \param flags The bitmask of flags from the IO::Flags enum to enable.
 	/// \returns The stream on which this function was called.
 	OutputStream *SetFlags(int flags);
 
-	/// \brief Disables the format format flags in the given bitmask of values from the IO::Flags enum
-	/// if they are not already disabled.
+	/// \brief Disables the format flags in the given bitmask of values from the IO::Flags enum.
 	///
 	/// All other flags are left untouched. The format flags modify how the stream formats output.
 	/// \param flags The bitmask of flags from the IO::Flags enum to disable.
@@ -321,19 +364,33 @@ struct OutputStream
 	/// \returns The stream on which this function was called.
 	OutputStream *ClearFlags();
 
+	/// \brief Returns the precision used when writing floating-point values. The default is 6.
 	int GetPrecision() const;
-	OutputStream *SetPrecision(int flags);
+
+	/// \brief Assigns the precision used when writing floating-point values.
+	///
+	/// If the IO::Fixed or IO::Scientific flag is set, the precision is the number of digits written
+	/// after the decimal point, otherwise it is the maximum number of significant digits. Unlike the
+	/// field width, the precision remains in effect until it is changed.
+	/// \param precision The new precision.
+	/// \returns The stream on which this function was called.
+	OutputStream *SetPrecision(int precision);
 
 	/// \brief Returns the current minimum field width.
+	///
+	/// The width is reset to 0 by every formatted output operation.
 	int GetWidth() const;
 
-	/// \brief Assigns the minimum field width.
+	/// \brief Assigns the minimum field width of the next formatted output operation.
 	///
 	/// The minimum field width specifies the minimum number of characters to be written in
 	/// a formatted output operation. If the number of characters in the written value is less
-	/// than the field width, it will be padded to the left with spaces, or padded to the right
-	/// if the IO::Left flag is set.
-	OutputStream *SetWidth(int flags);
+	/// than the field width, it is padded to the left, or to the right if the IO::Left flag is set.
+	/// It is padded with spaces, except for numbers written with the IO::Zero flag set. The width
+	/// applies only to the next formatted output operation, after which it is reset to 0.
+	/// \param width The new minimum field width.
+	/// \returns The stream on which this function was called.
+	OutputStream *SetWidth(int width);
 
 	/// \brief Returns the stream's current position measured in bytes.
 	int GetPosition() const;
@@ -378,14 +435,73 @@ OutputStream *StdOut();
 /// This stream must not be passed to the FreeOutputStream function.
 OutputStream *StdErr();
 
+/// \brief Opens a file for reading. The stream must be freed manually.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \returns The opened stream, which must be freed with FreeInputStream, or null if the file could
+/// not be opened.
 InputStream *CreateInputStream(const char *fileName);
+
+/// \brief Opens a file for reading. The stream is closed and freed automatically when the calling
+/// function returns.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \returns The opened stream, which must not be freed manually, or null if the file could not be
+/// opened.
 InputStream *CreateInputStreamCollected(const char *fileName);
+
+/// \brief Opens a file for reading. The stream is closed and freed automatically along with a given
+/// Collector.
+/// \param collector The Collector with which the stream is registered. If null, the Collector of the
+/// calling function is used.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \returns The opened stream, which must not be freed manually, or null if the file could not be
+/// opened.
 InputStream *CreateInputStreamWithCollector(Collector *collector, const char *fileName);
+
+/// \brief Closes and frees a stream returned by CreateInputStream.
+///
+/// The stream must not have been returned by StdIn or by one of the collected creation functions.
+/// \param stream The stream to free.
 void FreeInputStream(InputStream *stream);
 
+/// \brief Opens a file for writing. The stream must be freed manually.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \param append Whether output is appended to the end of an existing file. Otherwise, an existing
+/// file is truncated.
+/// \returns The opened stream, which must be freed with FreeOutputStream, or null if the file could
+/// not be opened.
 OutputStream *CreateOutputStream(const char *fileName, bool append);
+
+/// \brief Opens a file for writing. The stream is flushed, closed and freed automatically when the
+/// calling function returns.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \param append Whether output is appended to the end of an existing file. Otherwise, an existing
+/// file is truncated.
+/// \returns The opened stream, which must not be freed manually, or null if the file could not be
+/// opened.
 OutputStream *CreateOutputStreamCollected(const char *fileName, bool append);
+
+/// \brief Opens a file for writing. The stream is flushed, closed and freed automatically along with
+/// a given Collector.
+/// \param collector The Collector with which the stream is registered. If null, the Collector of the
+/// calling function is used.
+/// \param fileName The name of the file to open, which is resolved by the virtual machine's stream
+/// factory.
+/// \param append Whether output is appended to the end of an existing file. Otherwise, an existing
+/// file is truncated.
+/// \returns The opened stream, which must not be freed manually, or null if the file could not be
+/// opened.
 OutputStream *CreateOutputStreamWithCollector(Collector *collector, const char *fileName, bool append);
+
+/// \brief Flushes, closes and frees a stream returned by CreateOutputStream.
+///
+/// The stream must not have been returned by StdOut, StdErr or by one of the collected creation
+/// functions.
+/// \param stream The stream to free.
 void FreeOutputStream(OutputStream *stream);
 
 /// @}

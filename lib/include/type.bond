@@ -6,7 +6,11 @@ namespace Bond
 {
 
 /// \defgroup type type.bond
-/// \brief Functions for testing the values of types.
+/// \brief Functions for classifying and converting characters.
+///
+/// Only ASCII characters (values 0 through 127) are classified. All other values, including the
+/// negative char values of the bytes of multi-byte UTF-8 sequences, are not members of any class and
+/// are returned unchanged by the conversion functions. The results do not depend on the locale.
 ///
 /// \code
 /// include "type.bond";
@@ -14,49 +18,69 @@ namespace Bond
 
 /// @{
 
-/// \brief Returns whether a character is alphanumeric (i.e. a decimal digit or an upper or lower case letter).
+/// \brief Returns whether a character is an ASCII alphanumeric character (i.e. a decimal digit or an
+/// upper or lower case letter).
+/// \param c The character to classify.
 bool IsAlnum(int c);
 
-/// \brief Returns whether a character is alphabetic (.i.e. an upper or lower case letter).
+/// \brief Returns whether a character is an ASCII alphabetic character (i.e. an upper or lower case
+/// letter).
+/// \param c The character to classify.
 bool IsAlpha(int c);
 
-/// \brief Returns whether a character is a whitespace character used for separating words in a sentence.
+/// \brief Returns whether a character is an ASCII blank character (i.e. a space or a horizontal tab).
+/// \param c The character to classify.
 bool IsBlank(int c);
 
-/// \brief Returns whether a character is a control character (i.e. a non-printable character).
+/// \brief Returns whether a character is an ASCII control character (i.e. 0 through 31 or 127).
+/// \param c The character to classify.
 bool IsCntrl(int c);
 
-/// \brief Returns whether a character is a decimal digit.
+/// \brief Returns whether a character is an ASCII decimal digit.
+/// \param c The character to classify.
 bool IsDigit(int c);
 
-/// \brief Returns whether a character has a graphical representation (i.e. it is printable and is not a space).
+/// \brief Returns whether a character is an ASCII character with a graphical representation (i.e. it
+/// is printable and is not a space).
+/// \param c The character to classify.
 bool IsGraph(int c);
 
-/// \brief Returns whether a character is a lower case letter.
+/// \brief Returns whether a character is an ASCII lower case letter.
+/// \param c The character to classify.
 bool IsLower(int c);
 
-/// \brief Returns whether a character is a printable character (i.e. it occupies space on a display).
+/// \brief Returns whether a character is a printable ASCII character (i.e. a graphical character or
+/// a space).
+/// \param c The character to classify.
 bool IsPrint(int c);
 
-/// \brief Returns whether a character is a punctuation character.
+/// \brief Returns whether a character is an ASCII punctuation character (i.e. a graphical character
+/// that is not alphanumeric).
+/// \param c The character to classify.
 bool IsPunct(int c);
 
-/// \brief Returns whether a character is a whitespace character.
+/// \brief Returns whether a character is an ASCII whitespace character (i.e. a space, horizontal tab,
+/// newline, vertical tab, form feed or carriage return).
+/// \param c The character to classify.
 bool IsSpace(int c);
 
-/// \brief Returns whether a character is an upper case letter.
+/// \brief Returns whether a character is an ASCII upper case letter.
+/// \param c The character to classify.
 bool IsUpper(int c);
 
-/// \brief Returns whether a character is a hexadecimal digit character. (i.e. the digits 0 through 9 and
+/// \brief Returns whether a character is an ASCII hexadecimal digit (i.e. the digits 0 through 9 and
 /// upper and lower case letters A through F).
+/// \param c The character to classify.
 bool IsXDigit(int c);
 
-/// \brief Returns an upper case letter converted to lower case. If the given character is not an upper case
-/// letter, it is returned unchanged.
+/// \brief Returns an ASCII upper case letter converted to lower case. If the given character is not an
+/// ASCII upper case letter, it is returned unchanged.
+/// \param c The character to convert.
 int ToLower(int c);
 
-/// \brief Returns lower case letter converted to upper case. If the given character is not a lower case
-/// letter, it is returned unchanged.
+/// \brief Returns an ASCII lower case letter converted to upper case. If the given character is not an
+/// ASCII lower case letter, it is returned unchanged.
+/// \param c The character to convert.
 int ToUpper(int c);
 
 /// @}
