@@ -1,8 +1,8 @@
 /**
 \mainpage Bond C++ API
 
-Bond is a small C-like scripting language. This is the API of its compiler, virtual machine and
-runtime library.
+Bond is a lightweight bytecode interpreted embeddable scripting language implemented in C++.
+This is the API of its compiler, virtual machine and runtime library.
 
 \section text_encoding Text encoding
 
