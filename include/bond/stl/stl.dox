@@ -1,0 +1,7 @@
+/**
+\defgroup stl STL
+\brief These headers provide the containers, algorithms and C library functions used by Bond.
+
+By default they forward to the C++ standard library. Each one can be replaced with a custom
+implementation by defining the USER_BOND_*_HEADER macro named in its documentation.
+*/

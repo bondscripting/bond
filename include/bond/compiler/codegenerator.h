@@ -35,6 +35,8 @@ public:
 		mErrorBuffer(errorBuffer),
 		mPointerSize(pointerSize)
 	{}
+
+	/// \brief Destroys a CodeGenerator object.
 	~CodeGenerator() {}
 
 	/// \brief Generates bytecode for a list of parse trees.

@@ -9,12 +9,16 @@
 ///   when the condition is false.
 /// - BOND_ASSERT_FAIL() unconditionally reports a failure and aborts, e.g. for unreachable code.
 ///
-/// These macros are only enabled when BOND_ASSERTS_ENABLED is non-zero (the default) and compile to
-/// nothing otherwise. They do not throw, so they are safe to use in destructors and noexcept
-/// functions. Conditions that depend on program input must instead be validated with the always
-/// enabled macros in bond/systems/error.h.
+/// These macros are only enabled when BOND_ASSERTS_ENABLED is non-zero (the default). Otherwise,
+/// their conditions are still type checked but are not evaluated, and they have no effect. They do
+/// not throw, so they are safe to use in destructors and noexcept functions. Conditions that depend
+/// on program input must instead be validated with the always enabled macros in
+/// bond/systems/error.h.
 ///
-/// The default implementation can be replaced by defining USER_BOND_ASSERT_HEADER.
+/// The default implementation can be replaced by defining USER_BOND_ASSERT_HEADER. A replacement
+/// must define all four macros.
+///
+/// \ingroup assert
 
 #include "bond/conf.h"
 

@@ -34,7 +34,7 @@ typedef Vector<ParseNodeHandle> ParseNodeStore;
 /// When writing a tool that requires a compiler front end, the interactions between the front end
 /// components, namely a Lexer, a Parser and a SemanticAnalyzer, can be managed by a FrontEnd.
 ///
-/// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TokenCollection, TokenStream,
+/// \sa CompilerErrorBuffer, FrontEnd, Lexer, SemanticAnalyzer, TokenCollection, TokenStream,
 /// TranslationUnit
 class BOND_API Parser
 {
@@ -42,7 +42,9 @@ public:
 	/// \brief Constructs a Parser object.
 	/// \param allocator The memory allocator from which ParseNodes are allocated.
 	/// \param errorBuffer Buffer where error messages are pushed when syntax errors are encountered.
-	/// \param store Store of owning pointers to the ParseNodes created by this Parser.
+	/// \param store Store of owning pointers to the ParseNodes created by this Parser. The
+	///        ParseNodes are destroyed when the store is destroyed. They reference the Tokens from
+	///        which they were parsed, so the TokenCollections must outlive the store.
 	Parser(Allocator &allocator, CompilerErrorBuffer &errorBuffer, ParseNodeStore &store):
 		mAllocator(allocator),
 		mErrorBuffer(errorBuffer),

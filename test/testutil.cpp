@@ -1,4 +1,7 @@
 #include "framework/testframework.h"
+#include "bond/compiler/parsenodeutil.h"
+#include "bond/io/memoryinputstream.h"
+#include "bond/io/memoryoutputstream.h"
 #include "bond/io/path.h"
 #include "bond/io/stdiofilehandle.h"
 #include "bond/io/stdioinputstream.h"
@@ -319,6 +322,53 @@ DEFINE_TEST(StdioStreamFactoryLongPath)
 }
 
 
+DEFINE_TEST(MemoryStreams)
+{
+	// SetPositionFromEnd moves to the end position plus the offset, as fseek with SEEK_END does.
+	const char INPUT[] = "abcdefg";
+	Bond::MemoryInputStream inputStream(INPUT, Bond::Stream::pos_t(sizeof(INPUT) - 1));
+	inputStream.SetPositionFromEnd(-2);
+	ASSERT_FORMAT(inputStream.GetPosition() == 5, "Expected input position 5, but was %ld.", long(inputStream.GetPosition()));
+	ASSERT_MESSAGE(inputStream.Read() == 'f', "Expected to read 'f' two bytes before the end.");
+	inputStream.SetPositionFromEnd(1);
+	ASSERT_FORMAT(inputStream.GetPosition() == 7, "Expected input position to clamp to 7, but was %ld.", long(inputStream.GetPosition()));
+
+	// Formatted output advances the end position, as unformatted output does.
+	char buffer[16];
+	Bond::MemoryOutputStream outputStream(buffer, Bond::Stream::pos_t(sizeof(buffer)));
+	outputStream.Print("abc");
+	ASSERT_FORMAT(outputStream.GetEndPosition() == 3, "Expected end position 3 after Print, but was %ld.", long(outputStream.GetEndPosition()));
+	outputStream.SetPositionFromEnd(-1);
+	ASSERT_FORMAT(outputStream.GetPosition() == 2, "Expected output position 2, but was %ld.", long(outputStream.GetPosition()));
+}
+
+
+DEFINE_TEST(MathAndConstants)
+{
+	ASSERT_MESSAGE(!Bond::IsPowerOfTwo(0u), "Expected 0 not to be a power of two.");
+	ASSERT_MESSAGE(Bond::IsPowerOfTwo(1u), "Expected 1 to be a power of two.");
+	ASSERT_MESSAGE(!Bond::IsPowerOfTwo(6u), "Expected 6 not to be a power of two.");
+	ASSERT_MESSAGE(Bond::IsPowerOfTwo(8u), "Expected 8 to be a power of two.");
+
+	// A long constant that does not fit in an int must not be reported as negative.
+	Bond::Token longToken("0x80000000L", Bond::Token::CONST_LONG);
+	longToken.SetLongValue(int64_t(0x80000000));
+	ASSERT_MESSAGE(!Bond::IsNegativeIntegerConstant(longToken), "Expected 0x80000000L not to be negative.");
+
+	Bond::Token negativeLongToken("long", Bond::Token::CONST_LONG);
+	negativeLongToken.SetLongValue(int64_t(-1));
+	ASSERT_MESSAGE(Bond::IsNegativeIntegerConstant(negativeLongToken), "Expected -1L to be negative.");
+
+	Bond::Token intToken("int", Bond::Token::CONST_INT);
+	intToken.SetIntValue(-1);
+	ASSERT_MESSAGE(Bond::IsNegativeIntegerConstant(intToken), "Expected -1 to be negative.");
+
+	Bond::Token uintToken("uint", Bond::Token::CONST_UINT);
+	uintToken.SetUIntValue(0xFFFFFFFFu);
+	ASSERT_MESSAGE(!Bond::IsNegativeIntegerConstant(uintToken), "Expected an unsigned constant not to be negative.");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(NormalizePath)                      \
   TEST_ITEM(IsAbsolutePath)                     \
@@ -326,5 +376,7 @@ DEFINE_TEST(StdioStreamFactoryLongPath)
   TEST_ITEM(IsInRange)                          \
   TEST_ITEM(StdioUtf8FileName)                  \
   TEST_ITEM(StdioStreamFactoryLongPath)         \
+  TEST_ITEM(MemoryStreams)                      \
+  TEST_ITEM(MathAndConstants)                   \
 
 RUN_TESTS(Util, TEST_ITEMS)

@@ -124,6 +124,8 @@ int WriteFile(const char *fileName)
 	stream->Put(cast<uchar>('Y'));
 	if (stream->GetPosition() != 4) result = 7;
 
+	stream->SetPositionFromEnd(-1);
+	if (stream->GetPosition() != 4) result = 11;
 	stream->SetPositionFromEnd(0);
 	if (stream->GetPosition() != 5) result = 8;
 	stream->PrintI(42);
@@ -157,6 +159,8 @@ int ReadFile(const char *fileName)
 
 	stream->SetPositionFromEnd(0);
 	if (stream->GetPosition() != 7) result = 11;
+	stream->SetPositionFromEnd(-2);
+	if (stream->GetPosition() != 5) result = 18;
 
 	stream->SetPosition(5);
 	if (stream->Read(&bytes[0], 4u) != 2u) result = 12;

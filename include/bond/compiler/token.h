@@ -6,6 +6,14 @@
 #include "bond/stl/stringview.h"
 #include "bond/types/value.h"
 
+/// \brief An X-macro that lists every type of Token.
+///
+/// To use it, define BOND_TOKEN_ITEM(item), expand BOND_TOKEN_LIST and then undefine
+/// BOND_TOKEN_ITEM. The argument of each item is the name of a Token::TokenType enumerator.
+/// INVALID is the type of a Token that could not be scanned, END is the type of the last Token
+/// of every TokenCollection, and NUM_TOKEN_TYPES is the number of types, not a valid type.
+///
+/// \ingroup compiler
 #define BOND_TOKEN_LIST \
 	/* Keywords */                            \
 	BOND_TOKEN_ITEM(KEY_ALIGNOF)              \
@@ -144,7 +152,10 @@ public:
 	/// source. Currently only used to qualify integer literals as being expressed as hex or octal.
 	enum Annotation
 	{
+		/// \brief The integer literal is expressed in octal.
 		OCTAL = 1,
+
+		/// \brief The integer literal is expressed in hexadecimal.
 		HEX = 2,
 	};
 
@@ -239,7 +250,7 @@ public:
 	/// \brief Adds an annotation to the token.
 	void AddAnnotation(const Annotation &annotation) { mAnnotations |= annotation; }
 
-	/// \brief Returns whether the Token as a specified annotation.
+	/// \brief Returns whether the Token has a specified annotation.
 	bool HasAnnotation(const Annotation &annotation) const { return (mAnnotations & annotation) == annotation; }
 
 	/// \brief Returns the value of the token. Valid only for constant literal tokens.
@@ -251,10 +262,12 @@ public:
 	/// \brief Assigns the boolean value of the Token. Valid only for Tokens of type `CONST_BOOL`.
 	void SetBoolValue(bool value) { mValue.mBool = value; }
 
-	/// \brief Returns the integral value of the Token. Valid only for Tokens of type `CONST_INT`.
+	/// \brief Returns the integral value of the Token. Valid only for Tokens of type `CONST_CHAR`
+	/// and `CONST_INT`.
 	int32_t GetIntValue() const { return mValue.mInt; }
 
-	/// \brief Assigns the integral value of the Token. Valid only for Tokens of type `CONST_INT`.
+	/// \brief Assigns the integral value of the Token. Valid only for Tokens of type `CONST_CHAR`
+	/// and `CONST_INT`.
 	void SetIntValue(int32_t value) { mValue.mInt = value; }
 
 	/// \brief Returns the integral value of the Token. Valid only for Tokens of type `CONST_UINT`.
@@ -322,6 +335,11 @@ private:
 class BOND_API TokenTypeSet
 {
  public:
+	/// \brief Constructs a TokenTypeSet object containing up to 16 TokenTypes.
+	/// \param typeName A descriptive name for the type set. It is not copied, so it must outlive
+	///        the TokenTypeSet.
+	/// \param t0 through t15 The TokenTypes in the set. Unused arguments default to
+	///        `NUM_TOKEN_TYPES`.
 	TokenTypeSet(
 		const char *const typeName,
 		Token::TokenType t0 = Token::NUM_TOKEN_TYPES,
@@ -344,7 +362,7 @@ class BOND_API TokenTypeSet
 	/// \brief Returns a descriptive name for the type set.
 	const char *GetTypeName() const { return mTypeName; }
 
-	/// \brief Returns whether the give TokenType is contained in the type set.
+	/// \brief Returns whether the given TokenType is contained in the type set.
 	bool Contains(Token::TokenType type) const { return (mBitField[type / 32] & uint32_t(1 << (type % 32))) != 0; }
 
 	/// \brief Adds the given TokenType to the set.
@@ -522,17 +540,18 @@ extern BOND_API const TokenTypeSet STRUCT_MEMBER_DELIMITERS_TYPESET;
 extern BOND_API const TokenTypeSet INITIALIZER_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond switch statement sections,
-/// namely: `KEY_CASE`, `KEY_DEFAULT`, `CBRACE` and `COMMA`.
+/// namely: `KEY_CASE`, `KEY_DEFAULT`, `CBRACE` and `END`.
 extern BOND_API const TokenTypeSet SWITCH_SECTION_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond statements, namely:
 /// `KEY_BREAK`, `KEY_CASE`, `KEY_CONTINUE`, `KEY_DEFAULT`, `KEY_DO`, `KEY_IF`, `KEY_FOR`,
-/// `KEY_RETURN`, `KEY_SWITCH`, `KEY_WHILE`, `OBRACE`, `CBRACE` and `COLON`.
+/// `KEY_RETURN`, `KEY_SWITCH`, `KEY_USING`, `KEY_WHILE`, `OBRACE`, `CBRACE` and `SEMICOLON`.
 extern BOND_API const TokenTypeSet STATEMENT_DELIMITERS_TYPESET;
 
 /// \brief Constant TokenTypeSet of tokens delimiting the end of Bond switch labels, namely:
 /// `KEY_BREAK`, `KEY_CASE`, `KEY_CONTINUE`, `KEY_DEFAULT`, `KEY_DO`, `KEY_IF`, `KEY_FOR`,
-/// `KEY_RETURN`, `KEY_SWITCH`, `KEY_WHILE`, `OBRACE`, `CBRACE`, `SEMICOLON` and `COLON`.
+/// `KEY_RETURN`, `KEY_SWITCH`, `KEY_USING`, `KEY_WHILE`, `OBRACE`, `CBRACE`, `SEMICOLON` and
+/// `COLON`.
 extern BOND_API const TokenTypeSet LABEL_DELIMITERS_TYPESET;
 
 /// @}

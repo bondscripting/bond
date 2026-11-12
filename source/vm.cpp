@@ -2319,7 +2319,7 @@ void VM::DumpStackFrame(OutputStream &stream, const StackFrame &frame) const
 					stream.Print("%f", *reinterpret_cast<const double *>(argPointer));
 					break;
 				case SIG_POINTER:
-					stream.Print("%p", reinterpret_cast<const void *>(argPointer));
+					stream.Print("%p", *reinterpret_cast<void *const *>(argPointer));
 					break;
 				case SIG_AGGREGATE:
 				case SIG_VOID:

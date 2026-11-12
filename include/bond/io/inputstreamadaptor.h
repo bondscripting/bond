@@ -11,12 +11,16 @@ class InputStream;
 
 /// \brief A wrapper around an InputStream that adds formatted input operations used within
 /// the Bond Standard Library.
+///
+/// The scanning functions must only be called while the adaptor wraps a stream. A value that
+/// cannot be scanned is returned as 0.
 /// \ingroup io
 class BOND_API InputStreamAdaptor
 {
 public:
-	/// \brief Constructs an InputStreamAdaptor object.
-	/// \param stream The stream from which formatted input is read.
+	/// \brief Constructs an InputStreamAdaptor object with no formatting flags.
+	/// \param stream The stream from which formatted input is read, or null. The stream is not
+	///        owned by the adaptor.
 	explicit InputStreamAdaptor(InputStream *stream): mStream(stream), mFlags() {}
 
 	/// \brief Returns the wrapped InputStream.
@@ -26,9 +30,10 @@ public:
 	/// null. Does nothing if there is no wrapped InputStream.
 	void Close();
 
-	/// \brief Scans a string from the wrapped InputStream.
-	/// \param str Buffer where the scanned string is written.
-	/// \param bufferSize The size of the destination buffer, in bytes.
+	/// \brief Scans a whitespace-delimited string from the wrapped InputStream.
+	/// \param str Buffer where the scanned string is written, followed by a null terminator.
+	/// \param bufferSize The size of the destination buffer, in bytes. At most bufferSize - 1
+	///        characters are scanned.
 	void ScanStr(char *str, uint32_t bufferSize);
 
 	/// \brief Scans a boolean value from the wrapped InputStream.

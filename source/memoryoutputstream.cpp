@@ -30,6 +30,7 @@ void MemoryOutputStream::VPrint(const char *format, va_list argList)
 			mCurrent = mSize;
 			mBuffer[mSize - 1] = uint8_t('\0');
 		}
+		mEnd = max(mCurrent, mEnd);
 	}
 }
 
@@ -63,7 +64,7 @@ void MemoryOutputStream::SetPosition(off_t offset)
 
 void MemoryOutputStream::SetPositionFromEnd(off_t offset)
 {
-	SetPosition(off_t(mEnd - offset));
+	SetPosition(off_t(mEnd + offset));
 }
 
 

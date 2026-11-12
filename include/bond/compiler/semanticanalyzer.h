@@ -39,9 +39,13 @@ public:
 		mPointerSize(pointerSize)
 	{}
 
+	/// \brief Destroys a SemanticAnalyzer object.
 	~SemanticAnalyzer() {}
 
 	/// \brief Performs semantic analysis on a list of parse trees.
+	///
+	/// The results of the analysis, such as resolved symbols and evaluated types and values, are
+	/// stored in the ParseNodes of the parse trees. Errors are pushed to the CompilerErrorBuffer.
 	/// \param translationUnitList A linked list of parse trees to be analyzed.
 	void Analyze(TranslationUnit *translationUnitList);
 

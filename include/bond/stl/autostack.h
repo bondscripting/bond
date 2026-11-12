@@ -8,6 +8,9 @@
 namespace Bond
 {
 
+/// \addtogroup stl
+/// @{
+
 /// \brief A stack whose elements are automatic variables.
 ///
 /// Pushing a value onto the stack returns an Element that must be kept alive for as long as the
@@ -373,6 +376,8 @@ typedef AutoStack<uint32_t> UIntStack;
 
 /// \brief An AutoStack of size_t values.
 typedef AutoStack<size_t> SizeStack;
+
+/// @}
 
 }
 

@@ -22,6 +22,7 @@ namespace Bond
 class BOND_API SymbolTable
 {
 public:
+	/// \brief Constructs a SymbolTable object containing an empty global scope.
 	SymbolTable() {}
 
 	/// \brief Returns the Symbol for the global scope namespace.

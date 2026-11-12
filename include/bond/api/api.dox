@@ -1,0 +1,5 @@
+/**
+\defgroup api Native API
+\brief These types and functions bind native C++ functions to Bond and give access to the Bond
+Standard Library.
+*/

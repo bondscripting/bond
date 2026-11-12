@@ -16,11 +16,22 @@ namespace Bond
 /// \ingroup compiler
 struct StreamPos
 {
+	/// \brief Constructs a StreamPos object.
+	/// \param i The byte offset into the source.
+	/// \param l The 1-based line number.
+	/// \param c The 1-based column number.
 	StreamPos(size_t i = 0, size_t l = 1, size_t c = 1): index(i), line(l), column(c) {}
+
+	/// \brief Constructs a copy of another StreamPos.
 	StreamPos(const StreamPos &other) = default;
 
+	/// \brief The byte offset into the source.
 	size_t index;
+
+	/// \brief The 1-based line number.
 	size_t line;
+
+	/// \brief The 1-based column number, counted in code points.
 	size_t column;
 };
 

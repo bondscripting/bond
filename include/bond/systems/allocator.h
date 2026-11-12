@@ -30,8 +30,14 @@ public:
 	template <typename T>
 	struct Deallocator
 	{
+		/// \brief Constructs a Deallocator object.
+		/// \param allocator The allocator that frees the memory. If null, the memory is not freed.
 		explicit Deallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+
+		/// \brief Frees the given memory by calling Allocator::Free.
 		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->Free(ptr); }
+
+		/// \brief The allocator that frees the memory.
 		Allocator *mAllocator;
 	};
 
@@ -41,24 +47,34 @@ public:
 	class Handle: public unique_ptr<T, Deallocator<T> >
 	{
 	public:
+		/// \brief Constructs a Handle object.
+		/// \param allocator The allocator that frees the memory, or null if it is not to be freed.
+		/// \param ptr Pointer to the owned memory, which must have been allocated by \p allocator.
 		Handle(Allocator *allocator = nullptr, T *ptr = nullptr):
 			unique_ptr<T, Deallocator<T> >(ptr, Deallocator<T>(allocator))
 		{}
 
+		/// \brief Constructs a Handle object.
+		/// \param allocator The allocator that frees the memory.
+		/// \param ptr Pointer to the owned memory, which must have been allocated by \p allocator.
 		Handle(Allocator &allocator, T *ptr = nullptr):
 			unique_ptr<T, Deallocator<T> >(ptr, Deallocator<T>(&allocator))
 		{}
 
+		/// \brief Constructs a Handle object that takes ownership of the memory owned by another.
 		Handle(Handle &&other):
 			unique_ptr<T, Deallocator<T> >(Bond::move(other))
 		{}
 
+		/// \brief Frees the currently owned memory and takes ownership of the memory owned by
+		/// another Handle.
 		Handle &operator=(Handle &&other)
 		{
 			unique_ptr<T, Deallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
+		/// \brief Transfers ownership of the memory to a Handle of another pointer type.
 		template <typename U>
 		operator Handle<U>() &&
 		{
@@ -72,8 +88,14 @@ public:
 	template <typename T>
 	struct AlignedDeallocator
 	{
+		/// \brief Constructs an AlignedDeallocator object.
+		/// \param allocator The allocator that frees the memory. If null, the memory is not freed.
 		explicit AlignedDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
+
+		/// \brief Frees the given memory by calling Allocator::FreeAligned.
 		void operator()(T *ptr) { if (mAllocator != nullptr) mAllocator->FreeAligned(ptr); }
+
+		/// \brief The allocator that frees the memory.
 		Allocator *mAllocator;
 	};
 
@@ -83,24 +105,37 @@ public:
 	class AlignedHandle: public unique_ptr<T, AlignedDeallocator<T> >
 	{
 	public:
+		/// \brief Constructs an AlignedHandle object.
+		/// \param allocator The allocator that frees the memory, or null if it is not to be freed.
+		/// \param ptr Pointer to the owned memory, which must have been allocated by \p allocator
+		///        with AllocateAligned.
 		AlignedHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
 			unique_ptr<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(allocator))
 		{}
 
+		/// \brief Constructs an AlignedHandle object.
+		/// \param allocator The allocator that frees the memory.
+		/// \param ptr Pointer to the owned memory, which must have been allocated by \p allocator
+		///        with AllocateAligned.
 		AlignedHandle(Allocator &allocator, T *ptr = nullptr):
 			unique_ptr<T, AlignedDeallocator<T> >(ptr, AlignedDeallocator<T>(&allocator))
 		{}
 
+		/// \brief Constructs an AlignedHandle object that takes ownership of the memory owned by
+		/// another.
 		AlignedHandle(AlignedHandle &&other):
 			unique_ptr<T, AlignedDeallocator<T> >(Bond::move(other))
 		{}
 
+		/// \brief Frees the currently owned memory and takes ownership of the memory owned by
+		/// another AlignedHandle.
 		AlignedHandle &operator=(AlignedHandle &&other)
 		{
 			unique_ptr<T, AlignedDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
+		/// \brief Transfers ownership of the memory to an AlignedHandle of another pointer type.
 		template <typename U>
 		operator AlignedHandle<U>() &&
 		{
@@ -114,8 +149,12 @@ public:
 	template <typename T>
 	struct ObjectDeallocator
 	{
+		/// \brief Constructs an ObjectDeallocator object.
+		/// \param allocator The allocator that frees the memory. If null, the object is neither
+		///        destroyed nor freed.
 		explicit ObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
+		/// \brief Destroys the given object and frees its memory by calling Allocator::Free.
 		void operator()(T *ptr)
 		{
 			if ((mAllocator != nullptr) && (ptr != nullptr))
@@ -125,6 +164,7 @@ public:
 			}
 		}
 
+		/// \brief The allocator that frees the memory.
 		Allocator *mAllocator;
 	};
 
@@ -134,24 +174,39 @@ public:
 	class ObjectHandle: public unique_ptr<T, ObjectDeallocator<T> >
 	{
 	public:
+		/// \brief Constructs an ObjectHandle object.
+		/// \param allocator The allocator that frees the memory, or null if the object is not to
+		///        be destroyed.
+		/// \param ptr Pointer to the owned object, whose memory must have been allocated by
+		///        \p allocator.
 		ObjectHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
 			unique_ptr<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(allocator))
 		{}
 
+		/// \brief Constructs an ObjectHandle object.
+		/// \param allocator The allocator that frees the memory.
+		/// \param ptr Pointer to the owned object, whose memory must have been allocated by
+		///        \p allocator.
 		ObjectHandle(Allocator &allocator, T *ptr = nullptr):
 			unique_ptr<T, ObjectDeallocator<T> >(ptr, ObjectDeallocator<T>(&allocator))
 		{}
 
+		/// \brief Constructs an ObjectHandle object that takes ownership of the object owned by
+		/// another.
 		ObjectHandle(ObjectHandle &&other):
 			unique_ptr<T, ObjectDeallocator<T> >(Bond::move(other))
 		{}
 
+		/// \brief Destroys the currently owned object and takes ownership of the object owned by
+		/// another ObjectHandle.
 		ObjectHandle &operator=(ObjectHandle &&other)
 		{
 			unique_ptr<T, ObjectDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
+		/// \brief Transfers ownership of the object to an ObjectHandle of another type, which must
+		/// be T or have a virtual destructor so that the object is destroyed correctly.
 		template <typename U, typename Bond::enable_if<Bond::is_same<U, T>::value || Bond::has_virtual_destructor<U>::value, int>::type = 0>
 		operator ObjectHandle<U>() &&
 		{
@@ -165,8 +220,12 @@ public:
 	template <typename T>
 	struct AlignedObjectDeallocator
 	{
+		/// \brief Constructs an AlignedObjectDeallocator object.
+		/// \param allocator The allocator that frees the memory. If null, the object is neither
+		///        destroyed nor freed.
 		explicit AlignedObjectDeallocator(Allocator *allocator = nullptr): mAllocator(allocator) {}
 
+		/// \brief Destroys the given object and frees its memory by calling Allocator::FreeAligned.
 		void operator()(T *ptr)
 		{
 			if ((mAllocator != nullptr) && (ptr != nullptr))
@@ -176,6 +235,7 @@ public:
 			}
 		}
 
+		/// \brief The allocator that frees the memory.
 		Allocator *mAllocator;
 	};
 
@@ -185,24 +245,39 @@ public:
 	class AlignedObjectHandle: public unique_ptr<T, AlignedObjectDeallocator<T> >
 	{
 	public:
+		/// \brief Constructs an AlignedObjectHandle object.
+		/// \param allocator The allocator that frees the memory, or null if the object is not to
+		///        be destroyed.
+		/// \param ptr Pointer to the owned object, whose memory must have been allocated by
+		///        \p allocator with AllocateAligned.
 		AlignedObjectHandle(Allocator *allocator = nullptr, T *ptr = nullptr):
 			unique_ptr<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(allocator))
 		{}
 
+		/// \brief Constructs an AlignedObjectHandle object.
+		/// \param allocator The allocator that frees the memory.
+		/// \param ptr Pointer to the owned object, whose memory must have been allocated by
+		///        \p allocator with AllocateAligned.
 		AlignedObjectHandle(Allocator &allocator, T *ptr = nullptr):
 			unique_ptr<T, AlignedObjectDeallocator<T> >(ptr, AlignedObjectDeallocator<T>(&allocator))
 		{}
 
+		/// \brief Constructs an AlignedObjectHandle object that takes ownership of the object owned
+		/// by another.
 		AlignedObjectHandle(AlignedObjectHandle &&other):
 			unique_ptr<T, AlignedObjectDeallocator<T> >(Bond::move(other))
 		{}
 
+		/// \brief Destroys the currently owned object and takes ownership of the object owned by
+		/// another AlignedObjectHandle.
 		AlignedObjectHandle &operator=(AlignedObjectHandle &&other)
 		{
 			unique_ptr<T, AlignedObjectDeallocator<T> >::operator=(Bond::move(other));
 			return *this;
 		}
 
+		/// \brief Transfers ownership of the object to an AlignedObjectHandle of another type,
+		/// which must be T or have a virtual destructor so that the object is destroyed correctly.
 		template <typename U, typename Bond::enable_if<Bond::is_same<U, T>::value || Bond::has_virtual_destructor<U>::value, int>::type = 0>
 		operator AlignedObjectHandle<U>() &&
 		{
@@ -327,20 +402,32 @@ public:
 	};
 */
 
+	/// \brief Destroys the Allocator.
 	virtual ~Allocator() {}
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized memory of the given size.
+	///
+	/// Implementations are expected to report failure by throwing an exception, such as
+	/// std::bad_alloc, or by returning null.
+	/// \param size The size of the block in bytes.
 	virtual void *Allocate(size_t size) = 0;
 
 	/// \brief Allocates and returns a pointer to a block of uninitialized memory with the given size and alignment.
+	///
+	/// Implementations are expected to report failure by throwing an exception, such as
+	/// std::bad_alloc, or by returning null.
+	/// \param size The size of the block in bytes.
+	/// \param align The alignment of the block in bytes.
 	virtual void *AllocateAligned(size_t size, size_t align) = 0;
 
 	/// \brief Frees the memory pointed to by the given pointer. The memory must have been allocated by
-	/// this allocator's Allocate method.
+	/// this allocator's Allocate method. Does nothing if the pointer is null.
+	/// \param buffer Pointer to the memory to be freed.
 	virtual void Free(void *buffer) = 0;
 
 	/// \brief Frees the aligned memory pointed to by the given pointer. The memory must have been
-	/// allocated by this allocator's Allocate method.
+	/// allocated by this allocator's AllocateAligned method. Does nothing if the pointer is null.
+	/// \param buffer Pointer to the memory to be freed.
 	virtual void FreeAligned(void *buffer) = 0;
 
 	/// \brief Calls the non-const form of Free after casting away the constness of the given pointer.
@@ -392,7 +479,7 @@ public:
 		return static_cast<T *>(AllocateAligned(sizeof(T), align));
 	}
 
-	/// \brief Allocates and returns a pointer to a block of uninitialized aligned  memory large enough
+	/// \brief Allocates and returns a pointer to a block of uninitialized aligned memory large enough
 	/// to accommodate an array of objects of type T.
 	/// \param numElements The number of elements in the allocated array.
 	/// \param align The alignment requirements for the allocated memory.

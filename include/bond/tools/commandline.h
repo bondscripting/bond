@@ -55,7 +55,10 @@ private:
 class BOND_API Utf8ConsoleOutput
 {
 public:
+	/// \brief Switches the console's output code page to UTF-8.
 	Utf8ConsoleOutput();
+
+	/// \brief Flushes stdout and stderr and restores the console's original output code page.
 	~Utf8ConsoleOutput();
 
 	Utf8ConsoleOutput(const Utf8ConsoleOutput &other) = delete;

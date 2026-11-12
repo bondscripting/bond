@@ -31,6 +31,7 @@ enum Scope
 class BOND_API ParseNode
 {
 public:
+	/// \brief Destroys a ParseNode object.
 	virtual ~ParseNode() {}
 
 	/// \brief Dispatches this node to the given visitor.
@@ -54,6 +55,7 @@ protected:
 class BOND_API ListParseNode: public ParseNode
 {
 public:
+	/// \brief Destroys a ListParseNode object.
 	virtual ~ListParseNode() {}
 
 	/// \brief Returns the next node in the list.
@@ -74,8 +76,10 @@ private:
 };
 
 
+/// \brief Helper container for singly linked lists of parse nodes, which tracks the tail of the
+/// list so that nodes can be appended in constant time. It does not own the nodes.
+/// \tparam NodeType The type of the nodes in the list, which must derive from ListParseNode.
 template <typename NodeType>
-/// \brief Helper container for singly linked lists of parse nodes.
 class ParseNodeList
 {
 public:
@@ -139,6 +143,7 @@ public:
 		TYPE_FUNCTION,
 	};
 
+	/// \brief Destroys a Symbol object.
 	virtual ~Symbol() {}
 
 	virtual const Token *GetContextToken() const override { return GetName(); }
@@ -161,7 +166,7 @@ public:
 	/// \brief Returns true when symbol resolution has completed for this symbol.
 	virtual bool IsResolved() const { return true; }
 
-	/// \brief Returns true if this symbol defines a type.
+	/// \brief Returns true if this symbol defines a type, i.e. it is a struct or an enum.
 	bool IsTypeDefinition() const;
 
 	/// \brief Returns the enclosing symbol.
@@ -178,12 +183,14 @@ public:
 
 	/// \brief Finds a directly contained symbol by name.
 	/// \param name Name to search for.
-	/// \returns Matching symbol, or null if not found.
+	/// \returns Matching symbol, or null if not found. If the match is a UsingDeclaration, the
+	///        symbol it aliases is returned instead.
 	Symbol *FindSymbol(const StringView &name);
 
 	/// \brief Finds a directly contained symbol by name.
 	/// \param name Name to search for.
-	/// \returns Matching symbol, or null if not found.
+	/// \returns Matching symbol, or null if not found. If the match is a UsingDeclaration, the
+	///        symbol it aliases is returned instead.
 	const Symbol *FindSymbol(const StringView &name) const;
 
 	/// \brief Finds a directly contained symbol by token text.
@@ -222,7 +229,8 @@ public:
 	/// \returns Best-effort matching symbol, or null if not found.
 	const Symbol *FindSymbol(const QualifiedIdentifier *identifier, bool &isAmbiguous) const;
 
-	/// \brief Inserts a symbol into this symbol's child list.
+	/// \brief Inserts a symbol at the front of this symbol's child list and sets this symbol as
+	/// its parent.
 	/// \param symbol Symbol to insert.
 	void InsertSymbol(Symbol *symbol);
 
@@ -305,6 +313,7 @@ public:
 		mFlags(FLAG_POINTER | (isConst ? FLAG_CONST : 0))
 	{}
 
+	/// \brief Destroys a TypeDescriptor object.
 	virtual ~TypeDescriptor() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -392,7 +401,8 @@ public:
 	/// \brief Returns true if assignment into this type is allowed.
 	bool IsAssignable() const { return IsLValue() && !IsConst() && !IsArrayType(); }
 
-	/// \brief Returns the stack storage size of this type.
+	/// \brief Returns the stack storage size of this type, which is its size rounded up to a
+	/// multiple of BOND_SLOT_SIZE, or BOND_SLOT_SIZE for pointer types.
 	/// \param pointerSize Target pointer size.
 	uint32_t GetStackSize(PointerSize pointerSize) const;
 
@@ -458,7 +468,8 @@ public:
 	/// \brief Returns true if this descriptor denotes a struct type.
 	bool IsStructType() const;
 
-	/// \brief Returns true if this descriptor denotes the string type.
+	/// \brief Returns true if this descriptor denotes a string type, i.e. a pointer or array whose
+	/// element type is char or uchar, regardless of const qualification.
 	bool IsStringType() const;
 
 	/// \brief Returns a descriptor for the void type.
@@ -488,17 +499,18 @@ public:
 	/// \brief Returns a descriptor for the double type.
 	static TypeDescriptor GetDoubleType();
 
-	/// \brief Returns a descriptor for the string type.
+	/// \brief Returns a descriptor for the string type, which is a pointer to const char.
 	static TypeDescriptor GetStringType();
 
-	/// \brief Returns a descriptor for the void pointer type.
+	/// \brief Returns a descriptor for a pointer to const void.
 	static TypeDescriptor GetVoidPointerType();
 
 	/// \brief Returns a descriptor for a pointer to the given type.
 	/// \param specifier Type specifier for the pointee type.
 	static TypeDescriptor GetPointerType(const TypeSpecifier *specifier);
 
-	/// \brief Returns a const-qualified descriptor for a pointer to the given type.
+	/// \brief Returns a descriptor for a pointer to the const-qualified given type. The pointer
+	/// itself is not const-qualified.
 	/// \param specifier Type specifier for the pointee type.
 	static TypeDescriptor GetConstPointerType(const TypeSpecifier *specifier);
 
@@ -567,6 +579,7 @@ public:
 		mDefinition(definition)
 	{}
 
+	/// \brief Destroys a TypeSpecifier object.
 	virtual ~TypeSpecifier() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -651,6 +664,7 @@ public:
 	/// \brief Constructs a qualified identifier element.
 	/// \param name Token containing one identifier segment.
 	explicit QualifiedIdentifier(const Token *name): mName(name) {}
+	/// \brief Destroys a QualifiedIdentifier object.
 	virtual ~QualifiedIdentifier() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -690,6 +704,7 @@ public:
 		mRequiresCodeGeneration(true)
 	{}
 
+	/// \brief Destroys a TranslationUnit object.
 	virtual ~TranslationUnit() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -731,6 +746,7 @@ public:
 	/// \brief Constructs an include directive node.
 	/// \param includePath Token containing the include path.
 	explicit IncludeDirective(const Token *includePath): mIncludePath(includePath) {}
+	/// \brief Destroys an IncludeDirective object.
 	virtual ~IncludeDirective() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -758,6 +774,7 @@ public:
 		mDeclarationList(declarationList)
 	{}
 
+	/// \brief Destroys a NamespaceDefinition object.
 	virtual ~NamespaceDefinition() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -790,6 +807,7 @@ public:
 		mDeclarationList(declarationList)
 	{}
 
+	/// \brief Destroys a NativeBlock object.
 	virtual ~NativeBlock() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -825,6 +843,7 @@ public:
 		mEnumeratorList(nullptr)
 	{}
 
+	/// \brief Destroys an EnumDeclaration object.
 	virtual ~EnumDeclaration() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -869,6 +888,7 @@ public:
 		mTypeAndValue(typeDescriptor),
 		mName(name),
 		mValue(value) {}
+	/// \brief Destroys an Enumerator object.
 	virtual ~Enumerator() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -938,6 +958,7 @@ public:
 		mAlignment(BOND_DEFAULT_STRUCT_ALIGN)
 	{}
 
+	/// \brief Destroys a StructDeclaration object.
 	virtual ~StructDeclaration() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1049,6 +1070,7 @@ public:
 		mIsConst(isConst)
 	{}
 
+	/// \brief Destroys a FunctionPrototype object.
 	virtual ~FunctionPrototype() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1107,6 +1129,7 @@ public:
 		mNumReservedJumpTargetIds(0)
 	{}
 
+	/// \brief Destroys a FunctionDefinition object.
 	virtual ~FunctionDefinition() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1189,6 +1212,7 @@ public:
 		mOffset(offset)
 	{}
 
+	/// \brief Destroys a Parameter object.
 	virtual ~Parameter() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1241,6 +1265,7 @@ public:
 		mIsElidable(false)
 	{}
 
+	/// \brief Destroys a NamedInitializer object.
 	virtual ~NamedInitializer() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1310,6 +1335,7 @@ public:
 		mInitializerList(initializerList)
 	{}
 
+	/// \brief Destroys an Initializer object.
 	virtual ~Initializer() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1357,6 +1383,7 @@ public:
 		mStatementList(statementList),
 		mUsingNamespaceList(nullptr)
 	{}
+	/// \brief Destroys a CompoundStatement object.
 	virtual ~CompoundStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1397,6 +1424,7 @@ public:
 		mElseStatement(elseStatement)
 	{}
 
+	/// \brief Destroys an IfStatement object.
 	virtual ~IfStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1451,6 +1479,7 @@ public:
 		mMaxMatch(0)
 	{}
 
+	/// \brief Destroys a SwitchStatement object.
 	virtual ~SwitchStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1526,6 +1555,7 @@ public:
 		mJumpTargetId(0)
 	{}
 
+	/// \brief Destroys a SwitchSection object.
 	virtual ~SwitchSection() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1628,6 +1658,7 @@ public:
 		mExpression(expression)
 	{}
 
+	/// \brief Destroys a SwitchLabel object.
 	virtual ~SwitchLabel() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1674,6 +1705,7 @@ public:
 		mBody(body)
 	{}
 
+	/// \brief Destroys a WhileStatement object.
 	virtual ~WhileStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1730,6 +1762,7 @@ public:
 		mUsingNamespaceList(nullptr)
 	{}
 
+	/// \brief Destroys a ForStatement object.
 	virtual ~ForStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1789,6 +1822,7 @@ public:
 	/// \param keyword Jump keyword token.
 	/// \param rhs Optional return expression.
 	JumpStatement(const Token *keyword, Expression *rhs): mKeyword(keyword), mRhs(rhs) {}
+	/// \brief Destroys a JumpStatement object.
 	virtual ~JumpStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1832,6 +1866,7 @@ public:
 		mNamedInitializerList(initializerList)
 	{}
 
+	/// \brief Destroys a DeclarativeStatement object.
 	virtual ~DeclarativeStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1869,6 +1904,7 @@ public:
 	/// \brief Constructs a using-declaration.
 	/// \param identifier Qualified identifier naming the symbol to bring into scope.
 	explicit UsingDeclaration(QualifiedIdentifier *identifier);
+	/// \brief Destroys a UsingDeclaration object.
 	virtual ~UsingDeclaration() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1909,7 +1945,8 @@ private:
 /// list of opened namespaces (via its own dedicated next-pointer, separate from the
 /// ListParseNode next-pointer used to place it among the enclosing statement list). During
 /// unqualified lookup from within that scope, the opened namespace's members are treated as
-/// members of the directive's enclosing namespace, as in C++.
+/// members of the nearest namespace that encloses both the directive and the opened namespace,
+/// as in C++.
 class BOND_API UsingDirective: public ListParseNode
 {
 public:
@@ -1922,6 +1959,7 @@ public:
 		mNextUsingDirective(nullptr)
 	{}
 
+	/// \brief Destroys a UsingDirective object.
 	virtual ~UsingDirective() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -1977,6 +2015,7 @@ private:
 class BOND_API Expression: public ListParseNode
 {
 public:
+	/// \brief Destroys an Expression object.
 	virtual ~Expression() {}
 
 	/// \brief Returns the expression's type descriptor.
@@ -2014,6 +2053,7 @@ public:
 		mExpression(expression),
 		mDeclaratorName(declaratorName)
 	{}
+	/// \brief Destroys an ExpressionStatement object.
 	virtual ~ExpressionStatement() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2057,6 +2097,7 @@ public:
 		mFalseExpression(falseExpression)
 	{}
 
+	/// \brief Destroys a ConditionalExpression object.
 	virtual ~ConditionalExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2104,6 +2145,7 @@ public:
 		mRhs(rhs)
 	{}
 
+	/// \brief Destroys a BinaryExpression object.
 	virtual ~BinaryExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2141,6 +2183,7 @@ public:
 	/// \param op Unary operator token.
 	/// \param rhs Operand expression.
 	UnaryExpression(const Token *op, Expression *rhs): mOperator(op), mRhs(rhs) {}
+	/// \brief Destroys a UnaryExpression object.
 	virtual ~UnaryExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2171,6 +2214,7 @@ public:
 	/// \param op Postfix operator token.
 	/// \param lhs Operand expression.
 	PostfixExpression(const Token *op, Expression *lhs): mOperator(op), mLhs(lhs) {}
+	/// \brief Destroys a PostfixExpression object.
 	virtual ~PostfixExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2208,6 +2252,7 @@ public:
 		mDefinition(nullptr)
 	{}
 
+	/// \brief Destroys a MemberExpression object.
 	virtual ~MemberExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2256,6 +2301,7 @@ public:
 		mIndex(index)
 	{}
 
+	/// \brief Destroys an ArraySubscriptExpression object.
 	virtual ~ArraySubscriptExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2299,6 +2345,7 @@ public:
 		mArgumentList(argumentList)
 	{}
 
+	/// \brief Destroys a FunctionCallExpression object.
 	virtual ~FunctionCallExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2339,6 +2386,7 @@ public:
 		mRhs(rhs)
 	{}
 
+	/// \brief Destroys a CastExpression object.
 	virtual ~CastExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2387,6 +2435,7 @@ public:
 		mRhs(rhs)
 	{}
 
+	/// \brief Destroys a PropertyofExpression object.
 	virtual ~PropertyofExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2429,6 +2478,7 @@ public:
 	/// \brief Constructs a literal expression.
 	/// \param value Literal token.
 	explicit ConstantLiteralExpression(const Token *value): mValue(value) {}
+	/// \brief Destroys a ConstantLiteralExpression object.
 	virtual ~ConstantLiteralExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2455,6 +2505,7 @@ public:
 		mDefinition(nullptr)
 	{}
 
+	/// \brief Destroys an IdentifierExpression object.
 	virtual ~IdentifierExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2491,6 +2542,7 @@ public:
 	/// \brief Constructs a this expression.
 	/// \param token This keyword token.
 	explicit ThisExpression(const Token *token): mToken(token) {}
+	/// \brief Destroys a ThisExpression object.
 	virtual ~ThisExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }
@@ -2507,6 +2559,7 @@ private:
 class BOND_API EmptyExpression: public Expression
 {
 public:
+	/// \brief Destroys an EmptyExpression object.
 	virtual ~EmptyExpression() {}
 
 	virtual void Accept(ParseNodeVisitor &visitor) override { visitor.Visit(this); }

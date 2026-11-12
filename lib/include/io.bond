@@ -191,7 +191,8 @@ struct InputStream
 	void SetPosition(int offset);
 
 	/// \brief Sets the stream's position relative to its end measured in bytes.
-	/// \param offset The number of bytes from the end to which the stream is repositioned.
+	/// \param offset The offset in bytes from the end to which the stream is repositioned. The new
+	/// position is the end position plus offset, so offset is normally zero or negative.
 	void SetPositionFromEnd(int offset);
 
 	/// \brief Moves the stream by the specified number of bytes relative to its current position.
@@ -403,7 +404,8 @@ struct OutputStream
 	void SetPosition(int offset);
 
 	/// \brief Sets the stream's position relative to its end measured in bytes.
-	/// \param offset The number of bytes from the end to which the stream is repositioned.
+	/// \param offset The offset in bytes from the end to which the stream is repositioned. The new
+	/// position is the end position plus offset, so offset is normally zero or negative.
 	void SetPositionFromEnd(int offset);
 
 	/// \brief Moves the stream by the specified number of bytes relative to its current position.

@@ -23,13 +23,16 @@ class BOND_API StdioOutputStream: public OutputStream
 public:
 	/// \brief Constructs a StdioOutputStream object.
 	/// \param file The stdio FILE object to which output will be written. The file is not owned by
-	///        the StdioOutputStream unless it is later replaced by an owning handle.
+	///        the StdioOutputStream, so it is not closed when the StdioOutputStream is destroyed,
+	///        but it is closed by Close().
 	explicit StdioOutputStream(FILE *file):
 		mFile(file)
 	{}
 
-	/// \brief Constructs a StdioOutputStream object.
-	/// \param fileName The name of the file to open for writing.
+	/// \brief Constructs a StdioOutputStream object that opens and owns the given file.
+	///
+	/// An existing file is truncated. Throws a Bond::Exception if the file fails to open.
+	/// \param fileName The name of the file to open for writing in binary mode, encoded in UTF-8.
 	explicit StdioOutputStream(const char *fileName);
 
 	/// \brief Constructs a StdioOutputStream object.
@@ -48,17 +51,23 @@ public:
 		other.mFile = nullptr;
 	}
 
+	/// \brief Destroys a StdioOutputStream object, closing the file if it is owned.
 	virtual ~StdioOutputStream() {}
 
 	StdioOutputStream(const StdioOutputStream &other) = delete;
 	StdioOutputStream &operator=(const StdioOutputStream &other) = delete;
 
+	/// \brief Closes the file if it is owned and takes over the file of another
+	/// StdioOutputStream.
+	/// \param other The StdioOutputStream object from which resources will be moved.
+	/// \returns A reference to this StdioOutputStream.
 	StdioOutputStream &operator=(StdioOutputStream &&other);
 
 	/// \brief Tests whether this stream is currently bound to a FILE object.
 	/// \returns True if this stream is bound to a FILE object.
 	bool IsBound() const { return (mFile != nullptr); }
 
+	/// \brief Closes the FILE object, whether or not it is owned, and unbinds the stream.
 	virtual void Close() override;
 	virtual void Flush() override { fflush(mFile); }
 
@@ -89,6 +98,8 @@ class BOND_API StdOutOutputStream: public StdioOutputStream
 public:
 	/// \brief Constructs a StdOutOutputStream object.
 	StdOutOutputStream(): StdioOutputStream(stdout) {}
+
+	/// \brief Destroys a StdOutOutputStream object. stdout is not closed.
 	virtual ~StdOutOutputStream() {}
 };
 
@@ -100,6 +111,8 @@ class BOND_API StdErrOutputStream: public StdioOutputStream
 public:
 	/// \brief Constructs a StdErrOutputStream object.
 	StdErrOutputStream(): StdioOutputStream(stderr) {}
+
+	/// \brief Destroys a StdErrOutputStream object. stderr is not closed.
 	virtual ~StdErrOutputStream() {}
 };
 

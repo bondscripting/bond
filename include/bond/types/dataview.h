@@ -29,10 +29,11 @@ public:
 		mLength(length)
 	{}
 
+	/// \brief Constructs a DataView object over the same block of memory as another DataView.
 	DataView(const DataView &other) = default;
 
 	/// \brief Returns whether this DataView points to the same number of bytes at the same
-	/// memory address as another DataView.
+	/// memory address as another DataView. The contents of the memory are not compared.
 	/// \param other The DataView against which this one is compared.
 	bool operator==(const DataView &other) const
 	{
@@ -55,12 +56,12 @@ private:
 ///
 /// DataViewIndex does not perform any allocations; it contains a pointer to an existing array
 /// of DataView objects and an existing array of StringView objects whose lifetimes must
-/// supersede that of the DataView.
+/// supersede that of the DataViewIndex.
 class DataViewIndex
 {
 public:
 	/// \brief Constructs a DataViewIndex over the given array of DataViews. dataViewNames and
-	/// dataViews must both point to arrays of numDataView elements.
+	/// dataViews must both point to arrays of numDataViews elements.
 	/// \param dataViewNames The array of names for the DataViews in the index.
 	/// \param dataViews The array of DataViews over which the index is created.
 	/// \param numDataViews The number of DataViews in the index.

@@ -8,7 +8,7 @@ namespace Bond
 {
 
 /// \brief A concrete implementation of ParseNodeVisitor that, in addition to visiting a ParseNode,
-/// does a depth-first traversal its children and visits them too.
+/// does a depth-first traversal of its children and visits them too.
 ///
 /// Since the traversal of a ParseNode's children is invoked from the Visit methods, if any of them
 /// are overridden, traversal of the node's children will not occur unless an overridden method
@@ -18,11 +18,12 @@ namespace Bond
 /// traversal of the children may need to be reimplemented in the overridden Visit method instead
 /// of calling the base method.
 ///
-/// \sa ParseNode, ParseNodeVisitorAdapter, ParseNodeTraverser
+/// \sa ParseNode, ParseNodeVisitor, ParseNodeVisitorAdapter
 /// \ingroup compiler
 class BOND_API ParseNodeTraverser: public ParseNodeVisitor
 {
 public:
+	/// \brief Destroys a ParseNodeTraverser object.
 	virtual ~ParseNodeTraverser() {}
 
 	/// \brief Checks if the given ParseNode is not null and calls its Accept method with `this`
@@ -37,12 +38,12 @@ public:
 
 	/// \brief Iterates over the given list of ListParseNodes and calls the Accept method of each
 	/// one with `this` as the argument.
-	/// \param listNode The node whose Accept method is called.
+	/// \param listNode The first node of the list, or null.
 	virtual void TraverseList(ListParseNode *listNode);
 
 	/// \brief Iterates over the given list of ListParseNodes and calls the Accept method of each
 	/// one with `this` as the argument.
-	/// \param listNode The node whose Accept method is called.
+	/// \param listNode The first node of the list, or null.
 	virtual void TraverseList(const ListParseNode *listNode);
 
 	virtual void Visit(TranslationUnit *translationUnit) override;

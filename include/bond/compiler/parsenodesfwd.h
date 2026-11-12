@@ -1,6 +1,12 @@
 #ifndef BOND_COMPILER_PARSENODESFWD_H
 #define BOND_COMPILER_PARSENODESFWD_H
 
+/// \file
+/// \brief Forward declarations of all ParseNode classes, which are defined in
+/// bond/compiler/parsenodes.h.
+///
+/// \ingroup nodes
+
 namespace Bond
 {
 

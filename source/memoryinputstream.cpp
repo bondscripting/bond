@@ -48,7 +48,7 @@ void MemoryInputStream::SetPosition(off_t offset)
 
 void MemoryInputStream::SetPositionFromEnd(off_t offset)
 {
-	SetPosition(off_t(mSize - offset));
+	SetPosition(off_t(mSize + offset));
 }
 
 

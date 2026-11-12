@@ -91,7 +91,7 @@ public:
 	virtual pos_t GetPosition() const override { return pos_t(mPosition); }
 	virtual pos_t GetEndPosition() const override { return pos_t(mBytes.size()); }
 	virtual void SetPosition(off_t offset) override { mPosition = size_t(offset); }
-	virtual void SetPositionFromEnd(off_t offset) override { mPosition = mBytes.size() - size_t(offset); }
+	virtual void SetPositionFromEnd(off_t offset) override { mPosition = size_t(off_t(mBytes.size()) + offset); }
 
 	virtual void AddOffset(off_t offset) override
 	{

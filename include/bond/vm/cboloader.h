@@ -59,7 +59,8 @@ public:
 	void AddNativeBinding(const NativeBindingCollection &nativeBinding) { mNativeBindingList.push_back(&nativeBinding); }
 
 	/// \brief Adds an in-memory CBO file.
-	/// \param byteCode Pointer to the CBO byte stream.
+	/// \param byteCode Pointer to the CBO byte stream. The bytes are not copied and must remain
+	///        valid until Load() returns.
 	/// \param length Number of bytes in the CBO stream.
 	void AddCboFile(const void *byteCode, size_t length)
 	{
@@ -73,6 +74,16 @@ public:
 	void AddCboFile(InputStream &cboStream) { mInputStreamList.push_back(&cboStream); }
 
 	/// \brief Loads all added CBO files and returns the merged code segment.
+	///
+	/// Each CBO is validated with a CboValidator, after which its contents are copied into a single
+	/// block of memory allocated from the persistent allocator, so the CBO streams are no longer
+	/// needed once this function returns. Native functions are bound to the functions in the
+	/// added NativeBindingCollections and references to functions and data are resolved by name.
+	///
+	/// A Bond::Exception is thrown if a CBO is invalid or was compiled for a different pointer
+	/// size, if a function or global variable is defined more than once, if a native binding names
+	/// a function that does not exist or is not native, if a native function has no binding, or if
+	/// a referenced function or global variable is not defined.
 	/// \returns A CodeSegmentHandle owning the loaded CodeSegment.
 	CodeSegmentHandle Load();
 

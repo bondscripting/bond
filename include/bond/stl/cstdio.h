@@ -12,6 +12,8 @@
 ///
 /// File I/O is not covered here. It is abstracted by the InputStream, OutputStream and
 /// StreamFactory interfaces instead.
+///
+/// \ingroup stl
 
 #include "bond/conf.h"
 

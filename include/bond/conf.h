@@ -1,8 +1,26 @@
 #ifndef BOND_CONF_H
 #define BOND_CONF_H
 
+/// \file
+/// \brief Compile-time configuration of Bond.
+///
+/// The configuration macros below can be overridden by defining them on the command line, or in a
+/// header named by the USER_BOND_CONFIG_HEADER macro, which conf.h includes before giving them
+/// their default values. Bond only supports little endian targets.
+
 #include <cstddef>
 #include <new>
+
+/// \def BOND_API
+/// \brief Marks a class or function as part of the public interface of the Bond library.
+///
+/// When Bond is built as a shared library (BOND_BUILD_SHARED is defined), it exports the symbol.
+/// When Bond is used as a shared library (BOND_SHARED is defined), it imports the symbol on
+/// Windows. Otherwise, it expands to nothing.
+
+/// \def BOND_LOCAL
+/// \brief Marks a class or function as internal to the Bond library. It hides the symbol when
+/// Bond is built or used as a shared library with GCC or Clang, and expands to nothing otherwise.
 
 #if defined(BOND_SHARED) || defined(BOND_BUILD_SHARED)
   #if defined(_WIN32) || defined(__CYGWIN__)
@@ -36,10 +54,15 @@
 #endif
 
 #ifndef BOND_RUNTIME_CHECKS_ENABLED
+/// \brief Whether the VM validates the use of its API at runtime, such as the types and number
+/// of arguments passed to and read from functions. Violations throw a Bond::Exception. Defaults
+/// to 1.
 #define BOND_RUNTIME_CHECKS_ENABLED 1
 #endif
 
 #ifndef BOND_ASSERTS_ENABLED
+/// \brief Whether the BOND_ASSERT* macros are enabled. Defaults to 1.
+/// \sa assert
 #define BOND_ASSERTS_ENABLED 1
 #endif
 
@@ -61,7 +84,12 @@
 #ifndef BOND_PATH_SEPARATOR
 #ifdef _WIN32
 
+/// \brief The separator between the elements of a file path, as a string literal. Defaults to
+/// "\\" on Windows and "/" elsewhere. If it is overridden, BOND_PATH_SEPARATOR_CHAR must be
+/// overridden as well.
 #define BOND_PATH_SEPARATOR "\\"
+
+/// \brief The separator between the elements of a file path, as a character literal.
 #define BOND_PATH_SEPARATOR_CHAR '\\'
 
 #else
@@ -73,11 +101,14 @@
 #endif // BOND_PATH_SEPARATOR
 
 #ifndef BOND_FILESYSTEM_PREFIX
+/// \brief A string literal prepended to every file name opened by a StdioStreamFactory. Defaults
+/// to "".
 #define BOND_FILESYSTEM_PREFIX ""
 #endif
 
-// Maximum length of a file path in bytes, including the terminating null. Longer paths fail to open.
 #ifndef BOND_MAX_PATH_LENGTH
+/// \brief Maximum length of a file path in bytes, including the terminating null. Longer paths
+/// fail to open. Defaults to 1024.
 #define BOND_MAX_PATH_LENGTH 1024
 #endif
 

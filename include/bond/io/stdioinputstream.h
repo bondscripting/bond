@@ -23,13 +23,16 @@ class BOND_API StdioInputStream: public InputStream
 public:
 	/// \brief Constructs a StdioInputStream object.
 	/// \param file The stdio FILE object from which input will be read. The file is not owned by the
-	///        StdioInputStream unless it is later replaced by an owning handle.
+	///        StdioInputStream, so it is not closed when the StdioInputStream is destroyed, but it
+	///        is closed by Close().
 	explicit StdioInputStream(FILE *file):
 		mFile(file)
 	{}
 
-	/// \brief Constructs a StdioInputStream object.
-	/// \param fileName The name of the file to open for reading.
+	/// \brief Constructs a StdioInputStream object that opens and owns the given file.
+	///
+	/// Throws a Bond::Exception if the file fails to open.
+	/// \param fileName The name of the file to open for reading in binary mode, encoded in UTF-8.
 	explicit StdioInputStream(const char *fileName);
 
 	/// \brief Constructs a StdioInputStream object.
@@ -48,17 +51,22 @@ public:
 		other.mFile = nullptr;
 	}
 
+	/// \brief Destroys a StdioInputStream object, closing the file if it is owned.
 	virtual ~StdioInputStream() {}
 
 	StdioInputStream(const StdioInputStream &other) = delete;
 	StdioInputStream &operator=(const StdioInputStream &other) = delete;
 
+	/// \brief Closes the file if it is owned and takes over the file of another StdioInputStream.
+	/// \param other The StdioInputStream object from which resources will be moved.
+	/// \returns A reference to this StdioInputStream.
 	StdioInputStream &operator=(StdioInputStream &&other);
 
 	/// \brief Tests whether this stream is currently bound to a FILE object.
 	/// \returns True if this stream is bound to a FILE object.
 	bool IsBound() const { return (mFile != nullptr); }
 
+	/// \brief Closes the FILE object, whether or not it is owned, and unbinds the stream.
 	virtual void Close() override;
 
 	virtual void VScan(const char *format, va_list argList) override { vfscanf(mFile, format, argList); }
@@ -88,6 +96,8 @@ class BOND_API StdInInputStream: public StdioInputStream
 public:
 	/// \brief Constructs a StdInInputStream object.
 	StdInInputStream(): StdioInputStream(stdin) {}
+
+	/// \brief Destroys a StdInInputStream object. stdin is not closed.
 	virtual ~StdInInputStream() {}
 };
 

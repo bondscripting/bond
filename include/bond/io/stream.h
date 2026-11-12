@@ -49,7 +49,9 @@ public:
 	virtual void SetPosition(off_t offset) = 0;
 
 	/// \brief Sets the current position relative to the end of the stream.
-	/// \param offset The offset from the end position to which the stream should be moved.
+	/// \param offset The offset from the end position to which the stream should be moved, i.e.
+	///        the new position is GetEndPosition() + offset, so offset is normally zero or
+	///        negative.
 	virtual void SetPositionFromEnd(off_t offset) = 0;
 
 	/// \brief Advances the current position by the given offset.

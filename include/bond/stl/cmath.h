@@ -9,6 +9,8 @@
 /// library, by defining USER_BOND_CMATH_HEADER. A replacement must provide float and double
 /// overloads of each function in the Bond namespace, including isnan, isinf, isfinite and signbit,
 /// which C math libraries often define as macros, and integer overloads of abs, min, max and clamp.
+///
+/// \ingroup stl
 
 #include "bond/conf.h"
 

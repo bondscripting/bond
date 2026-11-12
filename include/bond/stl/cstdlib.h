@@ -20,6 +20,8 @@
 /// magnitude of the number is too large to be represented, in which case the integer functions
 /// return the closest representable value and the floating point ones return a signed infinity.
 /// Floating point underflow is not reported.
+///
+/// \ingroup stl
 
 #include "bond/conf.h"
 

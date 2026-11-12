@@ -20,17 +20,23 @@ typedef Allocator::ObjectHandle<OutputStream> OutputStreamHandle;
 
 /// \brief An abstract interface for creating file streams without being coupled to any particular
 /// concrete type of stream.
+///
+/// Implementations report a failure to create a stream either by throwing a Bond::Exception or
+/// by returning a null handle.
 class BOND_API StreamFactory
 {
 public:
+	/// \brief Destroys a StreamFactory object.
 	virtual ~StreamFactory() {}
 
 	/// \brief Returns an owning pointer to a dynamically allocated InputStream.
-	/// \param fileName The name of the file for which an input stream is created.
+	/// \param fileName The name of the file for which an input stream is created, encoded in
+	///        UTF-8.
 	virtual InputStreamHandle CreateInputStream(const char *fileName) = 0;
 
 	/// \brief Returns an owning pointer to a dynamically allocated OutputStream.
-	/// \param fileName The name of the file for which an output stream is created.
+	/// \param fileName The name of the file for which an output stream is created, encoded in
+	///        UTF-8.
 	/// \param append Whether bytes are written to the end of an existing file.
 	virtual OutputStreamHandle CreateOutputStream(const char *fileName, bool append) = 0;
 };

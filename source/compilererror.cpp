@@ -52,7 +52,7 @@ void CompilerError::Print(OutputStream &stream) const
 	{
 		const char *fileName = mContext->GetFileName();
 		const Bond::StreamPos &pos = mContext->GetStartPos();
-		stream.Print("%s (%d, %d): ", fileName, pos.line, pos.column);
+		stream.Print("%s (%" BOND_PRIu32 ", %" BOND_PRIu32 "): ", fileName, uint32_t(pos.line), uint32_t(pos.column));
 	}
 
 	enum State

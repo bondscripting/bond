@@ -957,7 +957,7 @@ bool IsNegativeIntegerConstant(const Token &token)
 {
 	return
 		SIGNED_INTEGER_CONSTANTS_TYPESET.Contains(token.GetTokenType()) &&
-		(CastValue(token, Token::KEY_INT).mInt < 0);
+		(CastValue(token, Token::KEY_LONG).mLong < 0);
 }
 
 }

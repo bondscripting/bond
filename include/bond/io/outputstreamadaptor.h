@@ -9,16 +9,21 @@ namespace Bond
 
 class OutputStream;
 
-/// \brief A wrapper around an OuputStream that adds formatted output operations used within
+/// \brief A wrapper around an OutputStream that adds formatted output operations used within
 /// the Bond Standard Library.
+///
+/// The output functions must only be called while the adaptor wraps a stream.
 /// \ingroup io
 class BOND_API OutputStreamAdaptor
 {
 public:
+	/// \brief The floating-point precision of a newly constructed OutputStreamAdaptor.
 	static const int DEFAULT_PRECISION = 6;
 
-	/// \brief Constructs an OutputStreamAdaptor object.
-	/// \param stream The stream to which formatted output is written.
+	/// \brief Constructs an OutputStreamAdaptor object with no formatting flags, a precision of
+	/// DEFAULT_PRECISION and a field width of 0.
+	/// \param stream The stream to which formatted output is written, or null. The stream is not
+	///        owned by the adaptor.
 	explicit OutputStreamAdaptor(OutputStream *stream):
 		mStream(stream),
 		mFlags(0),

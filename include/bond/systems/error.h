@@ -13,7 +13,10 @@
 /// files, unresolved names or files that fail to open, and are never compiled out. For catching
 /// logic errors during development, use the debugging asserts in bond/systems/assert.h instead.
 ///
-/// The default implementation can be replaced by defining USER_BOND_ERROR_HEADER.
+/// The default implementation can be replaced by defining USER_BOND_ERROR_HEADER. A replacement
+/// must define all six macros. Bond relies on them not returning when they report an error.
+///
+/// \ingroup error
 
 #include "bond/conf.h"
 

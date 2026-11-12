@@ -33,7 +33,7 @@ template <typename T>
 inline T AlignUpDelta(T value, T align) { return AlignUp(value, align) - value; }
 
 
-/// \brief Rounds a pointer down the nearest multiple of a specified power of two.
+/// \brief Rounds a pointer down to the nearest multiple of a specified power of two.
 /// \param ptr The pointer to be rounded.
 /// \param align The power of two around which the pointer is rounded.
 template <typename T>
@@ -53,13 +53,15 @@ inline T *AlignPointerUp(T *ptr, size_t align)
 }
 
 
-/// \brief Returns whether an integer is a power of two.
+/// \brief Returns whether an integer is a power of two. 0 is not a power of two.
 /// \param value The value to test.
 template <typename T>
-inline T IsPowerOfTwo(T value) { return (value == 1) || ((value & (value - 1)) == 0); }
+inline bool IsPowerOfTwo(T value) { return (value != T(0)) && ((value & (value - T(1))) == T(0)); }
 
 
-/// \brief Rounds a 32 bit integer up to the nearest power of two.
+/// \brief Rounds a 32 bit integer up to the nearest power of two. Values that are already powers
+/// of two are returned unchanged and 0 is returned as 0. The result is only correct for values no
+/// greater than 2^31.
 /// \param value The value to be rounded.
 template <typename T>
 inline T RoundUpToPowerOfTwo32(T value)

@@ -10,6 +10,13 @@ namespace Bond
 /// \addtogroup types
 /// @{
 
+/// \brief An X-macro that lists every opcode in the Bond Virtual Machine instruction set.
+///
+/// To use it, define BOND_OPCODE_ITEM(opCode, mnemonic, param, stackDelta), expand
+/// BOND_OPCODE_LIST and then undefine BOND_OPCODE_ITEM. The arguments of each item are the
+/// opcode name without its OPCODE_ prefix, its mnemonic as an unquoted identifier, its parameter
+/// type without its OC_PARAM_ prefix, and how much it moves the stack pointer in multiples of
+/// BOND_SLOT_SIZE bytes. The instructions are described in docs/instruction-set.txt.
 #define BOND_OPCODE_LIST \
 	/*               Opcode,       mnemonic,     parameter,    stack delta */ \
 	BOND_OPCODE_ITEM(NOP,          nop,          NONE,         0)  \
@@ -282,40 +289,78 @@ enum OpCode
 #define BOND_OPCODE_ITEM(opCode, mnemonic, param, stackDelta) OPCODE_ ## opCode,
 	BOND_OPCODE_LIST
 #undef BOND_OPCODE_ITEM
+
+	/// \brief The number of opcodes. Not a valid opcode.
 	OPCODE_MAX
 };
 
 
 /// \brief Enumeration describing all combinations of parameter types for the instructions
 /// in the Bond Virtual Machine instruction set.
+///
+/// Parameters are encoded in the bytecode immediately after the opcode byte. Parameters that
+/// refer to a constant table are encoded as a 16-bit index into the table of the CBO.
 enum OpCodeParam
 {
+	/// \brief No parameter.
 	OC_PARAM_NONE,
+
+	/// \brief A signed 8-bit value.
 	OC_PARAM_CHAR,
+
+	/// \brief An unsigned 8-bit value.
 	OC_PARAM_UCHAR,
+
+	/// \brief Two signed 8-bit values: a slot index and an increment.
 	OC_PARAM_CHAR_CHAR,
+
+	/// \brief A signed 16-bit value.
 	OC_PARAM_SHORT,
+
+	/// \brief An unsigned 16-bit value.
 	OC_PARAM_USHORT,
+
+	/// \brief A signed 32-bit integer stored in the 32-bit constant table.
 	OC_PARAM_INT,
+
+	/// \brief A 32-bit value stored in the 32-bit constant table.
 	OC_PARAM_VAL32,
+
+	/// \brief A 64-bit value stored in the 64-bit constant table.
 	OC_PARAM_VAL64,
+
+	/// \brief A signed 16-bit branch offset relative to the end of the instruction.
 	OC_PARAM_OFF16,
+
+	/// \brief A signed 32-bit branch offset relative to the end of the instruction, stored in the
+	/// 32-bit constant table.
 	OC_PARAM_OFF32,
+
+	/// \brief A string stored in the string constant table.
 	OC_PARAM_STRING,
+
+	/// \brief A qualified name stored in the qualified name table. The CboLoader replaces the
+	/// index with that of the referenced function or data entry in the CodeSegment.
 	OC_PARAM_NAME,
+
+	/// \brief A 32-bit aligned table holding a default offset, a match count and sorted pairs of
+	/// match values and branch offsets.
 	OC_PARAM_LOOKUPSWITCH,
+
+	/// \brief A 32-bit aligned table holding a default offset, a minimum and maximum match value
+	/// and one branch offset per value in that range.
 	OC_PARAM_TABLESWITCH,
 };
 
 
-/// \brief Returns a string representation of the given opcode.
+/// \brief Returns the mnemonic of the given opcode, e.g. "addi" for OPCODE_ADDI.
 BOND_API const char *GetOpCodeMnemonic(OpCode opCode);
 
 /// \brief Returns a value of the OpCodeParam enumeration describing the parameter types
 /// for the given opcode.
 BOND_API OpCodeParam GetOpCodeParamType(OpCode opCode);
 
-/// \brief Returns the how much the given opcode moves the stack pointer in multiples of
+/// \brief Returns how much the given opcode moves the stack pointer in multiples of
 /// BOND_SLOT_SIZE bytes.
 BOND_API int32_t GetStackDelta(OpCode opCode);
 

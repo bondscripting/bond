@@ -30,10 +30,10 @@ class TranslationUnit;
 ///
 /// File names are normalized lexically by NormalizePath (see bond/io/path.h): backslashes become
 /// forward slashes, "." segments and repeated separators are removed, and "dir/.." pairs are
-/// collapsed. A file is loaded at most
-/// once, so an include directive that resolves to the normalized name of a file that is already
-/// loaded has no effect. Symbolic links and case differences are not detected, so two names for
-/// the same file that differ in those respects load it twice.
+/// collapsed. A file is loaded at most once, so an include directive that resolves to the
+/// normalized name of a file that is already loaded has no effect. Symbolic links and case
+/// differences are not detected, so two names for the same file that differ in those respects
+/// load it twice.
 ///
 /// Like a quoted include in C, a relative include path is first resolved against the directory of
 /// the including file. If no such file exists, the path is passed to the StreamFactory as written,
@@ -44,7 +44,9 @@ class TranslationUnit;
 /// any use of the Tokens' file names.
 ///
 /// A file that cannot be opened is reported as an INCLUDE_FILE_NOT_FOUND or INPUT_FILE_NOT_FOUND
-/// error in the Lexer's CompilerErrorBuffer, and analysis stops.
+/// error in the Lexer's CompilerErrorBuffer, and analysis stops. Likewise, no further files are
+/// loaded once the Lexer or Parser reports an error, and semantic analysis is only performed if
+/// all files were loaded and parsed without errors.
 ///
 /// When analysis is complete, the list of generated TranslationUnits is returned.
 ///
@@ -60,14 +62,17 @@ class TranslationUnit;
 /// do not contribute static initializers. See CodeSegment::CallStaticInitializers for the order
 /// across CBOs.
 ///
-/// \sa CompilerErrorBuffer, FrontEnd, Parser, SemanticAnalyzer, TranslationUnit
+/// \sa CompilerErrorBuffer, Lexer, Parser, SemanticAnalyzer, TranslationUnit
 /// \ingroup compiler
 class BOND_API FrontEnd
 {
 public:
 	/// \brief Constructs a FrontEnd object.
+	///
+	/// None of the given objects are copied, so they must outlive the FrontEnd.
 	/// \param allocator The allocator used for the FrontEnd's internal data structures.
-	/// \param tokenCollectionStore Storage for the generated TokenCollections..
+	/// \param tokenCollectionStore Storage for the generated TokenCollections, which own the
+	///        Tokens referenced by the parse trees.
 	/// \param lexer The Lexer used to scan the Bond source files.
 	/// \param parser The Parser used to parse the Bond source files.
 	/// \param semanticAnalyzer The SemanticAnalyzer used to analyze the Bond source files.
@@ -96,7 +101,7 @@ public:
 	/// \brief Adds the name of a Bond source file to the input file list, unless a file with the
 	/// same normalized name has already been added.
 	/// \param inputFileName The name of the file to be loaded. Since StringViews are not deep
-	/// copied, the lifetime of the string must at least span the lifetime of the FrontEnd.
+	///        copied, the lifetime of the string must at least span the lifetime of the FrontEnd.
 	void AddInputFile(const StringView &inputFileName);
 
 	/// \brief Returns whether a file with the same normalized name as the given one has been
@@ -106,10 +111,12 @@ public:
 
 	/// \brief Performs loading, parsing and semantic analysis of all source files in the input file
 	/// list, as well as those files referenced via include directives.
-	/// returns A parse tree of ParseNodes rooted with a list of TranslationUnits.
+	/// \returns A linked list of the TranslationUnits generated for the files that were parsed, in
+	///        the order they were loaded, or null if no file was parsed.
 	TranslationUnit *Analyze();
 
-	/// \brief Returns whether any errors occurred whilst analyzing the source code.
+	/// \brief Returns whether any errors were reported to the CompilerErrorBuffer of the Lexer,
+	/// Parser or SemanticAnalyzer.
 	bool HasErrors() const;
 
 private:

@@ -58,45 +58,124 @@ struct ParseNodeCount
 		mEmptyExpression(defaultValue)
 	{}
 
+	/// \brief Number of TranslationUnit nodes.
 	int mTranslationUnit;
+
+	/// \brief Number of IncludeDirective nodes.
 	int mIncludeDirective;
+
+	/// \brief Number of NamespaceDefinition nodes.
 	int mNamespaceDefinition;
+
+	/// \brief Number of NativeBlock nodes.
 	int mNativeBlock;
+
+	/// \brief Number of EnumDeclaration nodes.
 	int mEnumDeclaration;
+
+	/// \brief Number of Enumerator nodes.
 	int mEnumerator;
+
+	/// \brief Number of StructDeclaration nodes.
 	int mStructDeclaration;
+
+	/// \brief Number of FunctionDefinition nodes.
 	int mFunctionDefinition;
+
+	/// \brief Number of FunctionPrototype nodes.
 	int mFunctionPrototype;
+
+	/// \brief Number of Parameter nodes.
 	int mParameter;
+
+	/// \brief Number of TypeDescriptor nodes.
 	int mTypeDescriptor;
+
+	/// \brief Number of TypeSpecifier nodes.
 	int mTypeSpecifier;
+
+	/// \brief Number of NamedInitializer nodes.
 	int mNamedInitializer;
+
+	/// \brief Number of Initializer nodes.
 	int mInitializer;
+
+	/// \brief Number of QualifiedIdentifier nodes.
 	int mQualifiedIdentifier;
+
+	/// \brief Number of CompoundStatement nodes.
 	int mCompoundStatement;
+
+	/// \brief Number of IfStatement nodes.
 	int mIfStatement;
+
+	/// \brief Number of SwitchStatement nodes.
 	int mSwitchStatement;
+
+	/// \brief Number of SwitchSection nodes.
 	int mSwitchSection;
+
+	/// \brief Number of SwitchLabel nodes.
 	int mSwitchLabel;
+
+	/// \brief Number of WhileStatement nodes.
 	int mWhileStatement;
+
+	/// \brief Number of ForStatement nodes.
 	int mForStatement;
+
+	/// \brief Number of JumpStatement nodes.
 	int mJumpStatement;
+
+	/// \brief Number of UsingDeclaration nodes.
 	int mUsingDeclaration;
+
+	/// \brief Number of UsingDirective nodes.
 	int mUsingDirective;
+
+	/// \brief Number of DeclarativeStatement nodes.
 	int mDeclarativeStatement;
+
+	/// \brief Number of ExpressionStatement nodes.
 	int mExpressionStatement;
+
+	/// \brief Number of ConditionalExpression nodes.
 	int mConditionalExpression;
+
+	/// \brief Number of BinaryExpression nodes.
 	int mBinaryExpression;
+
+	/// \brief Number of UnaryExpression nodes.
 	int mUnaryExpression;
+
+	/// \brief Number of PostfixExpression nodes.
 	int mPostfixExpression;
+
+	/// \brief Number of MemberExpression nodes.
 	int mMemberExpression;
+
+	/// \brief Number of ArraySubscriptExpression nodes.
 	int mArraySubscriptExpression;
+
+	/// \brief Number of FunctionCallExpression nodes.
 	int mFunctionCallExpression;
+
+	/// \brief Number of CastExpression nodes.
 	int mCastExpression;
+
+	/// \brief Number of PropertyofExpression nodes.
 	int mPropertyofExpression;
+
+	/// \brief Number of ConstantLiteralExpression nodes.
 	int mConstantLiteralExpression;
+
+	/// \brief Number of IdentifierExpression nodes.
 	int mIdentifierExpression;
+
+	/// \brief Number of ThisExpression nodes.
 	int mThisExpression;
+
+	/// \brief Number of EmptyExpression nodes.
 	int mEmptyExpression;
 };
 
@@ -112,13 +191,16 @@ class BOND_API ParseNodeCounter: private ParseNodeTraverser
 public:
 	/// \brief Constructs a ParseNodeCounter with all counters initialized to zero.
 	ParseNodeCounter(): mCount(0) {}
+
+	/// \brief Destroys a ParseNodeCounter object.
 	virtual ~ParseNodeCounter() {}
 
 	/// \brief Returns the current parse node counters.
 	/// \returns The accumulated ParseNodeCount values.
 	const ParseNodeCount &GetCount() const { return mCount; }
 
-	/// \brief Traverses a parse tree and accumulates node counts.
+	/// \brief Traverses a parse tree and adds its node counts to the counters, which are not
+	/// reset between calls.
 	/// \param parseNode Root parse node to traverse.
 	void Count(const ParseNode *parseNode) { Traverse(parseNode); }
 

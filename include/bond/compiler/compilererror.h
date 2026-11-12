@@ -4,6 +4,24 @@
 #include "bond/conf.h"
 #include "bond/types/types.h"
 
+/// \brief An X-macro that lists every type of compiler error along with the format of its message.
+///
+/// To use it, define BOND_COMPILER_ERROR(type, format), expand BOND_COMPILER_ERROR_LIST and then
+/// undefine BOND_COMPILER_ERROR.
+///
+/// The format strings are not printf format strings. CompilerError::Print interprets the
+/// following directives, where an argument is arg0 unless the directive is preceded by a 0 or a 1
+/// that selects arg0 or arg1 explicitly, e.g. "%1n":
+/// - %%c: The text of the context Token.
+/// - %%d: The argument as a signed integer.
+/// - %%f: The file name of the argument, which is a Token.
+/// - %%l: The line number of the argument, which is a Token.
+/// - %%n: The argument, which is a ParseNode, pretty printed.
+/// - %%s: The argument, which is a C-style string.
+/// - %%t: The text of the argument, which is a Token.
+/// - %%u: The argument as a Unicode code point, e.g. U+00E9.
+///
+/// \ingroup compiler
 #define BOND_COMPILER_ERROR_LIST                                                           \
   BOND_COMPILER_ERROR(NO_ERROR,                                                            \
     "")                                                                                    \
@@ -266,10 +284,12 @@ public:
 	/// \brief Constructs a CompilerError object with the given type and arguments supplied by the
 	/// compiler to format the error message.
 	/// \param type An enumerator identifying what type of error the compiler has detected.
-	/// \param context A Token identifying where in the source code the error was detected.
+	/// \param context A Token identifying where in the source code the error was detected, or null
+	///        if the error has no location in the source code.
 	/// \param arg0 An argument supplying information to be inserted into the format string for the
-	/// error message. Can be an integer, a C-style string, a pointer to a Token, or a pointer to
-	/// a ParseNode depending on the requirements of the error message.
+	///        error message. Can be an integer, a C-style string, a pointer to a Token, or a pointer
+	///        to a ParseNode depending on the requirements of the error message. Pointers are not
+	///        copied, so their targets must outlive the CompilerError.
 	/// \param arg1 An additional argument used in the same way as arg0.
 	CompilerError(Type type, const Token *context, intptr_t arg0, intptr_t arg1):
 		mType(type),
@@ -290,13 +310,16 @@ public:
 	/// \brief Returns the error message format string for the given error type.
 	static const char *GetFormat(Type type);
 
-	/// \brief Returns a string representation of the CompilerError's type.
+	/// \brief Returns the name of the CompilerError's type, e.g. "INVALID_ESCAPE".
 	const char *GetErrorName() const;
 
-	/// \brief Returns a string representation of the given error type.
+	/// \brief Returns the name of the given error type, e.g. "INVALID_ESCAPE".
 	static const char *GetErrorName(Type type);
 
 	/// \brief Prints a formatted error message to the given OutputStream.
+	///
+	/// The message is prefixed with the file name, line and column of the context Token, if any.
+	/// It is not followed by a newline.
 	/// \param stream The OutputStream to which the error message is printed.
 	void Print(OutputStream &stream) const;
 
@@ -315,10 +338,10 @@ private:
 /// the Bond compiler to collect the errors that they detect. The CompilerErrorBuffer provides
 /// functionality for printing formatted error messages to an OutputStream.
 ///
-/// The size of the buffer is fixed, and no memory allocations are incurred. If the buffer
-/// overflows, any additional errors are dropped since they are not considered relevant because
-/// they are most likely the consequence of the compiler being confused by the initial set of
-/// errors that caused the buffer to fill up.
+/// The size of the buffer is fixed at 64 errors, and no memory allocations are incurred. If the
+/// buffer overflows, any additional errors are dropped since they are not considered relevant
+/// because they are most likely the consequence of the compiler being confused by the initial set
+/// of errors that caused the buffer to fill up.
 ///
 /// \sa CodeGenerator, CompilerError, Lexer, Parser, SemanticAnalyzer
 class BOND_API CompilerErrorBuffer
@@ -330,14 +353,14 @@ public:
 	/// \brief Clears the contents of the error buffer.
 	void Reset();
 
-	/// \brief Constructs a CompilerError object with the given type and arguments to format the
-	/// error message and adds it to the buffer.
-	/// \sa CompilerError::CompilerError.
+	/// \brief Constructs a CompilerError object with the given type and pointer arguments to format
+	/// the error message and adds it to the buffer, unless the buffer is full.
+	/// \sa CompilerError::CompilerError
 	void PushError(CompilerError::Type type, const Token *context = nullptr, const void *arg0 = nullptr, const void *arg1 = nullptr);
 
-	/// \brief Constructs a CompilerError object with the given type and arguments to format the
-	/// error message and adds it to the buffer.
-	/// \sa CompilerError::CompilerError.
+	/// \brief Constructs a CompilerError object with the given type and integer arguments to format
+	/// the error message and adds it to the buffer, unless the buffer is full.
+	/// \sa CompilerError::CompilerError
 	void PushErrorInt(CompilerError::Type type, const Token *context = nullptr, intptr_t arg0 = 0, intptr_t arg1 = 0);
 
 	/// \brief Returns whether the buffer contains any errors.
@@ -355,11 +378,13 @@ public:
 	/// \param index The index of the error to be retrieved.
 	const CompilerError &GetError(size_t index) const { return mErrors[index]; }
 
-	/// \brief Appends the contents of the given CompilerErrorBuffer to this one.
+	/// \brief Appends the contents of the given CompilerErrorBuffer to this one. Errors that do not
+	/// fit are dropped.
 	/// \param other The CompilerErrorBuffer whose contents are appended.
 	void CopyFrom(const CompilerErrorBuffer &other);
 
-	/// \brief Prints a formatted error message for each error to the given OutputStream.
+	/// \brief Prints a formatted error message for each error, each followed by a newline, to the
+	/// given OutputStream.
 	/// \param stream The OutputStream to which the error messages are printed.
 	void Print(OutputStream &stream) const;
 
