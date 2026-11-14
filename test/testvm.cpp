@@ -2,8 +2,11 @@
 #include "bond/api/libruntime.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/vm/cboloader.h"
+#include "bond/types/opcodes.h"
 #include "bond/vm/codesegment.h"
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace
@@ -1722,6 +1725,117 @@ DEFINE_TEST(InitOrderTwoCbos)
 }
 
 
+namespace
+{
+const size_t MAX_DEBUG_DUMP_LINES = 8;
+char gCapturedCallStack[1024];
+char gCapturedStackFrame[256];
+
+
+void CaptureCallStack(Bond::StackFrame &frame)
+{
+	snprintf(gCapturedCallStack, sizeof(gCapturedCallStack), "%s", BondDebugDumpCallStack(&frame.GetVM()));
+	snprintf(gCapturedStackFrame, sizeof(gCapturedStackFrame), "%s", BondDebugDumpStackFrame(&frame));
+	frame.SetReturnValue(int32_t(0));
+}
+
+
+const Bond::NativeFunctionBinding DEBUG_CALL_STACK_BINDING_FUNCTIONS[] =
+{
+	{"CaptureCallStack", CaptureCallStack},
+	{nullptr, nullptr}
+};
+
+const Bond::NativeBindingCollection DEBUG_CALL_STACK_BINDING_COLLECTION = {DEBUG_CALL_STACK_BINDING_FUNCTIONS, 1};
+
+
+// Splits text into lines in place and returns the number of lines.
+size_t SplitLines(char *text, char *lines[], size_t maxLines)
+{
+	size_t numLines = 0;
+	char *line = text;
+	while ((*line != '\0') && (numLines < maxLines))
+	{
+		lines[numLines++] = line;
+		char *end = strchr(line, '\n');
+		if (end == nullptr)
+		{
+			break;
+		}
+		*end = '\0';
+		line = end + 1;
+	}
+	return numLines;
+}
+
+
+// Returns N for a call stack dump line of the form "<prefix> @ pc N", or -1 if the line has a
+// different form.
+int64_t GetCallSitePc(const char *line, const char *prefix)
+{
+	const char *const PC_LABEL = " @ pc ";
+	const size_t prefixLength = strlen(prefix);
+	const size_t labelLength = strlen(PC_LABEL);
+	if ((strncmp(line, prefix, prefixLength) != 0) || (strncmp(line + prefixLength, PC_LABEL, labelLength) != 0))
+	{
+		return -1;
+	}
+	const char *digits = line + prefixLength + labelLength;
+	char *end = nullptr;
+	const unsigned long pc = strtoul(digits, &end, 10);
+	return ((end != digits) && (*end == '\0')) ? int64_t(pc) : -1;
+}
+
+
+bool IsInvokeAt(const Bond::VM &vm, const char *functionName, int64_t pc)
+{
+	const Bond::Function *function = vm.GetCodeSegment().GetFunction(functionName);
+	if ((function == nullptr) || (pc < 0) || (pc >= int64_t(function->mCodeSize)))
+	{
+		return false;
+	}
+	const Bond::OpCode opCode = static_cast<Bond::OpCode>(function->mCode[pc]);
+	return (opCode == Bond::OPCODE_INVOKE) || (opCode == Bond::OPCODE_INVOKEUNPACK);
+}
+}
+
+
+DEFINE_VM_TEST_WITH_BINDING(DebugCallStack, "scripts/vm_DebugCallStack.bond", &DEBUG_CALL_STACK_BINDING_COLLECTION)
+{
+	using namespace Bond;
+
+	gCapturedCallStack[0] = '\0';
+	gCapturedStackFrame[0] = '\0';
+	VALIDATE_FUNCTION_CALL(int32_t, "Start", int32_t(2));
+
+	// The native function on top of the stack is not suspended in a call, so it has no call site.
+	ASSERT_FORMAT(strcmp(gCapturedStackFrame, "int CaptureCallStack()\n") == 0,
+		"Unexpected stack frame dump \"%s\".", gCapturedStackFrame);
+
+	char *lines[MAX_DEBUG_DUMP_LINES];
+	const size_t numLines = SplitLines(gCapturedCallStack, lines, MAX_DEBUG_DUMP_LINES);
+	ASSERT_FORMAT(numLines == 5, "Expected 5 frames, but was %d.", int(numLines));
+	ASSERT_FORMAT(strcmp(lines[0], "int CaptureCallStack()") == 0, "Unexpected top frame \"%s\".", lines[0]);
+
+	// Each Bond frame below the top is suspended at an invoke instruction.
+	const int64_t basePc = GetCallSitePc(lines[1], "int Recurse(0)");
+	const int64_t recursePc1 = GetCallSitePc(lines[2], "int Recurse(1)");
+	const int64_t recursePc2 = GetCallSitePc(lines[3], "int Recurse(2)");
+	const int64_t startPc = GetCallSitePc(lines[4], "int Start()");
+	ASSERT_FORMAT(IsInvokeAt(vm, "Recurse", basePc), "Unexpected frame \"%s\".", lines[1]);
+	ASSERT_FORMAT(IsInvokeAt(vm, "Recurse", recursePc1), "Unexpected frame \"%s\".", lines[2]);
+	ASSERT_FORMAT(IsInvokeAt(vm, "Recurse", recursePc2), "Unexpected frame \"%s\".", lines[3]);
+	ASSERT_FORMAT(IsInvokeAt(vm, "Start", startPc), "Unexpected frame \"%s\".", lines[4]);
+	ASSERT_MESSAGE(basePc != recursePc1, "The base case and the recursive case have the same call site.");
+	ASSERT_MESSAGE(recursePc1 == recursePc2, "The recursive calls have different call sites.");
+
+	// Once the calls return, only the VM's empty bottom frame remains.
+	ASSERT_FORMAT(*BondDebugDumpCallStack(&vm) == '\0', "Unexpected call stack \"%s\".", BondDebugDumpCallStack(&vm));
+	ASSERT_MESSAGE(*BondDebugDumpCallStack(nullptr) == '\0', "Expected an empty dump for a null VM.");
+	ASSERT_MESSAGE(*BondDebugDumpStackFrame(nullptr) == '\0', "Expected an empty dump for a null stack frame.");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1747,5 +1861,6 @@ DEFINE_TEST(InitOrderTwoCbos)
   TEST_ITEM(InitOrderOneCbo)                    \
   TEST_ITEM(InitOrderOneCboReversed)            \
   TEST_ITEM(InitOrderTwoCbos)                   \
+  TEST_ITEM(DebugCallStack)                     \
 
 RUN_TESTS(VM, TEST_ITEMS)

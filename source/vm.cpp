@@ -2100,19 +2100,27 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 
 			case OPCODE_INVOKE:
 			{
+				// Record the call site for debuggers and call stack dumps.
+				frame.mPc = pc - 1;
+				frame.mOperandStackPointer = sp;
 				const Value16 functionIndex(code + pc);
 				pc += sizeof(Value16);
 				const Function &function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
 				sp = InvokeFunction<false>(function, sp);
+				frame.mOperandStackPointer = nullptr;
 			}
 			break;
 
 			case OPCODE_INVOKEUNPACK:
 			{
+				// Record the call site for debuggers and call stack dumps.
+				frame.mPc = pc - 1;
+				frame.mOperandStackPointer = sp;
 				const Value16 functionIndex(code + pc);
 				pc += sizeof(Value16);
 				const Function &function = mCodeSegment.GetFunctionAtIndex(functionIndex.mUShort);
 				sp = InvokeFunction<true>(function, sp);
+				frame.mOperandStackPointer = nullptr;
 			}
 			break;
 
@@ -2327,7 +2335,14 @@ void VM::DumpStackFrame(OutputStream &stream, const StackFrame &frame) const
 					break;
 			}
 		}
-		stream.Print(")\n");
+		stream.Print(")");
+
+		if (frame.mOperandStackPointer != nullptr)
+		{
+			stream.Print(" @ pc %" BOND_PRIu32, uint32_t(frame.mPc));
+		}
+
+		stream.Print("\n");
 	}
 }
 
@@ -2348,4 +2363,48 @@ void VM::RaiseError(const char *format, ...) const
 	BOND_ERROR_MESSAGE(buffer);
 }
 
+}
+
+
+namespace
+{
+
+// Shared by the debugger helpers below. Big enough for deep call stacks, yet small enough not to
+// burden embedded applications.
+const size_t DEBUG_DUMP_BUFFER_LENGTH = 8192;
+char gDebugDumpBuffer[DEBUG_DUMP_BUFFER_LENGTH];
+
+
+const char *TerminateDebugDump(const Bond::MemoryOutputStream &stream)
+{
+	// Raw writes do not null-terminate, so terminate explicitly, truncating if the buffer is full.
+	const size_t end = size_t(stream.GetEndPosition());
+	gDebugDumpBuffer[(end < DEBUG_DUMP_BUFFER_LENGTH) ? end : (DEBUG_DUMP_BUFFER_LENGTH - 1)] = '\0';
+	return gDebugDumpBuffer;
+}
+
+}
+
+
+// The debugger helpers live in this translation unit so that they are linked into every program
+// that uses the VM, where a debugger can find them.
+extern "C" const char *BondDebugDumpCallStack(const Bond::VM *vm)
+{
+	Bond::MemoryOutputStream stream(gDebugDumpBuffer, Bond::Stream::pos_t(DEBUG_DUMP_BUFFER_LENGTH));
+	if (vm != nullptr)
+	{
+		vm->DumpCallStack(stream);
+	}
+	return TerminateDebugDump(stream);
+}
+
+
+extern "C" const char *BondDebugDumpStackFrame(const Bond::StackFrame *frame)
+{
+	Bond::MemoryOutputStream stream(gDebugDumpBuffer, Bond::Stream::pos_t(DEBUG_DUMP_BUFFER_LENGTH));
+	if (frame != nullptr)
+	{
+		frame->GetVM().DumpStackFrame(stream, *frame);
+	}
+	return TerminateDebugDump(stream);
 }

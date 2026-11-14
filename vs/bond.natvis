@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Visual Studio debugger visualizers for the Bond VM. See docs/debugging.txt.
+
+  Visual Studio loads this file automatically for the projects in vs/bond.slnx. CMake builds embed
+  it in the PDB of every executable or DLL that links bond_lib. Other applications can copy it to
+  "Documents\Visual Studio <version>\Visualizers".
+
+  These visualizers read the private members of the VM classes, so they must be kept in sync with
+  include/bond/vm/vm.h, include/bond/vm/codesegment.h, include/bond/stl/autostack.h and
+  include/bond/types/qualifiedname.h. SignatureType values are compared numerically:
+  0 void, 1 bool, 2 char, 3 uchar, 4 short, 5 ushort, 6 int, 7 uint, 8 long, 9 ulong, 10 float,
+  11 double, 12 pointer, 13 aggregate.
+-->
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <!-- A null-terminated array of name elements. Static initializers have an empty name. -->
+  <Type Name="Bond::QualifiedName">
+    <DisplayString Condition="mElements[0] == 0">&lt;static initializer&gt;</DisplayString>
+    <DisplayString Condition="mElements[1] == 0">{mElements[0],s8b}</DisplayString>
+    <DisplayString Condition="mElements[2] == 0">{mElements[0],s8b}.{mElements[1],s8b}</DisplayString>
+    <DisplayString Condition="mElements[3] == 0">{mElements[0],s8b}.{mElements[1],s8b}.{mElements[2],s8b}</DisplayString>
+    <DisplayString Condition="mElements[4] == 0">{mElements[0],s8b}.{mElements[1],s8b}.{mElements[2],s8b}.{mElements[3],s8b}</DisplayString>
+    <DisplayString>{mElements[0],s8b}.{mElements[1],s8b}.{mElements[2],s8b}.{mElements[3],s8b}...</DisplayString>
+    <Expand>
+      <CustomListItems>
+        <Variable Name="i" InitialValue="0"/>
+        <Loop>
+          <Break Condition="mElements[i] == 0"/>
+          <Item>mElements[i],s8</Item>
+          <Exec>i++</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::ReturnSignature">
+    <DisplayString Condition="mType == 13">{(Bond::SignatureType)mType,en}&lt;{mSize}&gt;</DisplayString>
+    <DisplayString>{(Bond::SignatureType)mType,en}</DisplayString>
+  </Type>
+
+  <Type Name="Bond::ParamSignature">
+    <DisplayString Condition="mType == 13">{(Bond::SignatureType)mType,en}&lt;{mSize}&gt; at fp offset {mFramePointerOffset}</DisplayString>
+    <DisplayString>{(Bond::SignatureType)mType,en} at fp offset {mFramePointerOffset}</DisplayString>
+  </Type>
+
+  <Type Name="Bond::ParamListSignature">
+    <DisplayString>{{ count={mParamCount} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>mParamCount</Size>
+        <ValuePointer>mParamSignatures</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::Function">
+    <DisplayString Condition="mCodeSize == 0">{mName} [native]</DisplayString>
+    <DisplayString>{mName}</DisplayString>
+    <Expand>
+      <Item Name="name">mName</Item>
+      <Item Name="return">mReturnSignature</Item>
+      <Item Name="params">mParamListSignature</Item>
+      <Item Name="native function" Condition="mCodeSize == 0">mNativeFunction</Item>
+      <Item Name="code" Condition="mCodeSize != 0">mCode,[mCodeSize]</Item>
+      <Item Name="code size">mCodeSize</Item>
+      <Item Name="arg size">mArgSize</Item>
+      <Item Name="packed arg size">mPackedArgSize</Item>
+      <Item Name="local size">mLocalSize</Item>
+      <Item Name="stack size">mStackSize</Item>
+      <Item Name="frame pointer alignment">mFramePointerAlignment</Item>
+      <Item Name="constant table">mConstantTable</Item>
+    </Expand>
+  </Type>
+
+  <!--
+    The activation record of a function. mPc and mOperandStackPointer are only valid while the
+    frame is suspended in a call, i.e. for every Bond frame but the top one. The pc of the top
+    frame is the pc local variable of the innermost C++ VM::ExecuteScriptFunction frame.
+  -->
+  <Type Name="Bond::StackFrame">
+    <DisplayString Condition="mFunction == 0">{{ no function }}</DisplayString>
+    <DisplayString Condition="mFunction-&gt;mCodeSize == 0">{mFunction-&gt;mName} [native]</DisplayString>
+    <DisplayString Condition="mOperandStackPointer != 0">{mFunction-&gt;mName} @ pc {mPc}</DisplayString>
+    <DisplayString>{mFunction-&gt;mName}</DisplayString>
+    <Expand>
+      <Item Name="function" Condition="mFunction != 0">*mFunction</Item>
+      <Item Name="pc" Condition="mOperandStackPointer != 0">mPc</Item>
+      <Item Name="instruction" Condition="mOperandStackPointer != 0">(Bond::OpCode)mFunction-&gt;mCode[mPc]</Item>
+      <Synthetic Name="args" Condition="mFunction != 0 &amp;&amp; mFunction-&gt;mParamListSignature.mParamCount != 0">
+        <DisplayString>{{ count={mFunction-&gt;mParamListSignature.mParamCount} }}</DisplayString>
+        <Expand>
+          <CustomListItems>
+            <Variable Name="i" InitialValue="0"/>
+            <Variable Name="sig" InitialValue="mFunction-&gt;mParamListSignature.mParamSignatures"/>
+            <Variable Name="arg" InitialValue="mFramePointer"/>
+            <Loop>
+              <Break Condition="i == (int)mFunction-&gt;mParamListSignature.mParamCount"/>
+              <Exec>arg = mFramePointer + sig[i].mFramePointerOffset</Exec>
+              <Item Name="[{i}] bool" Condition="sig[i].mType == 1">*(bool *)arg</Item>
+              <Item Name="[{i}] char" Condition="sig[i].mType == 2">*(signed char *)arg</Item>
+              <Item Name="[{i}] uchar" Condition="sig[i].mType == 3">*(unsigned char *)arg</Item>
+              <Item Name="[{i}] short" Condition="sig[i].mType == 4">*(short *)arg</Item>
+              <Item Name="[{i}] ushort" Condition="sig[i].mType == 5">*(unsigned short *)arg</Item>
+              <Item Name="[{i}] int" Condition="sig[i].mType == 6">*(int *)arg</Item>
+              <Item Name="[{i}] uint" Condition="sig[i].mType == 7">*(unsigned int *)arg</Item>
+              <Item Name="[{i}] long" Condition="sig[i].mType == 8">*(long long *)arg</Item>
+              <Item Name="[{i}] ulong" Condition="sig[i].mType == 9">*(unsigned long long *)arg</Item>
+              <Item Name="[{i}] float" Condition="sig[i].mType == 10">*(float *)arg</Item>
+              <Item Name="[{i}] double" Condition="sig[i].mType == 11">*(double *)arg</Item>
+              <Item Name="[{i}] pointer" Condition="sig[i].mType == 12">*(void **)arg</Item>
+              <Item Name="[{i}] aggregate" Condition="sig[i].mType == 13">arg,[sig[i].mSize]</Item>
+              <Exec>i++</Exec>
+            </Loop>
+          </CustomListItems>
+        </Expand>
+      </Synthetic>
+      <Item Name="locals (bytes)" Condition="mFunction != 0 &amp;&amp; mFunction-&gt;mLocalSize != 0">mFramePointer,[mFunction-&gt;mLocalSize]</Item>
+      <Item Name="locals (ints)" Condition="mFunction != 0 &amp;&amp; mFunction-&gt;mLocalSize &gt;= 4">(int *)mFramePointer,[mFunction-&gt;mLocalSize / 4]</Item>
+      <Item Name="operand stack" Condition="mOperandStackPointer != 0 &amp;&amp; mOperandStackPointer != mStackPointer">(Bond::Value64 *)mStackPointer,[(mOperandStackPointer - mStackPointer) / 8]</Item>
+      <Item Name="frame pointer">(void *)mFramePointer</Item>
+      <Item Name="return pointer" Condition="mReturnPointer != 0">(void *)mReturnPointer</Item>
+      <Item Name="collector">mCollector</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::InvocationStackFrame">
+    <DisplayString>{mValue}</DisplayString>
+    <Expand>
+      <ExpandedItem>mValue</ExpandedItem>
+      <Item Name="next arg">mNextArg</Item>
+    </Expand>
+  </Type>
+
+  <!-- The call stack, from the top down, without the VM's empty bottom frame. -->
+  <Type Name="Bond::AutoStack&lt;Bond::StackFrame&gt;">
+    <DisplayString Condition="mTop == 0 || mTop-&gt;mValue.mFunction == 0">{{ empty }}</DisplayString>
+    <DisplayString>{{ top={mTop-&gt;mValue} }}</DisplayString>
+    <Expand>
+      <CustomListItems>
+        <Variable Name="element" InitialValue="mTop"/>
+        <Loop>
+          <Break Condition="element == 0"/>
+          <Item Condition="element-&gt;mValue.mFunction != 0">element-&gt;mValue</Item>
+          <Exec>element = element-&gt;mNext</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::AutoStack&lt;*&gt;" Priority="MediumLow">
+    <DisplayString Condition="mTop == 0">{{ empty }}</DisplayString>
+    <DisplayString>{{ top={mTop-&gt;mValue} }}</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <HeadPointer>mTop</HeadPointer>
+        <NextPointer>mNext</NextPointer>
+        <ValueNode>mValue</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::AutoStack&lt;*&gt;::Element">
+    <DisplayString>{mValue}</DisplayString>
+    <Expand>
+      <ExpandedItem>mValue</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <!--
+    mStack is a std::unique_ptr, read through the internals of the MSVC standard library as its
+    own visualizer does. The stack in use excludes the operand stack of the top frame.
+  -->
+  <Type Name="Bond::VM">
+    <DisplayString>{mStackFrames}</DisplayString>
+    <Expand>
+      <Item Name="call stack">mStackFrames</Item>
+      <Item Name="code segment">mCodeSegment</Item>
+      <Item Name="stack base">(void *)mStack._Mypair._Myval2</Item>
+      <Item Name="stack size">mStackSize</Item>
+      <Item Name="stack in use" Condition="mStackFrames.mTop != 0">mStackFrames.mTop-&gt;mValue.mStackPointer - mStack._Mypair._Myval2</Item>
+      <Item Name="allocator">mAllocator</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::CodeSegment">
+    <DisplayString>{{ functions={mFunctionCount} static initializers={mStaticInitializerCount} data={mDataCount} }}</DisplayString>
+    <Expand>
+      <Synthetic Name="functions">
+        <DisplayString>{{ count={mFunctionCount} }}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>mFunctionCount</Size>
+            <ValuePointer>mFunctionTable</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="static initializers">
+        <DisplayString>{{ count={mStaticInitializerCount} }}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>mStaticInitializerCount</Size>
+            <ValuePointer>mStaticInitializerTable</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="data">
+        <DisplayString>{{ count={mDataCount} }}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>mDataCount</Size>
+            <ValuePointer>mDataTable</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="Bond::DataEntry">
+    <DisplayString>{mName}</DisplayString>
+  </Type>
+
+  <!-- Operand stack slots and constants hold values of any type, so show the common views. -->
+  <Type Name="Bond::Value32">
+    <DisplayString>{{ int={mInt} float={mFloat} hex={mUInt,x} }}</DisplayString>
+  </Type>
+
+  <Type Name="Bond::Value64">
+    <DisplayString>{{ int={*(int *)this} long={mLong} double={mDouble} hex={mULong,x} }}</DisplayString>
+  </Type>
+
+</AutoVisualizer>

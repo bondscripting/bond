@@ -40,7 +40,9 @@ public:
 		mFunction(nullptr),
 		mFramePointer(nullptr),
 		mStackPointer(nullptr),
-		mReturnPointer(nullptr)
+		mReturnPointer(nullptr),
+		mOperandStackPointer(nullptr),
+		mPc(0)
 	{}
 
 	/// \brief Constructs a StackFrame object for an invocation of the given function.
@@ -61,7 +63,9 @@ public:
 		mFunction(&function),
 		mFramePointer(framePointer),
 		mStackPointer(stackPointer),
-		mReturnPointer(returnPointer)
+		mReturnPointer(returnPointer),
+		mOperandStackPointer(nullptr),
+		mPc(0)
 	{}
 
 	StackFrame(const StackFrame &other) = delete;
@@ -121,6 +125,14 @@ private:
 	uint8_t *mFramePointer;
 	uint8_t *mStackPointer;
 	uint8_t *mReturnPointer;
+
+	// Execution state of a Bond function that is suspended while it calls another function. They
+	// are not used by the VM itself, but let debuggers, natvis visualizers and DumpStackFrame()
+	// locate the call site in every frame but the top one. mOperandStackPointer is the top of the
+	// operand stack, whose base is mStackPointer, and is null unless the frame is suspended in a
+	// call, in which case mPc is the bytecode offset of the invoke instruction.
+	uint8_t *mOperandStackPointer;
+	size_t mPc;
 };
 
 /// \brief The call stack of a VM.
@@ -310,7 +322,9 @@ public:
 	void DumpCallStack(OutputStream &stream) const;
 
 	/// \brief Writes a description of the given StackFrame, consisting of the signature of its
-	/// function and the values of its arguments, to the given stream.
+	/// function and the values of its arguments, to the given stream. If the frame is that of a
+	/// Bond function suspended in a call to another function, the description is followed by
+	/// "@ pc N", where N is the bytecode offset of the call instruction as listed by bondd.
 	/// \param stream The stream to which the stack frame is written.
 	/// \param frame The StackFrame to be written. Nothing is written if it is not associated with a
 	///        function.
@@ -405,6 +419,34 @@ private:
 /// @}
 
 }
+
+/// \addtogroup vm
+/// @{
+
+/// \brief Returns a description of the call stack of a VM, as written by
+/// Bond::VM::DumpCallStack().
+///
+/// This function is meant to be called from the expression evaluator of a native debugger while
+/// the VM is suspended, e.g. `BondDebugDumpCallStack(&vm),s8` in the Immediate window of Visual
+/// Studio or `call BondDebugDumpCallStack(&vm)` in gdb. It has C linkage so that it can be called
+/// without qualification. The text is written to a static buffer that is overwritten by every call
+/// to this function or to BondDebugDumpStackFrame() and truncated if it does not fit, so these
+/// functions are not thread safe and are not intended for use by applications.
+/// \param vm The VM whose call stack is described.
+/// \returns A null-terminated string, which is empty if vm is null.
+extern "C" BOND_API const char *BondDebugDumpCallStack(const Bond::VM *vm);
+
+/// \brief Returns a description of a StackFrame, as written by Bond::VM::DumpStackFrame().
+///
+/// This function is meant to be called from the expression evaluator of a native debugger while
+/// the VM is suspended, e.g. `BondDebugDumpStackFrame(&frame),s8` in the Immediate window of
+/// Visual Studio. It shares the static buffer of BondDebugDumpCallStack() and has the same
+/// limitations.
+/// \param frame The StackFrame to be described.
+/// \returns A null-terminated string, which is empty if frame is null.
+extern "C" BOND_API const char *BondDebugDumpStackFrame(const Bond::StackFrame *frame);
+
+/// @}
 
 #include "bond/private/vm.h"
 

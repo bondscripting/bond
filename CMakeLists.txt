@@ -44,6 +44,13 @@ set_target_properties(bond_lib PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+# Embed the debugger visualizers in the PDB of every MSVC executable or DLL that links bond_lib.
+# CMake passes .natvis sources to the linker with /NATVIS. The file is a PUBLIC source so that
+# targets linking the static library get it too. (A /NATVIS link option is not forwarded to the
+# linker by the Visual Studio generators.)
+if(MSVC)
+  target_sources(bond_lib PUBLIC "${CMAKE_SOURCE_DIR}/vs/bond.natvis")
+endif()
 # CommandLineArgs uses CommandLineToArgvW from shell32.
 if(WIN32)
   target_link_libraries(bond_lib PRIVATE shell32)
