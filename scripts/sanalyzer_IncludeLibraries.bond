@@ -1,3 +1,4 @@
+include "debug.bond";
 include "io.bond";
 include "math.bond";
 include "memory.bond";
@@ -12,4 +13,5 @@ void TestForPresenceOfIncludedDeclarations()
 	bool isalpha = Bond::IsAlpha('c');
 	void *ptr = Bond::Allocate(8);
 	Bond::Free(ptr);
+	bool attached = Bond::Debug::IsDebuggerPresent();
 }

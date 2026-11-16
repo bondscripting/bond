@@ -1,0 +1,43 @@
+// begin ignore
+native
+{
+// end ignore
+namespace Bond
+{
+
+/// \defgroup debug debug.bond
+/// \brief Functions for interacting with a native debugger, such as the Visual Studio debugger, gdb
+/// or lldb, that is attached to the process running the VM.
+///
+/// Bond does not have its own debugger. These functions let a script stop the native debugger at
+/// a chosen point, from where the Bond call stack, arguments and locals can be inspected with the
+/// visualizers and debugger-callable functions described in docs/debugging.txt.
+///
+/// \code
+/// include "debug.bond";
+/// \endcode
+
+/// @{
+
+namespace Debug
+{
+	/// \brief Stops the program in the native debugger if one is attached. Does nothing otherwise,
+	/// so calls can be left in scripts that run without a debugger.
+	///
+	/// The debugger stops in, or just below, the native function Bond::Debug::Break. Its frame
+	/// parameter is the Bond::StackFrame of the call, and frame.mVm gives the whole Bond call stack.
+	void Break();
+
+	/// \brief Returns whether a native debugger is attached to the process.
+	///
+	/// Detection is supported on Windows, Cygwin, Linux and macOS. On other platforms, false is
+	/// always returned and Break does nothing.
+	bool IsDebuggerPresent();
+}
+
+/// @}
+
+}
+// begin ignore
+}
+// end ignore

@@ -13,10 +13,14 @@ class CboLoader;
 
 /// \brief Adds all libraries of the Bond Standard Library to the given CboLoader.
 ///
-/// Equivalent to calling LoadLibIo(), LoadLibMath(), LoadLibMemory(), LoadLibString() and
-/// LoadLibType().
+/// Equivalent to calling LoadLibDebug(), LoadLibIo(), LoadLibMath(), LoadLibMemory(),
+/// LoadLibString() and LoadLibType().
 /// \param cboLoader The CboLoader to which the libraries are added.
 BOND_API void LoadAllLibs(CboLoader &cboLoader);
+
+/// \brief Adds the compiled code and native bindings of the debug library to the given CboLoader.
+/// \param cboLoader The CboLoader to which the library is added.
+BOND_API void LoadLibDebug(CboLoader &cboLoader);
 
 /// \brief Adds the compiled code and native bindings of the io library to the given CboLoader.
 /// \param cboLoader The CboLoader to which the library is added.

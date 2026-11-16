@@ -7,7 +7,9 @@ namespace Bond
 #include "private/libinclude_embedded_cpp.h"
 
 
+// The names must be sorted, since MemoryStreamFactory finds them with a binary search.
 #define INCLUDE_FILE_LIST \
+	INCLUDE_FILE_ITEM("debug.bond",  INCLUDE_DEBUG_BOND)  \
 	INCLUDE_FILE_ITEM("io.bond",     INCLUDE_IO_BOND)     \
 	INCLUDE_FILE_ITEM("math.bond",   INCLUDE_MATH_BOND)   \
 	INCLUDE_FILE_ITEM("memory.bond", INCLUDE_MEMORY_BOND) \

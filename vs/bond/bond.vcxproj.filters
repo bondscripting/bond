@@ -195,6 +195,9 @@
     <ClInclude Include="..\..\include\bond\api\libinclude.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bond\api\libdebug.h">
+      <Filter>Header Files\include\bond\api</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\bond\api\libmath.h">
       <Filter>Header Files\include\bond\api</Filter>
     </ClInclude>
@@ -432,6 +435,12 @@
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libiobindings.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libdebug.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\libdebugbindings.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\libmath.cpp">

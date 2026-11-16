@@ -1,0 +1,13 @@
+include "debug.bond";
+
+// Calls Break only when no debugger is attached, so that it is a no-op and running the tests
+// under a debugger does not stop here. Returns 1 if Break was called.
+int BreakWithoutDebugger()
+{
+	if (!Bond::Debug::IsDebuggerPresent())
+	{
+		Bond::Debug::Break();
+		return 1;
+	}
+	return 0;
+}

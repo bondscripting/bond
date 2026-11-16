@@ -1,3 +1,4 @@
+extern const Bond::DataView INCLUDE_DEBUG_BOND;
 extern const Bond::DataView INCLUDE_IO_BOND;
 extern const Bond::DataView INCLUDE_MATH_BOND;
 extern const Bond::DataView INCLUDE_MEMORY_BOND;

@@ -2,6 +2,7 @@
 // shared-only checks are compiled in when BOND_SHARED is defined.
 
 #include "framework/testframework.h"
+#include "bond/api/libdebug.h"
 #include "bond/api/libinclude.h"
 #include "bond/api/libmath.h"
 #include "bond/api/libmemory.h"
@@ -329,12 +330,13 @@ DEFINE_TEST(ExportedData)
 	ASSERT_MESSAGE(Bond::Token::GetTokenName(Bond::Token::KEY_VOID) != nullptr, "KEY_VOID has no name.");
 
 	ASSERT_MESSAGE(Bond::INCLUDE_FILE_INDEX.GetNumDataViews() > 0, "INCLUDE_FILE_INDEX is empty.");
-	ASSERT_MESSAGE(Bond::INCLUDE_FILE_INDEX.GetDataViewNames()[0] == "io.bond", "INCLUDE_FILE_INDEX has the wrong first name.");
+	ASSERT_MESSAGE(Bond::INCLUDE_FILE_INDEX.GetDataViewNames()[0] == "debug.bond","INCLUDE_FILE_INDEX has the wrong first name.");
 	ASSERT_MESSAGE(Bond::INCLUDE_FILE_INDEX.GetDataViews()[0].GetLength() > 0, "INCLUDE_FILE_INDEX has an empty first file.");
 
 	ASSERT_MESSAGE(Bond::MATH_BINDING_COLLECTION.mFunctionBindingCount > 0, "MATH_BINDING_COLLECTION is empty.");
 	ASSERT_MESSAGE(Bond::MATH_BINDING_COLLECTION.mFunctionBindings[0].mFunction != nullptr, "MATH_BINDING_COLLECTION has a null function.");
 	ASSERT_MESSAGE(Bond::MEMORY_BINDING_COLLECTION.mFunctionBindingCount > 0, "MEMORY_BINDING_COLLECTION is empty.");
+	ASSERT_MESSAGE(Bond::DEBUG_BINDING_COLLECTION.mFunctionBindingCount == 2, "DEBUG_BINDING_COLLECTION does not have 2 functions.");
 }
 
 

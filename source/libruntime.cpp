@@ -1,3 +1,4 @@
+#include "bond/api/libdebug.h"
 #include "bond/api/libio.h"
 #include "bond/api/libmath.h"
 #include "bond/api/libmemory.h"
@@ -10,6 +11,22 @@
 
 namespace Bond
 {
+
+template<PointerSize size>
+typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibDebugCbo()
+{
+#include "private/libruntime32_debug_cbo_embedded.h"
+	return DEBUG_CBO;
+}
+
+
+template<PointerSize size>
+typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibDebugCbo()
+{
+#include "private/libruntime64_debug_cbo_embedded.h"
+	return DEBUG_CBO;
+}
+
 
 template<PointerSize size>
 typename Bond::enable_if<size == POINTER_32BIT, const DataView &>::type GetLibIoCbo()
@@ -93,11 +110,20 @@ typename Bond::enable_if<size == POINTER_64BIT, const DataView &>::type GetLibTy
 
 void LoadAllLibs(CboLoader &cboLoader)
 {
+	LoadLibDebug(cboLoader);
 	LoadLibIo(cboLoader);
 	LoadLibMath(cboLoader);
 	LoadLibMemory(cboLoader);
 	LoadLibString(cboLoader);
 	LoadLibType(cboLoader);
+}
+
+
+void LoadLibDebug(CboLoader &cboLoader)
+{
+	const auto &cbo = GetLibDebugCbo<BOND_NATIVE_POINTER_SIZE>();
+	cboLoader.AddNativeBinding(DEBUG_BINDING_COLLECTION);
+	cboLoader.AddCboFile(cbo.GetData(), cbo.GetLength());
 }
 
 

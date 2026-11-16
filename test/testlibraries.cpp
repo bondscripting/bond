@@ -225,6 +225,19 @@ DEFINE_VM_TEST(Type, "scripts/sanalyzer_IncludeLibraries.bond")
 }
 
 
+DEFINE_VM_TEST(Debug, "scripts/vm_LibDebug.bond")
+{
+	using namespace Bond;
+
+	// The tests are not normally run under a debugger, in which case Break must return without
+	// trapping. Under a debugger, the script does not call Break, so the run is not interrupted.
+	int32_t attached = -1;
+	vm.CallFunction("Bond.Debug.IsDebuggerPresent", &attached);
+	ASSERT_MESSAGE((attached == 0) || (attached == 1), "Bond.Debug.IsDebuggerPresent returned a non-bool value.");
+	VALIDATE_FUNCTION_CALL(int32_t, "BreakWithoutDebugger", int32_t(1 - attached));
+}
+
+
 DEFINE_VM_TEST(Collector, "scripts/vm_Collector.bond")
 {
 	using namespace Bond;
@@ -709,6 +722,7 @@ DEFINE_TEST(VMWithoutStreams)
 #define TEST_ITEMS                              \
   TEST_ITEM(Math)                               \
   TEST_ITEM(Type)                               \
+  TEST_ITEM(Debug)                              \
   TEST_ITEM(Collector)                          \
   TEST_ITEM(String)                             \
   TEST_ITEM(MemoryRoundTrip)                    \
