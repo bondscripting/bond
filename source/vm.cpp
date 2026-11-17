@@ -6,8 +6,34 @@
 #include "bond/vm/vm.h"
 #include <cstring>
 
+// When 1, the VM counts executed opcodes and prints the counts to stderr at exit. Used to measure
+// the effect of code generator changes on the number of dispatched instructions.
+#ifndef BOND_VM_OPCODE_HISTOGRAM
+#define BOND_VM_OPCODE_HISTOGRAM 0
+#endif
+
+#if BOND_VM_OPCODE_HISTOGRAM
+#include <cstdio>
+#endif
+
 namespace Bond
 {
+
+#if BOND_VM_OPCODE_HISTOGRAM
+struct OpCodeHistogram
+{
+	uint64_t mCounts[256] = {};
+	~OpCodeHistogram()
+	{
+		for (int i = 0; i < int(OPCODE_MAX); ++i)
+		{
+			fprintf(stderr, "HIST %s %llu\n", GetOpCodeMnemonic(OpCode(i)), static_cast<unsigned long long>(mCounts[i]));
+		}
+	}
+};
+static OpCodeHistogram gOpCodeHistogram;
+#endif
+
 
 struct MatchOffsetPair
 {
@@ -160,6 +186,9 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 	for (;;)
 	{
 		const OpCode opCode = static_cast<OpCode>(code[pc++]);
+#if BOND_VM_OPCODE_HISTOGRAM
+		++gOpCodeHistogram.mCounts[opCode];
+#endif
 		switch (opCode)
 		{
 			case OPCODE_CONSTC:

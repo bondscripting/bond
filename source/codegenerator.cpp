@@ -134,6 +134,123 @@ static TypeDescriptor GetBinaryOperationType(const TypeDescriptor &lhDescriptor,
 }
 
 
+// Returns whether the expression is an integer constant that an increment instruction can add,
+// and sets delta to the value to add. The constant is negated for a subtraction.
+static bool GetIncrementDelta(const Expression *expression, bool negate, int64_t &delta)
+{
+	const TypeAndValue &tav = expression->GetTypeAndValue();
+	if (!tav.IsValueDefined() || !expression->GetTypeDescriptor().IsIntegerType())
+	{
+		return false;
+	}
+
+	// Limit the range before negating, which would overflow for the smallest long.
+	const int64_t value = tav.AsLongValue();
+	if ((value < -128) || (value > 128))
+	{
+		return false;
+	}
+	delta = negate ? -value : value;
+	return IsInRange<int8_t>(delta);
+}
+
+
+// Returns whether the expression is a constant integer zero, false or null.
+static bool IsZeroConstant(const Expression *expression)
+{
+	const TypeAndValue &tav = expression->GetTypeAndValue();
+	if (!tav.IsValueDefined())
+	{
+		return false;
+	}
+
+	const TypeDescriptor &typeDescriptor = expression->GetTypeDescriptor();
+	if (typeDescriptor.IsNullType())
+	{
+		return true;
+	}
+	if (typeDescriptor.IsBooleanType())
+	{
+		return !tav.GetBoolValue();
+	}
+	if (typeDescriptor.IsIntegerType())
+	{
+		return tav.AsLongValue() == 0;
+	}
+	return false;
+}
+
+
+// Returns whether the expression is the given local variable or parameter.
+static bool IsSymbolReference(const Expression *expression, const Symbol *symbol)
+{
+	const IdentifierExpression *identifier = CastNode<IdentifierExpression>(expression);
+	return (identifier != nullptr) && (identifier->GetDefinition() == symbol);
+}
+
+
+// Returns whether an assignment has the form 'x = x + c', 'x = c + x' or 'x = x - c', where x is a
+// local variable or parameter and c is an integer constant that an increment instruction can add.
+// Sets delta to the value to add.
+static bool IsSelfIncrement(const Expression *lhs, const Expression *rhs, int64_t &delta)
+{
+	const IdentifierExpression *target = CastNode<IdentifierExpression>(lhs);
+	const BinaryExpression *binaryExpression = CastNode<BinaryExpression>(rhs);
+	if ((target == nullptr) || (binaryExpression == nullptr) || !lhs->GetTypeDescriptor().IsIntegerType())
+	{
+		return false;
+	}
+
+	const Symbol *symbol = target->GetDefinition();
+	const NamedInitializer *namedInitializer = CastNode<NamedInitializer>(symbol);
+	const bool isLocal =
+		((namedInitializer != nullptr) && (namedInitializer->GetScope() == SCOPE_LOCAL)) ||
+		(CastNode<Parameter>(symbol) != nullptr);
+	if (!isLocal)
+	{
+		return false;
+	}
+
+	const Expression *operandL = binaryExpression->GetLhs();
+	const Expression *operandR = binaryExpression->GetRhs();
+	switch (binaryExpression->GetOperator()->GetTokenType())
+	{
+		case Token::OP_PLUS:
+			return
+				(IsSymbolReference(operandL, symbol) && GetIncrementDelta(operandR, false, delta)) ||
+				(IsSymbolReference(operandR, symbol) && GetIncrementDelta(operandL, false, delta));
+		case Token::OP_MINUS:
+			return IsSymbolReference(operandL, symbol) && GetIncrementDelta(operandR, true, delta);
+		default:
+			return false;
+	}
+}
+
+
+// Returns the statement if it is a break or continue statement, alone or as the only statement of
+// a block. Returns null otherwise.
+static const JumpStatement *GetLoneBreakOrContinue(const ParseNode *statement)
+{
+	const CompoundStatement *compoundStatement = CastNode<CompoundStatement>(statement);
+	if (compoundStatement != nullptr)
+	{
+		const ListParseNode *statementList = compoundStatement->GetStatementList();
+		if ((statementList == nullptr) || (NextNode(statementList) != nullptr))
+		{
+			return nullptr;
+		}
+		statement = statementList;
+	}
+
+	const JumpStatement *jumpStatement = CastNode<JumpStatement>(statement);
+	if ((jumpStatement != nullptr) && (jumpStatement->IsBreak() || jumpStatement->IsContinue()))
+	{
+		return jumpStatement;
+	}
+	return nullptr;
+}
+
+
 class GeneratorCore: private ParseNodeTraverser
 {
 public:
@@ -350,7 +467,7 @@ private:
 
 	virtual void Traverse(const ParseNode *parseNode) override;
 	void TraverseOmitOptionalTemporaries(const Expression *expression);
-	bool TraverseCollapseNotOperators(const Expression *expression);
+	bool TraverseCollapseNotOperators(const Expression *expression, bool truthValueOnly);
 	void TraverseOmitConstantFolding(const Expression *expression);
 
 	virtual void Visit(const TranslationUnit *translationUnit) override;
@@ -419,6 +536,7 @@ private:
 
 	ValueRef EmitCommaOperator(const BinaryExpression *binaryExpression);
 	ValueRef EmitSimpleBinaryOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	bool TryEmitTruthTest(const BinaryExpression *binaryExpression);
 
 	void EmitLogicalOperator(
 		const BinaryExpression *binaryExpression,
@@ -429,6 +547,7 @@ private:
 
 	ValueRef EmitAssignmentOperator(const BinaryExpression *binaryExpression);
 	ValueRef EmitCompoundAssignmentOperator(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
+	bool TryEmitIncrement(const ValueRef &lhRef, const TypeDescriptor &lhDescriptor, int64_t delta);
 	ValueRef EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 	ValueRef EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 	ValueRef EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet);
@@ -448,8 +567,10 @@ private:
 	void EmitLoadMemW(const TypeDescriptor &typeDescriptor);
 
 	void EmitArgumentList(const Expression *argList, const Parameter *paramList);
+	ValueRef EmitFunctionCall(const FunctionCallExpression *functionCallExpression, bool hasReturnOffset, int32_t returnOffset);
 
 	void EmitJump(OpCode opCode, size_t toLabel);
+	void EmitConditionalJump(const Expression *condition, bool jumpIfTrue, size_t toLabel);
 
 	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
 	void EmitOpCode(OpCode opCode);
@@ -484,6 +605,7 @@ private:
 	bool GetEmitOptionalTemporaries() const { return (mFlags.GetTop() & FLAG_OMIT_OPTIONAL_TEMPORARIES) == 0; }
 	bool GetCollapseNotOperators() const { return (mFlags.GetTop() & FLAG_COLLAPSE_NOT_OPERATORS) != 0; }
 	bool GetOmitConstantFolding() const { return (mFlags.GetTop() & FLAG_OMIT_CONSTANT_FOLDING) != 0; }
+	bool GetTruthValueOnly() const { return (mFlags.GetTop() & FLAG_TRUTH_VALUE_ONLY) != 0; }
 	void ApplyStackDelta(int32_t delta);
 	int32_t AllocateLocal(const TypeDescriptor &typeDescriptor);
 	size_t CreateLabel();
@@ -499,6 +621,11 @@ private:
 	static const uint32_t FLAG_OMIT_OPTIONAL_TEMPORARIES = 1 << 0;
 	static const uint32_t FLAG_COLLAPSE_NOT_OPERATORS = 1 << 1;
 	static const uint32_t FLAG_OMIT_CONSTANT_FOLDING = 1 << 2;
+
+	// Only whether the value of the expression is zero matters, not the value itself. Set only
+	// together with FLAG_COLLAPSE_NOT_OPERATORS, for the conditions of statements and of the
+	// conditional operator, and for the operands of !, && and || within them.
+	static const uint32_t FLAG_TRUTH_VALUE_ONLY = 1 << 3;
 
 	QualifiedNameIndexMap mQualifiedNameIndexMap;
 	QualifiedNameList mQualifiedNameList;
@@ -577,10 +704,10 @@ void GeneratorCore::TraverseOmitOptionalTemporaries(const Expression *expression
 }
 
 
-bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression)
+bool GeneratorCore::TraverseCollapseNotOperators(const Expression *expression, bool truthValueOnly)
 {
 	auto expressionIsNegatedElement = mExpressionIsNegated.Push(false);
-	auto flagsElement = mFlags.Push(uint32_t(FLAG_COLLAPSE_NOT_OPERATORS));
+	auto flagsElement = mFlags.Push(FLAG_COLLAPSE_NOT_OPERATORS | (truthValueOnly ? FLAG_TRUTH_VALUE_ONLY : 0));
 	ParseNodeTraverser::Traverse(expression);
 	return expressionIsNegatedElement.GetValue();
 }
@@ -726,9 +853,9 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 {
 	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	const Expression *condition = ifStatement->GetCondition();
-	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
+	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
+	const JumpStatement *loopJump = nullptr;
 
-	const TypeAndValue &conditionTav = ifStatement->GetCondition()->GetTypeAndValue();
 	if (conditionTav.IsValueDefined())
 	{
 		if (conditionTav.GetBoolValue())
@@ -740,14 +867,17 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 			Traverse(ifStatement->GetElseStatement());
 		}
 	}
+	else if ((ifStatement->GetElseStatement() == nullptr) &&
+	         ((loopJump = GetLoneBreakOrContinue(ifStatement->GetThenStatement())) != nullptr))
+	{
+		// 'if (c) break;' and 'if (c) continue;' compile to a single conditional branch.
+		const size_t toLabel = loopJump->IsBreak() ? mBreakLabel.GetTop() : mContinueLabel.GetTop();
+		EmitConditionalJump(condition, true, toLabel);
+	}
 	else
 	{
-		auto conditionRef = mValueRef.Push();
-		const bool negated = TraverseCollapseNotOperators(condition);
-		EmitPushValueRef(conditionRef, conditionDescriptor);
-
 		const size_t thenEndLabel = CreateLabel();
-		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, thenEndLabel);
+		EmitConditionalJump(condition, false, thenEndLabel);
 
 		Traverse(ifStatement->GetThenStatement());
 		size_t thenEndPos = GetByteCode().size();
@@ -878,38 +1008,49 @@ void GeneratorCore::Visit(const SwitchSection *switchSection)
 void GeneratorCore::Visit(const WhileStatement *whileStatement)
 {
 	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
-	const size_t loopStartLabel = CreateLabel();
-	const size_t loopEndLabel = CreateLabel();
-	SetLabelValue(loopStartLabel, GetByteCode().size());
+	const Expression *condition = whileStatement->GetCondition();
+	const TypeAndValue &conditionTav = condition->GetTypeAndValue();
+	const bool isConstant = conditionTav.IsValueDefined();
+	const bool isDoLoop = whileStatement->IsDoLoop();
 
-	// In a do loop, continue jumps to the condition, which follows the body.
-	const size_t continueLabel = whileStatement->IsDoLoop() ? CreateLabel() : loopStartLabel;
-	auto continueElement = mContinueLabel.Push(continueLabel);
+	// A while loop whose condition is constant false is never entered.
+	if (isConstant && !conditionTav.GetBoolValue() && !isDoLoop)
+	{
+		return;
+	}
+
+	const size_t loopStartLabel = CreateLabel();
+	const size_t conditionLabel = CreateLabel();
+	const size_t loopEndLabel = CreateLabel();
+
+	// Continue jumps to the condition, which follows the body.
+	auto continueElement = mContinueLabel.Push(conditionLabel);
 	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
-	const Expression *condition = whileStatement->GetCondition();
-	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
-
-	if (whileStatement->IsDoLoop())
+	if (isConstant)
 	{
+		// The condition is not tested. A constant false do loop runs its body once.
+		SetLabelValue(loopStartLabel, GetByteCode().size());
 		Traverse(whileStatement->GetBody());
-		SetLabelValue(continueLabel, GetByteCode().size());
-
-		auto conditionRef = mValueRef.Push();
-		const bool negated = TraverseCollapseNotOperators(condition);
-		EmitPushValueRef(conditionRef, conditionDescriptor);
-		EmitJump(negated ? OPCODE_IFZ : OPCODE_IFNZ, loopStartLabel);
+		SetLabelValue(conditionLabel, GetByteCode().size());
+		if (conditionTav.GetBoolValue())
+		{
+			EmitJump(OPCODE_GOTO, loopStartLabel);
+		}
 	}
 	else
 	{
-		auto conditionRef = mValueRef.Push();
-		const bool negated = TraverseCollapseNotOperators(condition);
-		EmitPushValueRef(conditionRef, conditionDescriptor);
-		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
+		// A while loop is entered through its condition, so that only one branch executes per
+		// iteration.
+		if (!isDoLoop)
+		{
+			EmitJump(OPCODE_GOTO, conditionLabel);
+		}
 
+		SetLabelValue(loopStartLabel, GetByteCode().size());
 		Traverse(whileStatement->GetBody());
-
-		EmitJump(OPCODE_GOTO, loopStartLabel);
+		SetLabelValue(conditionLabel, GetByteCode().size());
+		EmitConditionalJump(condition, true, loopStartLabel);
 	}
 
 	SetLabelValue(loopEndLabel, GetByteCode().size());
@@ -922,31 +1063,51 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	auto localOffsetElement = mLocalOffset.Push(mLocalOffset.GetTop());
 	Traverse(forStatement->GetInitializer());
 
+	// A missing condition is the same as a constant true one.
+	const Expression *condition = forStatement->GetCondition();
+	const bool isConstant = (condition == nullptr) || condition->GetTypeAndValue().IsValueDefined();
+	const bool isConstantTrue = isConstant && ((condition == nullptr) || condition->GetTypeAndValue().GetBoolValue());
+
+	// A loop whose condition is constant false is never entered.
+	if (isConstant && !isConstantTrue)
+	{
+		AssertStackEmpty();
+		return;
+	}
+
 	const size_t loopStartLabel = CreateLabel();
 	const size_t countingLabel = CreateLabel();
+	const size_t conditionLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
-	SetLabelValue(loopStartLabel, GetByteCode().size());
 
 	auto continueElement = mContinueLabel.Push(countingLabel);
 	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
-	const Expression *condition = forStatement->GetCondition();
-	if (condition != nullptr)
+	// A loop with a condition is entered through it, so that only one branch executes per iteration.
+	if (!isConstant)
 	{
-		const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
-		auto conditionRef = mValueRef.Push();
-		const bool negated = TraverseCollapseNotOperators(condition);
-		EmitPushValueRef(conditionRef, conditionDescriptor);
-		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, loopEndLabel);
+		EmitJump(OPCODE_GOTO, conditionLabel);
 	}
 
+	SetLabelValue(loopStartLabel, GetByteCode().size());
 	Traverse(forStatement->GetBody());
 	SetLabelValue(countingLabel, GetByteCode().size());
 
-	auto countingRef = mValueRef.Push();
-	TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
+	{
+		auto countingRef = mValueRef.Push();
+		TraverseOmitOptionalTemporaries(forStatement->GetCountingExpression());
+	}
 
-	EmitJump(OPCODE_GOTO, loopStartLabel);
+	SetLabelValue(conditionLabel, GetByteCode().size());
+	if (isConstant)
+	{
+		EmitJump(OPCODE_GOTO, loopStartLabel);
+	}
+	else
+	{
+		EmitConditionalJump(condition, true, loopStartLabel);
+	}
+
 	SetLabelValue(loopEndLabel, GetByteCode().size());
 	AssertStackEmpty();
 }
@@ -1033,19 +1194,14 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 	const Expression *condition = conditionalExpression->GetCondition();
 	const Expression *trueExpression = conditionalExpression->GetTrueExpression();
 	const Expression *falseExpression = conditionalExpression->GetFalseExpression();
-	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 	const TypeDescriptor &trueDescriptor = trueExpression->GetTypeDescriptor();
 	const TypeDescriptor &falseDescriptor = falseExpression->GetTypeDescriptor();
 	const TypeDescriptor &resultDescriptor = conditionalExpression->GetTypeDescriptor();
 	const bool isStruct = resultDescriptor.IsStructType();
 
 	{
-		auto conditionRef = mValueRef.Push();
-		const bool negated = TraverseCollapseNotOperators(condition);
-		EmitPushValueRef(conditionRef, conditionDescriptor);
-
 		const size_t trueEndLabel = CreateLabel();
-		EmitJump(negated ? OPCODE_IFNZ : OPCODE_IFZ, trueEndLabel);
+		EmitConditionalJump(condition, false, trueEndLabel);
 
 		{
 			auto stackTopElement = mStackTop.Push(mStackTop.GetTop());
@@ -1087,7 +1243,7 @@ void GeneratorCore::Visit(const ConditionalExpression *conditionalExpression)
 
 void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 {
-	if (!ProcessConstantExpression(binaryExpression))
+	if (!ProcessConstantExpression(binaryExpression) && !TryEmitTruthTest(binaryExpression))
 	{
 		const Expression *lhs = binaryExpression->GetLhs();
 		const Expression *rhs = binaryExpression->GetRhs();
@@ -1456,6 +1612,15 @@ void GeneratorCore::Visit(const ArraySubscriptExpression *arraySubscriptExpressi
 
 void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 {
+	mValueRef.SetTop(EmitFunctionCall(functionCallExpression, false, 0));
+}
+
+
+GeneratorCore::ValueRef GeneratorCore::EmitFunctionCall(
+	const FunctionCallExpression *functionCallExpression,
+	bool hasReturnOffset,
+	int32_t returnOffset)
+{
 	const Expression *lhs = functionCallExpression->GetLhs();
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeSpecifier *lhSpecifier = lhDescriptor.GetTypeSpecifier();
@@ -1463,7 +1628,13 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 	const FunctionPrototype *prototype = function->GetPrototype();
 	const TypeDescriptor *returnDescriptor = prototype->GetReturnType();
 	const SignatureType returnType = returnDescriptor->GetSignatureType();
-	const int32_t returnOffset = (returnType == SIG_AGGREGATE) ? AllocateLocal(*returnDescriptor) : 0;
+
+	// An aggregate is returned into a temporary, unless the caller provides its destination.
+	if ((returnType == SIG_AGGREGATE) && !hasReturnOffset)
+	{
+		returnOffset = AllocateLocal(*returnDescriptor);
+	}
+
 	const Parameter *paramList = prototype->GetParameterList();
 	const Expression *argList = functionCallExpression->GetArgumentList();
 
@@ -1492,17 +1663,15 @@ void GeneratorCore::Visit(const FunctionCallExpression *functionCallExpression)
 
 	if (returnType == SIG_AGGREGATE)
 	{
-		mValueRef.SetTop(ValueRef(ValueRef::CONTEXT_FP_INDIRECT, returnOffset));
+		return ValueRef(ValueRef::CONTEXT_FP_INDIRECT, returnOffset);
 	}
-	else if (returnType == SIG_VOID)
+	if (returnType == SIG_VOID)
 	{
-		mValueRef.SetTop(ValueRef(ValueRef::CONTEXT_NONE));
+		return ValueRef(ValueRef::CONTEXT_NONE);
 	}
-	else
-	{
-		ApplyStackDelta(BOND_SLOT_SIZE);
-		mValueRef.SetTop(ValueRef(ValueRef::CONTEXT_STACK_VALUE));
-	}
+
+	ApplyStackDelta(BOND_SLOT_SIZE);
+	return ValueRef(ValueRef::CONTEXT_STACK_VALUE);
 }
 
 
@@ -1679,9 +1848,20 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			EmitOpCode(OPCODE_DUP);
 		}
 
-		if (typeDescriptor.IsStructType())
+		const FunctionCallExpression *functionCall = CastNode<FunctionCallExpression>(expression);
+		if (typeDescriptor.IsStructType() &&
+		    index.mIsLocal &&
+		    (functionCall != nullptr) &&
+		    (expression->GetTypeDescriptor().GetSignatureType() == SIG_AGGREGATE) &&
+		    (expression->GetTypeDescriptor().GetSize(mPointerSize) == typeDescriptor.GetSize(mPointerSize)))
 		{
-			// TODO: Initialize the struct in-place without copying it.
+			// A local struct initialized by a call is returned into directly, without a temporary or
+			// a copy. The local is not in scope in its own initializer, so no argument can refer to
+			// it, and nothing reads it until the call returns.
+			EmitFunctionCall(functionCall, true, offset);
+		}
+		else if (typeDescriptor.IsStructType())
+		{
 			if (index.mIsLocal)
 			{
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
@@ -2992,6 +3172,71 @@ GeneratorCore::ValueRef GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpr
 }
 
 
+bool GeneratorCore::TryEmitTruthTest(const BinaryExpression *binaryExpression)
+{
+	// Where only the truth value of a comparison matters, 'x != 0' is the same as 'x' and 'x == 0'
+	// is the same as '!x', when x is held as a 32-bit value. The conditional branches test exactly
+	// 32 bits, so this excludes longs and 64-bit pointers. It also excludes floating point types,
+	// because the bits of -0.0 are not zero.
+	const Token::TokenType op = binaryExpression->GetOperator()->GetTokenType();
+	if (!GetTruthValueOnly() || ((op != Token::OP_EQUAL) && (op != Token::OP_NOT_EQUAL)))
+	{
+		return false;
+	}
+
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
+	const Expression *operand = IsZeroConstant(rhs) ? lhs : (IsZeroConstant(lhs) ? rhs : nullptr);
+	if ((operand == nullptr) || operand->GetTypeAndValue().IsValueDefined())
+	{
+		return false;
+	}
+
+	const TypeDescriptor &operandDescriptor = operand->GetTypeDescriptor();
+	bool isEligible = false;
+	if (operandDescriptor.IsPointerIntrinsicType())
+	{
+		isEligible = !Is64BitPointer();
+	}
+	else
+	{
+		switch (operandDescriptor.GetPrimitiveType())
+		{
+			case Token::KEY_BOOL:
+			case Token::KEY_CHAR:
+			case Token::KEY_UCHAR:
+			case Token::KEY_SHORT:
+			case Token::KEY_USHORT:
+			case Token::KEY_INT:
+			case Token::KEY_UINT:
+				isEligible = true;
+				break;
+			default:
+				break;
+		}
+	}
+
+	if (!isEligible)
+	{
+		return false;
+	}
+
+	{
+		auto operandRef = mValueRef.Push();
+		Traverse(operand);
+		EmitPushValueRef(operandRef, operandDescriptor);
+	}
+
+	if (op == Token::OP_EQUAL)
+	{
+		mExpressionIsNegated.SetTop(true);
+	}
+
+	mValueRef.SetTop(ValueRef(ValueRef::CONTEXT_STACK_VALUE));
+	return true;
+}
+
+
 GeneratorCore::ValueRef GeneratorCore::EmitAssignmentOperator(const BinaryExpression *binaryExpression)
 {
 	const Expression *lhs = binaryExpression->GetLhs();
@@ -2999,6 +3244,21 @@ GeneratorCore::ValueRef GeneratorCore::EmitAssignmentOperator(const BinaryExpres
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	ValueRef valueRef;
+
+	// 'x = x + c', 'x = c + x' and 'x = x - c' compile to an increment instruction when possible.
+	// Otherwise the code below traverses the identifier again, which emits nothing for a local.
+	int64_t delta = 0;
+	if (IsSelfIncrement(lhs, rhs, delta))
+	{
+		auto lhRef = mValueRef.Push();
+		Traverse(lhs);
+		if (TryEmitIncrement(lhRef, lhDescriptor, delta))
+		{
+			return ValueRef(GetEmitOptionalTemporaries() ?
+				ValueRef::CONTEXT_STACK_VALUE :
+				ValueRef::CONTEXT_NONE);
+		}
+	}
 
 	const MemberExpression *memberExpression = nullptr;
 	const NamedInitializer *namedInitializer = nullptr;
@@ -3103,9 +3363,13 @@ void GeneratorCore::EmitLogicalOperator(
 	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
+	const bool collapseNotOperators = GetCollapseNotOperators();
+	const bool truthValueOnly = GetTruthValueOnly();
 
+	// The lhs is always collapsed. If the branch is taken, the lhs is left on the stack as the
+	// result, so it must be an exact boolean unless only the truth value of the result matters.
 	auto lhRef = mValueRef.Push();
-	const bool lhsNegated = TraverseCollapseNotOperators(lhs);
+	const bool lhsNegated = TraverseCollapseNotOperators(lhs, truthValueOnly);
 	EmitPushValueRef(lhRef, lhDescriptor);
 	const uint32_t stackTop = mStackTop.GetTop();
 
@@ -3113,10 +3377,10 @@ void GeneratorCore::EmitLogicalOperator(
 	const size_t opCodePos = GetByteCode().size();
 	EmitJump(lhsNegated ? negatedOpCode : branchOpCode, endLabel);
 
-	if (GetCollapseNotOperators())
+	if (collapseNotOperators)
 	{
 		auto rhRef = mValueRef.Push();
-		const bool rhsNegated = TraverseCollapseNotOperators(rhs);
+		const bool rhsNegated = TraverseCollapseNotOperators(rhs, truthValueOnly);
 		EmitPushValueRef(rhRef, rhDescriptor);
 
 		// Apply De Morgan's laws if we can reduce the number of ! operators.
@@ -3150,33 +3414,18 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	const TypeDescriptor intermediateDescriptor = GetBinaryOperationType(lhDescriptor, rhDescriptor, opCodeSet);
-	const TypeAndValue &rhTav = rhs->GetTypeAndValue();
-	const int64_t rhValue = rhTav.AsLongValue() * ((&opCodeSet == &SUB_OPCODES) ? -1 : 1);
+	int64_t delta = 0;
+	const bool isIncrement =
+		((&opCodeSet == &ADD_OPCODES) || (&opCodeSet == &SUB_OPCODES)) &&
+		GetIncrementDelta(rhs, &opCodeSet == &SUB_OPCODES, delta);
 	uint32_t stackTop = mStackTop.GetTop();
 
 	auto lhRef = mValueRef.Push();
 	Traverse(lhs);
-	const int32_t frameOffset = lhRef.GetValue().mOffset;
-	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
 
-	if (((&opCodeSet == &ADD_OPCODES) || (&opCodeSet == &SUB_OPCODES)) &&
-	    (lhRef.GetValue().mContext == ValueRef::CONTEXT_FP_INDIRECT) &&
-	    IsInRange<int8_t>(slotIndex) &&
-	    ((frameOffset % BOND_SLOT_SIZE) == 0) &&
-	    lhDescriptor.IsLeast32IntegerType() &&
-	    rhDescriptor.IsIntegerType() &&
-	    rhTav.IsValueDefined() &&
-	    IsInRange<int8_t>(rhValue))
+	if (isIncrement && TryEmitIncrement(lhRef, lhDescriptor, delta))
 	{
-		EmitOpCode(INC_OPCODES.GetOpCode(lhDescriptor));
-		ByteCode &byteCode = GetByteCode();
-		byteCode.push_back(uint8_t(slotIndex));
-		byteCode.push_back(uint8_t(rhValue));
-
-		if (GetEmitOptionalTemporaries())
-		{
-			EmitPushValueRef(lhRef, lhDescriptor);
-		}
+		// The increment instruction performs the whole operation.
 	}
 	else if (lhRef.GetValue().mContext == ValueRef::CONTEXT_NATIVE_MEMBER)
 	{
@@ -3240,6 +3489,34 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 	return ValueRef(GetEmitOptionalTemporaries() ?
 		ValueRef::CONTEXT_STACK_VALUE :
 		ValueRef::CONTEXT_NONE);
+}
+
+
+bool GeneratorCore::TryEmitIncrement(const ValueRef &lhRef, const TypeDescriptor &lhDescriptor, int64_t delta)
+{
+	// The increment instruction adds a signed 8-bit constant to a slot-aligned local addressed by a
+	// signed 8-bit slot index.
+	const int32_t frameOffset = lhRef.mOffset;
+	const int32_t slotIndex = frameOffset / BOND_SLOT_SIZE;
+	if ((lhRef.mContext != ValueRef::CONTEXT_FP_INDIRECT) ||
+	    !IsInRange<int8_t>(slotIndex) ||
+	    ((frameOffset % BOND_SLOT_SIZE) != 0) ||
+	    !lhDescriptor.IsLeast32IntegerType() ||
+	    !IsInRange<int8_t>(delta))
+	{
+		return false;
+	}
+
+	EmitOpCode(INC_OPCODES.GetOpCode(lhDescriptor));
+	ByteCode &byteCode = GetByteCode();
+	byteCode.push_back(uint8_t(slotIndex));
+	byteCode.push_back(uint8_t(delta));
+
+	if (GetEmitOptionalTemporaries())
+	{
+		EmitPushValueRef(lhRef, lhDescriptor);
+	}
+	return true;
 }
 
 
@@ -3751,7 +4028,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitNotOperator(const UnaryExpression *un
 	const Expression *rhs = unaryExpression->GetRhs();
 	const TypeDescriptor &rhDescriptor = rhs->GetTypeDescriptor();
 	auto rhRef = mValueRef.Push();
-	const bool negated = TraverseCollapseNotOperators(rhs);
+	const bool negated = TraverseCollapseNotOperators(rhs, GetTruthValueOnly());
 	EmitPushValueRef(rhRef, rhDescriptor);
 
 	if (GetCollapseNotOperators())
@@ -3911,6 +4188,16 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 	byteCode.push_back(0);
 	byteCode.push_back(0);
 	GetFunction().mJumpList.push_back(JumpEntry(opCodePos, toLabel));
+}
+
+
+void GeneratorCore::EmitConditionalJump(const Expression *condition, bool jumpIfTrue, size_t toLabel)
+{
+	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
+	auto conditionRef = mValueRef.Push();
+	const bool negated = TraverseCollapseNotOperators(condition, true);
+	EmitPushValueRef(conditionRef, conditionDescriptor);
+	EmitJump((jumpIfTrue != negated) ? OPCODE_IFNZ : OPCODE_IFZ, toLabel);
 }
 
 
@@ -4134,6 +4421,36 @@ void GeneratorCore::ResolveJumps()
 				}
 			}
 		}
+
+		// Replace each goto whose target is a return instruction with a copy of that instruction. A
+		// return doesn't depend on its position, and the operand stack at the goto is the same as at
+		// its target. The unused bytes are filled with nops, which are never executed. The replaced
+		// gotos are removed from the jump list, which stays sorted.
+		size_t numJumps = 0;
+		for (const JumpEntry &jumpEntry: jumpList)
+		{
+			const size_t opCodePos = jumpEntry.mOpCodePos;
+			const size_t toPos = jumpEntry.mToPos;
+			const uint8_t targetOpCode = (toPos < byteCode.size()) ? byteCode[toPos] : uint8_t(OPCODE_NOP);
+			if ((byteCode[opCodePos] == OPCODE_GOTO) &&
+			    ((targetOpCode == OPCODE_RETURN) ||
+			     (targetOpCode == OPCODE_RETURN32) ||
+			     (targetOpCode == OPCODE_RETURN64) ||
+			     (targetOpCode == OPCODE_RETURNMEMW)))
+			{
+				// RETURNMEMW has a 2-byte operand, so it is the same size as the goto.
+				const size_t returnSize = (targetOpCode == OPCODE_RETURNMEMW) ? 3 : 1;
+				for (size_t i = 0; i < 3; ++i)
+				{
+					byteCode[opCodePos + i] = (i < returnSize) ? byteCode[toPos + i] : uint8_t(OPCODE_NOP);
+				}
+			}
+			else
+			{
+				jumpList[numJumps++] = jumpEntry;
+			}
+		}
+		jumpList.resize(numJumps, JumpEntry(0, 0));
 
 		// Add jump offsets to the constant table if necessary.
 		for (const JumpEntry &jumpEntry: jumpList)

@@ -1,0 +1,586 @@
+// Code generator optimizations. Each function computes a result that would differ if an
+// optimization were applied where it isn't valid.
+
+struct Range
+{
+	int lo;
+	int hi;
+};
+
+
+Range MakeRange(int lo, int hi)
+{
+	Range r = { lo, hi };
+	return r;
+}
+
+
+// Loops: the condition follows the body and is entered with a single jump.
+
+int WhileCount(int n)
+{
+	int count = 0;
+	int i = 0;
+	while (i < n)
+	{
+		++count;
+		++i;
+	}
+	return count;
+}
+
+
+int WhileBreakContinue(int n)
+{
+	int sum = 0;
+	int i = 0;
+	while (i < n)
+	{
+		++i;
+		if ((i % 2) == 0)
+		{
+			continue;
+		}
+		if (i > 7)
+		{
+			sum += 1000;
+			break;
+		}
+		sum += i;
+	}
+	return sum;
+}
+
+
+int ForBreakContinue(int n)
+{
+	int sum = 0;
+	for (int i = 0; i < n; ++i)
+	{
+		if (i == 2) continue;
+		if (i == 6) break;
+		sum += i;
+	}
+	return sum;
+}
+
+
+int DoCount(int n)
+{
+	int count = 0;
+	do
+	{
+		++count;
+	}
+	while (count < n);
+	return count;
+}
+
+
+int DoContinue(int n)
+{
+	int i = 0;
+	int sum = 0;
+	do
+	{
+		++i;
+		if ((i % 2) == 0) continue;
+		sum += i;
+	}
+	while (i < n);
+	return sum;
+}
+
+
+int WhileTrue(int n)
+{
+	int i = 0;
+	while (true)
+	{
+		if (i >= n) break;
+		++i;
+	}
+	return i;
+}
+
+
+int WhileFalse(int n)
+{
+	int i = n;
+	while (false)
+	{
+		++i;
+	}
+	return i;
+}
+
+
+int DoWhileFalse(int n)
+{
+	int i = n;
+	do
+	{
+		++i;
+		if (i > 100) continue;
+		i += 10;
+	}
+	while (false);
+	return i;
+}
+
+
+int DoWhileTrue(int n)
+{
+	int i = 0;
+	do
+	{
+		++i;
+		if (i < n) continue;
+		break;
+	}
+	while (true);
+	return i;
+}
+
+
+int ForTrueAndEmpty(int n)
+{
+	int a = 0;
+	for (int i = 0; true; ++i)
+	{
+		if (i >= n) break;
+		++a;
+	}
+	for (int j = 0; ; ++j)
+	{
+		if (j >= n) break;
+		a += 10;
+	}
+	return a;
+}
+
+
+int ForFalse(int n)
+{
+	int i = n;
+	for (i += 5; false; ++i)
+	{
+		i += 100;
+	}
+	return i;
+}
+
+
+int NestedLoops(int n)
+{
+	int sum = 0;
+	for (int i = 0; i < n; ++i)
+	{
+		int j = 0;
+		while (true)
+		{
+			++j;
+			if (j > i) break;
+			if (j == 2) continue;
+			switch (j)
+			{
+				case 3:
+					break;
+				case 5:
+					if (sum > 0) break;
+					sum += 10000;
+					break;
+				default:
+					sum += j;
+					continue;
+			}
+			sum += 100;
+		}
+		if (i == 6) break;
+	}
+	return sum;
+}
+
+
+int LoopConditions(int n, bool flag)
+{
+	int a = 0;
+	int i = 0;
+	while (!(i >= n))
+	{
+		++i;
+		++a;
+	}
+	i = 0;
+	while ((i < n) && !flag)
+	{
+		++i;
+		a += 10;
+	}
+	i = 0;
+	while ((i < n) || ((i < 2) && flag))
+	{
+		++i;
+		a += 100;
+	}
+	i = 0;
+	do
+	{
+		++i;
+		a += 1000;
+	}
+	while (!flag && (i < n));
+	return a;
+}
+
+
+int IfBreakConditions(int n, bool flag)
+{
+	int i = 0;
+	while (true)
+	{
+		if (!(i < n)) break;
+		if (flag && (i == 2)) { break; }
+		if ((i == 7) || (i == 100)) break;
+		++i;
+	}
+	return i;
+}
+
+
+// Assignments of the form 'x = x + c' use increment instructions for 32 and 64-bit locals.
+
+int IncrementInt(int x)
+{
+	x = x + 1;
+	x = 5 + x;
+	x = x - 3;
+	return x;
+}
+
+
+uint IncrementUInt(uint x)
+{
+	uint y = x;
+	y = y + 1u;
+	return y;
+}
+
+
+uint DecrementUInt(uint x)
+{
+	uint y = x;
+	y = y - 1;
+	return y;
+}
+
+
+long IncrementLong(long x)
+{
+	long y = x;
+	y = y + 1;
+	y = y - 2l;
+	y = 7 + y;
+	return y;
+}
+
+
+ulong IncrementULong(ulong x)
+{
+	ulong y = x;
+	y = y + 1ul;
+	return y;
+}
+
+
+int IncrementValue(int x)
+{
+	int y = (x = x + 1);
+	return (y * 100) + x;
+}
+
+
+int IncrementChar(char c)
+{
+	char d = c;
+	d = cast<char>(d + 1);
+	return d;
+}
+
+
+int IncrementShort(short s)
+{
+	s = cast<short>(s + 1);
+	return s;
+}
+
+
+float IncrementFloat(float f)
+{
+	f = f + 1;
+	return f;
+}
+
+
+int IncrementOther(int x, int y)
+{
+	x = y + 1;
+	return x;
+}
+
+
+int IncrementLarge(int x)
+{
+	x = x + 200;
+	x = x - (-128);
+	x = x - 128;
+	x = x + (-128);
+	return x;
+}
+
+
+int IncrementThroughPointer(int x)
+{
+	int *p = &x;
+	*p = *p + 2;
+	return x;
+}
+
+
+int IncrementField(int x)
+{
+	Range r = { x, 0 };
+	r.lo = r.lo + 1;
+	r.hi = r.hi - 1;
+	return (r.lo * 10) + r.hi;
+}
+
+
+// A goto whose target is a return instruction is replaced with a copy of that instruction.
+
+void SetByCondition(int *p, bool c)
+{
+	if (c)
+	{
+		*p = 1;
+	}
+	else
+	{
+		*p = 2;
+	}
+}
+
+
+int VoidIfElse(bool c)
+{
+	int x = 0;
+	SetByCondition(&x, c);
+	return x;
+}
+
+
+int ReturnTernaryInt(bool c, int a, int b)
+{
+	return c ? a : b;
+}
+
+
+long ReturnTernaryLong(bool c, long a, long b)
+{
+	return c ? a : b;
+}
+
+
+Range PickRange(bool c, Range a, Range b)
+{
+	return c ? a : b;
+}
+
+
+int ReturnTernaryStruct(bool c)
+{
+	Range r = PickRange(c, MakeRange(1, 2), MakeRange(3, 4));
+	return (r.lo * 10) + r.hi;
+}
+
+
+void CountUntilThree(int *p, int n)
+{
+	for (int i = 0; i < n; ++i)
+	{
+		if (*p == 3)
+		{
+			*p += 100;
+			break;
+		}
+		*p += 1;
+	}
+}
+
+
+int VoidBreak(int n)
+{
+	int x = 0;
+	CountUntilThree(&x, n);
+	return x;
+}
+
+
+// Where only the truth value matters, 'x != 0' tests x directly. A bool result must still be 0 or 1.
+
+bool OrNotZero(int x, bool y)
+{
+	bool b = (x != 0) || y;
+	return b;
+}
+
+
+bool AndNotZero(int x, bool y)
+{
+	bool b = (x != 0) && y;
+	return b;
+}
+
+
+bool NotEqualZeroValue(int x)
+{
+	return x != 0;
+}
+
+
+bool NotEqualZeroNegated(int x)
+{
+	bool b = !(x == 0);
+	return b;
+}
+
+
+int TruthTests(int x, char c, short s, uint u, bool b)
+{
+	int r = 0;
+	if (x != 0) r += 1;
+	if (0 == x) r += 2;
+	if (c != 0) r += 4;
+	if (!(s == 0)) r += 8;
+	if ((u != 0u) && (b != false)) r += 16;
+	if ((x == 0) || (c == 0)) r += 32;
+	r += (s != 0) ? 64 : 0;
+	while (b == true)
+	{
+		r += 128;
+		b = false;
+	}
+	return r;
+}
+
+
+int WideTruthTests(long l, float f, double d)
+{
+	int r = 0;
+	if (l != 0l) r += 1;
+	if (l == 0) r += 2;
+	if (f != 0.0f) r += 4;
+	if (d == 0.0) r += 8;
+	return r;
+}
+
+
+int NullTests(int *p, bool b)
+{
+	int r = 0;
+	if (p != null) r += 1;
+	if (p == null) r += 2;
+	if ((p != null) && b) r += 4;
+	if (!(null == p) || b) r += 8;
+	return r;
+}
+
+
+int NullTestCaller(bool isNull)
+{
+	int x = 0;
+	return isNull ? NullTests(null, false) : NullTests(&x, true);
+}
+
+
+// A local struct initialized by a call is returned into directly.
+
+struct RangePair
+{
+	Range first;
+	Range second;
+};
+
+
+struct RangeMaker
+{
+	int mBase;
+	Range Make(int length) const { return MakeRange(mBase, mBase + length); }
+};
+
+
+Range Swap(Range r)
+{
+	return MakeRange(r.hi, r.lo);
+}
+
+
+Range SwapThroughPointer(const Range *r)
+{
+	Range s = MakeRange(r->hi, r->lo);
+	return s;
+}
+
+
+int EncodeRange(Range r)
+{
+	return (r.lo * 10) + r.hi;
+}
+
+
+int ReturnIntoLocal(int n)
+{
+	Range a = MakeRange(n, n + 1);
+	Range b = MakeRange(a.hi, a.lo);
+	Range c = Swap(MakeRange(3, 4));
+	return (EncodeRange(a) * 10000) + (EncodeRange(b) * 100) + EncodeRange(c);
+}
+
+
+int ReturnIntoMembers()
+{
+	RangePair p = { MakeRange(1, 2), Swap(MakeRange(3, 4)) };
+	return (EncodeRange(p.first) * 100) + EncodeRange(p.second);
+}
+
+
+int ReturnFromMemberFunction(int n)
+{
+	RangeMaker maker = { n };
+	Range r = maker.Make(2);
+	return EncodeRange(r);
+}
+
+
+int AssignCallResult()
+{
+	Range v = MakeRange(1, 2);
+	v = Swap(v);
+	Range w = MakeRange(5, 6);
+	w = SwapThroughPointer(&w);
+	return (EncodeRange(v) * 100) + EncodeRange(w);
+}
+
+
+int LoopStructCondition(int n)
+{
+	int i = 0;
+	int a = 0;
+	while (i < MakeRange(0, n).hi)
+	{
+		Range r = MakeRange(i, i + 1);
+		a += r.hi;
+		++i;
+	}
+	return a;
+}

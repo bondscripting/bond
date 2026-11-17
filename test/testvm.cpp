@@ -1853,6 +1853,112 @@ DEFINE_VM_TEST_WITH_BINDING(DebugCallStack, "scripts/vm_DebugCallStack.bond", &D
 }
 
 
+DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
+{
+	using namespace Bond;
+
+	// Loops.
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileCount", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileCount", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileCount", int32_t(10), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileBreakContinue", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileBreakContinue", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileBreakContinue", int32_t(9), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileBreakContinue", int32_t(16), int32_t(8));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileBreakContinue", int32_t(1016), int32_t(100));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreakContinue", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreakContinue", int32_t(0), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreakContinue", int32_t(1), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreakContinue", int32_t(8), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForBreakContinue", int32_t(13), int32_t(100));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoCount", int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoCount", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoCount", int32_t(5), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoContinue", int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoContinue", int32_t(9), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoContinue", int32_t(9), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileTrue", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileTrue", int32_t(3), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "WhileFalse", int32_t(7), int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileFalse", int32_t(11), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileFalse", int32_t(201), int32_t(200));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileTrue", int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoWhileTrue", int32_t(5), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForTrueAndEmpty", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForTrueAndEmpty", int32_t(33), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "ForFalse", int32_t(6), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedLoops", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedLoops", int32_t(2), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedLoops", int32_t(413), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedLoops", int32_t(624), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopConditions", int32_t(3333), int32_t(3), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopConditions", int32_t(1303), int32_t(3), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopConditions", int32_t(1200), int32_t(0), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopConditions", int32_t(1000), int32_t(0), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "IfBreakConditions", int32_t(5), int32_t(5), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "IfBreakConditions", int32_t(2), int32_t(5), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "IfBreakConditions", int32_t(7), int32_t(10), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "IfBreakConditions", int32_t(0), int32_t(0), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopStructCondition", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "LoopStructCondition", int32_t(10), int32_t(4));
+
+	// Increments.
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementInt", int32_t(13), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementInt", int32_t(-2147483646), int32_t(2147483647));
+	VALIDATE_FUNCTION_CALL(uint32_t, "IncrementUInt", uint32_t(6), uint32_t(5));
+	VALIDATE_FUNCTION_CALL(uint32_t, "IncrementUInt", uint32_t(0), uint32_t(0xFFFFFFFF));
+	VALIDATE_FUNCTION_CALL(uint32_t, "DecrementUInt", uint32_t(0xFFFFFFFF), uint32_t(0));
+	VALIDATE_FUNCTION_CALL(int64_t, "IncrementLong", int64_t(16), int64_t(10));
+	VALIDATE_FUNCTION_CALL(int64_t, "IncrementLong", int64_t(BOND_LONG_MIN + 5), int64_t(BOND_LONG_MAX));
+	VALIDATE_FUNCTION_CALL(uint64_t, "IncrementULong", uint64_t(0), uint64_t(BOND_ULONG_MAX));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementValue", int32_t(505), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementChar", int32_t(-128), int8_t(127));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementShort", int32_t(-32768), int16_t(32767));
+	VALIDATE_FUNCTION_CALL(float, "IncrementFloat", 2.5f, 1.5f);
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementOther", int32_t(6), int32_t(0), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementLarge", int32_t(72), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementThroughPointer", int32_t(7), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "IncrementField", int32_t(49), int32_t(4));
+
+	// Gotos to return instructions.
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidIfElse", int32_t(1), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidIfElse", int32_t(2), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnTernaryInt", int32_t(5), uint8_t(1), int32_t(5), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnTernaryInt", int32_t(6), uint8_t(0), int32_t(5), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int64_t, "ReturnTernaryLong", int64_t(0x100000005), uint8_t(1), int64_t(0x100000005), int64_t(6));
+	VALIDATE_FUNCTION_CALL(int64_t, "ReturnTernaryLong", int64_t(6), uint8_t(0), int64_t(0x100000005), int64_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnTernaryStruct", int32_t(12), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnTernaryStruct", int32_t(34), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidBreak", int32_t(2), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidBreak", int32_t(103), int32_t(10));
+
+	// Comparisons against zero in truth tests.
+	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(1), int32_t(5), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(1), int32_t(256), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(0), int32_t(0), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(1), int32_t(0), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AndNotZero", uint32_t(1), int32_t(5), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AndNotZero", uint32_t(1), int32_t(256), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AndNotZero", uint32_t(0), int32_t(256), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(uint32_t, "AndNotZero", uint32_t(0), int32_t(0), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "NotEqualZeroValue", uint32_t(1), int32_t(256));
+	VALIDATE_FUNCTION_CALL(uint32_t, "NotEqualZeroNegated", uint32_t(1), int32_t(256));
+	VALIDATE_FUNCTION_CALL(int32_t, "TruthTests", int32_t(221), int32_t(5), int8_t(1), int16_t(1), uint32_t(1), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "TruthTests", int32_t(34), int32_t(0), int8_t(0), int16_t(0), uint32_t(0), uint8_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "TruthTests", int32_t(249), int32_t(256), int8_t(0), int16_t(-32768), uint32_t(256), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "WideTruthTests", int32_t(9), int64_t(0x100000000), -0.0f, -0.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "WideTruthTests", int32_t(6), int64_t(0), 1.0f, 2.0);
+	VALIDATE_FUNCTION_CALL(int32_t, "NullTestCaller", int32_t(2), uint8_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "NullTestCaller", int32_t(13), uint8_t(0));
+
+	// Struct return values written directly into locals.
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnIntoLocal", int32_t(122143), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnIntoMembers", int32_t(1243));
+	VALIDATE_FUNCTION_CALL(int32_t, "ReturnFromMemberFunction", int32_t(79), int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "AssignCallResult", int32_t(2165));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -1879,5 +1985,6 @@ DEFINE_VM_TEST_WITH_BINDING(DebugCallStack, "scripts/vm_DebugCallStack.bond", &D
   TEST_ITEM(InitOrderOneCboReversed)            \
   TEST_ITEM(InitOrderTwoCbos)                   \
   TEST_ITEM(DebugCallStack)                     \
+  TEST_ITEM(CodeGenOptimizations)               \
 
 RUN_TESTS(VM, TEST_ITEMS)
