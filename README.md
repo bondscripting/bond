@@ -76,7 +76,7 @@ Usage: <code>bond &lt;vm options&gt; - &lt;application options&gt;</code>
   <tbody>
     <tr>
       <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-e&nbsp;&lt;func&gt;</code></td>
-      <td>Fully qualified function name to be called as the Bond application's entry point. Defaults to <code>main</code> if omitted. The function signature must be <code>int &lt;func&gt;(int argc, const char **argv)</code>.</td>
+      <td>Fully qualified function name to be called as the Bond application's entry point. Defaults to <code>main</code> if omitted. The function signature must be either <code>int &lt;func&gt;()</code> or <code>int &lt;func&gt;(int argc, const char **argv)</code>.</td>
     </tr>
     <tr>
       <td nowrap style="white-space: nowrap; word-break: keep-all; overflow-wrap: normal;"><code>-s&nbsp;&lt;int&gt;</code></td>

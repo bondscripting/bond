@@ -3798,6 +3798,11 @@ GeneratorCore::ValueRef GeneratorCore::EmitAddressOfOperator(const UnaryExpressi
 	const Expression *rhs = unaryExpression->GetRhs();
 	auto rhRef = mValueRef.Push();
 	TraverseOmitConstantFolding(rhs);
+	// An array already evaluates to its address, which is also the value of a pointer to it.
+	if (rhs->GetTypeDescriptor().IsArrayType())
+	{
+		return rhRef;
+	}
 	ValueRef valueRef = EmitAddressOfValueRef(rhRef);
 	return valueRef;
 }

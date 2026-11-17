@@ -49,11 +49,10 @@ function_definition
   : function_prototype compound_statement
 
 native_block
-  : NATIVE '{' native_declaration* '}'
-
-native_declaration
-  : native_struct_declaration
-  | native_function_declaration
+  : NATIVE '{' external_declaration* '}'
+  Inside a native block, including any namespaces nested in it, functions are declared with
+  native_function_declaration instead of function_definition, and structs with
+  native_struct_declaration instead of struct_declaration.
 
 Declarations
 ------------
@@ -82,14 +81,14 @@ enumerator
   : IDENTIFIER ['=' const_expression]
 
 struct_declaration
-  : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+  : STRUCT IDENTIFIER '{' struct_member_declaration* '}' ';'
 
 struct_member_declaration
   : type_descriptor identifier_list ';'
   | function_prototype [ CONST ] compound_statement
 
 native_struct_declaration
-  | STRUCT IDENTIFIER [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] '{' native_struct_member_declaration+ '}' ';'
+  : STRUCT IDENTIFIER [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] '{' native_struct_member_declaration* '}' ';'
   | STRUCT IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' ';'
 
 native_struct_member_declaration

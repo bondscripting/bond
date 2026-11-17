@@ -235,7 +235,20 @@ void ValidationPass::Visit(WhileStatement *whileStatement)
 	auto isInLoopElement = mIsInLoop.Push(true);
 	mEndsWithJump.SetTop(false);
 	auto endsWithJumpElement = mEndsWithJump.Push(false);
-	ParseNodeTraverser::Visit(whileStatement);
+
+	bool bodyHasReturn = false;
+	{
+		auto hasReturnElement = mHasReturn.Push(false);
+		ParseNodeTraverser::Visit(whileStatement);
+		bodyHasReturn = hasReturnElement;
+	}
+
+	// The body of a while loop may never run, so a return in it does not cover the enclosing
+	// function. The body of a do-while loop always runs.
+	if (whileStatement->IsDoLoop() && bodyHasReturn)
+	{
+		mHasReturn.SetTop(true);
+	}
 }
 
 
@@ -245,6 +258,8 @@ void ValidationPass::Visit(ForStatement *forStatement)
 	auto isInLoopElement = mIsInLoop.Push(true);
 	mEndsWithJump.SetTop(false);
 	auto endsWithJumpElement = mEndsWithJump.Push(false);
+	// The body may never run, so a return in it does not cover the enclosing function.
+	auto hasReturnElement = mHasReturn.Push(false);
 	SemanticAnalysisPass::Visit(forStatement);
 }
 

@@ -789,6 +789,10 @@ DEFINE_VM_TEST(PropertyofOperators, "scripts/vm_PropertyofOperators.bond")
 
 	VALIDATE_FUNCTION_CALL(uint32_t, "GetAlignofArray_48_16", uint32_t(16));
 	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofArray_48_16", uint32_t(192));
+
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetAlignofType_3_1", uint32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofType_3_1", uint32_t(3));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofArray_3_1", uint32_t(12));
 }
 
 
@@ -1066,6 +1070,13 @@ DEFINE_VM_TEST(Pointers, "scripts/vm_Pointers.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "LocalOverlap", int32_t(1));
 
 	VALIDATE_FUNCTION_CALL(uint32_t, "PointersAndConstantFolding", uint32_t(1));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "AddressOfLocalArray", int32_t(24));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddressOfLocalArrayIsElementAddress", int32_t(1));
+	VALIDATE_FUNCTION_CALL(uint32_t, "SizeofDereferencedArrayPointer", uint32_t(12));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddressOfGlobalArray", int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddressOfMemberArray", int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddressOfSubArray", int32_t(21));
 }
 
 

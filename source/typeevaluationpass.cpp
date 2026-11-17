@@ -261,6 +261,19 @@ void TypeEvaluationPass::Visit(ConditionalExpression *conditionalExpression)
 		}
 
 		TypeDescriptor resultType = CombineOperandTypes(trueDescriptor, falseDescriptor);
+
+		// CombineOperandTypes picks the first pointer operand, so keep the pointee const if
+		// either operand points to const.
+		if (trueDescriptor.IsPointerType() && falseDescriptor.IsPointerType() &&
+		    !trueDescriptor.IsNullType() && !falseDescriptor.IsNullType() &&
+		    !resultType.GetDereferencedType().IsConst() &&
+		    falseDescriptor.GetDereferencedType().IsConst())
+		{
+			resultType = falseDescriptor;
+			resultType.ConvertToPointerIntrinsic();
+			resultType.ClearLValue();
+		}
+
 		conditionalExpression->SetTypeDescriptor(resultType);
 	}
 }

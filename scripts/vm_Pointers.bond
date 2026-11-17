@@ -235,3 +235,61 @@ bool PointersAndConstantFolding()
 
 	return ((cast<char*>(cPtr) - cast<char*>(aPtr)) == 8) && (ePtr > dPtr) && (dPtr > cPtr);
 }
+
+
+int AddressOfLocalArray()
+{
+	int[3] a = {1, 2, 3};
+	int[3] *pa = &a;
+	(*pa)[1] = 20;
+	return a[0] + a[1] + (*pa)[2];
+}
+
+
+bool AddressOfLocalArrayIsElementAddress()
+{
+	int[3] a = {};
+	int[3] *pa = &a;
+	return cast<const char *>(pa) == cast<const char *>(&a[0]);
+}
+
+
+uint SizeofDereferencedArrayPointer()
+{
+	int[3] a = {};
+	int[3] *pa = &a;
+	return sizeof(*pa);
+}
+
+
+const int[3] GLOBAL_ARRAY = {4, 5, 6};
+
+int AddressOfGlobalArray()
+{
+	const int[3] *pa = &GLOBAL_ARRAY;
+	return (*pa)[2];
+}
+
+
+struct ArrayHolder
+{
+	int x;
+	int[4] values;
+};
+
+int AddressOfMemberArray()
+{
+	ArrayHolder h = {};
+	int[4] *pv = &h.values;
+	(*pv)[3] = 7;
+	return h.values[3];
+}
+
+
+int AddressOfSubArray()
+{
+	int[2][3] m = {};
+	int[3] *row = &m[1];
+	(*row)[2] = 9;
+	return m[1][2] + cast<int>(cast<const char *>(row) - cast<const char *>(&m[0]));
+}

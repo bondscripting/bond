@@ -173,3 +173,27 @@ void ReturnValueFromVoid(int x)
 {
 	return x;
 }
+
+int NotAllPathsReturnAValue4(int x)
+{
+	// A while loop body may never run.
+	while (x > 0)
+	{
+		return 1;
+	}
+}
+
+int NotAllPathsReturnAValue5(int x)
+{
+	// A for loop body may never run.
+	for (int i = 0; i < x; ++i)
+	{
+		return i;
+	}
+}
+
+void TernaryKeepsPointeeConst(bool b, int *p, const int *cq)
+{
+	int *r1 = b ? p : cq;
+	int *r2 = b ? cq : p;
+}

@@ -458,7 +458,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				if (alignToken != nullptr)
 				{
 					const uint32_t align = CastValue(*alignToken, Token::KEY_UINT).mUInt;
-					if (IsNegativeIntegerConstant(*alignToken) || (align <= 1) || !IsPowerOfTwo(align))
+					if (IsNegativeIntegerConstant(*alignToken) || !IsPowerOfTwo(align))
 					{
 						hasError = true;
 						mErrorBuffer.PushError(CompilerError::INVALID_STRUCT_ALIGNMENT, alignToken);

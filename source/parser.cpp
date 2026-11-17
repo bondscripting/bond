@@ -409,11 +409,11 @@ Enumerator *ParserCore::ParseEnumerator(TypeDescriptor &typeDescriptor)
 
 
 // struct_declaration
-//   : STRUCT IDENTIFIER '{' struct_member_declaration+ '}' ';'
+//   : STRUCT IDENTIFIER '{' struct_member_declaration* '}' ';'
 //
 // native_struct_declaration
-//   : STRUCT [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] IDENTIFIER '{' native_struct_member_declaration+ '}' ';'
-//   | STRUCT '<' CONST_UINT [ ',' CONST_UINT ] '>' IDENTIFIER ';'
+//   : STRUCT IDENTIFIER [ '<' CONST_UINT [ ',' CONST_UINT ] '>' ] '{' native_struct_member_declaration* '}' ';'
+//   | STRUCT IDENTIFIER '<' CONST_UINT [ ',' CONST_UINT ] '>' ';'
 StructDeclaration *ParserCore::ParseStructDeclaration()
 {
 	StructDeclaration *declaration = nullptr;

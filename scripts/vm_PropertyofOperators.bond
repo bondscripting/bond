@@ -90,3 +90,21 @@ uint GetSizeofArray_48_16()
 	Struct_48_16[4] s = {};
 	return sizeof(s);
 }
+
+native { struct Struct_3_1<3, 1> {}; }
+
+uint GetAlignofType_3_1()
+{
+	return alignof<Struct_3_1>;
+}
+
+uint GetSizeofType_3_1()
+{
+	return sizeof<Struct_3_1>;
+}
+
+uint GetSizeofArray_3_1()
+{
+	Struct_3_1[4] s = {};
+	return sizeof(s);
+}

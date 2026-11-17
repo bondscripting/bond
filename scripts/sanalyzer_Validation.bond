@@ -81,3 +81,33 @@ void ValidEmptyReturn(int x)
 	}
 	x = 2;
 }
+
+int AllPathsReturnAValue5(int x)
+{
+	while (x > 0)
+	{
+		return 1;
+	}
+	for (int i = 0; i < x; ++i)
+	{
+		return i;
+	}
+	return 0;
+}
+
+int AllPathsReturnAValue6(int x)
+{
+	// The body of a do-while loop always runs.
+	do
+	{
+		return x;
+	}
+	while (x > 0);
+}
+
+void TernaryPointerToConst(bool b, int *p, const int *cq)
+{
+	const int *r1 = b ? p : cq;
+	const int *r2 = b ? cq : p;
+	const int *r3 = b ? p : null;
+}
