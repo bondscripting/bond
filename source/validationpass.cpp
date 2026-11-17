@@ -12,6 +12,8 @@ void ValidationPass::Analyze(TranslationUnit *translationUnitList)
 	auto hasDefaultLabelElement = mHasDefaultLabel.Push(false);
 	auto endsWithJumpElement = mEndsWithJump.Push(false);
 	auto hasReturnElement = mHasReturn.Push(false);
+	auto hasBreakElement = mHasBreak.Push(false);
+	auto hasContinueElement = mHasContinue.Push(false);
 	auto isInLoopElement = mIsInLoop.Push(false);
 	auto isInSwitchElement = mIsInSwitch.Push(false);
 	auto nextJumpTargetIdElement = mNextJumpTargetId.Push(0);
@@ -126,6 +128,7 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 	if (sectionList != nullptr)
 	{
 		auto hasDefaultLabelElement = mHasDefaultLabel.Push(false);
+		auto hasBreakElement = mHasBreak.Push(false);
 		while (sectionList != nullptr)
 		{
 			auto hasReturnElement = mHasReturn.Push(false);
@@ -134,7 +137,9 @@ void ValidationPass::Visit(SwitchStatement *switchStatement)
 			sectionList = NextNode(sectionList);
 		}
 
-		hasReturn = (hasReturn && hasDefaultLabelElement);
+		// A break that exits the switch lets it complete normally, even when every section
+		// also contains a return.
+		hasReturn = (hasReturn && hasDefaultLabelElement && !hasBreakElement);
 		mHasReturn.SetTop(mHasReturn.GetTop() || hasReturn);
 	}
 
@@ -237,17 +242,29 @@ void ValidationPass::Visit(WhileStatement *whileStatement)
 	auto endsWithJumpElement = mEndsWithJump.Push(false);
 
 	bool bodyHasReturn = false;
+	bool bodyHasBreak = false;
+	bool bodyHasContinue = false;
 	{
 		auto hasReturnElement = mHasReturn.Push(false);
+		auto hasBreakElement = mHasBreak.Push(false);
+		auto hasContinueElement = mHasContinue.Push(false);
 		ParseNodeTraverser::Visit(whileStatement);
 		bodyHasReturn = hasReturnElement;
+		bodyHasBreak = hasBreakElement;
+		bodyHasContinue = hasContinueElement;
 	}
 
 	// The body of a while loop may never run, so a return in it does not cover the enclosing
-	// function. The body of a do-while loop always runs.
-	if (whileStatement->IsDoLoop() && bodyHasReturn)
+	// function. The body of a do-while loop always runs, but a break leaves the loop, and so
+	// does a continue unless the condition is constant true.
+	if (whileStatement->IsDoLoop() && bodyHasReturn && !bodyHasBreak)
 	{
-		mHasReturn.SetTop(true);
+		const TypeAndValue &conditionTav = whileStatement->GetCondition()->GetTypeAndValue();
+		const bool conditionIsConstantTrue = conditionTav.IsValueDefined() && conditionTav.GetBoolValue();
+		if (!bodyHasContinue || conditionIsConstantTrue)
+		{
+			mHasReturn.SetTop(true);
+		}
 	}
 }
 
@@ -260,6 +277,9 @@ void ValidationPass::Visit(ForStatement *forStatement)
 	auto endsWithJumpElement = mEndsWithJump.Push(false);
 	// The body may never run, so a return in it does not cover the enclosing function.
 	auto hasReturnElement = mHasReturn.Push(false);
+	// Jumps in the body target this loop, not an enclosing switch or loop.
+	auto hasBreakElement = mHasBreak.Push(false);
+	auto hasContinueElement = mHasContinue.Push(false);
 	SemanticAnalysisPass::Visit(forStatement);
 }
 
@@ -277,6 +297,10 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 			mErrorBuffer.PushError(CompilerError::INVALID_BREAK, jumpStatement->GetContextToken());
 			endsWithJump = false;
 		}
+		else
+		{
+			mHasBreak.SetTop(true);
+		}
 	}
 	else if (jumpStatement->IsContinue())
 	{
@@ -284,6 +308,10 @@ void ValidationPass::Visit(JumpStatement *jumpStatement)
 		{
 			mErrorBuffer.PushError(CompilerError::INVALID_CONTINUE, jumpStatement->GetContextToken());
 			endsWithJump = false;
+		}
+		else
+		{
+			mHasContinue.SetTop(true);
 		}
 	}
 	else if (jumpStatement->IsReturn())

@@ -61,6 +61,8 @@ private:
 	BoolStack mHasDefaultLabel;
 	BoolStack mEndsWithJump;
 	BoolStack mHasReturn;
+	BoolStack mHasBreak;
+	BoolStack mHasContinue;
 	BoolStack mIsInLoop;
 	BoolStack mIsInSwitch;
 	SizeStack mNextJumpTargetId;

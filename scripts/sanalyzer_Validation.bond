@@ -111,3 +111,72 @@ void TernaryPointerToConst(bool b, int *p, const int *cq)
 	const int *r2 = b ? cq : p;
 	const int *r3 = b ? p : null;
 }
+
+int ReachableAfterSwitchWithBreak(int x)
+{
+	// The break leaves the switch, so the return after it is reachable.
+	switch (x)
+	{
+		case 1:
+			if (x == 1)
+			{
+				break;
+			}
+			return 1;
+		default:
+			return 2;
+	}
+	return 3;
+}
+
+int AllPathsReturnAValue7(int x)
+{
+	// The break leaves the inner loop, not the switch.
+	switch (x)
+	{
+		case 1:
+			while (x > 0)
+			{
+				if (x == 5)
+				{
+					break;
+				}
+				--x;
+			}
+			return 1;
+		default:
+			return 2;
+	}
+}
+
+int AllPathsReturnAValue8(int x)
+{
+	// The breaks leave the inner switch, not the do-while loop.
+	do
+	{
+		switch (x)
+		{
+			case 1:
+				break;
+			default:
+				x = 2;
+				break;
+		}
+		return x;
+	}
+	while (x > 0);
+}
+
+int AllPathsReturnAValue9(int x)
+{
+	// A continue in a do-while loop with a constant true condition runs the body again.
+	do
+	{
+		if (x == 1)
+		{
+			continue;
+		}
+		return x;
+	}
+	while (true);
+}

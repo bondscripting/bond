@@ -709,6 +709,10 @@ DEFINE_SEMANTICANALYZER_TEST(ValidationErrors, "scripts/sanalyzer_ValidationErro
 		{Bond::CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 186},
 		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::OP_TERNARY, 197},
 		{Bond::CompilerError::INVALID_TYPE_ASSIGNMENT, Bond::Token::OP_TERNARY, 198},
+		{Bond::CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 201},
+		{Bond::CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 217},
+		{Bond::CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 235},
+		{Bond::CompilerError::NOT_ALL_PATHS_RETURN_A_VALUE, Bond::Token::IDENTIFIER, 249},
 	};
 	const int NUM_ERRORS = sizeof(EXPECTED_ERRORS) / sizeof(*EXPECTED_ERRORS);
 

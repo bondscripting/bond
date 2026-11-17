@@ -197,3 +197,65 @@ void TernaryKeepsPointeeConst(bool b, int *p, const int *cq)
 	int *r1 = b ? p : cq;
 	int *r2 = b ? cq : p;
 }
+
+int NotAllPathsReturnAValue6(int x)
+{
+	// A break leaves the switch, even though the section then returns.
+	switch (x)
+	{
+		case 1:
+			if (x == 1)
+			{
+				break;
+			}
+			return 1;
+		default:
+			return 2;
+	}
+}
+
+int NotAllPathsReturnAValue7(int x)
+{
+	// A break nested in a block leaves the switch.
+	switch (x)
+	{
+		case 1:
+			{
+				if (x == 1)
+				{
+					break;
+				}
+			}
+			return 1;
+		default:
+			return 2;
+	}
+}
+
+int NotAllPathsReturnAValue8(int x)
+{
+	// A break leaves a do-while loop.
+	do
+	{
+		if (x == 1)
+		{
+			break;
+		}
+		return x;
+	}
+	while (x > 0);
+}
+
+int NotAllPathsReturnAValue9(int x)
+{
+	// A continue in a do-while loop goes to the condition, which may be false.
+	do
+	{
+		if (x == 1)
+		{
+			continue;
+		}
+		return x;
+	}
+	while (x > 0);
+}

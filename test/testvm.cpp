@@ -883,6 +883,10 @@ DEFINE_VM_TEST(Branches, "scripts/vm_Branches.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNoDefault", int32_t(8), int32_t(11));
 	VALIDATE_FUNCTION_CALL(int32_t, "TableSwitchNoDefault", int32_t(4), int32_t(12));
 
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchBreakThenReturn", int32_t(3), int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchBreakThenReturn", int32_t(1), int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchBreakThenReturn", int32_t(2), int32_t(5), int32_t(1));
+
 	VALIDATE_FUNCTION_CALL(int32_t, "While", int32_t(5), int32_t(5));
 	VALIDATE_FUNCTION_CALL(int32_t, "For", int32_t(5), int32_t(5));
 

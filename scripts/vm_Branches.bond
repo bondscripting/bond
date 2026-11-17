@@ -211,6 +211,22 @@ int TableSwitchNoDefault(int a)
 	return b;
 }
 
+int SwitchBreakThenReturn(int a, int b)
+{
+	switch (a)
+	{
+		case 1:
+			if (b == 1)
+			{
+				break;
+			}
+			return 1;
+		default:
+			return 2;
+	}
+	return 3;
+}
+
 int While(int a)
 {
 	int b = 0;
