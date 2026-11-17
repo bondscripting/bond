@@ -89,7 +89,7 @@ void InvocationStackFrame::Initialize(VM &vm, const Function &function, void *re
 	mValue.mFramePointer = framePointer;
 	mValue.mStackPointer = stackPointer;
 	mValue.mReturnPointer = reinterpret_cast<uint8_t *>(returnPointer);
-	vm.ValidateStackPointer(stackPointer);
+	vm.ValidateStackPointer(stackPointer, function.mStackSize);
 }
 
 
@@ -2208,7 +2208,7 @@ uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 	uint8_t *stackPointer = AlignPointerUp(framePointer + function.mLocalSize, BOND_SLOT_SIZE);
 
 	StackFrames::Element stackFrameElement(mStackFrames, *this, function, framePointer, stackPointer, returnPointer);
-	ValidateStackPointer(stackPointer);
+	ValidateStackPointer(stackPointer, function.mStackSize);
 
 	if (function.IsNative())
 	{
@@ -2223,9 +2223,13 @@ uint8_t *VM::InvokeFunction(const Function &function, uint8_t *stackTop)
 }
 
 
-void VM::ValidateStackPointer(uint8_t *stackPointer) const
+void VM::ValidateStackPointer(const uint8_t *stackPointer, size_t operandStackSize) const
 {
-	if (stackPointer >= mStack.get() + mStackSize)
+	// The frame's operand stack starts at stackPointer and grows by at most operandStackSize bytes.
+	// Compare sizes rather than computing stackPointer + operandStackSize, which could point past
+	// the end of the stack.
+	const uint8_t *stackEnd = mStack.get() + mStackSize;
+	if ((stackPointer >= stackEnd) || (size_t(stackEnd - stackPointer) < operandStackSize))
 	{
 		RaiseError("Stack overflow");
 	}

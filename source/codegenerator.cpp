@@ -445,6 +445,7 @@ private:
 	ValueRef EmitAddressOfValueRef(const ValueRef &valueRef);
 	ValueRef EmitDereferenceOperator(const UnaryExpression *unaryExpression);
 	ValueRef EmitDereferenceValueRef(const ValueRef &valueRef, const TypeDescriptor *typeDescriptor);
+	void EmitLoadMemW(const TypeDescriptor &typeDescriptor);
 
 	void EmitArgumentList(const Expression *argList, const Parameter *paramList);
 
@@ -1946,8 +1947,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor &type
 				break;
 			default:
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
-				EmitOpCode(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor.GetStackSize(mPointerSize)));
+				EmitLoadMemW(typeDescriptor);
 				break;
 		}
 	}
@@ -2069,8 +2069,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescr
 				EmitOpCode(OPCODE_LOAD64);
 				break;
 			default:
-				EmitOpCode(OPCODE_LOADMEMW);
-				EmitIndexedValue32(Value32(typeDescriptor.GetStackSize(mPointerSize)));
+				EmitLoadMemW(typeDescriptor);
 			break;
 		}
 	}
@@ -2078,6 +2077,17 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescr
 	{
 		EmitOpCode(LOAD_OPCODES.GetPointerOpCode(mPointerSize));
 	}
+}
+
+
+void GeneratorCore::EmitLoadMemW(const TypeDescriptor &typeDescriptor)
+{
+	// loadmemw replaces the address on top of the stack with the struct it points to, which occupies
+	// as many slots as needed to hold it. Copy only the struct's own bytes, so that the VM never reads
+	// past the end of the object.
+	EmitOpCode(OPCODE_LOADMEMW);
+	EmitIndexedValue32(Value32(typeDescriptor.GetSize(mPointerSize)));
+	ApplyStackDelta(int32_t(typeDescriptor.GetStackSize(mPointerSize)) - BOND_SLOT_SIZE);
 }
 
 

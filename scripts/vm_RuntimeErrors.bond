@@ -17,3 +17,20 @@ int Recurse(int n)
 	char[2048] stackPadding = {};
 	return Recurse(n + 1) + 1;
 }
+
+// Larger than the VM stack, so that pushing it as an argument overflows the operand stack of
+// PassHuge, even though the frame of PassHuge itself is tiny.
+struct Huge
+{
+	char[131072] mBytes;
+};
+
+int TakeHuge(Huge huge)
+{
+	return huge.mBytes[0];
+}
+
+int PassHuge(Huge *huge)
+{
+	return TakeHuge(*huge);
+}

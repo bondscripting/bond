@@ -16,7 +16,8 @@ namespace Bond
 /// BOND_OPCODE_LIST and then undefine BOND_OPCODE_ITEM. The arguments of each item are the
 /// opcode name without its OPCODE_ prefix, its mnemonic as an unquoted identifier, its parameter
 /// type without its OC_PARAM_ prefix, and how much it moves the stack pointer in multiples of
-/// BOND_SLOT_SIZE bytes. The instructions are described in docs/instruction-set.txt.
+/// BOND_SLOT_SIZE bytes. The instructions are described in docs/instruction-set.md, which must be
+/// updated whenever an opcode is added, removed or reordered.
 #define BOND_OPCODE_LIST \
 	/*               Opcode,       mnemonic,     parameter,    stack delta */ \
 	BOND_OPCODE_ITEM(NOP,          nop,          NONE,         0)  \
@@ -68,7 +69,9 @@ namespace Bond
 	BOND_OPCODE_ITEM(LOADUS,       loadus,       NONE,         0)  \
 	BOND_OPCODE_ITEM(LOAD32,       load32,       NONE,         0)  \
 	BOND_OPCODE_ITEM(LOAD64,       load64,       NONE,         0)  \
-	BOND_OPCODE_ITEM(LOADMEMW,     loadmemw,     INT,          1)  \
+	/* The delta is for a struct of at most one slot. The code generator */ \
+	/* accounts for the additional slots occupied by larger structs. */ \
+	BOND_OPCODE_ITEM(LOADMEMW,     loadmemw,     INT,          0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(STOREC,       storec,       NONE,         -2) \
 	BOND_OPCODE_ITEM(STORES,       stores,       NONE,         -2) \
@@ -360,8 +363,8 @@ BOND_API const char *GetOpCodeMnemonic(OpCode opCode);
 /// for the given opcode.
 BOND_API OpCodeParam GetOpCodeParamType(OpCode opCode);
 
-/// \brief Returns how much the given opcode moves the stack pointer in multiples of
-/// BOND_SLOT_SIZE bytes.
+/// \brief Returns how much the given opcode moves the stack pointer in bytes, which is its stack
+/// delta in BOND_OPCODE_LIST multiplied by BOND_SLOT_SIZE.
 BOND_API int32_t GetStackDelta(OpCode opCode);
 
 /// @}

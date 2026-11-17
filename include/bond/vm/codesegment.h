@@ -136,7 +136,8 @@ struct Function
 	/// \brief The size in bytes of the function's local variables.
 	uint32_t mLocalSize;
 
-	/// \brief The maximum size in bytes of the function's operand stack.
+	/// \brief The maximum size in bytes of the function's operand stack. The VM checks that it fits
+	/// in the remaining stack space when it sets up the function's frame.
 	uint32_t mStackSize;
 
 	/// \brief The alignment in bytes of the function's frame pointer.

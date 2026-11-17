@@ -402,7 +402,7 @@ private:
 	void ExecuteScriptFunction(StackFrame &frame);
 	template <bool UNPACK_ARGUMENTS>
 	uint8_t *InvokeFunction(const Function &function, uint8_t *stackTop);
-	void ValidateStackPointer(uint8_t *stackPointer) const;
+	void ValidateStackPointer(const uint8_t *stackPointer, size_t operandStackSize) const;
 
 	StackFrames mStackFrames;
 	StackFrames::Element mDummyFrame;

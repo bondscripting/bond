@@ -96,9 +96,34 @@ DEFINE_TEST(EscapedString)
 }
 
 
+// A struct passed by value through a pointer is copied with its exact size, so that the VM doesn't
+// read past the end of the pointed-to object.
+DEFINE_TEST(LoadMemExactSize)
+{
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"struct Int3 { int x; int y; int z; };"
+		"int G(Int3 v) { return v.x; }"
+		"int F(Int3 *p) { return G(*p); }",
+		"loadmemw    12\n");
+}
+
+
+// The operand stack size of a function includes every slot occupied by a struct pushed by value.
+DEFINE_TEST(LoadMemStackSize)
+{
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"struct Big { int[6] x; };"
+		"int G(Big b) { return b.x[0]; }"
+		"int F(Big *p) { return G(*p); }",
+		"int F(*)\n\targ size: 8\n\tpacked arg size: 8\n\tlocal size: 0\n\tstack size: 24\n");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(ShortUtf8String)                    \
   TEST_ITEM(AbbreviatedUtf8String)              \
   TEST_ITEM(EscapedString)                      \
+  TEST_ITEM(LoadMemExactSize)                   \
+  TEST_ITEM(LoadMemStackSize)                   \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

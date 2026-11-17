@@ -1578,6 +1578,12 @@ DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
 	ASSERT_BOND_EXCEPTION("Stack overflow", vm.CallFunction("Recurse", &intResult, int32_t(0)));
 	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
 
+	// The overflow must be detected when the frame of PassHuge is set up, before loadmemw copies the
+	// struct past the end of the stack.
+	static uint8_t hugeBuffer[131072];
+	ASSERT_BOND_EXCEPTION("Stack overflow", vm.CallFunction("PassHuge", &intResult, static_cast<void *>(hugeBuffer)));
+	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
+
 	ASSERT_BOND_EXCEPTION("VM::GetCallerStackFrame(): No caller stack frame exists.", vm.GetCallerStackFrame());
 	const VM &constVm = vm;
 	ASSERT_BOND_EXCEPTION("VM::GetCallerStackFrame(): No caller stack frame exists.", constVm.GetCallerStackFrame());
