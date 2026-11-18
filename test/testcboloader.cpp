@@ -9,7 +9,7 @@
 #include "bond/vm/codesegment.h"
 #include <cstring>
 
-// Offsets of fields in the CBO header and constant table. See docs/cbo-file-format.txt.
+// Offsets of fields in the CBO header and constant table. See docs/cbo-file-format.md.
 const size_t MAGIC_NUMBER_OFFSET = 0;
 const size_t MAJOR_VERSION_OFFSET = 4;
 const size_t FLAGS_OFFSET = 8;

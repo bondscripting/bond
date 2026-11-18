@@ -6,7 +6,7 @@ how it is encoded, what its operands mean, and how it changes the operand stack.
 The authoritative list of opcodes is the `BOND_OPCODE_LIST` X-macro in
 [`include/bond/types/opcodes.h`](../include/bond/types/opcodes.h). The semantics described here are
 those implemented by `VM::ExecuteScriptFunction` in [`source/vm.cpp`](../source/vm.cpp). The
-container format that holds the bytecode is described in [`cbo-file-format.txt`](cbo-file-format.txt).
+container format that holds the bytecode is described in [`cbo-file-format.md`](cbo-file-format.md).
 
 ## Contents
 
