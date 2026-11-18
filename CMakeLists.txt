@@ -20,11 +20,13 @@ if(MSVC)
   add_compile_options(/utf-8)
 endif()
 
-set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/source")
-set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
-set(TEST_DIR "${CMAKE_SOURCE_DIR}/test")
-set(TOOLS_DIR "${CMAKE_SOURCE_DIR}/tools")
-set(UTIL_DIR "${CMAKE_SOURCE_DIR}/util")
+# Paths are relative to this file, not the top-level project, so that Bond can be added to an
+# application's build with add_subdirectory().
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source")
+set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
+set(TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools")
+set(UTIL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/util")
 
 file(GLOB BOND_SOURCES "${SOURCE_DIR}/*.cpp")
 file(GLOB TOOL_SOURCES "${TOOLS_DIR}/*.cpp")
@@ -40,16 +42,16 @@ target_include_directories(bond_lib PUBLIC ${INCLUDE_DIR} ${SOURCE_DIR})
 target_compile_definitions(bond_lib PUBLIC $<$<NOT:$<CONFIG:Debug>>:BOND_ASSERTS_ENABLED=0>)
 set_target_properties(bond_lib PROPERTIES
   OUTPUT_NAME bond
-  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 # Embed the debugger visualizers in the PDB of every MSVC executable or DLL that links bond_lib.
 # CMake passes .natvis sources to the linker with /NATVIS. The file is a PUBLIC source so that
 # targets linking the static library get it too. (A /NATVIS link option is not forwarded to the
 # linker by the Visual Studio generators.)
 if(MSVC)
-  target_sources(bond_lib PUBLIC "${CMAKE_SOURCE_DIR}/vs/bond.natvis")
+  target_sources(bond_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/vs/bond.natvis")
 endif()
 # CommandLineArgs uses CommandLineToArgvW from shell32.
 if(WIN32)
@@ -102,7 +104,7 @@ if(BOND_BUILD_TOOLS)
     target_include_directories(${tool_name} PRIVATE ${INCLUDE_DIR} ${SOURCE_DIR})
     target_link_libraries(${tool_name} PRIVATE bond_lib)
     set_target_properties(${tool_name} PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+      RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
       EXCLUDE_FROM_ALL TRUE
     )
     list(APPEND TOOLS_TARGETS ${tool_name})
@@ -116,7 +118,7 @@ if(BOND_BUILD_TEST_FRAMEWORK)
   target_include_directories(framework_lib PUBLIC ${INCLUDE_DIR} ${TEST_DIR} "${TEST_DIR}/framework")
   set_target_properties(framework_lib PROPERTIES
     OUTPUT_NAME framework
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     EXCLUDE_FROM_ALL TRUE
   )
   if(BOND_ENABLE_DEFAULT_WARNINGS)
@@ -144,7 +146,7 @@ if(BOND_BUILD_TESTS)
     target_include_directories(${test_name} PRIVATE ${INCLUDE_DIR} ${TEST_DIR})
     target_link_libraries(${test_name} PRIVATE bond_lib framework_lib ${CMAKE_DL_LIBS})
     set_target_properties(${test_name} PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/testbin"
+      RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/testbin"
       EXCLUDE_FROM_ALL TRUE
     )
     bond_copy_runtime_dll(${test_name})
@@ -160,7 +162,7 @@ if(BOND_BUILD_TESTS)
   add_custom_target(run_tests
     ${RUN_TEST_COMMANDS}
     DEPENDS ${TEST_TARGETS}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Running Bond unit tests"
     VERBATIM
   )
@@ -178,7 +180,7 @@ if(BOND_BUILD_UTILS)
       $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
     )
     set_target_properties(${util_name} PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/util"
+      RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/util"
       EXCLUDE_FROM_ALL TRUE
     )
     list(APPEND UTIL_TARGETS ${util_name})
@@ -187,8 +189,8 @@ if(BOND_BUILD_UTILS)
 endif()
 
 # Default output directories for any targets that do not specify their own
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 # Provide an easy top-level target for the library-only default build
 # add_custom_target(bond ALL DEPENDS bond_lib)
