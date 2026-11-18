@@ -1,0 +1,239 @@
+# Debugging Bond Programs from a Native Debugger
+
+This document explains how to inspect a running Bond program from a native debugger such as the
+Visual Studio debugger, gdb or lldb. The following aids are available:
+
+- Visualizers for Visual Studio ([`vs/bond.natvis`](../vs/bond.natvis)) that show the Bond call
+  stack, typed arguments, raw locals and operand stacks.
+- Pretty-printers for gdb and lldb ([`debugger/bond_gdb.py`](../debugger/bond_gdb.py) and
+  [`debugger/bond_lldb.py`](../debugger/bond_lldb.py)) that show the same views.
+- Debugger-callable functions that print the Bond call stack as text.
+- The bytecode offset of each call site, recorded in every suspended stack frame and printed in
+  call stack dumps, including those in the messages of VM errors.
+- `Bond::Debug::Break()` in the [`debug.bond`](../lib/include/debug.bond) standard library, which
+  stops the native debugger at a chosen point in a script.
+
+Bond does not yet emit debug information, so parameter names, local variable names and source
+line numbers are not available. The bytecode offsets printed below match the listings of `bondd`,
+which can be used to locate the corresponding code.
+
+## Call stack dumps
+
+`VM::DumpCallStack()` writes one line per Bond stack frame, from the top down. Each line holds the
+signature of the function with the values of its arguments. Frames of Bond functions that are
+suspended in a call to another function end with `@ pc N`, where `N` is the offset of the invoke
+instruction in the function's bytecode, as listed by `bondd`:
+
+```
+double Bond.SinD(1231.250000)
+double Leaf(true, -3, 200, -300, 60000, -70000, 4000000000, -5000000000, 9000000000, 1.500000, 2.250000, 000001F5DAD5F320, aggr<8>) @ pc 15
+int Recurse(0, 000001F5DAD5F320) @ pc 49
+int Recurse(1, 000001F5DAD5F320) @ pc 60
+int Recurse(2, 000001F5DAD5F320) @ pc 60
+int main() @ pc 17
+```
+
+The top frame has no call site. Native functions, such as `Bond.SinD` above, never have one. VM
+errors, e.g. stack overflows, append this dump to their exception message.
+
+The call site is recorded by the invoke instructions in `StackFrame::mPc` and
+`StackFrame::mOperandStackPointer`. `mOperandStackPointer` is the top of the frame's operand stack
+while the frame is suspended in a call, and null otherwise. The base of the operand stack is
+`StackFrame::mStackPointer`. Both members are private and are meant for debuggers.
+
+## Visual Studio visualizers
+
+### Loading
+
+[`vs/bond.natvis`](../vs/bond.natvis) is loaded in the following ways:
+
+- Visual Studio loads it automatically while the [`vs/bond.slnx`](../vs/bond.slnx) solution is
+  open, since it is part of the bond project.
+- CMake builds with MSVC embed it in the PDB of every executable and DLL that links `bond_lib`, so
+  it also works when debugging those programs from outside the solution.
+- Applications that embed Bond can add it to their own projects, or copy it to
+  `Documents\Visual Studio <version>\Visualizers`.
+
+The visualizers read private members, so they must be updated whenever the layouts of `VM`,
+`StackFrame`, `Function`, `CodeSegment`, `AutoStack` or `QualifiedName` change.
+
+### What is shown
+
+- `Bond::VM`: the call stack, the code segment, the stack base, size and bytes in use, and the
+  allocator. Its summary is the top frame.
+- The call stack (`Bond::AutoStack<Bond::StackFrame>`): the stack frames from the top down, without
+  the empty frame at the bottom of every VM.
+- `Bond::StackFrame`: summarized as `Recurse @ pc 49`, or `Bond.SinD [native]` for native
+  functions. It expands to:
+  - `function`: the `Bond::Function`.
+  - `pc` and `instruction`: the call site and its opcode, for suspended frames only.
+  - `args`: the arguments with their Bond types and values. Struct arguments are shown as bytes.
+  - `locals (bytes)` and `locals (ints)`: the raw local variable area. There are no names yet, and
+    a local can sit at any offset that suits its alignment, so match the ints view against the
+    code with care.
+  - `operand stack`: the 8-byte slots of the operand stack, for suspended frames only. Each slot
+    is a `Bond::Value64` shown as int, long, double and hex, because a slot can hold any type.
+    When a frame is suspended in a call, the arguments of the callee are at the top.
+  - `frame pointer`, `return pointer` and the collector.
+- `Bond::InvocationStackFrame`: the `StackFrame` it pushes, plus the index of the next argument.
+- `Bond::Function`: the name, signature, sizes, native function pointer or bytecode.
+- `Bond::CodeSegment`: the function, static initializer and data tables.
+- `Bond::QualifiedName`: the dotted name, e.g. `Bond.SinD`. Static initializers have an empty
+  name, shown as `<static initializer>`.
+- `Bond::Value32` and `Bond::Value64`: the common views of a constant or stack slot.
+
+Typical use: break in a native function called from Bond (for example a stdlib function), then
+look at the `frame` argument in the Locals window, or watch `frame.mVm` to see the whole call stack.
+
+### Locals of `VM::ExecuteScriptFunction`
+
+The C++ call stack interleaves the Bond frames. Each Bond function executing bytecode has its own
+`VM::ExecuteScriptFunction` frame, whose local variables are:
+
+- `frame`: the `Bond::StackFrame` being executed.
+- `code`: the function's bytecode.
+- `pc`: the offset of the next byte to decode. While the frame is suspended in a call, this is past
+  the operands of the invoke instruction, so `(Bond::OpCode)code[pc]` is the next instruction to
+  execute, not the call. `StackFrame::mPc` holds the call site itself.
+- `sp`: the top of the operand stack. The live operand stack is
+
+  ```
+  (Bond::Value64 *)frame.mStackPointer,[(sp - frame.mStackPointer) / 8]
+  ```
+
+- `fp`: the frame pointer.
+
+These locals are reliable in Debug builds only. In optimized builds they may be held in registers
+or optimized away, while the visualizers and `StackFrame::mPc` still work.
+
+## gdb and lldb pretty-printers
+
+[`debugger/bond_gdb.py`](../debugger/bond_gdb.py) and
+[`debugger/bond_lldb.py`](../debugger/bond_lldb.py) are the gdb and lldb counterparts of
+[`vs/bond.natvis`](../vs/bond.natvis). Load them with:
+
+- gdb:
+
+  ```
+  source /path/to/bond/debugger/bond_gdb.py
+  ```
+
+- lldb:
+
+  ```
+  command script import /path/to/bond/debugger/bond_lldb.py
+  ```
+
+Add the line to `~/.gdbinit` or `~/.lldbinit` to load them in every session. The lldb formatters
+are registered in the type category `bond`, which can be turned off with
+`type category disable bond`. They also work with lldb on Windows.
+
+They show the same views as the Visual Studio visualizers above, with these differences:
+
+- The arguments of a stack frame are listed directly in the frame, as `args[0] int`,
+  `args[1] pointer`, and so on, rather than grouped under one item.
+- A struct argument is shown as an array of its bytes.
+- The VM's stack base is read from its empty bottom frame rather than from the `std::unique_ptr`
+  that owns the stack, so that it does not depend on the standard library implementation.
+
+For example, when stopped in a native function called from Bond, such as `Bond::Debug::Break`:
+
+```
+(gdb) p frame
+(gdb) p frame.mVm.mStackFrames
+```
+
+```
+(lldb) frame variable frame
+(lldb) frame variable frame.mVm
+```
+
+Like the visualizers, the pretty-printers read private members, so they must be updated whenever
+the layouts of `VM`, `StackFrame`, `Function`, `CodeSegment`, `AutoStack` or `QualifiedName`
+change.
+
+## Stopping from a script: `debug.bond`
+
+The [`debug.bond`](../lib/include/debug.bond) standard library lets a script stop the native
+debugger at a chosen point, like a breakpoint set in the script itself:
+
+```
+include "debug.bond";
+
+int Inner(int x)
+{
+    Bond::Debug::Break();
+    return x + 1;
+}
+```
+
+- `Bond::Debug::Break()` stops in the native debugger if one is attached, and does nothing
+  otherwise, so calls can be left in scripts that run without a debugger.
+- `Bond::Debug::IsDebuggerPresent()` returns whether a native debugger is attached.
+
+The libraries are loaded with `LoadAllLibs()` or `LoadLibDebug()`
+([`bond/api/libruntime.h`](../include/bond/api/libruntime.h)).
+
+### Where the debugger stops
+
+- MSVC builds stop inside the native function `Bond::Debug::Break`, which is the top C++ frame.
+- Other builds stop in `DebugBreak` (Windows and Cygwin) or in `raise` (elsewhere), a frame or two
+  below `Bond::Debug::Break`. Use `up` or `finish` to reach it.
+
+From there, the `frame` parameter of `Bond::Debug::Break` is the `Bond::StackFrame` of the call,
+and `frame.mVm` is the VM, whose visualizer shows the whole Bond call stack. In the C++ call stack,
+the `VM::ExecuteScriptFunction` frame just below shows the `pc` and locals of the calling Bond
+function, as described above. `BondDebugDumpCallStack(&frame.mVm)` prints the Bond call stack as
+text.
+
+Continuing from the debugger resumes the script after the call.
+
+### Debugger detection
+
+Debugger detection is supported on Windows and Cygwin (`IsDebuggerPresent`), Linux (the
+`TracerPid` field of `/proc/self/status`) and macOS (the `P_TRACED` flag). On other platforms,
+`IsDebuggerPresent()` always returns false and `Break()` does nothing.
+
+## Debugger-callable functions
+
+[`bond/vm/vm.h`](../include/bond/vm/vm.h) declares two functions with C linkage that return a
+description as text:
+
+```cpp
+const char *BondDebugDumpCallStack(const Bond::VM *vm);
+const char *BondDebugDumpStackFrame(const Bond::StackFrame *frame);
+```
+
+They write the same text as `VM::DumpCallStack()` and `VM::DumpStackFrame()` to a static 8 KiB
+buffer, which is overwritten by the next call and truncated if the text does not fit. They are
+meant for debuggers, not for applications, and are not thread safe. They accept null and then
+return an empty string.
+
+Visual Studio, in the Immediate or Watch window:
+
+```
+BondDebugDumpCallStack(&vm),s8
+BondDebugDumpCallStack(&frame.mVm),s8      (in a native function)
+BondDebugDumpStackFrame(&frame),s8
+```
+
+The `,s8` format specifier shows the text as UTF-8. Use the text visualizer (the magnifying glass)
+to see one frame per line.
+
+gdb:
+
+```
+printf "%s", BondDebugDumpCallStack(&vm)
+```
+
+lldb:
+
+```
+expr -- (void)printf("%s", BondDebugDumpCallStack(&vm))
+```
+
+The functions are defined in the same file as the VM, so they are linked into every program
+that uses it. They are exported from the shared library. An optimized static build can discard
+them as unreferenced, e.g. with the MSVC linker's default `/OPT:REF` in Release builds. To keep
+them, add `/INCLUDE:BondDebugDumpCallStack` and `/INCLUDE:BondDebugDumpStackFrame` to the linker
+options, or reference them from the application.

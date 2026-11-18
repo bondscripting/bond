@@ -93,7 +93,7 @@ namespace Debug
 
 void Break(Bond::StackFrame &frame)
 {
-	// Inspect frame, or frame.mVm for the whole Bond call stack. See docs/debugging.txt.
+	// Inspect frame, or frame.mVm for the whole Bond call stack. See docs/debugging.md.
 	if (DebuggerAttached())
 	{
 		Trap();

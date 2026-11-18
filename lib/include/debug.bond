@@ -11,7 +11,7 @@ namespace Bond
 ///
 /// Bond does not have its own debugger. These functions let a script stop the native debugger at
 /// a chosen point, from where the Bond call stack, arguments and locals can be inspected with the
-/// visualizers and debugger-callable functions described in docs/debugging.txt.
+/// visualizers and debugger-callable functions described in docs/debugging.md.
 ///
 /// \code
 /// include "debug.bond";

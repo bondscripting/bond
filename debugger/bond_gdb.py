@@ -1,4 +1,4 @@
-# gdb pretty-printers for the Bond VM. See docs/debugging.txt.
+# gdb pretty-printers for the Bond VM. See docs/debugging.md.
 #
 # Load them with:
 #     source /path/to/bond/debugger/bond_gdb.py

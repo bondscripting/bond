@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Visual Studio debugger visualizers for the Bond VM. See docs/debugging.txt.
+  Visual Studio debugger visualizers for the Bond VM. See docs/debugging.md.
 
   Visual Studio loads this file automatically for the projects in vs/bond.slnx. CMake builds embed
   it in the PDB of every executable or DLL that links bond_lib. Other applications can copy it to

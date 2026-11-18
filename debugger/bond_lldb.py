@@ -1,4 +1,4 @@
-# lldb data formatters for the Bond VM. See docs/debugging.txt.
+# lldb data formatters for the Bond VM. See docs/debugging.md.
 #
 # Load them with:
 #     command script import /path/to/bond/debugger/bond_lldb.py
