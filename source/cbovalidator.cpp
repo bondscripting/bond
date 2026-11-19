@@ -29,6 +29,7 @@ private:
 	void ValidateFunctionBlob(size_t blobEnd);
 	void ValidateDataBlob(size_t blobEnd);
 	size_t ValidateQualifiedNameIndex();
+	void ValidateSizeAndType(uint32_t &size, SignatureType &type);
 	void ValidateSizeAndType();
 	void ValidateParamListSignature();
 
@@ -237,7 +238,8 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	    ((argSize % BOND_SLOT_SIZE) != 0) ||
 	    ((packedArgSize % BOND_SLOT_SIZE) != 0) ||
 	    ((localSize % BOND_SLOT_SIZE) != 0) ||
-	    ((framePointerAlignment % BOND_SLOT_SIZE) != 0))
+	    !IsPowerOfTwo(framePointerAlignment) ||
+	    (framePointerAlignment < uint32_t(BOND_SLOT_SIZE)))
 	{
 		FunctionIsInvalid();
 	}
@@ -430,25 +432,41 @@ void CboValidatorCore::ValidateDataBlob(size_t blobEnd)
 
 	ValidateQualifiedNameIndex();
 
-	AssertBytesRemaining(2 * sizeof(Value32));
-	const uint32_t sizeAndType = ReadValue32().mUInt;
 	uint32_t size;
 	SignatureType type;
-	DecodeSizeAndType(sizeAndType, size, type);
+	ValidateSizeAndType(size, type);
+	AssertBytesRemaining(sizeof(Value32));
 	const Value32 payload = ReadValue32();
 	size_t alignment = size_t(BOND_SLOT_SIZE);
 
-	if ((type == SIG_LONG) || (type == SIG_ULONG) || (type == SIG_DOUBLE))
+	switch (type)
 	{
-		if ((payload.mUInt != BOND_UINT_MAX) && (payload.mUInt >= mResult.mValue64Count))
+		case SIG_LONG:
+		case SIG_ULONG:
+		case SIG_DOUBLE:
 		{
-			CboIsInvalid();
+			if ((payload.mUInt != BOND_UINT_MAX) && (payload.mUInt >= mResult.mValue64Count))
+			{
+				CboIsInvalid();
+			}
 		}
-	}
+		break;
 
-	if (type == SIG_AGGREGATE)
-	{
-		alignment = max(alignment, size_t(payload.mUInt));
+		case SIG_VOID:
+		case SIG_POINTER:
+		case SIG_AGGREGATE:
+		{
+			// The payload is the alignment of the data. The CboLoader aligns the data to it.
+			if (!IsPowerOfTwo(payload.mUInt))
+			{
+				CboIsInvalid();
+			}
+			alignment = max(alignment, size_t(payload.mUInt));
+		}
+		break;
+
+		default:
+			break;
 	}
 
 	mResult.mDataSize = AlignUp(mResult.mDataSize, alignment);
@@ -475,14 +493,45 @@ size_t CboValidatorCore::ValidateQualifiedNameIndex()
 }
 
 
-void CboValidatorCore::ValidateSizeAndType()
+void CboValidatorCore::ValidateSizeAndType(uint32_t &size, SignatureType &type)
 {
 	AssertBytesRemaining(sizeof(Value32));
 	const uint32_t sizeAndType = ReadValue32().mUInt;
+	DecodeSizeAndType(sizeAndType, size, type);
+
+	// The VM and the CboLoader access values according to their type, so the size must agree.
+	bool isValid;
+	switch (type)
+	{
+		case SIG_VOID: isValid = size == BOND_VOID_SIZE; break;
+		case SIG_BOOL: isValid = size == BOND_BOOL_SIZE; break;
+		case SIG_CHAR: isValid = size == BOND_CHAR_SIZE; break;
+		case SIG_UCHAR: isValid = size == BOND_UCHAR_SIZE; break;
+		case SIG_SHORT: isValid = size == BOND_SHORT_SIZE; break;
+		case SIG_USHORT: isValid = size == BOND_USHORT_SIZE; break;
+		case SIG_INT: isValid = size == BOND_INT_SIZE; break;
+		case SIG_UINT: isValid = size == BOND_UINT_SIZE; break;
+		case SIG_LONG: isValid = size == BOND_LONG_SIZE; break;
+		case SIG_ULONG: isValid = size == BOND_ULONG_SIZE; break;
+		case SIG_FLOAT: isValid = size == BOND_FLOAT_SIZE; break;
+		case SIG_DOUBLE: isValid = size == BOND_DOUBLE_SIZE; break;
+		case SIG_POINTER: isValid = size == GetPointerSize(mResult.mPointerSize); break;
+		case SIG_AGGREGATE: isValid = true; break;
+		default: isValid = false; break;
+	}
+
+	if (!isValid)
+	{
+		CboIsInvalid();
+	}
+}
+
+
+void CboValidatorCore::ValidateSizeAndType()
+{
 	uint32_t size;
 	SignatureType type;
-	DecodeSizeAndType(sizeAndType, size, type);
-	// TODO: Do some sanity checks.
+	ValidateSizeAndType(size, type);
 }
 
 

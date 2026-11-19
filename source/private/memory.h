@@ -18,7 +18,7 @@ inline size_t TallyMemoryRequirements(size_t &size, size_t count, size_t align)
 template <typename T>
 inline size_t TallyMemoryRequirements(size_t &size, size_t count)
 {
-	return TallyMemoryRequirements<T>(size, count, sizeof(T));
+	return TallyMemoryRequirements<T>(size, count, alignof(T));
 }
 
 }

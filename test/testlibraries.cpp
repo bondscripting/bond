@@ -5,6 +5,7 @@
 #include "bond/vm/codesegment.h"
 #include <cctype>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -442,6 +443,19 @@ DEFINE_VM_TEST_WITH_BINDING(MemoryAligned, "scripts/vm_LibMemory.bond", &ALLOCAT
 		ASSERT_FORMAT(IsAligned(ptr, alignment), "Pointer %p is not aligned to %" BOND_PRIu32 ".", ptr, alignment);
 		memset(ptr, 0xcd, 32);
 	}
+
+	// Collected memory follows a Collectable header, which must not reduce the alignment that the
+	// allocator provides.
+	const uint32_t defaultAlignment = uint32_t(alignof(std::max_align_t));
+	void *ptr = nullptr;
+	vm.CallFunction("Bond.AllocateCollected", &ptr, uint64_t(32));
+	ASSERT_FORMAT(IsAligned(ptr, defaultAlignment), "Pointer %p is not aligned to %" BOND_PRIu32 ".", ptr, defaultAlignment);
+	memset(ptr, 0xcd, 32);
+
+	ptr = nullptr;
+	vm.CallFunction("Bond.AllocateWithCollector", &ptr, collector, uint64_t(32));
+	ASSERT_FORMAT(IsAligned(ptr, defaultAlignment), "Pointer %p is not aligned to %" BOND_PRIu32 ".", ptr, defaultAlignment);
+	memset(ptr, 0xcd, 32);
 }
 
 

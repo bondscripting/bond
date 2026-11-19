@@ -1,6 +1,9 @@
 #include "bond/api/libmemory.h"
+#include "bond/stl/cmath.h"
 #include "bond/systems/allocator.h"
+#include "bond/systems/math.h"
 #include "bond/vm/vm.h"
+#include <cstddef>
 #include <cstring>
 
 namespace Bond
@@ -26,7 +29,9 @@ void Allocate(Bond::StackFrame &frame)
 
 void *AllocateCollected(Allocator &allocator, Collector &collector, size_t size)
 {
-	const size_t collectableSize = sizeof(Collectable);
+	// Pad the header so that the returned memory keeps the alignment of the allocation. Without
+	// the padding, a Collectable is 12 bytes on 32-bit hosts, which leaves 8-byte types misaligned.
+	const size_t collectableSize = AlignUp(sizeof(Collectable), max(alignof(std::max_align_t), size_t(BOND_SLOT_SIZE)));
 	auto memHandle = allocator.AllocOwned<uint8_t>(collectableSize + size);
 	Collectable *collectable = new (memHandle.get()) Collectable();
 	void *ptr = memHandle.get() + collectableSize;

@@ -35,7 +35,9 @@ struct FunctionBlob
 {
 	size_t mBlobOffset;
 	size_t mNameOffset;
+	size_t mReturnTypeOffset;
 	size_t mArgSizeOffset;
+	size_t mFramePointerAlignmentOffset;
 	size_t mCodeSizeOffset;
 	size_t mCodeOffset;
 	size_t mCodeSize;
@@ -120,7 +122,9 @@ bool GetFunctionBlob(const Cbo &cbo, size_t index, FunctionBlob &blob)
 				const size_t argSizeOffset = offset + 14 + (numParams * 2 * sizeof(Bond::Value32));
 				blob.mBlobOffset = offset;
 				blob.mNameOffset = offset + 6;
+				blob.mReturnTypeOffset = offset + 8;
 				blob.mArgSizeOffset = argSizeOffset;
+				blob.mFramePointerAlignmentOffset = argSizeOffset + (4 * sizeof(Bond::Value32));
 				blob.mCodeSizeOffset = argSizeOffset + (5 * sizeof(Bond::Value32));
 				blob.mCodeOffset = blob.mCodeSizeOffset + sizeof(Bond::Value32);
 				blob.mCodeSize = ReadLE32(cbo, blob.mCodeSizeOffset);
@@ -158,6 +162,38 @@ FunctionBlob GetFirstScriptFunctionBlob(const char *assertFile, int assertLine, 
 		}
 	}
 	throw TestFramework::AssertionFailure(assertFile, assertLine, "CBO contains no function with bytecode.");
+}
+
+
+struct DataBlob
+{
+	size_t mTypeOffset;
+	size_t mPayloadOffset;
+};
+
+
+/// \brief Returns the index'th data blob in the CBO's top level list blob.
+DataBlob GetDataBlob(const char *assertFile, int assertLine, const Cbo &cbo, size_t index)
+{
+	const size_t dataIdIndex = FindStringIndex(cbo, Bond::BOND_DATA_BLOB_ID);
+	const size_t listBlobOffset = GetListBlobOffset(cbo);
+	const size_t numBlobs = ReadLE32(cbo, listBlobOffset + 6);
+	size_t offset = listBlobOffset + 10;
+
+	for (size_t i = 0; i < numBlobs; ++i)
+	{
+		if (ReadLE16(cbo, offset + 4) == dataIdIndex)
+		{
+			if (index == 0)
+			{
+				// Blob size, id index and name index precede the type and payload.
+				return DataBlob{offset + 8, offset + 12};
+			}
+			--index;
+		}
+		offset += ReadLE32(cbo, offset);
+	}
+	throw TestFramework::AssertionFailure(assertFile, assertLine, "CBO contains too few data blobs.");
 }
 
 
@@ -419,6 +455,79 @@ DEFINE_TEST(InvalidFunctionBlob)
 }
 
 
+DEFINE_TEST(InvalidFramePointerAlignment)
+{
+	Cbo original;
+	COMPILE_CBO(SCRIPT_NAME, original);
+	const FunctionBlob blob = GetFirstFunctionBlob(__FILE__, __LINE__, original);
+
+	// Zero would align the frame pointer to null, 24 is not a power of two and 4 is less than a slot.
+	const uint32_t invalidAlignments[] = {0, 4, 24};
+	for (const uint32_t alignment: invalidAlignments)
+	{
+		Cbo cbo = original;
+		WriteLE32(cbo, blob.mFramePointerAlignmentOffset, alignment);
+		ASSERT_LOAD_FAILS("CBO file contains an invalid function blob", cbo, DEFAULT_LOAD_OPTIONS);
+	}
+
+	Cbo cbo = original;
+	WriteLE32(cbo, blob.mFramePointerAlignmentOffset, 64);
+	ASSERT_LOAD_SUCCEEDS(cbo, DEFAULT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(SizeAndTypeMismatch)
+{
+	Cbo original;
+	COMPILE_CBO(SCRIPT_NAME, original);
+	const FunctionBlob blob = GetFirstFunctionBlob(__FILE__, __LINE__, original);
+	const uint32_t returnType = ReadLE32(original, blob.mReturnTypeOffset);
+	ASSERT_MESSAGE(Bond::SignatureType(returnType & 0xf) == Bond::SIG_INT, "Expected the first function to return int.");
+
+	// An int of size 8.
+	Cbo cbo = original;
+	WriteLE32(cbo, blob.mReturnTypeOffset, Bond::EncodeSizeAndType(8, Bond::SIG_INT));
+	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
+
+	// A type value beyond the last signature type.
+	cbo = original;
+	WriteLE32(cbo, blob.mReturnTypeOffset, (returnType & ~uint32_t(0xf)) | uint32_t(Bond::SIG_AGGREGATE + 1));
+	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, DEFAULT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(InvalidDataBlob)
+{
+	// The script defines Global, Long and Pointer, in that order.
+	Cbo original;
+	COMPILE_CBO(DATA_SCRIPT_NAME, original);
+	const LoadOptions options = {1, false, nullptr};
+	const DataBlob longBlob = GetDataBlob(__FILE__, __LINE__, original, 1);
+	const DataBlob pointerBlob = GetDataBlob(__FILE__, __LINE__, original, 2);
+	ASSERT_MESSAGE(Bond::SignatureType(ReadLE32(original, longBlob.mTypeOffset) & 0xf) == Bond::SIG_LONG, "Expected the second global to be a long.");
+	ASSERT_MESSAGE(Bond::SignatureType(ReadLE32(original, pointerBlob.mTypeOffset) & 0xf) == Bond::SIG_POINTER, "Expected the third global to be a pointer.");
+
+	// The loader writes 8 bytes for a long, whatever its declared size.
+	Cbo cbo = original;
+	WriteLE32(cbo, longBlob.mTypeOffset, Bond::EncodeSizeAndType(0, Bond::SIG_LONG));
+	ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, options);
+
+	// Zero would align the data to null and 3 is not a power of two.
+	const uint32_t invalidAlignments[] = {0, 3};
+	for (const uint32_t alignment: invalidAlignments)
+	{
+		cbo = original;
+		WriteLE32(cbo, pointerBlob.mPayloadOffset, alignment);
+		ASSERT_LOAD_FAILS(MALFORMED_CBO, cbo, options);
+	}
+
+	// A pointer aligned beyond a slot must be accounted for when sizing the data.
+	cbo = original;
+	WriteLE32(cbo, pointerBlob.mPayloadOffset, 64);
+	ASSERT_LOAD_SUCCEEDS(cbo, options);
+}
+
+
 DEFINE_TEST(ConstantIndexOutOfRange)
 {
 	Cbo cbo;
@@ -518,6 +627,9 @@ DEFINE_TEST(BindingWithNoFunction)
   TEST_ITEM(BadBlobSize)                        \
   TEST_ITEM(BadCodeSize)                        \
   TEST_ITEM(InvalidFunctionBlob)                \
+  TEST_ITEM(InvalidFramePointerAlignment)       \
+  TEST_ITEM(SizeAndTypeMismatch)                \
+  TEST_ITEM(InvalidDataBlob)                    \
   TEST_ITEM(ConstantIndexOutOfRange)            \
   TEST_ITEM(NameIndexOutOfRange)                \
   TEST_ITEM(FunctionNameIndexOutOfRange)        \

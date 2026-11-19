@@ -627,7 +627,11 @@ void CboLoaderCore::LoadDataBlob(size_t blobEnd)
 		case SIG_POINTER:
 		case SIG_AGGREGATE:
 		{
-			mResources.mData = AlignPointerUp(mResources.mData, size_t(payload.mUInt));
+			// The CboValidator rejects alignments that are not powers of two. Data is never less
+			// than slot aligned, which matches the size computed by the CboValidator.
+			BOND_ASSERT(IsPowerOfTwo(payload.mUInt));
+			const size_t alignment = max(size_t(payload.mUInt), size_t(BOND_SLOT_SIZE));
+			mResources.mData = AlignPointerUp(mResources.mData, alignment);
 			dataEntry->mData = mResources.mData;
 		}
 		break;

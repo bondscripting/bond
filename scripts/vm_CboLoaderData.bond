@@ -1,1 +1,3 @@
 const int Global = 7;
+const long Long = 5;
+int *const Pointer = null;

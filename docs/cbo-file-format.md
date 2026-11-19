@@ -90,7 +90,11 @@ size = value >> 4
 | 6 | `int` | | 13 | aggregate (struct passed by value) |
 
 The values follow the order of `BOND_SIGNATURE_TYPE_LIST` in
-[`include/bond/types/types.h`](../include/bond/types/types.h).
+[`include/bond/types/types.h`](../include/bond/types/types.h). Values 14 and 15 are invalid.
+
+The size must match the type: 0 for `void`, 1 for `bool`, `char` and `uchar`, 2 for `short` and
+`ushort`, 4 for `int`, `uint` and `float`, 8 for `long`, `ulong` and `double`, and the pointer size
+given by the header flags for pointers. Only an aggregate can have any size.
 
 ## 6. Blobs
 
@@ -137,8 +141,8 @@ negative and strictly decreasing. A member function has an implicit `this` point
 offset -8 that is listed first. See
 [Stack frames](instruction-set.md#stack-frames) for how the offsets are assigned.
 
-`frameSize`, `packedFrameSize`, `localSize` and `framePointerAlignment` are multiples of 8 (the slot
-size), and `packedFrameSize <= frameSize`.
+`frameSize`, `packedFrameSize` and `localSize` are multiples of 8 (the slot size), and
+`packedFrameSize <= frameSize`. `framePointerAlignment` is a power of two of at least 8.
 
 A function with `codeSize == 0` is **native**: the host must bind an implementation to its name
 before the code is run. A function whose name is the empty qualified name is the file's **static
@@ -170,7 +174,9 @@ layout depends on the opcode. Opcode values are listed in the
 | `bool`, `char`, `uchar`, `short`, `ushort` | Initial value, truncated to the type's size. 0 if none. |
 | `int`, `uint`, `float` | Initial value as raw 32 bits. 0 if none. |
 | `long`, `ulong`, `double` | Index into `value64Table` of the initial value, or `0xFFFFFFFF` to initialize to zero. |
-| pointer, aggregate | Required alignment of the data in bytes. The data is zero initialized. |
+| `void`, pointer, aggregate | Required alignment of the data in bytes, a power of two. The data is zero initialized. |
+
+Every global is aligned to at least 8 bytes (the slot size), whatever its type.
 
 ### Metadata
 
