@@ -572,6 +572,86 @@ int AssignCallResult()
 }
 
 
+// Constant offsets that fit in 16 bits are added to a pointer with ptraddc. Larger ones push a
+// constant and add it.
+
+struct Fields
+{
+	int a;
+	int b;
+	int *ptr;
+	int Sum() const { return a + b; }
+	void Set(int x) { a = x; b = x * 2; }
+};
+
+
+struct BigFields
+{
+	char[32767] pad;
+	char x;
+	char y;
+};
+
+
+const Fields gFields = { 3, 4, null };
+
+
+int FieldsThroughPointer(int x)
+{
+	Fields f = { 0, 0, null };
+	Fields *p = &f;
+	p->Set(x);
+	p->b += 1;
+	return (p->Sum() * 100) + gFields.b;
+}
+
+
+int NegativeSubscripts(int *p)
+{
+	int *q = p + 5;
+	return (q[-3] * 10) + q[-5];
+}
+
+
+int LargeOffsets(char *p, BigFields *b)
+{
+	p[32767] = 1;
+	p[32768] = 2;
+	p[-32768] = 3;
+	p[-32769] = 4;
+	b->x = cast<char>(b->x + 4);
+	b->y = cast<char>(b->y + 4);
+	return (p[-32769] * 1000) + (p[-32768] * 100) + (p[32767] * 10) + p[32768];
+}
+
+
+int FieldPointerIncrements(int *p)
+{
+	Fields f = { 0, 0, p };
+	Fields *fp = &f;
+	int r = *(++fp->ptr);
+	r = (r * 10) + *(fp->ptr++);
+	r = (r * 10) + *fp->ptr;
+	fp->ptr += 3;
+	r = (r * 10) + *(--fp->ptr);
+	fp->ptr -= 2;
+	r = (r * 10) + *(fp->ptr--);
+	return (r * 10) + *fp->ptr;
+}
+
+
+const char *ConstUIntPointerOffset(const char *p)
+{
+	return p + 0x80000000u;
+}
+
+
+const char *ULongMaxPointerOffset(const char *p)
+{
+	return p + 0xFFFFFFFFFFFFFFFFul;
+}
+
+
 int LoopStructCondition(int n)
 {
 	int i = 0;

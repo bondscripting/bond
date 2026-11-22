@@ -1987,6 +1987,29 @@ DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "ReturnIntoMembers", int32_t(1243));
 	VALIDATE_FUNCTION_CALL(int32_t, "ReturnFromMemberFunction", int32_t(79), int32_t(7));
 	VALIDATE_FUNCTION_CALL(int32_t, "AssignCallResult", int32_t(2165));
+
+	// Constant pointer offsets.
+	VALIDATE_FUNCTION_CALL(int32_t, "FieldsThroughPointer", int32_t(1604), int32_t(5));
+
+	int32_t digits[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	VALIDATE_FUNCTION_CALL(int32_t, "NegativeSubscripts", int32_t(20), &digits[0]);
+	VALIDATE_FUNCTION_CALL(int32_t, "FieldPointerIncrements", int32_t(112421), &digits[0]);
+
+	// p[32767] and p[32768] are also the x and y members of a BigFields at p.
+	static int8_t largeBuffer[80000];
+	int8_t *largeMiddle = &largeBuffer[40000];
+	VALIDATE_FUNCTION_CALL(int32_t, "LargeOffsets", int32_t(4356), largeMiddle, largeMiddle);
+	ASSERT_MESSAGE(largeMiddle[-32769] == 4, "LargeOffsets() stored p[-32769] at the wrong address.");
+	ASSERT_MESSAGE(largeMiddle[-32768] == 3, "LargeOffsets() stored p[-32768] at the wrong address.");
+	ASSERT_MESSAGE(largeMiddle[32767] == 5, "LargeOffsets() stored b->x at the wrong address.");
+	ASSERT_MESSAGE(largeMiddle[32768] == 6, "LargeOffsets() stored b->y at the wrong address.");
+
+	// The pointers are never dereferenced, so compute the expected addresses with integer arithmetic.
+	const char *offsetBase = reinterpret_cast<const char *>(&digits[0]);
+	const char *uintOffsetResult = reinterpret_cast<const char *>(reinterpret_cast<uintptr_t>(offsetBase) + uintptr_t(0x80000000u));
+	VALIDATE_FUNCTION_CALL(const void *, "ConstUIntPointerOffset", uintOffsetResult, offsetBase);
+	const char *ulongOffsetResult = reinterpret_cast<const char *>(reinterpret_cast<uintptr_t>(offsetBase) - uintptr_t(1));
+	VALIDATE_FUNCTION_CALL(const void *, "ULongMaxPointerOffset", ulongOffsetResult, offsetBase);
 }
 
 

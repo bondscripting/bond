@@ -379,6 +379,128 @@ DEFINE_TEST(ReturnValueElision)
 }
 
 
+// A constant offset that fits in 16 bits is added to a pointer with a single ptraddc. Larger offsets
+// push a constant and add it.
+DEFINE_TEST(PointerAddConstant)
+{
+	const Bond::PointerSize POINTER_SIZES[] = { Bond::POINTER_32BIT, Bond::POINTER_64BIT };
+	for (const Bond::PointerSize pointerSize: POINTER_SIZES)
+	{
+		// Fields through a pointer, through 'this' and of a global.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; int b; };"
+			"int F(S *p) { return p->b; }",
+			"     1: ptraddc     4\n"
+			"     4: load32      \n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; int b; int Get() const { return b; } };",
+			"     1: ptraddc     4\n"
+			"     4: load32      \n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; int b; };"
+			"const S g = { 1, 2 };"
+			"int F() { return g.b; }",
+			"     0: loadea      g\n"
+			"     3: ptraddc     4\n"
+			"     6: load32      \n",
+			pointerSize);
+
+		// Constant subscripts, including negative ones.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[3] + p[-2]; }",
+			"     1: ptraddc     12\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[3] + p[-2]; }",
+			"     6: ptraddc     -8\n",
+			pointerSize);
+
+		// The 16-bit boundaries.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(char *p) { return p[32767]; }",
+			"ptraddc     32767\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(char *p) { return p[-32768]; }",
+			"ptraddc     -32768\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"int F(char *p) { return p[32768] + p[-32769]; }",
+			"ptraddc",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct Big { char[32767] pad; char x; char y; };"
+			"char F(Big *b) { return b->x; }",
+			"ptraddc     32767\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct Big { char[32767] pad; char x; char y; };"
+			"char F(Big *b) { return b->y; }",
+			"ptraddc",
+			pointerSize);
+
+		// Pointer increments and compound assignments on a field.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int *ptr; };"
+			"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
+			"addi",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int *ptr; };"
+			"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
+			"addl",
+			pointerSize);
+
+		// A zero offset emits nothing.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int b; };"
+			"int F(S *p, int *q) { return p->a + q[0]; }",
+			"ptraddc",
+			pointerSize);
+	}
+
+	// The fallback adds a constant of the pointer's width.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(char *p) { return p[32768]; }",
+		"     1: constus     32768\n"
+		"     4: addi        \n",
+		Bond::POINTER_32BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(char *p) { return p[32768]; }",
+		"     1: const64     0x8000\n"
+		"     4: addl        \n",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct S { int a; int *ptr; };"
+		"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
+		"     0: push64_p0   \n"
+		"     1: ptraddc     8\n"
+		"     4: dup         \n"
+		"     5: load64      \n"
+		"     6: ptraddc     4\n"
+		"     9: store64     \n",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct S { int a; int *ptr; };"
+		"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
+		"ptraddc     -12\n",
+		Bond::POINTER_64BIT);
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(ShortUtf8String)                    \
   TEST_ITEM(AbbreviatedUtf8String)              \
@@ -392,5 +514,6 @@ DEFINE_TEST(ReturnValueElision)
   TEST_ITEM(GotoToReturn)                       \
   TEST_ITEM(TruthTestAgainstZero)               \
   TEST_ITEM(ReturnValueElision)                 \
+  TEST_ITEM(PointerAddConstant)                 \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

@@ -530,6 +530,7 @@ private:
 	void EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 	ValueRef EmitAccumulateAddressOffset(const ValueRef &valueRef);
 	void EmitAccumulateAddressOffset(int32_t offset);
+	void EmitPointerAddConstant(int64_t offset);
 
 	void EmitCast(const TypeDescriptor &sourceType, const TypeDescriptor &destType);
 	void EmitCastWithoutNarrowing32(const TypeDescriptor &sourceType, const TypeDescriptor &destType);
@@ -2783,18 +2784,33 @@ GeneratorCore::ValueRef GeneratorCore::EmitAccumulateAddressOffset(const ValueRe
 
 void GeneratorCore::EmitAccumulateAddressOffset(int32_t offset)
 {
-	if (offset != 0)
+	EmitPointerAddConstant(offset);
+}
+
+
+void GeneratorCore::EmitPointerAddConstant(int64_t offset)
+{
+	// Add a constant byte offset to the pointer on top of the stack. Offsets that fit in 16 bits use
+	// a single ptraddc.
+	if (offset == 0)
 	{
-		if (Is64BitPointer())
-		{
-			EmitPushConstantLong(offset);
-			EmitOpCode(OPCODE_ADDL);
-		}
-		else
-		{
-			EmitPushConstantInt(offset);
-			EmitOpCode(OPCODE_ADDI);
-		}
+		return;
+	}
+
+	if (IsInRange<int16_t>(offset))
+	{
+		EmitOpCode(OPCODE_PTRADDC);
+		EmitValue16(Value16(int16_t(offset)));
+	}
+	else if (Is64BitPointer())
+	{
+		EmitPushConstantLong(offset);
+		EmitOpCode(OPCODE_ADDL);
+	}
+	else
+	{
+		EmitPushConstantInt(int32_t(offset));
+		EmitOpCode(OPCODE_ADDI);
 	}
 }
 
@@ -3698,7 +3714,12 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerDifference(const Expression *l
 void GeneratorCore::EmitPointerOffset(const Expression *offsetExpression, int32_t elementSize)
 {
 	const TypeAndValue &offsetTav = offsetExpression->GetTypeAndValue();
-	if (offsetTav.IsValueDefined())
+	if (offsetTav.IsValueDefined() &&
+	    IsInRange<int16_t>(int64_t(offsetTav.AsLongValue()) * elementSize))
+	{
+		EmitPointerAddConstant(int64_t(offsetTav.AsLongValue()) * elementSize);
+	}
+	else if (offsetTav.IsValueDefined())
 	{
 		if (Is64BitPointer())
 		{
@@ -3824,16 +3845,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expres
 			EmitOpCode(OPCODE_DUPINS);
 		}
 
-		if (Is64BitPointer())
-		{
-			EmitPushConstantLong(int64_t(pointerOffset));
-			EmitOpCode(OPCODE_ADDL);
-		}
-		else
-		{
-			EmitPushConstantInt(pointerOffset);
-			EmitOpCode(OPCODE_ADDI);
-		}
+		EmitPointerAddConstant(int64_t(pointerOffset));
 
 		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{
@@ -3863,16 +3875,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expres
 			EmitOpCode(valueDupOpCode);
 		}
 
-		if (Is64BitPointer())
-		{
-			EmitPushConstantLong(int64_t(pointerOffset));
-			EmitOpCode(OPCODE_ADDL);
-		}
-		else
-		{
-			EmitPushConstantInt(pointerOffset);
-			EmitOpCode(OPCODE_ADDI);
-		}
+		EmitPointerAddConstant(int64_t(pointerOffset));
 
 		if (GetEmitOptionalTemporaries() && (fixedness == PREFIX))
 		{

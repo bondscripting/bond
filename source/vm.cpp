@@ -1322,6 +1322,15 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
+			case OPCODE_PTRADDC:
+			{
+				uintptr_t *ptr = reinterpret_cast<uintptr_t *>(sp - BOND_SLOT_SIZE);
+				const Value16 offset(code + pc);
+				*ptr += uintptr_t(intptr_t(offset.mShort));
+				pc += sizeof(Value16);
+			}
+			break;
+
 			case OPCODE_PTROFFI:
 			{
 				intptr_t *ptr = reinterpret_cast<intptr_t *>(sp - (2 * BOND_SLOT_SIZE));

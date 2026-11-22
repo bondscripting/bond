@@ -710,6 +710,24 @@ Some conversions need no instruction:
 
 ### 3.10 Pointer arithmetic
 
+<a id="ptraddc"></a>
+#### `ptraddc`
+
+Offset an address by a constant number of bytes.
+
+| | |
+|---|---|
+| **Format** | `ptraddc offset:short` |
+| **Operands** | `offset`: the signed byte offset. |
+| **Stack** | `..., address → ..., address` |
+
+Computes `address + offset`, wrapping around like `addi` (32-bit pointers) or `addl` (64-bit
+pointers). The compiler uses it for member accesses, constant subscripts and pointer increments.
+When the offset doesn't fit in a `short`, the compiler pushes a constant and emits `addi`/`addl`
+instead.
+
+---
+
 <a id="ptroff"></a>
 #### `ptroffi`, `ptroffl`
 
@@ -1383,101 +1401,102 @@ the instruction's entry.
 | 132 | 0x84 | `dtol` | — | 1 | 0 |
 | 133 | 0x85 | `dtoul` | — | 1 | 0 |
 | 134 | 0x86 | `dtof` | — | 1 | 0 |
-| 135 | 0x87 | `ptroffi` | short | 3 | −1 |
-| 136 | 0x88 | `ptroffl` | short | 3 | −1 |
-| 137 | 0x89 | `ptrdiff` | short | 3 | −1 |
-| 138 | 0x8A | `inci` | char, char | 3 | 0 |
-| 139 | 0x8B | `incl` | char, char | 3 | 0 |
-| 140 | 0x8C | `addi` | — | 1 | −1 |
-| 141 | 0x8D | `addl` | — | 1 | −1 |
-| 142 | 0x8E | `addf` | — | 1 | −1 |
-| 143 | 0x8F | `addd` | — | 1 | −1 |
-| 144 | 0x90 | `subi` | — | 1 | −1 |
-| 145 | 0x91 | `subl` | — | 1 | −1 |
-| 146 | 0x92 | `subf` | — | 1 | −1 |
-| 147 | 0x93 | `subd` | — | 1 | −1 |
-| 148 | 0x94 | `muli` | — | 1 | −1 |
-| 149 | 0x95 | `mull` | — | 1 | −1 |
-| 150 | 0x96 | `mulf` | — | 1 | −1 |
-| 151 | 0x97 | `muld` | — | 1 | −1 |
-| 152 | 0x98 | `divi` | — | 1 | −1 |
-| 153 | 0x99 | `divui` | — | 1 | −1 |
-| 154 | 0x9A | `divl` | — | 1 | −1 |
-| 155 | 0x9B | `divul` | — | 1 | −1 |
-| 156 | 0x9C | `divf` | — | 1 | −1 |
-| 157 | 0x9D | `divd` | — | 1 | −1 |
-| 158 | 0x9E | `remi` | — | 1 | −1 |
-| 159 | 0x9F | `remui` | — | 1 | −1 |
-| 160 | 0xA0 | `reml` | — | 1 | −1 |
-| 161 | 0xA1 | `remul` | — | 1 | −1 |
-| 162 | 0xA2 | `lshi` | — | 1 | −1 |
-| 163 | 0xA3 | `lshl` | — | 1 | −1 |
-| 164 | 0xA4 | `rshi` | — | 1 | −1 |
-| 165 | 0xA5 | `rshui` | — | 1 | −1 |
-| 166 | 0xA6 | `rshl` | — | 1 | −1 |
-| 167 | 0xA7 | `rshul` | — | 1 | −1 |
-| 168 | 0xA8 | `andi` | — | 1 | −1 |
-| 169 | 0xA9 | `andl` | — | 1 | −1 |
-| 170 | 0xAA | `ori` | — | 1 | −1 |
-| 171 | 0xAB | `orl` | — | 1 | −1 |
-| 172 | 0xAC | `xori` | — | 1 | −1 |
-| 173 | 0xAD | `xorl` | — | 1 | −1 |
-| 174 | 0xAE | `negi` | — | 1 | 0 |
-| 175 | 0xAF | `negl` | — | 1 | 0 |
-| 176 | 0xB0 | `negf` | — | 1 | 0 |
-| 177 | 0xB1 | `negd` | — | 1 | 0 |
-| 178 | 0xB2 | `not` | — | 1 | 0 |
-| 179 | 0xB3 | `cmpeqi` | — | 1 | −1 |
-| 180 | 0xB4 | `cmpeql` | — | 1 | −1 |
-| 181 | 0xB5 | `cmpeqf` | — | 1 | −1 |
-| 182 | 0xB6 | `cmpeqd` | — | 1 | −1 |
-| 183 | 0xB7 | `cmpneqi` | — | 1 | −1 |
-| 184 | 0xB8 | `cmpneql` | — | 1 | −1 |
-| 185 | 0xB9 | `cmpneqf` | — | 1 | −1 |
-| 186 | 0xBA | `cmpneqd` | — | 1 | −1 |
-| 187 | 0xBB | `cmplti` | — | 1 | −1 |
-| 188 | 0xBC | `cmpltui` | — | 1 | −1 |
-| 189 | 0xBD | `cmpltl` | — | 1 | −1 |
-| 190 | 0xBE | `cmpltul` | — | 1 | −1 |
-| 191 | 0xBF | `cmpltf` | — | 1 | −1 |
-| 192 | 0xC0 | `cmpltd` | — | 1 | −1 |
-| 193 | 0xC1 | `cmplei` | — | 1 | −1 |
-| 194 | 0xC2 | `cmpleui` | — | 1 | −1 |
-| 195 | 0xC3 | `cmplel` | — | 1 | −1 |
-| 196 | 0xC4 | `cmpleul` | — | 1 | −1 |
-| 197 | 0xC5 | `cmplef` | — | 1 | −1 |
-| 198 | 0xC6 | `cmpled` | — | 1 | −1 |
-| 199 | 0xC7 | `cmpgti` | — | 1 | −1 |
-| 200 | 0xC8 | `cmpgtui` | — | 1 | −1 |
-| 201 | 0xC9 | `cmpgtl` | — | 1 | −1 |
-| 202 | 0xCA | `cmpgtul` | — | 1 | −1 |
-| 203 | 0xCB | `cmpgtf` | — | 1 | −1 |
-| 204 | 0xCC | `cmpgtd` | — | 1 | −1 |
-| 205 | 0xCD | `cmpgei` | — | 1 | −1 |
-| 206 | 0xCE | `cmpgeui` | — | 1 | −1 |
-| 207 | 0xCF | `cmpgel` | — | 1 | −1 |
-| 208 | 0xD0 | `cmpgeul` | — | 1 | −1 |
-| 209 | 0xD1 | `cmpgef` | — | 1 | −1 |
-| 210 | 0xD2 | `cmpged` | — | 1 | −1 |
-| 211 | 0xD3 | `brz` | off16 | 3 | −1 |
-| 212 | 0xD4 | `brzw` | off32 index | 3 | −1 |
-| 213 | 0xD5 | `brnz` | off16 | 3 | −1 |
-| 214 | 0xD6 | `brnzw` | off32 index | 3 | −1 |
-| 215 | 0xD7 | `nbrz` | off16 | 3 | −1 |
-| 216 | 0xD8 | `nbrzw` | off32 index | 3 | −1 |
-| 217 | 0xD9 | `nbrnz` | off16 | 3 | −1 |
-| 218 | 0xDA | `nbrnzw` | off32 index | 3 | −1 |
-| 219 | 0xDB | `ifz` | off16 | 3 | −1 |
-| 220 | 0xDC | `ifzw` | off32 index | 3 | −1 |
-| 221 | 0xDD | `ifnz` | off16 | 3 | −1 |
-| 222 | 0xDE | `ifnzw` | off32 index | 3 | −1 |
-| 223 | 0xDF | `goto` | off16 | 3 | 0 |
-| 224 | 0xE0 | `gotow` | off32 index | 3 | 0 |
-| 225 | 0xE1 | `lookupswitch` | lookupswitch table | variable | −1 |
-| 226 | 0xE2 | `tableswitch` | tableswitch table | variable | −1 |
-| 227 | 0xE3 | `invoke` | name index | 3 | 0 |
-| 228 | 0xE4 | `invokeunpack` | name index | 3 | 0 |
-| 229 | 0xE5 | `return` | — | 1 | 0 |
-| 230 | 0xE6 | `return32` | — | 1 | −1 |
-| 231 | 0xE7 | `return64` | — | 1 | −1 |
-| 232 | 0xE8 | `returnmemw` | int index | 3 | −1 |
+| 135 | 0x87 | `ptraddc` | short | 3 | 0 |
+| 136 | 0x88 | `ptroffi` | short | 3 | −1 |
+| 137 | 0x89 | `ptroffl` | short | 3 | −1 |
+| 138 | 0x8A | `ptrdiff` | short | 3 | −1 |
+| 139 | 0x8B | `inci` | char, char | 3 | 0 |
+| 140 | 0x8C | `incl` | char, char | 3 | 0 |
+| 141 | 0x8D | `addi` | — | 1 | −1 |
+| 142 | 0x8E | `addl` | — | 1 | −1 |
+| 143 | 0x8F | `addf` | — | 1 | −1 |
+| 144 | 0x90 | `addd` | — | 1 | −1 |
+| 145 | 0x91 | `subi` | — | 1 | −1 |
+| 146 | 0x92 | `subl` | — | 1 | −1 |
+| 147 | 0x93 | `subf` | — | 1 | −1 |
+| 148 | 0x94 | `subd` | — | 1 | −1 |
+| 149 | 0x95 | `muli` | — | 1 | −1 |
+| 150 | 0x96 | `mull` | — | 1 | −1 |
+| 151 | 0x97 | `mulf` | — | 1 | −1 |
+| 152 | 0x98 | `muld` | — | 1 | −1 |
+| 153 | 0x99 | `divi` | — | 1 | −1 |
+| 154 | 0x9A | `divui` | — | 1 | −1 |
+| 155 | 0x9B | `divl` | — | 1 | −1 |
+| 156 | 0x9C | `divul` | — | 1 | −1 |
+| 157 | 0x9D | `divf` | — | 1 | −1 |
+| 158 | 0x9E | `divd` | — | 1 | −1 |
+| 159 | 0x9F | `remi` | — | 1 | −1 |
+| 160 | 0xA0 | `remui` | — | 1 | −1 |
+| 161 | 0xA1 | `reml` | — | 1 | −1 |
+| 162 | 0xA2 | `remul` | — | 1 | −1 |
+| 163 | 0xA3 | `lshi` | — | 1 | −1 |
+| 164 | 0xA4 | `lshl` | — | 1 | −1 |
+| 165 | 0xA5 | `rshi` | — | 1 | −1 |
+| 166 | 0xA6 | `rshui` | — | 1 | −1 |
+| 167 | 0xA7 | `rshl` | — | 1 | −1 |
+| 168 | 0xA8 | `rshul` | — | 1 | −1 |
+| 169 | 0xA9 | `andi` | — | 1 | −1 |
+| 170 | 0xAA | `andl` | — | 1 | −1 |
+| 171 | 0xAB | `ori` | — | 1 | −1 |
+| 172 | 0xAC | `orl` | — | 1 | −1 |
+| 173 | 0xAD | `xori` | — | 1 | −1 |
+| 174 | 0xAE | `xorl` | — | 1 | −1 |
+| 175 | 0xAF | `negi` | — | 1 | 0 |
+| 176 | 0xB0 | `negl` | — | 1 | 0 |
+| 177 | 0xB1 | `negf` | — | 1 | 0 |
+| 178 | 0xB2 | `negd` | — | 1 | 0 |
+| 179 | 0xB3 | `not` | — | 1 | 0 |
+| 180 | 0xB4 | `cmpeqi` | — | 1 | −1 |
+| 181 | 0xB5 | `cmpeql` | — | 1 | −1 |
+| 182 | 0xB6 | `cmpeqf` | — | 1 | −1 |
+| 183 | 0xB7 | `cmpeqd` | — | 1 | −1 |
+| 184 | 0xB8 | `cmpneqi` | — | 1 | −1 |
+| 185 | 0xB9 | `cmpneql` | — | 1 | −1 |
+| 186 | 0xBA | `cmpneqf` | — | 1 | −1 |
+| 187 | 0xBB | `cmpneqd` | — | 1 | −1 |
+| 188 | 0xBC | `cmplti` | — | 1 | −1 |
+| 189 | 0xBD | `cmpltui` | — | 1 | −1 |
+| 190 | 0xBE | `cmpltl` | — | 1 | −1 |
+| 191 | 0xBF | `cmpltul` | — | 1 | −1 |
+| 192 | 0xC0 | `cmpltf` | — | 1 | −1 |
+| 193 | 0xC1 | `cmpltd` | — | 1 | −1 |
+| 194 | 0xC2 | `cmplei` | — | 1 | −1 |
+| 195 | 0xC3 | `cmpleui` | — | 1 | −1 |
+| 196 | 0xC4 | `cmplel` | — | 1 | −1 |
+| 197 | 0xC5 | `cmpleul` | — | 1 | −1 |
+| 198 | 0xC6 | `cmplef` | — | 1 | −1 |
+| 199 | 0xC7 | `cmpled` | — | 1 | −1 |
+| 200 | 0xC8 | `cmpgti` | — | 1 | −1 |
+| 201 | 0xC9 | `cmpgtui` | — | 1 | −1 |
+| 202 | 0xCA | `cmpgtl` | — | 1 | −1 |
+| 203 | 0xCB | `cmpgtul` | — | 1 | −1 |
+| 204 | 0xCC | `cmpgtf` | — | 1 | −1 |
+| 205 | 0xCD | `cmpgtd` | — | 1 | −1 |
+| 206 | 0xCE | `cmpgei` | — | 1 | −1 |
+| 207 | 0xCF | `cmpgeui` | — | 1 | −1 |
+| 208 | 0xD0 | `cmpgel` | — | 1 | −1 |
+| 209 | 0xD1 | `cmpgeul` | — | 1 | −1 |
+| 210 | 0xD2 | `cmpgef` | — | 1 | −1 |
+| 211 | 0xD3 | `cmpged` | — | 1 | −1 |
+| 212 | 0xD4 | `brz` | off16 | 3 | −1 |
+| 213 | 0xD5 | `brzw` | off32 index | 3 | −1 |
+| 214 | 0xD6 | `brnz` | off16 | 3 | −1 |
+| 215 | 0xD7 | `brnzw` | off32 index | 3 | −1 |
+| 216 | 0xD8 | `nbrz` | off16 | 3 | −1 |
+| 217 | 0xD9 | `nbrzw` | off32 index | 3 | −1 |
+| 218 | 0xDA | `nbrnz` | off16 | 3 | −1 |
+| 219 | 0xDB | `nbrnzw` | off32 index | 3 | −1 |
+| 220 | 0xDC | `ifz` | off16 | 3 | −1 |
+| 221 | 0xDD | `ifzw` | off32 index | 3 | −1 |
+| 222 | 0xDE | `ifnz` | off16 | 3 | −1 |
+| 223 | 0xDF | `ifnzw` | off32 index | 3 | −1 |
+| 224 | 0xE0 | `goto` | off16 | 3 | 0 |
+| 225 | 0xE1 | `gotow` | off32 index | 3 | 0 |
+| 226 | 0xE2 | `lookupswitch` | lookupswitch table | variable | −1 |
+| 227 | 0xE3 | `tableswitch` | tableswitch table | variable | −1 |
+| 228 | 0xE4 | `invoke` | name index | 3 | 0 |
+| 229 | 0xE5 | `invokeunpack` | name index | 3 | 0 |
+| 230 | 0xE6 | `return` | — | 1 | 0 |
+| 231 | 0xE7 | `return32` | — | 1 | −1 |
+| 232 | 0xE8 | `return64` | — | 1 | −1 |
+| 233 | 0xE9 | `returnmemw` | int index | 3 | −1 |
