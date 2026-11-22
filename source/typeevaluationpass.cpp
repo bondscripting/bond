@@ -1125,7 +1125,26 @@ void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const DeclarativeStateme
 
 void TypeEvaluationPass::RecursiveStructAnalyzer::Visit(const TypeDescriptor *typeDescriptor)
 {
-	if (!typeDescriptor->IsPointerIntrinsicType())
+	// A pointer doesn't contain its pointee, so a struct may point to itself, directly or through
+	// an array of pointers. Only the array lengths of such a type are checked, since they can
+	// refer to a struct through sizeof.
+	TypeDescriptor elementType = *typeDescriptor;
+	while (elementType.IsArrayType())
+	{
+		elementType = elementType.GetArrayElementType();
+	}
+
+	if (elementType.IsPointerIntrinsicType())
+	{
+		elementType = *typeDescriptor;
+		while (elementType.IsArrayType())
+		{
+			const TypeDescriptor &arrayType = elementType;
+			TraverseList(arrayType.GetLengthExpressionList());
+			elementType = elementType.GetArrayElementType();
+		}
+	}
+	else
 	{
 		ParseNodeTraverser::Visit(typeDescriptor);
 	}

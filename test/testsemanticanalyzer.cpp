@@ -434,6 +434,7 @@ DEFINE_SEMANTICANALYZER_TEST(TypeEvaluationErrors2, "scripts/sanalyzer_TypeEvalu
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 18},
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 19},
 		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 20},
+		{Bond::CompilerError::RECURSIVE_STRUCT, Bond::Token::IDENTIFIER, 22},
 		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_FLOAT, 42},
 		{Bond::CompilerError::SWITCH_LABEL_IS_NOT_CONST_INTEGER, Bond::Token::CONST_BOOL, 44},
 		{Bond::CompilerError::SWITCH_CONTROL_IS_NOT_INTEGER, Bond::Token::OP_LT, 40},

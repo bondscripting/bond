@@ -210,3 +210,128 @@ uint GetAlignofOverAligned()
 {
 	return alignof<OverAligned>;
 }
+
+// Structs that point to themselves, directly, through an array of pointers or through another
+// struct. A pointer member's size doesn't depend on the struct it points to.
+struct ListNode
+{
+	ListNode *mNext;
+	int mValue;
+};
+
+// The pointer comes after the value, so neither member is at offset 0.
+struct ReverseListNode
+{
+	int mValue;
+	ReverseListNode *mNext;
+};
+
+struct TreeNode
+{
+	TreeNode *[2] mChildren;
+	int mValue;
+};
+
+// Team refers to Member before Member is declared.
+struct Team
+{
+	Member *mCaptain;
+	int mId;
+};
+
+struct Member
+{
+	Team *mTeam;
+	Member *mNextMember;
+	int mId;
+};
+
+int SumListNodes(const ListNode *head)
+{
+	int sum = 0;
+	for (const ListNode *node = head; node != null; node = node->mNext)
+	{
+		sum += node->mValue;
+	}
+	return sum;
+}
+
+int BuildAndSumListNodes(int count)
+{
+	ListNode[8] nodes = {};
+	ListNode *head = null;
+	for (int i = 0; i < count; ++i)
+	{
+		nodes[i].mValue = i + 1;
+		nodes[i].mNext = head;
+		head = &nodes[i];
+	}
+	return SumListNodes(head);
+}
+
+int BuildAndSumReverseListNodes(int count)
+{
+	ReverseListNode[8] nodes = {};
+	ReverseListNode *head = null;
+	for (int i = 0; i < count; ++i)
+	{
+		nodes[i].mValue = 10 * (i + 1);
+		nodes[i].mNext = head;
+		head = &nodes[i];
+	}
+
+	int sum = 0;
+	const ReverseListNode *node = head;
+	while (node != null)
+	{
+		sum += node->mValue;
+		node = node->mNext;
+	}
+	return sum;
+}
+
+int SumTree(const TreeNode *node)
+{
+	if (node == null)
+	{
+		return 0;
+	}
+	return node->mValue + SumTree(node->mChildren[0]) + SumTree(node->mChildren[1]);
+}
+
+int BuildAndSumTree()
+{
+	TreeNode[5] nodes = {};
+	for (int i = 0; i < 5; ++i)
+	{
+		nodes[i].mValue = 1 << i;
+	}
+	nodes[0].mChildren[0] = &nodes[1];
+	nodes[0].mChildren[1] = &nodes[2];
+	nodes[2].mChildren[1] = &nodes[3];
+	return SumTree(&nodes[0]);
+}
+
+int TeamRoundTrip()
+{
+	Team team = {};
+	Member[2] members = {};
+	team.mId = 40;
+	team.mCaptain = &members[1];
+	members[0].mId = 1;
+	members[0].mTeam = &team;
+	members[1].mId = 2;
+	members[1].mTeam = &team;
+	members[1].mNextMember = &members[0];
+	return team.mCaptain->mNextMember->mTeam->mId + team.mCaptain->mId;
+}
+
+uint GetSizeofListNode()
+{
+	return sizeof<ListNode>;
+}
+
+uint GetSizeofTreeNode()
+{
+	return sizeof<TreeNode>;
+}

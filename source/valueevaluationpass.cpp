@@ -306,6 +306,33 @@ bool AlignmentComparator::operator()(const DeclarativeStatement &a, const Declar
 }
 
 
+// Returns true if the size and alignment of the given type are known. Unlike
+// TypeDescriptor::IsResolved, this holds for a pointer whose pointee isn't resolved, since a
+// pointer's size doesn't depend on its pointee. Otherwise a struct with a member that points to
+// the struct itself would wait for its own size and never be resolved.
+static bool IsSizeResolved(const TypeDescriptor &typeDescriptor)
+{
+	if (typeDescriptor.IsPointerIntrinsicType())
+	{
+		return true;
+	}
+	if (typeDescriptor.IsArrayType())
+	{
+		const Expression *lengthExpressionList = typeDescriptor.GetLengthExpressionList();
+		while (lengthExpressionList != nullptr)
+		{
+			if (!lengthExpressionList->GetTypeAndValue().IsValueDefined())
+			{
+				return false;
+			}
+			lengthExpressionList = NextNode(lengthExpressionList);
+		}
+		return IsSizeResolved(typeDescriptor.GetArrayElementType());
+	}
+	return typeDescriptor.IsResolved();
+}
+
+
 void ValueEvaluationPass::Analyze(TranslationUnit *translationUnitList)
 {
 	do
@@ -394,7 +421,7 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 				DeclarativeStatement *memberList = structDeclaration->GetMemberVariableList();
 				while (memberList != nullptr)
 				{
-					if (!memberList->GetTypeDescriptor()->IsResolved())
+					if (!IsSizeResolved(*memberList->GetTypeDescriptor()))
 					{
 						membersResolved = false;
 						break;
@@ -434,6 +461,12 @@ void ValueEvaluationPass::Visit(StructDeclaration *structDeclaration)
 					structSize = AlignUp(max(structSize, BOND_DEFAULT_STRUCT_SIZE), structAlign);
 					structDeclaration->SetSize(structSize);
 					structDeclaration->SetAlignment(structAlign);
+				}
+				else
+				{
+					// Keep iterating. If the size can never be determined, Analyze() reports an
+					// error rather than letting code be generated with unset member offsets.
+					mHasUnresolvedItems = true;
 				}
 			}
 			break;

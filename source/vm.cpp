@@ -7,7 +7,9 @@
 #include <cstring>
 
 // When 1, the VM counts executed opcodes and prints the counts to stderr at exit. Used to measure
-// the effect of code generator changes on the number of dispatched instructions.
+// the effect of code generator changes on the number of dispatched instructions. It also counts
+// pairs of opcodes that are adjacent in the code, where the second one was reached by falling
+// through from the first, since only those pairs are candidates for fused instructions.
 #ifndef BOND_VM_OPCODE_HISTOGRAM
 #define BOND_VM_OPCODE_HISTOGRAM 0
 #endif
@@ -20,14 +22,101 @@ namespace Bond
 {
 
 #if BOND_VM_OPCODE_HISTOGRAM
+// Returns the number of operand bytes that follow the opcode, or a huge value for the switch
+// instructions, whose variable-length tables are never fallen through.
+static size_t GetHistogramOperandSize(OpCode opCode)
+{
+	switch (GetOpCodeParamType(opCode))
+	{
+		case OC_PARAM_NONE:
+			return 0;
+		case OC_PARAM_CHAR:
+		case OC_PARAM_UCHAR:
+			return 1;
+		case OC_PARAM_CHAR_CHAR:
+		case OC_PARAM_SHORT:
+		case OC_PARAM_USHORT:
+		case OC_PARAM_INT:
+		case OC_PARAM_VAL32:
+		case OC_PARAM_VAL64:
+		case OC_PARAM_OFF16:
+		case OC_PARAM_OFF32:
+		case OC_PARAM_STRING:
+		case OC_PARAM_NAME:
+			return sizeof(Value16);
+		case OC_PARAM_LOOKUPSWITCH:
+		case OC_PARAM_TABLESWITCH:
+			break;
+	}
+	return size_t(1) << 30;
+}
+
+
+struct OpCodePairCount
+{
+	uint64_t mCount;
+	uint8_t mFirst;
+	uint8_t mSecond;
+
+	bool operator<(const OpCodePairCount &other) const
+	{
+		// Descending by count.
+		return mCount > other.mCount;
+	}
+};
+
+
 struct OpCodeHistogram
 {
 	uint64_t mCounts[256] = {};
+	uint64_t mPairs[256][256] = {};
+	uint64_t mFallThroughs = 0;
+	uint64_t mEntries = 0;
+
+	void Record(OpCode prevOpCode, OpCode opCode, bool fellThrough)
+	{
+		++mCounts[opCode];
+		if (fellThrough)
+		{
+			++mPairs[prevOpCode][opCode];
+			++mFallThroughs;
+		}
+		else
+		{
+			++mEntries;
+		}
+	}
+
 	~OpCodeHistogram()
 	{
 		for (int i = 0; i < int(OPCODE_MAX); ++i)
 		{
 			fprintf(stderr, "HIST %s %llu\n", GetOpCodeMnemonic(OpCode(i)), static_cast<unsigned long long>(mCounts[i]));
+		}
+
+		// Dispatches reached by falling through vs. by a taken branch or a function entry.
+		fprintf(stderr, "FALLTHROUGH %llu\n", static_cast<unsigned long long>(mFallThroughs));
+		fprintf(stderr, "ENTRY %llu\n", static_cast<unsigned long long>(mEntries));
+
+		static OpCodePairCount pairs[256 * 256];
+		size_t numPairs = 0;
+		for (int i = 0; i < 256; ++i)
+		{
+			for (int j = 0; j < 256; ++j)
+			{
+				if (mPairs[i][j] != 0)
+				{
+					pairs[numPairs++] = OpCodePairCount{mPairs[i][j], uint8_t(i), uint8_t(j)};
+				}
+			}
+		}
+		sort(pairs, pairs + numPairs);
+		for (size_t i = 0; i < numPairs; ++i)
+		{
+			fprintf(stderr, "PAIR %s %s %llu\n",
+				GetOpCodeMnemonic(OpCode(pairs[i].mFirst)),
+				GetOpCodeMnemonic(OpCode(pairs[i].mSecond)),
+				static_cast<unsigned long long>(pairs[i].mCount));
 		}
 	}
 };
@@ -182,12 +271,23 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 	uint8_t *const fp = frame.mFramePointer;
 	uint8_t *sp = frame.mStackPointer;
 	size_t pc = 0;
+#if BOND_VM_OPCODE_HISTOGRAM
+	// Per call, so that invoke and the instruction after it count as a pair when the callee
+	// returns, but invoke and the callee's first instruction don't.
+	OpCode histPrevOpCode = OPCODE_NOP;
+	size_t histNextPc = ~size_t(0);
+#endif
 
 	for (;;)
 	{
+#if BOND_VM_OPCODE_HISTOGRAM
+		const size_t histPc = pc;
+#endif
 		const OpCode opCode = static_cast<OpCode>(code[pc++]);
 #if BOND_VM_OPCODE_HISTOGRAM
-		++gOpCodeHistogram.mCounts[opCode];
+		gOpCodeHistogram.Record(histPrevOpCode, opCode, histPc == histNextPc);
+		histPrevOpCode = opCode;
+		histNextPc = histPc + 1 + GetHistogramOperandSize(opCode);
 #endif
 		switch (opCode)
 		{

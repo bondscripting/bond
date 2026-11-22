@@ -19,7 +19,7 @@ struct A { A a; };    // Directly recursive.
 struct B { C[2] c; }; // Indirectly recursive.
 struct C { B b; };
 struct D { D *d; };   // This is valid.
-
+struct E { E *[sizeof<E>] e; }; // Recursive through an array length.
 native { struct NativeStruct<8> { int x; }; }
 
 struct Point { int x; int y; };

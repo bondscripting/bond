@@ -68,6 +68,20 @@ static_assert(sizeof(OverAligned) == 48, "OverAligned must match the Bond layout
 static_assert(alignof(OverAligned) == 16, "OverAligned must match the Bond layout.");
 
 
+struct ListNode
+{
+	ListNode *next;
+	int32_t value;
+};
+
+
+struct TreeNode
+{
+	TreeNode *children[2];
+	int32_t value;
+};
+
+
 DEFINE_VM_TEST(Constants, "scripts/vm_Constants.bond")
 {
 	using namespace Bond;
@@ -1423,6 +1437,19 @@ DEFINE_VM_TEST(Structs, "scripts/vm_Structs.bond")
 	ASSERT_FORMAT(overAligned.x == -17, "Expected -17, but was %" BOND_PRId32 ".", overAligned.x);
 	ASSERT_FORMAT(overAligned.y == 29, "Expected 29, but was %" BOND_PRId32 ".", overAligned.y);
 	VALIDATE_FUNCTION_CALL(int32_t, "OverAlignedRoundTrip", int32_t(8 * 1000 + 3), int32_t(3), int32_t(8));
+
+	// Self-referential structs. The list built here checks the member offsets that the compiler
+	// emits against the native layout.
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofListNode", uint32_t(sizeof(ListNode)));
+	VALIDATE_FUNCTION_CALL(uint32_t, "GetSizeofTreeNode", uint32_t(sizeof(TreeNode)));
+	ListNode listNodes[3] = {{&listNodes[1], 4}, {&listNodes[2], 50}, {nullptr, 600}};
+	VALIDATE_FUNCTION_CALL(int32_t, "SumListNodes", int32_t(654), &listNodes[0]);
+	VALIDATE_FUNCTION_CALL(int32_t, "SumListNodes", int32_t(600), &listNodes[2]);
+	VALIDATE_FUNCTION_CALL(int32_t, "BuildAndSumListNodes", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "BuildAndSumListNodes", int32_t(36), int32_t(8));
+	VALIDATE_FUNCTION_CALL(int32_t, "BuildAndSumReverseListNodes", int32_t(150), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "BuildAndSumTree", int32_t(1 + 2 + 4 + 8));
+	VALIDATE_FUNCTION_CALL(int32_t, "TeamRoundTrip", int32_t(42));
 }
 
 
