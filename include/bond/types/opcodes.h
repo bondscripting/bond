@@ -79,15 +79,10 @@ namespace Bond
 	BOND_OPCODE_ITEM(STORE64,      store64,      NONE,         -2) \
 	                                                               \
 	BOND_OPCODE_ITEM(PUSHC,        pushc,        SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSHCW,       pushcw,       INT,          1)  \
 	BOND_OPCODE_ITEM(PUSHUC,       pushuc,       SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSHUCW,      pushucw,      INT,          1)  \
 	BOND_OPCODE_ITEM(PUSHS,        pushs,        SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSHSW,       pushsw,       INT,          1)  \
 	BOND_OPCODE_ITEM(PUSHUS,       pushus,       SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSHUSW,      pushusw,      INT,          1)  \
 	BOND_OPCODE_ITEM(PUSH32,       push32,       SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSH32W,      push32w,      INT,          1)  \
 	BOND_OPCODE_ITEM(PUSH32_P0,    push32_p0,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH32_P1,    push32_p1,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH32_P2,    push32_p2,    NONE,         1)  \
@@ -97,7 +92,6 @@ namespace Bond
 	BOND_OPCODE_ITEM(PUSH32_L2,    push32_l2,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH32_L3,    push32_l3,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH64,       push64,       SHORT,        1)  \
-	BOND_OPCODE_ITEM(PUSH64W,      push64w,      INT,          1)  \
 	BOND_OPCODE_ITEM(PUSH64_P0,    push64_p0,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH64_P1,    push64_p1,    NONE,         1)  \
 	BOND_OPCODE_ITEM(PUSH64_P2,    push64_p2,    NONE,         1)  \
@@ -109,11 +103,8 @@ namespace Bond
 	                                                               \
 	BOND_OPCODE_ITEM(POP,          pop,          NONE,         -1) \
 	BOND_OPCODE_ITEM(POPC,         popc,         SHORT,        -1) \
-	BOND_OPCODE_ITEM(POPCW,        popcw,        INT,          -1) \
 	BOND_OPCODE_ITEM(POPS,         pops,         SHORT,        -1) \
-	BOND_OPCODE_ITEM(POPSW,        popsw,        INT,          -1) \
 	BOND_OPCODE_ITEM(POP32,        pop32,        SHORT,        -1) \
-	BOND_OPCODE_ITEM(POP32W,       pop32w,       INT,          -1) \
 	BOND_OPCODE_ITEM(POP32_P0,     pop32_p0,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP32_P1,     pop32_p1,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP32_P2,     pop32_p2,     NONE,         -1) \
@@ -123,7 +114,6 @@ namespace Bond
 	BOND_OPCODE_ITEM(POP32_L2,     pop32_l2,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP32_L3,     pop32_l3,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP64,        pop64,        SHORT,        -1) \
-	BOND_OPCODE_ITEM(POP64W,       pop64w,       INT,          -1) \
 	BOND_OPCODE_ITEM(POP64_P0,     pop64_p0,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP64_P1,     pop64_p1,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP64_P2,     pop64_p2,     NONE,         -1) \

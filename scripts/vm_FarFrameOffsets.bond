@@ -1,0 +1,255 @@
+// Locals and parameters beyond the int16 frame offset range. They have no push or pop instruction,
+// so they are read and written through their address.
+struct FarStruct
+{
+	int a;
+	long b;
+};
+
+
+struct HugeArg
+{
+	char[40000] pad;
+};
+
+
+int FarChar(char x)
+{
+	char[40000] pad = {};
+	char v = x;
+	char w = v;
+	v = cast<char>(w + 1);
+	v += cast<char>(2);
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+uint FarUChar(uchar x)
+{
+	char[40000] pad = {};
+	uchar v = x;
+	uchar w = v;
+	v = cast<uchar>(w + 1);
+	v += cast<uchar>(2);
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+int FarShort(short x)
+{
+	char[40000] pad = {};
+	short v = x;
+	short w = v;
+	v = cast<short>(w + 1);
+	v += cast<short>(2);
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+uint FarUShort(ushort x)
+{
+	char[40000] pad = {};
+	ushort v = x;
+	ushort w = v;
+	v = cast<ushort>(w + 1);
+	v += cast<ushort>(2);
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+int FarInt(int x)
+{
+	char[40000] pad = {};
+	int v = x;
+	int w = v;
+	v = w + 1;
+	v += 2;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+uint FarUInt(uint x)
+{
+	char[40000] pad = {};
+	uint v = x;
+	uint w = v;
+	v = w + 1u;
+	v += 2u;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+long FarLong(long x)
+{
+	char[40000] pad = {};
+	long v = x;
+	long w = v;
+	v = w + 1l;
+	v += 2l;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+ulong FarULong(ulong x)
+{
+	char[40000] pad = {};
+	ulong v = x;
+	ulong w = v;
+	v = w + 1ul;
+	v += 2ul;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+float FarFloat(float x)
+{
+	char[40000] pad = {};
+	float v = x;
+	float w = v;
+	v = w + 1.0f;
+	v += 2.0f;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+double FarDouble(double x)
+{
+	char[40000] pad = {};
+	double v = x;
+	double w = v;
+	v = w + 1.0;
+	v += 2.0;
+	++v;
+	v++;
+	--v;
+	v--;
+	return v;
+}
+
+
+bool FarBool(int x)
+{
+	char[40000] pad = {};
+	bool v = x != 0;
+	bool w = v;
+	v = !w;
+	return v;
+}
+
+
+int FarValueContext(int x)
+{
+	char[40000] pad = {};
+	int a = 0;
+	int b = 0;
+	int c = b = a = x;
+	int d = a++;
+	int e = ++b;
+	int f = (c += 10);
+	int g = c--;
+	int h = --c;
+	return (a * 10000000) + (b * 1000000) + (c * 10000) + (d * 1000) + (e * 100) + (f * 10) + g + h;
+}
+
+
+int FarAddressOf(int x)
+{
+	char[40000] pad = {};
+	int v = 0;
+	int *p = &v;
+	*p = x;
+	return v + *p;
+}
+
+
+int FarPointer(int x)
+{
+	int[10] digits = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	char[40000] pad = {};
+	int *p = &digits[x];
+	int r = *(p++);
+	r = (r * 10) + *(++p);
+	p += 3;
+	r = (r * 10) + *p;
+	p -= 2;
+	r = (r * 10) + *(p--);
+	r = (r * 10) + *(--p);
+	p = p + 1;
+	return (r * 10) + *p;
+}
+
+
+int FarStructMembers(int x)
+{
+	char[40000] pad = {};
+	FarStruct s = { x, 2l };
+	s.a = s.a + 5;
+	s.b += 7l;
+	s.a++;
+	FarStruct t = s;
+	t.a *= 2;
+	return (s.a * 10000) + (t.a * 100) + cast<int>(s.b + t.b);
+}
+
+
+int FarParameterAfter(HugeArg h, int x)
+{
+	x = x + 1000;
+	x += 20;
+	x++;
+	h.pad[39999] = cast<char>(x);
+	return x + h.pad[39999];
+}
+
+
+int FarParameterBefore(int x, HugeArg h)
+{
+	x = x + 1000;
+	x += 20;
+	x++;
+	h.pad[39999] = cast<char>(x);
+	return x + h.pad[39999];
+}
+
+
+int FarParameters(int x)
+{
+	HugeArg h = {};
+	return (FarParameterAfter(h, x) * 10000) + FarParameterBefore(x, h);
+}

@@ -2034,6 +2034,32 @@ DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
 }
 
 
+DEFINE_VM_TEST(FarFrameOffsets, "scripts/vm_FarFrameOffsets.bond")
+{
+	using namespace Bond;
+
+	// Locals and parameters beyond the int16 frame offset range.
+	VALIDATE_FUNCTION_CALL(int32_t, "FarChar", int32_t(13), int8_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarChar", int32_t(-127), int8_t(126));
+	VALIDATE_FUNCTION_CALL(uint32_t, "FarUChar", uint32_t(1), uint8_t(254));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarShort", int32_t(-32767), int16_t(32766));
+	VALIDATE_FUNCTION_CALL(uint32_t, "FarUShort", uint32_t(1), uint16_t(65534));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarInt", int32_t(-2147483647), int32_t(2147483646));
+	VALIDATE_FUNCTION_CALL(uint32_t, "FarUInt", uint32_t(1), uint32_t(0xFFFFFFFE));
+	VALIDATE_FUNCTION_CALL(int64_t, "FarLong", int64_t(BOND_LONG_MIN + 1), int64_t(BOND_LONG_MAX - 1));
+	VALIDATE_FUNCTION_CALL(uint64_t, "FarULong", uint64_t(1), uint64_t(BOND_ULONG_MAX - 1));
+	VALIDATE_FUNCTION_CALL(float, "FarFloat", 4.5f, 1.5f);
+	VALIDATE_FUNCTION_CALL(double, "FarDouble", 2.5, -0.5);
+	VALIDATE_FUNCTION_CALL(uint32_t, "FarBool", uint32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(uint32_t, "FarBool", uint32_t(0), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarValueContext", int32_t(44113554), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarAddressOf", int32_t(42), int32_t(21));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarPointer", int32_t(136423), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarStructMembers", int32_t(91818), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarParameters", int32_t(10281028), int32_t(5));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -2061,5 +2087,6 @@ DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
   TEST_ITEM(InitOrderTwoCbos)                   \
   TEST_ITEM(DebugCallStack)                     \
   TEST_ITEM(CodeGenOptimizations)               \
+  TEST_ITEM(FarFrameOffsets)                    \
 
 RUN_TESTS(VM, TEST_ITEMS)

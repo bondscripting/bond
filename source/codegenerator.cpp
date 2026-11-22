@@ -528,6 +528,7 @@ private:
 	void EmitPopFramePointerIndirectValue32(int32_t offset);
 	void EmitPopFramePointerIndirectValue64(int32_t offset);
 	void EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
+	ValueRef EmitFarFrameAddress(const ValueRef &valueRef);
 	ValueRef EmitAccumulateAddressOffset(const ValueRef &valueRef);
 	void EmitAccumulateAddressOffset(int32_t offset);
 	void EmitPointerAddConstant(int64_t offset);
@@ -1887,12 +1888,12 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 		else
 		{
 			const TypeDescriptor &rhDescriptor = initializer->GetExpression()->GetTypeDescriptor();
+			const ValueRef lhRef = index.mIsLocal ?
+				EmitFarFrameAddress(ValueRef(ValueRef::CONTEXT_FP_INDIRECT, offset)) :
+				ValueRef(ValueRef::CONTEXT_ADDRESS_INDIRECT, 0);
 			auto rhRef = mValueRef.Push();
 			Traverse(initializer);
 			EmitPushValueRef(rhRef, rhDescriptor);
-			const ValueRef lhRef = index.mIsLocal ?
-				ValueRef(ValueRef::CONTEXT_FP_INDIRECT, offset) :
-				ValueRef(ValueRef::CONTEXT_ADDRESS_INDIRECT, 0);
 			EmitPopValueRefAs(lhRef, rhDescriptor, typeDescriptor);
 		}
 	}
@@ -2110,7 +2111,13 @@ void GeneratorCore::EmitPushValueRef(const ValueRef &valueRef, const TypeDescrip
 
 void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	if (typeDescriptor.IsValueType())
+	if (!IsInRange<int16_t>(offset))
+	{
+		// There are no push instructions with a wide frame offset. Load through the address instead.
+		EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+		EmitPushAddressIndirectValue(typeDescriptor, 0);
+	}
+	else if (typeDescriptor.IsValueType())
 	{
 		switch (typeDescriptor.GetPrimitiveType())
 		{
@@ -2186,7 +2193,15 @@ void GeneratorCore::EmitPushFramePointerIndirectValue32(int32_t offset)
 			EmitOpCode(OPCODE_PUSH32_L3);
 			break;
 		default:
-			EmitOpCodeWithOffset(OPCODE_PUSH32, offset);
+			if (IsInRange<int16_t>(offset))
+			{
+				EmitOpCodeWithOffset(OPCODE_PUSH32, offset);
+			}
+			else
+			{
+				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+				EmitOpCode(OPCODE_LOAD32);
+			}
 			break;
 	}
 }
@@ -2221,7 +2236,15 @@ void GeneratorCore::EmitPushFramePointerIndirectValue64(int32_t offset)
 			EmitOpCode(OPCODE_PUSH64_L3);
 			break;
 		default:
-			EmitOpCodeWithOffset(OPCODE_PUSH64, offset);
+			if (IsInRange<int16_t>(offset))
+			{
+				EmitOpCodeWithOffset(OPCODE_PUSH64, offset);
+			}
+			else
+			{
+				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+				EmitOpCode(OPCODE_LOAD64);
+			}
 			break;
 	}
 }
@@ -2632,7 +2655,16 @@ void GeneratorCore::EmitPopValueRef(const ValueRef &valueRef, const TypeDescript
 
 void GeneratorCore::EmitPopFramePointerIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	if (typeDescriptor.IsValueType())
+	if (!IsInRange<int16_t>(offset))
+	{
+		// There are no pop instructions with a wide frame offset. Every assignment target goes through
+		// EmitFarFrameAddress, which pushes the address before the value, so this path is not expected.
+		BOND_ASSERT(false);
+		EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
+		EmitOpCode(OPCODE_SWAP);
+		EmitPopAddressIndirectValue(typeDescriptor, 0);
+	}
+	else if (typeDescriptor.IsValueType())
 	{
 		switch (typeDescriptor.GetPrimitiveType())
 		{
@@ -2778,6 +2810,20 @@ void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor &typeDescri
 	{
 		EmitOpCode(STORE_OPCODES.GetPointerOpCode(mPointerSize));
 	}
+}
+
+
+GeneratorCore::ValueRef GeneratorCore::EmitFarFrameAddress(const ValueRef &valueRef)
+{
+	// A frame offset outside int16 has no push or pop instruction. Push the address of an assignment
+	// target before the value is computed, as for a global, so that storing the value needs only a
+	// store instruction and no swap.
+	if ((valueRef.mContext == ValueRef::CONTEXT_FP_INDIRECT) && !IsInRange<int16_t>(valueRef.mOffset))
+	{
+		EmitOpCodeWithOffset(OPCODE_LOADFP, valueRef.mOffset);
+		return ValueRef(ValueRef::CONTEXT_ADDRESS_INDIRECT, 0);
+	}
+	return valueRef;
 }
 
 
@@ -3342,6 +3388,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitAssignmentOperator(const BinaryExpres
 	{
 		auto lhRef = mValueRef.Push();
 		Traverse(lhs);
+		lhRef = EmitFarFrameAddress(lhRef);
 
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (lhRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
@@ -3485,6 +3532,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 	}
 	else
 	{
+		lhRef = EmitFarFrameAddress(lhRef);
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (lhRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
@@ -3607,6 +3655,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerCompoundAssignmentOperator(con
 	}
 	else
 	{
+		pointerRef = EmitFarFrameAddress(pointerRef);
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (pointerRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
@@ -3871,6 +3920,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expres
 	}
 	else
 	{
+		operandRef = EmitFarFrameAddress(operandRef);
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (operandRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
@@ -3966,6 +4016,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitIncrementOperator(const Expression *e
 	}
 	else
 	{
+		operandRef = EmitFarFrameAddress(operandRef);
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (operandRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
@@ -4224,7 +4275,9 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, int32_t offset)
 	}
 	else
 	{
-		EmitOpCode(static_cast<OpCode>(opCode + 1));
+		// loadfp is the only frame-offset instruction with a wide form.
+		BOND_ASSERT(opCode == OPCODE_LOADFP);
+		EmitOpCode(OPCODE_LOADFPW);
 		EmitIndexedValue32(Value32(offset));
 	}
 }

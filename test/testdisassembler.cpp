@@ -569,6 +569,70 @@ DEFINE_TEST(PointerAddConstant)
 }
 
 
+DEFINE_TEST(FarFrameOffsets)
+{
+	// A local beyond the int16 frame offset range is read with loadfpw and load. Its address is
+	// pushed before the value is computed, so a write is loadfpw before the value and a store after
+	// it, with no swap.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a) { char[40000] pad = {}; int x = a; return x; }",
+		"     6: loadfpw     40000\n"
+		"     9: push32_p0   \n"
+		"    10: store32     \n"
+		"    11: loadfpw     40000\n"
+		"    14: load32      \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a) { char[40000] pad = {}; int x = 0; x = a; return x; }",
+		"    11: loadfpw     40000\n"
+		"    14: push32_p0   \n"
+		"    15: store32     \n");
+
+	// Compound assignment loads through a copy of the address.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a) { char[40000] pad = {}; int x = 0; x += a; return x; }",
+		"    11: loadfpw     40000\n"
+		"    14: dup         \n"
+		"    15: load32      \n"
+		"    16: push32_p0   \n"
+		"    17: addi        \n"
+		"    18: store32     \n");
+
+	// In value context, the value is kept below the address with dupins.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a) { char[40000] pad = {}; int x = 0; return x = a; }",
+		"    11: loadfpw     40000\n"
+		"    14: push32_p0   \n"
+		"    15: dupins      \n"
+		"    16: store32     \n");
+
+	// Struct members, increments and pointers.
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"struct S { int a; long b; };"
+		"long F(int a) { char[40000] pad = {}; S s = { a, 2l }; s.a = s.a + 5; s.b += 7l; s.a++; --s.b; return s.b; }",
+		"swap");
+
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"int F(int *q) { char[40000] pad = {}; int *p = q; p++; --p; p += 3; p = p - 1; return *p; }",
+		"swap");
+
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"char F(char c, short s) { char[40000] pad = {}; char x = c; short y = s; x += c; y = cast<short>(y * s); ++x; y--; return cast<char>(x + y); }",
+		"swap");
+
+	// A parameter beyond the int16 range, after a large struct passed by value.
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"struct Huge { char[40000] pad; };"
+		"int F(Huge h, int x) { x = x + 1000; x += 2; ++x; return x; }",
+		"swap");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"struct Huge { char[40000] pad; };"
+		"int F(Huge h, int x) { x = x + 1000; x += 2; ++x; return x; }",
+		"loadfpw");
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(ShortUtf8String)                    \
   TEST_ITEM(AbbreviatedUtf8String)              \
@@ -584,5 +648,6 @@ DEFINE_TEST(PointerAddConstant)
   TEST_ITEM(TruthTestAgainstZero)               \
   TEST_ITEM(ReturnValueElision)                 \
   TEST_ITEM(PointerAddConstant)                 \
+  TEST_ITEM(FarFrameOffsets)                    \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

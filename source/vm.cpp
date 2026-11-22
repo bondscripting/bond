@@ -680,28 +680,10 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_PUSHCW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<int8_t, int32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_PUSHUC:
 			{
 				const Value16 offset(code + pc);
 				CopyValue<uint8_t, uint32_t>(fp + offset.mShort, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_PUSHUCW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<uint8_t, uint32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -716,15 +698,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_PUSHSW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<int16_t, int32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_PUSHUS:
 			{
 				const Value16 offset(code + pc);
@@ -734,28 +707,10 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_PUSHUSW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<uint16_t, uint32_t>(fp + value32Table[offsetIndex.mUShort].mInt, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_PUSH32:
 			{
 				const Value16 offset(code + pc);
 				CopyValue32(fp + offset.mShort, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_PUSH32W:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue32(fp + value32Table[offsetIndex.mUShort].mInt, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -821,15 +776,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			{
 				const Value16 offset(code + pc);
 				CopyValue64(fp + offset.mShort, sp);
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_PUSH64W:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue64(fp + value32Table[offsetIndex.mUShort].mInt, sp);
 				pc += sizeof(Value16);
 				sp += BOND_SLOT_SIZE;
 			}
@@ -906,15 +852,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_POPCW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<int32_t, int8_t>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_POPS:
 			{
 				const Value16 offset(code + pc);
@@ -924,28 +861,10 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_POPSW:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue<int32_t, int16_t>(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_POP32:
 			{
 				const Value16 offset(code + pc);
 				CopyValue32(sp - BOND_SLOT_SIZE, fp + offset.mShort);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_POP32W:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue32(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
 				pc += sizeof(Value16);
 				sp -= BOND_SLOT_SIZE;
 			}
@@ -1011,15 +930,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			{
 				const Value16 offset(code + pc);
 				CopyValue64(sp - BOND_SLOT_SIZE, fp + offset.mShort);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-			}
-			break;
-
-			case OPCODE_POP64W:
-			{
-				const Value16 offsetIndex(code + pc);
-				CopyValue64(sp - BOND_SLOT_SIZE, fp + value32Table[offsetIndex.mUShort].mInt);
 				pc += sizeof(Value16);
 				sp -= BOND_SLOT_SIZE;
 			}
