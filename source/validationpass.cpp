@@ -37,6 +37,7 @@ void ValidationPass::Visit(FunctionDefinition *functionDefinition)
 	SemanticAnalysisPass::Visit(functionDefinition);
 
 	functionDefinition->SetNumReservedJumpTargetIds(nextJumpTargetIdElement);
+	functionDefinition->SetBodyEndsWithJump(endsWithJumpElement || hasReturnElement);
 
 	if (!returnType->IsVoidType() && !hasReturnElement && !functionDefinition->IsNative())
 	{
@@ -99,6 +100,7 @@ void ValidationPass::Visit(IfStatement *ifStatement)
 		auto hasReturnElement = mHasReturn.Push(false);
 		auto endsWithJumpElement = mEndsWithJump.Push(false);
 		Traverse(ifStatement->GetThenStatement());
+		ifStatement->SetThenEndsWithJump(endsWithJumpElement || hasReturnElement);
 		hasReturn = hasReturn && hasReturnElement;
 		endsWithJump = endsWithJump && endsWithJumpElement;
 	}

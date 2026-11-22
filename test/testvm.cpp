@@ -1963,6 +1963,27 @@ DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
 	VALIDATE_FUNCTION_CALL(int32_t, "VoidBreak", int32_t(2), int32_t(2));
 	VALIDATE_FUNCTION_CALL(int32_t, "VoidBreak", int32_t(103), int32_t(10));
 
+	// No jump over the else-branch or trailing return where control can't reach them.
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidAllReturn", int32_t(10), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidAllReturn", int32_t(20), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "VoidAllReturn", int32_t(30), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "IntIfElseReturn", int32_t(1), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "IntIfElseReturn", int32_t(-1), int32_t(-5));
+	VALIDATE_FUNCTION_CALL(int32_t, "IntIfElseReturn", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ThenEndsInLoopJump", int32_t(221), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "ThenEndsInLoopJump", int32_t(1441), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedIfCaller", int32_t(2), int32_t(20));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedIfCaller", int32_t(1), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedIfCaller", int32_t(-10), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchReturns", int32_t(100), int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchReturns", int32_t(110), int32_t(1), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchReturns", int32_t(220), int32_t(2), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchReturns", int32_t(320), int32_t(3), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoLoopReturns", int32_t(103), int32_t(0), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoLoopReturns", int32_t(103), int32_t(0), int32_t(9));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoLoopReturns", int32_t(806), int32_t(5), int32_t(100));
+	VALIDATE_FUNCTION_CALL(int32_t, "DoLoopReturns", int32_t(808), int32_t(7), int32_t(100));
+
 	// Comparisons against zero in truth tests.
 	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(1), int32_t(5), uint8_t(0));
 	VALIDATE_FUNCTION_CALL(uint32_t, "OrNotZero", uint32_t(1), int32_t(256), uint8_t(0));

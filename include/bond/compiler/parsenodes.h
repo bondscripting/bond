@@ -1126,7 +1126,8 @@ public:
 		mBody(body),
 		mThisTypeDescriptor(thisTypeDescriptor),
 		mScope(scope),
-		mNumReservedJumpTargetIds(0)
+		mNumReservedJumpTargetIds(0),
+		mBodyEndsWithJump(false)
 	{}
 
 	/// \brief Destroys a FunctionDefinition object.
@@ -1172,6 +1173,13 @@ public:
 	/// \param numIds Number of reserved jump target IDs.
 	void SetNumReservedJumpTargetIds(size_t numIds) { mNumReservedJumpTargetIds = numIds; }
 
+	/// \brief Returns true if control can't reach the end of the function body.
+	bool BodyEndsWithJump() const { return mBodyEndsWithJump; }
+
+	/// \brief Sets whether control can't reach the end of the function body.
+	/// \param endsWithJump True if every path through the body ends in a jump.
+	void SetBodyEndsWithJump(bool endsWithJump) { mBodyEndsWithJump = endsWithJump; }
+
 private:
 	QualifiedIdentifier mIdentifier;
 	TypeSpecifier mTypeSpecifier;
@@ -1182,6 +1190,7 @@ private:
 	TypeDescriptor *mThisTypeDescriptor;
 	Scope mScope;
 	size_t mNumReservedJumpTargetIds;
+	bool mBodyEndsWithJump;
 };
 
 
@@ -1421,7 +1430,8 @@ public:
 		mKeyword(keyword),
 		mCondition(condition),
 		mThenStatement(thenStatement),
-		mElseStatement(elseStatement)
+		mElseStatement(elseStatement),
+		mThenEndsWithJump(false)
 	{}
 
 	/// \brief Destroys an IfStatement object.
@@ -1453,11 +1463,19 @@ public:
 	/// \brief Returns the else-branch statement.
 	const ParseNode *GetElseStatement() const { return mElseStatement; }
 
+	/// \brief Returns true if control can't reach the end of the then-branch.
+	bool ThenEndsWithJump() const { return mThenEndsWithJump; }
+
+	/// \brief Sets whether control can't reach the end of the then-branch.
+	/// \param endsWithJump True if every path through the then-branch ends in a jump.
+	void SetThenEndsWithJump(bool endsWithJump) { mThenEndsWithJump = endsWithJump; }
+
 private:
 	const Token *mKeyword;
 	Expression *mCondition;
 	ParseNode *mThenStatement;
 	ParseNode *mElseStatement;
+	bool mThenEndsWithJump;
 };
 
 

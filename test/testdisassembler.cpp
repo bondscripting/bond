@@ -290,6 +290,74 @@ DEFINE_TEST(GotoToReturn)
 }
 
 
+// When control can't reach the end of a then-branch, no goto jumps over the else-branch. When it
+// can't reach the end of a void function body, no trailing return is emitted.
+DEFINE_TEST(DeadJumpElimination)
+{
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(bool c) { if (c) return 1; else return 2; }",
+		"\tcode size: 10\n"
+		"     0: pushuc      -8\n"
+		"     3: ifz         2 (8)\n"
+		"     6: consti_1    \n"
+		"     7: return32    \n"
+		"     8: consti_2    \n"
+		"     9: return32    \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"void F(bool c) { if (c) { return; } else { return; } }",
+		"\tcode size: 8\n"
+		"     0: pushuc      -8\n"
+		"     3: ifz         1 (7)\n"
+		"     6: return      \n"
+		"     7: return      \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"void F(int *p, int x) { if (x == 1) { *p = 1; return; } else if (x == 2) { *p = 2; return; } else { return; } }",
+		"\tcode size: 21\n"
+		"     0: push32_p1   \n"
+		"     1: consti_1    \n"
+		"     2: cmpeqi      \n"
+		"     3: ifz         4 (10)\n"
+		"     6: push64_p0   \n"
+		"     7: consti_1    \n"
+		"     8: store32     \n"
+		"     9: return      \n"
+		"    10: push32_p1   \n",
+		Bond::POINTER_64BIT);
+
+	// A switch whose sections all return, with a default, ends the function.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"void F(int *p, int x) { switch (x) { case 1: *p = 1; return; default: return; } }",
+		"\tcode size: 25\n",
+		Bond::POINTER_64BIT);
+
+	// A then-branch that doesn't end in a jump still jumps over the else-branch.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(bool c) { int x = 0; if (c) { x = 1; } else { return 2; } return x; }",
+		"goto");
+
+	// A break in a switch lets control reach the end of the function.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"void F(int x) { switch (x) { case 1: if (x == 1) break; return; default: return; } }",
+		"    23: ifnz        2 (28)\n"
+		"    26: return      \n"
+		"    27: return      \n"
+		"    28: return      \n");
+
+	// So do continue in a do loop and the end of a while loop.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"void F(bool c, bool d) { do { if (c) continue; return; } while (d); }",
+		"    10: ifnz        -13 (0)\n"
+		"    13: return      \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"void F(bool c) { while (c) { } }",
+		"     6: ifnz        -6 (3)\n"
+		"     9: return      \n");
+}
+
+
 // Where only the truth value matters, a comparison of a 32-bit value against zero tests the value
 // directly.
 DEFINE_TEST(TruthTestAgainstZero)
@@ -512,6 +580,7 @@ DEFINE_TEST(PointerAddConstant)
   TEST_ITEM(ConditionalBreakAndContinue)        \
   TEST_ITEM(AssignmentIncrement)                \
   TEST_ITEM(GotoToReturn)                       \
+  TEST_ITEM(DeadJumpElimination)                \
   TEST_ITEM(TruthTestAgainstZero)               \
   TEST_ITEM(ReturnValueElision)                 \
   TEST_ITEM(PointerAddConstant)                 \

@@ -767,7 +767,9 @@ void GeneratorCore::Visit(const FunctionDefinition *functionDefinition)
 		auto stackTopElement = mStackTop.Push(0);
 		Traverse(functionDefinition->GetBody());
 
-		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType())
+		// The trailing return is omitted when control can't reach the end of the body.
+		if (functionDefinition->GetPrototype()->GetReturnType()->IsVoidType() &&
+		    !functionDefinition->BodyEndsWithJump())
 		{
 			EmitOpCode(OPCODE_RETURN);
 		}
@@ -885,12 +887,21 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 
 		if (ifStatement->GetElseStatement() != nullptr)
 		{
-			size_t elseEndLabel = CreateLabel();
-			EmitJump(OPCODE_GOTO, elseEndLabel);
+			// No jump over the else-branch is needed when control can't reach the end of the
+			// then-branch.
+			const bool jumpOverElse = !ifStatement->ThenEndsWithJump();
+			const size_t elseEndLabel = jumpOverElse ? CreateLabel() : 0;
+			if (jumpOverElse)
+			{
+				EmitJump(OPCODE_GOTO, elseEndLabel);
+			}
 			thenEndPos = GetByteCode().size();
 
 			Traverse(ifStatement->GetElseStatement());
-			SetLabelValue(elseEndLabel, GetByteCode().size());
+			if (jumpOverElse)
+			{
+				SetLabelValue(elseEndLabel, GetByteCode().size());
+			}
 		}
 
 		SetLabelValue(thenEndLabel, thenEndPos);
