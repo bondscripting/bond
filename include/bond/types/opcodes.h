@@ -79,6 +79,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(STORES,       stores,       NONE,         -2) \
 	BOND_OPCODE_ITEM(STORE32,      store32,      NONE,         -2) \
 	BOND_OPCODE_ITEM(STORE64,      store64,      NONE,         -2) \
+	BOND_OPCODE_ITEM(STORE32O,     store32o,     SHORT,        -2) \
+	BOND_OPCODE_ITEM(STORE64O,     store64o,     SHORT,        -2) \
 	                                                               \
 	BOND_OPCODE_ITEM(PUSHC,        pushc,        SHORT,        1)  \
 	BOND_OPCODE_ITEM(PUSHUC,       pushuc,       SHORT,        1)  \
@@ -216,6 +218,7 @@ namespace Bond
 	                                                               \
 	BOND_OPCODE_ITEM(NOT,          not,          NONE,         0)  \
 	                                                               \
+	BOND_OPCODE_ITEM(TSTL,         tstl,         NONE,         0)  \
 	BOND_OPCODE_ITEM(CMPEQI,       cmpeqi,       NONE,         -1) \
 	BOND_OPCODE_ITEM(CMPEQL,       cmpeql,       NONE,         -1) \
 	BOND_OPCODE_ITEM(CMPEQF,       cmpeqf,       NONE,         -1) \
@@ -257,10 +260,14 @@ namespace Bond
 	BOND_OPCODE_ITEM(NBRZW,        nbrzw,        OFF32,        -1) \
 	BOND_OPCODE_ITEM(NBRNZ,        nbrnz,        OFF16,        -1) \
 	BOND_OPCODE_ITEM(NBRNZW,       nbrnzw,       OFF32,        -1) \
-	BOND_OPCODE_ITEM(IFZ,          ifz,          OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFZW,         ifzw,         OFF32,        -1) \
-	BOND_OPCODE_ITEM(IFNZ,         ifnz,         OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFNZW,        ifnzw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(IFZI,         ifzi,         OFF16,        -1) \
+	BOND_OPCODE_ITEM(IFZIW,        ifziw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(IFNZI,        ifnzi,        OFF16,        -1) \
+	BOND_OPCODE_ITEM(IFNZIW,       ifnziw,       OFF32,        -1) \
+	BOND_OPCODE_ITEM(IFZL,         ifzl,         OFF16,        -1) \
+	BOND_OPCODE_ITEM(IFZLW,        ifzlw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(IFNZL,        ifnzl,        OFF16,        -1) \
+	BOND_OPCODE_ITEM(IFNZLW,       ifnzlw,       OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFEQI,        ifeqi,        OFF16,        -2) \
 	BOND_OPCODE_ITEM(IFEQIW,       ifeqiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFNEI,        ifnei,        OFF16,        -2) \

@@ -1,0 +1,147 @@
+// A comparison of a long or a 64-bit pointer against zero compiles to ifzl or ifnzl when it is a
+// condition, and to tstl when its result is used as a value. Each function computes the same facts
+// through different forms, so that every form must agree.
+
+// Returns a bit mask of tests of whether x is zero, each one written in a different form.
+int LongForms(long x)
+{
+	int r = 0;
+	if (x != 0l) { r = r | 0x1; }
+	if (x == 0l) { r = r | 0x2; }
+	if (0l != x) { r = r | 0x4; }
+	if (!(x == 0l)) { r = r | 0x8; }
+	r = r | ((x != 0l) ? 0x10 : 0);
+	r = r | ((x == 0l) ? 0x20 : 0);
+
+	// Values: the first two use tstl, the third keeps the comparison. A bool must be exactly 0 or 1,
+	// which '== true' checks.
+	bool b1 = x != 0l;
+	bool b2 = !(x == 0l);
+	bool b3 = x == 0l;
+	r = r | ((b1 == true) ? 0x40 : 0);
+	r = r | ((b2 == true) ? 0x80 : 0);
+	r = r | ((b3 == true) ? 0x100 : 0);
+	r = r | ((b1 == false) ? 0x200 : 0);
+
+	// Loops: while, for and do, with the test as the whole condition and as an operand.
+	int n = 0;
+	while ((x != 0l) && (n < 3)) { ++n; }
+	r = r + (n * 0x1000);
+	for (n = 0; (n < 5) && !(x == 0l); ++n) {}
+	r = r + (n * 0x10000);
+	n = 0;
+	do { ++n; } while ((n < 7) && (x != 0l));
+	r = r + (n * 0x100000);
+	return r;
+}
+
+
+int ULongForms(ulong x)
+{
+	int r = 0;
+	if (x != 0ul) { r = r | 0x1; }
+	if (x == 0ul) { r = r | 0x2; }
+	if (0ul != x) { r = r | 0x4; }
+	if (!(x == 0ul)) { r = r | 0x8; }
+	r = r | ((x != 0ul) ? 0x10 : 0);
+	r = r | ((x == 0ul) ? 0x20 : 0);
+	bool b1 = x != 0ul;
+	bool b2 = !(x == 0ul);
+	bool b3 = x == 0ul;
+	r = r | ((b1 == true) ? 0x40 : 0);
+	r = r | ((b2 == true) ? 0x80 : 0);
+	r = r | ((b3 == true) ? 0x100 : 0);
+	r = r | ((b1 == false) ? 0x200 : 0);
+	int n = 0;
+	while ((x != 0ul) && (n < 3)) { ++n; }
+	r = r + (n * 0x1000);
+	for (n = 0; (n < 5) && !(x == 0ul); ++n) {}
+	r = r + (n * 0x10000);
+	n = 0;
+	do { ++n; } while ((n < 7) && (x != 0ul));
+	r = r + (n * 0x100000);
+	return r;
+}
+
+
+int PointerForms(int *p)
+{
+	int r = 0;
+	if (p != null) { r = r | 0x1; }
+	if (p == null) { r = r | 0x2; }
+	if (null != p) { r = r | 0x4; }
+	if (!(p == null)) { r = r | 0x8; }
+	r = r | ((p != null) ? 0x10 : 0);
+	r = r | ((p == null) ? 0x20 : 0);
+	bool b1 = p != null;
+	bool b2 = !(p == null);
+	bool b3 = p == null;
+	r = r | ((b1 == true) ? 0x40 : 0);
+	r = r | ((b2 == true) ? 0x80 : 0);
+	r = r | ((b3 == true) ? 0x100 : 0);
+	r = r | ((b1 == false) ? 0x200 : 0);
+	int n = 0;
+	while ((p != null) && (n < 3)) { ++n; }
+	r = r + (n * 0x1000);
+	for (n = 0; (n < 5) && !(p == null); ++n) {}
+	r = r + (n * 0x10000);
+	n = 0;
+	do { ++n; } while ((n < 7) && (p != null));
+	r = r + (n * 0x100000);
+	return r;
+}
+
+
+bool Bump(int *e, bool c)
+{
+	*e = *e + 1;
+	return c;
+}
+
+
+// Short-circuit evaluation with wide tests as the lhs, in conditions and as values. The result
+// holds the outcomes in its low bits and the number of evaluations of Bump() times 100.
+int ShortCircuit(long a, int *p, bool c)
+{
+	int e = 0;
+	int r = 0;
+	if ((a != 0l) && Bump(&e, c)) { r = r | 0x1; }
+	if ((p == null) || Bump(&e, c)) { r = r | 0x2; }
+	if (!((a == 0l) || Bump(&e, c))) { r = r | 0x4; }
+	bool v1 = (a == 0l) || Bump(&e, c);
+	bool v2 = (p != null) && Bump(&e, c);
+	bool v3 = (a != 0l) || Bump(&e, c);
+	bool v4 = (p == null) && Bump(&e, c);
+	r = r | ((v1 == true) ? 0x8 : 0);
+	r = r | ((v2 == true) ? 0x10 : 0);
+	r = r | ((v3 == true) ? 0x20 : 0);
+	r = r | ((v4 == true) ? 0x40 : 0);
+	return r + (e * 100);
+}
+
+
+// Walks a null-terminated list, as the list benchmark does.
+struct Node
+{
+	Node *mNext;
+	int mValue;
+};
+
+
+int ListSum(int n)
+{
+	Node n2 = { null, 3 };
+	Node n1 = { &n2, 2 };
+	Node n0 = { &n1, 1 };
+	if (n < 3) { n1.mNext = null; }
+	if (n < 2) { n0.mNext = null; }
+
+	int sum = 0;
+	Node *node = &n0;
+	while (node != null)
+	{
+		sum = (sum * 10) + node->mValue;
+		node = node->mNext;
+	}
+	return sum;
+}

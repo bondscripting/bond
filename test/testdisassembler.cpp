@@ -294,7 +294,7 @@ DEFINE_TEST(DeadJumpElimination)
 		"int F(bool c) { if (c) return 1; else return 2; }",
 		"\tcode size: 10\n"
 		"     0: pushuc      -8\n"
-		"     3: ifz         2 (8)\n"
+		"     3: ifzi        2 (8)\n"
 		"     6: consti_1    \n"
 		"     7: return32    \n"
 		"     8: consti_2    \n"
@@ -304,7 +304,7 @@ DEFINE_TEST(DeadJumpElimination)
 		"void F(bool c) { if (c) { return; } else { return; } }",
 		"\tcode size: 8\n"
 		"     0: pushuc      -8\n"
-		"     3: ifz         1 (7)\n"
+		"     3: ifzi        1 (7)\n"
 		"     6: return      \n"
 		"     7: return      \n");
 
@@ -343,12 +343,12 @@ DEFINE_TEST(DeadJumpElimination)
 	// So do continue in a do loop and the end of a while loop.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"void F(bool c, bool d) { do { if (c) continue; return; } while (d); }",
-		"    10: ifnz        -13 (0)\n"
+		"    10: ifnzi       -13 (0)\n"
 		"    13: return      \n");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"void F(bool c) { while (c) { } }",
-		"     6: ifnz        -6 (3)\n"
+		"     6: ifnzi       -6 (3)\n"
 		"     9: return      \n");
 }
 
@@ -360,25 +360,25 @@ DEFINE_TEST(TruthTestAgainstZero)
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int x) { if (x != 0) { return 1; } return 2; }",
 		"     0: push32_p0   \n"
-		"     1: ifz         ");
+		"     1: ifzi        ");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int x) { if (x == 0) { return 1; } return 2; }",
 		"     0: push32_p0   \n"
-		"     1: ifnz        ");
+		"     1: ifnzi       ");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int x, bool y) { return ((x != 0) && y) ? 1 : 2; }",
 		"     0: push32_p0   \n"
-		"     1: ifz         ");
+		"     1: ifzi        ");
 
 	ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
 		"int F(int *p) { if (p != null) { return 1; } return 2; }",
 		"cmpneqi",
 		Bond::POINTER_32BIT);
 
-	// The comparison remains where the result is used as a value, for long, 64-bit pointer and
-	// floating point operands, and for comparisons against true.
+	// The comparison remains where the result is used as a value, for floating point operands, and
+	// for comparisons against true. Longs and 64-bit pointers are covered by WideTruthTest.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"bool F(int x, bool y) { bool b = (x != 0) || y; return b; }",
 		"cmpneqi");
@@ -386,15 +386,6 @@ DEFINE_TEST(TruthTestAgainstZero)
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"bool F(int x) { return x != 0; }",
 		"cmpneqi");
-
-	ASSERT_DISASSEMBLY_CONTAINS_P(
-		"int F(int *p) { if (p != null) { return 1; } return 2; }",
-		"cmpneql",
-		Bond::POINTER_64BIT);
-
-	ASSERT_DISASSEMBLY_CONTAINS(
-		"int F(long l) { if (l != 0l) { return 1; } return 2; }",
-		"cmpneql");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(float f) { if (f != 0.0f) { return 1; } return 2; }",
@@ -405,6 +396,133 @@ DEFINE_TEST(TruthTestAgainstZero)
 		"int F(bool b) { if (b == true) { return 1; } return 2; }",
 		"     3: consti_1    \n"
 		"     4: ifnei       ");
+}
+
+
+// A comparison of a long or 64-bit pointer against zero that is itself a condition branches on the
+// value with ifzl or ifnzl. Elsewhere, 'x != 0' becomes tstl, and so does 'x == 0' where its
+// negation can be folded into the consumer.
+DEFINE_TEST(WideTruthTest)
+{
+	// Conditions.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(int *p) { if (p != null) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(int *p) { if (p != null) { return 1; } return 2; }",
+		"     0: push32_p0   \n"
+		"     1: ifzi        ",
+		Bond::POINTER_32BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { if (l != 0l) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { if (l == 0l) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifnzl       ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { if (0l != l) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(ulong u) { if (u != 0ul) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { if (!(l == 0l)) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ");
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct N { N *next; }; int F(N *p) { int n = 0; while (p != null) { p = p->next; ++n; } return n; }",
+		"ifnzl       ",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(int *p, int *q) { if ((p != null) && (q == null)) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        6 (10)\n"
+		"     4: push64_p1   \n"
+		"     5: ifnzl       2 (10)\n",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long a, long b) { if ((a == 0l) || (b != 0l)) { return 1; } return 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        4 (8)\n"
+		"     4: push64_p1   \n"
+		"     5: ifzl        ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { return (l != 0l) ? 1 : 2; }",
+		"     0: push64_p0   \n"
+		"     1: ifzl        ");
+
+	// Value contexts use tstl, which yields an exact bool.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"bool F(int *p) { bool b = p != null; return b; }",
+		"     0: push64_p0   \n"
+		"     1: tstl        \n",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"bool F(long l) { return l != 0l; }",
+		"     0: push64_p0   \n"
+		"     1: tstl        \n"
+		"     2: return32    \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"bool F(long l) { return !(l == 0l); }",
+		"     0: push64_p0   \n"
+		"     1: tstl        \n"
+		"     2: return32    \n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"bool F(long l, bool y) { return (l == 0l) || y; }",
+		"     0: push64_p0   \n"
+		"     1: tstl        \n"
+		"     2: nbrnz       ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"bool F(long l, bool y) { return (l != 0l) && y; }",
+		"     0: push64_p0   \n"
+		"     1: tstl        \n"
+		"     2: brz         ");
+
+	// 'x == 0' with nothing to fold the negation into keeps the comparison.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"bool F(long l) { return l == 0l; }",
+		"cmpeql");
+
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"bool F(long l) { return l == 0l; }",
+		"tstl");
+
+	// No other comparison is affected.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(long l) { if (l != 1l) { return 1; } return 2; }",
+		"cmpneql");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(double d) { if (d != 0.0) { return 1; } return 2; }",
+		"cmpneqd");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(float f) { return (f != 0.0f) ? 1 : 2; }",
+		"cmpneqf");
+
+	ASSERT_DISASSEMBLY_NOT_CONTAINS(
+		"int F(int x) { if (x != 0) { return 1; } return 2; }",
+		"tstl");
 }
 
 
@@ -674,17 +792,159 @@ DEFINE_TEST(PointerAddConstant)
 		"struct S { int a; int *ptr; };"
 		"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
 		"     0: push64_p0   \n"
-		"     1: ptraddc     8\n"
-		"     4: dup         \n"
-		"     5: load64      \n"
-		"     6: ptraddc     4\n"
-		"     9: store64     \n",
+		"     1: dup         \n"
+		"     2: load64o     8\n"
+		"     5: ptraddc     4\n"
+		"     8: store64o    8\n",
 		Bond::POINTER_64BIT);
 
 	ASSERT_DISASSEMBLY_CONTAINS_P(
 		"struct S { int a; int *ptr; };"
 		"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
 		"ptraddc     -12\n",
+		Bond::POINTER_64BIT);
+}
+
+
+// A 32-bit or 64-bit value at a nonzero constant offset that fits in 16 bits is stored with a single
+// store32o or store64o. The offset stays out of the address until the store, so compound assignment
+// and increments duplicate the base address and use load32o/load64o and store32o/store64o.
+DEFINE_TEST(OffsetStores)
+{
+	const Bond::PointerSize POINTER_SIZES[] = { Bond::POINTER_32BIT, Bond::POINTER_64BIT };
+	for (const Bond::PointerSize pointerSize: POINTER_SIZES)
+	{
+		// Every eligible type, through a pointer and through 'this'.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; int b; void Set(int v) { b = v; } };",
+			"     2: store32o    4\n",
+			pointerSize);
+
+		const char *const ALL_TYPES =
+			"struct M { int a; int i; uint u; float f; long l; ulong ul; double d; };"
+			"void F(M *p) { p->i = 1; p->u = 2u; p->f = 3.0f; p->l = 4l; p->ul = 5ul; p->d = 6.0; }";
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store32o    4\n", pointerSize);
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store32o    8\n", pointerSize);
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store32o    12\n", pointerSize);
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store64o    16\n", pointerSize);
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store64o    24\n", pointerSize);
+		ASSERT_DISASSEMBLY_CONTAINS_P(ALL_TYPES, "store64o    32\n", pointerSize);
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(ALL_TYPES, "ptraddc", pointerSize);
+
+		// Constant subscripts, including negative ones, and the 16-bit boundaries.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(int *p, int v) { p[3] = v; p[-2] = v; }",
+			"     0: push32_p0   \n"
+			"     1: push32_p1   \n"
+			"     2: store32o    12\n",
+			Bond::POINTER_32BIT);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(int *p, int v) { p[3] = v; p[-2] = v; }",
+			"store32o    -8\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(int *p, int v) { p[8191] = v; p[-8192] = v; }",
+			"store32o    32764\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(int *p, int v) { p[8191] = v; p[-8192] = v; }",
+			"store32o    -32768\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(long *p, long v) { p[4095] = v; p[-4096] = v; }",
+			"store64o    32760\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"void F(long *p, long v) { p[4095] = v; p[-4096] = v; }",
+			"store64o    -32768\n",
+			pointerSize);
+
+		// Cases that keep a plain store: offsets out of range, a zero offset and small types.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"void F(int *p, int v) { p[8192] = v; p[-8193] = v; }",
+			"store32o",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct Big { char[32768] pad; int x; };"
+			"void F(Big *b) { b->x = 1; ++b->x; }",
+			"store32o",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int b; };"
+			"void F(S *p, int *q, int v) { p->a = v; *q = v; q[0] += v; }",
+			"store32o",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct C { int a; char c; uchar uc; short s; ushort us; bool b; };"
+			"void F(C *p) { p->c = cast<char>(1); p->uc = cast<uchar>(2); p->s = cast<short>(3); p->us = cast<ushort>(4); p->b = true; ++p->s; }",
+			"store32o",
+			pointerSize);
+	}
+
+	// Pointer-valued fields use the store of the pointer's width.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct R { int a; int *ptr; };"
+		"void F(R *r, int *q) { r->ptr = q; }",
+		"     2: store32o    4\n",
+		Bond::POINTER_32BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct R { int a; int *ptr; };"
+		"void F(R *r, int *q) { r->ptr = q; }",
+		"     2: store64o    8\n",
+		Bond::POINTER_64BIT);
+
+	// Value context: dupins copies the value below the address, then the store pops both.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct T { int a; int b; long c; };"
+		"int F(T *p, int v) { return p->b = v; }",
+		"     0: push64_p0   \n"
+		"     1: push32_p1   \n"
+		"     2: dupins      \n"
+		"     3: store32o    4\n"
+		"     6: return32    \n",
+		Bond::POINTER_64BIT);
+
+	// Compound assignment, prefix and postfix increments.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct T { int a; int b; long c; };"
+		"void F(T *p) { p->b += 3; ++p->c; p->b = 7; }",
+		"     0: push64_p0   \n"
+		"     1: dup         \n"
+		"     2: load32o     4\n"
+		"     5: consti_3    \n"
+		"     6: addi        \n"
+		"     7: store32o    4\n"
+		"    10: push64_p0   \n"
+		"    11: dup         \n"
+		"    12: load64o     8\n"
+		"    15: constl_1    \n"
+		"    16: addl        \n"
+		"    17: store64o    8\n"
+		"    20: push64_p0   \n"
+		"    21: constc      7\n"
+		"    23: store32o    4\n",
+		Bond::POINTER_64BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct T { int a; int b; long c; };"
+		"long F(T *p) { return p->c++; }",
+		"     0: push64_p0   \n"
+		"     1: dup         \n"
+		"     2: load64o     8\n"
+		"     5: dupins      \n"
+		"     6: constl_1    \n"
+		"     7: addl        \n"
+		"     8: store64o    8\n"
+		"    11: return64    \n",
 		Bond::POINTER_64BIT);
 }
 
@@ -778,17 +1038,12 @@ DEFINE_TEST(OffsetLoads)
 			"load32o",
 			pointerSize);
 
-		// Compound assignment, increment and stores keep ptraddc, since the address is reused.
+		// Compound assignment and increment duplicate the base address, then load and store at the
+		// offset (see OffsetStores).
 		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
 			"struct S { int a; int b; long c; };"
 			"void F(S *p) { p->b += 3; ++p->c; p->b = 7; }",
-			"load32o",
-			pointerSize);
-
-		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
-			"struct S { int a; int b; long c; };"
-			"void F(S *p) { p->b += 3; ++p->c; p->b = 7; }",
-			"load64o",
+			"ptraddc",
 			pointerSize);
 	}
 
@@ -891,10 +1146,12 @@ DEFINE_TEST(FarFrameOffsets)
   TEST_ITEM(GotoToReturn)                       \
   TEST_ITEM(DeadJumpElimination)                \
   TEST_ITEM(TruthTestAgainstZero)               \
+  TEST_ITEM(WideTruthTest)                      \
   TEST_ITEM(FusedCompareBranch)                 \
   TEST_ITEM(ReturnValueElision)                 \
   TEST_ITEM(PointerAddConstant)                 \
   TEST_ITEM(OffsetLoads)                        \
+  TEST_ITEM(OffsetStores)                       \
   TEST_ITEM(FarFrameOffsets)                    \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

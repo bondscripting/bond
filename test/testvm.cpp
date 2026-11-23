@@ -2070,6 +2070,51 @@ DEFINE_VM_TEST(OffsetLoads, "scripts/vm_OffsetLoads.bond")
 }
 
 
+DEFINE_VM_TEST(OffsetStores, "scripts/vm_OffsetStores.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL(int32_t, "StoreFields", int32_t(0x7FFF), int32_t(-123456));
+	VALIDATE_FUNCTION_CALL(int32_t, "StoreFields", int32_t(0x7FFF), int32_t(0x7FFFFFFF));
+	VALIDATE_FUNCTION_CALL(int64_t, "ValueContext", int64_t(2634), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int64_t, "ValueContext", int64_t(-598), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "Compound", int32_t(0x1FF), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "Compound", int32_t(0x1FF), int32_t(-20));
+	VALIDATE_FUNCTION_CALL(int32_t, "Increments", int32_t(0xF));
+	VALIDATE_FUNCTION_CALL(int32_t, "EvaluationOrder", int32_t(0x1F), int32_t(7));
+
+	int32_t ints[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	int64_t longs[6] = { 1, 2, 3, 4, 5, 6 };
+	VALIDATE_FUNCTION_CALL(int32_t, "StoreNegative", int32_t(0), &ints[0], &longs[0]);
+	const int32_t expectedInts[10] = { 50, 1, 30, 3, 5, 5, 13, 7, 8, 9 };
+	const int64_t expectedLongs[6] = { 400, 2, 2, 300, 5, 18 };
+	for (size_t i = 0; i < 10; ++i)
+	{
+		ASSERT_FORMAT(ints[i] == expectedInts[i], "StoreNegative() left ints[%d] = %d, expected %d.", int(i), int(ints[i]), int(expectedInts[i]));
+	}
+	for (size_t i = 0; i < 6; ++i)
+	{
+		ASSERT_FORMAT(longs[i] == expectedLongs[i], "StoreNegative() left longs[%d] = %d, expected %d.", int(i), int(longs[i]), int(expectedLongs[i]));
+	}
+
+	static int32_t intBuffer[20000];
+	static int64_t longBuffer[10000];
+	int32_t *intMiddle = &intBuffer[10000];
+	int64_t *longMiddle = &longBuffer[5000];
+	VALIDATE_FUNCTION_CALL(int32_t, "StoreBoundaries", int32_t(0), intMiddle, longMiddle);
+	ASSERT_MESSAGE(intMiddle[8191] == 1, "StoreBoundaries() stored p[8191] at the wrong address.");
+	ASSERT_MESSAGE(intMiddle[-8192] == 2, "StoreBoundaries() stored p[-8192] at the wrong address.");
+	ASSERT_MESSAGE(intMiddle[8192] == 3, "StoreBoundaries() stored p[8192] at the wrong address.");
+	ASSERT_MESSAGE(intMiddle[-8193] == 4, "StoreBoundaries() stored p[-8193] at the wrong address.");
+	ASSERT_MESSAGE(longMiddle[4095] == 5, "StoreBoundaries() stored q[4095] at the wrong address.");
+	ASSERT_MESSAGE(longMiddle[-4096] == 6, "StoreBoundaries() stored q[-4096] at the wrong address.");
+	ASSERT_MESSAGE(longMiddle[4096] == 7, "StoreBoundaries() stored q[4096] at the wrong address.");
+	ASSERT_MESSAGE(longMiddle[-4097] == 8, "StoreBoundaries() stored q[-4097] at the wrong address.");
+	ASSERT_MESSAGE((intMiddle[8190] == 0) && (intMiddle[-8191] == 0) && (longMiddle[4094] == 0) && (longMiddle[-4095] == 0),
+		"StoreBoundaries() wrote next to a target.");
+}
+
+
 DEFINE_VM_TEST(FarFrameOffsets, "scripts/vm_FarFrameOffsets.bond")
 {
 	using namespace Bond;
@@ -2210,6 +2255,75 @@ DEFINE_VM_TEST(FusedBranches, "scripts/vm_FusedBranches.bond")
 }
 
 
+// The result of LongForms, ULongForms and PointerForms in vm_WideTruthTests.bond.
+static int32_t WideFormsMask(bool isNonZero)
+{
+	// Tests that hold for a non-zero value, then for zero. The loop counts follow.
+	return isNonZero ?
+		(0x1 | 0x4 | 0x8 | 0x10 | 0x40 | 0x80) + (3 * 0x1000) + (5 * 0x10000) + (7 * 0x100000) :
+		(0x2 | 0x20 | 0x100 | 0x200) + (1 * 0x100000);
+}
+
+
+// The result of ShortCircuit in vm_WideTruthTests.bond.
+static int32_t ShortCircuitResult(int64_t a, const void *p, bool c)
+{
+	int32_t e = 0;
+	int32_t r = 0;
+	auto bump = [&e, c]() { ++e; return c; };
+	if ((a != 0) && bump()) { r |= 0x1; }
+	if ((p == nullptr) || bump()) { r |= 0x2; }
+	if (!((a == 0) || bump())) { r |= 0x4; }
+	const bool v1 = (a == 0) || bump();
+	const bool v2 = (p != nullptr) && bump();
+	const bool v3 = (a != 0) || bump();
+	const bool v4 = (p == nullptr) && bump();
+	r |= v1 ? 0x8 : 0;
+	r |= v2 ? 0x10 : 0;
+	r |= v3 ? 0x20 : 0;
+	r |= v4 ? 0x40 : 0;
+	return r + (e * 100);
+}
+
+
+DEFINE_VM_TEST(WideTruthTests, "scripts/vm_WideTruthTests.bond")
+{
+	using namespace Bond;
+
+	// Values whose low 32 bits are zero must still test as non-zero.
+	const int64_t longs[] = {0, 1, -1, int64_t(0x100000000), BOND_LONG_MIN, BOND_LONG_MAX};
+	for (const int64_t x: longs)
+	{
+		VALIDATE_FUNCTION_CALL(int32_t, "LongForms", WideFormsMask(x != 0), x);
+	}
+
+	const uint64_t ulongs[] = {0, 1, uint64_t(0x100000000), uint64_t(0x8000000000000000), BOND_ULONG_MAX};
+	for (const uint64_t x: ulongs)
+	{
+		VALIDATE_FUNCTION_CALL(int32_t, "ULongForms", WideFormsMask(x != 0), x);
+	}
+
+	int32_t value = 0;
+	int32_t *const pointers[] = {nullptr, &value};
+	for (int32_t *p: pointers)
+	{
+		VALIDATE_FUNCTION_CALL(int32_t, "PointerForms", WideFormsMask(p != nullptr), p);
+
+		for (const int64_t a: {int64_t(0), int64_t(0x100000000)})
+		{
+			for (const bool c: {false, true})
+			{
+				VALIDATE_FUNCTION_CALL(int32_t, "ShortCircuit", ShortCircuitResult(a, p, c), a, p, c);
+			}
+		}
+	}
+
+	VALIDATE_FUNCTION_CALL(int32_t, "ListSum", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "ListSum", int32_t(12), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "ListSum", int32_t(123), int32_t(3));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -2239,6 +2353,8 @@ DEFINE_VM_TEST(FusedBranches, "scripts/vm_FusedBranches.bond")
   TEST_ITEM(CodeGenOptimizations)               \
   TEST_ITEM(FarFrameOffsets)                    \
   TEST_ITEM(OffsetLoads)                        \
+  TEST_ITEM(OffsetStores)                       \
   TEST_ITEM(FusedBranches)                      \
+  TEST_ITEM(WideTruthTests)                     \
 
 RUN_TESTS(VM, TEST_ITEMS)

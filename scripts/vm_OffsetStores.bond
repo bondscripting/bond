@@ -1,0 +1,212 @@
+// A 32-bit or 64-bit value at a nonzero constant offset that fits in 16 bits is stored with a single
+// store32o or store64o. Compound assignments and increments duplicate the base address and load and
+// store at the offset. The guard members g0 and g1 check that no store lands next to its target.
+
+struct Fields
+{
+	int g0;
+	int i;
+	uint u;
+	float f;
+	long l;
+	ulong ul;
+	double d;
+	Fields *next;
+	int *ip;
+	char c;
+	short s;
+	int g1;
+};
+
+
+const int G0 = 0x11111111;
+const int G1 = 0x22222222;
+
+
+bool GuardsIntact(Fields *p)
+{
+	return (p->g0 == G0) && (p->g1 == G1);
+}
+
+
+// Stores every eligible type through a pointer and reads the values back as locals.
+int StoreFields(int x)
+{
+	Fields b = { G0, 0, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<char>(0), cast<short>(0), G1 };
+	Fields a = { G0, 0, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<char>(0), cast<short>(0), G1 };
+	int v = 0;
+	Fields *p = &a;
+	p->i = x;
+	p->u = 0xFFFFFFFEu;
+	p->f = 1.5f;
+	p->l = 0x123456789l;
+	p->ul = 0xFFFFFFFFFFFFFFFFul;
+	p->d = -2.25;
+	p->next = &b;
+	p->ip = &v;
+	p->c = cast<char>(-5);
+	p->s = cast<short>(-300);
+	p->next->i = 42;
+	p->next->l = -7l;
+	p->next->ip = &v;
+	*p->next->ip = 9;
+
+	int r = 0;
+	r = r | ((a.i == x) ? 0x1 : 0);
+	r = r | ((a.u == 0xFFFFFFFEu) ? 0x2 : 0);
+	r = r | ((a.f == 1.5f) ? 0x4 : 0);
+	r = r | ((a.l == 0x123456789l) ? 0x8 : 0);
+	r = r | ((a.ul == 0xFFFFFFFFFFFFFFFFul) ? 0x10 : 0);
+	r = r | ((a.d == -2.25) ? 0x20 : 0);
+	r = r | ((a.next == &b) ? 0x40 : 0);
+	r = r | ((a.ip == &v) ? 0x80 : 0);
+	r = r | ((a.c == cast<char>(-5)) ? 0x100 : 0);
+	r = r | ((a.s == cast<short>(-300)) ? 0x200 : 0);
+	r = r | ((b.i == 42) ? 0x400 : 0);
+	r = r | ((b.l == -7l) ? 0x800 : 0);
+	r = r | ((v == 9) ? 0x1000 : 0);
+	r = r | ((GuardsIntact(&a) && GuardsIntact(&b)) ? 0x2000 : 0);
+	r = r | (((b.u == 0u) && (b.ul == 0ul) && (b.d == 0.0) && (b.next == null)) ? 0x4000 : 0);
+	return r;
+}
+
+
+// Stores whose value is also used.
+long ValueContext(int x)
+{
+	Fields a = { G0, 0, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<char>(0), cast<short>(0), G1 };
+	Fields *p = &a;
+	const int r1 = (p->i = x) + 1;
+	const long r2 = p->l = cast<long>(x) * 3l;
+	const double r3 = p->d = 0.5;
+	p->ul = cast<ulong>(p->u = 7u);
+	long r = cast<long>(r1) + r2 + cast<long>(r3 * 10.0);
+	r = (r * 100l) + cast<long>(a.i) + a.l + cast<long>(a.u) + cast<long>(a.ul);
+	return GuardsIntact(&a) ? r : -1l;
+}
+
+
+// Compound assignment on every eligible type.
+int Compound(int x)
+{
+	Fields a = { G0, 10, 0xFFFFFFFFu, 1.5f, 100l, 5ul, 9.0, null, null, cast<char>(1), cast<short>(2), G1 };
+	Fields *p = &a;
+	p->i += x;
+	p->i -= 2;
+	p->i *= 3;
+	p->u += 1u;
+	p->f *= 2.0f;
+	p->l += cast<long>(x);
+	p->l *= 5l;
+	p->ul <<= 2ul;
+	p->d /= 4.0;
+	p->c += cast<char>(3);
+	p->s -= cast<short>(5);
+
+	int r = 0;
+	r = r | ((a.i == ((10 + x - 2) * 3)) ? 0x1 : 0);
+	r = r | ((a.u == 0u) ? 0x2 : 0);
+	r = r | ((a.f == 3.0f) ? 0x4 : 0);
+	r = r | ((a.l == ((100l + cast<long>(x)) * 5l)) ? 0x8 : 0);
+	r = r | ((a.ul == 20ul) ? 0x10 : 0);
+	r = r | ((a.d == 2.25) ? 0x20 : 0);
+	r = r | ((a.c == cast<char>(4)) ? 0x40 : 0);
+	r = r | ((a.s == cast<short>(-3)) ? 0x80 : 0);
+	r = r | (GuardsIntact(&a) ? 0x100 : 0);
+	return r;
+}
+
+
+// Prefix and postfix increments and their results.
+int Increments()
+{
+	int[8] buffer = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	Fields a = { G0, 10, 0u, 0.0f, 100l, 0ul, 0.0, null, &buffer[2], cast<char>(0), cast<short>(0), G1 };
+	Fields *p = &a;
+	const int i1 = p->i++;
+	const int i2 = ++p->i;
+	const int i3 = p->i--;
+	const long l1 = p->l--;
+	const long l2 = --p->l;
+	const long l3 = p->l++;
+	const int v1 = *p->ip++;
+	const int v2 = *++p->ip;
+	p->ip += 2;
+	const int v3 = *p->ip;
+	p->ip -= 3;
+	const int v4 = *p->ip--;
+	const int v5 = *p->ip;
+
+	int r = 0;
+	r = r | (((i1 == 10) && (i2 == 12) && (i3 == 12) && (a.i == 11)) ? 0x1 : 0);
+	r = r | (((l1 == 100l) && (l2 == 98l) && (l3 == 98l) && (a.l == 99l)) ? 0x2 : 0);
+	r = r | (((v1 == 2) && (v2 == 4) && (v3 == 6) && (v4 == 3) && (v5 == 2)) ? 0x4 : 0);
+	r = r | (GuardsIntact(&a) ? 0x8 : 0);
+	return r;
+}
+
+
+int StoreNegative(int *p, long *q)
+{
+	int *ip = p + 5;
+	ip[-3] = 30;
+	ip[-5] = 50;
+	ip[1] += 7;
+	ip[-1]++;
+	long *lp = q + 4;
+	lp[-1] = 300l;
+	lp[-4] = 400l;
+	lp[1] *= 3l;
+	--lp[-2];
+	return 0;
+}
+
+
+// p[8191] and p[-8192] are the last int offsets that fit in 16 bits, q[4095] and q[-4096] the last
+// long ones.
+int StoreBoundaries(int *p, long *q)
+{
+	p[8191] = 1;
+	p[-8192] = 2;
+	p[8192] = 3;
+	p[-8193] = 4;
+	q[4095] = 5l;
+	q[-4096] = 6l;
+	q[4096] = 7l;
+	q[-4097] = 8l;
+	return 0;
+}
+
+
+int SetI(Fields *p, int v)
+{
+	p->i = 100;
+	return v;
+}
+
+
+int Redirect(Fields **pp, Fields *target, int v)
+{
+	*pp = target;
+	return v;
+}
+
+
+// The address of the target is evaluated before the value, so a call in the value that writes the
+// same field or redirects the pointer doesn't change where the value goes.
+int EvaluationOrder(int x)
+{
+	Fields a = { G0, 0, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<char>(0), cast<short>(0), G1 };
+	Fields b = { G0, 0, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<char>(0), cast<short>(0), G1 };
+	Fields *p = &a;
+	p->u = cast<uint>(SetI(p, x));
+	int r = ((a.i == 100) && (a.u == cast<uint>(x))) ? 0x1 : 0;
+	p->i = SetI(p, x);
+	r = r | ((a.i == x) ? 0x2 : 0);
+	p->l = cast<long>(Redirect(&p, &b, x));
+	r = r | (((a.l == cast<long>(x)) && (b.l == 0l) && (p == &b)) ? 0x4 : 0);
+	p->i += Redirect(&p, &a, x);
+	r = r | (((b.i == x) && (a.i == x)) ? 0x8 : 0);
+	r = r | ((GuardsIntact(&a) && GuardsIntact(&b)) ? 0x10 : 0);
+	return r;
+}

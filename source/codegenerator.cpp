@@ -295,6 +295,8 @@ public:
 		mTranslationUnitList(translationUnitList),
 		mLastComparison(nullptr),
 		mLastComparisonPos(0),
+		mBranchCondition(nullptr),
+		mLastWideTruthTest(nullptr),
 		mPointerSize(pointerSize)
 	{}
 
@@ -549,6 +551,8 @@ private:
 	void EmitPopFramePointerIndirectValue64(int32_t offset);
 	void EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset);
 	ValueRef EmitFarFrameAddress(const ValueRef &valueRef);
+	ValueRef EmitPrepareAddressTarget(const ValueRef &valueRef, const TypeDescriptor &typeDescriptor);
+	OpCode GetOffsetAccessOpCode(const TypeDescriptor &typeDescriptor, int32_t offset, bool isStore) const;
 	ValueRef EmitAccumulateAddressOffset(const ValueRef &valueRef);
 	void EmitAccumulateAddressOffset(int32_t offset);
 	void EmitPointerAddConstant(int64_t offset);
@@ -678,6 +682,11 @@ private:
 	// absorb, and the position of that instruction.
 	const Expression *mLastComparison;
 	size_t mLastComparisonPos;
+
+	// The condition that EmitConditionalJump is compiling, and the last comparison against zero
+	// within such a condition that pushed a 64-bit value for ifzl or ifnzl to test.
+	const Expression *mBranchCondition;
+	const Expression *mLastWideTruthTest;
 
 	PointerSize mPointerSize;
 };
@@ -2282,38 +2291,12 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescr
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
 	// at the resulting address. A 32-bit or 64-bit value at a nonzero 16-bit offset is loaded with a
 	// single load32o or load64o.
-	if ((offset != 0) && IsInRange<int16_t>(offset))
+	const OpCode offsetLoad = GetOffsetAccessOpCode(typeDescriptor, offset, false);
+	if (offsetLoad != OPCODE_NOP)
 	{
-		OpCode offsetLoad = OPCODE_NOP;
-		if (typeDescriptor.IsValueType())
-		{
-			switch (typeDescriptor.GetPrimitiveType())
-			{
-				case Token::KEY_INT:
-				case Token::KEY_UINT:
-				case Token::KEY_FLOAT:
-					offsetLoad = OPCODE_LOAD32O;
-					break;
-				case Token::KEY_LONG:
-				case Token::KEY_ULONG:
-				case Token::KEY_DOUBLE:
-					offsetLoad = OPCODE_LOAD64O;
-					break;
-				default:
-					break;
-			}
-		}
-		else if (typeDescriptor.IsPointerType())
-		{
-			offsetLoad = Is64BitPointer() ? OPCODE_LOAD64O : OPCODE_LOAD32O;
-		}
-
-		if (offsetLoad != OPCODE_NOP)
-		{
-			EmitOpCode(offsetLoad);
-			EmitValue16(Value16(int16_t(offset)));
-			return;
-		}
+		EmitOpCode(offsetLoad);
+		EmitValue16(Value16(int16_t(offset)));
+		return;
 	}
 
 	EmitAccumulateAddressOffset(offset);
@@ -2839,7 +2822,18 @@ void GeneratorCore::EmitPopFramePointerIndirectValue64(int32_t offset)
 
 void GeneratorCore::EmitPopAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
-	EmitAccumulateAddressOffset(offset);
+	// The address is below the value on the stack. A 32-bit or 64-bit value at a nonzero 16-bit
+	// offset is stored with a single store32o or store64o. Any other offset must have been added to
+	// the address before the value was pushed (see EmitPrepareAddressTarget).
+	const OpCode offsetStore = GetOffsetAccessOpCode(typeDescriptor, offset, true);
+	if (offsetStore != OPCODE_NOP)
+	{
+		EmitOpCode(offsetStore);
+		EmitValue16(Value16(int16_t(offset)));
+		return;
+	}
+
+	BOND_ASSERT(offset == 0);
 
 	if (typeDescriptor.IsValueType())
 	{
@@ -2886,6 +2880,67 @@ GeneratorCore::ValueRef GeneratorCore::EmitFarFrameAddress(const ValueRef &value
 		return ValueRef(ValueRef::CONTEXT_ADDRESS_INDIRECT, 0);
 	}
 	return valueRef;
+}
+
+
+GeneratorCore::ValueRef GeneratorCore::EmitPrepareAddressTarget(const ValueRef &valueRef, const TypeDescriptor &typeDescriptor)
+{
+	// The address of an assignment target is pushed before the value. Keep a constant offset on the
+	// ref when the value can be loaded and stored at that offset with load32o/load64o and
+	// store32o/store64o. Otherwise add it to the address now, since it can't be added once the
+	// value is above the address on the stack.
+	if ((valueRef.mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT) &&
+	    (GetOffsetAccessOpCode(typeDescriptor, valueRef.mOffset, true) != OPCODE_NOP))
+	{
+		return valueRef;
+	}
+	return EmitAccumulateAddressOffset(valueRef);
+}
+
+
+OpCode GeneratorCore::GetOffsetAccessOpCode(const TypeDescriptor &typeDescriptor, int32_t offset, bool isStore) const
+{
+	// Returns the instruction that loads or stores a value of the given type at a constant offset
+	// from the address on the stack, or OPCODE_NOP if there is none. Only 32-bit and 64-bit values
+	// at a nonzero offset that fits in 16 bits have one.
+	if ((offset == 0) || !IsInRange<int16_t>(offset))
+	{
+		return OPCODE_NOP;
+	}
+
+	bool is64Bit = false;
+	if (typeDescriptor.IsValueType())
+	{
+		switch (typeDescriptor.GetPrimitiveType())
+		{
+			case Token::KEY_INT:
+			case Token::KEY_UINT:
+			case Token::KEY_FLOAT:
+				is64Bit = false;
+				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
+			case Token::KEY_DOUBLE:
+				is64Bit = true;
+				break;
+			default:
+				return OPCODE_NOP;
+		}
+	}
+	else if (typeDescriptor.IsPointerType())
+	{
+		is64Bit = Is64BitPointer();
+	}
+	else
+	{
+		return OPCODE_NOP;
+	}
+
+	if (isStore)
+	{
+		return is64Bit ? OPCODE_STORE64O : OPCODE_STORE32O;
+	}
+	return is64Bit ? OPCODE_LOAD64O : OPCODE_LOAD32O;
 }
 
 
@@ -3309,12 +3364,18 @@ GeneratorCore::ValueRef GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpr
 
 bool GeneratorCore::TryEmitTruthTest(const BinaryExpression *binaryExpression)
 {
-	// Where only the truth value of a comparison matters, 'x != 0' is the same as 'x' and 'x == 0'
-	// is the same as '!x', when x is held as a 32-bit value. The conditional branches test exactly
-	// 32 bits, so this excludes longs and 64-bit pointers. It also excludes floating point types,
-	// because the bits of -0.0 are not zero.
+	// A comparison against zero can be compiled as a test of the operand itself. Floating point
+	// types are never eligible, because the bits of -0.0 are not zero.
+	//
+	// A 32-bit operand (bool to uint, and 32-bit pointers): where only the truth value matters,
+	// 'x != 0' is the same as 'x' and 'x == 0' is the same as '!x'.
+	//
+	// A 64-bit operand (long, ulong and 64-bit pointers): ifzi and ifnzi test only 32 bits, so the
+	// raw value is pushed only when the comparison is itself the condition of EmitConditionalJump,
+	// which then tests it with ifzl or ifnzl. Elsewhere, tstl turns the value into an exact bool:
+	// 'x != 0' is 'tstl', and 'x == 0' is 'tstl' negated where the consumer applies the negation.
 	const Token::TokenType op = binaryExpression->GetOperator()->GetTokenType();
-	if (!GetTruthValueOnly() || ((op != Token::OP_EQUAL) && (op != Token::OP_NOT_EQUAL)))
+	if ((op != Token::OP_EQUAL) && (op != Token::OP_NOT_EQUAL))
 	{
 		return false;
 	}
@@ -3328,10 +3389,12 @@ bool GeneratorCore::TryEmitTruthTest(const BinaryExpression *binaryExpression)
 	}
 
 	const TypeDescriptor &operandDescriptor = operand->GetTypeDescriptor();
-	bool isEligible = false;
+	bool isNarrow = false;
+	bool isWide = false;
 	if (operandDescriptor.IsPointerIntrinsicType())
 	{
-		isEligible = !Is64BitPointer();
+		isWide = Is64BitPointer();
+		isNarrow = !isWide;
 	}
 	else
 	{
@@ -3344,14 +3407,40 @@ bool GeneratorCore::TryEmitTruthTest(const BinaryExpression *binaryExpression)
 			case Token::KEY_USHORT:
 			case Token::KEY_INT:
 			case Token::KEY_UINT:
-				isEligible = true;
+				isNarrow = true;
+				break;
+			case Token::KEY_LONG:
+			case Token::KEY_ULONG:
+				isWide = true;
 				break;
 			default:
 				break;
 		}
 	}
 
-	if (!isEligible)
+	const bool isNegated = (op == Token::OP_EQUAL);
+	const bool isBranchCondition = GetTruthValueOnly() && (binaryExpression == mBranchCondition);
+	bool emitTest = false;
+	if (isNarrow)
+	{
+		if (!GetTruthValueOnly())
+		{
+			return false;
+		}
+	}
+	else if (isWide)
+	{
+		if (!isBranchCondition)
+		{
+			// 'x == 0' would need 'tstl; not', which is no shorter than the comparison.
+			if (isNegated && !GetCollapseNotOperators())
+			{
+				return false;
+			}
+			emitTest = true;
+		}
+	}
+	else
 	{
 		return false;
 	}
@@ -3362,7 +3451,16 @@ bool GeneratorCore::TryEmitTruthTest(const BinaryExpression *binaryExpression)
 		EmitPushValueRef(operandRef, operandDescriptor);
 	}
 
-	if (op == Token::OP_EQUAL)
+	if (emitTest)
+	{
+		EmitOpCode(OPCODE_TSTL);
+	}
+	else if (isWide)
+	{
+		mLastWideTruthTest = binaryExpression;
+	}
+
+	if (isNegated)
 	{
 		mExpressionIsNegated.SetTop(true);
 	}
@@ -3455,7 +3553,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitAssignmentOperator(const BinaryExpres
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (lhRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
-			lhRef = EmitAccumulateAddressOffset(lhRef);
+			lhRef = EmitPrepareAddressTarget(lhRef, lhDescriptor);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
 
@@ -3598,7 +3696,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitCompoundAssignmentOperator(const Bina
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (lhRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
-			lhRef = EmitAccumulateAddressOffset(lhRef);
+			lhRef = EmitPrepareAddressTarget(lhRef, lhDescriptor);
 			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
@@ -3721,7 +3819,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerCompoundAssignmentOperator(con
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (pointerRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
-			pointerRef = EmitAccumulateAddressOffset(pointerRef);
+			pointerRef = EmitPrepareAddressTarget(pointerRef, pointerDescriptor);
 			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
@@ -3988,7 +4086,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerIncrementOperator(const Expres
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (operandRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
-			operandRef = EmitAccumulateAddressOffset(operandRef);
+			operandRef = EmitPrepareAddressTarget(operandRef, operandDescriptor);
 			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
@@ -4084,7 +4182,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitIncrementOperator(const Expression *e
 		OpCode valueDupOpCode = OPCODE_DUP;
 		if (operandRef.GetValue().mContext == ValueRef::CONTEXT_ADDRESS_INDIRECT)
 		{
-			operandRef = EmitAccumulateAddressOffset(operandRef);
+			operandRef = EmitPrepareAddressTarget(operandRef, operandDescriptor);
 			EmitOpCode(OPCODE_DUP);
 			valueDupOpCode = OPCODE_DUPINS;
 		}
@@ -4358,9 +4456,20 @@ void GeneratorCore::EmitConditionalJump(const Expression *condition, bool jumpIf
 
 	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 	auto conditionRef = mValueRef.Push();
+	const Expression *outerBranchCondition = mBranchCondition;
+	mBranchCondition = condition;
 	const bool negated = TraverseCollapseNotOperators(condition, true);
+	mBranchCondition = outerBranchCondition;
 	EmitPushValueRef(conditionRef, conditionDescriptor);
 	const bool branchIfNonZero = (jumpIfTrue != negated);
+
+	// A comparison of a 64-bit value against zero left the value itself to test.
+	if (condition == mLastWideTruthTest)
+	{
+		mLastWideTruthTest = nullptr;
+		EmitJump(branchIfNonZero ? OPCODE_IFNZL : OPCODE_IFZL, toLabel);
+		return;
+	}
 
 	// When the condition itself is an int comparison, its compare instruction was emitted last and
 	// is replaced by a branch that compares and branches. Labels defined within the condition refer
@@ -4379,7 +4488,7 @@ void GeneratorCore::EmitConditionalJump(const Expression *condition, bool jumpIf
 	}
 	else
 	{
-		EmitJump(branchIfNonZero ? OPCODE_IFNZ : OPCODE_IFZ, toLabel);
+		EmitJump(branchIfNonZero ? OPCODE_IFNZI : OPCODE_IFZI, toLabel);
 	}
 }
 
@@ -4516,9 +4625,11 @@ void GeneratorCore::ResolveJumps()
 					else
 					{
 						// The fused compare-and-branch instructions (ifeqi, ...) pop both operands, so
-						// they are threaded only through a goto, like ifz and ifnz. A brz that targets
+						// they are threaded only through a goto, like ifzi and ifnzi. A brz that targets
 						// one, as in 'if (z == (x && y))', must jump to it unchanged, since the fused
-						// branch consumes the value that the brz leaves on the stack.
+						// branch consumes the value that the brz leaves on the stack. The same holds for
+						// ifzl and ifnzl, which test a 64-bit value; a brz never targets them anyway,
+						// since the value that a brz leaves is a bool.
 						switch (opCode)
 						{
 							case OPCODE_BRZ:
@@ -4531,15 +4642,15 @@ void GeneratorCore::ResolveJumps()
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRNZ;
 										break;
-									case OPCODE_IFZ:
+									case OPCODE_IFZI:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZI;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
-									case OPCODE_IFNZ:
+									case OPCODE_IFNZI:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZI;
 										break;
 								}
 								break;
@@ -4554,15 +4665,15 @@ void GeneratorCore::ResolveJumps()
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_NBRZ;
 										break;
-									case OPCODE_IFNZ:
+									case OPCODE_IFNZI:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZI;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
-									case OPCODE_IFZ:
+									case OPCODE_IFZI:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZI;
 										break;
 								}
 								break;
@@ -4577,15 +4688,15 @@ void GeneratorCore::ResolveJumps()
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRNZ;
 										break;
-									case OPCODE_IFZ:
+									case OPCODE_IFZI:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZI;
 										break;
 									case OPCODE_BRNZ:
 									case OPCODE_NBRZ:
-									case OPCODE_IFNZ:
+									case OPCODE_IFNZI:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFNZI;
 										break;
 								}
 								break;
@@ -4600,15 +4711,15 @@ void GeneratorCore::ResolveJumps()
 										jumpEntry.mToPos = targetEntry->mToPos;
 										byteCode[jumpEntry.mOpCodePos] = OPCODE_BRZ;
 										break;
-									case OPCODE_IFNZ:
+									case OPCODE_IFNZI:
 										jumpEntry.mToPos = targetEntry->mToPos;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZI;
 										break;
 									case OPCODE_BRZ:
 									case OPCODE_NBRNZ:
-									case OPCODE_IFZ:
+									case OPCODE_IFZI:
 										jumpEntry.mToPos = targetEntry->mOpCodePos + 3;
-										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZ;
+										byteCode[jumpEntry.mOpCodePos] = OPCODE_IFZI;
 										break;
 								}
 								break;

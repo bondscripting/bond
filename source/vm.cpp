@@ -689,6 +689,26 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
+			case OPCODE_STORE32O:
+			{
+				const Value16 offset(code + pc);
+				const uintptr_t address = *reinterpret_cast<uintptr_t *>(sp - (2 * BOND_SLOT_SIZE)) + uintptr_t(intptr_t(offset.mShort));
+				CopyValue32(sp - BOND_SLOT_SIZE, reinterpret_cast<void *>(address));
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+			}
+			break;
+
+			case OPCODE_STORE64O:
+			{
+				const Value16 offset(code + pc);
+				const uintptr_t address = *reinterpret_cast<uintptr_t *>(sp - (2 * BOND_SLOT_SIZE)) + uintptr_t(intptr_t(offset.mShort));
+				CopyValue64(sp - BOND_SLOT_SIZE, reinterpret_cast<void *>(address));
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+			}
+			break;
+
 			case OPCODE_PUSHC:
 			{
 				const Value16 offset(code + pc);
@@ -1654,6 +1674,14 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
+			case OPCODE_TSTL:
+			{
+				const int64_t a = *reinterpret_cast<int64_t *>(sp - (1 * BOND_SLOT_SIZE));
+				int32_t *result = reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				*result = (a != 0) ? 1 : 0;
+			}
+			break;
+
 			case OPCODE_CMPEQI:
 			{
 				const int32_t *a = reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
@@ -2066,7 +2094,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFZ:
+			case OPCODE_IFZI:
 			{
 				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
 				const Value16 offset(code + pc);
@@ -2079,7 +2107,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFZW:
+			case OPCODE_IFZIW:
 			{
 				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
 				const Value16 offsetIndex(code + pc);
@@ -2092,7 +2120,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFNZ:
+			case OPCODE_IFNZI:
 			{
 				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
 				const Value16 offset(code + pc);
@@ -2105,9 +2133,61 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFNZW:
+			case OPCODE_IFNZIW:
 			{
 				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+				if (condition != 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFZL:
+			{
+				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+				if (condition == 0)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFZLW:
+			{
+				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+				if (condition == 0)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFNZL:
+			{
+				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= BOND_SLOT_SIZE;
+				if (condition != 0)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFNZLW:
+			{
+				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
 				const Value16 offsetIndex(code + pc);
 				pc += sizeof(Value16);
 				sp -= BOND_SLOT_SIZE;
