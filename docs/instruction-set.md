@@ -974,7 +974,42 @@ Pop a condition and branch on it.
 
 Pops the condition. `ifz` and `ifzw` branch if it is zero, and `ifnz` and `ifnzw` branch if it is
 non-zero. Otherwise execution continues with the next instruction. These are the branches used by
-`if`, `while` and `for` statements.
+`if`, `while` and `for` statements, except where a condition is a signed int comparison (see
+[`ifeqi` … `iflei`](#ifeqi-iflei)).
+
+---
+
+<a id="ifeqi-iflei"></a>
+#### `ifeqi`, `ifnei`, `iflti`, `ifgei`, `ifgti`, `iflei` and their wide forms
+
+Compare two ints and branch on the result.
+
+| | |
+|---|---|
+| **Format** | `ifeqi offset:off16` · `ifeqiw offset:off32 index`, and likewise for `ifnei`, `iflti`, `ifgei`, `ifgti` and `iflei` |
+| **Operands** | `offset`: the branch offset. |
+| **Stack** | `..., int a, int b → ...` |
+
+Pops `b` and `a`, then branches if `a == b` (`ifeqi`), `a != b` (`ifnei`), `a < b` (`iflti`),
+`a >= b` (`ifgei`), `a > b` (`ifgti`) or `a <= b` (`iflei`). Otherwise execution continues with the
+next instruction. The relational forms compare signed values. `ifeqi` and `ifnei` don't depend on
+signedness, so they also serve `uint`, `bool` and 32-bit pointer equality.
+
+Each one does the work of a `cmp*i` followed by `ifnz`. Since `!(a < b)` is exactly `a >= b` for
+ints, `cmp*i` followed by `ifz` maps to the inverse relation:
+
+```
+// if (n < 2) return n;
+     0: push32_p0
+     1: consti_2
+     2: ifgei       2 (7)      // skip the then-branch if n >= 2
+     5: push32_p0
+     6: return32
+```
+
+The compiler emits them for conditions of `if`, `while`, `for`, `do` and `?:`, including operands of
+`!`, `&&` and `||` in those conditions. The wide forms exist only because every branch needs one
+today. They are expected to go away once the code generator can lay out far branches itself.
 
 ---
 
@@ -1485,13 +1520,25 @@ the instruction's entry.
 | 211 | 0xD3 | `ifzw` | off32 index | 3 | −1 |
 | 212 | 0xD4 | `ifnz` | off16 | 3 | −1 |
 | 213 | 0xD5 | `ifnzw` | off32 index | 3 | −1 |
-| 214 | 0xD6 | `goto` | off16 | 3 | 0 |
-| 215 | 0xD7 | `gotow` | off32 index | 3 | 0 |
-| 216 | 0xD8 | `lookupswitch` | lookupswitch table | variable | −1 |
-| 217 | 0xD9 | `tableswitch` | tableswitch table | variable | −1 |
-| 218 | 0xDA | `invoke` | name index | 3 | 0 |
-| 219 | 0xDB | `invokeunpack` | name index | 3 | 0 |
-| 220 | 0xDC | `return` | — | 1 | 0 |
-| 221 | 0xDD | `return32` | — | 1 | −1 |
-| 222 | 0xDE | `return64` | — | 1 | −1 |
-| 223 | 0xDF | `returnmemw` | int index | 3 | −1 |
+| 214 | 0xD6 | `ifeqi` | off16 | 3 | −2 |
+| 215 | 0xD7 | `ifeqiw` | off32 index | 3 | −2 |
+| 216 | 0xD8 | `ifnei` | off16 | 3 | −2 |
+| 217 | 0xD9 | `ifneiw` | off32 index | 3 | −2 |
+| 218 | 0xDA | `iflti` | off16 | 3 | −2 |
+| 219 | 0xDB | `ifltiw` | off32 index | 3 | −2 |
+| 220 | 0xDC | `ifgei` | off16 | 3 | −2 |
+| 221 | 0xDD | `ifgeiw` | off32 index | 3 | −2 |
+| 222 | 0xDE | `ifgti` | off16 | 3 | −2 |
+| 223 | 0xDF | `ifgtiw` | off32 index | 3 | −2 |
+| 224 | 0xE0 | `iflei` | off16 | 3 | −2 |
+| 225 | 0xE1 | `ifleiw` | off32 index | 3 | −2 |
+| 226 | 0xE2 | `goto` | off16 | 3 | 0 |
+| 227 | 0xE3 | `gotow` | off32 index | 3 | 0 |
+| 228 | 0xE4 | `lookupswitch` | lookupswitch table | variable | −1 |
+| 229 | 0xE5 | `tableswitch` | tableswitch table | variable | −1 |
+| 230 | 0xE6 | `invoke` | name index | 3 | 0 |
+| 231 | 0xE7 | `invokeunpack` | name index | 3 | 0 |
+| 232 | 0xE8 | `return` | — | 1 | 0 |
+| 233 | 0xE9 | `return32` | — | 1 | −1 |
+| 234 | 0xEA | `return64` | — | 1 | −1 |
+| 235 | 0xEB | `returnmemw` | int index | 3 | −1 |

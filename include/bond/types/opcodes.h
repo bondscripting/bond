@@ -259,6 +259,18 @@ namespace Bond
 	BOND_OPCODE_ITEM(IFZW,         ifzw,         OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFNZ,         ifnz,         OFF16,        -1) \
 	BOND_OPCODE_ITEM(IFNZW,        ifnzw,        OFF32,        -1) \
+	BOND_OPCODE_ITEM(IFEQI,        ifeqi,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFEQIW,       ifeqiw,       OFF32,        -2) \
+	BOND_OPCODE_ITEM(IFNEI,        ifnei,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFNEIW,       ifneiw,       OFF32,        -2) \
+	BOND_OPCODE_ITEM(IFLTI,        iflti,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFLTIW,       ifltiw,       OFF32,        -2) \
+	BOND_OPCODE_ITEM(IFGEI,        ifgei,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFGEIW,       ifgeiw,       OFF32,        -2) \
+	BOND_OPCODE_ITEM(IFGTI,        ifgti,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFGTIW,       ifgtiw,       OFF32,        -2) \
+	BOND_OPCODE_ITEM(IFLEI,        iflei,        OFF16,        -2) \
+	BOND_OPCODE_ITEM(IFLEIW,       ifleiw,       OFF32,        -2) \
 	                                                               \
 	BOND_OPCODE_ITEM(GOTO,         goto,         OFF16,        0)  \
 	BOND_OPCODE_ITEM(GOTOW,        gotow,        OFF32,        0)  \

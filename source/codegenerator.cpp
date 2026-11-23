@@ -134,6 +134,24 @@ static TypeDescriptor GetBinaryOperationType(const TypeDescriptor &lhDescriptor,
 }
 
 
+// Returns the conditional branch that performs the given int comparison and branches if its result
+// is jumpIfTrue, or OPCODE_MAX if there is none. For ints, a relation is false exactly when its
+// inverse is true, e.g. !(a < b) is a >= b.
+static OpCode GetFusedBranchOpCode(OpCode compareOpCode, bool jumpIfTrue)
+{
+	switch (compareOpCode)
+	{
+		case OPCODE_CMPEQI: return jumpIfTrue ? OPCODE_IFEQI : OPCODE_IFNEI;
+		case OPCODE_CMPNEQI: return jumpIfTrue ? OPCODE_IFNEI : OPCODE_IFEQI;
+		case OPCODE_CMPLTI: return jumpIfTrue ? OPCODE_IFLTI : OPCODE_IFGEI;
+		case OPCODE_CMPLEI: return jumpIfTrue ? OPCODE_IFLEI : OPCODE_IFGTI;
+		case OPCODE_CMPGTI: return jumpIfTrue ? OPCODE_IFGTI : OPCODE_IFLEI;
+		case OPCODE_CMPGEI: return jumpIfTrue ? OPCODE_IFGEI : OPCODE_IFLTI;
+		default: return OPCODE_MAX;
+	}
+}
+
+
 // Returns whether the expression is an integer constant that an increment instruction can add,
 // and sets delta to the value to add. The constant is negated for a subtraction.
 static bool GetIncrementDelta(const Expression *expression, bool negate, int64_t &delta)
@@ -275,6 +293,8 @@ public:
 		mStream(stream),
 		mErrorBuffer(errorBuffer),
 		mTranslationUnitList(translationUnitList),
+		mLastComparison(nullptr),
+		mLastComparisonPos(0),
 		mPointerSize(pointerSize)
 	{}
 
@@ -552,7 +572,7 @@ private:
 	bool TryEmitIncrement(const ValueRef &lhRef, const TypeDescriptor &lhDescriptor, int64_t delta);
 	ValueRef EmitPointerCompoundAssignmentOperator(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
 	ValueRef EmitPointerArithmetic(const Expression *pointerExpression, const Expression *offsetExpression, int sign);
-	ValueRef EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet);
+	ValueRef EmitPointerComparison(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet);
 	ValueRef EmitPointerDifference(const Expression *lhs, const Expression *rhs);
 	void EmitPointerOffset(const Expression *offsetExpression, int32_t elementSize);
 
@@ -573,6 +593,7 @@ private:
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 	void EmitConditionalJump(const Expression *condition, bool jumpIfTrue, size_t toLabel);
+	void EmitBinaryOpCode(const Expression *expression, OpCode opCode);
 
 	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
 	void EmitOpCode(OpCode opCode);
@@ -652,6 +673,12 @@ private:
 	OutputStream &mStream;
 	CompilerErrorBuffer &mErrorBuffer;
 	const TranslationUnit *mTranslationUnitList;
+
+	// The last comparison compiled to an int compare instruction that a conditional branch can
+	// absorb, and the position of that instruction.
+	const Expression *mLastComparison;
+	size_t mLastComparisonPos;
+
 	PointerSize mPointerSize;
 };
 
@@ -1348,7 +1375,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_LT:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPLT_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPLT_OPCODES);
 				}
 				else
 				{
@@ -1358,7 +1385,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_LTE:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPLE_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPLE_OPCODES);
 				}
 				else
 				{
@@ -1368,7 +1395,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_GT:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPGT_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPGT_OPCODES);
 				}
 				else
 				{
@@ -1378,7 +1405,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_GTE:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPGE_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPGE_OPCODES);
 				}
 				else
 				{
@@ -1388,7 +1415,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_EQUAL:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPEQ_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPEQ_OPCODES);
 				}
 				else
 				{
@@ -1398,7 +1425,7 @@ void GeneratorCore::Visit(const BinaryExpression *binaryExpression)
 			case Token::OP_NOT_EQUAL:
 				if (lhDescriptor.IsPointerType() && rhDescriptor.IsPointerType())
 				{
-					valueRef = EmitPointerComparison(lhs, rhs, CMPNEQ_OPCODES);
+					valueRef = EmitPointerComparison(binaryExpression,CMPNEQ_OPCODES);
 				}
 				else
 				{
@@ -3239,7 +3266,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitSimpleBinaryOperator(const BinaryExpr
 	Traverse(rhs);
 	EmitPushValueRefAs(rhRef, rhDescriptor, resultDescriptor);
 
-	EmitOpCode(opCodeSet.GetOpCode(resultDescriptor));
+	EmitBinaryOpCode(binaryExpression, opCodeSet.GetOpCode(resultDescriptor));
 
 	return ValueRef(ValueRef::CONTEXT_STACK_VALUE);
 }
@@ -3718,8 +3745,10 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerArithmetic(const Expression *p
 }
 
 
-GeneratorCore::ValueRef GeneratorCore::EmitPointerComparison(const Expression *lhs, const Expression *rhs, const OpCodeSet &opCodeSet)
+GeneratorCore::ValueRef GeneratorCore::EmitPointerComparison(const BinaryExpression *binaryExpression, const OpCodeSet &opCodeSet)
 {
+	const Expression *lhs = binaryExpression->GetLhs();
+	const Expression *rhs = binaryExpression->GetRhs();
 	const TypeDescriptor &lhDescriptor = lhs->GetTypeDescriptor();
 	auto lhRef = mValueRef.Push();
 	Traverse(lhs);
@@ -3730,7 +3759,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitPointerComparison(const Expression *l
 	Traverse(rhs);
 	EmitPushValueRef(rhRef, rhDescriptor);
 
-	EmitOpCode(opCodeSet.GetPointerOpCode(mPointerSize));
+	EmitBinaryOpCode(binaryExpression, opCodeSet.GetPointerOpCode(mPointerSize));
 
 	return ValueRef(ValueRef::CONTEXT_STACK_VALUE);
 }
@@ -4258,11 +4287,77 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 
 void GeneratorCore::EmitConditionalJump(const Expression *condition, bool jumpIfTrue, size_t toLabel)
 {
+	// '!', '&&' and '||' are compiled into branches, so that each operand is tested by its own
+	// conditional branch. A constant operand is left to the generic path below.
+	if (!condition->GetTypeAndValue().IsValueDefined())
+	{
+		const UnaryExpression *unaryExpression = CastNode<UnaryExpression>(condition);
+		if ((unaryExpression != nullptr) && (unaryExpression->GetOperator()->GetTokenType() == Token::OP_NOT))
+		{
+			EmitConditionalJump(unaryExpression->GetRhs(), !jumpIfTrue, toLabel);
+			return;
+		}
+
+		const BinaryExpression *binaryExpression = CastNode<BinaryExpression>(condition);
+		const Token::TokenType op = (binaryExpression != nullptr) ?
+			binaryExpression->GetOperator()->GetTokenType() : Token::INVALID;
+		if ((op == Token::OP_AND) || (op == Token::OP_OR))
+		{
+			// The lhs alone decides the result when it is false for '&&' or true for '||'.
+			const bool lhsDecidingValue = (op == Token::OP_OR);
+			if (jumpIfTrue == lhsDecidingValue)
+			{
+				EmitConditionalJump(binaryExpression->GetLhs(), jumpIfTrue, toLabel);
+				EmitConditionalJump(binaryExpression->GetRhs(), jumpIfTrue, toLabel);
+			}
+			else
+			{
+				const size_t skipLabel = CreateLabel();
+				EmitConditionalJump(binaryExpression->GetLhs(), lhsDecidingValue, skipLabel);
+				EmitConditionalJump(binaryExpression->GetRhs(), jumpIfTrue, toLabel);
+				SetLabelValue(skipLabel, GetByteCode().size());
+			}
+			return;
+		}
+	}
+
 	const TypeDescriptor &conditionDescriptor = condition->GetTypeDescriptor();
 	auto conditionRef = mValueRef.Push();
 	const bool negated = TraverseCollapseNotOperators(condition, true);
 	EmitPushValueRef(conditionRef, conditionDescriptor);
-	EmitJump((jumpIfTrue != negated) ? OPCODE_IFNZ : OPCODE_IFZ, toLabel);
+	const bool branchIfNonZero = (jumpIfTrue != negated);
+
+	// When the condition itself is an int comparison, its compare instruction was emitted last and
+	// is replaced by a branch that compares and branches. Labels defined within the condition refer
+	// to that instruction or to earlier ones, never to the position after it, and the operand stack
+	// at the compare is the same as at the fused branch.
+	ByteCode &byteCode = GetByteCode();
+	const bool isFusable = (condition == mLastComparison) && (mLastComparisonPos + 1 == byteCode.size());
+	const OpCode compareOpCode = isFusable ? OpCode(byteCode.back()) : OPCODE_NOP;
+	const OpCode fusedOpCode = GetFusedBranchOpCode(compareOpCode, branchIfNonZero);
+	if (fusedOpCode != OPCODE_MAX)
+	{
+		byteCode.pop_back();
+		ApplyStackDelta(-GetStackDelta(compareOpCode));
+		mLastComparison = nullptr;
+		EmitJump(fusedOpCode, toLabel);
+	}
+	else
+	{
+		EmitJump(branchIfNonZero ? OPCODE_IFNZ : OPCODE_IFZ, toLabel);
+	}
+}
+
+
+void GeneratorCore::EmitBinaryOpCode(const Expression *expression, OpCode opCode)
+{
+	// Remember an int comparison, which a conditional branch that tests its result can absorb.
+	if (GetFusedBranchOpCode(opCode, true) != OPCODE_MAX)
+	{
+		mLastComparison = expression;
+		mLastComparisonPos = GetByteCode().size();
+	}
+	EmitOpCode(opCode);
 }
 
 
@@ -4385,6 +4480,10 @@ void GeneratorCore::ResolveJumps()
 					}
 					else
 					{
+						// The fused compare-and-branch instructions (ifeqi, ...) pop both operands, so
+						// they are threaded only through a goto, like ifz and ifnz. A brz that targets
+						// one, as in 'if (z == (x && y))', must jump to it unchanged, since the fused
+						// branch consumes the value that the brz leaves on the stack.
 						switch (opCode)
 						{
 							case OPCODE_BRZ:

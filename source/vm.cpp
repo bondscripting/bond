@@ -2100,6 +2100,174 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
+			case OPCODE_IFEQI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a == b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFEQIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a == b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFNEI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a != b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFNEIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a != b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFLTI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a < b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFLTIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a < b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFGEI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a >= b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFGEIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a >= b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFGTI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a > b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFGTIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a > b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
+			case OPCODE_IFLEI:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offset(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a <= b)
+				{
+					pc += offset.mShort;
+				}
+			}
+			break;
+
+			case OPCODE_IFLEIW:
+			{
+				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+				const Value16 offsetIndex(code + pc);
+				pc += sizeof(Value16);
+				sp -= 2 * BOND_SLOT_SIZE;
+				if (a <= b)
+				{
+					pc += value32Table[offsetIndex.mUShort].mInt;
+				}
+			}
+			break;
+
 			case OPCODE_GOTO:
 			{
 				const Value16 offset(code + pc);

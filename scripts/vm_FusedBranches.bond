@@ -1,0 +1,179 @@
+// Conditions that compile to fused compare-and-branch instructions (ifeqi, ifnei, iflti, ifgei,
+// ifgti, iflei), and nearby conditions that must not. The relation functions return a bit mask:
+// 1 a == b, 2 a != b, 4 a < b, 8 a >= b, 16 a > b, 32 a <= b.
+
+// An if condition branches when the relation is false.
+int IfRelations(int a, int b)
+{
+	int r = 0;
+	if (a == b) r += 1;
+	if (a != b) r += 2;
+	if (a < b) r += 4;
+	if (a >= b) r += 8;
+	if (a > b) r += 16;
+	if (a <= b) r += 32;
+	return r;
+}
+
+
+// A loop condition branches when the relation is true.
+int LoopRelations(int a, int b)
+{
+	int r = 0;
+	while (a == b) { r += 1; break; }
+	while (a != b) { r += 2; break; }
+	for (; a < b;) { r += 4; break; }
+	for (int i = 0; a >= b; ++i) { r += 8; break; }
+	int n = 0;
+	do { ++n; } while ((a > b) && (n < 2));
+	r += (n - 1) * 16;
+	n = 0;
+	do { ++n; } while ((a <= b) && (n < 2));
+	r += (n - 1) * 32;
+	return r;
+}
+
+
+int NegatedRelations(int a, int b)
+{
+	return
+		(!(a == b) ? 0 : 1) +
+		(!(a != b) ? 0 : 2) +
+		(!(a < b) ? 0 : 4) +
+		(!(a >= b) ? 0 : 8) +
+		(!(a > b) ? 0 : 16) +
+		(!(a <= b) ? 0 : 32);
+}
+
+
+// Promoted to int, so the sign of a char or short is kept.
+int CharRelations(char a, char b)
+{
+	int r = 0;
+	if (a == b) r += 1;
+	if (a != b) r += 2;
+	if (a < b) r += 4;
+	if (a >= b) r += 8;
+	if (a > b) r += 16;
+	if (a <= b) r += 32;
+	return r;
+}
+
+
+int ShortRelations(short a, short b)
+{
+	int r = 0;
+	if (a == b) r += 1;
+	if (a != b) r += 2;
+	if (a < b) r += 4;
+	if (a >= b) r += 8;
+	if (a > b) r += 16;
+	if (a <= b) r += 32;
+	return r;
+}
+
+
+// Unsigned relations must not use the signed fused branches.
+int UIntRelations(uint a, uint b)
+{
+	int r = 0;
+	if (a == b) r += 1;
+	if (a != b) r += 2;
+	if (a < b) r += 4;
+	if (a >= b) r += 8;
+	if (a > b) r += 16;
+	if (a <= b) r += 32;
+	return r;
+}
+
+
+int CountUp(int n)
+{
+	int s = 0;
+	for (int i = 0; i < n; ++i)
+	{
+		if (i == 3) continue;
+		if (i > 100) break;
+		s += i + 1;
+	}
+	return s;
+}
+
+
+int CountDown(int n)
+{
+	int s = 0;
+	while (n > 0)
+	{
+		s += n;
+		--n;
+	}
+	return s;
+}
+
+
+int Count(int *calls, int x)
+{
+	++*calls;
+	return x;
+}
+
+
+// Short-circuit evaluation of fused operands of &&, || and !. Returns a truth table code plus 100
+// times the number of evaluations of the right operands.
+int AndOr(int a, int b, int c, int d)
+{
+	int calls = 0;
+	int r = 0;
+	if ((a < b) && (c < Count(&calls, d))) r += 1;
+	if ((a < b) || (c < Count(&calls, d))) r += 2;
+	if (!((a < b) && !(c >= Count(&calls, d)))) r += 4;
+	int n = 0;
+	while ((a < b) && (c < Count(&calls, d)) && (n < 1)) ++n;
+	r += n * 8;
+	n = 0;
+	while (((a < b) || (c < Count(&calls, d))) && (n < 1)) ++n;
+	r += n * 16;
+	r += ((a >= b) || (c != Count(&calls, d))) ? 32 : 0;
+	return r + (calls * 100);
+}
+
+
+// A fused branch consumes the value that a brz or a conditional expression leaves on the stack.
+int BoolEqualsAnd(bool z, bool x, bool y)
+{
+	if (z == (x && y)) return 1;
+	return 0;
+}
+
+
+int LessThanConditional(int z, bool p, int x, int y)
+{
+	if (z < (p ? x : y)) return 1;
+	return 0;
+}
+
+
+int PointerEquality(int i, int j)
+{
+	int[2] arr = {};
+	if (&arr[i] == &arr[j]) return 1;
+	return 0;
+}
+
+
+bool LessValue(int a, int b)
+{
+	bool v = a < b;
+	return v;
+}
+
+
+int ConstantOperands(int a, int b)
+{
+	int r = 0;
+	if ((a < b) && true) r += 1;
+	if (false || (a < b)) r += 2;
+	if ((a < b) || true) r += 4;
+	return r;
+}

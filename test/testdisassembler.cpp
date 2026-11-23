@@ -8,6 +8,7 @@
 #include "bond/io/memoryoutputstream.h"
 #include "bond/systems/defaultallocator.h"
 #include "bond/tools/disassembler.h"
+#include <cstdio>
 #include <cstring>
 
 #define ASSERT_DISASSEMBLY_CONTAINS(source, expected) \
@@ -153,8 +154,7 @@ DEFINE_TEST(LoopInversion)
 		"     5: inci        0, 1\n"
 		"     8: push32_l0   \n"
 		"     9: push32_p0   \n"
-		"    10: cmplti      \n"
-		"    11: ifnz        -9 (5)\n");
+		"    10: iflti       -8 (5)\n");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int n) { int i = 0; for (int j = 0; j < n; ++j) { ++i; } return i; }",
@@ -163,8 +163,7 @@ DEFINE_TEST(LoopInversion)
 		"    10: inci        1, 1\n"
 		"    13: push32_l1   \n"
 		"    14: push32_p0   \n"
-		"    15: cmplti      \n"
-		"    16: ifnz        -12 (7)\n");
+		"    15: iflti       -11 (7)\n");
 }
 
 
@@ -203,26 +202,23 @@ DEFINE_TEST(ConditionalBreakAndContinue)
 {
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int n) { int i = 0; while (true) { if (i >= n) break; ++i; } return i; }",
-		"     4: cmpgei      \n"
-		"     5: ifnz        6 (14)\n"
-		"     8: inci        0, 1\n"
-		"    11: goto        -12 (2)\n"
-		"    14: push32_l0   \n");
+		"     4: ifgei       6 (13)\n"
+		"     7: inci        0, 1\n"
+		"    10: goto        -11 (2)\n"
+		"    13: push32_l0   \n");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int n) { int i = 0; while (true) { if (!(i < n)) { break; } ++i; } return i; }",
-		"     4: cmplti      \n"
-		"     5: ifz         6 (14)\n");
+		"     4: ifgei       6 (13)\n");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int n) { int s = 0; for (int i = 0; i < n; ++i) { if (i == 2) continue; s += i; } return s; }",
-		"     9: cmpeqi      \n"
-		"    10: ifnz        4 (17)\n"
-		"    13: push32_l0   \n"
-		"    14: push32_l1   \n"
-		"    15: addi        \n"
-		"    16: pop32_l0    \n"
-		"    17: inci        1, 1\n");
+		"     9: ifeqi       4 (16)\n"
+		"    12: push32_l0   \n"
+		"    13: push32_l1   \n"
+		"    14: addi        \n"
+		"    15: pop32_l0    \n"
+		"    16: inci        1, 1\n");
 }
 
 
@@ -314,16 +310,15 @@ DEFINE_TEST(DeadJumpElimination)
 
 	ASSERT_DISASSEMBLY_CONTAINS_P(
 		"void F(int *p, int x) { if (x == 1) { *p = 1; return; } else if (x == 2) { *p = 2; return; } else { return; } }",
-		"\tcode size: 21\n"
+		"\tcode size: 19\n"
 		"     0: push32_p1   \n"
 		"     1: consti_1    \n"
-		"     2: cmpeqi      \n"
-		"     3: ifz         4 (10)\n"
-		"     6: push64_p0   \n"
-		"     7: consti_1    \n"
-		"     8: store32     \n"
-		"     9: return      \n"
-		"    10: push32_p1   \n",
+		"     2: ifnei       4 (9)\n"
+		"     5: push64_p0   \n"
+		"     6: consti_1    \n"
+		"     7: store32     \n"
+		"     8: return      \n"
+		"     9: push32_p1   \n",
 		Bond::POINTER_64BIT);
 
 	// A switch whose sections all return, with a default, ends the function.
@@ -340,10 +335,10 @@ DEFINE_TEST(DeadJumpElimination)
 	// A break in a switch lets control reach the end of the function.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"void F(int x) { switch (x) { case 1: if (x == 1) break; return; default: return; } }",
-		"    23: ifnz        2 (28)\n"
+		"    22: ifeqi       2 (27)\n"
+		"    25: return      \n"
 		"    26: return      \n"
-		"    27: return      \n"
-		"    28: return      \n");
+		"    27: return      \n");
 
 	// So do continue in a do loop and the end of a while loop.
 	ASSERT_DISASSEMBLY_CONTAINS(
@@ -405,9 +400,133 @@ DEFINE_TEST(TruthTestAgainstZero)
 		"int F(float f) { if (f != 0.0f) { return 1; } return 2; }",
 		"cmpneqf");
 
+	// A comparison against true is kept, fused into its branch.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(bool b) { if (b == true) { return 1; } return 2; }",
-		"cmpeqi");
+		"     3: consti_1    \n"
+		"     4: ifnei       ");
+}
+
+
+// A condition that is a signed int comparison, alone or as an operand of !, && or ||, compiles to a
+// single compare-and-branch instruction. 'if' branches when the relation is false, loops when it is
+// true.
+DEFINE_TEST(FusedCompareBranch)
+{
+	const char *const relations[][4] =
+	{
+		{"==", "ifnei", "ifeqi"},
+		{"!=", "ifeqi", "ifnei"},
+		{"<", "ifgei", "iflti"},
+		{">=", "iflti", "ifgei"},
+		{">", "iflei", "ifgti"},
+		{"<=", "ifgti", "iflei"},
+	};
+	for (const auto &relation: relations)
+	{
+		char source[256];
+		char expected[64];
+		snprintf(source, sizeof(source), "int F(int a, int b) { if (a %s b) { return 1; } return 2; }", relation[0]);
+		snprintf(expected, sizeof(expected), "     2: %-12s", relation[1]);
+		ASSERT_DISASSEMBLY_CONTAINS(source, expected);
+
+		snprintf(source, sizeof(source), "int F(int a, int b) { int n = 0; while (a %s b) { ++n; --a; } return n; }", relation[0]);
+		snprintf(expected, sizeof(expected), "%-12s", relation[2]);
+		ASSERT_DISASSEMBLY_CONTAINS(source, expected);
+
+		snprintf(source, sizeof(source), "int F(int a, int b) { int n = 0; do { ++n; --a; } while (a %s b); return n; }", relation[0]);
+		ASSERT_DISASSEMBLY_CONTAINS(source, expected);
+
+		snprintf(source, sizeof(source), "int F(int a, int b) { return (a %s b) ? 1 : 2; }", relation[0]);
+		snprintf(expected, sizeof(expected), "     2: %-12s", relation[1]);
+		ASSERT_DISASSEMBLY_CONTAINS(source, expected);
+	}
+
+	// !, && and || are compiled into branches, so that each comparison fuses.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a, int b, int c) { if (!(a < b)) { return 1; } return 2; }",
+		"     2: iflti       ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a, int b, int c) { if ((a < b) && (b < c)) { return 1; } return 2; }",
+		"     0: push32_p0   \n"
+		"     1: push32_p1   \n"
+		"     2: ifgei       7 (12)\n"
+		"     5: push32_p1   \n"
+		"     6: push32_p2   \n"
+		"     7: ifgei       2 (12)\n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a, int b, int c) { if ((a < b) || (b < c)) { return 1; } return 2; }",
+		"     0: push32_p0   \n"
+		"     1: push32_p1   \n"
+		"     2: iflti       5 (10)\n"
+		"     5: push32_p1   \n"
+		"     6: push32_p2   \n"
+		"     7: ifgei       2 (12)\n");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int a, int b, int c) { if (!((a < b) && !(b < c))) { return 1; } return 2; }",
+		"     0: push32_p0   \n"
+		"     1: push32_p1   \n"
+		"     2: ifgei       5 (10)\n"
+		"     5: push32_p1   \n"
+		"     6: push32_p2   \n"
+		"     7: ifgei       2 (12)\n");
+
+	// Operands promoted to int fuse, and so does unsigned equality.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(char a, short b) { if (a < b) { return 1; } return 2; }",
+		"ifgei");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(uint a, uint b) { if (a == b) { return 1; } return 2; }",
+		"ifnei");
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(int *p, int *q) { if (p == q) { return 1; } return 2; }",
+		"ifnei",
+		Bond::POINTER_32BIT);
+
+	// A brz or a conditional expression may leave its value for the fused branch.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(bool z, bool x, bool y) { if (z == (x && y)) { return 1; } return 2; }",
+		"     6: brz         3 (12)\n"
+		"     9: pushuc      -24\n"
+		"    12: ifnei       ");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int z, bool p, int x, int y) { return (z < (p ? x : y)) ? 1 : 2; }",
+		"     8: goto        1 (12)\n"
+		"    11: push32_p3   \n"
+		"    12: ifgei       ");
+
+	// Unsigned relations, long, floating point and 64-bit pointer comparisons, tests against zero,
+	// constant conditions and comparisons used as values don't fuse.
+	const char *const unfused[] =
+	{
+		"int F(uint a, uint b) { if (a < b) { return 1; } return 2; }",
+		"int F(long a, long b) { if (a < b) { return 1; } return 2; }",
+		"int F(float a, float b) { if (a < b) { return 1; } return 2; }",
+		"int F(double a, double b) { if (a == b) { return 1; } return 2; }",
+		"int F(int a) { if (a != 0) { return 1; } return 2; }",
+		"int F(int a) { const int k = 3; if (k < 4) { a += 1; } return a; }",
+		"bool F(int a, int b) { bool v = a < b; return v; }",
+	};
+	for (const char *source: unfused)
+	{
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "ifeqi");
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "ifnei");
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "iflti");
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "ifgei");
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "ifgti");
+		ASSERT_DISASSEMBLY_NOT_CONTAINS(source, "iflei");
+	}
+
+	ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+		"int F(int *p, int *q) { if (p == q) { return 1; } return 2; }",
+		"ifnei",
+		Bond::POINTER_64BIT);
 }
 
 
@@ -646,6 +765,7 @@ DEFINE_TEST(FarFrameOffsets)
   TEST_ITEM(GotoToReturn)                       \
   TEST_ITEM(DeadJumpElimination)                \
   TEST_ITEM(TruthTestAgainstZero)               \
+  TEST_ITEM(FusedCompareBranch)                 \
   TEST_ITEM(ReturnValueElision)                 \
   TEST_ITEM(PointerAddConstant)                 \
   TEST_ITEM(FarFrameOffsets)                    \

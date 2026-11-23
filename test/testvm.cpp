@@ -2060,6 +2060,120 @@ DEFINE_VM_TEST(FarFrameOffsets, "scripts/vm_FarFrameOffsets.bond")
 }
 
 
+// The bit mask returned by the relation functions in vm_FusedBranches.bond.
+template <typename T>
+static int32_t RelationMask(T a, T b)
+{
+	return
+		((a == b) ? 1 : 0) +
+		((a != b) ? 2 : 0) +
+		((a < b) ? 4 : 0) +
+		((a >= b) ? 8 : 0) +
+		((a > b) ? 16 : 0) +
+		((a <= b) ? 32 : 0);
+}
+
+
+// The result of AndOr in vm_FusedBranches.bond, where e counts the evaluations of Count(d).
+static int32_t AndOrResult(int32_t a, int32_t b, int32_t c, int32_t d)
+{
+	const bool lhs = a < b;
+	const bool rhs = c < d;
+	int32_t r = 0;
+	int32_t e = 0;
+	e += lhs ? 1 : 0;
+	r += (lhs && rhs) ? 1 : 0;
+	e += lhs ? 0 : 1;
+	r += (lhs || rhs) ? 2 : 0;
+	e += lhs ? 1 : 0;
+	r += !(lhs && rhs) ? 4 : 0;
+	e += lhs ? (rhs ? 2 : 1) : 0;
+	r += (lhs && rhs) ? 8 : 0;
+	e += lhs ? 0 : (rhs ? 2 : 1);
+	r += (lhs || rhs) ? 16 : 0;
+	e += lhs ? 1 : 0;
+	r += (!lhs || (c != d)) ? 32 : 0;
+	return r + (e * 100);
+}
+
+
+DEFINE_VM_TEST(FusedBranches, "scripts/vm_FusedBranches.bond")
+{
+	using namespace Bond;
+
+	const int32_t ints[] = {BOND_INT_MIN, BOND_INT_MIN + 1, -1, 0, 1, BOND_INT_MAX - 1, BOND_INT_MAX};
+	for (const int32_t a: ints)
+	{
+		for (const int32_t b: ints)
+		{
+			const int32_t mask = RelationMask(a, b);
+			VALIDATE_FUNCTION_CALL(int32_t, "IfRelations", mask, a, b);
+			VALIDATE_FUNCTION_CALL(int32_t, "LoopRelations", mask, a, b);
+			VALIDATE_FUNCTION_CALL(int32_t, "NegatedRelations", mask, a, b);
+			VALIDATE_FUNCTION_CALL(int32_t, "UIntRelations", RelationMask(uint32_t(a), uint32_t(b)), uint32_t(a), uint32_t(b));
+			VALIDATE_FUNCTION_CALL(uint32_t, "LessValue", uint32_t((a < b) ? 1 : 0), a, b);
+		}
+	}
+
+	const int8_t chars[] = {-128, -1, 0, 1, 127};
+	for (const int8_t a: chars)
+	{
+		for (const int8_t b: chars)
+		{
+			VALIDATE_FUNCTION_CALL(int32_t, "CharRelations", RelationMask(a, b), a, b);
+		}
+	}
+
+	const int16_t shorts[] = {-32768, -1, 0, 1, 32767};
+	for (const int16_t a: shorts)
+	{
+		for (const int16_t b: shorts)
+		{
+			VALIDATE_FUNCTION_CALL(int32_t, "ShortRelations", RelationMask(a, b), a, b);
+		}
+	}
+
+	// Loops that run 0, 1 and many times.
+	VALIDATE_FUNCTION_CALL(int32_t, "CountUp", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountUp", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountUp", int32_t(51), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountDown", int32_t(0), int32_t(-5));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountDown", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountDown", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountDown", int32_t(55), int32_t(10));
+
+	const int32_t pairs[][2] = {{0, 1}, {1, 1}, {2, 1}};
+	for (const auto &ab: pairs)
+	{
+		for (const auto &cd: pairs)
+		{
+			VALIDATE_FUNCTION_CALL(int32_t, "AndOr", AndOrResult(ab[0], ab[1], cd[0], cd[1]), ab[0], ab[1], cd[0], cd[1]);
+		}
+	}
+
+	const bool bools[] = {false, true};
+	for (const bool z: bools)
+	{
+		for (const bool x: bools)
+		{
+			for (const bool y: bools)
+			{
+				VALIDATE_FUNCTION_CALL(int32_t, "BoolEqualsAnd", int32_t((z == (x && y)) ? 1 : 0), z, x, y);
+			}
+		}
+	}
+
+	VALIDATE_FUNCTION_CALL(int32_t, "LessThanConditional", int32_t(1), int32_t(2), true, int32_t(3), int32_t(-5));
+	VALIDATE_FUNCTION_CALL(int32_t, "LessThanConditional", int32_t(0), int32_t(2), true, int32_t(2), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "LessThanConditional", int32_t(1), int32_t(2), false, int32_t(-5), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "LessThanConditional", int32_t(0), int32_t(2), false, int32_t(5), int32_t(-3));
+	VALIDATE_FUNCTION_CALL(int32_t, "PointerEquality", int32_t(1), int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "PointerEquality", int32_t(0), int32_t(0), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "ConstantOperands", int32_t(7), int32_t(1), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "ConstantOperands", int32_t(4), int32_t(2), int32_t(1));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -2088,5 +2202,6 @@ DEFINE_VM_TEST(FarFrameOffsets, "scripts/vm_FarFrameOffsets.bond")
   TEST_ITEM(DebugCallStack)                     \
   TEST_ITEM(CodeGenOptimizations)               \
   TEST_ITEM(FarFrameOffsets)                    \
+  TEST_ITEM(FusedBranches)                      \
 
 RUN_TESTS(VM, TEST_ITEMS)
