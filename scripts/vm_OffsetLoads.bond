@@ -1,0 +1,120 @@
+// A 32-bit or 64-bit value at a nonzero constant offset that fits in 16 bits is loaded with a single
+// load32o or load64o. Other sizes, a zero offset and larger offsets keep ptraddc and a plain load.
+
+struct Mixed
+{
+	char c;
+	int i;
+	uint u;
+	float f;
+	long l;
+	ulong ul;
+	double d;
+	Mixed *next;
+	int *ip;
+	short s;
+
+	long Sum() const { return cast<long>(i) + l + cast<long>(s); }
+};
+
+
+struct Outer
+{
+	int a;
+	Mixed inner;
+};
+
+
+const Mixed gMixed = { cast<char>(2), -3, 4u, 0.5f, 0x7FFFFFFFFFFFFFFFl, 6ul, 7.0, null, null, cast<short>(-8) };
+
+
+int MixedFields(int x)
+{
+	int v = 77;
+	Mixed b = { cast<char>(-1), 11, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<short>(0) };
+	Mixed a = { cast<char>(-5), x, 0xFFFFFFFEu, 1.5f, 0x123456789l, 0xFFFFFFFFFFFFFFFFul, -2.25, null, null, cast<short>(-300) };
+	a.next = &b;
+	a.ip = &v;
+	Mixed *p = &a;
+
+	int r = 0;
+	r = r | ((p->c == cast<char>(-5)) ? 0x1 : 0);
+	r = r | ((p->i == x) ? 0x2 : 0);
+	r = r | ((p->u == 0xFFFFFFFEu) ? 0x4 : 0);
+	r = r | ((p->f == 1.5f) ? 0x8 : 0);
+	r = r | ((p->l == 0x123456789l) ? 0x10 : 0);
+	r = r | ((p->ul == 0xFFFFFFFFFFFFFFFFul) ? 0x20 : 0);
+	r = r | ((p->d == -2.25) ? 0x40 : 0);
+	r = r | ((p->next->i == 11) ? 0x80 : 0);
+	r = r | ((p->next->c == cast<char>(-1)) ? 0x100 : 0);
+	r = r | ((*p->ip == 77) ? 0x200 : 0);
+	r = r | ((p->s == cast<short>(-300)) ? 0x400 : 0);
+	r = r | ((p->Sum() == (cast<long>(x) + 0x123456789l - 300l)) ? 0x800 : 0);
+	r = r | ((gMixed.i == -3) ? 0x1000 : 0);
+	r = r | ((gMixed.l == 0x7FFFFFFFFFFFFFFFl) ? 0x2000 : 0);
+	r = r | ((gMixed.d == 7.0) ? 0x4000 : 0);
+	r = r | ((gMixed.f == 0.5f) ? 0x8000 : 0);
+	return r;
+}
+
+
+double NestedFields(double x)
+{
+	Outer o = { 1, { cast<char>(0), 2, 3u, 4.0f, 5l, 6ul, x, null, null, cast<short>(0) } };
+	Outer *p = &o;
+	return p->inner.d + cast<double>(p->inner.i) + cast<double>(p->inner.l);
+}
+
+
+int ListLength(int n)
+{
+	Mixed n3 = { cast<char>(0), 4, 0u, 0.0f, 0l, 0ul, 0.0, null, null, cast<short>(0) };
+	Mixed n2 = { cast<char>(0), 3, 0u, 0.0f, 0l, 0ul, 0.0, &n3, null, cast<short>(0) };
+	Mixed n1 = { cast<char>(0), 2, 0u, 0.0f, 0l, 0ul, 0.0, &n2, null, cast<short>(0) };
+	Mixed n0 = { cast<char>(0), 1, 0u, 0.0f, 0l, 0ul, 0.0, &n1, null, cast<short>(0) };
+
+	// Walk the list of the first n nodes.
+	Mixed *last = &n0;
+	int i = 1;
+	while (i < n)
+	{
+		last = last->next;
+		i += 1;
+	}
+	last->next = null;
+
+	int sum = 0;
+	Mixed *node = &n0;
+	while (node != null)
+	{
+		sum = (sum * 10) + node->i;
+		node = node->next;
+	}
+	return sum;
+}
+
+
+int NegativeIntOffsets(int *p)
+{
+	int *q = p + 5;
+	return (q[-3] * 10) + q[-5] + (q[0] * 100);
+}
+
+
+long NegativeLongOffsets(long *p)
+{
+	long *q = p + 4;
+	return (q[-1] * 100l) + q[-4] + (q[1] * 1000l);
+}
+
+
+int IntBoundaries(int *p)
+{
+	return (p[8191] * 1000) + (p[-8192] * 100) + (p[8192] * 10) + p[-8193];
+}
+
+
+long LongBoundaries(long *p)
+{
+	return (p[4095] * 1000l) + (p[-4096] * 100l) + (p[4096] * 10l) + p[-4097];
+}

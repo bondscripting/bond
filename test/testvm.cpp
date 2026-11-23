@@ -2034,6 +2034,42 @@ DEFINE_VM_TEST(CodeGenOptimizations, "scripts/vm_CodeGenOptimizations.bond")
 }
 
 
+DEFINE_VM_TEST(OffsetLoads, "scripts/vm_OffsetLoads.bond")
+{
+	using namespace Bond;
+
+	VALIDATE_FUNCTION_CALL(int32_t, "MixedFields", int32_t(0xFFFF), int32_t(-123456));
+	VALIDATE_FUNCTION_CALL(int32_t, "MixedFields", int32_t(0xFFFF), int32_t(0x7FFFFFFF));
+	VALIDATE_FUNCTION_CALL(double, "NestedFields", 7.5, 0.5);
+	VALIDATE_FUNCTION_CALL(int32_t, "ListLength", int32_t(1234), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "ListLength", int32_t(12), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "ListLength", int32_t(1), int32_t(1));
+
+	int32_t ints[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+	VALIDATE_FUNCTION_CALL(int32_t, "NegativeIntOffsets", int32_t(631), &ints[0]);
+	int64_t longs[6] = { 1, 2, 3, 4, 5, 6 };
+	VALIDATE_FUNCTION_CALL(int64_t, "NegativeLongOffsets", int64_t(6401), &longs[0]);
+
+	// p[8191] and p[-8192] are the last int offsets that fit in 16 bits, p[4095] and p[-4096] the
+	// last long ones.
+	static int32_t intBuffer[20000];
+	int32_t *intMiddle = &intBuffer[10000];
+	intMiddle[8191] = 1;
+	intMiddle[-8192] = 2;
+	intMiddle[8192] = 3;
+	intMiddle[-8193] = 4;
+	VALIDATE_FUNCTION_CALL(int32_t, "IntBoundaries", int32_t(1234), intMiddle);
+
+	static int64_t longBuffer[10000];
+	int64_t *longMiddle = &longBuffer[5000];
+	longMiddle[4095] = 5;
+	longMiddle[-4096] = 6;
+	longMiddle[4096] = 7;
+	longMiddle[-4097] = 8;
+	VALIDATE_FUNCTION_CALL(int64_t, "LongBoundaries", int64_t(5678), longMiddle);
+}
+
+
 DEFINE_VM_TEST(FarFrameOffsets, "scripts/vm_FarFrameOffsets.bond")
 {
 	using namespace Bond;
@@ -2202,6 +2238,7 @@ DEFINE_VM_TEST(FusedBranches, "scripts/vm_FusedBranches.bond")
   TEST_ITEM(DebugCallStack)                     \
   TEST_ITEM(CodeGenOptimizations)               \
   TEST_ITEM(FarFrameOffsets)                    \
+  TEST_ITEM(OffsetLoads)                        \
   TEST_ITEM(FusedBranches)                      \
 
 RUN_TESTS(VM, TEST_ITEMS)

@@ -2280,7 +2280,42 @@ void GeneratorCore::EmitPushFramePointerIndirectValue64(int32_t offset)
 void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescriptor, int32_t offset)
 {
 	// Add the accumulated offset to the address that is already on the stack. Then push the value
-	// at the resulting address.
+	// at the resulting address. A 32-bit or 64-bit value at a nonzero 16-bit offset is loaded with a
+	// single load32o or load64o.
+	if ((offset != 0) && IsInRange<int16_t>(offset))
+	{
+		OpCode offsetLoad = OPCODE_NOP;
+		if (typeDescriptor.IsValueType())
+		{
+			switch (typeDescriptor.GetPrimitiveType())
+			{
+				case Token::KEY_INT:
+				case Token::KEY_UINT:
+				case Token::KEY_FLOAT:
+					offsetLoad = OPCODE_LOAD32O;
+					break;
+				case Token::KEY_LONG:
+				case Token::KEY_ULONG:
+				case Token::KEY_DOUBLE:
+					offsetLoad = OPCODE_LOAD64O;
+					break;
+				default:
+					break;
+			}
+		}
+		else if (typeDescriptor.IsPointerType())
+		{
+			offsetLoad = Is64BitPointer() ? OPCODE_LOAD64O : OPCODE_LOAD32O;
+		}
+
+		if (offsetLoad != OPCODE_NOP)
+		{
+			EmitOpCode(offsetLoad);
+			EmitValue16(Value16(int16_t(offset)));
+			return;
+		}
+	}
+
 	EmitAccumulateAddressOffset(offset);
 
 	if (typeDescriptor.IsValueType())

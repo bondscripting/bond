@@ -628,6 +628,24 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
+			case OPCODE_LOAD32O:
+			{
+				const Value16 offset(code + pc);
+				const uintptr_t address = *reinterpret_cast<uintptr_t *>(sp - BOND_SLOT_SIZE) + uintptr_t(intptr_t(offset.mShort));
+				CopyValue32(reinterpret_cast<const void *>(address), sp - BOND_SLOT_SIZE);
+				pc += sizeof(Value16);
+			}
+			break;
+
+			case OPCODE_LOAD64O:
+			{
+				const Value16 offset(code + pc);
+				const uintptr_t address = *reinterpret_cast<uintptr_t *>(sp - BOND_SLOT_SIZE) + uintptr_t(intptr_t(offset.mShort));
+				CopyValue64(reinterpret_cast<const void *>(address), sp - BOND_SLOT_SIZE);
+				pc += sizeof(Value16);
+			}
+			break;
+
 			case OPCODE_LOADMEMW:
 			{
 				const Value16 memSizeIndex(code + pc);

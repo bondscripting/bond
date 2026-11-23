@@ -573,38 +573,39 @@ DEFINE_TEST(PointerAddConstant)
 	const Bond::PointerSize POINTER_SIZES[] = { Bond::POINTER_32BIT, Bond::POINTER_64BIT };
 	for (const Bond::PointerSize pointerSize: POINTER_SIZES)
 	{
-		// Fields through a pointer, through 'this' and of a global.
+		// Fields through a pointer, through 'this' and of a global. 32-bit and 64-bit loads use
+		// load32o and load64o instead (see OffsetLoads), so these use small types.
 		ASSERT_DISASSEMBLY_CONTAINS_P(
-			"struct S { int a; int b; };"
+			"struct S { int a; short b; };"
 			"int F(S *p) { return p->b; }",
 			"     1: ptraddc     4\n"
-			"     4: load32      \n",
+			"     4: loads       \n",
 			pointerSize);
 
 		ASSERT_DISASSEMBLY_CONTAINS_P(
-			"struct S { int a; int b; int Get() const { return b; } };",
+			"struct S { int a; short b; int Get() const { return b; } };",
 			"     1: ptraddc     4\n"
-			"     4: load32      \n",
+			"     4: loads       \n",
 			pointerSize);
 
 		ASSERT_DISASSEMBLY_CONTAINS_P(
-			"struct S { int a; int b; };"
+			"struct S { int a; short b; };"
 			"const S g = { 1, 2 };"
 			"int F() { return g.b; }",
 			"     0: loadea      g\n"
 			"     3: ptraddc     4\n"
-			"     6: load32      \n",
+			"     6: loads       \n",
 			pointerSize);
 
 		// Constant subscripts, including negative ones.
 		ASSERT_DISASSEMBLY_CONTAINS_P(
-			"int F(int *p) { return p[3] + p[-2]; }",
-			"     1: ptraddc     12\n",
+			"int F(short *p) { return p[3] + p[-2]; }",
+			"     1: ptraddc     6\n",
 			pointerSize);
 
 		ASSERT_DISASSEMBLY_CONTAINS_P(
-			"int F(int *p) { return p[3] + p[-2]; }",
-			"     6: ptraddc     -8\n",
+			"int F(short *p) { return p[3] + p[-2]; }",
+			"     6: ptraddc     -4\n",
 			pointerSize);
 
 		// The 16-bit boundaries.
@@ -684,6 +685,131 @@ DEFINE_TEST(PointerAddConstant)
 		"struct S { int a; int *ptr; };"
 		"void F(S *s) { ++s->ptr; s->ptr -= 3; }",
 		"ptraddc     -12\n",
+		Bond::POINTER_64BIT);
+}
+
+
+// A 32-bit or 64-bit value at a nonzero constant offset that fits in 16 bits is loaded with a single
+// load32o or load64o. Other sizes, a zero offset and larger offsets keep ptraddc and a plain load.
+DEFINE_TEST(OffsetLoads)
+{
+	const Bond::PointerSize POINTER_SIZES[] = { Bond::POINTER_32BIT, Bond::POINTER_64BIT };
+	for (const Bond::PointerSize pointerSize: POINTER_SIZES)
+	{
+		// Fields through a pointer, through 'this', of a global and of a nested struct.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; int b; };"
+			"int F(S *p) { return p->b; }",
+			"     1: load32o     4\n"
+			"     4: return32    \n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; float b; float Get() const { return b; } };",
+			"     1: load32o     4\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { int a; long b; };"
+			"const S g = { 1, 2l };"
+			"long F() { return g.b; }",
+			"     0: loadea      g\n"
+			"     3: load64o     8\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct In { int x; double d; };"
+			"struct Out { int a; In in; };"
+			"double F(Out *p) { return p->in.d; }",
+			"     1: load64o     16\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"struct S { uint a; ulong b; uint c; };"
+			"ulong F(S *p) { return p->b + p->c; }",
+			"load32o     16\n",
+			pointerSize);
+
+		// Constant subscripts, including negative ones.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[3] + p[-2]; }",
+			"     1: load32o     12\n"
+			"     4: push",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[3] + p[-2]; }",
+			"load32o     -8\n",
+			pointerSize);
+
+		// The 16-bit boundaries.
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[8191] + p[-8192]; }",
+			"load32o     32764\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_CONTAINS_P(
+			"int F(int *p) { return p[8191] + p[-8192]; }",
+			"load32o     -32768\n",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"int F(int *p) { return p[8192] + p[-8193]; }",
+			"load32o",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct Big { char[32768] pad; int x; };"
+			"int F(Big *b) { return b->x; }",
+			"load32o",
+			pointerSize);
+
+		// A zero offset uses a plain load.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; long b; };"
+			"long F(S *p, int *q) { return p->a + q[0]; }",
+			"load32o",
+			pointerSize);
+
+		// Small types keep ptraddc.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; char b; uchar c; short d; ushort e; bool f; };"
+			"int F(S *p) { return p->b + p->c + p->d + p->e + (p->f ? 1 : 0); }",
+			"load32o",
+			pointerSize);
+
+		// Compound assignment, increment and stores keep ptraddc, since the address is reused.
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int b; long c; };"
+			"void F(S *p) { p->b += 3; ++p->c; p->b = 7; }",
+			"load32o",
+			pointerSize);
+
+		ASSERT_DISASSEMBLY_NOT_CONTAINS_P(
+			"struct S { int a; int b; long c; };"
+			"void F(S *p) { p->b += 3; ++p->c; p->b = 7; }",
+			"load64o",
+			pointerSize);
+	}
+
+	// Pointer-valued fields use the load of the pointer's width.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct S { int a; int *p; };"
+		"int *F(S *s) { return s->p; }",
+		"     1: load32o     4\n",
+		Bond::POINTER_32BIT);
+
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct S { int a; int *p; };"
+		"int *F(S *s) { return s->p; }",
+		"     1: load64o     8\n",
+		Bond::POINTER_64BIT);
+
+	// Following a linked list.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"struct Node { int v; Node *next; };"
+		"int F(Node *n) { int s = 0; while (n != null) { s += n->v; n = n->next; } return s; }",
+		"load64o     8\n",
 		Bond::POINTER_64BIT);
 }
 
@@ -768,6 +894,7 @@ DEFINE_TEST(FarFrameOffsets)
   TEST_ITEM(FusedCompareBranch)                 \
   TEST_ITEM(ReturnValueElision)                 \
   TEST_ITEM(PointerAddConstant)                 \
+  TEST_ITEM(OffsetLoads)                        \
   TEST_ITEM(FarFrameOffsets)                    \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

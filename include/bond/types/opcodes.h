@@ -69,6 +69,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(LOADUS,       loadus,       NONE,         0)  \
 	BOND_OPCODE_ITEM(LOAD32,       load32,       NONE,         0)  \
 	BOND_OPCODE_ITEM(LOAD64,       load64,       NONE,         0)  \
+	BOND_OPCODE_ITEM(LOAD32O,      load32o,      SHORT,        0)  \
+	BOND_OPCODE_ITEM(LOAD64O,      load64o,      SHORT,        0)  \
 	/* The delta is for a struct of at most one slot. The code generator */ \
 	/* accounts for the additional slots occupied by larger structs. */ \
 	BOND_OPCODE_ITEM(LOADMEMW,     loadmemw,     INT,          0)  \
