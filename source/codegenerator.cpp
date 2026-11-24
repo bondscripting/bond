@@ -269,6 +269,41 @@ static const JumpStatement *GetLoneBreakOrContinue(const ParseNode *statement)
 }
 
 
+// Returns the last statement of a loop body, looking into nested blocks, if it is an if statement
+// with no else-branch, a non-constant condition and a lone break statement. Returns null otherwise.
+static const IfStatement *GetTailBreak(const ParseNode *body)
+{
+	const CompoundStatement *compoundStatement = CastNode<CompoundStatement>(body);
+	while (compoundStatement != nullptr)
+	{
+		const ListParseNode *statement = compoundStatement->GetStatementList();
+		if (statement == nullptr)
+		{
+			return nullptr;
+		}
+		while (NextNode(statement) != nullptr)
+		{
+			statement = NextNode(statement);
+		}
+		body = statement;
+		compoundStatement = CastNode<CompoundStatement>(body);
+	}
+
+	const IfStatement *ifStatement = CastNode<IfStatement>(body);
+	if ((ifStatement != nullptr) &&
+	    (ifStatement->GetElseStatement() == nullptr) &&
+	    !ifStatement->GetCondition()->GetTypeAndValue().IsValueDefined())
+	{
+		const JumpStatement *jumpStatement = GetLoneBreakOrContinue(ifStatement->GetThenStatement());
+		if ((jumpStatement != nullptr) && jumpStatement->IsBreak())
+		{
+			return ifStatement;
+		}
+	}
+	return nullptr;
+}
+
+
 class GeneratorCore: private ParseNodeTraverser
 {
 public:
@@ -297,6 +332,8 @@ public:
 		mLastComparisonPos(0),
 		mBranchCondition(nullptr),
 		mLastWideTruthTest(nullptr),
+		mTailBreak(nullptr),
+		mTailBreakLabel(0),
 		mPointerSize(pointerSize)
 	{}
 
@@ -597,6 +634,7 @@ private:
 
 	void EmitJump(OpCode opCode, size_t toLabel);
 	void EmitConditionalJump(const Expression *condition, bool jumpIfTrue, size_t toLabel);
+	void TraverseLoopBody(const ParseNode *body, const IfStatement *tailBreak, size_t loopStartLabel);
 	void EmitBinaryOpCode(const Expression *expression, OpCode opCode);
 
 	void EmitOpCodeWithOffset(OpCode opCode, int32_t offset);
@@ -687,6 +725,12 @@ private:
 	// within such a condition that pushed a 64-bit value for ifzl or ifnzl to test.
 	const Expression *mBranchCondition;
 	const Expression *mLastWideTruthTest;
+
+	// The 'if (c) break;' that ends the body of the innermost constant true loop being compiled, if
+	// any, and the loop's start label. It compiles to a branch back to the start when c is false,
+	// which replaces the loop's back-edge.
+	const IfStatement *mTailBreak;
+	size_t mTailBreakLabel;
 
 	PointerSize mPointerSize;
 };
@@ -907,6 +951,12 @@ void GeneratorCore::Visit(const IfStatement *ifStatement)
 			Traverse(ifStatement->GetElseStatement());
 		}
 	}
+	else if (ifStatement == mTailBreak)
+	{
+		// The tail 'if (c) break;' of a constant true loop branches back to the loop start when c
+		// is false, and falls through to the loop end otherwise.
+		EmitConditionalJump(condition, false, mTailBreakLabel);
+	}
 	else if ((ifStatement->GetElseStatement() == nullptr) &&
 	         ((loopJump = GetLoneBreakOrContinue(ifStatement->GetThenStatement())) != nullptr))
 	{
@@ -1072,17 +1122,22 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 	const size_t conditionLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 
-	// Continue jumps to the condition, which follows the body.
-	auto continueElement = mContinueLabel.Push(conditionLabel);
+	// A constant true loop whose body ends in 'if (c) break;' uses that test as its back-edge.
+	const bool isConstantTrue = isConstant && conditionTav.GetBoolValue();
+	const IfStatement *tailBreak = isConstantTrue ? GetTailBreak(whileStatement->GetBody()) : nullptr;
+
+	// Continue jumps to the condition, which follows the body. With a tail break, the condition is
+	// constant true and doesn't follow the body, so continue jumps to the start.
+	auto continueElement = mContinueLabel.Push((tailBreak != nullptr) ? loopStartLabel : conditionLabel);
 	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
 	if (isConstant)
 	{
 		// The condition is not tested. A constant false do loop runs its body once.
 		SetLabelValue(loopStartLabel, GetByteCode().size());
-		Traverse(whileStatement->GetBody());
+		TraverseLoopBody(whileStatement->GetBody(), tailBreak, loopStartLabel);
 		SetLabelValue(conditionLabel, GetByteCode().size());
-		if (conditionTav.GetBoolValue())
+		if (isConstantTrue && (tailBreak == nullptr))
 		{
 			EmitJump(OPCODE_GOTO, loopStartLabel);
 		}
@@ -1097,7 +1152,7 @@ void GeneratorCore::Visit(const WhileStatement *whileStatement)
 		}
 
 		SetLabelValue(loopStartLabel, GetByteCode().size());
-		Traverse(whileStatement->GetBody());
+		TraverseLoopBody(whileStatement->GetBody(), nullptr, loopStartLabel);
 		SetLabelValue(conditionLabel, GetByteCode().size());
 		EmitConditionalJump(condition, true, loopStartLabel);
 	}
@@ -1129,7 +1184,13 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	const size_t conditionLabel = CreateLabel();
 	const size_t loopEndLabel = CreateLabel();
 
-	auto continueElement = mContinueLabel.Push(countingLabel);
+	// A constant true loop with no counting expression whose body ends in 'if (c) break;' uses that
+	// test as its back-edge. Continue then jumps to the start, since nothing follows the body.
+	const IfStatement *tailBreak =
+		(isConstant && (forStatement->GetCountingExpression() == nullptr)) ?
+		GetTailBreak(forStatement->GetBody()) : nullptr;
+
+	auto continueElement = mContinueLabel.Push((tailBreak != nullptr) ? loopStartLabel : countingLabel);
 	auto breakElement = mBreakLabel.Push(loopEndLabel);
 
 	// A loop with a condition is entered through it, so that only one branch executes per iteration.
@@ -1139,7 +1200,7 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	}
 
 	SetLabelValue(loopStartLabel, GetByteCode().size());
-	Traverse(forStatement->GetBody());
+	TraverseLoopBody(forStatement->GetBody(), tailBreak, loopStartLabel);
 	SetLabelValue(countingLabel, GetByteCode().size());
 
 	{
@@ -1150,7 +1211,10 @@ void GeneratorCore::Visit(const ForStatement *forStatement)
 	SetLabelValue(conditionLabel, GetByteCode().size());
 	if (isConstant)
 	{
-		EmitJump(OPCODE_GOTO, loopStartLabel);
+		if (tailBreak == nullptr)
+		{
+			EmitJump(OPCODE_GOTO, loopStartLabel);
+		}
 	}
 	else
 	{
@@ -4415,6 +4479,18 @@ void GeneratorCore::EmitJump(OpCode opCode, size_t toLabel)
 	byteCode.push_back(0);
 	byteCode.push_back(0);
 	GetFunction().mJumpList.push_back(JumpEntry(opCodePos, toLabel));
+}
+
+
+void GeneratorCore::TraverseLoopBody(const ParseNode *body, const IfStatement *tailBreak, size_t loopStartLabel)
+{
+	const IfStatement *outerTailBreak = mTailBreak;
+	const size_t outerTailBreakLabel = mTailBreakLabel;
+	mTailBreak = tailBreak;
+	mTailBreakLabel = loopStartLabel;
+	Traverse(body);
+	mTailBreak = outerTailBreak;
+	mTailBreakLabel = outerTailBreakLabel;
 }
 
 

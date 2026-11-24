@@ -222,6 +222,78 @@ DEFINE_TEST(ConditionalBreakAndContinue)
 }
 
 
+// A constant true loop whose body ends in 'if (c) break;' branches back to its start when c is false,
+// instead of branching to its end when c is true and then executing a goto back to the start.
+DEFINE_TEST(TailBreakLoops)
+{
+	const char *const expected =
+		"     2: inci        0, 1\n"
+		"     5: push32_l0   \n"
+		"     6: push32_p0   \n"
+		"     7: iflti       -8 (2)\n"
+		"    10: push32_l0   \n"
+		"    11: return32    \n";
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; while (true) { ++i; if (i >= n) break; } return i; }",
+		expected);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; do { ++i; if (i >= n) { break; } } while (true); return i; }",
+		expected);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; for (;;) { ++i; if (!(i < n)) break; } return i; }",
+		expected);
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; for (;true;) { ++i; { if (i >= n) break; } } return i; }",
+		expected);
+
+	// Continue jumps to the start, and each operand of '&&' branches to the start when false.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n, int m) { int i = 0; while (true) { ++i; if (i % 2 == 0) continue; if ((i >= n) && (i >= m)) break; } return i; }",
+		"     8: ifzi        -9 (2)\n"
+		"    11: push32_l0   \n"
+		"    12: push32_p0   \n"
+		"    13: iflti       -14 (2)\n"
+		"    16: push32_l0   \n"
+		"    17: push32_p1   \n"
+		"    18: iflti       -19 (2)\n"
+		"    21: push32_l0   \n");
+
+	// A 64-bit tail condition tests all 64 bits.
+	ASSERT_DISASSEMBLY_CONTAINS_P(
+		"int F(long v) { int i = 0; while (true) { ++i; v = v - 0x100000000l; if (v == 0l) break; } return i; }",
+		"ifnzl       -",
+		Bond::POINTER_64BIT);
+
+	// Loops that keep their goto: a counting expression, a tail continue, an if with an else, and a
+	// break that is not last.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; for (;; ++i) { if (i >= n) break; } return i; }",
+		"goto");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; while (true) { ++i; if (i >= n) break; if (i == 3) continue; } return i; }",
+		"goto");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; int j = 0; while (true) { ++i; if (i >= n) { break; } else { ++j; } } return i + j; }",
+		"goto");
+
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; while (true) { if (i >= n) break; ++i; } return i; }",
+		"goto");
+
+	// A loop with a non-constant condition is already inverted, and its tail break stays a branch to
+	// the end.
+	ASSERT_DISASSEMBLY_CONTAINS(
+		"int F(int n) { int i = 0; while (i < 100) { ++i; if (i >= n) break; } return i; }",
+		"ifgei");
+}
+
+
 // 'x = x + c', 'x = c + x' and 'x = x - c' on a 32 or 64-bit local use an increment instruction when
 // the constant fits in 8 bits.
 DEFINE_TEST(AssignmentIncrement)
@@ -1142,6 +1214,7 @@ DEFINE_TEST(FarFrameOffsets)
   TEST_ITEM(LoopInversion)                      \
   TEST_ITEM(ConstantLoopConditions)             \
   TEST_ITEM(ConditionalBreakAndContinue)        \
+  TEST_ITEM(TailBreakLoops)                     \
   TEST_ITEM(AssignmentIncrement)                \
   TEST_ITEM(GotoToReturn)                       \
   TEST_ITEM(DeadJumpElimination)                \

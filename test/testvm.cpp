@@ -2324,6 +2324,54 @@ DEFINE_VM_TEST(WideTruthTests, "scripts/vm_WideTruthTests.bond")
 }
 
 
+DEFINE_VM_TEST(TailBreakLoops, "scripts/vm_TailBreakLoops.bond")
+{
+	using namespace Bond;
+
+	// The body runs at least once, even when the tail condition holds on entry.
+	const char *const simpleLoops[] = {"WhileTail", "DoTail", "ForTail"};
+	for (const char *name: simpleLoops)
+	{
+		VALIDATE_FUNCTION_CALL(int32_t, name, int32_t(1), int32_t(1));
+		VALIDATE_FUNCTION_CALL(int32_t, name, int32_t(5), int32_t(5));
+		VALIDATE_FUNCTION_CALL(int32_t, name, int32_t(1), int32_t(-3));
+	}
+
+	VALIDATE_FUNCTION_CALL(int32_t, "ContinueTail", int32_t(16), int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "ContinueTail", int32_t(16), int32_t(6));
+	VALIDATE_FUNCTION_CALL(int32_t, "ContinueTail", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "BodyLocalTail", int32_t(5), int32_t(10));
+	VALIDATE_FUNCTION_CALL(int32_t, "BodyLocalTail", int32_t(1), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "BlockTail", int32_t(4), int32_t(7));
+	VALIDATE_FUNCTION_CALL(int32_t, "BlockTail", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedTail", int32_t(12), int32_t(3), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "NestedTail", int32_t(1), int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchTail", int32_t(122), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "SwitchTail", int32_t(1), int32_t(1));
+	VALIDATE_FUNCTION_CALL(int32_t, "EarlyBreakTail", int32_t(2), int32_t(5), int32_t(2));
+	VALIDATE_FUNCTION_CALL(int32_t, "EarlyBreakTail", int32_t(5), int32_t(5), int32_t(9));
+	VALIDATE_FUNCTION_CALL(int32_t, "EarlyBreakTail", int32_t(0), int32_t(5), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "InnerConditionalLoop", int32_t(12), int32_t(3), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "InnerConditionalLoop", int32_t(200), int32_t(2), int32_t(200));
+
+	// Short-circuit tail conditions: i * 100 + the evaluations of the rhs.
+	VALIDATE_FUNCTION_CALL(int32_t, "AndTail", int32_t(503), int32_t(3), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "AndTail", int32_t(501), int32_t(5), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "OrTail", int32_t(303), int32_t(5), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "OrTail", int32_t(201), int32_t(2), int32_t(9));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "LongTail", int32_t(3), int64_t(0x300000000));
+	VALIDATE_FUNCTION_CALL(int32_t, "LongTail", int32_t(1), int64_t(0x100000000));
+	VALIDATE_FUNCTION_CALL(int32_t, "PointerTail", int32_t(111));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "CountingTail", int32_t(10), int32_t(4));
+	VALIDATE_FUNCTION_CALL(int32_t, "CountingTail", int32_t(0), int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "ContinueAtTail", int32_t(5), int32_t(5));
+	VALIDATE_FUNCTION_CALL(int32_t, "ElseTail", int32_t(304), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "ElseTail", int32_t(100), int32_t(1));
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -2356,5 +2404,6 @@ DEFINE_VM_TEST(WideTruthTests, "scripts/vm_WideTruthTests.bond")
   TEST_ITEM(OffsetStores)                       \
   TEST_ITEM(FusedBranches)                      \
   TEST_ITEM(WideTruthTests)                     \
+  TEST_ITEM(TailBreakLoops)                     \
 
 RUN_TESTS(VM, TEST_ITEMS)

@@ -1,0 +1,278 @@
+// Constant true loops whose body ends in 'if (c) break;' use that test as the back-edge: the loop
+// branches back to its start when c is false. Nearby loops that must keep their goto are tested
+// too.
+
+struct Node
+{
+	Node *mNext;
+	int mValue;
+};
+
+
+bool Count(int *e, bool v)
+{
+	++*e;
+	return v;
+}
+
+
+int WhileTail(int n)
+{
+	int i = 0;
+	while (true)
+	{
+		++i;
+		if (i >= n) break;
+	}
+	return i;
+}
+
+
+int DoTail(int n)
+{
+	int i = 0;
+	do
+	{
+		++i;
+		if (i >= n) { break; }
+	}
+	while (true);
+	return i;
+}
+
+
+int ForTail(int n)
+{
+	int i = 0;
+	for (;;)
+	{
+		++i;
+		if (!(i < n)) break;
+	}
+	return i;
+}
+
+
+// Continue jumps back to the start without testing the tail condition.
+int ContinueTail(int n)
+{
+	int i = 0;
+	int s = 0;
+	while (true)
+	{
+		++i;
+		if ((i % 2) == 0) continue;
+		s += i;
+		if (i >= n) break;
+	}
+	return s;
+}
+
+
+// The tail condition uses a local declared in the body.
+int BodyLocalTail(int n)
+{
+	int i = 0;
+	while (true)
+	{
+		const int sq = i * i;
+		++i;
+		if (sq >= n) break;
+	}
+	return i;
+}
+
+
+// The tail break is the last statement of a nested block.
+int BlockTail(int n)
+{
+	int i = 0;
+	while (true)
+	{
+		++i;
+		{
+			const int k = i * 2;
+			if (k >= n) break;
+		}
+	}
+	return i;
+}
+
+
+int NestedTail(int n, int m)
+{
+	int c = 0;
+	int i = 0;
+	while (true)
+	{
+		int j = 0;
+		while (true)
+		{
+			++c;
+			++j;
+			if (j >= m) break;
+		}
+		++i;
+		if (i >= n) break;
+	}
+	return c;
+}
+
+
+// The breaks inside the switch leave the switch, not the loop.
+int SwitchTail(int n)
+{
+	int i = 0;
+	int s = 0;
+	while (true)
+	{
+		switch (i % 3)
+		{
+			case 0: s += 1; break;
+			case 1: s += 10; break;
+			default: s += 100; break;
+		}
+		++i;
+		if (i >= n) break;
+	}
+	return s;
+}
+
+
+int EarlyBreakTail(int n, int m)
+{
+	int i = 0;
+	while (true)
+	{
+		if (i == m) break;
+		++i;
+		if (i >= n) break;
+	}
+	return i;
+}
+
+
+// The inner loop has a condition, so its tail break is an ordinary branch to its end.
+int InnerConditionalLoop(int n, int m)
+{
+	int c = 0;
+	int i = 0;
+	while (true)
+	{
+		int j = 0;
+		while (j < 100)
+		{
+			++c;
+			++j;
+			if (j >= m) break;
+		}
+		++i;
+		if (i >= n) break;
+	}
+	return c;
+}
+
+
+// Returns i * 100 + the number of evaluations of Count.
+int AndTail(int n, int m)
+{
+	int i = 0;
+	int e = 0;
+	while (true)
+	{
+		++i;
+		if ((i >= n) && Count(&e, i >= m)) break;
+	}
+	return (i * 100) + e;
+}
+
+
+int OrTail(int n, int m)
+{
+	int i = 0;
+	int e = 0;
+	while (true)
+	{
+		++i;
+		if ((i >= n) || Count(&e, i >= m)) break;
+	}
+	return (i * 100) + e;
+}
+
+
+// A 64-bit value whose low 32 bits are always zero.
+int LongTail(long v)
+{
+	int i = 0;
+	while (true)
+	{
+		++i;
+		v = v - 0x100000000l;
+		if (v == 0l) break;
+	}
+	return i;
+}
+
+
+int PointerTail()
+{
+	Node n2 = { null, 100 };
+	Node n1 = { &n2, 10 };
+	Node n0 = { &n1, 1 };
+
+	Node *p = &n0;
+	int s = 0;
+	while (true)
+	{
+		s += p->mValue;
+		p = p->mNext;
+		if (p == null) break;
+	}
+	return s;
+}
+
+
+// These keep their goto: a counting expression, a tail continue, and an if with an else.
+int CountingTail(int n)
+{
+	int s = 0;
+	for (int i = 0; ; ++i)
+	{
+		s += i;
+		if (i >= n) break;
+	}
+	return s;
+}
+
+
+int ContinueAtTail(int n)
+{
+	int i = 0;
+	while (true)
+	{
+		++i;
+		if (i >= n) break;
+		if ((i % 2) == 0) continue;
+	}
+	return i;
+}
+
+
+int ElseTail(int n)
+{
+	int i = 0;
+	int j = 0;
+	while (true)
+	{
+		++i;
+		if (i >= n)
+		{
+			break;
+		}
+		else
+		{
+			j += 2;
+		}
+	}
+	return (i * 100) + j;
+}
