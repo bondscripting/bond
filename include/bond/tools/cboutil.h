@@ -23,6 +23,10 @@ constexpr StringView BOND_DATA_BLOB_ID {"Data"};
 /// \brief Number of bytes in a CBO blob identifier.
 constexpr size_t BOND_BLOB_ID_LENGTH = 4;
 
+/// \brief Number of bytes in an entry of a function's extended instruction table in CBO data: a
+/// 16-bit opcode followed by a 32-bit operand.
+constexpr size_t BOND_EXT_ENTRY_SIZE = 6;
+
 
 /// \brief Packs a size and SignatureType into a single encoded integer, with the type in the low
 /// 4 bits and the size in the remaining 28 bits.

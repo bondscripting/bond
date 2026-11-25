@@ -95,6 +95,21 @@ struct ReturnSignature
 };
 
 
+/// \brief An entry of a function's extended instruction table, executed by the ext instruction.
+///
+/// It holds an instruction whose operand doesn't fit in its normal encoding: a branch whose offset
+/// doesn't fit in 16 bits, or a loadfp whose frame offset doesn't. See IsExtOpCode.
+struct ExtEntry
+{
+	/// \brief The opcode of the instruction to execute.
+	uint32_t mOpCode;
+
+	/// \brief The operand of the instruction. For a branch, it is the offset relative to the end
+	/// of the ext instruction.
+	int32_t mOperand;
+};
+
+
 /// \brief Metadata and executable code or native binding of a function loaded from a CBO.
 struct Function
 {
@@ -126,6 +141,12 @@ struct Function
 
 	/// \brief The size of the bytecode in bytes, which is 0 for a native function.
 	uint32_t mCodeSize;
+
+	/// \brief The extended instruction table, indexed by the operand of the ext instruction.
+	const ExtEntry *mExtTable;
+
+	/// \brief The number of entries in the extended instruction table.
+	uint32_t mExtCount;
 
 	/// \brief The size in bytes of the arguments laid out in the function's frame.
 	uint32_t mArgSize;

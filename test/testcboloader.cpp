@@ -22,6 +22,7 @@ const size_t VALUE32_TABLE_OFFSET = 22;
 
 const char *const SCRIPT_NAME = "scripts/vm_CboLoader.bond";
 const char *const DATA_SCRIPT_NAME = "scripts/vm_CboLoaderData.bond";
+const char *const EXT_SCRIPT_NAME = "scripts/vm_CboLoaderExt.bond";
 
 
 struct Cbo
@@ -41,6 +42,8 @@ struct FunctionBlob
 	size_t mCodeSizeOffset;
 	size_t mCodeOffset;
 	size_t mCodeSize;
+	size_t mExtCountOffset;
+	size_t mExtTableOffset;
 };
 
 
@@ -128,6 +131,8 @@ bool GetFunctionBlob(const Cbo &cbo, size_t index, FunctionBlob &blob)
 				blob.mCodeSizeOffset = argSizeOffset + (5 * sizeof(Bond::Value32));
 				blob.mCodeOffset = blob.mCodeSizeOffset + sizeof(Bond::Value32);
 				blob.mCodeSize = ReadLE32(cbo, blob.mCodeSizeOffset);
+				blob.mExtCountOffset = blob.mCodeOffset + blob.mCodeSize;
+				blob.mExtTableOffset = blob.mExtCountOffset + sizeof(Bond::Value16);
 				return true;
 			}
 			--index;
@@ -229,9 +234,9 @@ size_t FindOperand(const char *assertFile, int assertLine, const Cbo &cbo, Bond:
 				case Bond::OC_PARAM_VAL32:
 				case Bond::OC_PARAM_VAL64:
 				case Bond::OC_PARAM_OFF16:
-				case Bond::OC_PARAM_OFF32:
 				case Bond::OC_PARAM_STRING:
 				case Bond::OC_PARAM_NAME:
+				case Bond::OC_PARAM_EXT:
 					offset += sizeof(Bond::Value16);
 					break;
 				case Bond::OC_PARAM_LOOKUPSWITCH:
@@ -617,6 +622,115 @@ DEFINE_TEST(BindingWithNoFunction)
 }
 
 
+// The ext script loads without the standard library.
+const LoadOptions EXT_LOAD_OPTIONS = {1, false, nullptr};
+
+
+DEFINE_TEST(ExtTableLoads)
+{
+	Cbo cbo;
+	COMPILE_CBO(EXT_SCRIPT_NAME, cbo);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, cbo);
+
+	// The three ext instructions share one entry: loadfp with the far offset of x.
+	ASSERT_MESSAGE(ReadLE16(cbo, blob.mExtCountOffset) == 1, "Expected one extended instruction table entry.");
+	ASSERT_MESSAGE(ReadLE16(cbo, blob.mExtTableOffset) == uint32_t(Bond::OPCODE_LOADFP), "Expected a loadfp entry.");
+	ASSERT_MESSAGE(int32_t(ReadLE32(cbo, blob.mExtTableOffset + 2)) >= 32768, "Expected a far frame offset.");
+	ASSERT_LOAD_SUCCEEDS(cbo, EXT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(ExtIndexOutOfRange)
+{
+	Cbo cbo;
+	COMPILE_CBO(EXT_SCRIPT_NAME, cbo);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, cbo);
+	const size_t operandOffset = FindOperand(__FILE__, __LINE__, cbo, Bond::OC_PARAM_EXT);
+	WriteLE16(cbo, operandOffset, ReadLE16(cbo, blob.mExtCountOffset));
+	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(ExtInvalidOpCode)
+{
+	Cbo original;
+	COMPILE_CBO(EXT_SCRIPT_NAME, original);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, original);
+
+	// A secondary opcode, opcodes that ext can't execute, and a value beyond the last opcode.
+	const uint32_t invalidOpCodes[] =
+	{
+		256,
+		0xffff,
+		uint32_t(Bond::OPCODE_ADDI),
+		uint32_t(Bond::OPCODE_LOADFP + 1),
+		uint32_t(Bond::OPCODE_EXT),
+		uint32_t(Bond::OPCODE_LOOKUPSWITCH),
+		uint32_t(Bond::OPCODE_MAX),
+	};
+	for (const uint32_t opCode: invalidOpCodes)
+	{
+		Cbo cbo = original;
+		WriteLE16(cbo, blob.mExtTableOffset, opCode);
+		ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+	}
+}
+
+
+DEFINE_TEST(ExtBranchTarget)
+{
+	Cbo original;
+	COMPILE_CBO(EXT_SCRIPT_NAME, original);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, original);
+
+	// Turn the shared loadfp entry into a goto. Its offset is relative to the end of each ext
+	// instruction, so it must be in range at every one of them. The first ext instruction ends at
+	// operandOffset + 2 and the last one before the end of the code.
+	const size_t operandOffset = FindOperand(__FILE__, __LINE__, original, Bond::OC_PARAM_EXT);
+	const int32_t firstEnd = int32_t(operandOffset + sizeof(Bond::Value16) - blob.mCodeOffset);
+	const int32_t codeSize = int32_t(blob.mCodeSize);
+
+	Cbo cbo = original;
+	WriteLE16(cbo, blob.mExtTableOffset, uint32_t(Bond::OPCODE_GOTO));
+	WriteLE32(cbo, blob.mExtTableOffset + 2, uint32_t(-firstEnd));
+	ASSERT_LOAD_SUCCEEDS(cbo, EXT_LOAD_OPTIONS);
+
+	WriteLE32(cbo, blob.mExtTableOffset + 2, uint32_t(-firstEnd - 1));
+	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+
+	// Past the end of the code from the first ext instruction.
+	WriteLE32(cbo, blob.mExtTableOffset + 2, uint32_t(codeSize - firstEnd + 1));
+	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+
+	// A far offset, well out of range, as a conditional branch.
+	WriteLE16(cbo, blob.mExtTableOffset, uint32_t(Bond::OPCODE_IFLTI));
+	WriteLE32(cbo, blob.mExtTableOffset + 2, 40000);
+	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(ExtTableTruncated)
+{
+	// A table count that claims more entries than the blob holds.
+	Cbo cbo;
+	COMPILE_CBO(EXT_SCRIPT_NAME, cbo);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, cbo);
+	WriteLE16(cbo, blob.mExtCountOffset, 2);
+	ASSERT_LOAD_FAILS(nullptr, cbo, EXT_LOAD_OPTIONS);
+}
+
+
+DEFINE_TEST(InvalidOpCode)
+{
+	// A byte that isn't an opcode.
+	Cbo cbo;
+	COMPILE_CBO(EXT_SCRIPT_NAME, cbo);
+	const FunctionBlob blob = GetFirstScriptFunctionBlob(__FILE__, __LINE__, cbo);
+	cbo.mBytes[blob.mCodeOffset] = uint8_t(Bond::OPCODE_MAX);
+	ASSERT_LOAD_FAILS(INVALID_BYTECODE, cbo, EXT_LOAD_OPTIONS);
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(ValidCboLoads)                      \
   TEST_ITEM(Truncation)                         \
@@ -639,5 +753,11 @@ DEFINE_TEST(BindingWithNoFunction)
   TEST_ITEM(DataDefinedTwice)                   \
   TEST_ITEM(BindingTargetNotNative)             \
   TEST_ITEM(BindingWithNoFunction)              \
+  TEST_ITEM(ExtTableLoads)                      \
+  TEST_ITEM(ExtIndexOutOfRange)                 \
+  TEST_ITEM(ExtInvalidOpCode)                   \
+  TEST_ITEM(ExtBranchTarget)                    \
+  TEST_ITEM(ExtTableTruncated)                  \
+  TEST_ITEM(InvalidOpCode)                      \
 
 RUN_TESTS(CboLoader, TEST_ITEMS)

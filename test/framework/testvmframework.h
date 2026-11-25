@@ -95,6 +95,18 @@ void RunVMTest(
 	const Bond::NativeBindingCollection *nativeBinding);
 
 
+/// \brief Compiles the given in-memory source, which must not include the standard library, loads
+/// it without the standard library and calls validationFunction. Unlike RunVMTest, the size of the
+/// CBO is not limited by MAX_CBO_SIZE, so it suits generated sources with very large functions.
+void RunVMTestOnSource(
+	const char *assertFile,
+	int assertLine,
+	const char *sourceName,
+	const char *source,
+	size_t sourceLength,
+	VMValidationFunction *validationFunction);
+
+
 /// \brief Compiles scriptName into cboBuffer and returns the size of the CBO. Throws an
 /// AssertionFailure if the script fails to compile, the CBO does not fit or memory leaks.
 size_t CompileScriptToCbo(

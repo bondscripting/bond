@@ -1,3 +1,4 @@
+#include "framework/farbranchsource.h"
 #include "framework/testframework.h"
 #include "bond/compiler/codegenerator.h"
 #include "bond/compiler/compilererror.h"
@@ -25,13 +26,14 @@
 
 
 /// \brief Compiles the given Bond source for the given pointer size and asserts that its disassembly
-/// contains, or doesn't contain, the given text. The non-ASCII bytes in these tests are written as
-/// escapes, so that editors and git can't alter them.
-static void AssertDisassembly(
+/// contains, or doesn't contain, each of the given texts. The non-ASCII bytes in these tests are
+/// written as escapes, so that editors and git can't alter them.
+static void AssertDisassemblyTexts(
 	const char *assertFile,
 	int assertLine,
 	const char *source,
-	const char *text,
+	const char *const *texts,
+	size_t numTexts,
 	bool shouldContain,
 	Bond::PointerSize pointerSize)
 {
@@ -44,7 +46,8 @@ static void AssertDisassembly(
 		Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&allocator)));
 		Bond::Parser parser(allocator, errorBuffer, parseNodeStore);
 		Bond::SemanticAnalyzer analyzer(errorBuffer, pointerSize);
-		Bond::TokenCollectionHandle tokenCollectionHandle = lexer.Lex("Disassembler", source, strlen(source));
+		const size_t sourceLength = strlen(source);
+		Bond::TokenCollectionHandle tokenCollectionHandle = lexer.Lex("Disassembler", source, sourceLength);
 		Bond::TranslationUnit *translationUnit = nullptr;
 
 		if (!errorBuffer.HasErrors())
@@ -59,33 +62,58 @@ static void AssertDisassembly(
 			analyzer.Analyze(translationUnit);
 		}
 
-		char cbo[4096];
-		Bond::MemoryOutputStream cboStream(cbo, Bond::Stream::pos_t(sizeof(cbo)));
+		// Every function needs fewer CBO bytes than its source, plus a header and constant tables.
+		const size_t cboBufferSize = sourceLength + 4096;
+		auto cbo = allocator.AllocOwned<char>(cboBufferSize);
+		Bond::MemoryOutputStream cboStream(cbo.get(), Bond::Stream::pos_t(cboBufferSize));
 		if (!errorBuffer.HasErrors())
 		{
 			Bond::CodeGenerator generator(allocator, errorBuffer, pointerSize);
 			generator.Generate(translationUnit, cboStream);
 		}
 		TestFramework::Assert(!errorBuffer.HasErrors(), assertFile, assertLine, "Failed to compile the test source.");
+		const size_t cboSize = size_t(cboStream.GetPosition());
+		TestFramework::Assert(cboSize < cboBufferSize, assertFile, assertLine, "The CBO doesn't fit in its buffer.");
 
-		// Leave room for a terminator, since the buffer is zero-initialized and searched as a C string.
-		char output[16384] = {};
-		Bond::MemoryOutputStream outputStream(output, Bond::Stream::pos_t(sizeof(output) - 1));
+		// Each byte of code takes at most one line of output. Leave room for a terminator, since the
+		// buffer is zero-initialized and searched as a C string.
+		const size_t outputSize = 16384 + (64 * cboSize);
+		auto output = allocator.AllocOwned<char>(outputSize);
+		memset(output.get(), 0, outputSize);
+		Bond::MemoryOutputStream outputStream(output.get(), Bond::Stream::pos_t(outputSize - 1));
 		Bond::Disassembler disassembler(allocator);
-		disassembler.Disassemble(cbo, size_t(cboStream.GetPosition()), outputStream);
+		disassembler.Disassemble(cbo.get(), cboSize, outputStream);
+		TestFramework::Assert(size_t(outputStream.GetPosition()) < (outputSize - 1), assertFile, assertLine,
+			"The disassembly doesn't fit in its buffer.");
 
-		if (shouldContain)
+		for (size_t i = 0; i < numTexts; ++i)
 		{
-			TestFramework::Assert(strstr(output, text) != nullptr, assertFile, assertLine,
-				"Expected the disassembly to contain '%s'.", text);
-		}
-		else
-		{
-			TestFramework::Assert(strstr(output, text) == nullptr, assertFile, assertLine,
-				"Expected the disassembly not to contain '%s'.", text);
+			const char *text = texts[i];
+			if (shouldContain)
+			{
+				TestFramework::Assert(strstr(output.get(), text) != nullptr, assertFile, assertLine,
+					"Expected the disassembly to contain '%s'.", text);
+			}
+			else
+			{
+				TestFramework::Assert(strstr(output.get(), text) == nullptr, assertFile, assertLine,
+					"Expected the disassembly not to contain '%s'.", text);
+			}
 		}
 	}
 	TestFramework::Assert(allocator.GetNumAllocations() == 0, assertFile, assertLine, "Memory leak.");
+}
+
+
+static void AssertDisassembly(
+	const char *assertFile,
+	int assertLine,
+	const char *source,
+	const char *text,
+	bool shouldContain,
+	Bond::PointerSize pointerSize)
+{
+	AssertDisassemblyTexts(assertFile, assertLine, source, &text, 1, shouldContain, pointerSize);
 }
 
 
@@ -129,7 +157,7 @@ DEFINE_TEST(LoadMemExactSize)
 		"struct Int3 { int x; int y; int z; };"
 		"int G(Int3 v) { return v.x; }"
 		"int F(Int3 *p) { return G(*p); }",
-		"loadmemw    12\n");
+		"loadmem     12\n");
 }
 
 
@@ -352,9 +380,9 @@ DEFINE_TEST(GotoToReturn)
 		"struct Pair { int a; int b; };"
 		"Pair F(bool c, Pair a, Pair b) { return c ? a : b; }",
 		"     6: loadfp      -16\n"
-		"     9: returnmemw  8\n"
+		"     9: returnmem   8\n"
 		"    12: loadfp      -24\n"
-		"    15: returnmemw  8\n");
+		"    15: returnmem   8\n");
 }
 
 
@@ -745,14 +773,14 @@ DEFINE_TEST(ReturnValueElision)
 		"struct P { R x; R y; };"
 		"R M(int x) { R r = { x, x }; return r; }"
 		"int F() { P p = { M(1), M(2) }; return p.y.a; }",
-		"memcopyw");
+		"memcopy");
 
 	// Assignment still copies through a temporary.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"struct R { int a; int b; };"
 		"R M(int x) { R r = { x, x }; return r; }"
 		"int F() { R v = M(1); v = M(v.a); return v.a; }",
-		"memcopyw");
+		"memcopy");
 }
 
 
@@ -1143,27 +1171,27 @@ DEFINE_TEST(OffsetLoads)
 
 DEFINE_TEST(FarFrameOffsets)
 {
-	// A local beyond the int16 frame offset range is read with loadfpw and load. Its address is
-	// pushed before the value is computed, so a write is loadfpw before the value and a store after
-	// it, with no swap.
+	// A local beyond the int16 frame offset range is read with an ext loadfp and a load. Its address
+	// is pushed before the value is computed, so a write is an ext loadfp before the value and a
+	// store after it, with no swap.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int a) { char[40000] pad = {}; int x = a; return x; }",
-		"     6: loadfpw     40000\n"
+		"     6: ext         loadfp 40000\n"
 		"     9: push32_p0   \n"
 		"    10: store32     \n"
-		"    11: loadfpw     40000\n"
+		"    11: ext         loadfp 40000\n"
 		"    14: load32      \n");
 
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int a) { char[40000] pad = {}; int x = 0; x = a; return x; }",
-		"    11: loadfpw     40000\n"
+		"    11: ext         loadfp 40000\n"
 		"    14: push32_p0   \n"
 		"    15: store32     \n");
 
 	// Compound assignment loads through a copy of the address.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int a) { char[40000] pad = {}; int x = 0; x += a; return x; }",
-		"    11: loadfpw     40000\n"
+		"    11: ext         loadfp 40000\n"
 		"    14: dup         \n"
 		"    15: load32      \n"
 		"    16: push32_p0   \n"
@@ -1173,7 +1201,7 @@ DEFINE_TEST(FarFrameOffsets)
 	// In value context, the value is kept below the address with dupins.
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"int F(int a) { char[40000] pad = {}; int x = 0; return x = a; }",
-		"    11: loadfpw     40000\n"
+		"    11: ext         loadfp 40000\n"
 		"    14: push32_p0   \n"
 		"    15: dupins      \n"
 		"    16: store32     \n");
@@ -1201,7 +1229,49 @@ DEFINE_TEST(FarFrameOffsets)
 	ASSERT_DISASSEMBLY_CONTAINS(
 		"struct Huge { char[40000] pad; };"
 		"int F(Huge h, int x) { x = x + 1000; x += 2; ++x; return x; }",
-		"loadfpw");
+		"ext         loadfp");
+}
+
+
+DEFINE_TEST(FarBranches)
+{
+	// Every kind of branch whose offset doesn't fit in 16 bits is an ext instruction, whose table
+	// entry holds the short branch and its 32-bit offset. The source is generated, since each of
+	// its functions has more than 32 KB of code.
+	Bond::DefaultAllocator allocator;
+	{
+		TestFramework::SourceBuffer source((TestFramework::SourceBuffer::allocator_type(&allocator)));
+		TestFramework::GenerateFarBranchSource(source);
+
+		const char *const farBranches[] =
+		{
+			"ext         ifzi ",
+			"ext         ifnzi ",
+			"ext         ifzl ",
+			"ext         ifnzl ",
+			"ext         ifeqi ",
+			"ext         ifnei ",
+			"ext         iflti ",
+			"ext         ifgei ",
+			"ext         ifgti ",
+			"ext         iflei ",
+			"ext         brz ",
+			"ext         brnz ",
+			"ext         nbrz ",
+			"ext         nbrnz ",
+			"ext         goto ",
+			// Backward branches of FarWhile, FarBreak and FarDo.
+			"ext         iflti -",
+			"ext         goto -",
+			"ext         ifnzi -",
+		};
+		const size_t numFarBranches = sizeof(farBranches) / sizeof(*farBranches);
+
+		// The disassembler validates the CBO first, which rejects a short branch whose target is out
+		// of range.
+		AssertDisassemblyTexts(__FILE__, __LINE__, source.data(), farBranches, numFarBranches, true, Bond::POINTER_32BIT);
+		AssertDisassemblyTexts(__FILE__, __LINE__, source.data(), farBranches, numFarBranches, true, Bond::POINTER_64BIT);
+	}
 }
 
 
@@ -1226,5 +1296,6 @@ DEFINE_TEST(FarFrameOffsets)
   TEST_ITEM(OffsetLoads)                        \
   TEST_ITEM(OffsetStores)                       \
   TEST_ITEM(FarFrameOffsets)                    \
+  TEST_ITEM(FarBranches)                        \
 
 RUN_TESTS(Disassembler, TEST_ITEMS)

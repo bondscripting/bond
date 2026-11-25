@@ -196,6 +196,14 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 	const uint32_t codeSize = ReadValue32().mUInt;
 	const size_t codeStart = GetPosition();
 	const size_t codeEnd = codeStart + codeSize;
+
+	// The extended instruction table follows the code. Its entries are read where an ext
+	// instruction refers to them.
+	SetPosition(codeEnd);
+	const size_t extCount = ReadValue16().mUShort;
+	const size_t extTableStart = GetPosition();
+	const size_t extTableEnd = extTableStart + (extCount * BOND_EXT_ENTRY_SIZE);
+	SetPosition(codeStart);
 	mOutStream.Print(
 		"\targ size: %" BOND_PRIu32 "\n"
 		"\tpacked arg size: %" BOND_PRIu32 "\n"
@@ -264,12 +272,22 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 				mOutStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
 			}
 			break;
-			case OC_PARAM_OFF32:
+			case OC_PARAM_EXT:
 			{
-				const size_t offsetIndex = ReadValue16().mUShort;
-				const int32_t offset = mValue32Table[offsetIndex].mInt;
-				const uint32_t baseAddress = uint32_t(GetPosition() - codeStart);
-				mOutStream.Print("%" BOND_PRId32 " (%" BOND_PRIu32 ")", offset, baseAddress + offset);
+				// Print the embedded instruction and its full operand. A branch offset is relative
+				// to the end of the ext instruction.
+				const size_t extIndex = ReadValue16().mUShort;
+				const size_t pos = GetPosition();
+				SetPosition(extTableStart + (extIndex * BOND_EXT_ENTRY_SIZE));
+				const OpCode extOpCode = static_cast<OpCode>(ReadValue16().mUShort);
+				const int32_t operand = ReadValue32().mInt;
+				SetPosition(pos);
+				mOutStream.Print("%s %" BOND_PRId32, GetOpCodeMnemonic(extOpCode), operand);
+				if (GetOpCodeParamType(extOpCode) == OC_PARAM_OFF16)
+				{
+					const uint32_t baseAddress = uint32_t(pos - codeStart);
+					mOutStream.Print(" (%" BOND_PRIu32 ")", baseAddress + uint32_t(operand));
+				}
 			}
 			break;
 			case OC_PARAM_STRING:
@@ -323,6 +341,7 @@ void DisassemblerCore::DisassembleFunctionBlob(size_t blobEnd)
 		}
 		mOutStream.Print("\n");
 	}
+	SetPosition(extTableEnd);
 
 	// Disassemble the optional metadata blob.
 	if (GetPosition() < blobEnd)

@@ -14,8 +14,7 @@ class CboValidatorCore
 public:
 	explicit CboValidatorCore(InputStream &stream):
 		mStream(stream),
-		mStreamEnd(stream.GetEndPosition()),
-		mValue32TableOffset(0)
+		mStreamEnd(stream.GetEndPosition())
 	{}
 
 	CboValidatorCore(const CboValidatorCore &other) = delete;
@@ -27,6 +26,7 @@ private:
 	void ValidateBlob();
 	void ValidateListBlob();
 	void ValidateFunctionBlob(size_t blobEnd);
+	void ValidateBranchTarget(int32_t offset, size_t codeStart, size_t codeSize);
 	void ValidateDataBlob(size_t blobEnd);
 	size_t ValidateQualifiedNameIndex();
 	void ValidateSizeAndType(uint32_t &size, SignatureType &type);
@@ -35,7 +35,6 @@ private:
 
 	Value16 ReadValue16();
 	Value32 ReadValue32();
-	Value32 ReadValue32TableAt(size_t index);
 
 	void AssertBytesRemaining(size_t numBytes) const;
 	void FunctionIsInvalid() const;
@@ -49,7 +48,6 @@ private:
 	CboValidator::Result mResult;
 	InputStream& mStream;
 	size_t mStreamEnd;
-	size_t mValue32TableOffset;
 };
 
 
@@ -96,7 +94,6 @@ CboValidator::Result CboValidatorCore::Validate()
 	AssertBytesRemaining(tableSize - (GetPosition() - tableStart));
 	AssertBytesRemaining(valueSize);
 
-	mValue32TableOffset = GetPosition();
 	Skip((value32Count * sizeof(Value32)) + (value64Count * sizeof(Value64)));
 
 	size_t stringByteCount = 0;
@@ -254,14 +251,44 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 	}
 
 	mResult.mCodeByteCount += AlignUp(codeSize, sizeof(Value32));
-	AssertBytesRemaining(codeSize);
+	AssertBytesRemaining(codeSize + sizeof(Value16));
 	const size_t codeStart = GetPosition();
 	const size_t codeEnd = codeStart + codeSize;
 
+	// The extended instruction table follows the code. Validate its entries first, since the
+	// bytecode refers to them.
+	SetPosition(codeEnd);
+	const size_t extCount = ReadValue16().mUShort;
+	AssertBytesRemaining(extCount * BOND_EXT_ENTRY_SIZE);
+	const size_t extTableStart = GetPosition();
+	const size_t extTableEnd = extTableStart + (extCount * BOND_EXT_ENTRY_SIZE);
+
+	if ((codeSize == 0) && (extCount != 0))
+	{
+		FunctionIsInvalid();
+	}
+
+	for (size_t i = 0; i < extCount; ++i)
+	{
+		const uint32_t extOpCode = ReadValue16().mUShort;
+		Skip(sizeof(Value32));
+		if (!IsExtOpCode(extOpCode))
+		{
+			CodeIsInvalid();
+		}
+	}
+	mResult.mExtEntryCount += extCount;
+
 	// Do a validation pass on the bytecode.
+	SetPosition(codeStart);
 	while (GetPosition() < codeEnd)
 	{
-		const OpCode opCode = static_cast<OpCode>(mStream.Read());
+		const uint32_t opCodeValue = uint32_t(mStream.Read());
+		if (opCodeValue >= uint32_t(OPCODE_MAX))
+		{
+			CodeIsInvalid();
+		}
+		const OpCode opCode = static_cast<OpCode>(opCodeValue);
 		const OpCodeParam param = GetOpCodeParamType(opCode);
 
 		switch (param)
@@ -304,31 +331,28 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 			{
 				AssertBytesRemaining(sizeof(Value16));
 				const int32_t offset = ReadValue16().mShort;
-				const int32_t baseAddress = int32_t(GetPosition() - codeStart);
-				const int32_t targetAddress = baseAddress + offset;
-				if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
-				{
-					CodeIsInvalid();
-				}
+				ValidateBranchTarget(offset, codeStart, codeSize);
 			}
 			break;
-			case OC_PARAM_OFF32:
+			case OC_PARAM_EXT:
 			{
 				AssertBytesRemaining(sizeof(Value16));
-				const size_t offsetIndex = ReadValue16().mUShort;
-				if (offsetIndex >= mResult.mValue32Count)
+				const size_t extIndex = ReadValue16().mUShort;
+				if (extIndex >= extCount)
 				{
 					CodeIsInvalid();
 				}
-				else
+
+				// A branch offset is relative to the end of the ext instruction. An entry can be
+				// shared by several ext instructions, so the target is checked at each of them.
+				const size_t pos = GetPosition();
+				SetPosition(extTableStart + (extIndex * BOND_EXT_ENTRY_SIZE));
+				const OpCode extOpCode = static_cast<OpCode>(ReadValue16().mUShort);
+				const int32_t operand = ReadValue32().mInt;
+				SetPosition(pos);
+				if (GetOpCodeParamType(extOpCode) == OC_PARAM_OFF16)
 				{
-					const int32_t offset = ReadValue32TableAt(offsetIndex).mInt;
-					const int32_t baseAddress = int32_t(GetPosition() - codeStart);
-					const int32_t targetAddress = baseAddress + offset;
-					if ((targetAddress < 0) || (uint32_t(targetAddress) > codeSize))
-					{
-						CodeIsInvalid();
-					}
+					ValidateBranchTarget(operand, codeStart, codeSize);
 				}
 			}
 			break;
@@ -418,10 +442,28 @@ void CboValidatorCore::ValidateFunctionBlob(size_t blobEnd)
 		}
 	}
 
+	// The last instruction must not extend into the extended instruction table.
+	if (GetPosition() != codeEnd)
+	{
+		CodeIsInvalid();
+	}
+	SetPosition(extTableEnd);
+
 	// Validate the optional metadata blob.
 	if (GetPosition() < blobEnd)
 	{
 		ValidateBlob();
+	}
+}
+
+
+void CboValidatorCore::ValidateBranchTarget(int32_t offset, size_t codeStart, size_t codeSize)
+{
+	// The offset is relative to the current position, which is the end of the branch instruction.
+	const int64_t targetAddress = int64_t(GetPosition() - codeStart) + int64_t(offset);
+	if ((targetAddress < 0) || (uint64_t(targetAddress) > uint64_t(codeSize)))
+	{
+		CodeIsInvalid();
 	}
 }
 
@@ -570,16 +612,6 @@ Value32 CboValidatorCore::ReadValue32()
 {
 	Value32 value;
 	mStream.Read(value.mBytes, sizeof(Value32));
-	return value;
-}
-
-
-Value32 CboValidatorCore::ReadValue32TableAt(size_t index)
-{
-	const auto pos = mStream.GetPosition();
-	mStream.SetPosition(Stream::pos_t(mValue32TableOffset + (index * sizeof(Value32))));
-	const Value32 value = ReadValue32();
-	mStream.SetPosition(pos);
 	return value;
 }
 

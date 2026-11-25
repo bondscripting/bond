@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\test\framework\testvmframework.cpp">
       <Filter>Source Files\test\framework</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\framework\farbranchsource.cpp">
+      <Filter>Source Files\test\framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\test\framework\asserts.h">
@@ -63,6 +66,9 @@
       <Filter>Header Files\test\framework</Filter>
     </ClInclude>
     <ClInclude Include="..\..\test\framework\testvmframework.h">
+      <Filter>Header Files\test\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\framework\farbranchsource.h">
       <Filter>Header Files\test\framework</Filter>
     </ClInclude>
   </ItemGroup>

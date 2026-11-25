@@ -49,6 +49,17 @@
   #pragma warning(disable: 4275)
 #endif
 
+/// \def BOND_NOINLINE
+/// \brief Prevents the compiler from inlining a function, e.g. to keep rarely executed code out
+/// of a hot loop.
+#if defined(_MSC_VER)
+  #define BOND_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__)
+  #define BOND_NOINLINE __attribute__((noinline))
+#else
+  #define BOND_NOINLINE
+#endif
+
 #ifdef USER_BOND_CONFIG_HEADER
 #include USER_BOND_CONFIG_HEADER
 #endif

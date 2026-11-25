@@ -1,5 +1,6 @@
 #include "bond/io/memoryoutputstream.h"
 #include "bond/stl/algorithm.h"
+#include "bond/systems/assert.h"
 #include "bond/systems/error.h"
 #include "bond/systems/math.h"
 #include "bond/types/opcodes.h"
@@ -40,9 +41,9 @@ static size_t GetHistogramOperandSize(OpCode opCode)
 		case OC_PARAM_VAL32:
 		case OC_PARAM_VAL64:
 		case OC_PARAM_OFF16:
-		case OC_PARAM_OFF32:
 		case OC_PARAM_STRING:
 		case OC_PARAM_NAME:
+		case OC_PARAM_EXT:
 			return sizeof(Value16);
 		case OC_PARAM_LOOKUPSWITCH:
 		case OC_PARAM_TABLESWITCH:
@@ -558,15 +559,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_LOADFPW:
-			{
-				const Value16 offsetIndex(code + pc);
-				*reinterpret_cast<uint8_t **>(sp) = fp + value32Table[offsetIndex.mUShort].mInt;
-				pc += sizeof(Value16);
-				sp += BOND_SLOT_SIZE;
-			}
-			break;
-
 			case OPCODE_LOADEA:
 			{
 				const Value16 dataIndex(code + pc);
@@ -646,7 +638,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_LOADMEMW:
+			case OPCODE_LOADMEM:
 			{
 				const Value16 memSizeIndex(code + pc);
 				const size_t memSize = size_t(value32Table[memSizeIndex.mUShort].mInt);
@@ -1029,7 +1021,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_MEMCOPYW:
+			case OPCODE_MEMCOPY:
 			{
 				const Value16 memSizeIndex(code + pc);
 				const size_t memSize = size_t(value32Table[memSizeIndex.mUShort].mInt);
@@ -1041,7 +1033,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_MEMZEROW:
+			case OPCODE_MEMZERO:
 			{
 				const Value16 memSizeIndex(code + pc);
 				const size_t memSize = size_t(value32Table[memSizeIndex.mUShort].mInt);
@@ -2025,29 +2017,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_NBRZW:
-			{
-				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = (*condition == 0) ? 1 : 0;
-			}
-			// Fall through.
-
-			case OPCODE_BRZW:
-			{
-				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				if (condition == 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-				else
-				{
-					sp -= BOND_SLOT_SIZE;
-				}
-			}
-			break;
-
 			case OPCODE_NBRNZ:
 			{
 				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
@@ -2071,29 +2040,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_NBRNZW:
-			{
-				int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				*condition = (*condition == 0) ? 1 : 0;
-			}
-			// Fall through.
-
-			case OPCODE_BRNZW:
-			{
-				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				if (condition != 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-				else
-				{
-					sp -= BOND_SLOT_SIZE;
-				}
-			}
-			break;
-
 			case OPCODE_IFZI:
 			{
 				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
@@ -2103,19 +2049,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				if (condition == 0)
 				{
 					pc += offset.mShort;
-				}
-			}
-			break;
-
-			case OPCODE_IFZIW:
-			{
-				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-				if (condition == 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
 				}
 			}
 			break;
@@ -2133,19 +2066,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFNZIW:
-			{
-				const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-				if (condition != 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_IFZL:
 			{
 				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
@@ -2159,19 +2079,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFZLW:
-			{
-				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-				if (condition == 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_IFNZL:
 			{
 				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
@@ -2181,19 +2088,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				if (condition != 0)
 				{
 					pc += offset.mShort;
-				}
-			}
-			break;
-
-			case OPCODE_IFNZLW:
-			{
-				const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= BOND_SLOT_SIZE;
-				if (condition != 0)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
 				}
 			}
 			break;
@@ -2212,20 +2106,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFEQIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a == b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_IFNEI:
 			{
 				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
@@ -2236,20 +2116,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				if (a != b)
 				{
 					pc += offset.mShort;
-				}
-			}
-			break;
-
-			case OPCODE_IFNEIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a != b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
 				}
 			}
 			break;
@@ -2268,20 +2134,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFLTIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a < b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_IFGEI:
 			{
 				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
@@ -2292,20 +2144,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 				if (a >= b)
 				{
 					pc += offset.mShort;
-				}
-			}
-			break;
-
-			case OPCODE_IFGEIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a >= b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
 				}
 			}
 			break;
@@ -2324,20 +2162,6 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFGTIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a > b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_IFLEI:
 			{
 				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
@@ -2352,31 +2176,10 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			break;
 
-			case OPCODE_IFLEIW:
-			{
-				const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
-				const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16);
-				sp -= 2 * BOND_SLOT_SIZE;
-				if (a <= b)
-				{
-					pc += value32Table[offsetIndex.mUShort].mInt;
-				}
-			}
-			break;
-
 			case OPCODE_GOTO:
 			{
 				const Value16 offset(code + pc);
 				pc += sizeof(Value16) + offset.mShort;
-			}
-			break;
-
-			case OPCODE_GOTOW:
-			{
-				const Value16 offsetIndex(code + pc);
-				pc += sizeof(Value16) + value32Table[offsetIndex.mUShort].mInt;
 			}
 			break;
 
@@ -2453,7 +2256,7 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			return;
 
-			case OPCODE_RETURNMEMW:
+			case OPCODE_RETURNMEM:
 			{
 				const Value16 memSizeIndex(code + pc);
 				const int32_t memSize = value32Table[memSizeIndex.mUShort].mInt;
@@ -2462,10 +2265,146 @@ void VM::ExecuteScriptFunction(StackFrame &frame)
 			}
 			return;
 
+			case OPCODE_EXT:
+			{
+				const Value16 extIndex(code + pc);
+				pc += sizeof(Value16);
+				const Function &function = *frame.mFunction;
+				BOND_ASSERT(extIndex.mUShort < function.mExtCount);
+				const ExtResult result = ExecuteExtInstruction(function.mExtTable[extIndex.mUShort], pc, sp, fp);
+				pc = result.mPc;
+				sp = result.mSp;
+			}
+			break;
+
 			case OPCODE_NOP: break;
 			case OPCODE_MAX: break;
 		}
 	}
+}
+
+
+// Executes an entry of a function's extended instruction table: an instruction whose operand
+// doesn't fit in its normal encoding. It is rarely executed, so it is kept out of the dispatch loop
+// of ExecuteScriptFunction. The pc is just past the ext instruction, which is where a branch offset
+// is relative to. The semantics match those of the short instructions in ExecuteScriptFunction.
+BOND_NOINLINE VM::ExtResult VM::ExecuteExtInstruction(const ExtEntry &entry, size_t pc, uint8_t *sp, uint8_t *fp)
+{
+	const int32_t operand = entry.mOperand;
+	switch (entry.mOpCode)
+	{
+		case OPCODE_LOADFP:
+		{
+			*reinterpret_cast<uint8_t **>(sp) = fp + operand;
+			sp += BOND_SLOT_SIZE;
+		}
+		break;
+
+		case OPCODE_NBRZ:
+		case OPCODE_BRZ:
+		{
+			int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
+			if (entry.mOpCode == OPCODE_NBRZ)
+			{
+				*condition = (*condition == 0) ? 1 : 0;
+			}
+			if (*condition == 0)
+			{
+				pc += operand;
+			}
+			else
+			{
+				sp -= BOND_SLOT_SIZE;
+			}
+		}
+		break;
+
+		case OPCODE_NBRNZ:
+		case OPCODE_BRNZ:
+		{
+			int32_t *condition = reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
+			if (entry.mOpCode == OPCODE_NBRNZ)
+			{
+				*condition = (*condition == 0) ? 1 : 0;
+			}
+			if (*condition != 0)
+			{
+				pc += operand;
+			}
+			else
+			{
+				sp -= BOND_SLOT_SIZE;
+			}
+		}
+		break;
+
+		case OPCODE_IFZI:
+		case OPCODE_IFNZI:
+		{
+			const int32_t condition = *reinterpret_cast<int32_t *>(sp - BOND_SLOT_SIZE);
+			sp -= BOND_SLOT_SIZE;
+			if ((condition == 0) == (entry.mOpCode == OPCODE_IFZI))
+			{
+				pc += operand;
+			}
+		}
+		break;
+
+		case OPCODE_IFZL:
+		case OPCODE_IFNZL:
+		{
+			const int64_t condition = *reinterpret_cast<int64_t *>(sp - BOND_SLOT_SIZE);
+			sp -= BOND_SLOT_SIZE;
+			if ((condition == 0) == (entry.mOpCode == OPCODE_IFZL))
+			{
+				pc += operand;
+			}
+		}
+		break;
+
+		case OPCODE_IFEQI:
+		case OPCODE_IFNEI:
+		case OPCODE_IFLTI:
+		case OPCODE_IFGEI:
+		case OPCODE_IFGTI:
+		case OPCODE_IFLEI:
+		{
+			const int32_t a = *reinterpret_cast<int32_t *>(sp - (2 * BOND_SLOT_SIZE));
+			const int32_t b = *reinterpret_cast<int32_t *>(sp - (1 * BOND_SLOT_SIZE));
+			sp -= 2 * BOND_SLOT_SIZE;
+			bool taken = false;
+			switch (entry.mOpCode)
+			{
+				case OPCODE_IFEQI: taken = a == b; break;
+				case OPCODE_IFNEI: taken = a != b; break;
+				case OPCODE_IFLTI: taken = a < b; break;
+				case OPCODE_IFGEI: taken = a >= b; break;
+				case OPCODE_IFGTI: taken = a > b; break;
+				case OPCODE_IFLEI: taken = a <= b; break;
+				default: break;
+			}
+			if (taken)
+			{
+				pc += operand;
+			}
+		}
+		break;
+
+		case OPCODE_GOTO:
+		{
+			pc += operand;
+		}
+		break;
+
+		default:
+		{
+			// The CboValidator only accepts the opcodes handled above (see IsExtOpCode).
+			BOND_ASSERT_MESSAGE(false, "Invalid opcode in extended instruction table.");
+		}
+		break;
+	}
+
+	return ExtResult{pc, sp};
 }
 
 

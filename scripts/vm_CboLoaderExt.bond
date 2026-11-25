@@ -1,0 +1,10 @@
+// Used by test/testcboloader.cpp, which corrupts the extended instruction table of this function.
+// x lies beyond the 16-bit frame offset range, so each of its three uses is an ext instruction, and
+// they share a single table entry.
+int FarLocal(int a)
+{
+	char[40000] pad = {};
+	int x = a;
+	x += a;
+	return x;
+}

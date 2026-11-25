@@ -425,9 +425,22 @@ private:
 		size_t GetFromPos() const { return mOpCodePos + 3; }
 	};
 
+	// An entry of a function's extended instruction table, executed by the ext instruction.
+	struct ExtTableEntry
+	{
+		ExtTableEntry(OpCode opCode, int32_t operand):
+			mOpCode(opCode),
+			mOperand(operand)
+		{}
+		OpCode mOpCode;
+		int32_t mOperand;
+	};
+
 	typedef Vector<uint8_t> ByteCode;
 	typedef Vector<size_t> LabelList;
 	typedef Vector<JumpEntry> JumpList;
+	typedef Vector<ExtTableEntry> ExtTable;
+	typedef Map<uint64_t, uint16_t> ExtIndexMap;
 
 	struct CompiledFunction
 	{
@@ -442,6 +455,8 @@ private:
 			mByteCode(ByteCode::allocator_type(&allocator)),
 			mLabelList(LabelList::allocator_type(&allocator)),
 			mJumpList(JumpList::allocator_type(&allocator)),
+			mExtTable(ExtTable::allocator_type(&allocator)),
+			mExtIndexMap(ExtIndexMap::allocator_type(&allocator)),
 			mArgSize(argSize),
 			mPackedArgSize(packedArgSize),
 			mLocalSize(0),
@@ -453,6 +468,8 @@ private:
 		ByteCode mByteCode;
 		LabelList mLabelList;
 		JumpList mJumpList;
+		ExtTable mExtTable;
+		ExtIndexMap mExtIndexMap;
 
 		uint32_t mArgSize;
 		uint32_t mPackedArgSize;
@@ -627,7 +644,7 @@ private:
 	ValueRef EmitAddressOfValueRef(const ValueRef &valueRef);
 	ValueRef EmitDereferenceOperator(const UnaryExpression *unaryExpression);
 	ValueRef EmitDereferenceValueRef(const ValueRef &valueRef, const TypeDescriptor *typeDescriptor);
-	void EmitLoadMemW(const TypeDescriptor &typeDescriptor);
+	void EmitLoadMem(const TypeDescriptor &typeDescriptor);
 
 	void EmitArgumentList(const Expression *argList, const Parameter *paramList);
 	ValueRef EmitFunctionCall(const FunctionCallExpression *functionCallExpression, bool hasReturnOffset, int32_t returnOffset);
@@ -679,6 +696,7 @@ private:
 	uint16_t MapString(const StringView &str);
 	uint16_t MapValue32(const Value32 &value32);
 	uint16_t MapValue64(const Value64 &value32);
+	uint16_t MapExtEntry(CompiledFunction &compiledFunction, OpCode opCode, int32_t operand);
 
 	void AssertStackEmpty();
 	void PushError(CompilerError::Type type);
@@ -1278,7 +1296,7 @@ void GeneratorCore::Visit(const JumpStatement *jumpStatement)
 
 					default:
 						EmitPushAddressOfValueRef(rhRef);
-						EmitOpCode(OPCODE_RETURNMEMW);
+						EmitOpCode(OPCODE_RETURNMEM);
 						EmitIndexedValue32(Value32(returnDescriptor->GetSize(mPointerSize)));
 						break;
 				}
@@ -1939,7 +1957,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 					EmitOpCode(OPCODE_DUP);
 				}
 				EmitPushConstant(constantExpression->GetTypeAndValue());
-				EmitOpCode(OPCODE_MEMCOPYW);
+				EmitOpCode(OPCODE_MEMCOPY);
 				const uint32_t stringLength = uint32_t(constantExpression->GetValueToken()->GetStringLength() + 1);
 				EmitIndexedValue32(Value32(stringLength));
 			}
@@ -1982,7 +2000,7 @@ void GeneratorCore::EmitInitializer(const Initializer *initializer, InitializerI
 			auto rhRef = mValueRef.Push();
 			Traverse(initializer);
 			EmitPushAddressOfValueRef(rhRef);
-			EmitOpCode(OPCODE_MEMCOPYW);
+			EmitOpCode(OPCODE_MEMCOPY);
 			EmitIndexedValue32(Value32(typeDescriptor.GetSize(mPointerSize)));
 		}
 		else
@@ -2071,7 +2089,7 @@ void GeneratorCore::FlushZero(InitializerIndex &index, bool isLast)
 		{
 			EmitOpCode(OPCODE_DUP);
 		}
-		EmitOpCode(OPCODE_MEMZEROW);
+		EmitOpCode(OPCODE_MEMZERO);
 		EmitIndexedValue32(Value32(index.mZeroSize));
 		index.mZeroSize = 0;
 	}
@@ -2246,7 +2264,7 @@ void GeneratorCore::EmitPushFramePointerIndirectValue(const TypeDescriptor &type
 				break;
 			default:
 				EmitOpCodeWithOffset(OPCODE_LOADFP, offset);
-				EmitLoadMemW(typeDescriptor);
+				EmitLoadMem(typeDescriptor);
 				break;
 		}
 	}
@@ -2393,7 +2411,7 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescr
 				EmitOpCode(OPCODE_LOAD64);
 				break;
 			default:
-				EmitLoadMemW(typeDescriptor);
+				EmitLoadMem(typeDescriptor);
 			break;
 		}
 	}
@@ -2404,12 +2422,12 @@ void GeneratorCore::EmitPushAddressIndirectValue(const TypeDescriptor &typeDescr
 }
 
 
-void GeneratorCore::EmitLoadMemW(const TypeDescriptor &typeDescriptor)
+void GeneratorCore::EmitLoadMem(const TypeDescriptor &typeDescriptor)
 {
-	// loadmemw replaces the address on top of the stack with the struct it points to, which occupies
+	// loadmem replaces the address on top of the stack with the struct it points to, which occupies
 	// as many slots as needed to hold it. Copy only the struct's own bytes, so that the VM never reads
 	// past the end of the object.
-	EmitOpCode(OPCODE_LOADMEMW);
+	EmitOpCode(OPCODE_LOADMEM);
 	EmitIndexedValue32(Value32(typeDescriptor.GetSize(mPointerSize)));
 	ApplyStackDelta(int32_t(typeDescriptor.GetStackSize(mPointerSize)) - BOND_SLOT_SIZE);
 }
@@ -3605,7 +3623,7 @@ GeneratorCore::ValueRef GeneratorCore::EmitAssignmentOperator(const BinaryExpres
 		auto rhRef = mValueRef.Push();
 		Traverse(rhs);
 		EmitPushAddressOfValueRef(rhRef);
-		EmitOpCode(OPCODE_MEMCOPYW);
+		EmitOpCode(OPCODE_MEMCOPY);
 		EmitIndexedValue32(Value32(lhDescriptor.GetSize(mPointerSize)));
 	}
 	else
@@ -4590,10 +4608,12 @@ void GeneratorCore::EmitOpCodeWithOffset(OpCode opCode, int32_t offset)
 	}
 	else
 	{
-		// loadfp is the only frame-offset instruction with a wide form.
+		// loadfp is the only frame-offset instruction that can take a far offset. It is emitted as
+		// an ext instruction whose table entry holds the 32-bit offset.
 		BOND_ASSERT(opCode == OPCODE_LOADFP);
-		EmitOpCode(OPCODE_LOADFPW);
-		EmitIndexedValue32(Value32(offset));
+		GetByteCode().push_back(uint8_t(OPCODE_EXT));
+		ApplyStackDelta(GetStackDelta(opCode));
+		EmitValue16(Value16(MapExtEntry(GetFunction(), opCode, offset)));
 	}
 }
 
@@ -4824,10 +4844,10 @@ void GeneratorCore::ResolveJumps()
 			    ((targetOpCode == OPCODE_RETURN) ||
 			     (targetOpCode == OPCODE_RETURN32) ||
 			     (targetOpCode == OPCODE_RETURN64) ||
-			     (targetOpCode == OPCODE_RETURNMEMW)))
+			     (targetOpCode == OPCODE_RETURNMEM)))
 			{
-				// RETURNMEMW has a 2-byte operand, so it is the same size as the goto.
-				const size_t returnSize = (targetOpCode == OPCODE_RETURNMEMW) ? 3 : 1;
+				// RETURNMEM has a 2-byte operand, so it is the same size as the goto.
+				const size_t returnSize = (targetOpCode == OPCODE_RETURNMEM) ? 3 : 1;
 				for (size_t i = 0; i < 3; ++i)
 				{
 					byteCode[opCodePos + i] = (i < returnSize) ? byteCode[toPos + i] : uint8_t(OPCODE_NOP);
@@ -4839,16 +4859,6 @@ void GeneratorCore::ResolveJumps()
 			}
 		}
 		jumpList.resize(numJumps, JumpEntry(0, 0));
-
-		// Add jump offsets to the constant table if necessary.
-		for (const JumpEntry &jumpEntry: jumpList)
-		{
-			const int32_t offset = int32_t(jumpEntry.mToPos - jumpEntry.GetFromPos());
-			if (!IsInRange<int16_t>(offset))
-			{
-				MapValue32(Value32(offset));
-			}
-		}
 	}
 }
 
@@ -4944,7 +4954,7 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 {
 	uint32_t numFunctions = 0;
 
-	for (const CompiledFunction &compiledFunction: mFunctionList)
+	for (CompiledFunction &compiledFunction: mFunctionList)
 	{
 		const FunctionDefinition *function = compiledFunction.mDefinition;
 		const ByteCode &byteCode = compiledFunction.mByteCode;
@@ -5001,10 +5011,12 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 			const int32_t offset = int32_t(jumpEntry.mToPos) - int32_t(jumpEntry.GetFromPos());
 			Value16 arg(offset);
 
+			// A far branch becomes an ext instruction of the same size, whose table entry holds the
+			// branch and its 32-bit offset, relative to the end of the ext instruction.
 			if (!IsInRange<int16_t>(offset))
 			{
-				++opCode;
-				arg.mUShort = MapValue32(Value32(offset));
+				arg.mUShort = MapExtEntry(compiledFunction, OpCode(opCode), offset);
+				opCode = uint8_t(OPCODE_EXT);
 			}
 
 			mStream.Write(opCode);
@@ -5018,9 +5030,20 @@ uint32_t GeneratorCore::WriteFunctionList(uint16_t functionIndex)
 		}
 
 		// Patch up the code size.
-		const Stream::pos_t endPos = mStream.GetPosition();
+		const Stream::pos_t codeEndPos = mStream.GetPosition();
 		mStream.SetPosition(codeSizePos);
-		WriteValue32(Value32(uint32_t(endPos - codeStartPos)));
+		WriteValue32(Value32(uint32_t(codeEndPos - codeStartPos)));
+		mStream.SetPosition(codeEndPos);
+
+		// The extended instruction table follows the code.
+		const ExtTable &extTable = compiledFunction.mExtTable;
+		WriteValue16(Value16(uint16_t(extTable.size())));
+		for (const ExtTableEntry &entry: extTable)
+		{
+			WriteValue16(Value16(uint16_t(entry.mOpCode)));
+			WriteValue32(Value32(entry.mOperand));
+		}
+		const Stream::pos_t endPos = mStream.GetPosition();
 
 		// Patch up the blob size.
 		mStream.SetPosition(blobStartPos);
@@ -5055,6 +5078,7 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			WriteValue32(Value32(0));              // Stack size
 			WriteValue32(Value32(BOND_SLOT_SIZE)); // Frame pointer alignment
 			WriteValue32(Value32(0));              // Code size
+			WriteValue16(Value16(uint16_t(0)));    // Extended instruction count
 
 			// Patch up the blob size.
 			const Stream::pos_t endPos = mStream.GetPosition();
@@ -5084,6 +5108,7 @@ uint32_t GeneratorCore::WriteNativeMemberList(uint16_t functionIndex)
 			WriteValue32(Value32(0));              // Stack size
 			WriteValue32(Value32(alignment));      // Frame pointer alignment
 			WriteValue32(Value32(0));              // Code size
+			WriteValue16(Value16(uint16_t(0)));    // Extended instruction count
 
 			// Patch up the blob size.
 			const Stream::pos_t endPos = mStream.GetPosition();
@@ -5428,6 +5453,25 @@ uint16_t GeneratorCore::MapValue64(const Value64 &value)
 	if (insertResult.second)
 	{
 		mValue64List.push_back(value);
+	}
+	return insertResult.first->second;
+}
+
+
+uint16_t GeneratorCore::MapExtEntry(CompiledFunction &compiledFunction, OpCode opCode, int32_t operand)
+{
+	BOND_ASSERT(IsExtOpCode(uint32_t(opCode)));
+	ExtTable &extTable = compiledFunction.mExtTable;
+	if (!IsInRange<uint16_t>(extTable.size()))
+	{
+		PushError(CompilerError::EXT_TABLE_OVERFLOW);
+	}
+	const uint64_t key = (uint64_t(opCode) << 32) | uint64_t(uint32_t(operand));
+	const uint16_t index = uint16_t(extTable.size());
+	auto insertResult = compiledFunction.mExtIndexMap.emplace(key, index);
+	if (insertResult.second)
+	{
+		extTable.push_back(ExtTableEntry(opCode, operand));
 	}
 	return insertResult.first->second;
 }

@@ -399,7 +399,16 @@ public:
 private:
 	friend class InvocationStackFrame;
 
+	/// \brief The program counter and stack pointer after an ext instruction. They are passed and
+	/// returned by value, so that the dispatch loop never takes their addresses.
+	struct ExtResult
+	{
+		size_t mPc;
+		uint8_t *mSp;
+	};
+
 	void ExecuteScriptFunction(StackFrame &frame);
+	static ExtResult ExecuteExtInstruction(const ExtEntry &entry, size_t pc, uint8_t *sp, uint8_t *fp);
 	template <bool UNPACK_ARGUMENTS>
 	uint8_t *InvokeFunction(const Function &function, uint8_t *stackTop);
 	void ValidateStackPointer(const uint8_t *stackPointer, size_t operandStackSize) const;

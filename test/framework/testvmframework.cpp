@@ -6,6 +6,7 @@
 #include "bond/compiler/codegenerator.h"
 #include "bond/compiler/frontend.h"
 #include "bond/compiler/lexer.h"
+#include "bond/compiler/parsenodes.h"
 #include "bond/compiler/parser.h"
 #include "bond/compiler/semanticanalyzer.h"
 #include "bond/io/memoryoutputstream.h"
@@ -58,6 +59,87 @@ void RunVMTest(
 			cboLoader.AddNativeBinding(*nativeBinding);
 		}
 		cboLoader.AddCboFile(cboBuffer, cboSize);
+		Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
+		Bond::StdioStreamFactory vmStreamFactory(vmAllocator, nullptr, nullptr, false);
+		CapturedOutputStream stdOut;
+		CapturedOutputStream stdErr;
+		Bond::VM vm(vmAllocator, *codeSegmentHandle.get(), 96 * 1024, nullptr, &stdOut, &stdErr, &vmStreamFactory);
+		codeSegmentHandle.get()->CallStaticInitializers(vm);
+		validationFunction(vm);
+	}
+	catch (const Bond::Exception &e)
+	{
+		throw AssertionFailure(assertFile, assertLine, "%s", e.GetMessage());
+	}
+}
+
+
+void RunVMTestOnSource(
+	const char *assertFile,
+	int assertLine,
+	const char *sourceName,
+	const char *source,
+	size_t sourceLength,
+	VMValidationFunction *validationFunction)
+{
+	Assert(validationFunction != nullptr, assertFile, assertLine, "Validation function is NULL.");
+
+	Bond::DefaultAllocator compilerAllocator;
+	Bond::DefaultAllocator cboLoaderAllocator;
+	Bond::DefaultAllocator vmAllocator;
+	AllocationLeakGuard<Bond::DefaultAllocator> compilerLeakGuard(compilerAllocator, "Compiler", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> cboLoaderLeakGuard(
+		cboLoaderAllocator, "CBO loader", assertFile, assertLine);
+	AllocationLeakGuard<Bond::DefaultAllocator> vmLeakGuard(vmAllocator, "VM", assertFile, assertLine);
+
+	try
+	{
+		// Every function needs fewer CBO bytes than its source, plus a header and constant tables.
+		const size_t bufferSize = sourceLength + (64 * 1024);
+		auto cboBuffer = compilerAllocator.AllocOwned<uint8_t>(bufferSize);
+		size_t cboSize = 0;
+
+		{
+			// The code generator uses the symbol tables owned by the semantic analyzer, so it must
+			// outlive code generation.
+			Bond::CompilerErrorBuffer errorBuffer;
+			Bond::Lexer lexer(compilerAllocator, errorBuffer);
+			Bond::ParseNodeStore parseNodeStore((Bond::ParseNodeStore::allocator_type(&compilerAllocator)));
+			Bond::Parser parser(compilerAllocator, errorBuffer, parseNodeStore);
+			Bond::SemanticAnalyzer analyzer(errorBuffer);
+			Bond::TokenCollectionHandle tokenCollectionHandle = lexer.Lex(sourceName, source, sourceLength);
+			Bond::TranslationUnit *translationUnit = nullptr;
+
+			if (!errorBuffer.HasErrors())
+			{
+				Bond::TokenStream stream = tokenCollectionHandle->GetTokenStream();
+				translationUnit = parser.Parse(stream);
+			}
+
+			if (!errorBuffer.HasErrors())
+			{
+				translationUnit->SetRequiresCodeGeneration(true);
+				analyzer.Analyze(translationUnit);
+			}
+
+			if (!errorBuffer.HasErrors())
+			{
+				Bond::MemoryOutputStream cboStream(cboBuffer.get(), Bond::Stream::pos_t(bufferSize));
+				Bond::CodeGenerator generator(compilerAllocator, errorBuffer);
+				generator.Generate(translationUnit, cboStream);
+				cboSize = size_t(cboStream.GetPosition());
+				Assert(cboSize < bufferSize, assertFile, assertLine,
+					"CBO for '%s' exceeds the %d byte buffer.", sourceName, int(bufferSize));
+			}
+
+			if (errorBuffer.HasErrors())
+			{
+				throw AssertionFailure(assertFile, assertLine, "Failed to compile '%s'.", sourceName);
+			}
+		}
+
+		Bond::CboLoader cboLoader(cboLoaderAllocator);
+		cboLoader.AddCboFile(cboBuffer.get(), cboSize);
 		Bond::CodeSegmentHandle codeSegmentHandle = cboLoader.Load();
 		Bond::StdioStreamFactory vmStreamFactory(vmAllocator, nullptr, nullptr, false);
 		CapturedOutputStream stdOut;

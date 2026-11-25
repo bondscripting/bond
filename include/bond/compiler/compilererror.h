@@ -239,6 +239,8 @@
     "Qualified name table overflow.")                                                      \
   BOND_COMPILER_ERROR(STRING_OVERFLOW,                                                     \
     "String overflow.")                                                                    \
+  BOND_COMPILER_ERROR(EXT_TABLE_OVERFLOW,                                                  \
+    "Extended instruction table overflow.")                                                \
   BOND_COMPILER_ERROR(INTERNAL_ERROR,                                                      \
     "Internal compiler error.")                                                            \
 

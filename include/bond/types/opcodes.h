@@ -60,7 +60,6 @@ namespace Bond
 	BOND_OPCODE_ITEM(CONSTD_2,     constd_2,     NONE,         1)  \
 	                                                               \
 	BOND_OPCODE_ITEM(LOADFP,       loadfp,       SHORT,        1)  \
-	BOND_OPCODE_ITEM(LOADFPW,      loadfpw,      INT,          1)  \
 	BOND_OPCODE_ITEM(LOADEA,       loadea,       NAME,         1)  \
 	BOND_OPCODE_ITEM(LOADSTR,      loadstr,      STRING,       1)  \
 	BOND_OPCODE_ITEM(LOADC,        loadc,        NONE,         0)  \
@@ -73,7 +72,7 @@ namespace Bond
 	BOND_OPCODE_ITEM(LOAD64O,      load64o,      SHORT,        0)  \
 	/* The delta is for a struct of at most one slot. The code generator */ \
 	/* accounts for the additional slots occupied by larger structs. */ \
-	BOND_OPCODE_ITEM(LOADMEMW,     loadmemw,     INT,          0)  \
+	BOND_OPCODE_ITEM(LOADMEM,      loadmem,      INT,          0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(STOREC,       storec,       NONE,         -2) \
 	BOND_OPCODE_ITEM(STORES,       stores,       NONE,         -2) \
@@ -127,8 +126,8 @@ namespace Bond
 	BOND_OPCODE_ITEM(POP64_L2,     pop64_l2,     NONE,         -1) \
 	BOND_OPCODE_ITEM(POP64_L3,     pop64_l3,     NONE,         -1) \
 	                                                               \
-	BOND_OPCODE_ITEM(MEMCOPYW,     memcopyw,     INT,          -2) \
-	BOND_OPCODE_ITEM(MEMZEROW,     memzerow,     INT,          -1) \
+	BOND_OPCODE_ITEM(MEMCOPY,      memcopy,      INT,          -2) \
+	BOND_OPCODE_ITEM(MEMZERO,      memzero,      INT,          -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(DUP,          dup,          NONE,         1)  \
 	BOND_OPCODE_ITEM(DUPINS,       dupins,       NONE,         1)  \
@@ -253,36 +252,21 @@ namespace Bond
 	BOND_OPCODE_ITEM(CMPGED,       cmpged,       NONE,         -1) \
 	                                                               \
 	BOND_OPCODE_ITEM(BRZ,          brz,          OFF16,        -1) \
-	BOND_OPCODE_ITEM(BRZW,         brzw,         OFF32,        -1) \
 	BOND_OPCODE_ITEM(BRNZ,         brnz,         OFF16,        -1) \
-	BOND_OPCODE_ITEM(BRNZW,        brnzw,        OFF32,        -1) \
 	BOND_OPCODE_ITEM(NBRZ,         nbrz,         OFF16,        -1) \
-	BOND_OPCODE_ITEM(NBRZW,        nbrzw,        OFF32,        -1) \
 	BOND_OPCODE_ITEM(NBRNZ,        nbrnz,        OFF16,        -1) \
-	BOND_OPCODE_ITEM(NBRNZW,       nbrnzw,       OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFZI,         ifzi,         OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFZIW,        ifziw,        OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFNZI,        ifnzi,        OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFNZIW,       ifnziw,       OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFZL,         ifzl,         OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFZLW,        ifzlw,        OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFNZL,        ifnzl,        OFF16,        -1) \
-	BOND_OPCODE_ITEM(IFNZLW,       ifnzlw,       OFF32,        -1) \
 	BOND_OPCODE_ITEM(IFEQI,        ifeqi,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFEQIW,       ifeqiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFNEI,        ifnei,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFNEIW,       ifneiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFLTI,        iflti,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFLTIW,       ifltiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFGEI,        ifgei,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFGEIW,       ifgeiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFGTI,        ifgti,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFGTIW,       ifgtiw,       OFF32,        -2) \
 	BOND_OPCODE_ITEM(IFLEI,        iflei,        OFF16,        -2) \
-	BOND_OPCODE_ITEM(IFLEIW,       ifleiw,       OFF32,        -2) \
 	                                                               \
 	BOND_OPCODE_ITEM(GOTO,         goto,         OFF16,        0)  \
-	BOND_OPCODE_ITEM(GOTOW,        gotow,        OFF32,        0)  \
 	                                                               \
 	BOND_OPCODE_ITEM(LOOKUPSWITCH, lookupswitch, LOOKUPSWITCH, -1) \
 	BOND_OPCODE_ITEM(TABLESWITCH,  tableswitch,  TABLESWITCH,  -1) \
@@ -295,7 +279,11 @@ namespace Bond
 	BOND_OPCODE_ITEM(RETURN,       return,       NONE,         0)  \
 	BOND_OPCODE_ITEM(RETURN32,     return32,     NONE,         -1) \
 	BOND_OPCODE_ITEM(RETURN64,     return64,     NONE,         -1) \
-	BOND_OPCODE_ITEM(RETURNMEMW,   returnmemw,   INT,          -1) \
+	BOND_OPCODE_ITEM(RETURNMEM,    returnmem,    INT,          -1) \
+	                                                               \
+	/* Executes an entry of the function's extended instruction table. The */ \
+	/* delta varies; the code generator applies that of the embedded opcode. */ \
+	BOND_OPCODE_ITEM(EXT,          ext,          EXT,          0)  \
 
 
 /// \brief Enumeration of all opcodes in the Bond Virtual Machine instruction set.
@@ -347,9 +335,6 @@ enum OpCodeParam
 	/// \brief A signed 16-bit branch offset relative to the end of the instruction.
 	OC_PARAM_OFF16,
 
-	/// \brief A signed 32-bit branch offset relative to the end of the instruction, stored in the
-	/// 32-bit constant table.
-	OC_PARAM_OFF32,
 
 	/// \brief A string stored in the string constant table.
 	OC_PARAM_STRING,
@@ -365,6 +350,10 @@ enum OpCodeParam
 	/// \brief A 32-bit aligned table holding a default offset, a minimum and maximum match value
 	/// and one branch offset per value in that range.
 	OC_PARAM_TABLESWITCH,
+
+	/// \brief An unsigned 16-bit index into the function's extended instruction table. The entry
+	/// holds an opcode accepted by IsExtOpCode and its 32-bit operand.
+	OC_PARAM_EXT,
 };
 
 
@@ -378,6 +367,12 @@ BOND_API OpCodeParam GetOpCodeParamType(OpCode opCode);
 /// \brief Returns how much the given opcode moves the stack pointer in bytes, which is its stack
 /// delta in BOND_OPCODE_LIST multiplied by BOND_SLOT_SIZE.
 BOND_API int32_t GetStackDelta(OpCode opCode);
+
+/// \brief Returns whether the given opcode may appear in an entry of a function's extended
+/// instruction table, i.e. executed by the ext instruction with a 32-bit operand. These are the
+/// branches with a 16-bit offset and loadfp. Values of 256 and above are reserved for a secondary
+/// opcode space, none of which is defined yet.
+BOND_API bool IsExtOpCode(uint32_t opCode);
 
 /// @}
 

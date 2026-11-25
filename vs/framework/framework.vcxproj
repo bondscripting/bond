@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\test\framework\testparserframework.cpp" />
     <ClCompile Include="..\..\test\framework\testsemanticanalyzerframework.cpp" />
     <ClCompile Include="..\..\test\framework\testvmframework.cpp" />
+    <ClCompile Include="..\..\test\framework\farbranchsource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\test\framework\asserts.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="..\..\test\framework\testparserframework.h" />
     <ClInclude Include="..\..\test\framework\testsemanticanalyzerframework.h" />
     <ClInclude Include="..\..\test\framework\testvmframework.h" />
+    <ClInclude Include="..\..\test\framework\farbranchsource.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7E525B78-8165-452D-BCA1-6855B3FFD564}</ProjectGuid>

@@ -78,4 +78,11 @@ int32_t GetStackDelta(OpCode opCode)
 	return OPCODE_STACK_DELTAS[opCode];
 }
 
+
+bool IsExtOpCode(uint32_t opCode)
+{
+	return (opCode < uint32_t(OPCODE_MAX)) &&
+		((GetOpCodeParamType(OpCode(opCode)) == OC_PARAM_OFF16) || (opCode == uint32_t(OPCODE_LOADFP)));
+}
+
 }

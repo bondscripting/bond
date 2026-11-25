@@ -32,6 +32,7 @@ struct CboLoaderResources
 			size_t functionTableStart,
 			size_t staticInitializerTableStart,
 			size_t codeStart,
+			size_t extTableStart,
 			size_t dataTableStart,
 			size_t dataStart):
 		mConstantTables(reinterpret_cast<ConstantTable *>(memory + constantTablesStart)),
@@ -45,6 +46,7 @@ struct CboLoaderResources
 		mFunctionTable(reinterpret_cast<Function *>(memory + functionTableStart)),
 		mStaticInitializerTable(reinterpret_cast<Function *>(memory + staticInitializerTableStart)),
 		mCode(reinterpret_cast<uint8_t *>(memory + codeStart)),
+		mExtTable(reinterpret_cast<ExtEntry *>(memory + extTableStart)),
 		mDataTable(reinterpret_cast<DataEntry *>(memory + dataTableStart)),
 		mData(reinterpret_cast<uint8_t *>(memory + dataStart))
 	{}
@@ -59,6 +61,7 @@ struct CboLoaderResources
 	Function *mFunctionTable;
 	Function *mStaticInitializerTable;
 	uint8_t *mCode;
+	ExtEntry *mExtTable;
 	DataEntry *mDataTable;
 	uint8_t *mData;
 };
@@ -120,6 +123,7 @@ CodeSegmentHandle CboLoader::Load()
 	size_t functionCount = 0;
 	size_t staticInitializerCount = 0;
 	size_t codeByteCount = 0;
+	size_t extEntryCount = 0;
 	size_t dataCount = 0;
 	size_t dataSize = 0;
 	size_t dataAlignment = size_t(BOND_SLOT_SIZE);
@@ -144,6 +148,7 @@ CodeSegmentHandle CboLoader::Load()
 		functionCount += result.mFunctionCount;
 		staticInitializerCount += result.mStaticInitializerCount;
 		codeByteCount += result.mCodeByteCount;
+		extEntryCount += result.mExtEntryCount;
 		dataCount += result.mDataCount;
 		dataSize = AlignUp(dataSize, result.mDataAlignment);
 		dataSize += result.mDataSize;
@@ -163,6 +168,7 @@ CodeSegmentHandle CboLoader::Load()
 	const size_t functionTableStart = TallyMemoryRequirements<Function>(memSize, functionCount);
 	const size_t staticInitializerTableStart = TallyMemoryRequirements<Function>(memSize, staticInitializerCount);
 	const size_t codeStart = TallyMemoryRequirements<const uint8_t>(memSize, codeByteCount, sizeof(Value32));
+	const size_t extTableStart = TallyMemoryRequirements<ExtEntry>(memSize, extEntryCount);
 	const size_t dataTableStart = TallyMemoryRequirements<DataEntry>(memSize, dataCount);
 	const size_t dataStart = TallyMemoryRequirements<const uint8_t>(memSize, dataSize, dataAlignment);
 
@@ -185,6 +191,7 @@ CodeSegmentHandle CboLoader::Load()
 		functionTableStart,
 		staticInitializerTableStart,
 		codeStart,
+		extTableStart,
 		dataTableStart,
 		dataStart);
 
@@ -304,8 +311,8 @@ void CboLoader::ProcessFunction(Function &function, const CodeSegment &codeSegme
 				case OC_PARAM_VAL32:
 				case OC_PARAM_VAL64:
 				case OC_PARAM_OFF16:
-				case OC_PARAM_OFF32:
 				case OC_PARAM_STRING:
+				case OC_PARAM_EXT:
 					code += sizeof(Value16);
 					break;
 				case OC_PARAM_NAME:
@@ -562,6 +569,18 @@ void CboLoaderCore::LoadFunctionBlob(size_t blobEnd)
 	{
 		function->mNativeFunction = nullptr;
 	}
+
+	// Load the extended instruction table, which the CboValidator has already checked.
+	const uint32_t extCount = ReadValue16().mUShort;
+	ExtEntry *extTable = mResources.mExtTable;
+	for (uint32_t i = 0; i < extCount; ++i)
+	{
+		extTable[i].mOpCode = ReadValue16().mUShort;
+		extTable[i].mOperand = ReadValue32().mInt;
+	}
+	function->mExtTable = (extCount > 0) ? extTable : nullptr;
+	function->mExtCount = extCount;
+	mResources.mExtTable += extCount;
 
 	// Load the optional metadata blob.
 	if (GetPosition() < blobEnd)

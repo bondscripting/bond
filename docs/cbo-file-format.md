@@ -51,7 +51,7 @@ host's.
 | `u16` | `value64Count` | |
 | `u16` | `stringCount` | |
 | `u16` | `qualifiedNameCount` | |
-| `u32[value32Count]` | `value32Table` | 32-bit constants: integers, floats and wide branch offsets. |
+| `u32[value32Count]` | `value32Table` | 32-bit constants: integers, floats and the sizes of block memory operations. |
 | `u64[value64Count]` | `value64Table` | 64-bit constants: longs and doubles. |
 | `String[stringCount]` | `stringTable` | |
 | `QualifiedName[qualifiedNameCount]` | `qualifiedNameTable` | |
@@ -134,6 +134,8 @@ of its Data blobs.
 | `u32` | `framePointerAlignment` | Required alignment of the frame pointer. |
 | `u32` | `codeSize` | |
 | `u8[codeSize]` | `code` | Bytecode. |
+| `u16` | `extCount` | Number of entries in the extended instruction table. 0 for a native function. |
+| `ExtEntry[extCount]` | `extTable` | The function's extended instruction table. |
 | `Blob` | `metadata` | Optional. See [Metadata](#metadata). |
 
 **ParamSignature**: an `i32 framePointerOffset` followed by a `u32` SizeAndType. Offsets are
@@ -143,6 +145,13 @@ offset -8 that is listed first. See
 
 `frameSize`, `packedFrameSize` and `localSize` are multiples of 8 (the slot size), and
 `packedFrameSize <= frameSize`. `framePointerAlignment` is a power of two of at least 8.
+
+**ExtEntry**: a `u16 opCode` followed by an `i32 operand`, 6 bytes. The
+[`ext`](instruction-set.md#ext) instruction executes an entry: the opcode with the 32-bit operand
+in place of its 16-bit one. The opcode must be a branch with a 16-bit offset or `loadfp`. For a
+branch, the operand is an offset relative to the end of the `ext` instruction. Values of 256 and
+above are reserved for a secondary opcode space and are rejected for now. `bondc` writes each
+distinct entry once per function.
 
 A function with `codeSize == 0` is **native**: the host must bind an implementation to its name
 before the code is run. A function whose name is the empty qualified name is the file's **static
@@ -206,7 +215,7 @@ namespace Ex
 }
 ```
 
-produces this 150-byte file:
+produces this 152-byte file:
 
 ```
 Offset  Bytes                     Meaning
@@ -232,11 +241,11 @@ Constant table
 0x36    02 00 01 00 00 00         qualified name 1: Ex.G
 0x3C    02 00 01 00 02 00         qualified name 2: Ex.Add
 Root List blob
-0x42    54 00 00 00               blobSize = 84 (ends at 0x96, end of file)
+0x42    56 00 00 00               blobSize = 86 (ends at 0x98, end of file)
 0x46    03 00                     idIndex = 3 ("List")
 0x48    02 00 00 00               blobCount = 2
 Func blob
-0x4C    3A 00 00 00               blobSize = 58 (ends at 0x86)
+0x4C    3C 00 00 00               blobSize = 60 (ends at 0x88)
 0x50    04 00                     idIndex = 4 ("Func")
 0x52    02 00                     nameIndex = 2 (Ex.Add)
 0x54    46 00 00 00               returnType: size 4, type 6 (int)
@@ -249,11 +258,12 @@ Func blob
 0x76    10 00 00 00               stackSize = 16
 0x7A    08 00 00 00               framePointerAlignment = 8
 0x7E    04 00 00 00               codeSize = 4
-0x82    3E 3F 8C E6               push32_p0, push32_p1, addi, return32
+0x82    3C 3D 86 E2               push32_p0, push32_p1, addi, return32
+0x86    00 00                     extCount = 0
 Data blob
-0x86    10 00 00 00               blobSize = 16 (ends at 0x96)
-0x8A    05 00                     idIndex = 5 ("Data")
-0x8C    01 00                     nameIndex = 1 (Ex.G)
-0x8E    46 00 00 00               type: size 4, type 6 (int)
-0x92    07 00 00 00               payload: initial value 7
+0x88    10 00 00 00               blobSize = 16 (ends at 0x98)
+0x8C    05 00                     idIndex = 5 ("Data")
+0x8E    01 00                     nameIndex = 1 (Ex.G)
+0x90    46 00 00 00               type: size 4, type 6 (int)
+0x94    07 00 00 00               payload: initial value 7
 ```

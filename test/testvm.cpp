@@ -1,3 +1,4 @@
+#include "framework/farbranchsource.h"
 #include "framework/testvmframework.h"
 #include "bond/api/libruntime.h"
 #include "bond/systems/defaultallocator.h"
@@ -1609,7 +1610,7 @@ DEFINE_VM_TEST(RuntimeErrors, "scripts/vm_RuntimeErrors.bond")
 	ASSERT_BOND_EXCEPTION("Stack overflow", vm.CallFunction("Recurse", &intResult, int32_t(0)));
 	VALIDATE_FUNCTION_CALL(int32_t, "AddInts", int32_t(3), int32_t(1), int32_t(2));
 
-	// The overflow must be detected when the frame of PassHuge is set up, before loadmemw copies the
+	// The overflow must be detected when the frame of PassHuge is set up, before loadmem copies the
 	// struct past the end of the stack.
 	static uint8_t hugeBuffer[131072];
 	ASSERT_BOND_EXCEPTION("Stack overflow", vm.CallFunction("PassHuge", &intResult, static_cast<void *>(hugeBuffer)));
@@ -2372,6 +2373,89 @@ DEFINE_VM_TEST(TailBreakLoops, "scripts/vm_TailBreakLoops.bond")
 }
 
 
+static void ValidateFarBranches(Bond::VM &vm)
+{
+	// Each function branches over padding code that sums FAR_BRANCH_PAD_TERMS copies of c, so every
+	// branch is an ext instruction. See GenerateFarBranchSource for the expected results.
+	const int32_t sum = TestFramework::FAR_BRANCH_PAD_TERMS * 3;
+
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfzi", sum, int32_t(5), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfzi", int32_t(1), int32_t(0), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfnzi", int32_t(1), int32_t(5), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfnzi", sum, int32_t(0), int32_t(3));
+
+	// The high half of a long must be tested too.
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfzl", sum, int64_t(0x100000000ll), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfzl", int32_t(1), int64_t(0), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfnzl", int32_t(1), int64_t(0x100000000ll), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarIfnzl", sum, int64_t(0), int32_t(3));
+
+	struct FusedCase
+	{
+		const char *mName;
+		bool (*mPadded)(int32_t a, int32_t b);
+	};
+	const FusedCase fusedCases[] =
+	{
+		{"FarIfeqi", [](int32_t a, int32_t b) { return a != b; }},
+		{"FarIfnei", [](int32_t a, int32_t b) { return a == b; }},
+		{"FarIflti", [](int32_t a, int32_t b) { return a >= b; }},
+		{"FarIfgei", [](int32_t a, int32_t b) { return a < b; }},
+		{"FarIfgti", [](int32_t a, int32_t b) { return a <= b; }},
+		{"FarIflei", [](int32_t a, int32_t b) { return a > b; }},
+	};
+	const int32_t operands[][2] = {{-1, 1}, {1, 1}, {1, -1}, {Bond::BOND_INT_MIN, Bond::BOND_INT_MAX}};
+	for (const FusedCase &fusedCase: fusedCases)
+	{
+		for (const auto &pair: operands)
+		{
+			const int32_t expected = fusedCase.mPadded(pair[0], pair[1]) ? sum : 1;
+			VALIDATE_FUNCTION_CALL(int32_t, fusedCase.mName, expected, pair[0], pair[1], int32_t(3));
+		}
+	}
+
+	// c == 0 makes the padding sum zero, which shows that the right operand was evaluated. Bool
+	// results are returned widened to 32 bits.
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrz", int32_t(1), true, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrz", int32_t(0), true, int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrz", int32_t(0), false, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrnz", int32_t(1), true, int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrnz", int32_t(1), false, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBrnz", int32_t(0), false, int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrz", int32_t(1), false, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrz", int32_t(0), false, int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrz", int32_t(0), true, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrnz", int32_t(1), false, int32_t(0));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrnz", int32_t(1), true, int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarNbrnz", int32_t(0), true, int32_t(0));
+
+	VALIDATE_FUNCTION_CALL(int32_t, "FarGoto", int32_t(2), int32_t(1), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarGoto", sum, int32_t(0), int32_t(3));
+
+	// Loops with far forward and backward branches, run 0, 1 and several times.
+	VALIDATE_FUNCTION_CALL(int32_t, "FarWhile", int32_t(0), int32_t(4), int32_t(4), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarWhile", sum, int32_t(3), int32_t(4), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarWhile", sum * 3, int32_t(1), int32_t(4), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBreak", int32_t(0), int32_t(0), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBreak", sum, int32_t(1), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarBreak", sum * 3, int32_t(3), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarDo", sum, int32_t(1), int32_t(3));
+	VALIDATE_FUNCTION_CALL(int32_t, "FarDo", sum * 3, int32_t(3), int32_t(3));
+}
+
+
+DEFINE_TEST(FarBranches)
+{
+	Bond::DefaultAllocator allocator;
+	{
+		TestFramework::SourceBuffer source((TestFramework::SourceBuffer::allocator_type(&allocator)));
+		TestFramework::GenerateFarBranchSource(source);
+		TestFramework::RunVMTestOnSource(
+			__FILE__, __LINE__, "FarBranches", source.data(), source.size() - 1, &ValidateFarBranches);
+	}
+}
+
+
 #define TEST_ITEMS                              \
   TEST_ITEM(Constants)                          \
   TEST_ITEM(StackOperations)                    \
@@ -2405,5 +2489,6 @@ DEFINE_VM_TEST(TailBreakLoops, "scripts/vm_TailBreakLoops.bond")
   TEST_ITEM(FusedBranches)                      \
   TEST_ITEM(WideTruthTests)                     \
   TEST_ITEM(TailBreakLoops)                     \
+  TEST_ITEM(FarBranches)                        \
 
 RUN_TESTS(VM, TEST_ITEMS)

@@ -44,6 +44,7 @@ public:
 			mFunctionCount(0),
 			mStaticInitializerCount(0),
 			mCodeByteCount(0),
+			mExtEntryCount(0),
 			mDataCount(0),
 			mDataSize(0),
 			mDataAlignment(0)
@@ -105,6 +106,9 @@ public:
 
 		/// \brief Total number of bytes of bytecode.
 		size_t mCodeByteCount;
+
+		/// \brief Total number of entries in the extended instruction tables of the functions.
+		size_t mExtEntryCount;
 
 		/// \brief Number of global variables.
 		size_t mDataCount;

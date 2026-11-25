@@ -52,7 +52,7 @@ of its type. Values narrower than 32 bits are always widened to 32 bits on the s
 occupies the low-addressed 4 bytes of its slot. The upper 4 bytes are unspecified. The stack grows
 toward higher addresses.
 
-The exception is a struct value pushed by [`loadmemw`](#loadmemw), which occupies as many
+The exception is a struct value pushed by [`loadmem`](#loadmem), which occupies as many
 consecutive slots as needed to hold it.
 
 Addresses are pointer-sized: 4 bytes when compiling for 32-bit pointers, 8 bytes for 64-bit
@@ -128,26 +128,28 @@ value* for values on the operand stack.
 | `value32 index` | 2 | Unsigned 16-bit index into the value32 table. The entry is used as raw 32 bits. |
 | `value64 index` | 2 | Unsigned 16-bit index into the **value64 table**. The entry is used as raw 64 bits. |
 | `off16` | 2 | Signed 16-bit branch offset, relative to the address immediately following the operand. |
-| `off32 index` | 2 | Unsigned 16-bit index into the value32 table. The entry is a signed 32-bit branch offset, relative to the address immediately following the operand. |
+| `ext index` | 2 | Unsigned 16-bit index into the function's own **extended instruction table**. Used only by [`ext`](#ext). |
 | `string index` | 2 | Unsigned 16-bit index into the **string table**. |
 | `name index` | 2 | Unsigned 16-bit index. In a CBO file it indexes the **qualified name table**. When the CBO is loaded, the `CboLoader` rewrites it as the index of the referenced data entry or function in the `CodeSegment`. |
 | `lookupswitch table`, `tableswitch table` | variable | Padding to a 4-byte boundary, followed by an inline jump table. See [Switches](#318-switches). |
 
 The value32, value64, string and qualified name tables form the constant table of the CBO file
-that contains the function.
+that contains the function. The extended instruction table belongs to the function itself and
+follows its code in the CBO file.
 
 Multi-byte operands are stored in little-endian byte order in CBO files. Bond only supports
 little-endian targets (`include/bond/conf.h` rejects others at compile time), so the VM reads
 operands from the loaded bytecode without conversion.
 
-### Wide forms
+### Far operands
 
-`loadfp` and the branches come in a narrow and a wide (`w`-suffixed) form. The narrow form encodes its
-value as a `short` immediate. The wide form encodes an `int index` (or an `off32 index` for
-branches) that refers to a full 32-bit value in the value32 table. Both forms are 3 bytes long. The
-compiler emits the wide form only when the value doesn't fit in 16 bits. The wide opcode is always
-the narrow opcode plus one. `loadmemw`, `memcopyw`, `memzerow` and `returnmemw` exist only in the
-wide form. The frame push and pop instructions have no wide form; see [`loadfp`](#loadfp).
+`loadfp` and the branches encode their operand as a 16-bit immediate. When the operand doesn't fit
+in 16 bits (a frame over 32 KB, or a branch over more than 32 KB of code), the compiler emits an
+[`ext`](#ext) instruction instead, whose entry in the function's extended instruction table holds
+the instruction and its full 32-bit operand. `ext` is 3 bytes long, like the instructions it
+replaces. The frame push and pop instructions have no far form; see [`loadfp`](#loadfp).
+`loadmem`, `memcopy`, `memzero` and `returnmem` always take an `int index` into the value32
+table.
 
 ### Stack notation
 
@@ -295,23 +297,24 @@ Push a small built-in floating point constant.
 ### 3.2 Addresses
 
 <a id="loadfp"></a>
-#### `loadfp`, `loadfpw`
+#### `loadfp`
 
 Push the address of a parameter or local.
 
 | | |
 |---|---|
-| **Format** | `loadfp offset:short` · `loadfpw index:int index` |
-| **Operands** | `offset`: signed byte offset from `fp`. `index`: value32 table index of the offset. |
+| **Format** | `loadfp offset:short` |
+| **Operands** | `offset`: signed byte offset from `fp`. |
 | **Stack** | `... → ..., address` |
 
 Pushes `fp + offset`. A negative offset addresses a parameter and a non-negative one addresses a
 local. The compiler uses it to take the address of a variable, to access struct parameters and
 locals, and to pass the address of a return buffer to a function that returns a struct.
 
-`loadfpw` is the only frame instruction with a wide form. The compiler also uses it to read and
-write a variable whose offset doesn't fit in 16 bits: `loadfpw` followed by a [load](#load), and for
-a write, `loadfpw` before the value is computed and a [store](#store) after it.
+`loadfp` is the only frame instruction that can be executed by [`ext`](#ext) with a 32-bit offset.
+The compiler also uses it to read and write a variable whose offset doesn't fit in 16 bits: an
+`ext` `loadfp` followed by a [load](#load), and for a write, an `ext` `loadfp` before the value is
+computed and a [store](#store) after it.
 
 ---
 
@@ -392,23 +395,23 @@ duplicates the base address and pairs `load32o`/`load64o` with
 
 ---
 
-<a id="loadmemw"></a>
-#### `loadmemw`
+<a id="loadmem"></a>
+#### `loadmem`
 
 Replace an address with a copy of the block of memory at that address.
 
 | | |
 |---|---|
-| **Format** | `loadmemw size:int index` |
+| **Format** | `loadmem size:int index` |
 | **Operands** | `size`: value32 table index of the number of bytes to copy. |
 | **Stack** | `..., address → ..., value…` |
 
 Copies exactly `size` bytes from `address` onto the operand stack, starting at the slot that held
 the address. The result occupies `ceil(size / 8)` slots. Any remaining bytes of the last slot are
-unspecified. The compiler uses `loadmemw` to push a struct by value, for example as a function
+unspecified. The compiler uses `loadmem` to push a struct by value, for example as a function
 argument, and passes the size of the struct.
 
-> **Note:** The stack delta recorded for `loadmemw` in `opcodes.h` is 0, which is exact for structs
+> **Note:** The stack delta recorded for `loadmem` in `opcodes.h` is 0, which is exact for structs
 > of at most 8 bytes. The real change is `ceil(size / 8) − 1` slots, and the code generator accounts
 > for the additional slots itself.
 
@@ -472,8 +475,8 @@ duplicates the base address and uses [`load32o`/`load64o`](#loado) at the same o
 ### 3.5 Pushing frame values
 
 These instructions read a parameter or local directly from the frame and push it. They combine
-[`loadfp`](#loadfp) and a [load](#load) into a single instruction. There are no wide forms: a
-variable whose offset doesn't fit in 16 bits is read with `loadfpw` and a load.
+[`loadfp`](#loadfp) and a [load](#load) into a single instruction. There are no far forms: a
+variable whose offset doesn't fit in 16 bits is read with an [`ext`](#ext) `loadfp` and a load.
 
 <a id="push-narrow"></a>
 #### `pushc`, `pushuc`, `pushs`, `pushus`
@@ -635,14 +638,14 @@ Pop a 64-bit value and store it in the frame.
 
 ### 3.7 Block memory operations
 
-<a id="memcopyw"></a>
-#### `memcopyw`
+<a id="memcopy"></a>
+#### `memcopy`
 
 Copy a block of memory.
 
 | | |
 |---|---|
-| **Format** | `memcopyw size:int index` |
+| **Format** | `memcopy size:int index` |
 | **Operands** | `size`: value32 table index of the number of bytes to copy. |
 | **Stack** | `..., destAddress, sourceAddress → ...` |
 
@@ -652,14 +655,14 @@ function into its destination.
 
 ---
 
-<a id="memzerow"></a>
-#### `memzerow`
+<a id="memzero"></a>
+#### `memzero`
 
 Zero a block of memory.
 
 | | |
 |---|---|
-| **Format** | `memzerow size:int index` |
+| **Format** | `memzero size:int index` |
 | **Operands** | `size`: value32 table index of the number of bytes to zero. |
 | **Stack** | `..., address → ...` |
 
@@ -1034,21 +1037,21 @@ the same comparison compiles to [`ifzl`/`ifnzl`](#ifzl-ifnzl) instead.
 ### 3.16 Conditional branches
 
 All branch offsets are relative to the address immediately following the instruction's operand. In
-`bondd` output, the offset is followed by the absolute target in parentheses, e.g. `brz 3 (9)`.
+`bondd` output, the offset is followed by the absolute target in parentheses, e.g. `brz 3 (9)`. A
+branch whose offset doesn't fit in 16 bits is executed by [`ext`](#ext).
 
 <a id="ifzi-ifnzi"></a>
-#### `ifzi`, `ifziw`, `ifnzi`, `ifnziw`
+#### `ifzi`, `ifnzi`
 
 Pop an int condition and branch on it.
 
 | | |
 |---|---|
-| **Format** | `ifzi offset:off16` · `ifziw offset:off32 index` · `ifnzi offset:off16` · `ifnziw offset:off32 index` |
+| **Format** | `ifzi offset:off16` · `ifnzi offset:off16` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | `..., int → ...` |
 
-Pops the condition. `ifzi` and `ifziw` branch if it is zero, and `ifnzi` and `ifnziw` branch if it is
-non-zero. Otherwise execution continues with the next instruction. These are the branches used by
+Pops the condition. `ifzi` branches if it is zero, and `ifnzi` branches if it is non-zero. Otherwise execution continues with the next instruction. These are the branches used by
 `if`, `while` and `for` statements, except where a condition is a signed int comparison (see
 [`ifeqi` … `iflei`](#ifeqi-iflei)) or a 64-bit value compared with zero (see
 [`ifzl`/`ifnzl`](#ifzl-ifnzl)).
@@ -1056,18 +1059,17 @@ non-zero. Otherwise execution continues with the next instruction. These are the
 ---
 
 <a id="ifzl-ifnzl"></a>
-#### `ifzl`, `ifzlw`, `ifnzl`, `ifnzlw`
+#### `ifzl`, `ifnzl`
 
 Pop a 64-bit condition and branch on it.
 
 | | |
 |---|---|
-| **Format** | `ifzl offset:off16` · `ifzlw offset:off32 index` · `ifnzl offset:off16` · `ifnzlw offset:off32 index` |
+| **Format** | `ifzl offset:off16` · `ifnzl offset:off16` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | `..., value64 → ...` |
 
-Pops the condition. `ifzl` and `ifzlw` branch if all 64 bits are zero, and `ifnzl` and `ifnzlw`
-branch otherwise. The compiler emits them for conditions that compare a long, ulong or 64-bit
+Pops the condition. `ifzl` branches if all 64 bits are zero, and `ifnzl` branches otherwise. The compiler emits them for conditions that compare a long, ulong or 64-bit
 pointer with zero, including operands of `!`, `&&` and `||` in a condition. The value itself is
 tested, so `p != null` costs no comparison:
 
@@ -1085,13 +1087,13 @@ tested, so `p != null` costs no comparison:
 ---
 
 <a id="ifeqi-iflei"></a>
-#### `ifeqi`, `ifnei`, `iflti`, `ifgei`, `ifgti`, `iflei` and their wide forms
+#### `ifeqi`, `ifnei`, `iflti`, `ifgei`, `ifgti`, `iflei`
 
 Compare two ints and branch on the result.
 
 | | |
 |---|---|
-| **Format** | `ifeqi offset:off16` · `ifeqiw offset:off32 index`, and likewise for `ifnei`, `iflti`, `ifgei`, `ifgti` and `iflei` |
+| **Format** | `ifeqi offset:off16`, and likewise for `ifnei`, `iflti`, `ifgei`, `ifgti` and `iflei` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | `..., int a, int b → ...` |
 
@@ -1113,23 +1115,22 @@ ints, `cmp*i` followed by `ifzi` maps to the inverse relation:
 ```
 
 The compiler emits them for conditions of `if`, `while`, `for`, `do` and `?:`, including operands of
-`!`, `&&` and `||` in those conditions. The wide forms exist only because every branch needs one
-today. They are expected to go away once the code generator can lay out far branches itself.
+`!`, `&&` and `||` in those conditions.
 
 ---
 
 <a id="brz-brnz"></a>
-#### `brz`, `brzw`, `brnz`, `brnzw`
+#### `brz`, `brnz`
 
 Branch on a condition, keeping it on the stack if the branch is taken.
 
 | | |
 |---|---|
-| **Format** | `brz offset:off16` · `brzw offset:off32 index` · `brnz offset:off16` · `brnzw offset:off32 index` |
+| **Format** | `brz offset:off16` · `brnz offset:off16` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | branch taken: `..., int → ..., int` · not taken: `..., int → ...` |
 
-`brz` and `brzw` branch if the condition is zero. `brnz` and `brnzw` branch if it is non-zero. When
+`brz` branches if the condition is zero. `brnz` branches if it is non-zero. When
 the branch is taken, the condition is left on the stack. When execution falls through, it is
 popped.
 
@@ -1152,13 +1153,13 @@ is already on the stack and the branch skips the evaluation of `b`. Otherwise `a
 ---
 
 <a id="nbrz-nbrnz"></a>
-#### `nbrz`, `nbrzw`, `nbrnz`, `nbrnzw`
+#### `nbrz`, `nbrnz`
 
 Negate a condition, then branch on it, keeping it on the stack if the branch is taken.
 
 | | |
 |---|---|
-| **Format** | `nbrz offset:off16` · `nbrzw offset:off32 index` · `nbrnz offset:off16` · `nbrnzw offset:off32 index` |
+| **Format** | `nbrz offset:off16` · `nbrnz offset:off16` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | branch taken: `..., int → ..., int` · not taken: `..., int → ...` |
 
@@ -1176,15 +1177,57 @@ leaving 1. The compiler uses these for short-circuit operators whose operand is 
 ### 3.17 Unconditional branches
 
 <a id="goto"></a>
-#### `goto`, `gotow`
+#### `goto`
 
 Branch unconditionally.
 
 | | |
 |---|---|
-| **Format** | `goto offset:off16` · `gotow offset:off32 index` |
+| **Format** | `goto offset:off16` |
 | **Operands** | `offset`: the branch offset. |
 | **Stack** | `... → ...` |
+
+---
+
+<a id="ext"></a>
+#### `ext`
+
+Execute an entry of the function's extended instruction table.
+
+| | |
+|---|---|
+| **Format** | `ext index:ext index` |
+| **Operands** | `index`: index into the function's extended instruction table. |
+| **Stack** | that of the entry's instruction |
+
+Each function has its own extended instruction table, stored after its code in the CBO file (see
+[`cbo-file-format.md`](cbo-file-format.md#func-blob-func)). An entry holds a 16-bit opcode and a
+signed 32-bit operand. `ext` executes the entry's instruction with that operand in place of the
+instruction's normal 16-bit operand. It is how the compiler encodes an operand that doesn't fit in
+16 bits, without a separate wide opcode for each instruction:
+
+- A **branch** ([`ifzi`](#ifzi-ifnzi) … [`iflei`](#ifeqi-iflei), [`brz`](#brz-brnz) …
+  [`nbrnz`](#nbrz-nbrnz) and [`goto`](#goto)) whose target is more than 32 KB away. The offset is
+  relative to the end of the `ext` instruction, exactly as for the short branch, which `ext`
+  replaces byte for byte.
+- [`loadfp`](#loadfp) with a frame offset outside the 16-bit range.
+
+No other opcodes are valid in an entry. Opcode values of 256 and above are reserved for a secondary
+opcode space for rarely executed instructions. None is defined yet, so the `CboValidator` rejects
+them, as it rejects an index beyond the end of the table and a branch target outside the
+function's code. Entries are deduplicated within a function, so several `ext` instructions can
+share one.
+
+```
+// int F(int a) { char[40000] pad = {}; int x = a; return x; }
+     ...
+     6: ext         loadfp 40000   // push fp + 40000, the address of x
+     9: push32_p0
+    10: store32
+```
+
+`ext` costs more than the instruction it executes: the VM reads the table entry and dispatches on
+it a second time, out of line. The compiler emits it only where the short form can't be used.
 
 ---
 
@@ -1281,7 +1324,7 @@ Call a function.
 **Calling sequence.** Before `invoke`, the caller pushes, in order:
 
 1. The arguments, **last argument first**, so that argument 0 ends up on top. Each argument
-   occupies `ceil(size / 8)` slots. Struct arguments are pushed with [`loadmemw`](#loadmemw).
+   occupies `ceil(size / 8)` slots. Struct arguments are pushed with [`loadmem`](#loadmem).
 2. For a member function, the `this` pointer.
 3. For a function that returns a struct, the address of a caller-allocated buffer for the return
    value, usually obtained with [`loadfp`](#loadfp).
@@ -1312,7 +1355,7 @@ the same.
      5: loadfp      24         // return buffer: a temporary local
      8: invoke      MakeBig    // pops the argument and the buffer address
     11: loadfp      24
-    14: memcopyw    24         // b = temporary
+    14: memcopy     24         // b = temporary
     17: push32_l0
     18: return32
 ```
@@ -1376,14 +1419,14 @@ for addresses with 64-bit pointers.
 
 ---
 
-<a id="returnmemw"></a>
-#### `returnmemw`
+<a id="returnmem"></a>
+#### `returnmem`
 
 Return a struct value.
 
 | | |
 |---|---|
-| **Format** | `returnmemw size:int index` |
+| **Format** | `returnmem size:int index` |
 | **Operands** | `size`: value32 table index of the size of the struct in bytes. |
 | **Stack** | `..., address → (discarded)` |
 
@@ -1393,11 +1436,11 @@ Copies `size` bytes from `address` to the return buffer supplied by the caller (
 ```
 // Big MakeBig(int v) { Big b = {}; b.x[0] = v; return b; }
      0: loadfp      0
-     3: memzerow    24
+     3: memzero     24
      6: push32_p0
      7: pop32_l0
      8: loadfp      0
-    11: returnmemw  24
+    11: returnmem   24
 ```
 
 ---
@@ -1406,8 +1449,8 @@ Copies `size` bytes from `address` to the return buffer supplied by the caller (
 
 Opcode values are assigned in the order of `BOND_OPCODE_LIST`, starting from 0. The length includes
 the opcode byte. The stack delta is the nominal value recorded in `opcodes.h`. For the branches that
-keep their condition when taken, and for `loadmemw` and `invoke`, the actual effect is described in
-the instruction's entry.
+keep their condition when taken, and for `loadmem`, `invoke` and `ext`, the actual effect is
+described in the instruction's entry. Values 230 to 255 are unassigned.
 
 | Dec | Hex | Mnemonic | Operand | Length (bytes) | Stack delta (slots) |
 |---:|---:|---|---|---:|---:|
@@ -1449,210 +1492,195 @@ the instruction's entry.
 | 35 | 0x23 | `constd_1` | — | 1 | +1 |
 | 36 | 0x24 | `constd_2` | — | 1 | +1 |
 | 37 | 0x25 | `loadfp` | short | 3 | +1 |
-| 38 | 0x26 | `loadfpw` | int index | 3 | +1 |
-| 39 | 0x27 | `loadea` | name index | 3 | +1 |
-| 40 | 0x28 | `loadstr` | string index | 3 | +1 |
-| 41 | 0x29 | `loadc` | — | 1 | 0 |
-| 42 | 0x2A | `loaduc` | — | 1 | 0 |
-| 43 | 0x2B | `loads` | — | 1 | 0 |
-| 44 | 0x2C | `loadus` | — | 1 | 0 |
-| 45 | 0x2D | `load32` | — | 1 | 0 |
-| 46 | 0x2E | `load64` | — | 1 | 0 |
-| 47 | 0x2F | `load32o` | short | 3 | 0 |
-| 48 | 0x30 | `load64o` | short | 3 | 0 |
-| 49 | 0x31 | `loadmemw` | int index | 3 | 0 |
-| 50 | 0x32 | `storec` | — | 1 | −2 |
-| 51 | 0x33 | `stores` | — | 1 | −2 |
-| 52 | 0x34 | `store32` | — | 1 | −2 |
-| 53 | 0x35 | `store64` | — | 1 | −2 |
-| 54 | 0x36 | `store32o` | short | 3 | −2 |
-| 55 | 0x37 | `store64o` | short | 3 | −2 |
-| 56 | 0x38 | `pushc` | short | 3 | +1 |
-| 57 | 0x39 | `pushuc` | short | 3 | +1 |
-| 58 | 0x3A | `pushs` | short | 3 | +1 |
-| 59 | 0x3B | `pushus` | short | 3 | +1 |
-| 60 | 0x3C | `push32` | short | 3 | +1 |
-| 61 | 0x3D | `push32_p0` | — | 1 | +1 |
-| 62 | 0x3E | `push32_p1` | — | 1 | +1 |
-| 63 | 0x3F | `push32_p2` | — | 1 | +1 |
-| 64 | 0x40 | `push32_p3` | — | 1 | +1 |
-| 65 | 0x41 | `push32_l0` | — | 1 | +1 |
-| 66 | 0x42 | `push32_l1` | — | 1 | +1 |
-| 67 | 0x43 | `push32_l2` | — | 1 | +1 |
-| 68 | 0x44 | `push32_l3` | — | 1 | +1 |
-| 69 | 0x45 | `push64` | short | 3 | +1 |
-| 70 | 0x46 | `push64_p0` | — | 1 | +1 |
-| 71 | 0x47 | `push64_p1` | — | 1 | +1 |
-| 72 | 0x48 | `push64_p2` | — | 1 | +1 |
-| 73 | 0x49 | `push64_p3` | — | 1 | +1 |
-| 74 | 0x4A | `push64_l0` | — | 1 | +1 |
-| 75 | 0x4B | `push64_l1` | — | 1 | +1 |
-| 76 | 0x4C | `push64_l2` | — | 1 | +1 |
-| 77 | 0x4D | `push64_l3` | — | 1 | +1 |
-| 78 | 0x4E | `pop` | — | 1 | −1 |
-| 79 | 0x4F | `popc` | short | 3 | −1 |
-| 80 | 0x50 | `pops` | short | 3 | −1 |
-| 81 | 0x51 | `pop32` | short | 3 | −1 |
-| 82 | 0x52 | `pop32_p0` | — | 1 | −1 |
-| 83 | 0x53 | `pop32_p1` | — | 1 | −1 |
-| 84 | 0x54 | `pop32_p2` | — | 1 | −1 |
-| 85 | 0x55 | `pop32_p3` | — | 1 | −1 |
-| 86 | 0x56 | `pop32_l0` | — | 1 | −1 |
-| 87 | 0x57 | `pop32_l1` | — | 1 | −1 |
-| 88 | 0x58 | `pop32_l2` | — | 1 | −1 |
-| 89 | 0x59 | `pop32_l3` | — | 1 | −1 |
-| 90 | 0x5A | `pop64` | short | 3 | −1 |
-| 91 | 0x5B | `pop64_p0` | — | 1 | −1 |
-| 92 | 0x5C | `pop64_p1` | — | 1 | −1 |
-| 93 | 0x5D | `pop64_p2` | — | 1 | −1 |
-| 94 | 0x5E | `pop64_p3` | — | 1 | −1 |
-| 95 | 0x5F | `pop64_l0` | — | 1 | −1 |
-| 96 | 0x60 | `pop64_l1` | — | 1 | −1 |
-| 97 | 0x61 | `pop64_l2` | — | 1 | −1 |
-| 98 | 0x62 | `pop64_l3` | — | 1 | −1 |
-| 99 | 0x63 | `memcopyw` | int index | 3 | −2 |
-| 100 | 0x64 | `memzerow` | int index | 3 | −1 |
-| 101 | 0x65 | `dup` | — | 1 | +1 |
-| 102 | 0x66 | `dupins` | — | 1 | +1 |
-| 103 | 0x67 | `swap` | — | 1 | 0 |
-| 104 | 0x68 | `itoc` | — | 1 | 0 |
-| 105 | 0x69 | `uitouc` | — | 1 | 0 |
-| 106 | 0x6A | `itos` | — | 1 | 0 |
-| 107 | 0x6B | `uitous` | — | 1 | 0 |
-| 108 | 0x6C | `itol` | — | 1 | 0 |
-| 109 | 0x6D | `uitoul` | — | 1 | 0 |
-| 110 | 0x6E | `itof` | — | 1 | 0 |
-| 111 | 0x6F | `uitof` | — | 1 | 0 |
-| 112 | 0x70 | `itod` | — | 1 | 0 |
-| 113 | 0x71 | `uitod` | — | 1 | 0 |
-| 114 | 0x72 | `ltoi` | — | 1 | 0 |
-| 115 | 0x73 | `ltof` | — | 1 | 0 |
-| 116 | 0x74 | `ultof` | — | 1 | 0 |
-| 117 | 0x75 | `ltod` | — | 1 | 0 |
-| 118 | 0x76 | `ultod` | — | 1 | 0 |
-| 119 | 0x77 | `ftoi` | — | 1 | 0 |
-| 120 | 0x78 | `ftoui` | — | 1 | 0 |
-| 121 | 0x79 | `ftol` | — | 1 | 0 |
-| 122 | 0x7A | `ftoul` | — | 1 | 0 |
-| 123 | 0x7B | `ftod` | — | 1 | 0 |
-| 124 | 0x7C | `dtoi` | — | 1 | 0 |
-| 125 | 0x7D | `dtoui` | — | 1 | 0 |
-| 126 | 0x7E | `dtol` | — | 1 | 0 |
-| 127 | 0x7F | `dtoul` | — | 1 | 0 |
-| 128 | 0x80 | `dtof` | — | 1 | 0 |
-| 129 | 0x81 | `ptraddc` | short | 3 | 0 |
-| 130 | 0x82 | `ptroffi` | short | 3 | −1 |
-| 131 | 0x83 | `ptroffl` | short | 3 | −1 |
-| 132 | 0x84 | `ptrdiff` | short | 3 | −1 |
-| 133 | 0x85 | `inci` | char, char | 3 | 0 |
-| 134 | 0x86 | `incl` | char, char | 3 | 0 |
-| 135 | 0x87 | `addi` | — | 1 | −1 |
-| 136 | 0x88 | `addl` | — | 1 | −1 |
-| 137 | 0x89 | `addf` | — | 1 | −1 |
-| 138 | 0x8A | `addd` | — | 1 | −1 |
-| 139 | 0x8B | `subi` | — | 1 | −1 |
-| 140 | 0x8C | `subl` | — | 1 | −1 |
-| 141 | 0x8D | `subf` | — | 1 | −1 |
-| 142 | 0x8E | `subd` | — | 1 | −1 |
-| 143 | 0x8F | `muli` | — | 1 | −1 |
-| 144 | 0x90 | `mull` | — | 1 | −1 |
-| 145 | 0x91 | `mulf` | — | 1 | −1 |
-| 146 | 0x92 | `muld` | — | 1 | −1 |
-| 147 | 0x93 | `divi` | — | 1 | −1 |
-| 148 | 0x94 | `divui` | — | 1 | −1 |
-| 149 | 0x95 | `divl` | — | 1 | −1 |
-| 150 | 0x96 | `divul` | — | 1 | −1 |
-| 151 | 0x97 | `divf` | — | 1 | −1 |
-| 152 | 0x98 | `divd` | — | 1 | −1 |
-| 153 | 0x99 | `remi` | — | 1 | −1 |
-| 154 | 0x9A | `remui` | — | 1 | −1 |
-| 155 | 0x9B | `reml` | — | 1 | −1 |
-| 156 | 0x9C | `remul` | — | 1 | −1 |
-| 157 | 0x9D | `lshi` | — | 1 | −1 |
-| 158 | 0x9E | `lshl` | — | 1 | −1 |
-| 159 | 0x9F | `rshi` | — | 1 | −1 |
-| 160 | 0xA0 | `rshui` | — | 1 | −1 |
-| 161 | 0xA1 | `rshl` | — | 1 | −1 |
-| 162 | 0xA2 | `rshul` | — | 1 | −1 |
-| 163 | 0xA3 | `andi` | — | 1 | −1 |
-| 164 | 0xA4 | `andl` | — | 1 | −1 |
-| 165 | 0xA5 | `ori` | — | 1 | −1 |
-| 166 | 0xA6 | `orl` | — | 1 | −1 |
-| 167 | 0xA7 | `xori` | — | 1 | −1 |
-| 168 | 0xA8 | `xorl` | — | 1 | −1 |
-| 169 | 0xA9 | `negi` | — | 1 | 0 |
-| 170 | 0xAA | `negl` | — | 1 | 0 |
-| 171 | 0xAB | `negf` | — | 1 | 0 |
-| 172 | 0xAC | `negd` | — | 1 | 0 |
-| 173 | 0xAD | `not` | — | 1 | 0 |
-| 174 | 0xAE | `tstl` | — | 1 | 0 |
-| 175 | 0xAF | `cmpeqi` | — | 1 | −1 |
-| 176 | 0xB0 | `cmpeql` | — | 1 | −1 |
-| 177 | 0xB1 | `cmpeqf` | — | 1 | −1 |
-| 178 | 0xB2 | `cmpeqd` | — | 1 | −1 |
-| 179 | 0xB3 | `cmpneqi` | — | 1 | −1 |
-| 180 | 0xB4 | `cmpneql` | — | 1 | −1 |
-| 181 | 0xB5 | `cmpneqf` | — | 1 | −1 |
-| 182 | 0xB6 | `cmpneqd` | — | 1 | −1 |
-| 183 | 0xB7 | `cmplti` | — | 1 | −1 |
-| 184 | 0xB8 | `cmpltui` | — | 1 | −1 |
-| 185 | 0xB9 | `cmpltl` | — | 1 | −1 |
-| 186 | 0xBA | `cmpltul` | — | 1 | −1 |
-| 187 | 0xBB | `cmpltf` | — | 1 | −1 |
-| 188 | 0xBC | `cmpltd` | — | 1 | −1 |
-| 189 | 0xBD | `cmplei` | — | 1 | −1 |
-| 190 | 0xBE | `cmpleui` | — | 1 | −1 |
-| 191 | 0xBF | `cmplel` | — | 1 | −1 |
-| 192 | 0xC0 | `cmpleul` | — | 1 | −1 |
-| 193 | 0xC1 | `cmplef` | — | 1 | −1 |
-| 194 | 0xC2 | `cmpled` | — | 1 | −1 |
-| 195 | 0xC3 | `cmpgti` | — | 1 | −1 |
-| 196 | 0xC4 | `cmpgtui` | — | 1 | −1 |
-| 197 | 0xC5 | `cmpgtl` | — | 1 | −1 |
-| 198 | 0xC6 | `cmpgtul` | — | 1 | −1 |
-| 199 | 0xC7 | `cmpgtf` | — | 1 | −1 |
-| 200 | 0xC8 | `cmpgtd` | — | 1 | −1 |
-| 201 | 0xC9 | `cmpgei` | — | 1 | −1 |
-| 202 | 0xCA | `cmpgeui` | — | 1 | −1 |
-| 203 | 0xCB | `cmpgel` | — | 1 | −1 |
-| 204 | 0xCC | `cmpgeul` | — | 1 | −1 |
-| 205 | 0xCD | `cmpgef` | — | 1 | −1 |
-| 206 | 0xCE | `cmpged` | — | 1 | −1 |
-| 207 | 0xCF | `brz` | off16 | 3 | −1 |
-| 208 | 0xD0 | `brzw` | off32 index | 3 | −1 |
-| 209 | 0xD1 | `brnz` | off16 | 3 | −1 |
-| 210 | 0xD2 | `brnzw` | off32 index | 3 | −1 |
-| 211 | 0xD3 | `nbrz` | off16 | 3 | −1 |
-| 212 | 0xD4 | `nbrzw` | off32 index | 3 | −1 |
-| 213 | 0xD5 | `nbrnz` | off16 | 3 | −1 |
-| 214 | 0xD6 | `nbrnzw` | off32 index | 3 | −1 |
-| 215 | 0xD7 | `ifzi` | off16 | 3 | −1 |
-| 216 | 0xD8 | `ifziw` | off32 index | 3 | −1 |
-| 217 | 0xD9 | `ifnzi` | off16 | 3 | −1 |
-| 218 | 0xDA | `ifnziw` | off32 index | 3 | −1 |
-| 219 | 0xDB | `ifzl` | off16 | 3 | −1 |
-| 220 | 0xDC | `ifzlw` | off32 index | 3 | −1 |
-| 221 | 0xDD | `ifnzl` | off16 | 3 | −1 |
-| 222 | 0xDE | `ifnzlw` | off32 index | 3 | −1 |
-| 223 | 0xDF | `ifeqi` | off16 | 3 | −2 |
-| 224 | 0xE0 | `ifeqiw` | off32 index | 3 | −2 |
-| 225 | 0xE1 | `ifnei` | off16 | 3 | −2 |
-| 226 | 0xE2 | `ifneiw` | off32 index | 3 | −2 |
-| 227 | 0xE3 | `iflti` | off16 | 3 | −2 |
-| 228 | 0xE4 | `ifltiw` | off32 index | 3 | −2 |
-| 229 | 0xE5 | `ifgei` | off16 | 3 | −2 |
-| 230 | 0xE6 | `ifgeiw` | off32 index | 3 | −2 |
-| 231 | 0xE7 | `ifgti` | off16 | 3 | −2 |
-| 232 | 0xE8 | `ifgtiw` | off32 index | 3 | −2 |
-| 233 | 0xE9 | `iflei` | off16 | 3 | −2 |
-| 234 | 0xEA | `ifleiw` | off32 index | 3 | −2 |
-| 235 | 0xEB | `goto` | off16 | 3 | 0 |
-| 236 | 0xEC | `gotow` | off32 index | 3 | 0 |
-| 237 | 0xED | `lookupswitch` | lookupswitch table | variable | −1 |
-| 238 | 0xEE | `tableswitch` | tableswitch table | variable | −1 |
-| 239 | 0xEF | `invoke` | name index | 3 | 0 |
-| 240 | 0xF0 | `invokeunpack` | name index | 3 | 0 |
-| 241 | 0xF1 | `return` | — | 1 | 0 |
-| 242 | 0xF2 | `return32` | — | 1 | −1 |
-| 243 | 0xF3 | `return64` | — | 1 | −1 |
-| 244 | 0xF4 | `returnmemw` | int index | 3 | −1 |
+| 38 | 0x26 | `loadea` | name index | 3 | +1 |
+| 39 | 0x27 | `loadstr` | string index | 3 | +1 |
+| 40 | 0x28 | `loadc` | — | 1 | 0 |
+| 41 | 0x29 | `loaduc` | — | 1 | 0 |
+| 42 | 0x2A | `loads` | — | 1 | 0 |
+| 43 | 0x2B | `loadus` | — | 1 | 0 |
+| 44 | 0x2C | `load32` | — | 1 | 0 |
+| 45 | 0x2D | `load64` | — | 1 | 0 |
+| 46 | 0x2E | `load32o` | short | 3 | 0 |
+| 47 | 0x2F | `load64o` | short | 3 | 0 |
+| 48 | 0x30 | `loadmem` | int index | 3 | 0 |
+| 49 | 0x31 | `storec` | — | 1 | −2 |
+| 50 | 0x32 | `stores` | — | 1 | −2 |
+| 51 | 0x33 | `store32` | — | 1 | −2 |
+| 52 | 0x34 | `store64` | — | 1 | −2 |
+| 53 | 0x35 | `store32o` | short | 3 | −2 |
+| 54 | 0x36 | `store64o` | short | 3 | −2 |
+| 55 | 0x37 | `pushc` | short | 3 | +1 |
+| 56 | 0x38 | `pushuc` | short | 3 | +1 |
+| 57 | 0x39 | `pushs` | short | 3 | +1 |
+| 58 | 0x3A | `pushus` | short | 3 | +1 |
+| 59 | 0x3B | `push32` | short | 3 | +1 |
+| 60 | 0x3C | `push32_p0` | — | 1 | +1 |
+| 61 | 0x3D | `push32_p1` | — | 1 | +1 |
+| 62 | 0x3E | `push32_p2` | — | 1 | +1 |
+| 63 | 0x3F | `push32_p3` | — | 1 | +1 |
+| 64 | 0x40 | `push32_l0` | — | 1 | +1 |
+| 65 | 0x41 | `push32_l1` | — | 1 | +1 |
+| 66 | 0x42 | `push32_l2` | — | 1 | +1 |
+| 67 | 0x43 | `push32_l3` | — | 1 | +1 |
+| 68 | 0x44 | `push64` | short | 3 | +1 |
+| 69 | 0x45 | `push64_p0` | — | 1 | +1 |
+| 70 | 0x46 | `push64_p1` | — | 1 | +1 |
+| 71 | 0x47 | `push64_p2` | — | 1 | +1 |
+| 72 | 0x48 | `push64_p3` | — | 1 | +1 |
+| 73 | 0x49 | `push64_l0` | — | 1 | +1 |
+| 74 | 0x4A | `push64_l1` | — | 1 | +1 |
+| 75 | 0x4B | `push64_l2` | — | 1 | +1 |
+| 76 | 0x4C | `push64_l3` | — | 1 | +1 |
+| 77 | 0x4D | `pop` | — | 1 | −1 |
+| 78 | 0x4E | `popc` | short | 3 | −1 |
+| 79 | 0x4F | `pops` | short | 3 | −1 |
+| 80 | 0x50 | `pop32` | short | 3 | −1 |
+| 81 | 0x51 | `pop32_p0` | — | 1 | −1 |
+| 82 | 0x52 | `pop32_p1` | — | 1 | −1 |
+| 83 | 0x53 | `pop32_p2` | — | 1 | −1 |
+| 84 | 0x54 | `pop32_p3` | — | 1 | −1 |
+| 85 | 0x55 | `pop32_l0` | — | 1 | −1 |
+| 86 | 0x56 | `pop32_l1` | — | 1 | −1 |
+| 87 | 0x57 | `pop32_l2` | — | 1 | −1 |
+| 88 | 0x58 | `pop32_l3` | — | 1 | −1 |
+| 89 | 0x59 | `pop64` | short | 3 | −1 |
+| 90 | 0x5A | `pop64_p0` | — | 1 | −1 |
+| 91 | 0x5B | `pop64_p1` | — | 1 | −1 |
+| 92 | 0x5C | `pop64_p2` | — | 1 | −1 |
+| 93 | 0x5D | `pop64_p3` | — | 1 | −1 |
+| 94 | 0x5E | `pop64_l0` | — | 1 | −1 |
+| 95 | 0x5F | `pop64_l1` | — | 1 | −1 |
+| 96 | 0x60 | `pop64_l2` | — | 1 | −1 |
+| 97 | 0x61 | `pop64_l3` | — | 1 | −1 |
+| 98 | 0x62 | `memcopy` | int index | 3 | −2 |
+| 99 | 0x63 | `memzero` | int index | 3 | −1 |
+| 100 | 0x64 | `dup` | — | 1 | +1 |
+| 101 | 0x65 | `dupins` | — | 1 | +1 |
+| 102 | 0x66 | `swap` | — | 1 | 0 |
+| 103 | 0x67 | `itoc` | — | 1 | 0 |
+| 104 | 0x68 | `uitouc` | — | 1 | 0 |
+| 105 | 0x69 | `itos` | — | 1 | 0 |
+| 106 | 0x6A | `uitous` | — | 1 | 0 |
+| 107 | 0x6B | `itol` | — | 1 | 0 |
+| 108 | 0x6C | `uitoul` | — | 1 | 0 |
+| 109 | 0x6D | `itof` | — | 1 | 0 |
+| 110 | 0x6E | `uitof` | — | 1 | 0 |
+| 111 | 0x6F | `itod` | — | 1 | 0 |
+| 112 | 0x70 | `uitod` | — | 1 | 0 |
+| 113 | 0x71 | `ltoi` | — | 1 | 0 |
+| 114 | 0x72 | `ltof` | — | 1 | 0 |
+| 115 | 0x73 | `ultof` | — | 1 | 0 |
+| 116 | 0x74 | `ltod` | — | 1 | 0 |
+| 117 | 0x75 | `ultod` | — | 1 | 0 |
+| 118 | 0x76 | `ftoi` | — | 1 | 0 |
+| 119 | 0x77 | `ftoui` | — | 1 | 0 |
+| 120 | 0x78 | `ftol` | — | 1 | 0 |
+| 121 | 0x79 | `ftoul` | — | 1 | 0 |
+| 122 | 0x7A | `ftod` | — | 1 | 0 |
+| 123 | 0x7B | `dtoi` | — | 1 | 0 |
+| 124 | 0x7C | `dtoui` | — | 1 | 0 |
+| 125 | 0x7D | `dtol` | — | 1 | 0 |
+| 126 | 0x7E | `dtoul` | — | 1 | 0 |
+| 127 | 0x7F | `dtof` | — | 1 | 0 |
+| 128 | 0x80 | `ptraddc` | short | 3 | 0 |
+| 129 | 0x81 | `ptroffi` | short | 3 | −1 |
+| 130 | 0x82 | `ptroffl` | short | 3 | −1 |
+| 131 | 0x83 | `ptrdiff` | short | 3 | −1 |
+| 132 | 0x84 | `inci` | char, char | 3 | 0 |
+| 133 | 0x85 | `incl` | char, char | 3 | 0 |
+| 134 | 0x86 | `addi` | — | 1 | −1 |
+| 135 | 0x87 | `addl` | — | 1 | −1 |
+| 136 | 0x88 | `addf` | — | 1 | −1 |
+| 137 | 0x89 | `addd` | — | 1 | −1 |
+| 138 | 0x8A | `subi` | — | 1 | −1 |
+| 139 | 0x8B | `subl` | — | 1 | −1 |
+| 140 | 0x8C | `subf` | — | 1 | −1 |
+| 141 | 0x8D | `subd` | — | 1 | −1 |
+| 142 | 0x8E | `muli` | — | 1 | −1 |
+| 143 | 0x8F | `mull` | — | 1 | −1 |
+| 144 | 0x90 | `mulf` | — | 1 | −1 |
+| 145 | 0x91 | `muld` | — | 1 | −1 |
+| 146 | 0x92 | `divi` | — | 1 | −1 |
+| 147 | 0x93 | `divui` | — | 1 | −1 |
+| 148 | 0x94 | `divl` | — | 1 | −1 |
+| 149 | 0x95 | `divul` | — | 1 | −1 |
+| 150 | 0x96 | `divf` | — | 1 | −1 |
+| 151 | 0x97 | `divd` | — | 1 | −1 |
+| 152 | 0x98 | `remi` | — | 1 | −1 |
+| 153 | 0x99 | `remui` | — | 1 | −1 |
+| 154 | 0x9A | `reml` | — | 1 | −1 |
+| 155 | 0x9B | `remul` | — | 1 | −1 |
+| 156 | 0x9C | `lshi` | — | 1 | −1 |
+| 157 | 0x9D | `lshl` | — | 1 | −1 |
+| 158 | 0x9E | `rshi` | — | 1 | −1 |
+| 159 | 0x9F | `rshui` | — | 1 | −1 |
+| 160 | 0xA0 | `rshl` | — | 1 | −1 |
+| 161 | 0xA1 | `rshul` | — | 1 | −1 |
+| 162 | 0xA2 | `andi` | — | 1 | −1 |
+| 163 | 0xA3 | `andl` | — | 1 | −1 |
+| 164 | 0xA4 | `ori` | — | 1 | −1 |
+| 165 | 0xA5 | `orl` | — | 1 | −1 |
+| 166 | 0xA6 | `xori` | — | 1 | −1 |
+| 167 | 0xA7 | `xorl` | — | 1 | −1 |
+| 168 | 0xA8 | `negi` | — | 1 | 0 |
+| 169 | 0xA9 | `negl` | — | 1 | 0 |
+| 170 | 0xAA | `negf` | — | 1 | 0 |
+| 171 | 0xAB | `negd` | — | 1 | 0 |
+| 172 | 0xAC | `not` | — | 1 | 0 |
+| 173 | 0xAD | `tstl` | — | 1 | 0 |
+| 174 | 0xAE | `cmpeqi` | — | 1 | −1 |
+| 175 | 0xAF | `cmpeql` | — | 1 | −1 |
+| 176 | 0xB0 | `cmpeqf` | — | 1 | −1 |
+| 177 | 0xB1 | `cmpeqd` | — | 1 | −1 |
+| 178 | 0xB2 | `cmpneqi` | — | 1 | −1 |
+| 179 | 0xB3 | `cmpneql` | — | 1 | −1 |
+| 180 | 0xB4 | `cmpneqf` | — | 1 | −1 |
+| 181 | 0xB5 | `cmpneqd` | — | 1 | −1 |
+| 182 | 0xB6 | `cmplti` | — | 1 | −1 |
+| 183 | 0xB7 | `cmpltui` | — | 1 | −1 |
+| 184 | 0xB8 | `cmpltl` | — | 1 | −1 |
+| 185 | 0xB9 | `cmpltul` | — | 1 | −1 |
+| 186 | 0xBA | `cmpltf` | — | 1 | −1 |
+| 187 | 0xBB | `cmpltd` | — | 1 | −1 |
+| 188 | 0xBC | `cmplei` | — | 1 | −1 |
+| 189 | 0xBD | `cmpleui` | — | 1 | −1 |
+| 190 | 0xBE | `cmplel` | — | 1 | −1 |
+| 191 | 0xBF | `cmpleul` | — | 1 | −1 |
+| 192 | 0xC0 | `cmplef` | — | 1 | −1 |
+| 193 | 0xC1 | `cmpled` | — | 1 | −1 |
+| 194 | 0xC2 | `cmpgti` | — | 1 | −1 |
+| 195 | 0xC3 | `cmpgtui` | — | 1 | −1 |
+| 196 | 0xC4 | `cmpgtl` | — | 1 | −1 |
+| 197 | 0xC5 | `cmpgtul` | — | 1 | −1 |
+| 198 | 0xC6 | `cmpgtf` | — | 1 | −1 |
+| 199 | 0xC7 | `cmpgtd` | — | 1 | −1 |
+| 200 | 0xC8 | `cmpgei` | — | 1 | −1 |
+| 201 | 0xC9 | `cmpgeui` | — | 1 | −1 |
+| 202 | 0xCA | `cmpgel` | — | 1 | −1 |
+| 203 | 0xCB | `cmpgeul` | — | 1 | −1 |
+| 204 | 0xCC | `cmpgef` | — | 1 | −1 |
+| 205 | 0xCD | `cmpged` | — | 1 | −1 |
+| 206 | 0xCE | `brz` | off16 | 3 | −1 |
+| 207 | 0xCF | `brnz` | off16 | 3 | −1 |
+| 208 | 0xD0 | `nbrz` | off16 | 3 | −1 |
+| 209 | 0xD1 | `nbrnz` | off16 | 3 | −1 |
+| 210 | 0xD2 | `ifzi` | off16 | 3 | −1 |
+| 211 | 0xD3 | `ifnzi` | off16 | 3 | −1 |
+| 212 | 0xD4 | `ifzl` | off16 | 3 | −1 |
+| 213 | 0xD5 | `ifnzl` | off16 | 3 | −1 |
+| 214 | 0xD6 | `ifeqi` | off16 | 3 | −2 |
+| 215 | 0xD7 | `ifnei` | off16 | 3 | −2 |
+| 216 | 0xD8 | `iflti` | off16 | 3 | −2 |
+| 217 | 0xD9 | `ifgei` | off16 | 3 | −2 |
+| 218 | 0xDA | `ifgti` | off16 | 3 | −2 |
+| 219 | 0xDB | `iflei` | off16 | 3 | −2 |
+| 220 | 0xDC | `goto` | off16 | 3 | 0 |
+| 221 | 0xDD | `lookupswitch` | lookupswitch table | variable | −1 |
+| 222 | 0xDE | `tableswitch` | tableswitch table | variable | −1 |
+| 223 | 0xDF | `invoke` | name index | 3 | 0 |
+| 224 | 0xE0 | `invokeunpack` | name index | 3 | 0 |
+| 225 | 0xE1 | `return` | — | 1 | 0 |
+| 226 | 0xE2 | `return32` | — | 1 | −1 |
+| 227 | 0xE3 | `return64` | — | 1 | −1 |
+| 228 | 0xE4 | `returnmem` | int index | 3 | −1 |
+| 229 | 0xE5 | `ext` | ext index | 3 | varies |
